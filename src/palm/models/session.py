@@ -144,10 +144,20 @@ class WizardSession(BaseModel):
         return []
 
     def ensure_path_consistency(self) -> None:
-        """0.2.1 defensive method: reconstruct current_path from history if needed."""
-        if not self.current_path and self.execution_path_history:
-            last = self.execution_path_history[-1]
-            if last:
-                self.current_path = list(last)
-                if not self.current_step_slug:
-                    self.current_step_slug = last[-1]
+        """
+        0.2.2: Make current_path the single source of truth.
+        Reconstructs current_path from execution_path_history when needed.
+        Also syncs current_step_slug.
+        """
+        if self.execution_path_history:
+            last_path = self.execution_path_history[-1]
+            if last_path:
+                if not self.current_path or self.current_path != last_path:
+                    self.current_path = list(last_path)
+                if not self.current_step_slug or self.current_step_slug != last_path[-1]:
+                    self.current_step_slug = last_path[-1]
+        elif self.current_path:
+            # No history but we have a path — seed the history
+            self.execution_path_history = [list(self.current_path)]
+            if not self.current_step_slug:
+                self.current_step_slug = self.current_path[-1]

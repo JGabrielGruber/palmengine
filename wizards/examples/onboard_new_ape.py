@@ -93,7 +93,8 @@ def onboard_new_ape_wizard() -> WizardDefinition:
         type=StepType.CONDITION,
         title="Age Gate",
         prompt="Evaluating age...",
-        # True branch (index 0) = adult, False (index 1) = minor
+        # 0.2.2: Explicit branching rule
+        # children[0] = True branch (adult), children[1] = False branch (minor)
         condition=lambda data: (data.get("ask_age") or 0) >= 18,
         children=[adult_branch, minor_branch],
     )
@@ -126,7 +127,7 @@ def onboard_new_ape_wizard() -> WizardDefinition:
             type=StepType.SUMMARY,
             title="Onboarding Summary",
             prompt="Review your answers before finalizing.",
-            guidelines="You can backtrack using 'back ask_name', 'back personal_section.ask_age', or 'back age_gate'.",
+            guidelines="You can backtrack with simple slugs (back ask_name) or dotted paths (back personal_section.ask_age).",
         ),
         StepDefinition(
             slug="commit",

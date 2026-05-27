@@ -15,7 +15,7 @@ Key principles:
 - First step is always a non-backtrackable Introduction
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 from palm.exceptions import (
     BacktrackNotAllowedError,

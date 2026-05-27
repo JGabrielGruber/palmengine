@@ -152,6 +152,7 @@ class WizardEngine:
         context.is_first_step = True
 
         session.last_rich_context = context.model_dump(mode="json")
+        session.ensure_path_consistency()
         self.store.save(session)
 
         logger.info(f"Started new session {session.id} for wizard '{wizard_id}'")
@@ -167,7 +168,7 @@ class WizardEngine:
             self.store.save(session)
             raise SessionExpiredError(f"Session {session_id} has expired")
 
-        # 0.2.1: Ensure hierarchical path state is consistent after load
+        # 0.2.2: Ensure current_path is always the single source of truth
         session.ensure_path_consistency()
 
         if touch:
@@ -227,8 +228,8 @@ class WizardEngine:
             field_name = current_step.slug
             session.collected_data[field_name] = self._normalize_value(value, current_step)
 
-        # 0.2.1 Stabilized: Use a loop for auto-descent instead of recursion.
-        # This keeps a single consistent session object for the entire "tick".
+        # 0.2.2: Single-source-of-truth navigation loop
+        logger.debug(f"process_input: current_path={current_path}, current_step={current_step.slug}")
         next_path = definition.get_next_path(current_path, session.collected_data)
 
         while next_path is not None:
@@ -244,14 +245,14 @@ class WizardEngine:
             add_to_back = next_step.is_backtrackable
             session.record_path(next_path, add_to_back_stack=add_to_back)
 
-            # Pure control composites (SEQUENCE / CONDITION) never pause for the user.
-            # Immediately compute the following step inside the same tick.
+            # 0.2.2: Pure control composites (SEQUENCE / CONDITION) never pause for the user.
+            # We auto-descend (or continue after finishing children) inside the same tick.
             if next_step.is_composite() and next_step.type in (StepType.SEQUENCE, StepType.CONDITION):
-                logger.debug(f"Auto-descending composite {next_path} (type={next_step.type})")
-                self.store.save(session)  # persist progress into the composite
-                current_path = next_path  # for the next iteration of get_next_path
+                logger.debug(f"Auto-descending into composite {next_path} (type={next_step.type})")
+                self.store.save(session)
+                current_path = next_path
                 next_path = definition.get_next_path(current_path, session.collected_data)
-                continue  # loop to next without user input
+                continue
 
             # Special non-pausing types
             if next_step.type == StepType.ACTION:
@@ -270,6 +271,7 @@ class WizardEngine:
             self.store.save(session)
             context = self._build_rich_context(session, definition, next_step, current_path=next_path)
             session.last_rich_context = context.model_dump(mode="json")
+            session.ensure_path_consistency()
             self.store.save(session)
 
             logger.debug(f"Session {session_id} paused at path {next_path}")
@@ -338,8 +340,11 @@ class WizardEngine:
 
         popped = session.pop_back_stack_to(target)
 
-        # Clear data collected in the popped subtree(s)
+        # 0.2.2: Clear data for everything after the target (handles dotted paths properly)
         for key in popped:
+            # Remove both the dotted key and the leaf slug
+            if key in session.collected_data:
+                session.collected_data.pop(key, None)
             leaf = key.split(".")[-1]
             if leaf in session.collected_data:
                 logger.debug(f"  clearing collected data for '{leaf}' (from backtrack)")
@@ -349,6 +354,8 @@ class WizardEngine:
         session.current_step_slug = target_path[-1]
         session.status = SessionStatus.PAUSED_FOR_INPUT
 
+        # 0.2.2: Force consistency after backtrack
+        session.ensure_path_consistency()
         self.store.save(session)
 
         context = self._build_rich_context(session, definition, target_step, current_path=target_path)

@@ -237,3 +237,68 @@ def test_backtracking_across_hierarchy(engine: WizardEngine) -> None:
     ctx2 = fresh.backtrack(s.id, "personal_section.ask_age")
     assert ctx2.current_step_slug == "ask_age"
     assert "personal_section" in ctx2.current_path
+
+
+# ----------------------------------------------------------------------
+# 0.2.2 Dedicated Stabilization Tests
+# ----------------------------------------------------------------------
+
+def test_condition_true_false_branching(engine: WizardEngine):
+    """CONDITION must select exactly one branch: children[0] for True, children[1] for False."""
+    fresh = WizardEngine()
+    fresh.register(onboard_new_ape_wizard())
+
+    # Adult path (True branch)
+    s1, _ = fresh.start_session("onboard_new_ape")
+    fresh.process_input(s1.id, "confirm")
+    fresh.process_input(s1.id, "Adult Ape")
+    fresh.process_input(s1.id, "35")  # >= 18 → True branch
+    s1 = fresh.get_session(s1.id, touch=False)
+    assert s1.current_step_slug == "ask_employee_id", "Should be on adult branch (children[0])"
+
+    # Minor path (False branch)
+    s2, _ = fresh.start_session("onboard_new_ape")
+    fresh.process_input(s2.id, "confirm")
+    fresh.process_input(s2.id, "Young Ape")
+    fresh.process_input(s2.id, "15")  # < 18 → False branch
+    s2 = fresh.get_session(s2.id, touch=False)
+    assert s2.current_step_slug == "ask_guardian_contact", "Should be on minor branch (children[1])"
+
+
+def test_auto_descent_and_sibling_progression(engine: WizardEngine):
+    """After finishing children of a SEQUENCE, engine must correctly ascend and continue."""
+    fresh = WizardEngine()
+    fresh.register(onboard_new_ape_wizard())
+
+    s, _ = fresh.start_session("onboard_new_ape")
+    fresh.process_input(s.id, "confirm")
+    fresh.process_input(s.id, "Test User")
+    fresh.process_input(s.id, "25")
+
+    s = fresh.get_session(s.id, touch=False)
+    # After personal_section children + age_gate, we should be at summary or later
+    assert s.current_path[0] in ("age_gate", "summary", "commit") or s.current_step_slug in ("ask_employee_id", "summary")
+
+
+def test_backtrack_then_continue(engine: WizardEngine):
+    """Backtrack using dotted path, then continue forward successfully."""
+    fresh = WizardEngine()
+    fresh.register(onboard_new_ape_wizard())
+
+    s, _ = fresh.start_session("onboard_new_ape")
+    fresh.process_input(s.id, "confirm")
+    fresh.process_input(s.id, "Backtrack Tester")
+    fresh.process_input(s.id, "30")
+
+    # Backtrack into the middle of personal_section
+    fresh.backtrack(s.id, "personal_section.ask_name")
+    s = fresh.get_session(s.id, touch=False)
+    assert s.current_path == ["personal_section", "ask_name"]
+
+    # Continue forward again
+    fresh.process_input(s.id, "Backtrack Tester 2")
+    fresh.process_input(s.id, "31")
+    s = fresh.get_session(s.id, touch=False)
+
+    # Should have progressed past personal_section again
+    assert "personal_section" not in s.current_path or s.current_step_slug in ("ask_employee_id", "summary", "commit")

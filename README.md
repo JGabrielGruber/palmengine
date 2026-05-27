@@ -89,11 +89,13 @@ palm> exit
 
 ---
 
-## Creating Your Own Wizard (0.2.0+)
+## Creating Your Own Wizard (0.2.2+)
 
 See:
-- [wizards/examples/create_ape_profile.py](wizards/examples/create_ape_profile.py) — the clean, recommended **basic/flat** example.
-- [wizards/examples/onboard_new_ape.py](wizards/examples/onboard_new_ape.py) — the **rich 0.2.1 hierarchical demo** (SEQUENCE + ContextBuilder + CONDITION + dotted backtracking).
+- [wizards/examples/create_ape_profile.py](wizards/examples/create_ape_profile.py) — the clean, recommended **basic/flat** example (stable and simple).
+- [wizards/examples/onboard_new_ape.py](wizards/examples/onboard_new_ape.py) — the **rich 0.2.2 hierarchical demo** (SEQUENCE + ContextBuilder + CONDITION + reliable dotted backtracking).
+
+**0.2.2 Stabilization Note**: Hierarchical navigation, CONDITION branching, auto-descent, and backtracking have been made significantly more reliable and deterministic. `current_path` is now the primary source of truth.
 
 Basic pattern:
 

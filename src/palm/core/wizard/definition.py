@@ -161,27 +161,34 @@ class WizardDefinition(BaseModel):
         # 2. Composite handling: descend
         if current_step.children:
             if current_step.type == StepType.CONDITION:
+                # 0.2.2: Explicit and strict CONDITION branching
+                # children[0] = True branch, children[1] = False branch
                 cond = current_step.condition
-                branch_idx = 0
-                if cond is not None:
-                    try:
-                        result = bool(cond(data))
-                        branch_idx = 0 if result else 1
-                        logger.debug(f"  -> CONDITION evaluated to {result} -> branch {branch_idx}")
-                    except Exception as exc:
-                        logger.warning(f"  CONDITION predicate failed for {current_path}: {exc}. Defaulting to branch 0.")
-                        branch_idx = 0
+                take_true_branch = True
 
-                if branch_idx < len(current_step.children):
+                if cond is not None and callable(cond):
+                    try:
+                        take_true_branch = bool(cond(data))
+                    except Exception as exc:
+                        logger.warning(f"CONDITION predicate failed for {current_path}: {exc}. Defaulting to True branch.")
+                        take_true_branch = True
+
+                branch_idx = 0 if take_true_branch else 1
+
+                if current_step.children and branch_idx < len(current_step.children):
                     child = current_step.children[branch_idx]
                     next_path = current_path + [child.slug]
-                    logger.debug(f"  -> descending CONDITION to {next_path}")
+                    logger.info(f"CONDITION at {current_path} evaluated to {take_true_branch} → choosing child '{child.slug}'")
                     return next_path
 
-                # Fallback to first child
-                next_path = current_path + [current_step.children[0].slug]
-                logger.debug(f"  -> CONDITION fallback to first child {next_path}")
-                return next_path
+                # Safe fallback
+                if current_step.children:
+                    next_path = current_path + [current_step.children[0].slug]
+                    logger.warning(f"CONDITION fallback at {current_path} → first child")
+                    return next_path
+
+                logger.warning(f"CONDITION at {current_path} has no children")
+                return self._find_next_sibling_or_ascend(current_path)
 
             # Default for any composite with children (SEQUENCE or untyped container): descend to first child
             next_path = current_path + [current_step.children[0].slug]

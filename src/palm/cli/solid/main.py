@@ -26,7 +26,7 @@ def main() -> None:
     # Set up beautiful logging early
     configure_logging(level=settings.log_level, console=console)
 
-    console.print("[bold green]🌴 Palm Orchestration Engine[/] - Solid Admin CLI v0.1.1")
+    console.print("[bold green]🌴 Palm Orchestration Engine[/] - Solid Admin CLI v0.2.2")
     console.print("Type [bold]help[/] for available commands. [dim]Ctrl+D or 'exit' to quit.[/]\n")
 
     logger.info("Starting Palm Solid Admin CLI")
