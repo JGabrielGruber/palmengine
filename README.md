@@ -45,6 +45,45 @@ palm/
 └── main.py
 ```
 
+```mermaid
+flowchart LR
+    palm[🌴 Palm]:::root
+    
+    subgraph Core["Core Engines"]
+        orchestration[Orchestration Engine]
+        behaviortree[Behavior Tree Engine]
+        processmgr[Process Manager]
+    end
+
+    subgraph Runtimes["Runtime Modes"]
+        embedded[Embedded Mode]
+        daemon[Daemon Mode]
+        server[Server Mode]
+        websocket[WebSocket Mode]
+    end
+
+    subgraph UseCases["Business Rule Implementations"]
+        wizards[REPL Wizards]
+        etl[ETL Pipelines]
+        dag[DAG Workflows]
+        ingestion[Transactional Data Ingestion]
+    end
+
+    palm --> orchestration
+    palm --> behaviortree
+    palm --> processmgr
+    
+    orchestration --> embedded
+    orchestration --> daemon
+    orchestration --> server
+    orchestration --> websocket
+    
+    behaviortree --> wizards
+    behaviortree --> etl
+    behaviortree --> dag
+    behaviortree --> ingestion
+```
+
 ---
 
 ## Quick Start
