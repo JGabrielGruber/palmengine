@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palm Engine — Lightweight Python Orchestration</title>
+    <meta name="description" content="Palm Engine: A clean, Python-first orchestration engine powered by Behavior Trees. Perfect for complex workflows, interactive wizards, and transactional processes.">
+    <script src=" https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js "></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .logo {
+            width: 180px;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            font-size: 3.5rem;
+            margin: 0 0 1rem 0;
+            background: linear-gradient(90deg, #f97316, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tagline {
+            font-size: 1.4rem;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+        .cta {
+            display: inline-flex;
+            gap: 1rem;
+        }
+        .btn {
+            padding: 14px 32px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #f97316;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #fb923c;
+            transform: translateY(-3px);
+        }
+        .btn-secondary {
+            border: 2px solid #64748b;
+            color: #e2e8f0;
+        }
+        .section {
+            padding: 5rem 0;
+        }
+        .mermaid-container {
+            background: #1e2937;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 3rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <!-- Logo -->
+            <img src="logo.png" alt="Palm Engine Logo" class="logo" style="filter: drop-shadow(0 0 30px rgba(249,115,22,0.6));">
+            
+            <h1>Palm Engine</h1>
+            <p class="tagline">
+                A lightweight, Python-first orchestration engine powered by a clean Behavior Tree foundation.<br>
+                Complex multi-step workflows • Rich interactive wizards • Transactional processes
+            </p>
+            
+            <div class="cta">
+                <a href="#get-started" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/palmengine" class="btn btn-secondary">GitHub</a>
+            </div>
+            
+            <div style="margin-top: 4rem;">
+                <p style="color: #64748b; font-size: 0.95rem;">Human-in-the-loop • Fully automated • Python native</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background: #0f172a;">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom: 3rem;">Architecture</h2>
+            
+            <div class="mermaid-container mermaid">
+flowchart LR
+    palm[🌴 Palm]:::root
+    
+    subgraph Core["Core Engines"]
+        orchestration[Orchestration Engine]
+        behaviortree[Behavior Tree Engine]
+        processmgr[Process Manager]
+        security[Security Primitives]
+    end
+
+    subgraph Runtimes["Runtime Modes"]
+        embedded[Embedded Mode]
+        daemon[Daemon Mode]
+        server[Server Mode]
+        websocket[WebSocket Mode]
+    end
+
+    subgraph UseCases["Business Rule Implementations"]
+        wizards[REPL Wizards]
+        etl[ETL Pipelines]
+        dag[DAG Workflows]
+        ingestion[Transactional Data Ingestion]
+    end
+
+    subgraph Extensions["Extensions"]
+        authengine[Auth Engine]
+    end
+
+    subgraph AuthProvider["Authentication Providers"]
+        oauth[OAuth2 / OIDC]
+        jwt[JWT / Token]
+        apikey[API Key]
+        custom[Custom / SSO]
+    end
+
+    palm --> orchestration
+    palm --> behaviortree
+    palm --> processmgr
+    
+    orchestration --> embedded
+    orchestration --> daemon
+    orchestration --> server
+    orchestration --> websocket
+    
+    behaviortree --> wizards
+    behaviortree --> etl
+    behaviortree --> dag
+    behaviortree --> ingestion
+
+    palm --> authengine
+    palm --> security
+    
+    authengine --> oauth
+    authengine --> jwt
+    authengine --> apikey
+    authengine --> custom
+        </div>
+    </section>
+
+    <script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        securityLevel: 'strict'
+    });
+    </script>
+
+</body>
+</html>            
+            
