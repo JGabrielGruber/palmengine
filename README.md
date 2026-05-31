@@ -53,6 +53,7 @@ flowchart LR
         orchestration[Orchestration Engine]
         behaviortree[Behavior Tree Engine]
         processmgr[Process Manager]
+        security[Security Primitives]
     end
 
     subgraph Runtimes["Runtime Modes"]
@@ -69,6 +70,17 @@ flowchart LR
         ingestion[Transactional Data Ingestion]
     end
 
+    subgraph Extensions["Extensions"]
+        authengine[Auth Engine]
+    end
+
+    subgraph AuthProvider["Authentication Providers"]
+        oauth[OAuth2 / OIDC]
+        jwt[JWT / Token]
+        apikey[API Key]
+        custom[Custom / SSO]
+    end
+
     palm --> orchestration
     palm --> behaviortree
     palm --> processmgr
@@ -82,6 +94,15 @@ flowchart LR
     behaviortree --> etl
     behaviortree --> dag
     behaviortree --> ingestion
+
+    palm --> authengine
+    palm --> security
+    
+    authengine --> oauth
+    authengine --> jwt
+    authengine --> apikey
+    authengine --> custom
+
 ```
 
 ---
