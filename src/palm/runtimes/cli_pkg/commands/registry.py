@@ -17,6 +17,7 @@ from palm.runtimes.cli_pkg.display import (
     render_instance_table,
     render_job_status,
 )
+from palm.runtimes.cli_pkg.doctor import run_doctor
 
 Handler = Callable[[CliContext, list[str]], int]
 
@@ -53,6 +54,7 @@ def build_registry() -> CommandRegistry:
     reg = CommandRegistry()
 
     reg.register("help", _cmd_help)
+    reg.register("doctor", _cmd_doctor)
     reg.register("status", _cmd_status)
     reg.register("version", _cmd_version)
 
@@ -104,6 +106,10 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
   input [<instance_id>] <value>
   back [<instance_id>] <step_slug>
 
+[bold]Diagnostics[/]
+  doctor                    Full engine health report
+  status --full             Same as doctor (one-shot: palm status --full)
+
 [bold]System[/]
   clear                     Clear screen
   help                      This message
@@ -118,7 +124,13 @@ def _cmd_version(ctx: CliContext, _args: list[str]) -> int:
     return 0
 
 
+def _cmd_doctor(ctx: CliContext, _args: list[str]) -> int:
+    return run_doctor(ctx)
+
+
 def _cmd_status(ctx: CliContext, args: list[str]) -> int:
+    if args and args[0] == "--full":
+        return run_doctor(ctx)
     try:
         iid = actions.resolve_instance_ref(ctx, args[0] if args else None)
     except (ValueError, Exception) as exc:

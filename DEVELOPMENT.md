@@ -1,65 +1,134 @@
 # DEVELOPMENT.md
 
+Guide for contributors working on Palm **0.4.0-dev**.
+
 ## Setup
 
 ```bash
-uv sync --group dev
+uv sync --group dev --extra cli
 uv pip install -e .
+just dev          # optional: sync + pre-commit + format
 ```
 
-## Daily Commands
+The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
+
+## Daily commands
 
 | Task | Command |
 |------|---------|
-| CLI (placeholder) | `palm` or `palm status` |
-| Tests | `pytest` |
+| REPL | `palm` or `palm repl` or `just palm-repl` |
+| Diagnostics | `palm doctor` or `just palm-doctor` |
+| Short status | `palm status` |
+| Full status | `palm status --full` |
+| Tests | `pytest` or `just test-quick` |
 | Lint | `ruff check src/palm/ tests/` |
 | Format | `ruff format src/palm/ tests/` |
 | Type check | `mypy src/palm/` |
+| Fast gate | `just check` |
+| Full gate | `just full-check` |
 
-Or use `just` recipes (`just check`, `just test-quick`).
-
-## Project Layout
+## Project layout
 
 ```
-src/palm/              # Python package
+src/palm/
 ├── core/              # Pure engines — no external palm imports
-├── patterns/          # Wizard, DAG, ETL
+├── patterns/          # Wizard, DAG, ETL (+ commit registry, validation)
 ├── providers/         # REST, GraphQL, Postgres
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
-├── definitions/       # Flow and process specs
-├── runtimes/          # CLI, embedded, server, daemon
-└── utils/             # Shared non-core helpers
+├── definitions/       # FlowDefinition, ProcessDefinition
+├── executions/        # Executor, repositories, builder, instance sync
+├── instances/         # ProcessInstance, status history
+├── runtimes/
+│   ├── embedded.py    # EmbeddedRuntime
+│   ├── cli.py         # Entry point
+│   └── cli_pkg/       # REPL, doctor, commands
+└── utils/
 
-archive/               # Legacy code — do not import
-tests/                 # Pytest suite
-examples/              # Future runnable examples
+examples/definitions/  # Auto-loaded by CLI (see examples/README.md)
+archive/               # Legacy — do not import
+tests/
 ```
 
-## Adding a Pattern
+## Working with the CLI
+
+Example definitions register on every CLI start:
+
+```bash
+palm doctor
+palm process list
+palm wizard start onboard
+```
+
+Drive wizards in the REPL or one-shot:
+
+```bash
+palm input <instance_id> <value>
+palm back <instance_id> <step_slug>
+palm process resume <instance_id>
+```
+
+### Shared storage for resume demos
+
+In-memory storage is per `EmbeddedRuntime` unless you pass a shared `StorageEngine`:
+
+```python
+from palm.core import StorageEngine
+from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
+
+storage = StorageEngine()
+storage.initialize(backend="memory")
+ctx = bootstrap_runtime(storage=storage)
+# … submit, persist …
+shutdown_context(ctx)
+# New context with same storage object can resume instances
+```
+
+## Adding a pattern
 
 1. Create `palm/patterns/<name>.py` subclassing `BasePattern`.
 2. Call `pattern_registry.register("<name>", YourPattern)` at module bottom.
 3. Export from `palm/patterns/__init__.py`.
-4. Add tests in `tests/`.
+4. Extend `executions/builder.py` if the pattern has flow options.
+5. Add tests in `tests/`.
 
-## Adding a Storage Backend
+## Adding example definitions
+
+1. Add `examples/definitions/<name>.py`.
+2. Implement `register_definitions(repository)`.
+3. Register commit handlers on `default_commit_registry()` when using `commit_hook`.
+4. Run `palm doctor` to confirm catalog counts.
+
+## Adding a storage backend
 
 1. Create `palm/storages/<name>.py` subclassing `BaseBackend`.
 2. Register with `storage_registry`.
 3. Add tests.
 
-## Core Purity Check
+## Core purity check
 
 ```bash
-# Must return no matches:
+just guard-core
+# or:
 rg 'from palm\.(patterns|providers|storages|runtimes|definitions|utils)' src/palm/core/
 ```
 
-## Archive Policy
+Must return no matches.
+
+## Archive policy
 
 All code under `archive/` is historical. Never add new features there.
 
+## Testing focus areas
+
+| Area | Tests |
+|------|-------|
+| Core orchestration | `tests/test_orchestration.py` |
+| Wizard pattern | `tests/test_wizard.py` |
+| Executions / builder | `tests/test_executions.py` |
+| Instances / resume | `tests/test_instances.py` |
+| Embedded API | `tests/test_embedded.py` |
+| CLI dispatch | `tests/test_cli.py` |
+
 ---
 
-Last updated: June 2026 (0.4.0-dev restructure)
+Last updated: June 2026 (0.4.0-dev — executions, instances, CLI)

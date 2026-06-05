@@ -114,7 +114,30 @@ deps:
     @echo "✅ Dependency audit complete"
 
 # -----------------------------------------------------------------------------
-# 6. Convenience & CI-friendly
+# 6. Palm CLI (requires --extra cli)
+# -----------------------------------------------------------------------------
+palm *ARGS='doctor':
+    uv run --extra cli palm {{ARGS}}
+
+palm-repl:
+    uv run --extra cli palm repl
+
+palm-doctor:
+    uv run --extra cli palm doctor
+
+palm-status:
+    uv run --extra cli palm status
+
+palm-demo-onboard:
+    @echo "Starting onboarding wizard (interactive)…"
+    uv run --extra cli palm wizard start onboard
+
+palm-demo-approval:
+    @echo "Starting approval workflow (interactive)…"
+    uv run --extra cli palm wizard start approval
+
+# -----------------------------------------------------------------------------
+# 7. Convenience & CI-friendly
 # -----------------------------------------------------------------------------
 prepr: full-check   # Pre-PR / Pre-merge
     @echo "🎉 All quality gates passed — ready for review!"
@@ -134,4 +157,6 @@ help:
     @echo "   just refactor     → Dead code + autofix"
     @echo "   just guard-core   → Architecture enforcement"
     @echo "   just audit        → Security + complexity"
+    @echo "   just palm-doctor  → CLI health + examples"
+    @echo "   just palm-repl    → Interactive Palm shell"
     @echo "Run 'just --list' for full list"

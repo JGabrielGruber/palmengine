@@ -12,6 +12,7 @@ from palm import __version__
 from palm.core.registry import pattern_registry, storage_registry
 from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
+from palm.runtimes.cli_pkg.doctor import run_doctor
 from palm.runtimes.cli_pkg.repl import run_repl
 
 
@@ -44,11 +45,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Engine status, or instance/job status when instance_id is given",
     )
     status_p.add_argument(
+        "--full",
+        action="store_true",
+        help="Full diagnostic report (same as palm doctor)",
+    )
+    status_p.add_argument(
         "instance_id",
         nargs="?",
         default=None,
         help="Process instance id (optional)",
     )
+
+    sub.add_parser("doctor", help="Engine health, definitions, storage, and instances")
 
     proc = sub.add_parser("process", help="Process definition commands")
     proc_sub = proc.add_subparsers(dest="process_cmd", required=True)
@@ -78,12 +86,6 @@ def build_parser() -> argparse.ArgumentParser:
             nargs=argparse.REMAINDER,
             help="[<instance_id>] <value> or [<instance_id>] <step_slug>",
         )
-
-    status_inst = sub.add_parser(
-        "status-instance",
-        help=argparse.SUPPRESS,
-    )
-    status_inst.add_argument("instance_id", nargs="?", default=None)
 
     return parser
 
@@ -120,8 +122,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "repl":
             exit_code = run_repl(ctx)
+        elif args.command == "doctor":
+            exit_code = run_doctor(ctx)
         elif args.command == "status":
-            if args.instance_id:
+            if getattr(args, "full", False):
+                exit_code = run_doctor(ctx)
+            elif args.instance_id:
                 exit_code = registry.dispatch(ctx, f"status {args.instance_id}")
             else:
                 exit_code = _print_engine_status(ctx)

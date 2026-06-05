@@ -21,6 +21,13 @@ def test_process_list_registers_examples(cli_ctx) -> None:
     names = {p.name for p in cli_ctx.runtime.repository.list_processes()}
     assert "onboarding" in names
     assert "quick-demo" in names
+    assert "data-ingestion" in names
+    assert "approval-workflow" in names
+
+
+def test_doctor_reports_healthy(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "doctor") == 0
 
 
 def test_wizard_start_onboard(cli_ctx) -> None:
