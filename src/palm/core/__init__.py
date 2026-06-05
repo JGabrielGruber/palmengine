@@ -36,7 +36,17 @@ from palm.core.exceptions import (
     StorageError,
     StorageNotConfiguredError,
 )
-from palm.core.orchestration import Job, JobStatus, OrchestrationEngine
+from palm.core.orchestration import (
+    ExecutionBackend,
+    Job,
+    JobState,
+    JobStatus,
+    OrchestrationEngine,
+    OrchestrationEventType,
+    OrchestrationMode,
+    TestBackend,
+    TestMode,
+)
 from palm.core.registry import (
     pattern_registry,
     provider_registry,
@@ -61,9 +71,15 @@ __all__ = [
     "EngineError",
     "Event",
     "EventEngine",
+    "ExecutionBackend",
     "Job",
+    "JobState",
     "JobStatus",
     "OrchestrationEngine",
+    "OrchestrationEventType",
+    "OrchestrationMode",
+    "TestBackend",
+    "TestMode",
     "PalmError",
     "PatternStatus",
     "Principal",
