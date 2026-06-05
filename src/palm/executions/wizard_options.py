@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.executions.exceptions import DefinitionBuildError
+
+
 def parse_wizard_flow_options(options: dict[str, Any]) -> dict[str, Any]:
     """
     Normalize wizard keys from a ``FlowDefinition.options`` payload.

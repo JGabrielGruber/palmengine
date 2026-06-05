@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 import palm.patterns  # — register patterns
-import palm.providers  # — register providers  # — register providers
+import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register backends
 from palm import __version__
 from palm.backends.behavior_tree import BehaviorTreeBackend
@@ -28,7 +28,9 @@ from palm.core.context import BaseState
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.executions import DefinitionExecutor, DefinitionRepository
+from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRepository
+from palm.executions.instance_events import wire_instance_persistence
+from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardConfig, WizardPattern
 from palm.states import BlackboardState
 
@@ -47,9 +49,11 @@ class EmbeddedRuntime:
         self.behavior_tree = BehaviorTreeEngine()
         self.resource = ResourceEngine()
         self.orchestration = OrchestrationEngine()
+        self._owns_storage = storage is None
         self.storage = storage if storage is not None else StorageEngine()
         self.repository = DefinitionRepository(self.storage)
-        self.executor = DefinitionExecutor(self, self.repository)
+        self.instances = InstanceRepository(self.storage)
+        self.executor = DefinitionExecutor(self, self.repository, self.instances)
         self._started = False
 
     @property
@@ -92,6 +96,7 @@ class EmbeddedRuntime:
         self.storage.initialize(backend=options.get("backend", "memory"))
 
         self.orchestration.start()
+        wire_instance_persistence(self, self.instances)
         self._started = True
 
     def stop(self) -> None:
@@ -100,7 +105,8 @@ class EmbeddedRuntime:
             return
 
         self.orchestration.stop()
-        self.storage.shutdown()
+        if self._owns_storage:
+            self.storage.shutdown()
         self.orchestration.shutdown()
         self.behavior_tree.shutdown()
         self.resource.shutdown()
@@ -182,7 +188,27 @@ class EmbeddedRuntime:
         job = self.orchestration.get_job(job_id)
         slug = wizard.provide_input(job.state, value)
         self.orchestration.resume_job(job_id)
+        self.executor.persist_job(job)
         return slug
+
+    def resume_process(self, instance_id: str) -> Job:
+        """Resume a persisted process instance (wizard state and answers restored)."""
+        self._require_started()
+        job = self.executor.resume_process(instance_id)
+        self._bind_instance_context(job)
+        return job
+
+    def get_instance(self, instance_id: str) -> ProcessInstance:
+        """Load a persisted process instance record."""
+        self._require_started()
+        return self.instances.get(instance_id)
+
+    def _bind_instance_context(self, job: Job) -> None:
+        ctx = self.context
+        if not ctx.is_initialized:
+            return
+        iid = job.metadata.get("instance_id", job.id)
+        ctx.push(f"job:{job.id}", state=job.state, job_id=job.id, instance_id=iid)
 
     def get_job(self, job_id: str) -> Job:
         """Return a registered orchestration job."""
