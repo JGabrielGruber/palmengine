@@ -12,9 +12,9 @@ Constitution for AI coding agents and human developers working on Palm.
 
 ## Architecture Rules (0.4.0-dev)
 
-### 1. Core Layer (`palm/core/`) — PURE
+### 1. Core Layer (`src/palm/core/`) — PURE
 
-- **Invariant:** Nothing inside `palm/core/` may import from outside `palm/core/`.
+- **Invariant:** Nothing inside `src/palm/core/` may import from outside `palm/core/`.
 - Contains abstract bases, registries, shared primitives, and engine skeletons:
   - `behavior_tree/` — patterns and blackboard execution
   - `resource/` — provider coordination

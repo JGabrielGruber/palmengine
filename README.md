@@ -19,7 +19,7 @@ palm status
 ## Project Structure
 
 ```
-palm/                      # Python package
+src/palm/                  # Python package
 ├── core/                  # Pure foundational engines (no external palm imports)
 │   ├── behavior_tree/     # Pattern execution + blackboard
 │   ├── resource/          # Provider coordination
@@ -75,8 +75,8 @@ Commands (placeholder):
 
 ```bash
 pytest
-ruff check palm/ tests/
-mypy palm/
+ruff check src/palm/ tests/
+mypy src/palm/
 just check
 ```
 

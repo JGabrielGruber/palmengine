@@ -55,6 +55,6 @@ class Registry(Generic[T]):
         self._entries.clear()
 
 
-pattern_registry: Registry["BasePattern"] = Registry("pattern")
-provider_registry: Registry["BaseProvider"] = Registry("provider")
-storage_registry: Registry["BaseBackend"] = Registry("storage backend")
+pattern_registry: Registry[BasePattern] = Registry("pattern")
+provider_registry: Registry[BaseProvider] = Registry("provider")
+storage_registry: Registry[BaseBackend] = Registry("storage backend")

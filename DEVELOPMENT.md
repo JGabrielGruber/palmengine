@@ -13,16 +13,16 @@ uv pip install -e .
 |------|---------|
 | CLI (placeholder) | `palm` or `palm status` |
 | Tests | `pytest` |
-| Lint | `ruff check palm/ tests/` |
-| Format | `ruff format palm/ tests/` |
-| Type check | `mypy palm/` |
+| Lint | `ruff check src/palm/ tests/` |
+| Format | `ruff format src/palm/ tests/` |
+| Type check | `mypy src/palm/` |
 
 Or use `just` recipes (`just check`, `just test-quick`).
 
 ## Project Layout
 
 ```
-palm/                  # Python package (repo root layout)
+src/palm/              # Python package
 ├── core/              # Pure engines — no external palm imports
 ├── patterns/          # Wizard, DAG, ETL
 ├── providers/         # REST, GraphQL, Postgres
@@ -53,7 +53,7 @@ examples/              # Future runnable examples
 
 ```bash
 # Must return no matches:
-rg 'from palm\.(patterns|providers|storages|runtimes|definitions|utils)' palm/core/
+rg 'from palm\.(patterns|providers|storages|runtimes|definitions|utils)' src/palm/core/
 ```
 
 ## Archive Policy

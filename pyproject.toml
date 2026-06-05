@@ -65,11 +65,11 @@ Repository = "https://github.com/example/palm"
 Issues = "https://github.com/example/palm/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["palm"]
+packages = ["src/palm"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "palm/",
+    "src/palm/",
     "tests/",
     "examples/",
     "README.md",
@@ -99,7 +99,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = ["src"]
 asyncio_mode = "auto"
 addopts = "-ra -q --strict-markers"
 

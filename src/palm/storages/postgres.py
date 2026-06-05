@@ -13,20 +13,26 @@ from palm.core.storage import BaseBackend
 class PostgresStorageBackend(BaseBackend):
     """Stub Postgres persistence backend."""
 
+    def __init__(self, *, name: str = "postgres") -> None:
+        super().__init__(name=name)
+
     def open(self) -> None:
-        pass
+        if self._is_open:
+            return
+        self._is_open = True
 
     def get(self, key: str) -> Any | None:
+        self.ensure_open()
         return None
 
     def set(self, key: str, value: Any) -> None:
-        pass
+        self.ensure_open()
 
     def delete(self, key: str) -> None:
-        pass
+        self.ensure_open()
 
     def close(self) -> None:
-        pass
+        self._is_open = False
 
 
 storage_registry.register("postgres", PostgresStorageBackend)

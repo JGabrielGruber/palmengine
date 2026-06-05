@@ -19,10 +19,13 @@ from palm.core.behavior_tree import BasePattern, BehaviorTreeEngine, PatternStat
 from palm.core.context import ContextEngine
 from palm.core.event import Event, EventEngine
 from palm.core.exceptions import (
+    BackendNotOpenError,
     ConfigurationError,
     EngineError,
     PalmError,
     RegistryError,
+    StorageError,
+    StorageNotConfiguredError,
 )
 from palm.core.orchestration import Job, JobStatus, OrchestrationEngine
 from palm.core.registry import (
@@ -35,6 +38,7 @@ from palm.core.storage import BaseBackend, StorageEngine
 
 __all__ = [
     "AuthEngine",
+    "BackendNotOpenError",
     "BaseBackend",
     "BasePalmEngine",
     "BasePattern",
@@ -54,6 +58,8 @@ __all__ = [
     "RegistryError",
     "ResourceEngine",
     "StorageEngine",
+    "StorageError",
+    "StorageNotConfiguredError",
     "pattern_registry",
     "provider_registry",
     "storage_registry",

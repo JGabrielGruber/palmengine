@@ -22,3 +22,15 @@ class RegistryError(PalmError):
 
 class ConfigurationError(PalmError):
     """Raised when engine configuration is invalid or incomplete."""
+
+
+class StorageError(EngineError):
+    """Raised when storage operations fail."""
+
+
+class StorageNotConfiguredError(StorageError):
+    """Raised when the storage engine has no active backend."""
+
+
+class BackendNotOpenError(StorageError):
+    """Raised when an operation requires an open backend."""
