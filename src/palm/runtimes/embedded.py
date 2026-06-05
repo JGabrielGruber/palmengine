@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 import palm.patterns  # — register patterns
-import palm.providers  # — register providers
+import palm.providers  # — register providers  # — register providers
 import palm.storages  # noqa: F401 — register backends
 from palm import __version__
 from palm.backends.behavior_tree import BehaviorTreeBackend
@@ -20,6 +20,7 @@ from palm.core import (
     EventEngine,
     Job,
     OrchestrationEngine,
+    ResourceEngine,
     StorageEngine,
     TestMode,
 )
@@ -44,6 +45,7 @@ class EmbeddedRuntime:
         self.context = ContextEngine()
         self.event = EventEngine()
         self.behavior_tree = BehaviorTreeEngine()
+        self.resource = ResourceEngine()
         self.orchestration = OrchestrationEngine()
         self.storage = storage if storage is not None else StorageEngine()
         self.repository = DefinitionRepository(self.storage)
@@ -65,6 +67,7 @@ class EmbeddedRuntime:
 
         self.context.initialize()
         self.event.initialize()
+        self.resource.initialize()
 
         mode = options.get("mode")
         if mode is None:
@@ -100,6 +103,7 @@ class EmbeddedRuntime:
         self.storage.shutdown()
         self.orchestration.shutdown()
         self.behavior_tree.shutdown()
+        self.resource.shutdown()
         self.context.shutdown()
         self.event.shutdown()
         self._started = False

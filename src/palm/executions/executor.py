@@ -9,9 +9,11 @@ from typing import TYPE_CHECKING, Any, overload
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
+from palm.executions.build_context import PatternBuildContext
 from palm.executions.builder import build_pattern
 from palm.executions.exceptions import DefinitionBuildError, DefinitionNotFoundError
 from palm.executions.repository import DefinitionRepository
+from palm.executions.wizard_options import wizard_metadata_from_flow
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:
@@ -72,13 +74,22 @@ class DefinitionExecutor:
         """Build a pattern from a flow (or repository ref) and submit a job."""
         resolved = self._resolve_flow(flow, by_id=by_id)
         self._require_runtime()
-        pattern = build_pattern(resolved, event_engine=self._runtime.event)
+        build_ctx = PatternBuildContext(
+            event_engine=self._runtime.event,
+            resource_engine=getattr(self._runtime, "resource", None),
+        )
+        if resolved.pattern == "wizard":
+            build_ctx.wizard_metadata = wizard_metadata_from_flow(resolved.options)
+
+        pattern = build_pattern(resolved, context=build_ctx)
         job_state = state if state is not None else BlackboardState()
         meta = dict(metadata or {})
         meta.setdefault("definition_type", "flow")
         meta.setdefault("flow", resolved.name)
         meta.setdefault("flow_id", resolved.definition_id)
         meta.setdefault("pattern", resolved.pattern)
+        if build_ctx.wizard_metadata:
+            meta.setdefault("wizard", dict(build_ctx.wizard_metadata))
         return self._runtime.orchestration.submit(
             pattern,
             state=job_state,

@@ -185,6 +185,41 @@ def test_persisted_process_executes_after_reload() -> None:
         storage.shutdown()
 
 
+def test_transactional_wizard_from_stored_flow(runtime: EmbeddedRuntime) -> None:
+    from palm.patterns.wizard.commit import CommitResult, default_commit_registry
+
+    default_commit_registry().register(
+        "persist_user",
+        lambda ctx: CommitResult.success({"id": ctx.answers.get("name")}),
+    )
+
+    flow = FlowDefinition(
+        name="txn-onboard",
+        pattern="wizard",
+        options={
+            "include_summary": True,
+            "include_commit": True,
+            "commit_hook": "persist_user",
+            "steps": [
+                {
+                    "slug": "name",
+                    "title": "Name",
+                    "prompt": "Name?",
+                    "validation": [{"rule": "min_length", "params": {"min": 2}}],
+                },
+            ],
+        },
+    )
+    runtime.repository.save_flow(flow)
+    job = runtime.submit_flow("txn-onboard")
+    assert job.metadata.get("wizard", {}).get("commit_hook") == "persist_user"
+    runtime.provide_input(job.id, "Ada")
+    runtime.provide_input(job.id, "yes")
+    runtime.provide_input(job.id, "yes")
+    assert job.status == JobStatus.SUCCEEDED
+    assert job.state.get(WizardKeys.COMMITTED) is True
+
+
 def test_wizard_via_process_definition(runtime: EmbeddedRuntime) -> None:
     process = ProcessDefinition(
         name="quick",

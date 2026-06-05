@@ -5,6 +5,7 @@ Sits above ``palm.core`` orchestration and below runtimes, translating
 ``FlowDefinition`` / ``ProcessDefinition`` into executable patterns.
 """
 
+from palm.executions.build_context import PatternBuildContext
 from palm.executions.builder import build_pattern, wizard_config_from_options
 from palm.executions.exceptions import (
     DefinitionBuildError,
@@ -13,6 +14,7 @@ from palm.executions.exceptions import (
 )
 from palm.executions.executor import DefinitionExecutor, ProcessExecutor
 from palm.executions.repository import DefinitionRepository
+from palm.executions.wizard_options import parse_wizard_flow_options, wizard_metadata_from_flow
 
 __all__ = [
     "DefinitionBuildError",
@@ -20,7 +22,10 @@ __all__ = [
     "DefinitionNotFoundError",
     "DefinitionRepository",
     "ExecutionError",
+    "PatternBuildContext",
     "ProcessExecutor",
     "build_pattern",
+    "parse_wizard_flow_options",
     "wizard_config_from_options",
+    "wizard_metadata_from_flow",
 ]

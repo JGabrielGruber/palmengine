@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import pytest
+
 from palm.core.behavior_tree import PatternStatus
 from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.patterns.wizard import (
+    StepValidationRule,
     WizardConfig,
     WizardEventType,
     WizardKeys,
     WizardPattern,
     WizardStepConfig,
 )
+from palm.patterns.wizard.commit import CommitContext, CommitRegistry, CommitResult
 from palm.states import BlackboardState
 
 
@@ -187,6 +191,161 @@ def test_wizard_registry_default_steps() -> None:
     assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
     wizard.provide_input(state, "b")
     assert wizard.tick(state) == PatternStatus.SUCCESS
+
+
+def _transactional_config() -> WizardConfig:
+    return WizardConfig(
+        steps=(
+            WizardStepConfig(
+                slug="name",
+                title="Name",
+                prompt="Name?",
+                validation=(StepValidationRule("min_length", {"min": 2}),),
+            ),
+            WizardStepConfig(
+                slug="role",
+                title="Role",
+                prompt="Role?",
+                field_type="choice",
+                choices=("dev", "mgr"),
+            ),
+        ),
+        allow_backtrack=True,
+        include_summary=True,
+        include_commit=True,
+        commit_hook="save_profile",
+    )
+
+
+def test_transactional_wizard_happy_path_with_commit() -> None:
+    from palm.patterns.wizard.commit import CommitRegistry, CommitResult
+
+    registry = CommitRegistry()
+    committed: list[dict] = []
+
+    def save_profile(ctx: CommitContext) -> CommitResult:
+        committed.append(dict(ctx.answers))
+        return CommitResult.success({"stored": True})
+
+    registry.register("save_profile", save_profile)
+
+    state = BlackboardState()
+    wizard = WizardPattern(
+        name="txn",
+        config=_transactional_config(),
+        commit_registry=registry,
+    )
+
+    wizard.tick(state)
+    wizard.provide_input(state, "Ada")
+    wizard.tick(state)
+    wizard.provide_input(state, "dev")
+    wizard.tick(state)
+    assert wizard.current_step_slug(state) == "summary"
+    wizard.provide_input(state, "yes")
+    wizard.tick(state)
+    assert wizard.current_step_slug(state) == "commit"
+    wizard.provide_input(state, "yes")
+    assert wizard.tick(state) == PatternStatus.SUCCESS
+    assert wizard.is_committed(state)
+    assert committed[0] == {"name": "Ada", "role": "dev"}
+
+
+def test_validation_min_length_failure() -> None:
+    state = BlackboardState()
+    config = WizardConfig(
+        steps=(
+            WizardStepConfig(
+                slug="name",
+                title="Name",
+                prompt="Name?",
+                validation=(StepValidationRule("min_length", {"min": 3}),),
+            ),
+        ),
+    )
+    wizard = WizardPattern(name="w", config=config)
+    wizard.tick(state)
+    wizard.provide_input(state, "ab")
+    assert wizard.tick(state) == PatternStatus.FAILURE
+    assert state.get(WizardKeys.VALIDATION_ERROR)
+
+
+def test_commit_handler_failure() -> None:
+    from palm.patterns.wizard.commit import CommitRegistry, CommitResult
+
+    registry = CommitRegistry()
+
+    def failing(_: CommitContext) -> CommitResult:
+        return CommitResult.failure("disk full")
+
+    registry.register("save_profile", failing)
+
+    config = WizardConfig(
+        steps=(WizardStepConfig(slug="name", title="N", prompt="N?"),),
+        include_summary=False,
+        include_commit=True,
+        commit_hook="save_profile",
+    )
+    state = BlackboardState()
+    wizard = WizardPattern(name="w", config=config, commit_registry=registry)
+    wizard.tick(state)
+    wizard.provide_input(state, "Ada")
+    wizard.tick(state)
+    wizard.provide_input(state, "yes")
+    assert wizard.tick(state) == PatternStatus.FAILURE
+    assert state.get(WizardKeys.COMMIT_ERROR) == "disk full"
+
+
+def test_backtrack_blocked_for_commit_step() -> None:
+    registry = CommitRegistry()
+    registry.register("save_profile", lambda _ctx: CommitResult.success())
+
+    state = BlackboardState()
+    wizard = WizardPattern(
+        name="w",
+        config=_transactional_config(),
+        commit_registry=registry,
+    )
+    wizard.tick(state)
+    wizard.provide_input(state, "Ada")
+    wizard.tick(state)
+    wizard.provide_input(state, "dev")
+    wizard.tick(state)
+    wizard.provide_input(state, "yes")
+    wizard.tick(state)
+    assert wizard.current_step_slug(state) == "commit"
+    with pytest.raises(ValueError, match="protected"):
+        wizard.request_backtrack(state, "commit")
+    with pytest.raises(ValueError, match="protected"):
+        wizard.request_backtrack(state, "summary")
+
+
+def test_action_step_uses_resource_engine() -> None:
+    from palm.core.resource import ResourceEngine
+
+    resource = ResourceEngine()
+    resource.initialize()
+    config = WizardConfig(
+        steps=(
+            WizardStepConfig(
+                slug="lookup",
+                title="Lookup",
+                prompt="Fetch?",
+                step_kind="action",
+                field_type="confirm",
+                resource_provider="rest",
+                resource_id="users/1",
+            ),
+        ),
+    )
+    state = BlackboardState()
+    wizard = WizardPattern(name="w", config=config, resource_engine=resource)
+    wizard.tick(state)
+    wizard.provide_input(state, "yes")
+    assert wizard.tick(state) == PatternStatus.SUCCESS
+    result = state.get(f"{WizardKeys.RESOURCE_RESULT}:lookup")
+    assert result["source"] == "rest"
+    resource.shutdown()
 
 
 def test_answers_persist_across_ticks() -> None:

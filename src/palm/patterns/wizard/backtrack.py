@@ -1,5 +1,5 @@
 """
-Wizard backtracking — reset tree position and restore step index in state.
+Wizard backtracking — reset tree position with safeguards for protected steps.
 """
 
 from __future__ import annotations
@@ -8,6 +8,21 @@ from palm.core.behavior_tree import RootNode, SequenceNode
 from palm.core.context import BaseState
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.keys import WizardKeys
+
+
+def can_backtrack_to(config: WizardConfig, target: str | int) -> bool:
+    """Return whether backtracking to ``target`` (slug or index) is allowed."""
+    if not config.allow_backtrack:
+        return False
+
+    slug = target if isinstance(target, str) else config.iter_tree_steps()[target].slug
+    if slug in config.protected_slugs():
+        return False
+
+    step = config.get_step(slug)
+    if step is not None and step.is_protected:
+        return False
+    return True
 
 
 def apply_backtrack(
@@ -32,17 +47,25 @@ def apply_backtrack(
     state.delete(WizardKeys.BACKTRACK_TO)
     if isinstance(target, int):
         index = target
+        slug = config.iter_tree_steps()[index].slug
     elif isinstance(target, str):
+        if not can_backtrack_to(config, target):
+            return None
         index = config.index_of(target)
+        slug = target
     else:
         return None
 
-    if index < 0 or index >= config.step_count:
+    tree_steps = config.iter_tree_steps()
+    if index < 0 or index >= len(tree_steps):
+        return None
+
+    if not can_backtrack_to(config, slug):
         return None
 
     root.reset()
     sequence._current_index = index
     state.set(WizardKeys.STEP_INDEX, index)
-    state.set(WizardKeys.CURRENT_STEP, config.steps[index].slug)
+    state.set(WizardKeys.CURRENT_STEP, tree_steps[index].slug)
     state.delete(WizardKeys.ACTIVE_PROMPT)
     return index
