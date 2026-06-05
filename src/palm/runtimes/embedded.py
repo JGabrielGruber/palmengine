@@ -25,6 +25,9 @@ from palm.core import (
 )
 from palm.core.context import BaseState
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.definitions.flow import FlowDefinition
+from palm.definitions.process import ProcessDefinition
+from palm.executions import DefinitionExecutor
 from palm.patterns.wizard import WizardConfig, WizardPattern
 from palm.states import BlackboardState
 
@@ -43,6 +46,7 @@ class EmbeddedRuntime:
         self.behavior_tree = BehaviorTreeEngine()
         self.orchestration = OrchestrationEngine()
         self.storage = StorageEngine()
+        self.executor = DefinitionExecutor(self)
         self._started = False
 
     @property
@@ -99,6 +103,43 @@ class EmbeddedRuntime:
         self.event.shutdown()
         self._started = False
 
+    def submit_flow(
+        self,
+        flow: FlowDefinition,
+        *,
+        job_id: str | None = None,
+        state: BlackboardState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job:
+        """Submit a flow definition as an orchestration job."""
+        return self.executor.submit_flow(
+            flow,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def submit_process(
+        self,
+        process: ProcessDefinition,
+        *,
+        job_id: str | None = None,
+        state: BlackboardState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job | list[Job]:
+        """
+        Submit all flows on a process definition.
+
+        Returns a single ``Job`` when the process has one flow, otherwise a list.
+        """
+        jobs = self.executor.submit_process(
+            process,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+        return jobs[0] if len(jobs) == 1 else jobs
+
     def submit_wizard(
         self,
         *,
@@ -109,23 +150,16 @@ class EmbeddedRuntime:
         state: BlackboardState | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job:
-        """Submit an interactive wizard job and return its orchestration handle."""
-        self._require_started()
-        wizard = WizardPattern(
-            name=name,
-            config=config,
-            steps=steps,
-            event_engine=self.event,
-        )
-        job_state = state if state is not None else BlackboardState()
+        """Submit an interactive wizard via the executions builder."""
+        options: dict[str, Any] = {}
+        if config is not None:
+            options["config"] = config
+        if steps is not None:
+            options["steps"] = steps
+        flow = FlowDefinition(name=name, pattern="wizard", options=options)
         meta = dict(metadata or {})
         meta.setdefault("pattern", "wizard")
-        return self.orchestration.submit(
-            wizard,
-            state=job_state,
-            job_id=job_id,
-            metadata=meta,
-        )
+        return self.submit_flow(flow, job_id=job_id, state=state, metadata=meta)
 
     def provide_input(self, job_id: str, value: Any) -> str | None:
         """
