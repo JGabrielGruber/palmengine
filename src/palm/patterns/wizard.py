@@ -6,9 +6,7 @@ Built on ``BasePattern``; registers as ``"wizard"`` in ``pattern_registry``.
 
 from __future__ import annotations
 
-from typing import Any
-
-from palm.core.behavior_tree import BasePattern, PatternStatus
+from palm.core.behavior_tree import BasePattern, Blackboard, PatternStatus
 from palm.core.registry import pattern_registry
 
 
@@ -20,11 +18,11 @@ class WizardPattern(BasePattern):
         self._steps = steps
         self._current = 0
 
-    def tick(self, blackboard: dict[str, Any]) -> PatternStatus:
+    def tick(self, blackboard: Blackboard) -> PatternStatus:
         if self._current >= self._steps:
             return PatternStatus.SUCCESS
         self._current += 1
-        blackboard["wizard_step"] = self._current
+        blackboard.set("wizard_step", self._current)
         if self._current >= self._steps:
             return PatternStatus.SUCCESS
         return PatternStatus.RUNNING

@@ -34,3 +34,7 @@ class StorageNotConfiguredError(StorageError):
 
 class BackendNotOpenError(StorageError):
     """Raised when an operation requires an open backend."""
+
+
+class ContextError(EngineError):
+    """Raised when context stack operations fail."""

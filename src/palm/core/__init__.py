@@ -15,12 +15,20 @@ Engines:
 
 from palm.core.auth import AuthEngine, Principal
 from palm.core.base import BasePalmEngine
-from palm.core.behavior_tree import BasePattern, BehaviorTreeEngine, PatternStatus
+from palm.core.behavior_tree import (
+    BaseNode,
+    BasePattern,
+    BehaviorTreeEngine,
+    Blackboard,
+    PatternStatus,
+    RootNode,
+)
 from palm.core.context import ContextEngine
 from palm.core.event import Event, EventEngine
 from palm.core.exceptions import (
     BackendNotOpenError,
     ConfigurationError,
+    ContextError,
     EngineError,
     PalmError,
     RegistryError,
@@ -41,10 +49,13 @@ __all__ = [
     "BackendNotOpenError",
     "BaseBackend",
     "BasePalmEngine",
+    "BaseNode",
     "BasePattern",
     "BaseProvider",
     "BehaviorTreeEngine",
+    "Blackboard",
     "ConfigurationError",
+    "ContextError",
     "ContextEngine",
     "EngineError",
     "Event",
@@ -55,6 +66,7 @@ __all__ = [
     "PalmError",
     "PatternStatus",
     "Principal",
+    "RootNode",
     "RegistryError",
     "ResourceEngine",
     "StorageEngine",

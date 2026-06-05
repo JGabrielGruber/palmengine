@@ -1,31 +1,39 @@
 """
 Abstract behavior-tree pattern contract.
 
-Concrete patterns (wizard, DAG, ETL) live in ``palm.patterns`` and register via
-``pattern_registry``. Core only defines the execution contract.
+Tree nodes inherit ``BasePattern`` via ``BaseNode``. Domain patterns in
+``palm.patterns`` may also implement this contract directly.
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+
+from palm.core.behavior_tree.blackboard import Blackboard
 
 
-class PatternStatus(Enum):
-    """Outcome of a single pattern tick."""
+class PatternStatus(StrEnum):
+    """Outcome of a single pattern or node tick."""
 
     SUCCESS = "success"
     FAILURE = "failure"
     RUNNING = "running"
+    WAITING_FOR_INPUT = "waiting_for_input"
+
+
+# Alias used by migrated behavior-tree nodes
+NodeStatus = PatternStatus
 
 
 class BasePattern(ABC):
-    """Abstract node or subtree executed by the Behavior Tree engine."""
+    """Abstract node or subtree executed by the behavior tree engine."""
 
     def __init__(self, *, name: str) -> None:
+        if not name:
+            raise ValueError("Pattern name must be a non-empty string")
         self.name = name
 
     @abstractmethod
-    def tick(self, blackboard: dict[str, Any]) -> PatternStatus:
+    def tick(self, blackboard: Blackboard) -> PatternStatus:
         """Advance one execution step using shared blackboard state."""
