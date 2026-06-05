@@ -13,8 +13,8 @@ from palm.core.base import BasePalmEngine
 from palm.core.behavior_tree.base_pattern import BasePattern, PatternStatus
 from palm.core.behavior_tree.exceptions import BehaviorTreeError, NodeExecutionError
 from palm.core.behavior_tree.root import RootNode
+from palm.core.context import BaseState
 from palm.core.exceptions import StateError, StateNotConfiguredError
-from palm.core.state import BaseState
 
 _CONTINUING = frozenset({PatternStatus.RUNNING})
 

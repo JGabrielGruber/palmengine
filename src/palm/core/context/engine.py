@@ -12,8 +12,10 @@ from contextlib import contextmanager
 from typing import Any
 
 from palm.core.base import BasePalmEngine
+from palm.core.context.base_state import BaseState
 from palm.core.exceptions import ContextError
-from palm.core.state import STATE_FRAME_KEY, BaseState
+
+STATE_FRAME_KEY = "state"
 
 
 class ContextEngine(BasePalmEngine):

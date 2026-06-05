@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 
 StateOp = tuple[Literal["get", "set", "delete", "clear"], str, Any]
 

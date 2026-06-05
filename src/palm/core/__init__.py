@@ -5,11 +5,10 @@ Palm Core — pure foundational engines.
 
 Engines:
 - ``behavior_tree`` — control-flow patterns with pluggable state
-- ``state`` — ``BaseState`` abstraction for execution state
+- ``context`` — scoped metadata and ``BaseState`` for execution state
 - ``resource`` — external provider coordination
 - ``storage`` — persistence backend coordination
 - ``orchestration`` — job lifecycle
-- ``context`` — scoped execution metadata
 - ``event`` — observability bus
 - ``auth`` — authentication primitives
 """
@@ -23,7 +22,7 @@ from palm.core.behavior_tree import (
     PatternStatus,
     RootNode,
 )
-from palm.core.context import ContextEngine
+from palm.core.context import STATE_FRAME_KEY, BaseState, ContextEngine
 from palm.core.event import Event, EventEngine
 from palm.core.exceptions import (
     BackendNotOpenError,
@@ -44,7 +43,6 @@ from palm.core.registry import (
     storage_registry,
 )
 from palm.core.resource import BaseProvider, ResourceEngine
-from palm.core.state import STATE_FRAME_KEY, BaseState
 from palm.core.storage import BaseBackend, StorageEngine
 
 __all__ = [

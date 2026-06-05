@@ -7,7 +7,7 @@ from enum import StrEnum
 from palm.core.behavior_tree.base import BaseNode
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.behavior_tree.composite import CompositeNode
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 
 
 class ParallelPolicy(StrEnum):

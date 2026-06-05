@@ -10,7 +10,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import StrEnum
 
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 
 
 class PatternStatus(StrEnum):

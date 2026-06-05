@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 from palm.states import BlackboardState, TestState
 
 

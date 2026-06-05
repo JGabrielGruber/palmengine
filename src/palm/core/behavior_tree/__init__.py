@@ -1,7 +1,7 @@
 """
 Behavior Tree engine — control-flow nodes and execution.
 
-Execution state is pluggable via ``palm.core.state.BaseState``. Default concrete
+Execution state is pluggable via ``palm.core.context.BaseState``. Default concrete
 implementations live in ``palm.states`` (e.g. ``BlackboardState``).
 """
 
@@ -30,7 +30,7 @@ from palm.core.behavior_tree.nodes import (
     StubInteractiveLeaf,
 )
 from palm.core.behavior_tree.root import RootNode
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 
 __all__ = [
     "ActionNode",

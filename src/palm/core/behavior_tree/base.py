@@ -12,7 +12,7 @@ from palm.core.behavior_tree.exceptions import (
     InvalidTreeStructureError,
     NodeExecutionError,
 )
-from palm.core.state import BaseState
+from palm.core.context import BaseState
 
 
 class BaseNode(BasePattern):

@@ -7,8 +7,8 @@ Registers as ``"dag"`` in ``pattern_registry``.
 from __future__ import annotations
 
 from palm.core.behavior_tree import BasePattern, PatternStatus
+from palm.core.context import BaseState
 from palm.core.registry import pattern_registry
-from palm.core.state import BaseState
 
 
 class DagPattern(BasePattern):
