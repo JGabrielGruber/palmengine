@@ -166,6 +166,26 @@ See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ---
 
+## Philosophy
+
+**🌴 Palm grows where the sun meets the sea.**
+
+We believe orchestration should be:
+- **Simple at the core, powerful at the edges** — a clean Behavior Tree foundation with rich, transactional patterns on top.
+- **Human-first** — interactive wizards, easy resume, beautiful CLI, and clear feedback when waiting for input.
+- **Truth-seeking & High-agency** — explicit contracts, pluggable state, persistent instances, and no hidden magic.
+- **Built for the long run** — transactional commits, validation, resource integration, and durable process instances that survive restarts.
+- **Developer-friendly** — great docs, examples, `palm doctor`, and a modular structure that scales from one-person projects to serious production workflows.
+
+Palm is not just another workflow engine.  
+It is a **philosophical son** (*filius philosophorum*) — balancing structure with flexibility, precision with humanity, and automation with mindful human participation.
+
+**Crafted with ❤️ in Brazil, powered by xAI.**
+
+<img src="https://palmengine.org/images/philosophy-sunset.jpg" alt="Palm at golden hour" width="800">
+
+---
+
 ## Migration from 0.3.x
 
 Legacy CLI, wizards, and old engine code live under **`archive/`**. New work targets `src/palm/core/`, `executions/`, `instances/`, and `runtimes/` — never import from `archive/`.

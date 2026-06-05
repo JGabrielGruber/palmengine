@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Palm Engine — Lightweight Python Orchestration</title>
     <link rel="icon" href="logo.png" type="image/x-icon">
-    <meta name="description" content="Palm Engine: A clean, Python-first orchestration engine powered by Behavior Trees. Perfect for complex workflows, interactive wizards, and transactional processes.">
-    <script src=" https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js "></script>
+    <meta name="description" content="Palm Engine: A clean, Python-first orchestration engine powered by Behavior Trees. Complex multi-step workflows, rich interactive wizards, and transactional processes.">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
@@ -86,13 +86,22 @@
             margin: 3rem 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+        .philosophy {
+            background: linear-gradient(to bottom, #1e2937, #0f172a);
+            text-align: center;
+        }
+        .philosophy img {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            margin: 2rem 0;
+        }
     </style>
 </head>
 <body>
 
     <section class="hero">
         <div class="container">
-            <!-- Logo -->
             <img src="logo.png" alt="Palm Engine Logo" class="logo" style="filter: drop-shadow(0 0 30px rgba(249,115,22,0.6));">
             
             <h1>Palm Engine</h1>
@@ -103,12 +112,35 @@
             
             <div class="cta">
                 <a href="#get-started" class="btn btn-primary">Get Started</a>
-                <a href="https://github.com/palmengine" class="btn btn-secondary">GitHub</a>
+                <a href="https://github.com/JGabrielGruber/palm" class="btn btn-secondary">GitHub</a>
             </div>
             
             <div style="margin-top: 4rem;">
-                <p style="color: #64748b; font-size: 0.95rem;">Human-in-the-loop • Fully automated • Python native</p>
+                <p style="color: #64748b; font-size: 0.95rem;">Human-in-the-loop • Fully automated • Built with ❤️ in Brazil, powered by xAI</p>
             </div>
+        </div>
+    </section>
+
+    <section class="section philosophy" id="philosophy">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom: 2rem;">Philosophy</h2>
+            
+            <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto 2rem;">
+                <strong>🌴 Palm grows where the sun meets the sea.</strong><br><br>
+                
+                We believe orchestration should be:<br>
+                • Simple at the core, powerful at the edges<br>
+                • Human-first — interactive, resumable, and beautiful<br>
+                • Truth-seeking & High-agency — explicit, pluggable, durable<br>
+                • Built for the long run — transactional, persistent, extensible
+            </p>
+
+            <img src="images/philosophy-sunset.jpg" alt="Palm at golden hour — where structure meets beauty" style="max-width: 100%; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+
+            <p style="margin-top: 2rem; font-style: italic; color: #94a3b8;">
+                Palm is a <strong>philosophical son</strong> — balancing structure with flexibility,<br>
+                precision with humanity, and automation with mindful participation.
+            </p>
         </div>
     </section>
 
@@ -123,58 +155,49 @@ flowchart LR
     subgraph Core["Core Engines"]
         orchestration[Orchestration Engine]
         behaviortree[Behavior Tree Engine]
-        processmgr[Process Manager]
-        security[Security Primitives]
+        context[Context + State]
+        event[Event Engine]
     end
 
-    subgraph Runtimes["Runtime Modes"]
-        embedded[Embedded Mode]
-        daemon[Daemon Mode]
-        server[Server Mode]
-        websocket[WebSocket Mode]
+    subgraph Executions["Executions Layer"]
+        definitions[Definitions]
+        repository[Repositories]
+        executor[DefinitionExecutor]
     end
 
-    subgraph UseCases["Business Rule Implementations"]
-        wizards[REPL Wizards]
-        etl[ETL Pipelines]
-        dag[DAG Workflows]
-        ingestion[Transactional Data Ingestion]
+    subgraph Runtimes["Runtimes"]
+        embedded[Embedded]
+        cli[CLI + REPL]
+        daemon[Daemon]
+        server[Server]
     end
 
-    subgraph Extensions["Extensions"]
-        authengine[Auth Engine]
-    end
-
-    subgraph AuthProvider["Authentication Providers"]
-        oauth[OAuth2 / OIDC]
-        jwt[JWT / Token]
-        apikey[API Key]
-        custom[Custom / SSO]
-    end
-
-    palm --> orchestration
-    palm --> behaviortree
-    palm --> processmgr
-    
-    orchestration --> embedded
-    orchestration --> daemon
-    orchestration --> server
-    orchestration --> websocket
-    
-    behaviortree --> wizards
-    behaviortree --> etl
-    behaviortree --> dag
-    behaviortree --> ingestion
-
-    palm --> authengine
-    palm --> security
-    
-    authengine --> oauth
-    authengine --> jwt
-    authengine --> apikey
-    authengine --> custom
+    palm --> Core
+    palm --> Executions
+    Executions --> Core
+    Executions --> Runtimes
+    Core --> Runtimes
+            </div>
         </div>
     </section>
+
+    <section class="section" id="get-started">
+        <div class="container" style="text-align: center;">
+            <h2>Get Started</h2>
+            <pre style="background:#1e2937; padding: 1.5rem; border-radius: 12px; display: inline-block; text-align: left;">
+uv sync --group dev --extra cli
+palm doctor
+palm wizard start onboard</pre>
+            <p style="margin-top: 2rem;">
+                <a href="https://github.com/JGabrielGruber/palm" class="btn btn-primary">View on GitHub →</a>
+            </p>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 3rem; background: #0f172a; color: #64748b; font-size: 0.9rem;">
+        Palm Engine — Crafted with ❤️ in Brazil • Powered by <a href="https://x.ai" style="color: #f97316;">xAI</a><br>
+        <span style="font-size: 0.8rem;">Thank you for the tokens and the powerful collaborators (🐒 + 🤖).</span>
+    </footer>
 
     <script>
     mermaid.initialize({
@@ -185,5 +208,4 @@ flowchart LR
     </script>
 
 </body>
-</html>            
-            
+</html>
