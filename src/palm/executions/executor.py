@@ -4,13 +4,14 @@ Definition executor — submits flows and processes via a runtime.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
 from palm.executions.builder import build_pattern
-from palm.executions.exceptions import DefinitionBuildError
+from palm.executions.exceptions import DefinitionBuildError, DefinitionNotFoundError
+from palm.executions.repository import DefinitionRepository
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:
@@ -22,13 +23,23 @@ class DefinitionExecutor:
     """
     Bridges declarative definitions to orchestration jobs.
 
-    Uses ``pattern_registry`` for resolution and delegates submission to the
-    wired ``EmbeddedRuntime`` (context, events, orchestration unchanged).
+    Accepts in-memory definitions, or resolves names/ids through a
+    ``DefinitionRepository`` when a string reference is supplied.
     """
 
-    def __init__(self, runtime: EmbeddedRuntime) -> None:
+    def __init__(
+        self,
+        runtime: EmbeddedRuntime,
+        repository: DefinitionRepository | None = None,
+    ) -> None:
         self._runtime = runtime
+        self._repository = repository
 
+    @property
+    def repository(self) -> DefinitionRepository | None:
+        return self._repository
+
+    @overload
     def submit_flow(
         self,
         flow: FlowDefinition,
@@ -36,15 +47,38 @@ class DefinitionExecutor:
         job_id: str | None = None,
         state: BaseState | None = None,
         metadata: dict[str, Any] | None = None,
+    ) -> Job: ...
+
+    @overload
+    def submit_flow(
+        self,
+        flow: str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job: ...
+
+    def submit_flow(
+        self,
+        flow: FlowDefinition | str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Job:
-        """Build a pattern from ``flow`` and submit it as an orchestration job."""
+        """Build a pattern from a flow (or repository ref) and submit a job."""
+        resolved = self._resolve_flow(flow, by_id=by_id)
         self._require_runtime()
-        pattern = build_pattern(flow, event_engine=self._runtime.event)
+        pattern = build_pattern(resolved, event_engine=self._runtime.event)
         job_state = state if state is not None else BlackboardState()
         meta = dict(metadata or {})
         meta.setdefault("definition_type", "flow")
-        meta.setdefault("flow", flow.name)
-        meta.setdefault("pattern", flow.pattern)
+        meta.setdefault("flow", resolved.name)
+        meta.setdefault("flow_id", resolved.definition_id)
+        meta.setdefault("pattern", resolved.pattern)
         return self._runtime.orchestration.submit(
             pattern,
             state=job_state,
@@ -52,6 +86,7 @@ class DefinitionExecutor:
             metadata=meta,
         )
 
+    @overload
     def submit_process(
         self,
         process: ProcessDefinition,
@@ -59,19 +94,42 @@ class DefinitionExecutor:
         job_id: str | None = None,
         state: BaseState | None = None,
         metadata: dict[str, Any] | None = None,
+    ) -> list[Job]: ...
+
+    @overload
+    def submit_process(
+        self,
+        process: str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> list[Job]: ...
+
+    def submit_process(
+        self,
+        process: ProcessDefinition | str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> list[Job]:
-        """Submit one job per flow defined on ``process``."""
-        if not process.flows:
-            raise DefinitionBuildError(f"Process {process.name!r} defines no flows")
+        """Submit one job per flow on a process (or repository ref)."""
+        resolved = self._resolve_process(process, by_id=by_id)
+        if not resolved.flows:
+            raise DefinitionBuildError(f"Process {resolved.name!r} defines no flows")
 
         jobs: list[Job] = []
-        for index, flow in enumerate(process.flows):
+        for index, flow in enumerate(resolved.flows):
             flow_meta = dict(metadata or {})
             flow_meta.setdefault("definition_type", "process")
-            flow_meta.setdefault("process", process.name)
-            flow_meta.setdefault("storage", process.storage)
-            if process.metadata:
-                flow_meta.setdefault("process_metadata", dict(process.metadata))
+            flow_meta.setdefault("process", resolved.name)
+            flow_meta.setdefault("process_id", resolved.definition_id)
+            flow_meta.setdefault("storage", resolved.storage)
+            if resolved.metadata:
+                flow_meta.setdefault("process_metadata", dict(resolved.metadata))
 
             assigned_id = job_id if index == 0 else None
             jobs.append(
@@ -83,6 +141,92 @@ class DefinitionExecutor:
                 )
             )
         return jobs
+
+    def submit_flow_by_name(
+        self,
+        name: str,
+        *,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job:
+        return self.submit_flow(name, by_id=False, job_id=job_id, state=state, metadata=metadata)
+
+    def submit_flow_by_id(
+        self,
+        definition_id: str,
+        *,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job:
+        return self.submit_flow(
+            definition_id,
+            by_id=True,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def submit_process_by_name(
+        self,
+        name: str,
+        *,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> list[Job]:
+        return self.submit_process(
+            name,
+            by_id=False,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def submit_process_by_id(
+        self,
+        definition_id: str,
+        *,
+        job_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> list[Job]:
+        return self.submit_process(
+            definition_id,
+            by_id=True,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def _resolve_flow(self, flow: FlowDefinition | str, *, by_id: bool) -> FlowDefinition:
+        if isinstance(flow, FlowDefinition):
+            return flow
+        repo = self._repository
+        if repo is None:
+            raise DefinitionBuildError(
+                "Cannot resolve flow by reference without a DefinitionRepository"
+            )
+        try:
+            return repo.get_flow(flow, by_id=by_id)
+        except DefinitionNotFoundError as exc:
+            raise DefinitionBuildError(str(exc)) from exc
+
+    def _resolve_process(
+        self, process: ProcessDefinition | str, *, by_id: bool
+    ) -> ProcessDefinition:
+        if isinstance(process, ProcessDefinition):
+            return process
+        repo = self._repository
+        if repo is None:
+            raise DefinitionBuildError(
+                "Cannot resolve process by reference without a DefinitionRepository"
+            )
+        try:
+            return repo.get_process(process, by_id=by_id)
+        except DefinitionNotFoundError as exc:
+            raise DefinitionBuildError(str(exc)) from exc
 
     def _require_runtime(self) -> None:
         if not self._runtime.is_started:

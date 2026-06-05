@@ -27,7 +27,7 @@ from palm.core.context import BaseState
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.executions import DefinitionExecutor
+from palm.executions import DefinitionExecutor, DefinitionRepository
 from palm.patterns.wizard import WizardConfig, WizardPattern
 from palm.states import BlackboardState
 
@@ -40,13 +40,14 @@ class EmbeddedRuntime:
     pattern executables (e.g. ``WizardPattern``) advance through the job API.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, storage: StorageEngine | None = None) -> None:
         self.context = ContextEngine()
         self.event = EventEngine()
         self.behavior_tree = BehaviorTreeEngine()
         self.orchestration = OrchestrationEngine()
-        self.storage = StorageEngine()
-        self.executor = DefinitionExecutor(self)
+        self.storage = storage if storage is not None else StorageEngine()
+        self.repository = DefinitionRepository(self.storage)
+        self.executor = DefinitionExecutor(self, self.repository)
         self._started = False
 
     @property
@@ -105,15 +106,17 @@ class EmbeddedRuntime:
 
     def submit_flow(
         self,
-        flow: FlowDefinition,
+        flow: FlowDefinition | str,
         *,
+        by_id: bool = False,
         job_id: str | None = None,
         state: BlackboardState | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job:
-        """Submit a flow definition as an orchestration job."""
+        """Submit a flow definition or repository reference as a job."""
         return self.executor.submit_flow(
             flow,
+            by_id=by_id,
             job_id=job_id,
             state=state,
             metadata=metadata,
@@ -121,19 +124,21 @@ class EmbeddedRuntime:
 
     def submit_process(
         self,
-        process: ProcessDefinition,
+        process: ProcessDefinition | str,
         *,
+        by_id: bool = False,
         job_id: str | None = None,
         state: BlackboardState | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job | list[Job]:
         """
-        Submit all flows on a process definition.
+        Submit a process definition or repository reference.
 
         Returns a single ``Job`` when the process has one flow, otherwise a list.
         """
         jobs = self.executor.submit_process(
             process,
+            by_id=by_id,
             job_id=job_id,
             state=state,
             metadata=metadata,

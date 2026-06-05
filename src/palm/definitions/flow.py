@@ -1,14 +1,15 @@
 """
 Flow definition — declarative description of a runnable flow.
 
-Flows reference registered patterns and bind runtime configuration. Full YAML/JSON
-loading will be added in a later iteration.
+Flows reference registered patterns and bind runtime configuration.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any
+
+_DEFINITION_VERSION = 1
 
 
 @dataclass
@@ -18,6 +19,49 @@ class FlowDefinition:
     name: str
     pattern: str
     options: dict[str, Any] = field(default_factory=dict)
+    id: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise ValueError("FlowDefinition name must be non-empty")
+        if not self.pattern:
+            raise ValueError("FlowDefinition pattern must be non-empty")
+
+    @property
+    def definition_id(self) -> str:
+        """Stable identifier used for storage keys (defaults to ``name``)."""
+        return self.id if self.id else self.name
 
     def to_dict(self) -> dict[str, Any]:
-        return {"name": self.name, "pattern": self.pattern, "options": self.options}
+        """Serialize to a JSON-friendly dict for persistence."""
+        payload: dict[str, Any] = {
+            "version": _DEFINITION_VERSION,
+            "kind": "flow",
+            "name": self.name,
+            "pattern": self.pattern,
+            "options": dict(self.options),
+        }
+        if self.id is not None:
+            payload["id"] = self.id
+        return payload
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> FlowDefinition:
+        """Restore a flow definition from ``to_dict`` output or legacy shape."""
+        if data.get("kind") == "flow" and "version" in data:
+            return cls(
+                name=str(data["name"]),
+                pattern=str(data["pattern"]),
+                options=dict(data.get("options") or {}),
+                id=data.get("id"),
+            )
+        return cls(
+            name=str(data["name"]),
+            pattern=str(data["pattern"]),
+            options=dict(data.get("options") or {}),
+            id=data.get("id"),
+        )
+
+    def to_storage_record(self) -> dict[str, Any]:
+        """Envelope stored under the repository storage key."""
+        return self.to_dict()

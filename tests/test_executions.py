@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import pytest
 
+from palm.core import StorageEngine
 from palm.core.behavior_tree import BasePattern
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.executions import (
     DefinitionBuildError,
     DefinitionExecutor,
+    DefinitionRepository,
     build_pattern,
     wizard_config_from_options,
 )
@@ -120,6 +122,67 @@ def test_builder_rejects_unsupported_options() -> None:
     flow = FlowDefinition(name="dag", pattern="dag", options={"extra": True})
     with pytest.raises(DefinitionBuildError, match="does not support"):
         build_pattern(flow)
+
+
+def test_submit_flow_by_name_from_repository(runtime: EmbeddedRuntime) -> None:
+    flow = _onboard_flow()
+    runtime.repository.save_flow(flow)
+    job = runtime.submit_flow("onboard")
+    assert job.metadata["flow_id"] == "onboard"
+    assert job.status == JobStatus.WAITING_FOR_INPUT
+    runtime.provide_input(job.id, "Ada")
+    runtime.provide_input(job.id, "yes")
+    assert job.status == JobStatus.SUCCEEDED
+
+
+def test_submit_flow_by_id_from_repository(runtime: EmbeddedRuntime) -> None:
+    flow = FlowDefinition(
+        id="stored-onboard",
+        name="onboard",
+        pattern="wizard",
+        options={"steps": ["name", "confirm"]},
+    )
+    runtime.repository.save_flow(flow)
+    job = runtime.executor.submit_flow_by_id("stored-onboard")
+    assert job.metadata["flow_id"] == "stored-onboard"
+    assert runtime.current_wizard_step(job.id) == "name"
+
+
+def test_submit_flow_missing_definition_raises(runtime: EmbeddedRuntime) -> None:
+    with pytest.raises(DefinitionBuildError, match="not found"):
+        runtime.executor.submit_flow("missing")
+
+
+def test_persisted_process_executes_after_reload() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = DefinitionRepository(storage)
+    process = ProcessDefinition(
+        id="proc-wizard",
+        name="stored-wizard",
+        flows=[
+            FlowDefinition(
+                name="steps",
+                pattern="wizard",
+                options={"steps": 2},
+            )
+        ],
+    )
+    repo.save_process(process)
+
+    rt = EmbeddedRuntime(storage=storage)
+    rt.start()
+    try:
+        fresh_repo = DefinitionRepository(storage)
+        assert fresh_repo.get_process_by_name("stored-wizard").definition_id == "proc-wizard"
+        job = rt.submit_process("stored-wizard")
+        assert isinstance(job, Job)
+        rt.provide_input(job.id, "a")
+        rt.provide_input(job.id, "b")
+        assert job.status == JobStatus.SUCCEEDED
+    finally:
+        rt.stop()
+        storage.shutdown()
 
 
 def test_wizard_via_process_definition(runtime: EmbeddedRuntime) -> None:
