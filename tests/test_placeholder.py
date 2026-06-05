@@ -37,6 +37,21 @@ def test_behavior_tree_engine_tick() -> None:
     engine.shutdown()
 
 
+def test_embedded_runtime_quick_wizard() -> None:
+    from palm.runtimes.embedded import EmbeddedRuntime
+
+    rt = EmbeddedRuntime()
+    rt.start()
+    try:
+        job = rt.submit_wizard(steps=2)
+        assert job.status.value == "WAITING_FOR_INPUT"
+        rt.provide_input(job.id, "first")
+        rt.provide_input(job.id, "second")
+        assert job.status.value == "SUCCEEDED"
+    finally:
+        rt.stop()
+
+
 def test_registry_unknown_raises() -> None:
     reg: Registry[object] = Registry("widget")
     try:
