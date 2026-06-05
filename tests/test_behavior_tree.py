@@ -172,10 +172,14 @@ def test_wizard_pattern_via_engine() -> None:
     engine = BehaviorTreeEngine()
     engine.initialize(state=BlackboardState())
     cls = pattern_registry.get("wizard")
-    engine.set_root(cls(name="wiz", steps=2))
-    assert engine.tick() == PatternStatus.RUNNING
+    wiz = cls(name="wiz", steps=2)
+    engine.set_root(wiz)
+    assert engine.tick() == PatternStatus.WAITING_FOR_INPUT
+    wiz.provide_input(engine.state, "first")
+    assert engine.tick() == PatternStatus.WAITING_FOR_INPUT
+    wiz.provide_input(engine.state, "second")
     assert engine.tick() == PatternStatus.SUCCESS
-    assert engine.state.get("wizard_step") == 2
+    assert wiz.answers(engine.state)["step_1"] == "first"
 
 
 def test_custom_test_state_in_tree() -> None:

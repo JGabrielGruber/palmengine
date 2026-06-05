@@ -19,9 +19,14 @@ class InteractiveLeaf(LeafNode):
     """Abstract leaf that returns WAITING_FOR_INPUT until data is supplied."""
 
     INPUT_KEY_PREFIX = "__bt_input__"
+    PROMPT_KEY_PREFIX = "__bt_prompt__"
 
     def input_key(self) -> str:
         return f"{self.INPUT_KEY_PREFIX}:{self.name}"
+
+    def prompt_key(self) -> str:
+        """Blackboard key where this leaf publishes prompt metadata."""
+        return f"{self.PROMPT_KEY_PREFIX}:{self.name}"
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         key = self.input_key()
@@ -48,7 +53,7 @@ class StubInteractiveLeaf(InteractiveLeaf):
         self.received_value: Any = None
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        state.set(f"__test_prompt__:{self.name}", "Please provide input")
+        state.set(self.prompt_key(), {"message": "Please provide input"})
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:

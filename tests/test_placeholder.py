@@ -27,8 +27,12 @@ def test_behavior_tree_engine_tick() -> None:
     engine = BehaviorTreeEngine()
     engine.initialize(state=BlackboardState())
     cls = pattern_registry.get("wizard")
-    engine.set_root(cls(name="test", steps=2))
-    assert engine.tick().value == "running"
+    wiz = cls(name="test", steps=2)
+    engine.set_root(wiz)
+    assert engine.tick().value == "waiting_for_input"
+    wiz.provide_input(engine.state, "a")
+    assert engine.tick().value == "waiting_for_input"
+    wiz.provide_input(engine.state, "b")
     assert engine.tick().value == "success"
     engine.shutdown()
 
