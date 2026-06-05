@@ -4,15 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palm"
-version = "0.3.1"
-description = "Palm Orchestration Engine - Lightweight multi-step transactional workflows with rich interactive wizards"
+version = "0.4.0-dev"
+description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 authors = [
     {name = "Palm Team"},
 ]
-keywords = ["orchestration", "workflow", "wizard", "behavior-tree", "state-machine", "transactional"]
+keywords = ["orchestration", "workflow", "wizard", "behavior-tree", "engine"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -22,22 +22,21 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
-    "Topic :: System :: Systems Administration",
 ]
 
 dependencies = [
-    # Core
     "pydantic>=2.7,<3.0",
     "pydantic-settings>=2.2,<3.0",
-    # CLI / TUI
-    "rich>=13.7,<14.0",
-    "prompt-toolkit>=3.0.43,<4.0",
-    # Persistence
-    "sqlalchemy>=2.0.30,<3.0",
-    "alembic>=1.13,<2.0",  # future migrations
-    # Utils
     "python-dotenv>=1.0,<2.0",
-    "python-dateutil>=2.9,<3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2,<9.0",
+    "pytest-asyncio>=0.23,<0.24",
+    "ruff>=0.4,<0.5",
+    "mypy>=1.10,<2.0",
+    "pre-commit>=3.7,<4.0",
 ]
 
 [project.optional-dependencies]
@@ -48,14 +47,17 @@ dev = [
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
 ]
+cli = [
+    "rich>=13.7,<14.0",
+    "prompt-toolkit>=3.0.43,<4.0",
+]
 test = [
     "pytest>=8.2,<9.0",
     "pytest-cov>=5.0,<6.0",
 ]
 
 [project.scripts]
-palm = "palm.cli.solid.main:main"
-palm-admin = "palm.cli.solid.main:main"
+palm = "palm.runtimes.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/example/palm"
@@ -63,37 +65,24 @@ Repository = "https://github.com/example/palm"
 Issues = "https://github.com/example/palm/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/palm"]
+packages = ["palm"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/",
-    "wizards/",
+    "palm/",
+    "tests/",
+    "examples/",
     "README.md",
     "LICENSE",
 ]
-
-# -----------------------------
-# Tooling
-# -----------------------------
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
-    "RUF", # ruff-specific
-]
-ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
-]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+ignore = ["E501", "B008"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["palm"]
@@ -110,12 +99,11 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["."]
 asyncio_mode = "auto"
 addopts = "-ra -q --strict-markers"
 
 [tool.palm]
-# Palm engine specific runtime config (overridable via .env)
 default_session_ttl = 3600
 max_concurrent_processes = 16
 data_dir = "data"

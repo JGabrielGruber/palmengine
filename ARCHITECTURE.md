@@ -1,67 +1,91 @@
 # ARCHITECTURE.md
 
-## High-Level Architecture (post 0.3.0-dev clean-core migration)
+## Overview
 
-Palm follows a **layered architecture** with strict separation of concerns.
+Palm is a layered orchestration engine. The **core** is pure and self-contained; concrete implementations and runtimes build on top without polluting core boundaries.
 
-### Layers
+## Layer Diagram
 
-1. **Behavior Tree Engine** (`palm/core/behavior_tree/`)
-   - One of the two allowed general-purpose engines in `palm/core/`.
-   - General-purpose, reusable Behavior Tree implementation.
-   - Core abstractions: `BaseNode`, `LeafNode`, `CompositeNode`, `DecoratorNode`, `Blackboard`.
-   - Completely independent of wizards, persistence, CLI, and the Orchestration Engine (orchestration may compose with it optionally via backends).
+```mermaid
+flowchart TB
+    subgraph Runtimes["palm.runtimes"]
+        cli[CLI]
+        embedded[Embedded]
+        server[Server]
+        daemon[Daemon]
+    end
 
-2. **Shared Core Primitives** (`palm/core/events.py`)
-   - `Event` + `EventBus` — minimal, synchronous, in-memory observability bus.
-   - Used by the Orchestration Engine today; available to the BT engine and future engines.
-   - Lives at the `core/` package root so it can be shared without duplication.
+    subgraph Definitions["palm.definitions"]
+        flow[Flow]
+        process[Process]
+    end
 
-3. **Orchestration Engine** (`palm/core/orchestration/`)
-   - The second general-purpose engine in `palm/core/`.
-   - Introduces `Orchestrator`, `Job` (with strict status machine + its own independent `Blackboard`), `OrchestrationMode` (Strategy), and the abstract `ExecutionBackend`.
-   - **Only** `TestBackend` (pure, deterministic, zero external deps) is allowed as a concrete backend inside this package.
-   - All other concrete backends live outside `palm/core/` under `palm/backends/` (e.g. `BehaviorTreeBackend` for composition with the BT engine).
-   - Uses the shared EventBus for observability.
-   - **Strict rule**: Zero imports from `palm/core/behavior_tree/` (or any domain code) inside `palm/core/orchestration/`.
+    subgraph Concretes["Concrete Implementations"]
+        patterns[palm.patterns]
+        providers[palm.providers]
+        storages[palm.storages]
+    end
 
-4. **Legacy Reference Implementation** (`palm/cli/solid/legacy/`)
-   - Contains the complete pre-0.3.0 wizard engine, models, persistence, orchestrator, workflow scaffolding, etc.
-   - This is a **deprecated reference snapshot only**. It is preserved so the existing Solid CLI continues to work.
-   - New code must **never** import from here.
+    subgraph Core["palm.core — PURE"]
+        bt[Behavior Tree]
+        res[Resource]
+        sto[Storage]
+        orch[Orchestration]
+        ctx[Context]
+        evt[Event]
+        auth[Auth]
+        reg[Registry]
+    end
 
-5. **Interface Layer** (`palm/cli/solid/`)
-   - The Solid Admin CLI (and future TUIs / servers).
-   - Currently wires the legacy implementation. Will be updated as clean layers are built on the two core engines.
+    Runtimes --> Definitions
+    Runtimes --> Concretes
+    Concretes --> Core
+    Definitions --> Core
+```
 
-General utilities (`config/`, `utils/logging/`) and the base `PalmError` remain at the top level as cross-cutting concerns.
+## Core Engines
 
-## Key Design Decisions
+| Engine | Responsibility |
+|--------|----------------|
+| Behavior Tree | Execute `BasePattern` trees with shared blackboard |
+| Resource | Resolve and lifecycle-manage `BaseProvider` instances |
+| Storage | Resolve and lifecycle-manage `BaseBackend` instances |
+| Orchestration | Create and track `Job` units with independent blackboards |
+| Context | Stack-scoped execution metadata |
+| Event | Synchronous publish/subscribe observability |
+| Auth | Principal and authorization stubs |
 
-- **Behavior Tree as Foundation**: Chosen over a simple DAG or state machine because it provides superior support for complex control flow, composition, reusability, and conditional execution while maintaining clean tree semantics.
-- **Orchestration Engine + Strategy Pattern**: Added in 0.3.0-dev as the second core engine. `OrchestrationMode` + `ExecutionBackend` (with `TestBackend` as the primary concrete) enable pluggable execution (test, embedded, process, future distributed) without modifying the `Orchestrator`.
-- **TestBackend First**: The orchestration engine's own testability and the majority of its contract/edge tests are deliberately independent of the BT engine. `TestBackend` provides deterministic synthetic work descriptors.
-- **Shared EventBus**: Minimal observability primitive at `core/events.py` so both engines (and future ones) have a consistent, replaceable event model.
-- **Blackboard Pattern**: Adopted for decoupled data sharing across nodes (and still used by Jobs even when driven by TestBackend).
-- **OOP Abstractions + SRP**: Strong use of abstract base classes and inheritance to enforce contracts and enable extensibility. Every class has one reason to change.
-- **Strict Core Purity**: `palm/core/` contains only general-purpose engines + tiny shared primitives. Zero domain, CLI, or legacy coupling.
+**Rule:** `palm/core/` imports only from `palm/core/`.
 
-## Future Extensibility
+## Registries
 
-Both engines in `palm.core` are intentionally general-purpose:
+`palm/core/registry.py` exposes:
 
-- Behavior Tree Engine supports complex control flow, interactive leaves, and composition.
-- Orchestration Engine (with pluggable modes + backends) supports job lifecycle, concurrency strategies, and observability for any executable (including BT trees).
+- `pattern_registry` — wizard, dag, etl
+- `provider_registry` — rest, graphql, postgres
+- `storage_registry` — memory, postgres, mongodb, filesystem
 
-Together they enable:
-- Non-interactive DAG workflows
-- Automated ETL processes
-- AI agent decision systems
-- Rich interactive wizards (rebuilt cleanly on top of the two engines)
-- Hybrid human + automated flows
+Concrete modules register implementations at import time.
 
-Wizards remain the current primary business need, but the architecture is deliberately broader.
+## Runtimes
+
+| Runtime | Status |
+|---------|--------|
+| `embedded` | Wires core engines in-process |
+| `cli` | Entry point (`palm` command) — placeholder UI |
+| `server` | Not implemented |
+| `daemon` | Not implemented |
+
+## Archive
+
+Pre-0.4.0 implementation lives under `archive/` (legacy CLI, old behavior tree, orchestration tests, wizards). Reference only.
+
+## Design Goals
+
+- **Core purity** — testable engines with zero domain coupling
+- **Registry-based extension** — open for new patterns/providers/backends
+- **Runtime flexibility** — same engines in CLI, embedded, or future server modes
 
 ---
 
-Last updated: May 2026 (Orchestration Engine v0.3.0-dev with TestBackend + core events)
+Last updated: June 2026 (0.4.0-dev restructure)

@@ -1,78 +1,75 @@
 # AGENTS.md
 
-## Purpose
-
-This document serves as the **constitution** for any AI coding agent (Grok Build, Claude, Cursor, etc.) or human developer working on Palm. It defines the non-negotiable principles, architecture constraints, and patterns that must be respected.
-
-All generated or modified code must comply with the rules stated here.
+Constitution for AI coding agents and human developers working on Palm.
 
 ## Core Principles
 
-- **Single Responsibility Principle (SRP)**: Every class, module, and function must have one, and only one, reason to change.
-- **Separation of Concerns**: Clear boundaries between layers (Behavior Tree Engine, Wizard Domain, Persistence, CLI/UI).
-- **Open/Closed Principle**: The system must be open for extension but closed for modification.
-- **Testability**: All core logic must be unit-testable without side effects.
-- **Explicit over Implicit**: Prefer clear, readable, and self-documenting code over clever shortcuts.
+- **Single Responsibility Principle (SRP)**: One reason to change per class, module, and function.
+- **Separation of Concerns**: Strict boundaries between core engines, concrete implementations, definitions, and runtimes.
+- **Open/Closed Principle**: Extend via registries and new modules; avoid modifying core contracts.
+- **Testability**: Core logic must be unit-testable without side effects.
+- **Explicit over Implicit**: Readable, self-documenting code over clever shortcuts.
 
-## Architecture Rules (updated 0.3.0-dev)
+## Architecture Rules (0.4.0-dev)
 
-1. **Behavior Tree Engine** (`palm/core/behavior_tree/`)
-   - One of the two general-purpose engines allowed in `palm/core/`.
-   - Must remain completely independent of wizards, RichContext, sessions, persistence, CLI, and the Orchestration Engine (orchestration may optionally compose with it via backends).
-   - No imports from `palm.cli.*` or legacy code allowed.
+### 1. Core Layer (`palm/core/`) — PURE
 
-2. **Orchestration Engine** (`palm/core/orchestration/`)
-   - The second general-purpose engine in `palm/core/`.
-   - Uses the Strategy pattern (`OrchestrationMode` + nested `ExecutionBackend`).
-   - **Only** `TestBackend` (in `execution/test_backend.py`) may exist as a concrete backend inside this package. It is fast, deterministic, and has zero dependencies on the Behavior Tree Engine or any domain code.
-   - All other concrete execution backends (including `BehaviorTreeBackend`) live outside `palm/core/` (under `palm/backends/` or domain packages).
-   - Introduces `Job` (with its own independent `Blackboard`), `Orchestrator`, and shared `palm/core/events.py`.
-   - Must remain **completely** independent of the Behavior Tree Engine: zero imports from `palm/core/behavior_tree/` anywhere in `palm/core/orchestration/`.
-   - Must remain independent of wizards, RichContext, sessions, persistence, and CLI.
-   - No imports from `palm.cli.*` or legacy code allowed.
+- **Invariant:** Nothing inside `palm/core/` may import from outside `palm/core/`.
+- Contains abstract bases, registries, shared primitives, and engine skeletons:
+  - `behavior_tree/` — patterns and blackboard execution
+  - `resource/` — provider coordination
+  - `storage/` — backend coordination
+  - `orchestration/` — job lifecycle
+  - `context/` — scoped execution metadata
+  - `event/` — observability bus
+  - `auth/` — authentication primitives
+- Shared modules: `base.py`, `exceptions.py`, `registry.py`
 
-3. **Legacy Reference Code** (`palm/cli/solid/legacy/`)
-   - Contains the old wizard implementation, models, persistence, orchestrator, etc.
-   - This is a **deprecated historical snapshot**. It exists only to keep the Solid CLI working during the transition.
-   - **Strict rule**: New code must never import anything from `palm.cli.solid.legacy.*` (except inside the legacy package itself for its own maintenance).
+### 2. Concrete Layers (outside core)
 
-4. **Future Domain Layers**
-   - New wizard (and other domain) functionality must be built on top of `palm.core.behavior_tree` and/or `palm.core.orchestration`.
-   - They will live outside `palm/core/` (typically under `palm/` or a new clean package) and must follow the same independence rules as the engines.
+| Package | Role |
+|---------|------|
+| `palm/patterns/` | Wizard, DAG, ETL patterns (register via `pattern_registry`) |
+| `palm/providers/` | REST, GraphQL, Postgres providers |
+| `palm/storages/` | Memory, Postgres, MongoDB, filesystem backends |
+| `palm/definitions/` | Flow and process definitions |
+| `palm/runtimes/` | Embedded, CLI, server, daemon |
+| `palm/utils/` | Cross-cutting helpers (core must not import utils) |
 
-5. **Folder Structure Discipline**
-   - One primary class per file for all Behavior Tree nodes.
-   - Concrete nodes live under `tree/nodes/`.
-   - Never create "god classes" or monolithic files in core engines.
+### 3. Archive (`archive/`)
 
-4. **Blackboard Usage**
-   - All data sharing between nodes must go through the `Blackboard`.
-   - Direct parameter passing between nodes is forbidden except for construction.
+- All pre-0.4.0 code (legacy CLI, old core engines, old tests, wizards).
+- **Never import from `archive/` in new code.**
+
+### 4. Folder Discipline
+
+- One primary class per file in core engines.
+- Register concretes at module import time in patterns/providers/storages.
 
 ## Forbidden Patterns
 
-- Monolithic classes handling multiple responsibilities.
-- Putting CLI/UI logic (Rich, prompt_toolkit, etc.) inside core.
-- Using `eval()`, dynamic code execution, or overly dynamic Python magic in core logic.
-- Tight coupling between layers (core should not import from cli).
+- Core importing from patterns, providers, storages, runtimes, or CLI.
+- Monolithic god classes.
+- `eval()` or overly dynamic magic in core.
+- New features in `archive/`.
 
-## When Adding New Features
+## When Adding Features
 
-- New Behavior Tree node → create dedicated file under `tree/nodes/`
-- New Orchestration Engine component (Job, Mode, Backend, etc.) → create dedicated file under `orchestration/`
-- New Wizard functionality → implement as nodes or decorators in the wizard layer first (on top of the two core engines).
-- Always add corresponding tests for both the abstraction and the concrete implementation (use Abstract*Test pattern + TestBackend for orchestration).
+- New pattern → `palm/patterns/<name>.py` + register in `pattern_registry`
+- New provider → `palm/providers/<name>.py` + register in `provider_registry`
+- New storage → `palm/storages/<name>.py` + register in `storage_registry`
+- New engine capability → extend the relevant `palm/core/<engine>/` module only
+- Always add tests under `tests/`
 
-## Review Checklist (for agents and humans)
+## Review Checklist
 
-- Does this change respect SRP?
-- Is the Behavior Tree engine still independent of wizards and orchestration?
-- Is the Orchestration Engine (including TestBackend) still independent of wizards, CLI, and legacy?
-- Are abstractions properly used (Strategy for modes/backends)?
-- Are new nodes / engine classes placed in the correct location?
-- Are tests included for both abstraction contract and implementation?
-- Does any new code in `palm/core/` import from `cli.*` or legacy? (Must not)
+- [ ] Core purity preserved (no external imports in `palm/core/`)
+- [ ] SRP respected
+- [ ] Registrations wired on import
+- [ ] Tests included
+- [ ] Docs updated if structure or entry points change
+- [ ] No imports from `archive/`
 
 ---
 
-Last updated: May 2026 (Orchestration Engine + TestBackend + core/events added)
+Last updated: June 2026 (0.4.0-dev full restructure)

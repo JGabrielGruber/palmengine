@@ -34,23 +34,22 @@ check: lint typecheck test-quick
 full-check: format lint typecheck test-full audit guard-core
 
 lint:
-    uv run ruff check src/ tests/
+    uv run ruff check palm/ tests/
 
 lint-fix:
-    uv run ruff check --fix src/ tests/
+    uv run ruff check --fix palm/ tests/
 
 format:
-    uv run ruff format src/ tests/
+    uv run ruff format palm/ tests/
 
 typecheck:
-    uv run mypy src/
-    uv run pyright src/
+    uv run mypy palm/
 
 test-quick:
     uv run pytest -q --tb=no
 
 test-full:
-    uv run pytest --cov=src/palm --cov-report=term-missing
+    uv run pytest --cov=palm --cov-report=term-missing
 
 test-watch:
     uv run ptw
@@ -60,36 +59,39 @@ test-watch:
 # -----------------------------------------------------------------------------
 refactor:
     @echo "🔍 Finding dead code..."
-    uv run vulture src/ --min-confidence 70
+    uv run vulture palm/ --min-confidence 70
     @echo "🧹 Running autofixes..."
     just lint-fix
-    uv run autoflake --remove-all-unused-imports --in-place --recursive src/
+    uv run autoflake --remove-all-unused-imports --in-place --recursive palm/
     @echo "📊 Complexity report:"
-    uv run radon cc src/palm/core/ --min C
+    uv run radon cc palm/core/ --min C
     @echo "✅ Refactor pass done. Now run 'just full-check' and review."
 
 # -----------------------------------------------------------------------------
 # 4. Palm Architecture Guards (Critical for this project)
 # -----------------------------------------------------------------------------
 guard-core:
-    @echo "🔒 Checking Core Purity Rules (0.3.0-dev)..."
+    @echo "🔒 Checking Core Purity Rules (0.4.0-dev)..."
     uv run python -c '
 import sys
 from pathlib import Path
-src = Path("src")
+core = Path("palm/core")
+forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "utils")
 violations = []
-for py in src.rglob("*.py"):
-    content = py.read_text()
-    if "palm.cli.solid.legacy" in content and "cli/solid/legacy" not in str(py):
-        violations.append(f"Legacy import in core: {py}")
-    if "behavior_tree" in content and "orchestration" in str(py):
-        violations.append(f"BT import in orchestration: {py}")
+for py in core.rglob("*.py"):
+    for line in py.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("from palm.") and not stripped.startswith("import palm."):
+            continue
+        for pkg in forbidden:
+            if f"palm.{pkg}" in stripped:
+                violations.append(f"{py}: {stripped}")
 if violations:
+    print("Core purity violations:")
     print("\n".join(violations))
     sys.exit(1)
-else:
-    print("✅ Core architecture rules respected")
-    '
+print("✅ Core architecture rules respected")
+'
 
 guard-legacy:
     @echo "📌 Legacy package is reference-only — no new features here"
@@ -100,12 +102,12 @@ guard-legacy:
 audit: security complexity deps
 
 security:
-    uv run bandit -r src/ -ll -ii
+    uv run bandit -r palm/ -ll -ii
     uv run pip-audit
 
 complexity:
-    uv run radon cc src/palm/core/ -a
-    uv run xenon --max-average A --max-modules B src/
+    uv run radon cc palm/core/ -a
+    uv run xenon --max-average A --max-modules B palm/
 
 deps:
     uv pip compile pyproject.toml --output-file=requirements.txt --quiet

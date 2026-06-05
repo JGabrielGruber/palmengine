@@ -1,60 +1,65 @@
 # DEVELOPMENT.md
 
-## Development Workflow
-
-### Setup
+## Setup
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --group dev
+uv pip install -e .
 ```
 
-### Key Commands
+## Daily Commands
 
-- Run the CLI: `python main.py` or `palm`
-- Run tests: `pytest`
-- Lint: `ruff check .`
-- Format: `ruff format .`
-- Type check: `mypy src`
+| Task | Command |
+|------|---------|
+| CLI (placeholder) | `palm` or `palm status` |
+| Tests | `pytest` |
+| Lint | `ruff check palm/ tests/` |
+| Format | `ruff format palm/ tests/` |
+| Type check | `mypy palm/` |
 
-## Adding New Behavior Tree Nodes
+Or use `just` recipes (`just check`, `just test-quick`).
 
-1. Decide the category: Leaf, Composite, or Decorator.
-2. Create a new file under `src/palm/core/behavior_tree/nodes/`.
-3. Inherit from the correct abstract base class.
-4. Implement `tick(blackboard: Blackboard) -> NodeStatus`.
-5. Add comprehensive tests (both abstraction contract and specific behavior).
+## Project Layout
 
-## Testing Philosophy
+```
+palm/                  # Python package (repo root layout)
+├── core/              # Pure engines — no external palm imports
+├── patterns/          # Wizard, DAG, ETL
+├── providers/         # REST, GraphQL, Postgres
+├── storages/          # Memory, Postgres, MongoDB, filesystem
+├── definitions/       # Flow and process specs
+├── runtimes/          # CLI, embedded, server, daemon
+└── utils/             # Shared non-core helpers
 
-- Test abstractions using abstract test classes.
-- Test concrete implementations thoroughly.
-- Include edge cases and breaking scenarios.
+archive/               # Legacy code — do not import
+tests/                 # Pytest suite
+examples/              # Future runnable examples
+```
 
-## Code Style
+## Adding a Pattern
 
-- Follow PEP 8 + Ruff rules.
-- Use type hints everywhere.
-- Prefer explicit code over clever code.
-- One class per file for Behavior Tree nodes.
+1. Create `palm/patterns/<name>.py` subclassing `BasePattern`.
+2. Call `pattern_registry.register("<name>", YourPattern)` at module bottom.
+3. Export from `palm/patterns/__init__.py`.
+4. Add tests in `tests/`.
 
-## Legacy Code & Deprecation (0.3.0-dev+)
+## Adding a Storage Backend
 
-All pre-clean-core wizard, models, persistence, orchestrator, and workflow code now lives in `src/palm/cli/solid/legacy/`.
+1. Create `palm/storages/<name>.py` subclassing `BaseBackend`.
+2. Register with `storage_registry`.
+3. Add tests.
 
-- This is a **reference implementation only**.
-- Never add new features or import from `palm.cli.solid.legacy.*` in new code (except inside the legacy package for its own maintenance).
+## Core Purity Check
 
-## Pull Request / Agent Review Requirements
+```bash
+# Must return no matches:
+rg 'from palm\.(patterns|providers|storages|runtimes|definitions|utils)' palm/core/
+```
 
-- Must not violate architecture layers (core = only general-purpose BT engine and future reusable engines).
-- Must respect Single Responsibility Principle.
-- Must include tests.
-- Must update documentation if behavior changes.
-- New code must never depend on anything under `palm.cli.solid.legacy`.
+## Archive Policy
+
+All code under `archive/` is historical. Never add new features there.
 
 ---
 
-Last updated: May 2026 (0.3.0-dev clean-core migration)
-```
+Last updated: June 2026 (0.4.0-dev restructure)
