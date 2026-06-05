@@ -1,12 +1,12 @@
 """
-Behavior Tree engine — control-flow nodes, blackboard, and execution.
+Behavior Tree engine — control-flow nodes and execution.
 
-Pure core module: no imports from outside ``palm.core``.
+Execution state is pluggable via ``palm.core.state.BaseState``. Default concrete
+implementations live in ``palm.states`` (e.g. ``BlackboardState``).
 """
 
 from palm.core.behavior_tree.base import BaseNode
 from palm.core.behavior_tree.base_pattern import BasePattern, NodeStatus, PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.composite import CompositeNode
 from palm.core.behavior_tree.decorator import DecoratorNode
 from palm.core.behavior_tree.engine import BehaviorTreeEngine
@@ -30,14 +30,15 @@ from palm.core.behavior_tree.nodes import (
     StubInteractiveLeaf,
 )
 from palm.core.behavior_tree.root import RootNode
+from palm.core.state import BaseState
 
 __all__ = [
     "ActionNode",
     "BaseNode",
     "BasePattern",
+    "BaseState",
     "BehaviorTreeEngine",
     "BehaviorTreeError",
-    "Blackboard",
     "CompositeNode",
     "ConditionNode",
     "DecoratorNode",

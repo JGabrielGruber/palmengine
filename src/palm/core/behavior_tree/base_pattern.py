@@ -10,7 +10,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import StrEnum
 
-from palm.core.behavior_tree.blackboard import Blackboard
+from palm.core.state import BaseState
 
 
 class PatternStatus(StrEnum):
@@ -35,5 +35,5 @@ class BasePattern(ABC):
         self.name = name
 
     @abstractmethod
-    def tick(self, blackboard: Blackboard) -> PatternStatus:
-        """Advance one execution step using shared blackboard state."""
+    def tick(self, state: BaseState) -> PatternStatus:
+        """Advance one execution step using shared execution state."""

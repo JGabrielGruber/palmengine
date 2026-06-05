@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from palm.core.behavior_tree.base import BaseNode
 from palm.core.behavior_tree.base_pattern import PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.decorator import DecoratorNode
+from palm.core.state import BaseState
 
 
 class RetryNode(DecoratorNode):
@@ -16,9 +16,9 @@ class RetryNode(DecoratorNode):
         self.max_attempts = max_attempts
         self._attempts = 0
 
-    def _tick_impl(self, blackboard: Blackboard) -> PatternStatus:
+    def _tick_impl(self, state: BaseState) -> PatternStatus:
         while True:
-            status = self.child.tick(blackboard)
+            status = self.child.tick(state)
             if status in (PatternStatus.RUNNING, PatternStatus.WAITING_FOR_INPUT):
                 return status
             if status == PatternStatus.SUCCESS:

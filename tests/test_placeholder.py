@@ -22,8 +22,10 @@ def test_storage_registry_has_memory() -> None:
 
 
 def test_behavior_tree_engine_tick() -> None:
+    from palm.states import BlackboardState
+
     engine = BehaviorTreeEngine()
-    engine.initialize()
+    engine.initialize(state=BlackboardState())
     cls = pattern_registry.get("wizard")
     engine.set_root(cls(name="test", steps=2))
     assert engine.tick().value == "running"

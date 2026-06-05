@@ -1,33 +1,22 @@
 """
 Base node types for the Palm Behavior Tree engine.
-
-Defines ``BaseNode`` — the root of the node hierarchy with tick/reset contracts.
 """
 
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING
 
 from palm.core.behavior_tree.base_pattern import BasePattern, PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.exceptions import (
     BehaviorTreeError,
     InvalidTreeStructureError,
     NodeExecutionError,
 )
-
-if TYPE_CHECKING:
-    pass
+from palm.core.state import BaseState
 
 
 class BaseNode(BasePattern):
-    """
-    Abstract base for behavior tree nodes with parent/child structure.
-
-    Subclasses implement ``_tick_impl``. The public ``tick`` wrapper performs
-    setup, error translation, and status validation.
-    """
+    """Abstract base for behavior tree nodes with parent/child structure."""
 
     def __init__(self, name: str) -> None:
         super().__init__(name=name)
@@ -36,15 +25,15 @@ class BaseNode(BasePattern):
         self._setup_done = False
 
     @abstractmethod
-    def _tick_impl(self, blackboard: Blackboard) -> PatternStatus:
+    def _tick_impl(self, state: BaseState) -> PatternStatus:
         """Perform the node's work. Called by ``tick``."""
 
-    def tick(self, blackboard: Blackboard) -> PatternStatus:
+    def tick(self, state: BaseState) -> PatternStatus:
         try:
             if not self._setup_done:
-                self._setup(blackboard)
+                self._setup(state)
                 self._setup_done = True
-            status = self._tick_impl(blackboard)
+            status = self._tick_impl(state)
             if not isinstance(status, PatternStatus):
                 raise NodeExecutionError(
                     f"Node {self.name!r} returned non-PatternStatus value: {status!r}"
@@ -57,7 +46,7 @@ class BaseNode(BasePattern):
                 f"Unhandled exception in node {self.name!r} during tick: {exc}"
             ) from exc
 
-    def _setup(self, blackboard: Blackboard) -> None:
+    def _setup(self, state: BaseState) -> None:
         pass
 
     def _reset_impl(self) -> None:

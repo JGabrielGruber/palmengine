@@ -1,8 +1,8 @@
 """
 Context engine — stack-based scoped execution context.
 
-Runtimes and patterns attach session-local metadata to named context frames
-without coupling to CLI or persistence.
+Frames may hold metadata and/or a bound ``BaseState`` for cooperation with
+behavior trees and patterns.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ from typing import Any
 
 from palm.core.base import BasePalmEngine
 from palm.core.exceptions import ContextError
+from palm.core.state import STATE_FRAME_KEY, BaseState
 
 
 class ContextEngine(BasePalmEngine):
@@ -26,57 +27,67 @@ class ContextEngine(BasePalmEngine):
 
     @property
     def current(self) -> dict[str, Any]:
-        """The active context frame (mutable)."""
+        """The active context frame (mutable metadata dict)."""
         return self._stack[-1]
 
     @property
     def depth(self) -> int:
-        """Number of frames on the stack (including root)."""
         return len(self._stack)
 
     @property
     def current_name(self) -> str:
         return str(self.current.get(self._ROOT_KEY, "root"))
 
+    @property
+    def current_state(self) -> BaseState | None:
+        """Return the ``BaseState`` bound to the current frame, if any."""
+        value = self.current.get(STATE_FRAME_KEY)
+        return value if isinstance(value, BaseState) else None
+
     def get(self, key: str, default: Any = None) -> Any:
-        """Read a value from the current frame."""
         return self.current.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
-        """Write a value into the current frame."""
         self.current[key] = value
 
-    def push(self, name: str, **data: Any) -> dict[str, Any]:
-        """
-        Push a new named context frame onto the stack.
+    def bind_state(self, state: BaseState) -> None:
+        """Attach ``state`` to the current context frame."""
+        self.current[STATE_FRAME_KEY] = state
 
-        Returns the new frame dict for direct mutation.
-        """
+    def push(
+        self,
+        name: str,
+        *,
+        state: BaseState | None = None,
+        **data: Any,
+    ) -> dict[str, Any]:
+        """Push a new frame, optionally binding execution state."""
         frame = self._make_frame(name, **data)
+        if state is not None:
+            frame[STATE_FRAME_KEY] = state
         self._stack.append(frame)
         return frame
 
     def pop(self) -> dict[str, Any]:
-        """
-        Pop the current frame.
-
-        The root frame cannot be popped.
-        """
         if len(self._stack) <= 1:
             raise ContextError("Cannot pop the root context frame")
         return self._stack.pop()
 
     @contextmanager
-    def scope(self, name: str, **data: Any) -> Generator[dict[str, Any], None, None]:
-        """Context manager wrapping ``push`` / ``pop``."""
-        frame = self.push(name, **data)
+    def scope(
+        self,
+        name: str,
+        *,
+        state: BaseState | None = None,
+        **data: Any,
+    ) -> Generator[dict[str, Any], None, None]:
+        frame = self.push(name, state=state, **data)
         try:
             yield frame
         finally:
             self.pop()
 
     def frames(self) -> tuple[Mapping[str, Any], ...]:
-        """Immutable snapshot of all frames (shallow copies)."""
         return tuple(dict(frame) for frame in self._stack)
 
     def _make_frame(self, name: str, **data: Any) -> dict[str, Any]:
@@ -84,10 +95,14 @@ class ContextEngine(BasePalmEngine):
 
     def _do_initialize(self, **options: Any) -> None:
         seed = options.get("initial")
+        state = options.get("state")
         if isinstance(seed, dict):
-            self._stack = [self._make_frame("root", **seed)]
+            frame = self._make_frame("root", **seed)
         else:
-            self._stack = [self._make_frame("root")]
+            frame = self._make_frame("root")
+        if isinstance(state, BaseState):
+            frame[STATE_FRAME_KEY] = state
+        self._stack = [frame]
 
     def _do_shutdown(self) -> None:
         self._stack = [self._make_frame("root")]

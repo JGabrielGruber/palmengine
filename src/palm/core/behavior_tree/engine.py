@@ -1,8 +1,8 @@
 """
 Behavior Tree engine — general-purpose control-flow execution.
 
-Runs a tree rooted at ``BasePattern`` (typically ``RootNode``) with a shared
-``Blackboard``. Independent of wizards, CLI, persistence, and other engines.
+Runs a tree rooted at ``BasePattern`` with pluggable ``BaseState``. Independent
+of wizards, CLI, persistence, and other engines.
 """
 
 from __future__ import annotations
@@ -11,30 +11,32 @@ from typing import Any
 
 from palm.core.base import BasePalmEngine
 from palm.core.behavior_tree.base_pattern import BasePattern, PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.exceptions import BehaviorTreeError, NodeExecutionError
 from palm.core.behavior_tree.root import RootNode
+from palm.core.exceptions import StateError, StateNotConfiguredError
+from palm.core.state import BaseState
 
 _CONTINUING = frozenset({PatternStatus.RUNNING})
 
 
 class BehaviorTreeEngine(BasePalmEngine):
     """
-    Executes a behavior tree with a shared blackboard.
+    Executes a behavior tree with pluggable execution state.
 
-    Set a root via ``set_root`` (``RootNode`` recommended), then drive execution
-    with ``tick`` or ``tick_until_terminal``.
+    Provide ``state`` at ``initialize`` (e.g. ``BlackboardState`` from
+    ``palm.states``). Use ``set_root`` then ``tick`` or ``tick_until_terminal``.
     """
 
     def __init__(self) -> None:
         super().__init__(name="behavior_tree")
         self._root: BasePattern | None = None
-        self._blackboard = Blackboard()
+        self._state: BaseState | None = None
         self._last_status = PatternStatus.FAILURE
 
     @property
-    def blackboard(self) -> Blackboard:
-        return self._blackboard
+    def state(self) -> BaseState:
+        """The active execution state."""
+        return self._require_state()
 
     @property
     def root(self) -> BasePattern | None:
@@ -56,9 +58,11 @@ class BehaviorTreeEngine(BasePalmEngine):
             self._last_status = PatternStatus.FAILURE
             return self._last_status
         try:
-            self._last_status = self._root.tick(self._blackboard)
+            self._last_status = self._root.tick(self._require_state())
             return self._last_status
         except NodeExecutionError:
+            raise
+        except StateError:
             raise
         except Exception as exc:
             raise BehaviorTreeError(
@@ -90,12 +94,17 @@ class BehaviorTreeEngine(BasePalmEngine):
             self._root.reset()
         self._last_status = PatternStatus.FAILURE
 
+    def _require_state(self) -> BaseState:
+        if self._state is None:
+            raise StateNotConfiguredError(
+                "No execution state is configured. Pass state= to initialize()."
+            )
+        return self._state
+
     def _do_initialize(self, **options: Any) -> None:
-        initial = options.get("blackboard")
-        if isinstance(initial, Blackboard):
-            self._blackboard = initial
-        elif isinstance(initial, dict):
-            self._blackboard = Blackboard(initial)
+        state = options.get("state")
+        if isinstance(state, BaseState):
+            self._state = state
 
         root = options.get("root")
         if root is not None and isinstance(root, BasePattern):
@@ -103,5 +112,7 @@ class BehaviorTreeEngine(BasePalmEngine):
 
     def _do_shutdown(self) -> None:
         self.reset()
-        self._blackboard.clear()
+        if self._state is not None:
+            self._state.clear()
+        self._state = None
         self._root = None

@@ -38,3 +38,11 @@ class BackendNotOpenError(StorageError):
 
 class ContextError(EngineError):
     """Raised when context stack operations fail."""
+
+
+class StateError(EngineError):
+    """Raised when state operations fail."""
+
+
+class StateNotConfiguredError(StateError):
+    """Raised when an engine requires state but none is bound."""

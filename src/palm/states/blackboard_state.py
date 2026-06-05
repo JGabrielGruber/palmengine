@@ -1,17 +1,16 @@
 """
-Shared blackboard for behavior tree execution.
-
-All inter-node data flows through the blackboard. Nodes should use disciplined
-key naming (prefixes, namespaces) to avoid collisions.
+Dict-backed blackboard state — default behavior-tree storage.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
+from palm.core.state import BaseState
 
-class Blackboard:
-    """Key-value store used by all nodes in a behavior tree."""
+
+class BlackboardState(BaseState):
+    """In-memory key-value state for behavior tree execution."""
 
     def __init__(self, initial: dict[str, Any] | None = None) -> None:
         self._data: dict[str, Any] = dict(initial) if initial else {}
@@ -38,4 +37,4 @@ class Blackboard:
         return list(self._data.keys())
 
     def __repr__(self) -> str:
-        return f"Blackboard(keys={len(self._data)})"
+        return f"BlackboardState(keys={len(self._data)})"

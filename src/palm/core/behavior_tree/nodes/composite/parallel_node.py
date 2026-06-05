@@ -6,8 +6,8 @@ from enum import StrEnum
 
 from palm.core.behavior_tree.base import BaseNode
 from palm.core.behavior_tree.base_pattern import PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.composite import CompositeNode
+from palm.core.state import BaseState
 
 
 class ParallelPolicy(StrEnum):
@@ -28,7 +28,7 @@ class ParallelNode(CompositeNode):
         self.policy = policy
         self._child_results: list[PatternStatus | None] = [None] * len(self.children)
 
-    def _tick_impl(self, blackboard: Blackboard) -> PatternStatus:
+    def _tick_impl(self, state: BaseState) -> PatternStatus:
         if not self.children:
             return PatternStatus.SUCCESS
 
@@ -38,7 +38,7 @@ class ParallelNode(CompositeNode):
         for idx, child in enumerate(self.children):
             if self._child_results[idx] is not None:
                 continue
-            status = child.tick(blackboard)
+            status = child.tick(state)
             if status in (PatternStatus.RUNNING, PatternStatus.WAITING_FOR_INPUT):
                 if status == PatternStatus.WAITING_FOR_INPUT:
                     any_waiting = True

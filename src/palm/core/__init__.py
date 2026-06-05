@@ -4,7 +4,8 @@ Palm Core — pure foundational engines.
 **Invariant:** nothing inside ``palm.core`` may import from outside ``palm.core``.
 
 Engines:
-- ``behavior_tree`` — control-flow patterns and blackboard execution
+- ``behavior_tree`` — control-flow patterns with pluggable state
+- ``state`` — ``BaseState`` abstraction for execution state
 - ``resource`` — external provider coordination
 - ``storage`` — persistence backend coordination
 - ``orchestration`` — job lifecycle
@@ -19,7 +20,6 @@ from palm.core.behavior_tree import (
     BaseNode,
     BasePattern,
     BehaviorTreeEngine,
-    Blackboard,
     PatternStatus,
     RootNode,
 )
@@ -32,6 +32,8 @@ from palm.core.exceptions import (
     EngineError,
     PalmError,
     RegistryError,
+    StateError,
+    StateNotConfiguredError,
     StorageError,
     StorageNotConfiguredError,
 )
@@ -42,6 +44,7 @@ from palm.core.registry import (
     storage_registry,
 )
 from palm.core.resource import BaseProvider, ResourceEngine
+from palm.core.state import STATE_FRAME_KEY, BaseState
 from palm.core.storage import BaseBackend, StorageEngine
 
 __all__ = [
@@ -53,7 +56,7 @@ __all__ = [
     "BasePattern",
     "BaseProvider",
     "BehaviorTreeEngine",
-    "Blackboard",
+    "BaseState",
     "ConfigurationError",
     "ContextError",
     "ContextEngine",
@@ -75,4 +78,7 @@ __all__ = [
     "pattern_registry",
     "provider_registry",
     "storage_registry",
+    "STATE_FRAME_KEY",
+    "StateError",
+    "StateNotConfiguredError",
 ]

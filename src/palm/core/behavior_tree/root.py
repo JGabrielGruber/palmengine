@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from palm.core.behavior_tree.base import BaseNode
 from palm.core.behavior_tree.base_pattern import PatternStatus
-from palm.core.behavior_tree.blackboard import Blackboard
 from palm.core.behavior_tree.decorator import DecoratorNode
+from palm.core.state import BaseState
 
 
 class RootNode(DecoratorNode):
@@ -15,5 +15,5 @@ class RootNode(DecoratorNode):
         super().__init__(name, child=child)
         self.validate_tree_structure()
 
-    def _tick_impl(self, blackboard: Blackboard) -> PatternStatus:
-        return self.child.tick(blackboard)
+    def _tick_impl(self, state: BaseState) -> PatternStatus:
+        return self.child.tick(state)
