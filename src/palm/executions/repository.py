@@ -265,7 +265,9 @@ class DefinitionRepository:
     def _scan_storage_for_name(
         self, kind: str, name: str
     ) -> FlowDefinition | ProcessDefinition | None:
-        ids = self._collect_ids(kind, self._flows_by_id if kind == "flow" else self._processes_by_id)
+        ids = self._collect_ids(
+            kind, self._flows_by_id if kind == "flow" else self._processes_by_id
+        )
         for definition_id in ids:
             record = self._load_record(kind, definition_id)
             if not isinstance(record, dict):

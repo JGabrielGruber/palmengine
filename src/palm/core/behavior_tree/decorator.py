@@ -19,9 +19,7 @@ class DecoratorNode(BaseNode, ABC):
     @property
     def child(self) -> BaseNode:
         if not self.children:
-            raise InvalidTreeStructureError(
-                f"Decorator {self.name!r} has no child"
-            )
+            raise InvalidTreeStructureError(f"Decorator {self.name!r} has no child")
         return self.children[0]
 
     def _add_child(self, child: BaseNode) -> None:

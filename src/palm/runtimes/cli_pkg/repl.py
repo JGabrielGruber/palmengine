@@ -20,9 +20,7 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         from prompt_toolkit.styles import Style
         from rich.panel import Panel
     except ImportError as exc:
-        raise SystemExit(
-            "REPL requires prompt-toolkit. Install with: uv sync --extra cli"
-        ) from exc
+        raise SystemExit("REPL requires prompt-toolkit. Install with: uv sync --extra cli") from exc
 
     from prompt_toolkit.completion import Completer, Completion
 
@@ -76,7 +74,7 @@ def _make_completer(registry: CommandRegistry, completer_cls: Any, completion_cl
     phrases = sorted(registry.handlers.keys(), key=len)
     tokens = sorted({p.split()[0] for p in phrases})
 
-    class _ReplCompleter(completer_cls):
+    class _ReplCompleter(completer_cls):  # type: ignore[misc]
         def get_completions(self, document: Any, complete_event: Any) -> Any:
             text = document.text_before_cursor.lower()
             words = text.split()

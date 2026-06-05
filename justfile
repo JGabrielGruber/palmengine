@@ -18,9 +18,9 @@ dev: setup hygiene
     @echo "✅ Ready to code! Use: just check, just test, just guard"
 
 setup:
-    uv sync --group dev
+    uv sync --group dev --extra cli
     uv run pre-commit install
-    @echo "✅ Environment synced + pre-commit installed"
+    @echo "✅ Environment synced (dev + cli extras) + pre-commit installed"
 
 hygiene:
     just format
@@ -31,16 +31,16 @@ hygiene:
 # -----------------------------------------------------------------------------
 check: lint typecheck test-quick
 
-full-check: format lint typecheck test-full audit guard-core
+full-check: format lint typecheck test-full audit guard-core demo-full
 
 lint:
-    uv run ruff check src/palm/ tests/
+    uv run ruff check src/palm/ tests/ examples/
 
 lint-fix:
-    uv run ruff check --fix src/palm/ tests/
+    uv run ruff check --fix src/palm/ tests/ examples/
 
 format:
-    uv run ruff format src/palm/ tests/
+    uv run ruff format src/palm/ tests/ examples/
 
 typecheck:
     uv run mypy src/palm/
@@ -71,7 +71,7 @@ refactor:
 # 4. Palm Architecture Guards (Critical for this project)
 # -----------------------------------------------------------------------------
 guard-core:
-    @echo "🔒 Checking Core Purity Rules (0.4.0-dev)..."
+    @echo "🔒 Checking Core Purity Rules (0.5.0-dev)..."
     uv run python -c '
 import sys
 from pathlib import Path
@@ -116,7 +116,7 @@ deps:
 # -----------------------------------------------------------------------------
 # 6. Palm CLI (requires --extra cli)
 # -----------------------------------------------------------------------------
-palm *ARGS='doctor':
+palm *ARGS='--help':
     uv run --extra cli palm {{ARGS}}
 
 palm-repl:
@@ -128,6 +128,12 @@ palm-doctor:
 palm-status:
     uv run --extra cli palm status
 
+palm-status-full:
+    uv run --extra cli palm status --full
+
+palm-version:
+    uv run --extra cli palm version --full
+
 palm-demo-onboard:
     @echo "Starting onboarding wizard (interactive)…"
     uv run --extra cli palm wizard start onboard
@@ -136,11 +142,14 @@ palm-demo-approval:
     @echo "Starting approval workflow (interactive)…"
     uv run --extra cli palm wizard start approval
 
+demo-full:
+    uv run python examples/full_demo.py
+
 # -----------------------------------------------------------------------------
 # 7. Convenience & CI-friendly
 # -----------------------------------------------------------------------------
-prepr: full-check   # Pre-PR / Pre-merge
-    @echo "🎉 All quality gates passed — ready for review!"
+prepr: full-check
+    @echo "🎉 Palm 0.5.0-dev quality gates passed — ready for release review!"
 
 clean:
     rm -rf .pytest_cache .ruff_cache .mypy_cache __pycache__ *.db
@@ -151,12 +160,13 @@ clean:
 # -----------------------------------------------------------------------------
 help:
     @echo "🌴 Palm Tooling Commands:"
-    @echo "   just dev          → Full setup + hygiene"
-    @echo "   just check        → Fast quality check"
-    @echo "   just full-check   → Everything"
-    @echo "   just refactor     → Dead code + autofix"
-    @echo "   just guard-core   → Architecture enforcement"
-    @echo "   just audit        → Security + complexity"
-    @echo "   just palm-doctor  → CLI health + examples"
-    @echo "   just palm-repl    → Interactive Palm shell"
+    @echo "   just dev              → Full setup + hygiene"
+    @echo "   just check            → Fast quality check"
+    @echo "   just full-check       → Everything + demo-full"
+    @echo "   just prepr            → Pre-release gate (0.5.0-dev)"
+    @echo "   just demo-full        → examples/full_demo.py"
+    @echo "   just palm --help      → CLI command list"
+    @echo "   just palm-version     → palm version --full"
+    @echo "   just palm-doctor      → CLI health + examples"
+    @echo "   just palm-repl        → Interactive Palm shell"
     @echo "Run 'just --list' for full list"

@@ -63,9 +63,7 @@ def build_pattern(
         return pattern_cls(name=flow.options.get("name", flow.name))
 
     if flow.options:
-        raise DefinitionBuildError(
-            f"Pattern {flow.pattern!r} does not support flow options yet"
-        )
+        raise DefinitionBuildError(f"Pattern {flow.pattern!r} does not support flow options yet")
 
     return pattern_cls(name=flow.name)
 

@@ -4,8 +4,6 @@ Shared CLI actions — submit, input, backtrack, resume (EmbeddedRuntime API).
 
 from __future__ import annotations
 
-from typing import Any
-
 from palm.core.orchestration import Job, JobStatus
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.runtimes.cli_pkg.context import CliContext

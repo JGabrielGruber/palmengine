@@ -6,9 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
 
-from palm import __version__
 from palm.runtimes.cli_pkg import actions
 from palm.runtimes.cli_pkg.bootstrap import resolve_flow_ref, resolve_process_ref
 from palm.runtimes.cli_pkg.context import CliContext
@@ -44,9 +42,7 @@ class CommandRegistry:
             if handler is not None:
                 return handler(ctx, parts[width:])
 
-        ctx.console.print(
-            f"[yellow]Unknown command:[/] {parts[0]}. Type [bold]help[/]."
-        )
+        ctx.console.print(f"[yellow]Unknown command:[/] {parts[0]}. Type [bold]help[/].")
         return 1
 
 
@@ -108,6 +104,7 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
 
 [bold]Diagnostics[/]
   doctor                    Full engine health report
+  version --full            Build info and registered plugins
   status --full             Same as doctor (one-shot: palm status --full)
 
 [bold]System[/]
@@ -119,8 +116,12 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
     return 0
 
 
-def _cmd_version(ctx: CliContext, _args: list[str]) -> int:
-    ctx.console.print(f"Palm [bold]{__version__}[/]")
+def _cmd_version(ctx: CliContext, args: list[str]) -> int:
+    from palm.runtimes.cli_pkg.version_info import print_version_brief, print_version_full
+
+    if args and args[0] == "--full":
+        return print_version_full(ctx.console)
+    print_version_brief()
     return 0
 
 
@@ -181,11 +182,7 @@ def _cmd_process_resume(ctx: CliContext, args: list[str]) -> int:
 def _cmd_wizard_list(ctx: CliContext, _args: list[str]) -> int:
     from rich.table import Table
 
-    flows = [
-        f
-        for f in ctx.runtime.repository.list_flows()
-        if f.pattern == "wizard"
-    ]
+    flows = [f for f in ctx.runtime.repository.list_flows() if f.pattern == "wizard"]
     if not flows:
         ctx.console.print("[yellow]No wizard flows registered.[/]")
         return 0

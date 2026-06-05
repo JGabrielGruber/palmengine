@@ -52,8 +52,7 @@ class ProcessDefinition:
         """Restore a process definition from ``to_dict`` output or legacy shape."""
         raw_flows = data.get("flows") or []
         flows = [
-            FlowDefinition.from_dict(item) if isinstance(item, dict) else item
-            for item in raw_flows
+            FlowDefinition.from_dict(item) if isinstance(item, dict) else item for item in raw_flows
         ]
         if flows and not all(isinstance(f, FlowDefinition) for f in flows):
             raise TypeError("Process flows must be FlowDefinition or dict payloads")

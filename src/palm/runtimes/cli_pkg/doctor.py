@@ -4,8 +4,6 @@ Engine diagnostics — health, registries, storage, definitions, and instances.
 
 from __future__ import annotations
 
-from typing import Any
-
 from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.runtimes.cli_pkg.context import CliContext

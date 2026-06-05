@@ -22,7 +22,13 @@ def _wizard_flow() -> FlowDefinition:
         options={
             "steps": [
                 {"slug": "name", "title": "Name", "prompt": "Name?"},
-                {"slug": "role", "title": "Role", "prompt": "Role?", "field_type": "choice", "choices": ["dev", "mgr"]},
+                {
+                    "slug": "role",
+                    "title": "Role",
+                    "prompt": "Role?",
+                    "field_type": "choice",
+                    "choices": ["dev", "mgr"],
+                },
             ],
         },
     )

@@ -105,9 +105,7 @@ class OrchestrationEngine(BasePalmEngine):
             self.start()
 
         if len(self._jobs) >= self.max_concurrent_jobs:
-            raise OrchestratorError(
-                f"Maximum concurrent jobs ({self.max_concurrent_jobs}) reached"
-            )
+            raise OrchestratorError(f"Maximum concurrent jobs ({self.max_concurrent_jobs}) reached")
 
         jid = job_id or f"job-{uuid.uuid4().hex[:12]}"
         if jid in self._jobs:

@@ -54,9 +54,7 @@ class TestBackend(ExecutionBackend):
         finally:
             job._allow_mutation = False
 
-    def _advance_descriptor(
-        self, job: Job, descriptor: dict[str, Any], steps: int
-    ) -> JobStatus:
+    def _advance_descriptor(self, job: Job, descriptor: dict[str, Any], steps: int) -> JobStatus:
         total_steps = int(descriptor.get("steps", 1))
         target = descriptor.get("final_status", "SUCCEEDED")
         result = descriptor.get("result")

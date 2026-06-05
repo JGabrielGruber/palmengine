@@ -39,8 +39,14 @@ class EmbeddedRuntime:
     """
     In-process runtime coordinating context, events, behavior trees, and jobs.
 
+    This is the primary integration surface for libraries and tests. Call
+    :meth:`start` before :meth:`submit_flow`, :meth:`submit_process`, or
+    :meth:`resume_process`, and :meth:`stop` when finished.
+
     Orchestration uses ``TestMode`` with ``BehaviorTreeBackend`` by default so
     pattern executables (e.g. ``WizardPattern``) advance through the job API.
+    Pass a shared :class:`~palm.core.storage.StorageEngine` to the constructor
+    when instances must survive across multiple runtime lifetimes.
     """
 
     def __init__(self, *, storage: StorageEngine | None = None) -> None:
@@ -88,9 +94,7 @@ class EmbeddedRuntime:
         self.orchestration.initialize(**orch_options)
 
         state = options.get("state")
-        bt_state: BaseState = (
-            state if isinstance(state, BaseState) else BlackboardState()
-        )
+        bt_state: BaseState = state if isinstance(state, BaseState) else BlackboardState()
         self.behavior_tree.initialize(state=bt_state)
 
         self.storage.initialize(backend=options.get("backend", "memory"))
@@ -123,7 +127,13 @@ class EmbeddedRuntime:
         state: BlackboardState | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job:
-        """Submit a flow definition or repository reference as a job."""
+        """
+        Submit a flow definition or repository name/id as an orchestration job.
+
+        Creates a durable :class:`~palm.instances.ProcessInstance` when storage
+        is configured. Wizard jobs typically enter ``WAITING_FOR_INPUT`` until
+        :meth:`provide_input` is called.
+        """
         return self.executor.submit_flow(
             flow,
             by_id=by_id,
@@ -192,7 +202,12 @@ class EmbeddedRuntime:
         return slug
 
     def resume_process(self, instance_id: str) -> Job:
-        """Resume a persisted process instance (wizard state and answers restored)."""
+        """
+        Resume a persisted process instance.
+
+        Restores wizard answers and step position from storage, registers a new
+        job, and returns it ready for :meth:`provide_input` or inspection.
+        """
         self._require_started()
         job = self.executor.resume_process(instance_id)
         self._bind_instance_context(job)

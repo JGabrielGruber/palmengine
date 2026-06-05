@@ -10,9 +10,7 @@ from palm.core.orchestration import Job, JobStatus
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 
-_TERMINAL = frozenset(
-    {JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED}
-)
+_TERMINAL = frozenset({JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED})
 
 
 def instance_id_for_job(job: Job) -> str:
@@ -36,9 +34,7 @@ def render_wizard_panel(
     iid = instance_id or instance_id_for_job(job)
     prompt = wizard_prompt_bundle(job)
     executable = job.executable
-    wizard_name = (
-        executable.name if isinstance(executable, WizardPattern) else "wizard"
-    )
+    wizard_name = executable.name if isinstance(executable, WizardPattern) else "wizard"
 
     if prompt:
         slug = prompt.get("slug", "?")
@@ -51,7 +47,9 @@ def render_wizard_panel(
             for choice in choices:
                 body += f"  • [green]{choice}[/]\n"
         if field_type == "confirm":
-            body += "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"
+            body += (
+                "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"
+            )
         answers = job.state.get(WizardKeys.ANSWERS)
         if isinstance(answers, dict) and answers:
             body += "\n[dim]Collected:[/]\n"
@@ -80,9 +78,7 @@ def render_wizard_panel(
         )
         return
 
-    console.print(
-        f"[dim]Job {job.id[:12]}… status={job.status.value} (no active prompt)[/]"
-    )
+    console.print(f"[dim]Job {job.id[:12]}… status={job.status.value} (no active prompt)[/]")
 
 
 def render_instance_table(console: Any, instances: list[Any]) -> None:

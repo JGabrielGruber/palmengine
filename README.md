@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight orchestration engine for multi-step transactional workflows — interactive wizards with validation and commit hooks, DAG pipelines, and ETL processes.
 
-Version **0.4.0-dev** uses a **pure core** with registry-based extension, durable **process instances**, and a modern **CLI** built on `EmbeddedRuntime`.
+Version **0.5.0-dev** builds on the 0.4.0 architecture with durable **process instances**, transactional wizards, and a modern **CLI** on `EmbeddedRuntime`. See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -13,9 +13,12 @@ Version **0.4.0-dev** uses a **pure core** with registry-based extension, durabl
 uv sync --group dev --extra cli
 uv pip install -e .
 
-# Check engine health and loaded example definitions
+# Version and health
+palm version --full
 palm doctor
-# or: palm status --full
+
+# End-to-end scripted demo (submit → input → resume → commit)
+uv run python examples/full_demo.py
 
 # Interactive REPL (default when you run `palm` with no subcommand)
 palm repl

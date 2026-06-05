@@ -8,10 +8,9 @@ import importlib.util
 from pathlib import Path
 from typing import Any
 
-import palm.patterns  # noqa: F401
-import palm.providers  # noqa: F401
+import palm.patterns
+import palm.providers
 import palm.storages  # noqa: F401
-
 from palm.core.storage import StorageEngine
 from palm.executions.exceptions import DefinitionNotFoundError
 from palm.runtimes.cli_pkg.context import CliContext

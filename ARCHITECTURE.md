@@ -4,7 +4,7 @@
 
 Palm is a layered orchestration engine. The **core** is pure and self-contained; concrete implementations, definitions, executions, and runtimes build on top without polluting core boundaries.
 
-Version **0.4.0-dev** adds **executions** (submit/resume/build), **instances** (durable snapshots), and transactional **wizards** with validation, resource actions, summary, and commit hooks.
+Version **0.5.0-dev** continues the 0.4.0 layered architecture with **executions** (submit/resume/build), **instances** (durable snapshots), transactional **wizards**, and the modern CLI.
 
 ## Layer diagram
 
@@ -162,4 +162,4 @@ Pre-0.4.0 implementation lives under `archive/` (legacy CLI, old behavior tree, 
 
 ---
 
-Last updated: June 2026 (0.4.0-dev — executions, instances, CLI)
+Last updated: June 2026 (0.5.0-dev)

@@ -67,9 +67,7 @@ class ProcessInstance:
     def from_dict(cls, data: dict[str, Any]) -> ProcessInstance:
         history_raw = data.get("status_history") or []
         history = [
-            StatusHistoryEntry.from_dict(item)
-            for item in history_raw
-            if isinstance(item, dict)
+            StatusHistoryEntry.from_dict(item) for item in history_raw if isinstance(item, dict)
         ]
         return cls(
             instance_id=str(data["instance_id"]),

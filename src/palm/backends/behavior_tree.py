@@ -35,9 +35,7 @@ class BehaviorTreeBackend(ExecutionBackend):
                     status = pattern.tick(job.state)
                 except Exception as exc:
                     job._transition_to(JobStatus.FAILED, error=exc)
-                    raise JobExecutionError(
-                        job.id, "pattern tick failed", original=exc
-                    ) from exc
+                    raise JobExecutionError(job.id, "pattern tick failed", original=exc) from exc
 
                 if status == PatternStatus.WAITING_FOR_INPUT:
                     job._transition_to(JobStatus.WAITING_FOR_INPUT)

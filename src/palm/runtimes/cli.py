@@ -1,5 +1,8 @@
 """
 CLI runtime — command-line and REPL entry point for Palm.
+
+Run ``palm --help`` for commands. Use ``palm version --full`` for build and
+plugin details without starting the embedded runtime.
 """
 
 from __future__ import annotations
@@ -10,21 +13,39 @@ from pathlib import Path
 
 from palm import __version__
 from palm.core.registry import pattern_registry, storage_registry
-from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
+from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, create_console, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
 from palm.runtimes.cli_pkg.doctor import run_doctor
 from palm.runtimes.cli_pkg.repl import run_repl
+from palm.runtimes.cli_pkg.version_info import print_version_brief, print_version_full
+
+_CLI_EPILOG = """
+examples:
+  palm                          interactive REPL (default)
+  palm doctor                   engine health and loaded definitions
+  palm version --full             version, Python, registered plugins
+  palm wizard start onboard       run the onboarding example wizard
+  palm process resume <id>        resume a persisted instance
+
+documentation:
+  README.md · CHANGELOG.md · ARCHITECTURE.md · examples/full_demo.py
+"""
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="palm",
-        description="Palm Engine — multi-step transactional workflow orchestration",
+        description=(
+            "Palm Engine — multi-step transactional workflow orchestration " f"({__version__})"
+        ),
+        epilog=_CLI_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "--version",
         action="version",
         version=f"Palm {__version__}",
+        help="Show version and exit",
     )
     parser.add_argument(
         "--backend",
@@ -40,6 +61,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", metavar="command")
 
     sub.add_parser("repl", help="Interactive REPL (default when no subcommand)")
+
+    version_p = sub.add_parser("version", help="Show version information")
+    version_p.add_argument(
+        "--full",
+        action="store_true",
+        help="Show Python platform and registered patterns/providers/storages",
+    )
+
     status_p = sub.add_parser(
         "status",
         help="Engine status, or instance/job status when instance_id is given",
@@ -99,7 +128,8 @@ def _print_engine_status(ctx: object) -> int:
             f"[bold]Palm Engine v{__version__}[/]\n"
             f"Runtime: embedded\n"
             f"Patterns: {', '.join(pattern_registry.names())}\n"
-            f"Storage:  {', '.join(storage_registry.names())}",
+            f"Storage:  {', '.join(storage_registry.names())}\n\n"
+            f"[dim]Tip:[/] [cyan]palm doctor[/] or [cyan]palm version --full[/]",
             title="Status",
             border_style="green",
         )
@@ -108,9 +138,18 @@ def _print_engine_status(ctx: object) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point registered in pyproject.toml."""
+    """CLI entry point registered in ``pyproject.toml`` as the ``palm`` script."""
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    if args.command == "version":
+        if getattr(args, "full", False):
+            try:
+                return print_version_full(create_console())
+            except SystemExit:
+                return print_version_full()
+        print_version_brief()
+        return 0
 
     if args.command is None:
         args.command = "repl"

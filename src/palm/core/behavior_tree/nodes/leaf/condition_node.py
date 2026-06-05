@@ -23,8 +23,4 @@ class ConditionNode(LeafNode):
         self._predicate = predicate
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
-        return (
-            PatternStatus.SUCCESS
-            if self._predicate(state)
-            else PatternStatus.FAILURE
-        )
+        return PatternStatus.SUCCESS if self._predicate(state) else PatternStatus.FAILURE

@@ -54,8 +54,8 @@ def test_instance_list_after_submit(cli_ctx) -> None:
 
 
 def test_process_resume() -> None:
-    from palm.core import StorageEngine
     import palm.storages.memory  # noqa: F401
+    from palm.core import StorageEngine
 
     storage = StorageEngine()
     storage.initialize(backend="memory")

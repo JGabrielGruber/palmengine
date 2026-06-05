@@ -1,11 +1,11 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.4.0-dev**.
+Guide for contributors working on Palm **0.5.0-dev**.
 
 ## Setup
 
 ```bash
-uv sync --group dev --extra cli
+uv sync --group dev --extra cli   # recommended: includes Rich + REPL
 uv pip install -e .
 just dev          # optional: sync + pre-commit + format
 ```
@@ -18,6 +18,8 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 |------|---------|
 | REPL | `palm` or `palm repl` or `just palm-repl` |
 | Diagnostics | `palm doctor` or `just palm-doctor` |
+| Version (full) | `palm version --full` or `just palm-version` |
+| E2E demo script | `just demo-full` |
 | Short status | `palm status` |
 | Full status | `palm status --full` |
 | Tests | `pytest` or `just test-quick` |
@@ -131,4 +133,4 @@ All code under `archive/` is historical. Never add new features there.
 
 ---
 
-Last updated: June 2026 (0.4.0-dev — executions, instances, CLI)
+Last updated: June 2026 (0.5.0-dev)

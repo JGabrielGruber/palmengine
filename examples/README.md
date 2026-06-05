@@ -83,9 +83,21 @@ Wizard flow options commonly used in examples:
 
 Commit handlers receive a `CommitContext` with `answers`, `state`, and optional `resource_engine` for `fetch_resource()`.
 
+## Full end-to-end demo
+
+[`full_demo.py`](full_demo.py) runs without the REPL: register a flow, submit,
+answer the first wizard step, stop the runtime, start a new runtime with shared
+storage, resume, and complete summary + commit.
+
+```bash
+uv run python examples/full_demo.py
+# or: just demo-full
+```
+
 ## Verify loading
 
 ```bash
 palm doctor
 palm process list
+palm version --full
 ```

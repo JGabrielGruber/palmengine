@@ -64,9 +64,7 @@ class ParallelNode(CompositeNode):
             if failures > 0:
                 return PatternStatus.FAILURE
             return (
-                PatternStatus.SUCCESS
-                if successes == len(self.children)
-                else PatternStatus.FAILURE
+                PatternStatus.SUCCESS if successes == len(self.children) else PatternStatus.FAILURE
             )
         if successes > 0:
             return PatternStatus.SUCCESS
