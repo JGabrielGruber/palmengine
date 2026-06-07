@@ -150,6 +150,7 @@ class DefinitionExecutor:
     def submit_plan(self, plan: ExecutionPlan) -> Job:
         """Submit a prepared :class:`~palm.executions.plan.ExecutionPlan` to orchestration."""
         self._require_runtime()
+        plan.validate()
         return plan.submit_to(self._runtime.orchestration)
 
     def submit_plans(self, plans: Iterable[ExecutionPlan]) -> list[Job]:

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from palm.core.context import BaseState
+from palm.executions.exceptions import PlanValidationError
 
 if TYPE_CHECKING:
     from palm.core.orchestration import Job, OrchestrationEngine
@@ -31,8 +32,25 @@ class ExecutionPlan:
     metadata: dict[str, Any]
     job_id: str | None = None
 
+    def validate(self) -> None:
+        """
+        Fail fast before orchestration submission.
+
+        Lightweight structural checks only — pattern/build validation happens
+        during preparation.
+        """
+        if self.executable is None:
+            raise PlanValidationError("ExecutionPlan.executable must not be None")
+        if not isinstance(self.state, BaseState):
+            raise PlanValidationError("ExecutionPlan.state must be a BaseState")
+        if not isinstance(self.metadata, dict):
+            raise PlanValidationError("ExecutionPlan.metadata must be a dict")
+        if self.job_id is not None and not str(self.job_id).strip():
+            raise PlanValidationError("ExecutionPlan.job_id must be a non-empty string when set")
+
     def submit_to(self, orchestration: OrchestrationEngine) -> Job:
         """Register this plan as a job on an orchestration engine."""
+        self.validate()
         return orchestration.submit(
             self.executable,
             state=self.state,

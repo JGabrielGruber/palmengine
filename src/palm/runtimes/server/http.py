@@ -13,7 +13,8 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.definitions.flow import FlowDefinition
+from palm.executions.exceptions import PlanNotFoundError
+from palm.runtimes.server.auth import PALM_SUBJECT_HEADER, authenticate_request
 
 if TYPE_CHECKING:
     from palm.runtimes.server.runtime import ServerRuntime
@@ -44,14 +45,13 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/health":
             runtime = self.server.runtime
-            self._json(
-                200,
-                {
-                    "status": "ok",
-                    "runtime": runtime.runtime_name,
-                    "version": runtime.version,
-                },
-            )
+            payload: dict[str, Any] = {
+                "status": "ok",
+                "runtime": runtime.runtime_name,
+                "version": runtime.version,
+                "auth_enforce": runtime.auth_enforce,
+            }
+            self._json(200, payload)
             return
 
         match = _JOB_PATH.match(path)
@@ -66,6 +66,12 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
         if path == "/v1/jobs":
             self._submit_job()
             return
+        if path == "/v1/plans/prepare":
+            self._prepare_plans()
+            return
+        if path == "/v1/plans/submit":
+            self._submit_plans()
+            return
 
         match = _JOB_INPUT_PATH.match(path)
         if match is not None:
@@ -73,6 +79,19 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
             return
 
         self._json(404, {"error": "not_found", "path": path})
+
+    def _require_auth(self) -> bool:
+        runtime = self.server.runtime
+        if authenticate_request(runtime, self.headers):
+            return True
+        self._json(
+            401,
+            {
+                "error": "unauthorized",
+                "detail": f"missing or invalid {PALM_SUBJECT_HEADER} header",
+            },
+        )
+        return False
 
     def _get_job(self, job_id: str) -> None:
         runtime = self.server.runtime
@@ -97,13 +116,16 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
         self._json(200, payload)
 
     def _submit_job(self) -> None:
+        if not self._require_auth():
+            return
         body = self._read_json()
         if body is None:
             return
 
         runtime = self.server.runtime
         try:
-            job = self._submit_from_body(body)
+            plan = runtime.prepare_flow_from_body(body)
+            job = runtime.executor.submit_plan(plan)
         except (TypeError, ValueError, KeyError) as exc:
             self._json(400, {"error": "invalid_request", "detail": str(exc)})
             return
@@ -121,33 +143,73 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
             },
         )
 
-    def _submit_from_body(self, body: dict[str, Any]) -> Any:
+    def _prepare_plans(self) -> None:
+        if not self._require_auth():
+            return
+        body = self._read_json()
+        if body is None:
+            return
+
         runtime = self.server.runtime
-        if "flow" in body and isinstance(body["flow"], dict):
-            flow = FlowDefinition.from_dict(body["flow"])
-            return runtime.submit_flow(flow, job_id=body.get("job_id"))
+        registry = runtime.plan_registry
+        try:
+            if "process" in body or "process_name" in body:
+                bundle = runtime.prepare_process_from_body(body)
+                stored = runtime.store_process_plan(bundle)
+            else:
+                plan = runtime.prepare_flow_from_body(body)
+                stored = [runtime.store_plan(plan)]
+        except (TypeError, ValueError, KeyError) as exc:
+            self._json(400, {"error": "invalid_request", "detail": str(exc)})
+            return
 
-        if "wizard" in body:
-            wizard = body["wizard"]
-            if not isinstance(wizard, dict):
-                raise TypeError("wizard must be an object")
-            steps = wizard.get("steps")
-            return runtime.submit_wizard(
-                name=str(wizard.get("name", "wizard")),
-                steps=int(steps) if steps is not None else None,
-                job_id=body.get("job_id"),
-            )
+        self._json(
+            201,
+            {
+                "plans": [registry.summary(item) for item in stored],
+            },
+        )
 
-        if "flow_name" in body:
-            return runtime.submit_flow(
-                str(body["flow_name"]),
-                by_id=bool(body.get("by_id", False)),
-                job_id=body.get("job_id"),
-            )
+    def _submit_plans(self) -> None:
+        if not self._require_auth():
+            return
+        body = self._read_json()
+        if body is None:
+            return
 
-        raise ValueError("expected 'flow', 'wizard', or 'flow_name' in request body")
+        plan_ids = body.get("plan_ids")
+        if not isinstance(plan_ids, list) or not plan_ids:
+            self._json(400, {"error": "invalid_request", "detail": "plan_ids must be a non-empty list"})
+            return
+
+        runtime = self.server.runtime
+        try:
+            jobs = runtime.submit_stored_plans([str(plan_id) for plan_id in plan_ids])
+        except PlanNotFoundError as exc:
+            self._json(404, {"error": "plan_not_found", "plan_id": exc.plan_id})
+            return
+        except Exception as exc:
+            self._json(500, {"error": "submit_failed", "detail": str(exc)})
+            return
+
+        runtime.wait_until_idle()
+        self._json(
+            202,
+            {
+                "jobs": [
+                    {
+                        "job_id": job.id,
+                        "status": job.status.value,
+                        "metadata": job.metadata,
+                    }
+                    for job in jobs
+                ],
+            },
+        )
 
     def _provide_input(self, job_id: str) -> None:
+        if not self._require_auth():
+            return
         body = self._read_json()
         if body is None:
             return

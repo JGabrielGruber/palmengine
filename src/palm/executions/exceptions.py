@@ -32,3 +32,15 @@ class InstanceNotFoundError(ExecutionError):
 
 class InstanceResumeError(ExecutionError):
     """Raised when an instance cannot be resumed (terminal, missing flow, etc.)."""
+
+
+class PlanValidationError(ExecutionError):
+    """Raised when an :class:`~palm.executions.plan.ExecutionPlan` fails pre-submit checks."""
+
+
+class PlanNotFoundError(ExecutionError):
+    """Raised when a stored plan id cannot be resolved."""
+
+    def __init__(self, plan_id: str) -> None:
+        super().__init__(f"Execution plan not found: {plan_id!r}")
+        self.plan_id = plan_id

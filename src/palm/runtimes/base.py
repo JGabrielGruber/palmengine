@@ -61,6 +61,7 @@ class BaseRuntime:
         self.instances = InstanceRepository(self.storage)
         self.executor = DefinitionExecutor(self, self.repository, self.instances)
         self._started = False
+        self._auth_enforce = False
 
     @property
     def is_started(self) -> bool:
@@ -69,6 +70,11 @@ class BaseRuntime:
     @property
     def version(self) -> str:
         return __version__
+
+    @property
+    def auth_enforce(self) -> bool:
+        """Whether drive authorization is required for job execution."""
+        return self._auth_enforce
 
     def start(self, **options: Any) -> None:
         """Initialize engines, wire orchestration, and begin accepting jobs."""
@@ -88,7 +94,8 @@ class BaseRuntime:
         hooks = list(options.get("hooks") or [])
         if options.get("observability"):
             hooks.append(DriveObservabilityHook())
-        if options.get("auth_enforce"):
+        self._auth_enforce = bool(options.get("auth_enforce"))
+        if self._auth_enforce:
             hooks.append(
                 AuthMiddleware(
                     self.auth,

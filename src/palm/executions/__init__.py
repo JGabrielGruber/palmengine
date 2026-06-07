@@ -13,7 +13,10 @@ from palm.executions.exceptions import (
     ExecutionError,
     InstanceNotFoundError,
     InstanceResumeError,
+    PlanNotFoundError,
+    PlanValidationError,
 )
+from palm.executions.plan_registry import PlanRegistry, StoredPlan
 from palm.executions.executor import DefinitionExecutor, ProcessExecutor
 from palm.executions.flow_submission import FlowSubmission, prepare_flow_submission
 from palm.executions.plan import ExecutionPlan
@@ -38,7 +41,11 @@ __all__ = [
     "InstancePersistenceHook",
     "InstanceRepository",
     "InstanceResumeError",
+    "PlanNotFoundError",
+    "PlanRegistry",
+    "PlanValidationError",
     "PatternBuildContext",
+    "StoredPlan",
     "ProcessExecutor",
     "ProcessInstance",
     "StatusHistoryEntry",
