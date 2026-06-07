@@ -1,5 +1,5 @@
 """
-TestBackend — deterministic backend for orchestration unit tests.
+TestBackend — deterministic runner for orchestration unit tests.
 
 Lives outside ``palm.core`` to preserve core purity.
 """
@@ -8,14 +8,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.orchestration.exceptions import JobExecutionError
-from palm.core.orchestration.execution.base_backend import ExecutionBackend
+from palm.core.orchestration.execution.base_runner import JobRunner
+from palm.core.orchestration.execution_context import ExecutionContext
 from palm.core.orchestration.job import Job, JobStatus
+from palm.core.orchestration.run_result import RunResult
 
 
-class TestBackend(ExecutionBackend):
+class TestBackend(JobRunner):
     """
-    Synchronous test backend accepting dict descriptors or callables.
+    Synchronous test runner accepting dict descriptors or callables.
 
     Dict shape::
 
@@ -23,40 +24,34 @@ class TestBackend(ExecutionBackend):
          "result": ..., "inject_error": exc}
     """
 
-    def advance(self, job: Job, *, max_steps: int | None = None) -> JobStatus:
+    def run(self, ctx: ExecutionContext, *, budget: int | None = None) -> RunResult:
+        job = ctx.job
         if job.is_terminal:
-            return job.status
+            return RunResult(status=job.status, result=job.result)
 
-        steps = max_steps or 10_000
+        steps = budget or 10_000
         if steps < 1:
-            raise ValueError("max_steps must be >= 1")
+            raise ValueError("budget must be >= 1")
 
-        job._allow_mutation = True
-        try:
-            executable = job.executable
+        executable = job.executable
 
-            if callable(executable) and not isinstance(executable, dict):
-                try:
-                    result_status = executable(job)
-                    if isinstance(result_status, JobStatus):
-                        job._transition_to(result_status)
-                    return job.status
-                except Exception as exc:
-                    job._transition_to(JobStatus.FAILED, error=exc)
-                    raise JobExecutionError(
-                        job.id, "callable executable raised", original=exc
-                    ) from exc
+        if callable(executable) and not isinstance(executable, dict):
+            try:
+                outcome = executable(job)
+            except Exception as exc:
+                return RunResult(status=JobStatus.FAILED, error=exc, propagate=True)
+            if isinstance(outcome, RunResult):
+                return outcome
+            if isinstance(outcome, JobStatus):
+                return RunResult(status=outcome)
+            return RunResult(status=job.status)
 
-            if isinstance(executable, dict):
-                return self._advance_descriptor(job, executable, steps)
+        if isinstance(executable, dict):
+            return self._run_descriptor(job, executable, steps)
 
-            job._transition_to(JobStatus.SUCCEEDED, result=executable)
-            return JobStatus.SUCCEEDED
+        return RunResult(status=JobStatus.SUCCEEDED, result=executable)
 
-        finally:
-            job._allow_mutation = False
-
-    def _advance_descriptor(self, job: Job, descriptor: dict[str, Any], steps: int) -> JobStatus:
+    def _run_descriptor(self, job: Job, descriptor: dict[str, Any], steps: int) -> RunResult:
         total_steps = int(descriptor.get("steps", 1))
         target = descriptor.get("final_status", "SUCCEEDED")
         result = descriptor.get("result")
@@ -64,38 +59,25 @@ class TestBackend(ExecutionBackend):
 
         if job.status == JobStatus.WAITING_FOR_INPUT:
             if target in (JobStatus.SUCCEEDED.value, "SUCCEEDED"):
-                job._transition_to(JobStatus.SUCCEEDED, result=result)
-            elif target in (JobStatus.FAILED.value, "FAILED"):
+                return RunResult(status=JobStatus.SUCCEEDED, result=result)
+            if target in (JobStatus.FAILED.value, "FAILED"):
                 err = inject_error or RuntimeError("TestBackend forced failure on resume")
-                job._transition_to(JobStatus.FAILED, error=err)
-                raise JobExecutionError(job.id, "forced failure on resume", original=err) from err
-            else:
-                job._transition_to(JobStatus.SUCCEEDED, result=result)
-            return job.status
+                return RunResult(status=JobStatus.FAILED, error=err, propagate=True)
+            return RunResult(status=JobStatus.SUCCEEDED, result=result)
 
         for _ in range(min(total_steps, steps)):
-            if job.status != JobStatus.RUNNING:
-                job._transition_to(JobStatus.RUNNING)
-
             if target == JobStatus.WAITING_FOR_INPUT.value:
-                job._transition_to(JobStatus.WAITING_FOR_INPUT)
-                return job.status
+                return RunResult(status=JobStatus.WAITING_FOR_INPUT)
 
             if inject_error is not None:
-                job._transition_to(JobStatus.FAILED, error=inject_error)
-                raise JobExecutionError(
-                    job.id, "injected by TestBackend", original=inject_error
-                ) from inject_error
+                return RunResult(status=JobStatus.FAILED, error=inject_error, propagate=True)
 
         if target in (JobStatus.SUCCEEDED.value, "SUCCEEDED"):
-            job._transition_to(JobStatus.SUCCEEDED, result=result)
-        elif target in (JobStatus.FAILED.value, "FAILED"):
+            return RunResult(status=JobStatus.SUCCEEDED, result=result)
+        if target in (JobStatus.FAILED.value, "FAILED"):
             err = inject_error or RuntimeError("TestBackend forced failure")
-            job._transition_to(JobStatus.FAILED, error=err)
-            raise JobExecutionError(job.id, "forced by test descriptor", original=err) from err
-        elif target in (JobStatus.WAITING_FOR_INPUT.value, "WAITING_FOR_INPUT"):
-            job._transition_to(JobStatus.WAITING_FOR_INPUT)
-        else:
-            job._transition_to(JobStatus.SUCCEEDED, result=result)
+            return RunResult(status=JobStatus.FAILED, error=err, propagate=True)
+        if target in (JobStatus.WAITING_FOR_INPUT.value, "WAITING_FOR_INPUT"):
+            return RunResult(status=JobStatus.WAITING_FOR_INPUT)
 
-        return job.status
+        return RunResult(status=JobStatus.SUCCEEDED, result=result)

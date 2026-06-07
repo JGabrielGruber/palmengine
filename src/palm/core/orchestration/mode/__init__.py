@@ -2,4 +2,7 @@
 
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
 
-__all__ = ["OrchestrationMode"]
+# Preferred name for the scheduling strategy (0.6+).
+JobScheduler = OrchestrationMode
+
+__all__ = ["JobScheduler", "OrchestrationMode"]

@@ -38,12 +38,16 @@ from palm.core.exceptions import (
 )
 from palm.core.orchestration import (
     ExecutionBackend,
+    ExecutionContext,
     Job,
+    JobRunner,
+    JobScheduler,
     JobState,
     JobStatus,
     OrchestrationEngine,
     OrchestrationEventType,
     OrchestrationMode,
+    RunResult,
 )
 from palm.core.registry import (
     pattern_registry,
@@ -70,12 +74,16 @@ __all__ = [
     "Event",
     "EventEngine",
     "ExecutionBackend",
+    "ExecutionContext",
     "Job",
+    "JobRunner",
+    "JobScheduler",
     "JobState",
     "JobStatus",
     "OrchestrationEngine",
     "OrchestrationEventType",
     "OrchestrationMode",
+    "RunResult",
     "PalmError",
     "PatternStatus",
     "Principal",

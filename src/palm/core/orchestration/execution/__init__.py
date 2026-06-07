@@ -1,5 +1,6 @@
-"""Execution backend contract for orchestration."""
+"""Job execution contracts for orchestration."""
 
 from palm.core.orchestration.execution.base_backend import ExecutionBackend
+from palm.core.orchestration.execution.base_runner import JobRunner
 
-__all__ = ["ExecutionBackend"]
+__all__ = ["ExecutionBackend", "JobRunner"]

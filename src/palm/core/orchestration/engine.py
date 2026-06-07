@@ -14,11 +14,17 @@ from palm.core.base import BasePalmEngine
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
-from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorError
+from palm.core.orchestration.exceptions import (
+    JobExecutionError,
+    JobNotFoundError,
+    OrchestratorError,
+)
+from palm.core.orchestration.execution_context import ExecutionContext
 from palm.core.orchestration.job import Job, JobStatus
 from palm.core.orchestration.job_state import JobState
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
 from palm.core.orchestration.mode.unconfigured_mode import UnconfiguredMode
+from palm.core.orchestration.run_result import RunResult
 
 if TYPE_CHECKING:
     pass
@@ -72,7 +78,8 @@ class OrchestrationEngine(BasePalmEngine):
         self._mode.shutdown(timeout=timeout)
 
         for job in list(self._jobs.values()):
-            if job.is_live:
+            # Waiting jobs are parked for input — not cancelled on shutdown.
+            if job.status == JobStatus.RUNNING:
                 try:
                     self._mode.cancel_job(self, job)
                     self._emit(OrchestrationEventType.JOB_CANCELLED, {"job_id": job.id})
@@ -123,7 +130,6 @@ class OrchestrationEngine(BasePalmEngine):
         )
 
         self._mode.submit_job(self, job)
-        self._publish_job_status(job)
 
         return job
 
@@ -162,7 +168,33 @@ class OrchestrationEngine(BasePalmEngine):
         if job.status != JobStatus.WAITING_FOR_INPUT:
             return
         self._mode.resume_job(self, job)
+
+    def execution_context(self, job: Job) -> ExecutionContext:
+        """Build an :class:`~palm.core.orchestration.execution_context.ExecutionContext` for a job."""
+        return ExecutionContext(job=job)
+
+    def apply_result(self, job: Job, result: RunResult) -> None:
+        """
+        Apply a runner outcome — the single authority for job lifecycle transitions.
+
+        Schedulers and runners must not mutate ``job.status`` directly; they produce
+        a :class:`~palm.core.orchestration.run_result.RunResult` and delegate here.
+        """
+        if job.is_terminal and result.status != job.status:
+            return
+
+        if result.status != job.status:
+            job._transition_to(result.status, result=result.result, error=result.error)
+        else:
+            if result.result is not None:
+                job.result = result.result
+            if result.error is not None:
+                job.error = result.error
+
         self._publish_job_status(job)
+
+        if result.propagate and result.error is not None:
+            raise JobExecutionError(job.id, str(result.error), original=result.error)
 
     def _bind_job_context(self, job: Job) -> None:
         ctx = self._context_engine

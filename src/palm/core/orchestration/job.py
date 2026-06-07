@@ -1,8 +1,9 @@
 """
 Job abstraction — unit of work managed by the orchestration engine.
 
-Execution semantics live in ``ExecutionBackend`` implementations; the job
-enforces lifecycle transitions and holds pluggable ``BaseState``.
+Execution semantics live in :class:`~palm.core.orchestration.execution.base_runner.JobRunner`
+implementations; :class:`~palm.core.orchestration.engine.OrchestrationEngine` applies
+lifecycle transitions. The job holds pluggable :class:`~palm.core.context.BaseState`.
 """
 
 from __future__ import annotations
@@ -33,8 +34,8 @@ class Job:
     """
     One unit of work submitted to ``OrchestrationEngine``.
 
-    The ``executable`` field is opaque; backends interpret it (test descriptors,
-    behavior-tree patterns via external backends, etc.).
+    The ``executable`` field is opaque; runners interpret it (patterns, callables,
+    descriptors, etc.).
     """
 
     id: str
@@ -47,7 +48,6 @@ class Job:
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     started_at: datetime | None = None
     completed_at: datetime | None = None
-    _allow_mutation: bool = field(default=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if not self.id or not isinstance(self.id, str):
@@ -60,9 +60,7 @@ class Job:
         result: Any = None,
         error: BaseException | None = None,
     ) -> None:
-        if not self._allow_mutation:
-            self._allow_mutation = True
-
+        """Apply a lifecycle transition (called by :class:`~palm.core.orchestration.engine.OrchestrationEngine` only)."""
         old = self.status
         if not self._is_valid_transition(old, new_status):
             raise InvalidJobTransitionError(self.id, str(old), str(new_status))

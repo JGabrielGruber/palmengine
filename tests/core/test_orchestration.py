@@ -8,10 +8,13 @@ from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.core.exceptions import ConfigurationError
 from palm.core.orchestration import (
+    ExecutionContext,
     Job,
+    JobRunner,
     JobStatus,
     OrchestrationEngine,
     OrchestrationEventType,
+    RunResult,
 )
 from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorError
 from tests.core.fakes import TestState
@@ -48,12 +51,42 @@ def test_max_concurrent_jobs_enforced(orchestration_engine: OrchestrationEngine)
         orchestration_engine.submit({"steps": 1})
 
 
+def test_waiting_job_survives_engine_stop(orchestration_engine: OrchestrationEngine) -> None:
+    job = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
+    assert job.status == JobStatus.WAITING_FOR_INPUT
+    orchestration_engine.stop()
+    assert orchestration_engine.get_job(job.id).status == JobStatus.WAITING_FOR_INPUT
+
+
 def test_waiting_job_resumes_via_provide_input(orchestration_engine: OrchestrationEngine) -> None:
     job = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
     assert job.status == JobStatus.WAITING_FOR_INPUT
     orchestration_engine.provide_input(job.id, "answer", 42)
     assert job.status == JobStatus.SUCCEEDED
     assert job.state.get("answer") == 42
+
+
+class _StatusOnlyRunner(JobRunner):
+    """Runner that returns a result without mutating the job."""
+
+    def __init__(self, status: JobStatus, *, result: object = None) -> None:
+        self._status = status
+        self._result = result
+
+    def run(self, ctx: ExecutionContext, *, budget: int | None = None) -> RunResult:
+        assert ctx.job.status == JobStatus.PENDING
+        return RunResult(status=self._status, result=self._result)
+
+
+def test_apply_result_is_lifecycle_authority() -> None:
+    engine = OrchestrationEngine()
+    engine.initialize(mode=TestMode(backend=_StatusOnlyRunner(JobStatus.SUCCEEDED, result="ok")))
+    engine.start()
+    job = engine.submit({"steps": 99})
+    assert job.status == JobStatus.SUCCEEDED
+    assert job.result == "ok"
+    engine.stop()
+    engine.shutdown()
 
 
 def test_unconfigured_engine_requires_mode() -> None:

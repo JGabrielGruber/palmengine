@@ -1,5 +1,7 @@
 """
 OrchestrationMode — strategy for how jobs are driven at runtime.
+
+Also exported as :data:`~palm.core.orchestration.mode.JobScheduler` (preferred name in 0.6+).
 """
 
 from __future__ import annotations
@@ -8,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration.job import JobStatus
+from palm.core.orchestration.run_result import RunResult
 
 if TYPE_CHECKING:
     from palm.core.orchestration.engine import OrchestrationEngine
@@ -42,11 +45,7 @@ class OrchestrationMode(ABC):
 
     def cancel_job(self, engine: OrchestrationEngine, job: Job) -> None:
         if not job.is_terminal:
-            job._allow_mutation = True
-            try:
-                job._transition_to(JobStatus.CANCELLED)
-            finally:
-                job._allow_mutation = False
+            engine.apply_result(job, RunResult(status=JobStatus.CANCELLED))
 
     def on_engine_shutdown(self, engine: OrchestrationEngine) -> None:
         """Final hook before the engine finishes shutdown."""

@@ -1,17 +1,12 @@
 """
-ExecutionBackend — abstract strategy for advancing job executables.
+ExecutionBackend — backward-compatible alias for :class:`JobRunner`.
 """
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from palm.core.orchestration.execution.base_runner import JobRunner
 
-from palm.core.orchestration.job import Job, JobStatus
+# Deprecated name kept for transitional imports (0.6+).
+ExecutionBackend = JobRunner
 
-
-class ExecutionBackend(ABC):
-    """Advances opaque ``job.executable`` work through valid job transitions."""
-
-    @abstractmethod
-    def advance(self, job: Job, *, max_steps: int | None = None) -> JobStatus:
-        """Make progress on the job and return the resulting status."""
+__all__ = ["ExecutionBackend", "JobRunner"]

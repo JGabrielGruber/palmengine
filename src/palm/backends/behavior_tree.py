@@ -5,64 +5,64 @@ BehaviorTreeBackend — runs ``BasePattern`` executables against job state.
 from __future__ import annotations
 
 from palm.core.behavior_tree import BasePattern, PatternStatus
-from palm.core.orchestration.exceptions import JobExecutionError
-from palm.core.orchestration.execution.base_backend import ExecutionBackend
-from palm.core.orchestration.job import Job, JobStatus
+from palm.core.orchestration.execution.base_runner import JobRunner
+from palm.core.orchestration.execution_context import ExecutionContext
+from palm.core.orchestration.job import JobStatus
+from palm.core.orchestration.run_result import RunResult
 
 
-class BehaviorTreeBackend(ExecutionBackend):
+class BehaviorTreeBackend(JobRunner):
     """Advances a ``BasePattern`` stored in ``job.executable`` using ``job.state``."""
 
-    def advance(self, job: Job, *, max_steps: int | None = None) -> JobStatus:
+    def run(self, ctx: ExecutionContext, *, budget: int | None = None) -> RunResult:
+        job = ctx.job
+        if job.is_terminal:
+            return RunResult(status=job.status, result=job.result)
+
         pattern = job.executable
         if not isinstance(pattern, BasePattern):
-            raise JobExecutionError(
-                job.id,
-                "BehaviorTreeBackend requires a BasePattern executable",
+            return RunResult(
+                status=JobStatus.FAILED,
+                error=TypeError("BehaviorTreeBackend requires a BasePattern executable"),
+                propagate=True,
             )
 
-        ticks = max_steps if max_steps is not None else 10_000
+        ticks = budget if budget is not None else 10_000
         if ticks < 1:
-            raise ValueError("max_steps must be >= 1")
+            raise ValueError("budget must be >= 1")
 
-        job._allow_mutation = True
-        try:
-            if job.status == JobStatus.PENDING:
-                job._transition_to(JobStatus.RUNNING)
+        logical_status = job.status
+        if logical_status == JobStatus.PENDING:
+            logical_status = JobStatus.RUNNING
 
-            for _ in range(ticks):
-                try:
-                    status = pattern.tick(job.state)
-                except Exception as exc:
-                    job._transition_to(JobStatus.FAILED, error=exc)
-                    raise JobExecutionError(job.id, "pattern tick failed", original=exc) from exc
+        for _ in range(ticks):
+            try:
+                status = pattern.tick(job.state)
+            except Exception as exc:
+                return RunResult(status=JobStatus.FAILED, error=exc, propagate=True)
 
-                if status == PatternStatus.WAITING_FOR_INPUT:
-                    job._transition_to(JobStatus.WAITING_FOR_INPUT)
-                    return job.status
+            if status == PatternStatus.WAITING_FOR_INPUT:
+                return RunResult(status=JobStatus.WAITING_FOR_INPUT)
 
-                if status == PatternStatus.SUCCESS:
-                    job._transition_to(
-                        JobStatus.SUCCEEDED,
-                        result=job.state.get("__result__"),
-                    )
-                    return job.status
+            if status == PatternStatus.SUCCESS:
+                return RunResult(
+                    status=JobStatus.SUCCEEDED,
+                    result=job.state.get("__result__"),
+                )
 
-                if status == PatternStatus.FAILURE:
-                    job._transition_to(
-                        JobStatus.FAILED,
-                        error=job.state.get("__error__"),
-                    )
-                    return job.status
+            if status == PatternStatus.FAILURE:
+                err = job.state.get("__error__")
+                return RunResult(
+                    status=JobStatus.FAILED,
+                    error=err if isinstance(err, BaseException) else RuntimeError("pattern failed"),
+                )
 
-            if job.status == JobStatus.RUNNING:
-                return job.status
+            logical_status = JobStatus.RUNNING
 
-            job._transition_to(
-                JobStatus.FAILED,
-                error=RuntimeError("pattern did not reach a terminal status"),
-            )
-            return job.status
+        if logical_status == JobStatus.RUNNING:
+            return RunResult(status=JobStatus.RUNNING)
 
-        finally:
-            job._allow_mutation = False
+        return RunResult(
+            status=JobStatus.FAILED,
+            error=RuntimeError("pattern did not reach a terminal status"),
+        )
