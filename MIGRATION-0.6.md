@@ -32,6 +32,18 @@ Shared coordination logic now lives in **`palm.common`** (with `palm.executions`
 
 Old import paths under `palm.executions.*` continue to work via thin re-export shims.
 
+### Extensible modules (Django-style apps)
+
+Patterns, providers, and storages are now self-contained subpackages:
+
+| App type | Layout | Registration |
+|----------|--------|--------------|
+| Pattern | `patterns/<name>/pattern.py`, `builder.py`, `registry.py` | `INSTALLED_PATTERNS` + `pattern_registry` |
+| Provider | `providers/<name>/provider.py`, `registry.py` | `INSTALLED_PROVIDERS` + `provider_registry` |
+| Storage | `storages/<name>/backend.py`, `registry.py` | `INSTALLED_STORAGES` + `storage_registry` |
+
+Wizard-specific build/options logic moved from `common/patterns/` into `patterns/wizard/`. `palm.patterns.wizard.commit` remains a shim for `wizard.handler`.
+
 ```python
 # Recommended (0.6+)
 from palm.common import DefinitionExecutor, ExecutionPlan

@@ -30,9 +30,9 @@ Constitution for AI coding agents and human developers working on Palm.
 | Package | Role |
 |---------|------|
 | `palm/common/` | Shared coordination — plans, submission, hooks, persistence, pattern builder |
-| `palm/patterns/` | **Extensible** — wizard, DAG, ETL (register via `pattern_registry`) |
-| `palm/providers/` | **Extensible** — REST, GraphQL, Postgres providers |
-| `palm/storages/` | **Extensible** — memory, Postgres, MongoDB, filesystem backends |
+| `palm/patterns/` | **Extensible apps** — each pattern is a subpackage (`pattern.py`, `builder.py`, `registry.py`) |
+| `palm/providers/` | **Extensible apps** — each provider is a subpackage (`provider.py`, `registry.py`) |
+| `palm/storages/` | **Extensible apps** — each storage is a subpackage (`backend.py`, `registry.py`) |
 | `palm/definitions/` | Flow and process definition models |
 | `palm/instances/` | Durable process instance snapshots |
 | `palm/runtimes/` | Embedded, CLI, server, daemon surfaces |
@@ -58,9 +58,9 @@ Constitution for AI coding agents and human developers working on Palm.
 
 ## When Adding Features
 
-- New pattern → `palm/patterns/<name>.py` + register in `pattern_registry`
-- New provider → `palm/providers/<name>.py` + register in `provider_registry`
-- New storage → `palm/storages/<name>.py` + register in `storage_registry`
+- New pattern → `palm/patterns/<name>/` with `pattern.py`, `builder.py`, `registry.py`; add to `INSTALLED_PATTERNS` in `patterns/_apps.py`
+- New provider → `palm/providers/<name>/` with `provider.py`, `registry.py`; add to `INSTALLED_PROVIDERS`
+- New storage → `palm/storages/<name>/` with `backend.py`, `registry.py`; add to `INSTALLED_STORAGES`
 - Shared submission / plan / hook logic → `palm/common/<area>/` (not `patterns/`)
 - New engine capability → extend the relevant `palm/core/<engine>/` module only
 - Always add tests under `tests/`

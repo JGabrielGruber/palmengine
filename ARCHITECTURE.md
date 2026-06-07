@@ -90,7 +90,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 
 `palm.executions` remains as a **backward-compat alias** re-exporting `palm.common`. New code should import from `palm.common` directly.
 
-**Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — register at import time; never modify core to add a plugin.
+**Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — each is a Django-style app subpackage with its own `registry.py`. Add the app name to `INSTALLED_PATTERNS` / `INSTALLED_PROVIDERS` / `INSTALLED_STORAGES`; never modify core to add a plugin.
 
 ---
 

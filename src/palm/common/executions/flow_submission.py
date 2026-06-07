@@ -9,12 +9,12 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
-from palm.common.patterns.wizard_options import wizard_metadata_from_flow
 from palm.common.persistence.instance_sync import prepare_resume_state
 from palm.common.plans.execution_plan import ExecutionPlan
 from palm.core.context import BaseState
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
+from palm.patterns.wizard.options import wizard_metadata_from_flow
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:

@@ -1,9 +1,13 @@
 """
-Concrete resource providers — REST, GraphQL, and Postgres.
+Concrete resource providers — REST, GraphQL, and Postgres (Django-style apps).
 
-Import submodules to register providers with ``provider_registry``.
+Each subpackage registers via its own ``registry.py``.
 """
 
-from palm.providers import graphql, postgres, rest
+from palm.providers._apps import INSTALLED_PROVIDERS, autoload
 
-__all__ = ["rest", "graphql", "postgres"]
+autoload()
+
+from palm.providers import graphql, postgres, rest  # noqa: E402
+
+__all__ = ["INSTALLED_PROVIDERS", "autoload", "graphql", "postgres", "rest"]

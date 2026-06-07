@@ -12,28 +12,21 @@ Extensible plugins live elsewhere:
 - ``palm.storages`` — register via ``storage_registry``
 """
 
-from palm.common.exceptions import (
-    DefinitionBuildError,
-    DefinitionNotFoundError,
-    ExecutionError,
-    InstanceNotFoundError,
-    InstanceResumeError,
-    PlanNotFoundError,
-    PlanValidationError,
-)
-from palm.common.executions.executor import DefinitionExecutor
-from palm.common.executions.flow_submission import FlowSubmission, prepare_flow_submission
-from palm.common.executions.process_submission import prepare_process_plans
-from palm.common.hooks.instance_persistence import InstancePersistenceHook
-from palm.common.patterns.build_context import PatternBuildContext
-from palm.common.patterns.builder import build_pattern, wizard_config_from_options
-from palm.common.patterns.wizard_options import parse_wizard_flow_options, wizard_metadata_from_flow
-from palm.common.persistence.definition_repository import DefinitionRepository
-from palm.common.persistence.instance_repository import InstanceRepository
-from palm.common.plans.execution_plan import ExecutionPlan
-from palm.common.plans.process_plan import ProcessPlan
-from palm.common.plans.registry import PlanRegistry, StoredPlan
-from palm.instances import ProcessInstance, StatusHistoryEntry
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from palm.common.executions.executor import DefinitionExecutor
+    from palm.common.executions.flow_submission import FlowSubmission
+    from palm.common.hooks.instance_persistence import InstancePersistenceHook
+    from palm.common.patterns.build_context import PatternBuildContext
+    from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.common.persistence.instance_repository import InstanceRepository
+    from palm.common.plans.execution_plan import ExecutionPlan
+    from palm.common.plans.process_plan import ProcessPlan
+    from palm.common.plans.registry import PlanRegistry, StoredPlan
+    from palm.instances import ProcessInstance, StatusHistoryEntry
 
 __all__ = [
     "DefinitionBuildError",
@@ -62,3 +55,43 @@ __all__ = [
     "wizard_config_from_options",
     "wizard_metadata_from_flow",
 ]
+
+_LAZY_EXPORTS: dict[str, tuple[str, str]] = {
+    "DefinitionBuildError": ("palm.common.exceptions", "DefinitionBuildError"),
+    "DefinitionNotFoundError": ("palm.common.exceptions", "DefinitionNotFoundError"),
+    "ExecutionError": ("palm.common.exceptions", "ExecutionError"),
+    "InstanceNotFoundError": ("palm.common.exceptions", "InstanceNotFoundError"),
+    "InstanceResumeError": ("palm.common.exceptions", "InstanceResumeError"),
+    "PlanNotFoundError": ("palm.common.exceptions", "PlanNotFoundError"),
+    "PlanValidationError": ("palm.common.exceptions", "PlanValidationError"),
+    "DefinitionExecutor": ("palm.common.executions.executor", "DefinitionExecutor"),
+    "FlowSubmission": ("palm.common.executions.flow_submission", "FlowSubmission"),
+    "prepare_flow_submission": ("palm.common.executions.flow_submission", "prepare_flow_submission"),
+    "prepare_process_plans": ("palm.common.executions.process_submission", "prepare_process_plans"),
+    "InstancePersistenceHook": ("palm.common.hooks.instance_persistence", "InstancePersistenceHook"),
+    "PatternBuildContext": ("palm.common.patterns.build_context", "PatternBuildContext"),
+    "build_pattern": ("palm.common.patterns.builder", "build_pattern"),
+    "wizard_config_from_options": ("palm.common.patterns.builder", "wizard_config_from_options"),
+    "parse_wizard_flow_options": ("palm.common.patterns.wizard_options", "parse_wizard_flow_options"),
+    "wizard_metadata_from_flow": ("palm.common.patterns.wizard_options", "wizard_metadata_from_flow"),
+    "DefinitionRepository": ("palm.common.persistence.definition_repository", "DefinitionRepository"),
+    "InstanceRepository": ("palm.common.persistence.instance_repository", "InstanceRepository"),
+    "ExecutionPlan": ("palm.common.plans.execution_plan", "ExecutionPlan"),
+    "ProcessPlan": ("palm.common.plans.process_plan", "ProcessPlan"),
+    "PlanRegistry": ("palm.common.plans.registry", "PlanRegistry"),
+    "StoredPlan": ("palm.common.plans.registry", "StoredPlan"),
+    "ProcessInstance": ("palm.instances", "ProcessInstance"),
+    "StatusHistoryEntry": ("palm.instances", "StatusHistoryEntry"),
+}
+
+
+def __getattr__(name: str):
+    if name not in _LAZY_EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module_path, attr = _LAZY_EXPORTS[name]
+    import importlib
+
+    module = importlib.import_module(module_path)
+    value = getattr(module, attr)
+    globals()[name] = value
+    return value

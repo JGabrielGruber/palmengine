@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.registry import storage_registry
 from palm.core.storage import BaseBackend
 
 
@@ -41,4 +40,3 @@ class MemoryBackend(BaseBackend):
         self._is_open = False
 
 
-storage_registry.register("memory", MemoryBackend)

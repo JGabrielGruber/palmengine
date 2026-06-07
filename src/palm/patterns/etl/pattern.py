@@ -1,14 +1,11 @@
 """
-ETL pattern — extract, transform, load pipelines.
-
-Registers as ``"etl"`` in ``pattern_registry``.
+ETL pattern implementation — extract, transform, load pipelines.
 """
 
 from __future__ import annotations
 
 from palm.core.behavior_tree import BasePattern, PatternStatus
 from palm.core.context import BaseState
-from palm.core.registry import pattern_registry
 
 
 class EtlPattern(BasePattern):
@@ -27,6 +24,3 @@ class EtlPattern(BasePattern):
         if self._phase >= len(self._phases):
             return PatternStatus.SUCCESS
         return PatternStatus.RUNNING
-
-
-pattern_registry.register("etl", EtlPattern)

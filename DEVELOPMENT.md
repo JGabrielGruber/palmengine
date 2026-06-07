@@ -86,13 +86,15 @@ shutdown_context(ctx)
 # New context with same storage object can resume instances
 ```
 
-## Adding a pattern
+## Adding a pattern (Django-style app)
 
-1. Create `palm/patterns/<name>.py` subclassing `BasePattern`.
-2. Call `pattern_registry.register("<name>", YourPattern)` at module bottom.
-3. Export from `palm/patterns/__init__.py`.
-4. Extend `common/patterns/builder.py` if the pattern has flow options.
-5. Add tests in `tests/`.
+1. Create `palm/patterns/<name>/` with:
+   - `pattern.py` — `BasePattern` subclass
+   - `builder.py` — `build(flow, context, pattern_cls)` for flow options
+   - `registry.py` — `pattern_registry.register(...)` + `register_builder(...)`
+   - `__init__.py` — import `registry` for side effect
+2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
+3. Add tests in `tests/`.
 
 ## Adding example definitions
 
