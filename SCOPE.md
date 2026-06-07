@@ -1,6 +1,6 @@
 # Palm Engine — Project Scope & Roadmap
 
-**Version:** 0.5.0-dev · **Last updated:** June 2026
+**Version:** 0.6.0 · **Last updated:** June 2026
 
 This document describes what Palm is for, what it does today, and where it is headed. For layer-by-layer technical detail, see [ARCHITECTURE.md](ARCHITECTURE.md). For day-to-day usage, see [README.md](README.md).
 
@@ -28,7 +28,7 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 
 ---
 
-## In scope (today — 0.5.0-dev)
+## In scope (today — 0.6.0)
 
 ### Orchestration & control flow
 
@@ -59,9 +59,12 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 ### Runtimes & developer experience
 
 - **EmbeddedRuntime** — in-process API for libraries and tests
+- **DaemonRuntime** — long-lived background process with queued scheduler
+- **ServerRuntime** — HTTP API (`/v1/jobs`, `/v1/plans/*`) with optional auth
 - **CLI + REPL** — `palm doctor`, process/instance commands, definition-driven flows
+- **RuntimeHost** / **BaseRuntime** — shared wiring, hooks, and lifecycle across runtimes
 - Example definitions and `examples/full_demo.py` end-to-end script
-- Documentation, changelog, and `just` recipes for quality gates
+- Documentation, changelog, migration guide, and `just` recipes for quality gates
 
 ### Extension surfaces
 
@@ -72,7 +75,7 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 
 ## Out of scope (for now)
 
-- Production **server**, **daemon**, or **WebSocket** runtimes (planned, not shipped)
+- **WebSocket** runtime and live job/wizard streaming (planned)
 - Full **GPU / KernelLeaf** execution in the main tree (experimental prototypes only)
 - A complete **auth product** — core exposes primitives; enforcement is runtime/BT concern
 - Legacy code under `archive/` — reference and experiments, not imported by new work
@@ -111,12 +114,12 @@ Step definitions stay focused on **user-facing intent** (prompt, validation, res
 
 ## Roadmap
 
-### Near term (0.5.x → 0.6)
+### Near term (0.6.x)
 
 - Harden transactional wizard and instance resume across storage backends
 - Stronger **ResourceEngine** usage in patterns and commit handlers
-- Runtime-level middleware hooks (auth context, observability) without core pollution
-- **Server** and **daemon** runtime skeletons with shared `EmbeddedRuntime` semantics
+- Expand runtime middleware (auth policies, observability exporters) without core pollution
+- WebSocket runtime for live wizard and job streaming
 
 ### Medium term
 
@@ -150,8 +153,8 @@ Early experiments live in `archive/experimental/gpubatches/`. They inform the ro
 |---------|--------|-----------|
 | Embedded | **Shipped** | Library and test hub |
 | CLI / REPL | **Shipped** | Human-first operator surface |
-| Server (HTTP) | Planned | Remote submit, status, input |
-| Daemon | Planned | Background instance workers |
+| Server (HTTP) | **Shipped** | Remote submit, status, deferred plans |
+| Daemon | **Shipped** | Background instance workers |
 | WebSocket | Planned | Live wizard and job streaming |
 
 ---

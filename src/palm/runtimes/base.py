@@ -119,8 +119,7 @@ class BaseRuntime:
         bt_state: BaseState = state if isinstance(state, BaseState) else BlackboardState()
         self.behavior_tree.initialize(state=bt_state)
 
-        raw_storage = options.get("storage_backend", options.get("backend", "memory"))
-        storage_backend = raw_storage if isinstance(raw_storage, str) else "memory"
+        storage_backend = str(options.get("storage_backend", "memory"))
         self.storage.initialize(backend=storage_backend)
 
         self.orchestration.start()

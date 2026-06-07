@@ -291,7 +291,7 @@ class OrchestrationEngine(BasePalmEngine):
         bus.emit(event_type, **payload)
 
     def _do_initialize(self, **options: Any) -> None:
-        scheduler = options.get("scheduler") or options.get("mode")
+        scheduler = options.get("scheduler")
         if isinstance(scheduler, OrchestrationMode):
             self._mode = scheduler
 

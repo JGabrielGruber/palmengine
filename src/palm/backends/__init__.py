@@ -1,7 +1,5 @@
-"""
-Concrete job runners for the orchestration engine (outside core).
-"""
+"""Concrete job runners for Palm orchestration."""
 
-from palm.backends.behavior_tree import BehaviorTreeBackend, BehaviorTreeRunner
+from palm.backends.behavior_tree import BehaviorTreeRunner
 
-__all__ = ["BehaviorTreeBackend", "BehaviorTreeRunner"]
+__all__ = ["BehaviorTreeRunner"]

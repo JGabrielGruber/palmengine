@@ -2,6 +2,38 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] — 2026-06-07
+
+Major orchestration maturation release: authoritative lifecycle, layered runtimes, execution plans, and production-oriented server/daemon surfaces.
+
+### Added
+
+- **Lifecycle authority** — `RunResult` + `OrchestrationEngine.apply_result()` as sole job transition path
+- **Scheduling model** — `JobScheduler` (inline/queued) composes with `JobRunner`; shared `drive_job` primitive
+- **Middleware** — `JobHook` protocol with drive-phase hooks (`on_before_drive`, `on_after_drive`); `AuthMiddleware`, `DriveObservabilityHook`, `InstancePersistenceHook`
+- **Executions handoff** — `ExecutionPlan`, `ProcessPlan`, `prepare_*_plan`, `submit_plan(s)`, `PlanRegistry` for deferred submission
+- **Runtimes** — `RuntimeHost` protocol, `BaseRuntime` shared wiring, `DaemonRuntime`, `ServerRuntime` (stdlib HTTP API)
+- **Auth** — `AuthEngine` wired on runtimes; `auth_enforce`, per-request `X-Palm-Subject` on server
+- **Server API** — `POST /v1/plans/prepare`, `POST /v1/plans/submit`, job input/status endpoints
+- **Migration guide** — [MIGRATION-0.6.md](MIGRATION-0.6.md)
+
+### Changed
+
+- **EmbeddedRuntime** slimmed to policy wrapper over `BaseRuntime`
+- **DefinitionExecutor** uses plan-based submission internally
+- CLI storage flag renamed to `--storage-backend`
+- Test double renamed: `TestBackend` → `TestRunner`
+- Orchestration initialization uses `scheduler=` (not `mode=`)
+
+### Removed
+
+- `ExecutionBackend` alias (use `JobRunner`)
+- `BehaviorTreeBackend` alias (use `BehaviorTreeRunner`)
+- `EmbeddedMode` (use `InlineScheduler`)
+- `wire_instance_persistence()` (automatic hook registration)
+- `ProcessExecutor` alias (use `DefinitionExecutor`)
+- Deprecated `backend=` parameters on schedulers and runtime runner resolution
+
 ## [0.5.0-dev] — 2026-06-05
 
 Milestone toward **0.5.0**: a production-oriented developer experience on top of the 0.4.0 architecture rebuild.

@@ -12,7 +12,7 @@ from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.host import RuntimeHost
 from palm.runtimes.schedulers import InlineScheduler
-from tests.core.fakes.backend import TestBackend
+from tests.core.fakes.runner import TestRunner
 
 
 class _MinimalHost:
@@ -30,7 +30,7 @@ class _MinimalHost:
 
     def start(self) -> None:
         self.event.initialize()
-        self.orchestration.initialize(scheduler=InlineScheduler(runner=TestBackend()))
+        self.orchestration.initialize(scheduler=InlineScheduler(runner=TestRunner()))
         self.orchestration.start()
         self._started = True
 

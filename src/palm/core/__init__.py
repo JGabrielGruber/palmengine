@@ -37,7 +37,6 @@ from palm.core.exceptions import (
     StorageNotConfiguredError,
 )
 from palm.core.orchestration import (
-    ExecutionBackend,
     ExecutionContext,
     InputCapable,
     Job,
@@ -77,7 +76,6 @@ __all__ = [
     "EngineError",
     "Event",
     "EventEngine",
-    "ExecutionBackend",
     "ExecutionContext",
     "InputCapable",
     "Job",

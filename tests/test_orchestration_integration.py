@@ -32,7 +32,7 @@ def _wizard_config() -> WizardConfig:
     )
 
 
-def test_wizard_job_via_behavior_tree_backend(event_engine: EventEngine) -> None:
+def test_wizard_job_via_behavior_tree_runner(event_engine: EventEngine) -> None:
     events: list[tuple[str, dict]] = []
     event_engine.subscribe("*", lambda e: events.append((e.type, dict(e.payload))))
 
@@ -45,7 +45,7 @@ def test_wizard_job_via_behavior_tree_backend(event_engine: EventEngine) -> None
 
     mode = TestMode(runner=BehaviorTreeRunner())
     engine = OrchestrationEngine()
-    engine.initialize(mode=mode, event_engine=event_engine)
+    engine.initialize(scheduler=mode, event_engine=event_engine)
     engine.start()
 
     job = engine.submit(wizard, state=state)

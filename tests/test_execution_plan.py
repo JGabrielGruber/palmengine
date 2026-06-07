@@ -35,11 +35,10 @@ def test_flow_submission_to_plan_and_submit() -> None:
 
 def test_execution_plan_submit_to() -> None:
     from palm.states import BlackboardState
-
-    from tests.core.fakes.backend import TestBackend
+    from tests.core.fakes.runner import TestRunner
 
     rt = EmbeddedRuntime()
-    rt.start(runner=TestBackend())
+    rt.start(runner=TestRunner())
     try:
         plan = ExecutionPlan(
             executable={"steps": 1, "final_status": "SUCCEEDED", "result": "ok"},

@@ -11,7 +11,7 @@ from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.host import RuntimeHost
 from palm.runtimes.schedulers import InlineScheduler, QueuedScheduler
 from palm.runtimes.wiring import resolve_scheduler
-from tests.core.fakes.backend import TestBackend
+from tests.core.fakes.runner import TestRunner
 
 
 def _two_step_config() -> WizardConfig:
@@ -50,8 +50,8 @@ def test_embedded_defaults_to_inline_scheduler() -> None:
 
 
 def test_resolve_scheduler_policy_strings() -> None:
-    inline = resolve_scheduler({"scheduler": "inline", "runner": TestBackend()})
-    queued = resolve_scheduler({"scheduler": "queued", "runner": TestBackend()})
+    inline = resolve_scheduler({"scheduler": "inline", "runner": TestRunner()})
+    queued = resolve_scheduler({"scheduler": "queued", "runner": TestRunner()})
     assert isinstance(inline, InlineScheduler)
     assert isinstance(queued, QueuedScheduler)
 
@@ -74,7 +74,7 @@ def test_daemon_wizard_flow_to_completion(daemon: DaemonRuntime) -> None:
 
 def test_embedded_accepts_scheduler_policy_override() -> None:
     rt = EmbeddedRuntime()
-    rt.start(scheduler="queued", runner=TestBackend())
+    rt.start(scheduler="queued", runner=TestRunner())
     try:
         assert isinstance(rt.orchestration.scheduler, QueuedScheduler)
         job = rt.orchestration.submit({"steps": 1, "final_status": "SUCCEEDED"})

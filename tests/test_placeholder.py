@@ -10,7 +10,7 @@ from palm.storages import memory  # noqa: F401
 
 
 def test_version() -> None:
-    assert palm.__version__ == "0.5.0-dev"
+    assert palm.__version__ == "0.6.0"
 
 
 def test_pattern_registry_has_wizard() -> None:

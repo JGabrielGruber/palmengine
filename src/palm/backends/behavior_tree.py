@@ -4,8 +4,6 @@ BehaviorTreeRunner — runs ``BasePattern`` executables against job state.
 
 from __future__ import annotations
 
-import warnings
-
 from palm.core.behavior_tree import BasePattern, PatternStatus
 from palm.core.orchestration.execution.base_runner import JobRunner
 from palm.core.orchestration.execution_context import ExecutionContext
@@ -68,15 +66,3 @@ class BehaviorTreeRunner(JobRunner):
             status=JobStatus.FAILED,
             error=RuntimeError("pattern did not reach a terminal status"),
         )
-
-
-class BehaviorTreeBackend(BehaviorTreeRunner):
-    """Deprecated alias for :class:`BehaviorTreeRunner`."""
-
-    def __init__(self) -> None:
-        warnings.warn(
-            "BehaviorTreeBackend is deprecated; use BehaviorTreeRunner (0.6+)",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__()

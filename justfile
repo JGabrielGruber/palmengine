@@ -80,7 +80,7 @@ import sys
 from pathlib import Path
 core = Path("src/palm/core")
 forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "utils")
-forbidden_test_artifacts = ("TestMode", "TestBackend", "StubInteractiveLeaf")
+forbidden_test_artifacts = ("TestMode", "TestRunner", "StubInteractiveLeaf")
 violations = []
 for py in core.rglob("*.py"):
     if py.name.startswith("test_"):
@@ -159,7 +159,7 @@ demo-full:
 # 7. Convenience & CI-friendly
 # -----------------------------------------------------------------------------
 prepr: full-check
-    @echo "🎉 Palm 0.5.0-dev quality gates passed — ready for release review!"
+    @echo "🎉 Palm 0.6.0 quality gates passed — ready for release review!"
 
 clean:
     rm -rf .pytest_cache .ruff_cache .mypy_cache __pycache__ *.db
@@ -174,7 +174,7 @@ help:
     @echo "   just check            → Fast quality check + guard-core"
     @echo "   just test-core        → Pure palm.core contract tests"
     @echo "   just full-check       → Everything + demo-full"
-    @echo "   just prepr            → Pre-release gate (0.5.0-dev)"
+    @echo "   just prepr            → Pre-release gate (0.6.0)"
     @echo "   just demo-full        → examples/full_demo.py"
     @echo "   just palm --help      → CLI command list"
     @echo "   just palm-version     → palm version --full"

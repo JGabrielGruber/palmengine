@@ -1,5 +1,5 @@
 """
-TestBackend — deterministic runner for orchestration unit tests.
+TestRunner — deterministic runner for orchestration unit tests.
 
 Lives outside ``palm.core`` to preserve core purity.
 """
@@ -14,7 +14,7 @@ from palm.core.orchestration.job import Job, JobStatus
 from palm.core.orchestration.run_result import RunResult
 
 
-class TestBackend(JobRunner):
+class TestRunner(JobRunner):
     """
     Synchronous test runner accepting dict descriptors or callables.
 
@@ -61,7 +61,7 @@ class TestBackend(JobRunner):
             if target in (JobStatus.SUCCEEDED.value, "SUCCEEDED"):
                 return RunResult(status=JobStatus.SUCCEEDED, result=result)
             if target in (JobStatus.FAILED.value, "FAILED"):
-                err = inject_error or RuntimeError("TestBackend forced failure on resume")
+                err = inject_error or RuntimeError("TestRunner forced failure on resume")
                 return RunResult(status=JobStatus.FAILED, error=err, propagate=True)
             return RunResult(status=JobStatus.SUCCEEDED, result=result)
 
@@ -75,7 +75,7 @@ class TestBackend(JobRunner):
         if target in (JobStatus.SUCCEEDED.value, "SUCCEEDED"):
             return RunResult(status=JobStatus.SUCCEEDED, result=result)
         if target in (JobStatus.FAILED.value, "FAILED"):
-            err = inject_error or RuntimeError("TestBackend forced failure")
+            err = inject_error or RuntimeError("TestRunner forced failure")
             return RunResult(status=JobStatus.FAILED, error=err, propagate=True)
         if target in (JobStatus.WAITING_FOR_INPUT.value, "WAITING_FOR_INPUT"):
             return RunResult(status=JobStatus.WAITING_FOR_INPUT)

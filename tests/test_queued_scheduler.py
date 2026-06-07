@@ -10,7 +10,7 @@ from palm.core.event import EventEngine
 from palm.core.orchestration import JobStatus, OrchestrationEngine
 from palm.patterns.wizard import WizardConfig, WizardStepConfig
 from palm.runtimes.schedulers import QueuedScheduler
-from tests.core.fakes.backend import TestBackend
+from tests.core.fakes.runner import TestRunner
 
 
 def _two_step_config() -> WizardConfig:
@@ -24,7 +24,7 @@ def _two_step_config() -> WizardConfig:
 
 @pytest.fixture
 def queued_engine() -> OrchestrationEngine:
-    scheduler = QueuedScheduler(runner=TestBackend())
+    scheduler = QueuedScheduler(runner=TestRunner())
     events = EventEngine()
     context = ContextEngine()
     events.initialize()

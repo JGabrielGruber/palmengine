@@ -13,7 +13,7 @@ from palm.core.orchestration.execution.base_runner import JobRunner
 from palm.core.orchestration.job import JobStatus
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
 from palm.core.orchestration.run_result import RunResult
-from tests.core.fakes.backend import TestBackend
+from tests.core.fakes.runner import TestRunner
 
 if TYPE_CHECKING:
     from palm.core.orchestration.engine import OrchestrationEngine
@@ -29,12 +29,11 @@ class TestMode(OrchestrationMode):
         self,
         *,
         runner: JobRunner | None = None,
-        backend: JobRunner | None = None,
         budget: int = 10_000,
         name: str = "TestMode",
     ) -> None:
         super().__init__(name=name)
-        self._runner: JobRunner = runner or backend or TestBackend()
+        self._runner: JobRunner = runner or TestRunner()
         self._budget = budget
         self._running = False
         self._force_next_status: dict[str, JobStatus] = {}

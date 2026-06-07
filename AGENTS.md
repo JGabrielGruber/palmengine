@@ -10,7 +10,7 @@ Constitution for AI coding agents and human developers working on Palm.
 - **Testability**: Core logic must be unit-testable without side effects.
 - **Explicit over Implicit**: Readable, self-documenting code over clever shortcuts.
 
-## Architecture Rules (0.5.0-dev)
+## Architecture Rules (0.6.0)
 
 ### 1. Core Layer (`src/palm/core/`) — PURE
 
@@ -72,4 +72,4 @@ Constitution for AI coding agents and human developers working on Palm.
 
 ---
 
-Last updated: June 2026 (0.5.0-dev)
+Last updated: June 2026 (0.6.0)

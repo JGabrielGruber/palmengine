@@ -29,7 +29,7 @@ def test_state() -> TestState:
 
 @pytest.fixture
 def test_mode() -> TestMode:
-    """Synchronous orchestration mode backed by :class:`~tests.core.fakes.backend.TestBackend`."""
+    """Synchronous orchestration scheduler backed by :class:`~tests.core.fakes.runner.TestRunner`."""
     mode = TestMode()
     mode.start()
     return mode
@@ -70,7 +70,7 @@ def bt_engine(test_state: TestState) -> Iterator[BehaviorTreeEngine]:
 def orchestration_engine(test_mode: TestMode) -> Iterator[OrchestrationEngine]:
     """Orchestration engine wired with :class:`TestMode`."""
     engine = OrchestrationEngine()
-    engine.initialize(mode=test_mode)
+    engine.initialize(scheduler=test_mode)
     engine.start()
     yield engine
     engine.stop()
@@ -90,7 +90,7 @@ def full_core_setup(
 
     ctx.initialize(state=test_state)
     events.initialize()
-    orch.initialize(mode=test_mode, event_engine=events, context_engine=ctx)
+    orch.initialize(scheduler=test_mode, event_engine=events, context_engine=ctx)
     bt.initialize(state=test_state)
     orch.start()
 

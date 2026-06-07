@@ -12,8 +12,8 @@ from palm.definitions.flow import FlowDefinition
 from palm.executions.build_context import PatternBuildContext
 from palm.executions.builder import build_pattern
 from palm.executions.instance_sync import prepare_resume_state
-from palm.executions.wizard_options import wizard_metadata_from_flow
 from palm.executions.plan import ExecutionPlan
+from palm.executions.wizard_options import wizard_metadata_from_flow
 from palm.instances import ProcessInstance
 from palm.states import BlackboardState
 

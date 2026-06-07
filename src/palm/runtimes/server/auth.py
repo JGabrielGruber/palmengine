@@ -4,7 +4,8 @@ HTTP request authentication for :class:`~palm.runtimes.server.runtime.ServerRunt
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Mapping
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from palm.runtimes.server.runtime import ServerRuntime

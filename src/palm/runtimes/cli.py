@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show version and exit",
     )
     parser.add_argument(
-        "--backend",
+        "--storage-backend",
         default="memory",
         help="Storage backend name (default: memory)",
     )
@@ -154,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         args.command = "repl"
 
-    ctx = bootstrap_runtime(backend=args.backend, data_dir=args.data_dir)
+    ctx = bootstrap_runtime(storage_backend=args.storage_backend, data_dir=args.data_dir)
     registry = build_registry()
     exit_code = 0
 

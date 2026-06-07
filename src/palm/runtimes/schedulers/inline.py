@@ -4,7 +4,6 @@ InlineScheduler — synchronous in-process job scheduling.
 
 from __future__ import annotations
 
-import warnings
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration.drive import drive_job
@@ -27,22 +26,12 @@ class InlineScheduler(OrchestrationMode):
     def __init__(
         self,
         *,
-        runner: JobRunner | None = None,
-        backend: JobRunner | None = None,
+        runner: JobRunner,
         budget: int = 10_000,
         name: str = "InlineScheduler",
     ) -> None:
-        if backend is not None and runner is None:
-            warnings.warn(
-                "backend= is deprecated on InlineScheduler; use runner= (0.6+)",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        resolved = runner if runner is not None else backend
-        if resolved is None:
-            raise TypeError("InlineScheduler requires runner=")
         super().__init__(name=name)
-        self._runner = resolved
+        self._runner = runner
         self._budget = budget
         self._running = False
 

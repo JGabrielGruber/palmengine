@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.5.0-dev**.
+Guide for contributors working on Palm **0.6.0**.
 
 ## Setup
 
@@ -140,4 +140,4 @@ All code under `archive/` is historical. Never add new features there.
 
 ---
 
-Last updated: June 2026 (0.5.0-dev)
+Last updated: June 2026 (0.6.0)

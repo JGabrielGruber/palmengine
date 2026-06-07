@@ -7,7 +7,6 @@ delegate engine composition to :class:`~palm.runtimes.base.BaseRuntime`.
 
 from __future__ import annotations
 
-import warnings
 from typing import Any, Literal
 
 from palm.backends.behavior_tree import BehaviorTreeRunner
@@ -21,15 +20,9 @@ SchedulerPolicy = Literal["inline", "queued"]
 def resolve_runner(options: dict[str, Any]) -> JobRunner:
     """Select a job runner from startup options."""
     runner = options.get("runner")
-    legacy_backend = options.get("backend")
-    if runner is None and legacy_backend is not None and not isinstance(legacy_backend, str):
-        warnings.warn(
-            "backend= as JobRunner is deprecated; use runner= (0.6+)",
-            DeprecationWarning,
-            stacklevel=3,
-        )
-        runner = legacy_backend
-    return runner if runner is not None else BehaviorTreeRunner()
+    if runner is None:
+        runner = BehaviorTreeRunner()
+    return runner
 
 
 def resolve_scheduler(
@@ -43,7 +36,7 @@ def resolve_scheduler(
     Accepts an explicit scheduler instance, a policy string (``"inline"`` /
     ``"queued"``), or falls back to ``default_policy`` for the hosting runtime.
     """
-    scheduler = options.get("scheduler") or options.get("mode")
+    scheduler = options.get("scheduler")
     if scheduler is not None and not isinstance(scheduler, str):
         return scheduler
 

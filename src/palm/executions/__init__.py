@@ -16,13 +16,13 @@ from palm.executions.exceptions import (
     PlanNotFoundError,
     PlanValidationError,
 )
-from palm.executions.plan_registry import PlanRegistry, StoredPlan
-from palm.executions.executor import DefinitionExecutor, ProcessExecutor
+from palm.executions.executor import DefinitionExecutor
 from palm.executions.flow_submission import FlowSubmission, prepare_flow_submission
-from palm.executions.plan import ExecutionPlan
-from palm.executions.process_submission import ProcessPlan, prepare_process_plans
 from palm.executions.hooks import InstancePersistenceHook
 from palm.executions.instance_repository import InstanceRepository
+from palm.executions.plan import ExecutionPlan
+from palm.executions.plan_registry import PlanRegistry, StoredPlan
+from palm.executions.process_submission import ProcessPlan, prepare_process_plans
 from palm.executions.repository import DefinitionRepository
 from palm.executions.wizard_options import parse_wizard_flow_options, wizard_metadata_from_flow
 from palm.instances import ProcessInstance, StatusHistoryEntry
@@ -46,7 +46,6 @@ __all__ = [
     "PlanValidationError",
     "PatternBuildContext",
     "StoredPlan",
-    "ProcessExecutor",
     "ProcessInstance",
     "StatusHistoryEntry",
     "build_pattern",

@@ -10,7 +10,7 @@ from tests.core.fakes.mode import TestMode
 def test_drive_observability_hook_records_slices() -> None:
     hook = DriveObservabilityHook()
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(), hooks=[hook])
+    engine.initialize(scheduler=TestMode(), hooks=[hook])
     engine.start()
 
     job = engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})

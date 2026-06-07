@@ -9,7 +9,7 @@ from palm import __version__
 
 
 def test_version_module() -> None:
-    assert __version__ == "0.5.0-dev"
+    assert __version__ == "0.6.0"
 
 
 def test_cli_version_brief() -> None:
@@ -20,7 +20,7 @@ def test_cli_version_brief() -> None:
         check=False,
     )
     assert result.returncode == 0
-    assert "0.5.0-dev" in result.stdout
+    assert "0.6.0" in result.stdout
 
 
 def test_cli_version_full() -> None:
@@ -32,7 +32,7 @@ def test_cli_version_full() -> None:
     )
     assert result.returncode == 0
     assert "wizard" in result.stdout
-    assert "0.5.0-dev" in result.stdout
+    assert "0.6.0" in result.stdout
 
 
 def test_cli_help_lists_commands() -> None:

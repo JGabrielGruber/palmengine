@@ -18,10 +18,10 @@ from palm.executions.exceptions import (
     InstanceResumeError,
 )
 from palm.executions.flow_submission import prepare_flow_submission, prepare_resume_submission
+from palm.executions.instance_repository import InstanceRepository
+from palm.executions.instance_resume import is_resumable_status
 from palm.executions.plan import ExecutionPlan
 from palm.executions.process_submission import ProcessPlan, prepare_process_plans
-from palm.executions.instance_events import is_resumable_status
-from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
 
 if TYPE_CHECKING:
@@ -403,4 +403,3 @@ class DefinitionExecutor:
             )
 
 
-ProcessExecutor = DefinitionExecutor

@@ -31,7 +31,7 @@ class _RecordingHook(JobHookAdapter):
 def test_job_hooks_receive_submit_and_status_events() -> None:
     hook = _RecordingHook()
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(), hooks=[hook])
+    engine.initialize(scheduler=TestMode(), hooks=[hook])
     engine.start()
 
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})

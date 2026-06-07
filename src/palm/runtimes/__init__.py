@@ -10,8 +10,8 @@ Execution runtimes — surfaces that host Palm engines.
 from palm.runtimes.cli import main
 from palm.runtimes.daemon import DaemonRuntime, run_daemon
 from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.host import RuntimeHost
 from palm.runtimes.hooks import AuthMiddleware, DriveObservabilityHook, DriveSlice
+from palm.runtimes.host import RuntimeHost
 from palm.runtimes.server import ServerRuntime, run_server
 
 __all__ = [

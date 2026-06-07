@@ -72,7 +72,7 @@ class _WaitThenSucceedRunner(JobRunner):
 def test_deliver_input_resumes_input_capable_job() -> None:
     executable = FakeInputCapable(step="name")
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(runner=_WaitThenSucceedRunner()))
+    engine.initialize(scheduler=TestMode(runner=_WaitThenSucceedRunner()))
     engine.start()
 
     job = engine.submit(executable)
@@ -115,7 +115,7 @@ class _StatusOnlyRunner(JobRunner):
 
 def test_apply_result_is_lifecycle_authority() -> None:
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(backend=_StatusOnlyRunner(JobStatus.SUCCEEDED, result="ok")))
+    engine.initialize(scheduler=TestMode(runner=_StatusOnlyRunner(JobStatus.SUCCEEDED, result="ok")))
     engine.start()
     job = engine.submit({"steps": 99})
     assert job.status == JobStatus.SUCCEEDED
@@ -139,7 +139,7 @@ def test_orchestration_events_via_event_engine(
     event_engine.subscribe("*", lambda e: events.append(e.type))
 
     engine = OrchestrationEngine()
-    engine.initialize(mode=test_mode, event_engine=event_engine)
+    engine.initialize(scheduler=test_mode, event_engine=event_engine)
     engine.start()
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
     engine.stop()
@@ -157,7 +157,7 @@ def test_context_engine_binds_job_state(
     test_mode: TestMode,
 ) -> None:
     engine = OrchestrationEngine()
-    engine.initialize(mode=test_mode, context_engine=context_engine)
+    engine.initialize(scheduler=test_mode, context_engine=context_engine)
     engine.start()
 
     state = TestState({"seed": 1})

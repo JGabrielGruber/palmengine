@@ -8,13 +8,13 @@ The ``palm`` package is organized in layers:
 - ``palm.instances`` — durable process instance snapshots
 - ``palm.patterns`` / ``palm.providers`` / ``palm.storages`` — concrete implementations
 - ``palm.definitions`` — flow and process definitions
-- ``palm.runtimes`` — CLI, embedded, and future server/daemon surfaces
+- ``palm.runtimes`` — CLI, embedded, server, and daemon surfaces
 
-Public API version: ``palm.__version__`` (currently 0.5.0-dev).
+Public API version: ``palm.__version__`` (currently 0.6.0).
 """
 
 from __future__ import annotations
 
-__version__ = "0.5.0-dev"
+__version__ = "0.6.0"
 
 __all__ = ["__version__"]

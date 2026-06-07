@@ -31,7 +31,7 @@ class UnconfiguredMode(OrchestrationMode):
 
     def _require_mode(self) -> None:
         raise ConfigurationError(
-            "OrchestrationEngine requires initialize(mode=...) before accepting jobs"
+            "OrchestrationEngine requires initialize(scheduler=...) before accepting jobs"
         )
 
     def submit_job(self, engine: OrchestrationEngine, job: Job) -> None:

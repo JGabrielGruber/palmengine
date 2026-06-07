@@ -30,13 +30,13 @@ def create_console() -> Any:
 
 def bootstrap_runtime(
     *,
-    backend: str = "memory",
+    storage_backend: str = "memory",
     data_dir: Path | None = None,
     storage: StorageEngine | None = None,
 ) -> CliContext:
     """Start embedded runtime and hydrate definition/instance indexes from storage."""
     runtime = EmbeddedRuntime(storage=storage)
-    runtime.start(backend=backend)
+    runtime.start(storage_backend=storage_backend)
     _hydrate_definitions_from_storage(runtime)
     _load_example_definitions(runtime, data_dir)
     return CliContext(runtime=runtime, console=create_console())

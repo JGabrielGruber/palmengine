@@ -5,19 +5,19 @@ from __future__ import annotations
 import pytest
 
 from palm.core.auth import AuthEngine, Principal
-from palm.definitions.flow import FlowDefinition
 from palm.core.orchestration import JobStatus, OrchestrationEngine
 from palm.core.orchestration.exceptions import JobAuthorizationError
+from palm.definitions.flow import FlowDefinition
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.hooks import AuthMiddleware
-from tests.core.fakes.backend import TestBackend
 from tests.core.fakes.mode import TestMode
+from tests.core.fakes.runner import TestRunner
 
 
 def test_auth_middleware_stamps_principal_on_submit() -> None:
     rt = EmbeddedRuntime()
     rt.start(
-        runner=TestBackend(),
+        runner=TestRunner(),
         credentials={"subject": "ada"},
         auth_enforce=True,
     )
@@ -34,7 +34,7 @@ def test_auth_middleware_rejects_unauthenticated_drive() -> None:
     auth.initialize()
     hook = AuthMiddleware(auth, enforce_drive=True)
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(runner=TestBackend()), hooks=[hook])
+    engine.initialize(scheduler=TestMode(runner=TestRunner()), hooks=[hook])
     engine.start()
 
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
@@ -52,7 +52,7 @@ def test_auth_middleware_allows_bound_principal() -> None:
     auth.bind_principal(Principal(id="ops", roles=("user", "admin")))
     hook = AuthMiddleware(auth, required_roles=("admin",))
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(runner=TestBackend()), hooks=[hook])
+    engine.initialize(scheduler=TestMode(runner=TestRunner()), hooks=[hook])
     engine.start()
 
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED", "result": "ok"})
@@ -66,7 +66,7 @@ def test_auth_middleware_allows_bound_principal() -> None:
 
 def test_embedded_auth_enforce_requires_credentials() -> None:
     rt = EmbeddedRuntime()
-    rt.start(runner=TestBackend(), auth_enforce=True)
+    rt.start(runner=TestRunner(), auth_enforce=True)
     try:
         job = rt.orchestration.submit({"steps": 1, "final_status": "SUCCEEDED"})
         assert job.status == JobStatus.FAILED

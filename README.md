@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.5.0-dev` · See [CHANGELOG.md](CHANGELOG.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.6.0` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
 
 ---
 
@@ -19,15 +19,16 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.5.0-dev)
+## What works today (0.6.0)
 
 | Area | Capabilities |
 |------|----------------|
-| **Core** | Behavior tree, orchestration, context, storage, resource, event engines — strict purity |
+| **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
 | **Patterns** | Transactional **wizard** (validation, summary, commit, resources); DAG and ETL stubs |
-| **Executions** | `DefinitionExecutor`, definition builder, submit/resume, instance sync |
-| **Persistence** | `DefinitionRepository`, `InstanceRepository`, resume across restarts |
-| **Runtime** | `EmbeddedRuntime` API; **CLI + REPL** with `palm doctor`, process/instance commands |
+| **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
+| **Persistence** | `DefinitionRepository`, `InstanceRepository`, `InstancePersistenceHook`, resume across restarts |
+| **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
+| **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, plan validation & staging |
 | **DX** | Example definitions, `full_demo.py`, docs, `just` quality recipes |
 
 ```mermaid
@@ -127,7 +128,7 @@ src/palm/
 ├── patterns/       # wizard, dag, etl
 ├── providers/      # rest, graphql, postgres
 ├── storages/       # memory, filesystem, postgres, mongodb
-└── runtimes/       # EmbeddedRuntime, CLI
+└── runtimes/       # BaseRuntime, Embedded/Daemon/Server, CLI
 
 examples/           # definitions/ + full_demo.py
 SCOPE.md            # vision, scope, roadmap
@@ -143,7 +144,7 @@ High-level direction (not all shipped yet). Full detail in [SCOPE.md](SCOPE.md).
 
 | Theme | Direction |
 |-------|-----------|
-| **Runtimes** | Server, daemon, WebSocket surfaces sharing `EmbeddedRuntime` semantics |
+| **Runtimes** | WebSocket surface, persistent plan registry, richer server auth |
 | **Middleware** | Runtime-level auth/observability; optional BT guard nodes for step policy |
 | **Resources** | Deeper `ResourceEngine` integration in patterns and commit handlers |
 | **Compute** | `KernelLeaf` GPU nodes, resident kernels, dataset staging (Parquet → context → kernel → artifact) |
@@ -191,9 +192,10 @@ Orchestration should balance structure with flexibility—automation with mindfu
 
 ---
 
-## Migration from 0.3.x
+## Migration
 
-Legacy code lives under **`archive/`**. New work targets `core/`, `executions/`, `instances/`, and `runtimes/` — never import from `archive/`.
+- **0.5.x → 0.6.0** — see [MIGRATION-0.6.md](MIGRATION-0.6.md) for removed aliases (`ExecutionBackend`, `EmbeddedMode`, etc.)
+- **0.3.x legacy** — code under **`archive/`** is reference-only; never import from `archive/` in new work
 
 ---
 

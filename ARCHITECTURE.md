@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.5.0-dev · June 2026
+**Palm Engine** · 0.6.0 · June 2026
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -158,11 +158,13 @@ Executions sit between runtimes and core: they understand definitions and patter
 
 | Component | Role |
 |-----------|------|
-| `DefinitionExecutor` | `submit_flow`, `submit_process`, `resume_process`, `persist_job` |
+| `DefinitionExecutor` | `prepare_*_plan`, `submit_plan(s)`, `submit_flow`, `resume_process` |
+| `ExecutionPlan` / `ProcessPlan` | Orchestration-ready handoff; prepare vs submit |
+| `PlanRegistry` | Deferred plan staging (server / batch) |
 | `builder` | `FlowDefinition` → `WizardPattern` / DAG / ETL |
 | `DefinitionRepository` | In-memory cache + storage-backed CRUD |
 | `InstanceRepository` | Durable `ProcessInstance` CRUD |
-| `instance_events` | Orchestration events → instance snapshots |
+| `InstancePersistenceHook` | Job lifecycle → instance snapshots |
 
 Keeping the executor outside core preserves a single orchestration model while allowing rich wizard options and resume logic to evolve independently.
 
@@ -235,13 +237,14 @@ Avoid encoding middleware chains inside step JSON. Keep steps declarative; compo
 
 | Runtime | Status | Role |
 |---------|--------|------|
-| **EmbeddedRuntime** | Shipped | In-process hub: `submit_*`, `provide_input`, `resume_process` |
+| **BaseRuntime** | Shipped | Shared engine wiring, hooks, auth, plan registry |
+| **EmbeddedRuntime** | Shipped | Inline scheduler; libraries, tests, CLI |
+| **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
+| **ServerRuntime** | Shipped | Queued scheduler + HTTP (`/v1/jobs`, `/v1/plans/*`) |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **Server** | Planned | HTTP submit/status/input |
-| **Daemon** | Planned | Background workers for long-running instances |
 | **WebSocket** | Planned | Streaming wizard context and job events |
 
-`EmbeddedRuntime` wires engines once; other runtimes are expected to reuse the same executions API rather than duplicate orchestration logic.
+All runtimes share `BaseRuntime` and the executions API — no duplicated orchestration logic.
 
 ---
 
