@@ -7,7 +7,7 @@ import pytest
 from palm.core.event import EventEngine
 from palm.core.orchestration import OrchestrationEngine
 from palm.definitions.flow import FlowDefinition
-from palm.executions import DefinitionExecutor
+from palm.common import DefinitionExecutor
 from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.host import RuntimeHost

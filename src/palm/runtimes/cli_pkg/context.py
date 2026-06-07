@@ -9,7 +9,7 @@ from typing import Any
 
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.executions.exceptions import InstanceNotFoundError
+from palm.common.exceptions import InstanceNotFoundError
 from palm.instances import ProcessInstance
 from palm.runtimes.embedded import EmbeddedRuntime
 

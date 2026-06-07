@@ -1,16 +1,7 @@
 """
-Instance resume helpers — status checks for process instance recovery.
+Backward-compatibility shim — import from ``palm.common`` instead.
 """
 
 from __future__ import annotations
 
-from palm.core.orchestration.job import JobStatus
-
-
-def is_resumable_status(status: str) -> bool:
-    """Return whether a persisted instance status can be resumed."""
-    return status in (
-        JobStatus.WAITING_FOR_INPUT.value,
-        JobStatus.RUNNING.value,
-        JobStatus.PENDING.value,
-    )
+from palm.common.persistence.instance_resume import *  # noqa: F403

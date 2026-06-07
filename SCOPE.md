@@ -18,7 +18,7 @@ Palm should feel approachable on day one and remain honest as complexity grows: 
 
 | Principle | What it means in practice |
 |-----------|---------------------------|
-| **Simple at the core, powerful at the edges** | `palm.core` stays pure and small; patterns, executions, and runtimes carry domain and integration logic. |
+| **Simple at the core, powerful at the edges** | `palm.core` stays pure and small; `palm.common`, patterns, and runtimes carry coordination and integration logic. |
 | **Human-first** | Interactive wizards, Rich CLI feedback, backtracking, and resume after interruption. |
 | **Truth-seeking & high-agency** | Pluggable `BaseState`, visible job lifecycle, persistent instances, transactional commits. |
 | **Durable & transactional** | Definitions and process instances persist; commits succeed or fail explicitly. |
@@ -43,11 +43,12 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 - `InstanceRepository` — durable `ProcessInstance` snapshots with status history
 - Resume across runtime restarts when storage is shared
 
-### Executions layer
+### Common coordination layer (`palm.common`)
 
 - `DefinitionExecutor` — submit flows/processes, resume instances, persist jobs
-- Pattern builder — resolve definitions into concrete `WizardPattern` / DAG / ETL
-- Instance sync wired through orchestration events
+- `common/plans/` — `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` (prepare → stage → submit)
+- `common/patterns/` — materialize definitions into concrete patterns via registry
+- `common/hooks/` + `common/persistence/` — instance sync wired through orchestration hooks
 
 ### Interactive wizards (flagship pattern)
 

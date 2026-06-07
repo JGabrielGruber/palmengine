@@ -35,9 +35,9 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 flowchart LR
     User[Developer / operator] --> CLI[CLI / REPL]
     CLI --> ER[EmbeddedRuntime]
-    ER --> EX[executions]
-    EX --> PAT[patterns]
-    EX --> INST[instances]
+    ER --> CM[common]
+    CM --> PAT[patterns]
+    CM --> INST[instances]
     PAT --> BT[Behavior Tree]
     INST --> STO[storage]
 ```
@@ -122,12 +122,13 @@ Run `palm --help` for the full list.
 ```
 src/palm/
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
-├── executions/     # Executor, repositories, builder
+├── common/         # Shared coordination (plans, hooks, persistence, submission)
+├── executions/     # Backward-compat alias for common
 ├── instances/      # ProcessInstance snapshots
 ├── definitions/    # FlowDefinition, ProcessDefinition
-├── patterns/       # wizard, dag, etl
-├── providers/      # rest, graphql, postgres
-├── storages/       # memory, filesystem, postgres, mongodb
+├── patterns/       # wizard, dag, etl (extensible)
+├── providers/      # rest, graphql, postgres (extensible)
+├── storages/       # memory, filesystem, postgres, mongodb (extensible)
 └── runtimes/       # BaseRuntime, Embedded/Daemon/Server, CLI
 
 examples/           # definitions/ + full_demo.py

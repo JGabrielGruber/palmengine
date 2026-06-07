@@ -27,8 +27,8 @@ from palm.core import (
 from palm.core.context import BaseState
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRepository
-from palm.executions.hooks import InstancePersistenceHook
+from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
+from palm.common.hooks import InstancePersistenceHook
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardConfig
 from palm.runtimes.hooks import AuthMiddleware, DriveObservabilityHook, authenticate_runtime

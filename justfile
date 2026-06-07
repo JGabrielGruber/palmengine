@@ -79,7 +79,7 @@ guard-core:
 import sys
 from pathlib import Path
 core = Path("src/palm/core")
-forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "utils")
+forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "common", "executions", "utils")
 forbidden_test_artifacts = ("TestMode", "TestRunner", "StubInteractiveLeaf")
 violations = []
 for py in core.rglob("*.py"):

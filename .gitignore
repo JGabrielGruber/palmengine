@@ -227,3 +227,6 @@ repomix-output.xml
 
 # Archive
 archive/
+
+# Data
+data/

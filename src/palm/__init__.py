@@ -4,9 +4,10 @@ Palm Engine — lightweight orchestration for multi-step transactional workflows
 The ``palm`` package is organized in layers:
 
 - ``palm.core`` — pure foundational engines (no imports from outside core)
-- ``palm.executions`` — submit/resume/build from definitions
+- ``palm.common`` — shared coordination (plans, submission, hooks, persistence)
 - ``palm.instances`` — durable process instance snapshots
-- ``palm.patterns`` / ``palm.providers`` / ``palm.storages`` — concrete implementations
+- ``palm.patterns`` / ``palm.providers`` / ``palm.storages`` — extensible plugin modules
+- ``palm.executions`` — backward-compat alias for ``palm.common``
 - ``palm.definitions`` — flow and process definitions
 - ``palm.runtimes`` — CLI, embedded, server, and daemon surfaces
 

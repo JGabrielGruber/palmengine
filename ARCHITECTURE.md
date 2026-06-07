@@ -13,7 +13,7 @@ Palm is a **layered orchestration engine** with a **pure core** and **registry-b
 Three ideas recur everywhere:
 
 1. **Core purity** — `palm/core/` never imports patterns, providers, storages, definitions, or runtimes.
-2. **Definitions as contract** — `FlowDefinition` / `ProcessDefinition` describe *what* to run; executions build and submit *how*.
+2. **Definitions as contract** — `FlowDefinition` / `ProcessDefinition` describe *what* to run; `palm.common` builds and submits *how*.
 3. **Hybrid middleware** — cross-cutting concerns (auth, observability, persistence) live primarily at the **runtime**; optional **BT guard nodes** handle step-level policy without polluting step definitions.
 
 ---
@@ -25,23 +25,27 @@ flowchart TB
     subgraph Runtimes["palm.runtimes — middleware & surfaces"]
         cli[CLI + REPL + doctor]
         embedded[EmbeddedRuntime]
-        future[Server / Daemon / WS — planned]
+        server[ServerRuntime]
+        daemon[DaemonRuntime]
     end
 
-    subgraph Executions["palm.executions — glue"]
+    subgraph Common["palm.common — shared coordination"]
         exec[DefinitionExecutor]
-        repo[DefinitionRepository]
-        inst_repo[InstanceRepository]
-        builder[Pattern builder]
-        events[Instance persistence]
+        plans[ExecutionPlan / PlanRegistry]
+        hooks[InstancePersistenceHook]
+        persist[Definition + Instance repos]
+        builder[Pattern materialization]
     end
 
-    subgraph Domain["Domain packages"]
-        instances[palm.instances]
-        definitions[palm.definitions]
+    subgraph Plugins["Extensible plugins"]
         patterns[palm.patterns]
         providers[palm.providers]
         storages[palm.storages]
+    end
+
+    subgraph Domain["Domain models"]
+        instances[palm.instances]
+        definitions[palm.definitions]
     end
 
     subgraph Core["palm.core — PURE"]
@@ -55,22 +59,38 @@ flowchart TB
         reg[Registries]
     end
 
-    Runtimes --> Executions
+    Runtimes --> Common
     Runtimes --> instances
-    Executions --> definitions
-    Executions --> patterns
-    Executions --> instances
+    Common --> definitions
+    Common --> patterns
+    Common --> instances
     patterns --> bt
     patterns --> res
     instances --> sto
     providers --> res
     storages --> sto
-    Executions --> orch
+    Common --> orch
     orch --> ctx
     orch --> evt
 ```
 
 **Dependency rule:** arrows point inward toward core. Core never points outward.
+
+### `palm.common` layout
+
+Shared, non-plugin coordination lives under `palm.common/`:
+
+| Subpackage | Responsibility |
+|------------|----------------|
+| `common/executions/` | `DefinitionExecutor`, flow/process submission prep |
+| `common/plans/` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
+| `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`) |
+| `common/persistence/` | Definition and instance repositories, resume/sync |
+| `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
+
+`palm.executions` remains as a **backward-compat alias** re-exporting `palm.common`. New code should import from `palm.common` directly.
+
+**Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — register at import time; never modify core to add a plugin.
 
 ---
 
@@ -224,7 +244,7 @@ flowchart TB
 | Concern | Preferred home |
 |---------|----------------|
 | Session / principal | Runtime |
-| Instance persistence | Runtime + executions events |
+| Instance persistence | Runtime + `palm.common.hooks` |
 | Structured logging / tracing | Runtime (future: EventEngine subscribers) |
 | Step may run? / quota / feature flag | BT guard node |
 | User prompt & validation | Wizard step leaf (definition-driven) |
@@ -244,7 +264,7 @@ Avoid encoding middleware chains inside step JSON. Keep steps declarative; compo
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
 | **WebSocket** | Planned | Streaming wizard context and job events |
 
-All runtimes share `BaseRuntime` and the executions API — no duplicated orchestration logic.
+All runtimes share `BaseRuntime` and the `palm.common` API — no duplicated orchestration logic.
 
 ---
 
@@ -278,7 +298,7 @@ New production code must not import from `archive/`.
 - **Registry extension** — patterns, providers, storages without forked core
 - **Durable truth** — definitions + instances survive restarts
 - **Runtime middleware** — auth and ops at the edge; guards in the tree when needed
-- **One engine, many surfaces** — embedded, CLI, future server/daemon share executions
+- **One engine, many surfaces** — embedded, CLI, server, and daemon share `palm.common`
 
 ---
 

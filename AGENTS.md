@@ -25,15 +25,18 @@ Constitution for AI coding agents and human developers working on Palm.
   - `auth/` — authentication primitives
 - Shared modules: `base.py`, `exceptions.py`, `registry.py`
 
-### 2. Concrete Layers (outside core)
+### 2. Layers (outside core)
 
 | Package | Role |
 |---------|------|
-| `palm/patterns/` | Wizard, DAG, ETL patterns (register via `pattern_registry`) |
-| `palm/providers/` | REST, GraphQL, Postgres providers |
-| `palm/storages/` | Memory, Postgres, MongoDB, filesystem backends |
-| `palm/definitions/` | Flow and process definitions |
-| `palm/runtimes/` | Embedded, CLI, server, daemon |
+| `palm/common/` | Shared coordination — plans, submission, hooks, persistence, pattern builder |
+| `palm/patterns/` | **Extensible** — wizard, DAG, ETL (register via `pattern_registry`) |
+| `palm/providers/` | **Extensible** — REST, GraphQL, Postgres providers |
+| `palm/storages/` | **Extensible** — memory, Postgres, MongoDB, filesystem backends |
+| `palm/definitions/` | Flow and process definition models |
+| `palm/instances/` | Durable process instance snapshots |
+| `palm/runtimes/` | Embedded, CLI, server, daemon surfaces |
+| `palm/executions/` | Backward-compat re-exports of `palm.common` (prefer `common` for new code) |
 | `palm/utils/` | Cross-cutting helpers (core must not import utils) |
 
 ### 3. Archive (`archive/`)
@@ -58,6 +61,7 @@ Constitution for AI coding agents and human developers working on Palm.
 - New pattern → `palm/patterns/<name>.py` + register in `pattern_registry`
 - New provider → `palm/providers/<name>.py` + register in `provider_registry`
 - New storage → `palm/storages/<name>.py` + register in `storage_registry`
+- Shared submission / plan / hook logic → `palm/common/<area>/` (not `patterns/`)
 - New engine capability → extend the relevant `palm/core/<engine>/` module only
 - Always add tests under `tests/`
 

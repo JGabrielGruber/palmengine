@@ -1,56 +1,61 @@
 """
-Executions layer — definition-driven job submission (outside core).
+Backward-compatibility package — prefer ``palm.common`` for new code.
 
-Sits above ``palm.core`` orchestration and below runtimes, translating
-``FlowDefinition`` / ``ProcessDefinition`` into executable patterns.
+Re-exports the shared coordination API formerly rooted here.
 """
 
-from palm.executions.build_context import PatternBuildContext
-from palm.executions.builder import build_pattern, wizard_config_from_options
-from palm.executions.exceptions import (
+from palm.common import (
     DefinitionBuildError,
+    DefinitionExecutor,
     DefinitionNotFoundError,
+    DefinitionRepository,
     ExecutionError,
+    ExecutionPlan,
+    FlowSubmission,
     InstanceNotFoundError,
+    InstancePersistenceHook,
+    InstanceRepository,
     InstanceResumeError,
+    PatternBuildContext,
     PlanNotFoundError,
+    PlanRegistry,
     PlanValidationError,
+    ProcessInstance,
+    ProcessPlan,
+    StatusHistoryEntry,
+    StoredPlan,
+    build_pattern,
+    parse_wizard_flow_options,
+    prepare_flow_submission,
+    prepare_process_plans,
+    wizard_config_from_options,
+    wizard_metadata_from_flow,
 )
-from palm.executions.executor import DefinitionExecutor
-from palm.executions.flow_submission import FlowSubmission, prepare_flow_submission
-from palm.executions.hooks import InstancePersistenceHook
-from palm.executions.instance_repository import InstanceRepository
-from palm.executions.plan import ExecutionPlan
-from palm.executions.plan_registry import PlanRegistry, StoredPlan
-from palm.executions.process_submission import ProcessPlan, prepare_process_plans
-from palm.executions.repository import DefinitionRepository
-from palm.executions.wizard_options import parse_wizard_flow_options, wizard_metadata_from_flow
-from palm.instances import ProcessInstance, StatusHistoryEntry
 
 __all__ = [
     "DefinitionBuildError",
     "DefinitionExecutor",
     "DefinitionNotFoundError",
     "DefinitionRepository",
+    "ExecutionError",
     "ExecutionPlan",
     "FlowSubmission",
-    "ProcessPlan",
-    "prepare_process_plans",
-    "ExecutionError",
     "InstanceNotFoundError",
     "InstancePersistenceHook",
     "InstanceRepository",
     "InstanceResumeError",
+    "PatternBuildContext",
     "PlanNotFoundError",
     "PlanRegistry",
     "PlanValidationError",
-    "PatternBuildContext",
-    "StoredPlan",
     "ProcessInstance",
+    "ProcessPlan",
     "StatusHistoryEntry",
+    "StoredPlan",
     "build_pattern",
-    "prepare_flow_submission",
     "parse_wizard_flow_options",
+    "prepare_flow_submission",
+    "prepare_process_plans",
     "wizard_config_from_options",
     "wizard_metadata_from_flow",
 ]

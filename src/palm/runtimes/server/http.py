@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.executions.exceptions import PlanNotFoundError
+from palm.common.exceptions import PlanNotFoundError
 from palm.runtimes.server.auth import PALM_SUBJECT_HEADER, authenticate_request
 
 if TYPE_CHECKING:

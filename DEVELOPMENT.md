@@ -38,7 +38,8 @@ src/palm/
 ├── providers/         # REST, GraphQL, Postgres
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
-├── executions/        # Executor, repositories, builder, instance sync
+├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/)
+├── executions/        # Backward-compat alias for common
 ├── instances/         # ProcessInstance, status history
 ├── runtimes/
 │   ├── embedded.py    # EmbeddedRuntime
@@ -90,7 +91,7 @@ shutdown_context(ctx)
 1. Create `palm/patterns/<name>.py` subclassing `BasePattern`.
 2. Call `pattern_registry.register("<name>", YourPattern)` at module bottom.
 3. Export from `palm/patterns/__init__.py`.
-4. Extend `executions/builder.py` if the pattern has flow options.
+4. Extend `common/patterns/builder.py` if the pattern has flow options.
 5. Add tests in `tests/`.
 
 ## Adding example definitions
