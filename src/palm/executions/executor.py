@@ -23,7 +23,7 @@ from palm.executions.repository import DefinitionRepository
 
 if TYPE_CHECKING:
     from palm.core.context import BaseState
-    from palm.runtimes.embedded import EmbeddedRuntime
+    from palm.runtimes.host import RuntimeHost
 
 
 class DefinitionExecutor:
@@ -37,7 +37,7 @@ class DefinitionExecutor:
 
     def __init__(
         self,
-        runtime: EmbeddedRuntime,
+        runtime: RuntimeHost,
         repository: DefinitionRepository | None = None,
         instances: InstanceRepository | None = None,
     ) -> None:
@@ -321,7 +321,7 @@ class DefinitionExecutor:
     def _require_runtime(self) -> None:
         if not self._runtime.is_started:
             raise RuntimeError(
-                "EmbeddedRuntime is not started; call start() before submitting definitions"
+                "Runtime host is not started; call start() before submitting definitions"
             )
 
 

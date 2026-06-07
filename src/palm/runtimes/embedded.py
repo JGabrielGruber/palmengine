@@ -39,8 +39,10 @@ class EmbeddedRuntime:
     """
     In-process runtime coordinating context, events, behavior trees, and jobs.
 
-    This is the primary integration surface for libraries and tests. Call
-    :meth:`start` before :meth:`submit_flow`, :meth:`submit_process`, or
+    Satisfies :class:`~palm.runtimes.host.RuntimeHost` for
+    :class:`~palm.executions.executor.DefinitionExecutor` and other executions-layer
+    bridges. This is the primary integration surface for libraries and tests.
+    Call :meth:`start` before :meth:`submit_flow`, :meth:`submit_process`, or
     :meth:`resume_process`, and :meth:`stop` when finished.
 
     Orchestration uses :class:`~palm.runtimes.schedulers.inline.InlineScheduler` with

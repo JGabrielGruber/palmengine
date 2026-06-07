@@ -9,5 +9,6 @@ Execution runtimes — surfaces that host Palm engines.
 
 from palm.runtimes.cli import main
 from palm.runtimes.embedded import EmbeddedRuntime
+from palm.runtimes.host import RuntimeHost
 
-__all__ = ["main", "EmbeddedRuntime"]
+__all__ = ["EmbeddedRuntime", "RuntimeHost", "main"]

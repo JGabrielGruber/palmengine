@@ -56,7 +56,7 @@ def test_wizard_config_from_slug_list() -> None:
 def test_definition_executor_requires_started() -> None:
     rt = EmbeddedRuntime()
     executor = DefinitionExecutor(rt)
-    with pytest.raises(RuntimeError, match="not started"):
+    with pytest.raises(RuntimeError, match="Runtime host is not started"):
         executor.submit_flow(_onboard_flow())
 
 
