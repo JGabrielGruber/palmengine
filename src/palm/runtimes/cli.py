@@ -13,7 +13,8 @@ from pathlib import Path
 
 from palm import __version__
 from palm.core.registry import pattern_registry, storage_registry
-from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, create_console, shutdown_context
+from palm.app.session import create_console
+from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
 from palm.runtimes.cli_pkg.doctor import run_doctor
 from palm.runtimes.cli_pkg.repl import run_repl

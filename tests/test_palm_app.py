@@ -99,3 +99,13 @@ def test_requires_bootstrap() -> None:
     application = PalmApp()
     with pytest.raises(RuntimeError, match="bootstrapped"):
         application.create_runtime("embedded")
+
+
+def test_bootstrap_cli_registers_primary_runtime(app: PalmApp) -> None:
+    from palm.app.app import CLI_RUNTIME_NAME
+
+    runtime = app.bootstrap_cli()
+    assert isinstance(runtime, EmbeddedRuntime)
+    assert app.primary_name == CLI_RUNTIME_NAME
+    assert app.is_runtime_started(CLI_RUNTIME_NAME)
+    assert app.list_processes()

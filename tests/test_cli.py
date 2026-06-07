@@ -18,7 +18,7 @@ def cli_ctx():
 def test_process_list_registers_examples(cli_ctx) -> None:
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "process list") == 0
-    names = {p.name for p in cli_ctx.runtime.repository.list_processes()}
+    names = {p.name for p in cli_ctx.app.list_processes()}
     assert "onboarding" in names
     assert "quick-demo" in names
     assert "data-ingestion" in names
@@ -49,7 +49,7 @@ def test_instance_list_after_submit(cli_ctx) -> None:
     reg = build_registry()
     reg.dispatch(cli_ctx, "process submit quick-demo")
     assert reg.dispatch(cli_ctx, "instance list") == 0
-    instances = cli_ctx.runtime.instances.list_instances()
+    instances = cli_ctx.app.list_instances()
     assert len(instances) >= 1
 
 
@@ -75,7 +75,7 @@ def test_process_resume() -> None:
         assert reg.dispatch(ctx2, f"process resume {iid}") == 0
         assert ctx2.active_instance_id == iid
         job_id = ctx2.resolve_job_id(iid)
-        assert ctx2.runtime.current_wizard_step(job_id) == "beta"
+        assert ctx2.app.current_wizard_step(job_id) == "beta"
     finally:
         shutdown_context(ctx2)
         storage.shutdown()

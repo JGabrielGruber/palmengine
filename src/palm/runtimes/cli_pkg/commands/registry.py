@@ -8,7 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from palm.runtimes.cli_pkg import actions
-from palm.runtimes.cli_pkg.bootstrap import resolve_flow_ref, resolve_process_ref
+
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import (
     render_definition_catalog,
@@ -148,7 +148,7 @@ def _cmd_process_list(ctx: CliContext, _args: list[str]) -> int:
 
 
 def _cmd_instance_list(ctx: CliContext, _args: list[str]) -> int:
-    instances = ctx.runtime.instances.list_instances()
+    instances = ctx.app.list_instances()
     render_instance_table(ctx.console, instances)
     return 0
 
@@ -158,7 +158,7 @@ def _cmd_process_submit(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] process submit <process-name-or-id>")
         return 1
     try:
-        resolve_process_ref(ctx.runtime, args[0])
+        ctx.app.resolve_process(args[0])
         actions.submit_process(ctx, args[0])
         ctx.console.print("[dim]Process submitted.[/]")
     except Exception as exc:
@@ -182,7 +182,7 @@ def _cmd_process_resume(ctx: CliContext, args: list[str]) -> int:
 def _cmd_wizard_list(ctx: CliContext, _args: list[str]) -> int:
     from rich.table import Table
 
-    flows = [f for f in ctx.runtime.repository.list_flows() if f.pattern == "wizard"]
+    flows = [f for f in ctx.app.list_flows() if f.pattern == "wizard"]
     if not flows:
         ctx.console.print("[yellow]No wizard flows registered.[/]")
         return 0
@@ -202,7 +202,7 @@ def _cmd_wizard_start(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] wizard start <flow_name_or_id>")
         return 1
     try:
-        resolve_flow_ref(ctx.runtime, args[0])
+        ctx.app.resolve_flow(args[0])
         actions.submit_flow(ctx, args[0])
         ctx.console.print("[dim]Wizard started.[/]")
     except Exception as exc:

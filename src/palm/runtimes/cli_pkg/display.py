@@ -112,9 +112,8 @@ def render_definition_catalog(ctx: Any) -> None:
     from rich.table import Table
 
     console = ctx.console
-    repo = ctx.runtime.repository
-    flows = repo.list_flows()
-    processes = repo.list_processes()
+    flows = ctx.app.list_flows()
+    processes = ctx.app.list_processes()
 
     if processes:
         pt = Table(title="Process Definitions", show_lines=True)

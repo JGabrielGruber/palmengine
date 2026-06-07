@@ -4,7 +4,7 @@ PalmApp — central application orchestrator for Palm Engine.
 
 from __future__ import annotations
 
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from palm.app.bootstrap import (
     ensure_plugins,
@@ -14,10 +14,16 @@ from palm.app.bootstrap import (
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from palm.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
-from palm.runtimes.base import BaseRuntime
-from palm.runtimes.daemon import DaemonRuntime
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.server import ServerRuntime
+
+if TYPE_CHECKING:
+    from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.core.orchestration import Job
+    from palm.definitions.flow import FlowDefinition
+    from palm.definitions.process import ProcessDefinition
+    from palm.instances import ProcessInstance
+    from palm.runtimes.base import BaseRuntime
+
+CLI_RUNTIME_NAME = "cli"
 
 
 class PalmApp:
@@ -63,6 +69,19 @@ class PalmApp:
         self._bootstrapped = True
         return self
 
+    def bootstrap_cli(self, **start_options: Any) -> BaseRuntime:
+        """Register the CLI embedded runtime, start it, and load definitions."""
+        self._require_bootstrapped()
+        runtime = self.create_runtime(
+            "embedded",
+            name=CLI_RUNTIME_NAME,
+            autostart=True,
+            set_primary=True,
+            **start_options,
+        )
+        self.load_definitions(name=CLI_RUNTIME_NAME)
+        return runtime
+
     def create_runtime(
         self,
         kind: RuntimeKind,
@@ -104,6 +123,108 @@ class PalmApp:
         """Return a registered runtime (primary by default)."""
         handle = self._runtimes.get(name or self._require_primary_name())
         return handle.runtime
+
+    def repository(self, *, runtime_name: str | None = None) -> DefinitionRepository:
+        """Return the definition repository for a registered runtime."""
+        return self.runtime(runtime_name).repository
+
+    def resolve_flow(self, ref: str, *, runtime_name: str | None = None) -> FlowDefinition:
+        """Resolve a flow by display name, falling back to definition id."""
+        from palm.app.resolvers import resolve_flow_for_app
+
+        return resolve_flow_for_app(self, ref, runtime_name=runtime_name)
+
+    def resolve_process(
+        self, ref: str, *, runtime_name: str | None = None
+    ) -> ProcessDefinition:
+        """Resolve a process by display name, falling back to definition id."""
+        from palm.app.resolvers import resolve_process_for_app
+
+        return resolve_process_for_app(self, ref, runtime_name=runtime_name)
+
+    def submit_flow(
+        self,
+        ref: FlowDefinition | str,
+        *,
+        runtime_name: str | None = None,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: Any = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job:
+        """Submit a flow on a registered runtime (primary by default)."""
+        return self.runtime(runtime_name).submit_flow(
+            ref,
+            by_id=by_id,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def submit_process(
+        self,
+        ref: ProcessDefinition | str,
+        *,
+        runtime_name: str | None = None,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: Any = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job | list[Job]:
+        """Submit a process on a registered runtime (primary by default)."""
+        return self.runtime(runtime_name).submit_process(
+            ref,
+            by_id=by_id,
+            job_id=job_id,
+            state=state,
+            metadata=metadata,
+        )
+
+    def resume_process(self, instance_id: str, *, runtime_name: str | None = None) -> Job:
+        """Resume a persisted process instance on a registered runtime."""
+        return self.runtime(runtime_name).resume_process(instance_id)
+
+    def provide_input(
+        self, job_id: str, value: Any, *, runtime_name: str | None = None
+    ) -> str | None:
+        """Deliver interactive input and resume the job on a registered runtime."""
+        return self.runtime(runtime_name).provide_input(job_id, value)
+
+    def get_job(self, job_id: str, *, runtime_name: str | None = None) -> Job:
+        """Return an orchestration job from a registered runtime."""
+        return self.runtime(runtime_name).get_job(job_id)
+
+    def get_instance(self, instance_id: str, *, runtime_name: str | None = None) -> ProcessInstance:
+        """Load a persisted process instance from a registered runtime."""
+        return self.runtime(runtime_name).get_instance(instance_id)
+
+    def list_instances(self, *, runtime_name: str | None = None) -> list[ProcessInstance]:
+        """List durable process instances for a registered runtime."""
+        return self.runtime(runtime_name).instances.list_instances()
+
+    def list_flows(self, *, runtime_name: str | None = None) -> list[FlowDefinition]:
+        """List flow definitions from a registered runtime repository."""
+        return self.repository(runtime_name=runtime_name).list_flows()
+
+    def list_processes(self, *, runtime_name: str | None = None) -> list[ProcessDefinition]:
+        """List process definitions from a registered runtime repository."""
+        return self.repository(runtime_name=runtime_name).list_processes()
+
+    def current_wizard_step(self, job_id: str, *, runtime_name: str | None = None) -> str | None:
+        """Return the active wizard step slug when applicable."""
+        return self.runtime(runtime_name).current_wizard_step(job_id)
+
+    def resume_job(self, job_id: str, *, runtime_name: str | None = None) -> None:
+        """Resume orchestration for a registered job."""
+        self.runtime(runtime_name).orchestration.resume_job(job_id)
+
+    def persist_job(self, job: Job, *, runtime_name: str | None = None) -> None:
+        """Persist job state through a registered runtime executor."""
+        self.runtime(runtime_name).executor.persist_job(job)
+
+    def is_runtime_started(self, name: str | None = None) -> bool:
+        """Return whether a registered runtime has been started."""
+        return self.runtime(name).is_started
 
     def get_handle(self, name: str) -> RuntimeHandle:
         """Return the registry record for a named runtime."""
@@ -166,10 +287,16 @@ class PalmApp:
 
     def _build_runtime(self, kind: RuntimeKind, **options: Any) -> BaseRuntime:
         if kind == "embedded":
+            from palm.runtimes.embedded import EmbeddedRuntime
+
             return EmbeddedRuntime(storage=self.storage)
         if kind == "daemon":
+            from palm.runtimes.daemon import DaemonRuntime
+
             return DaemonRuntime(storage=self.storage)
         if kind == "server":
+            from palm.runtimes.server import ServerRuntime
+
             return ServerRuntime(
                 storage=self.storage,
                 host=str(options.pop("host", "127.0.0.1")),

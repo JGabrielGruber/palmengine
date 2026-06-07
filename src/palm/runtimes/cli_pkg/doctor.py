@@ -16,13 +16,13 @@ def run_doctor(ctx: CliContext) -> int:
     from rich.table import Table
 
     console = ctx.console
-    runtime = ctx.runtime
+    app = ctx.app
     issues: list[str] = []
 
-    if not runtime.is_started:
-        issues.append("EmbeddedRuntime is not started")
+    if not app.is_runtime_started():
+        issues.append("CLI runtime is not started")
 
-    storage = runtime.storage
+    storage = app.storage
     backend_name = storage.backend_name or "(none)"
     backend_open = (
         storage.backend is not None and storage.backend.is_open
@@ -35,7 +35,8 @@ def run_doctor(ctx: CliContext) -> int:
     console.print(
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
-            f"Runtime: embedded — {'[green]started[/]' if runtime.is_started else '[red]stopped[/]'}\n"
+            f"Runtime: embedded — "
+            f"{'[green]started[/]' if app.is_runtime_started() else '[red]stopped[/]'}\n"
             f"Storage: {backend_name} — "
             f"{'[green]ready[/]' if backend_open else '[red]unavailable[/]'}",
             title="Engine Health",
@@ -51,15 +52,15 @@ def run_doctor(ctx: CliContext) -> int:
     reg_table.add_row("storages", ", ".join(sorted(storage_registry.names())) or "—")
     console.print(reg_table)
 
-    flows = runtime.repository.list_flows()
-    processes = runtime.repository.list_processes()
+    flows = app.list_flows()
+    processes = app.list_processes()
     inst_table = Table(title="Catalog & Persistence", show_lines=True)
     inst_table.add_column("Resource", style="cyan")
     inst_table.add_column("Count", justify="right")
     inst_table.add_column("Notes")
     inst_table.add_row("flow definitions", str(len(flows)), "in-memory + storage index")
     inst_table.add_row("process definitions", str(len(processes)), "")
-    instances = runtime.instances.list_instances()
+    instances = app.list_instances()
     inst_table.add_row("process instances", str(len(instances)), "durable snapshots")
     console.print(inst_table)
 
