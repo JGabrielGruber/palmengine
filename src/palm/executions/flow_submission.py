@@ -13,6 +13,7 @@ from palm.executions.build_context import PatternBuildContext
 from palm.executions.builder import build_pattern
 from palm.executions.instance_sync import prepare_resume_state
 from palm.executions.wizard_options import wizard_metadata_from_flow
+from palm.executions.plan import ExecutionPlan
 from palm.instances import ProcessInstance
 from palm.states import BlackboardState
 
@@ -29,6 +30,15 @@ class FlowSubmission:
     state: BaseState
     metadata: dict[str, Any]
     instance_id: str | None
+
+    def to_plan(self, *, job_id: str | None = None) -> ExecutionPlan:
+        """Convert this submission into an :class:`~palm.executions.plan.ExecutionPlan`."""
+        return ExecutionPlan(
+            executable=self.executable,
+            state=self.state,
+            metadata=self.metadata,
+            job_id=job_id,
+        )
 
 
 def prepare_flow_submission(

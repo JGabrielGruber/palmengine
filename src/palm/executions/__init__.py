@@ -16,6 +16,7 @@ from palm.executions.exceptions import (
 )
 from palm.executions.executor import DefinitionExecutor, ProcessExecutor
 from palm.executions.flow_submission import FlowSubmission, prepare_flow_submission
+from palm.executions.plan import ExecutionPlan
 from palm.executions.hooks import InstancePersistenceHook
 from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
@@ -27,6 +28,7 @@ __all__ = [
     "DefinitionExecutor",
     "DefinitionNotFoundError",
     "DefinitionRepository",
+    "ExecutionPlan",
     "FlowSubmission",
     "ExecutionError",
     "InstanceNotFoundError",

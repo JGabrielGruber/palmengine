@@ -9,7 +9,6 @@ import threading
 from typing import Any, ClassVar
 
 from palm.runtimes.base import BaseRuntime
-from palm.runtimes.schedulers import QueuedScheduler
 from palm.runtimes.wiring import SchedulerPolicy
 
 
@@ -23,19 +22,6 @@ class DaemonRuntime(BaseRuntime):
 
     runtime_name: ClassVar[str] = "DaemonRuntime"
     default_scheduler_policy: ClassVar[SchedulerPolicy] = "queued"
-
-    def wait_until_idle(self, *, timeout: float = 5.0) -> bool:
-        """
-        Block until the background scheduler has processed queued work.
-
-        Convenience for tests and coordinated shutdown; observe job status via
-        orchestration for production completion tracking.
-        """
-        self._require_started()
-        scheduler = self.orchestration.scheduler
-        if isinstance(scheduler, QueuedScheduler):
-            return scheduler.wait_until_idle(timeout=timeout)
-        return True
 
 
 def run_daemon(**options: Any) -> None:

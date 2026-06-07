@@ -17,6 +17,7 @@ from palm.executions.exceptions import (
     InstanceResumeError,
 )
 from palm.executions.flow_submission import prepare_flow_submission, prepare_resume_submission
+from palm.executions.plan import ExecutionPlan
 from palm.executions.instance_events import is_resumable_status
 from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
@@ -101,12 +102,12 @@ class DefinitionExecutor:
             build_ctx=build_ctx,
             instance_id=instance_id,
         )
-        return self._runtime.orchestration.submit(
-            submission.executable,
-            state=submission.state,
-            job_id=job_id,
-            metadata=submission.metadata,
-        )
+        return self.submit_plan(submission.to_plan(job_id=job_id))
+
+    def submit_plan(self, plan: ExecutionPlan) -> Job:
+        """Submit a prepared :class:`~palm.executions.plan.ExecutionPlan` to orchestration."""
+        self._require_runtime()
+        return plan.submit_to(self._runtime.orchestration)
 
     def resume_process(self, instance_id: str) -> Job:
         """
@@ -141,12 +142,7 @@ class DefinitionExecutor:
         except JobNotFoundError:
             pass
 
-        return self._runtime.orchestration.submit(
-            submission.executable,
-            state=submission.state,
-            job_id=instance.job_id,
-            metadata=submission.metadata,
-        )
+        return self.submit_plan(submission.to_plan(job_id=instance.job_id))
 
     @overload
     def submit_process(

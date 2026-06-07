@@ -30,6 +30,8 @@ from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRe
 from palm.executions.hooks import InstancePersistenceHook
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardConfig
+from palm.runtimes.hooks import DriveObservabilityHook
+from palm.runtimes.schedulers import QueuedScheduler
 from palm.runtimes.wiring import SchedulerPolicy, resolve_scheduler
 from palm.states import BlackboardState
 
@@ -80,6 +82,8 @@ class BaseRuntime:
             default_policy=self.default_scheduler_policy,
         )
         hooks = list(options.get("hooks") or [])
+        if options.get("observability"):
+            hooks.append(DriveObservabilityHook())
         hooks.append(InstancePersistenceHook(self.instances))
 
         orch_options: dict[str, Any] = {
@@ -211,6 +215,20 @@ class BaseRuntime:
         """Return collected answers when the job executable supports inspection."""
         self._require_started()
         return self.orchestration.inspect_answers(job_id)
+
+    def wait_until_idle(self, *, timeout: float = 5.0) -> bool:
+        """
+        Block until a queued scheduler has processed pending work.
+
+        No-op for inline schedulers. Useful for tests and coordinated shutdown
+        of background runtimes (:class:`~palm.runtimes.daemon.DaemonRuntime`,
+        :class:`~palm.runtimes.server.ServerRuntime`).
+        """
+        self._require_started()
+        scheduler = self.orchestration.scheduler
+        if isinstance(scheduler, QueuedScheduler):
+            return scheduler.wait_until_idle(timeout=timeout)
+        return True
 
     def _require_started(self) -> None:
         if not self._started:
