@@ -27,7 +27,6 @@ from palm.core.behavior_tree.nodes import (
     RetryNode,
     SelectorNode,
     SequenceNode,
-    StubInteractiveLeaf,
 )
 from palm.core.behavior_tree.root import RootNode
 from palm.core.context import BaseState
@@ -56,5 +55,4 @@ __all__ = [
     "RootNode",
     "SelectorNode",
     "SequenceNode",
-    "StubInteractiveLeaf",
 ]

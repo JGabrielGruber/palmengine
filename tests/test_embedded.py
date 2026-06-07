@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from palm.core.behavior_tree import BasePattern, PatternStatus
-from palm.core.context import BaseState
 from palm.core.orchestration import JobStatus
 from palm.patterns.wizard import WizardConfig, WizardEventType, WizardKeys, WizardStepConfig
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
+from tests.core.fakes import FakePattern
 
 
 def _two_step_config() -> WizardConfig:
@@ -78,13 +77,8 @@ def test_provide_input_requires_started() -> None:
         rt.provide_input(job.id, "x")
 
 
-class _InstantPattern(BasePattern):
-    def tick(self, state: BaseState) -> PatternStatus:
-        return PatternStatus.SUCCESS
-
-
 def test_provide_input_rejects_non_wizard_job(runtime: EmbeddedRuntime) -> None:
-    job = runtime.orchestration.submit(_InstantPattern(name="noop"))
+    job = runtime.orchestration.submit(FakePattern(name="noop"))
     assert job.status == JobStatus.SUCCEEDED
     with pytest.raises(TypeError, match="not a wizard"):
         runtime.provide_input(job.id, "value")

@@ -44,8 +44,6 @@ from palm.core.orchestration import (
     OrchestrationEngine,
     OrchestrationEventType,
     OrchestrationMode,
-    TestBackend,
-    TestMode,
 )
 from palm.core.registry import (
     pattern_registry,
@@ -78,8 +76,6 @@ __all__ = [
     "OrchestrationEngine",
     "OrchestrationEventType",
     "OrchestrationMode",
-    "TestBackend",
-    "TestMode",
     "PalmError",
     "PatternStatus",
     "Principal",

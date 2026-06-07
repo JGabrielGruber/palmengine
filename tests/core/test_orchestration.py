@@ -12,7 +12,6 @@ from palm.core.orchestration import (
     JobStatus,
     OrchestrationEngine,
     OrchestrationEventType,
-    TestMode,
 )
 from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorError
 from palm.patterns.wizard import (
@@ -23,69 +22,53 @@ from palm.patterns.wizard import (
     WizardStepConfig,
 )
 from palm.states import BlackboardState
+from tests.core.fakes.mode import TestMode
 
 
-def _engine(*, mode: TestMode | None = None) -> OrchestrationEngine:
-    engine = OrchestrationEngine()
-    engine.initialize(mode=mode or TestMode())
-    engine.start()
-    return engine
-
-
-def test_submit_succeeds_with_test_backend() -> None:
-    engine = _engine()
-    job = engine.submit({"steps": 1, "final_status": "SUCCEEDED", "result": "ok"})
+def test_submit_succeeds_with_test_backend(orchestration_engine: OrchestrationEngine) -> None:
+    job = orchestration_engine.submit(
+        {"steps": 1, "final_status": "SUCCEEDED", "result": "ok"}
+    )
     assert isinstance(job, Job)
     assert job.status == JobStatus.SUCCEEDED
     assert job.result == "ok"
-    engine.stop()
 
 
-def test_get_job_and_list_by_status() -> None:
-    engine = _engine()
-    done = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
-    waiting = engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
-    assert engine.get_job(done.id) is done
-    assert done in engine.list_jobs(JobStatus.SUCCEEDED)
-    assert waiting in engine.list_jobs(JobStatus.WAITING_FOR_INPUT)
-    engine.stop()
+def test_get_job_and_list_by_status(orchestration_engine: OrchestrationEngine) -> None:
+    done = orchestration_engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
+    waiting = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
+    assert orchestration_engine.get_job(done.id) is done
+    assert done in orchestration_engine.list_jobs(JobStatus.SUCCEEDED)
+    assert waiting in orchestration_engine.list_jobs(JobStatus.WAITING_FOR_INPUT)
 
 
-def test_unknown_job_raises() -> None:
-    engine = _engine()
+def test_unknown_job_raises(orchestration_engine: OrchestrationEngine) -> None:
     with pytest.raises(JobNotFoundError):
-        engine.get_job("missing")
-    engine.stop()
+        orchestration_engine.get_job("missing")
 
 
-def test_max_concurrent_jobs_enforced() -> None:
-    engine = _engine()
-    engine.max_concurrent_jobs = 2
-    engine.submit({"steps": 1})
-    engine.submit({"steps": 1})
+def test_max_concurrent_jobs_enforced(orchestration_engine: OrchestrationEngine) -> None:
+    orchestration_engine.max_concurrent_jobs = 2
+    orchestration_engine.submit({"steps": 1})
+    orchestration_engine.submit({"steps": 1})
     with pytest.raises(OrchestratorError, match="Maximum concurrent"):
-        engine.submit({"steps": 1})
-    engine.stop()
+        orchestration_engine.submit({"steps": 1})
 
 
-def test_waiting_job_resumes_via_provide_input() -> None:
-    engine = _engine()
-    job = engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
+def test_waiting_job_resumes_via_provide_input(orchestration_engine: OrchestrationEngine) -> None:
+    job = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
     assert job.status == JobStatus.WAITING_FOR_INPUT
-    engine.provide_input(job.id, "answer", 42)
+    orchestration_engine.provide_input(job.id, "answer", 42)
     assert job.status == JobStatus.SUCCEEDED
     assert job.state.get("answer") == 42
-    engine.stop()
 
 
-def test_orchestration_events_via_event_engine() -> None:
+def test_orchestration_events_via_event_engine(event_engine: EventEngine) -> None:
     events: list[str] = []
-    bus = EventEngine()
-    bus.initialize()
-    bus.subscribe("*", lambda e: events.append(e.type))
+    event_engine.subscribe("*", lambda e: events.append(e.type))
 
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(), event_engine=bus)
+    engine.initialize(mode=TestMode(), event_engine=event_engine)
     engine.start()
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
     engine.stop()
@@ -98,20 +81,17 @@ def test_orchestration_events_via_event_engine() -> None:
     assert job.status == JobStatus.SUCCEEDED
 
 
-def test_context_engine_binds_job_state() -> None:
-    ctx = ContextEngine()
-    ctx.initialize()
+def test_context_engine_binds_job_state(context_engine: ContextEngine) -> None:
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode(), context_engine=ctx)
+    engine.initialize(mode=TestMode(), context_engine=context_engine)
     engine.start()
 
     state = BlackboardState({"seed": 1})
     job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"}, state=state)
-    assert ctx.current_state is state
-    assert ctx.get("job_id") == job.id
+    assert context_engine.current_state is state
+    assert context_engine.get("job_id") == job.id
     engine.stop()
     engine.shutdown()
-    ctx.shutdown()
 
 
 def _wizard_config() -> WizardConfig:
@@ -130,22 +110,20 @@ def _wizard_config() -> WizardConfig:
     )
 
 
-def test_wizard_job_via_behavior_tree_backend() -> None:
+def test_wizard_job_via_behavior_tree_backend(event_engine: EventEngine) -> None:
     events: list[tuple[str, dict]] = []
-    bus = EventEngine()
-    bus.initialize()
-    bus.subscribe("*", lambda e: events.append((e.type, dict(e.payload))))
+    event_engine.subscribe("*", lambda e: events.append((e.type, dict(e.payload))))
 
     state = BlackboardState()
     wizard = WizardPattern(
         name="onboard",
         config=_wizard_config(),
-        event_engine=bus,
+        event_engine=event_engine,
     )
 
     mode = TestMode(backend=BehaviorTreeBackend())
     engine = OrchestrationEngine()
-    engine.initialize(mode=mode, event_engine=bus)
+    engine.initialize(mode=mode, event_engine=event_engine)
     engine.start()
 
     job = engine.submit(wizard, state=state)
@@ -166,4 +144,3 @@ def test_wizard_job_via_behavior_tree_backend() -> None:
 
     engine.stop()
     engine.shutdown()
-    bus.shutdown()

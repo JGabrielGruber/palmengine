@@ -48,6 +48,9 @@ typecheck:
 test-quick:
     uv run pytest -q --tb=no
 
+test-core:
+    uv run pytest -q tests/core/ --tb=short
+
 test-full:
     uv run pytest --cov=src/palm --cov-report=term-missing
 

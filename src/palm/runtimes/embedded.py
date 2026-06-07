@@ -22,7 +22,6 @@ from palm.core import (
     OrchestrationEngine,
     ResourceEngine,
     StorageEngine,
-    TestMode,
 )
 from palm.core.context import BaseState
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -32,6 +31,7 @@ from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRe
 from palm.executions.instance_events import wire_instance_persistence
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardConfig, WizardPattern
+from palm.runtimes.embedded_mode import EmbeddedMode
 from palm.states import BlackboardState
 
 
@@ -43,8 +43,9 @@ class EmbeddedRuntime:
     :meth:`start` before :meth:`submit_flow`, :meth:`submit_process`, or
     :meth:`resume_process`, and :meth:`stop` when finished.
 
-    Orchestration uses ``TestMode`` with ``BehaviorTreeBackend`` by default so
-    pattern executables (e.g. ``WizardPattern``) advance through the job API.
+    Orchestration uses :class:`~palm.runtimes.embedded_mode.EmbeddedMode` with
+    ``BehaviorTreeBackend`` by default so pattern executables (e.g.
+    ``WizardPattern``) advance through the job API.
     Pass a shared :class:`~palm.core.storage.StorageEngine` to the constructor
     when instances must survive across multiple runtime lifetimes.
     """
@@ -81,7 +82,7 @@ class EmbeddedRuntime:
 
         mode = options.get("mode")
         if mode is None:
-            mode = TestMode(backend=BehaviorTreeBackend())
+            mode = EmbeddedMode(backend=BehaviorTreeBackend())
 
         orch_options: dict[str, Any] = {
             "mode": mode,

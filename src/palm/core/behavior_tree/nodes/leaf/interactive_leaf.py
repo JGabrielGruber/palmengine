@@ -43,20 +43,3 @@ class InteractiveLeaf(LeafNode):
     @abstractmethod
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
         """Process supplied input and return terminal or running status."""
-
-
-class StubInteractiveLeaf(InteractiveLeaf):
-    """Stub implementation for testing the interactive leaf contract."""
-
-    def __init__(self, name: str = "test_interactive") -> None:
-        super().__init__(name)
-        self.received_value: Any = None
-
-    def _request_input(self, state: BaseState) -> PatternStatus:
-        state.set(self.prompt_key(), {"message": "Please provide input"})
-        return PatternStatus.WAITING_FOR_INPUT
-
-    def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        self.received_value = value
-        state.set(f"__test_received__:{self.name}", value)
-        return PatternStatus.SUCCESS

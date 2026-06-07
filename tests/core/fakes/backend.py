@@ -1,5 +1,7 @@
 """
-TestBackend — deterministic in-core backend for orchestration tests.
+TestBackend — deterministic backend for orchestration unit tests.
+
+Lives outside ``palm.core`` to preserve core purity.
 """
 
 from __future__ import annotations

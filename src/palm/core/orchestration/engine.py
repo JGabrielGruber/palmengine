@@ -18,7 +18,7 @@ from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorErr
 from palm.core.orchestration.job import Job, JobStatus
 from palm.core.orchestration.job_state import JobState
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
-from palm.core.orchestration.mode.test_mode import TestMode
+from palm.core.orchestration.mode.unconfigured_mode import UnconfiguredMode
 
 if TYPE_CHECKING:
     pass
@@ -28,17 +28,13 @@ class OrchestrationEngine(BasePalmEngine):
     """
     Coordinates job registration, lifecycle, and mode-driven execution.
 
-    Typical test setup::
-
-        engine = OrchestrationEngine()
-        engine.initialize(mode=TestMode())
-        engine.start()
-        job = engine.submit({"steps": 1, "final_status": "SUCCEEDED"})
+    Call :meth:`initialize` with an :class:`~palm.core.orchestration.mode.base_mode.OrchestrationMode`
+    before submitting work (e.g. a runtime-specific mode or a test double).
     """
 
     def __init__(self) -> None:
         super().__init__(name="orchestration")
-        self._mode: OrchestrationMode = TestMode()
+        self._mode: OrchestrationMode = UnconfiguredMode()
         self._event_engine: EventEngine | None = None
         self._context_engine: ContextEngine | None = None
         self._jobs: dict[str, Job] = {}
