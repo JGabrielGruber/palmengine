@@ -35,3 +35,13 @@ class JobExecutionError(OrchestrationError):
 
 class OrchestratorError(OrchestrationError):
     """Orchestrator-level failures (capacity, duplicate ids, etc.)."""
+
+
+class JobAuthorizationError(OrchestrationError):
+    """Raised when drive-phase middleware rejects job execution."""
+
+    def __init__(self, job_id: str, *, principal_id: str | None = None) -> None:
+        detail = f"principal {principal_id!r}" if principal_id else "no authenticated principal"
+        super().__init__(f"Job {job_id} not authorized ({detail})")
+        self.job_id = job_id
+        self.principal_id = principal_id

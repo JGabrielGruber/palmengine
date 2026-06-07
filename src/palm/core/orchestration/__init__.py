@@ -5,6 +5,7 @@ Pure core module: abstract contracts only; concrete modes and backends live outs
 """
 
 from palm.core.orchestration.engine import OrchestrationEngine
+from palm.core.orchestration.exceptions import JobAuthorizationError
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.orchestration.execution import ExecutionBackend, JobRunner
 from palm.core.orchestration.execution_context import ExecutionContext
@@ -21,6 +22,7 @@ __all__ = [
     "InputCapable",
     "Job",
     "JobHook",
+    "JobAuthorizationError",
     "JobHookAdapter",
     "JobRunner",
     "JobScheduler",

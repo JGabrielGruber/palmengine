@@ -15,6 +15,7 @@ import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register backends
 from palm import __version__
 from palm.core import (
+    AuthEngine,
     BehaviorTreeEngine,
     ContextEngine,
     EventEngine,
@@ -30,7 +31,7 @@ from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRe
 from palm.executions.hooks import InstancePersistenceHook
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardConfig
-from palm.runtimes.hooks import DriveObservabilityHook
+from palm.runtimes.hooks import AuthMiddleware, DriveObservabilityHook, authenticate_runtime
 from palm.runtimes.schedulers import QueuedScheduler
 from palm.runtimes.wiring import SchedulerPolicy, resolve_scheduler
 from palm.states import BlackboardState
@@ -52,6 +53,7 @@ class BaseRuntime:
         self.event = EventEngine()
         self.behavior_tree = BehaviorTreeEngine()
         self.resource = ResourceEngine()
+        self.auth = AuthEngine()
         self.orchestration = OrchestrationEngine()
         self._owns_storage = storage is None
         self.storage = storage if storage is not None else StorageEngine()
@@ -76,6 +78,8 @@ class BaseRuntime:
         self.context.initialize()
         self.event.initialize()
         self.resource.initialize()
+        self.auth.initialize()
+        authenticate_runtime(self.auth, options.get("credentials"))
 
         scheduler = resolve_scheduler(
             options,
@@ -84,6 +88,13 @@ class BaseRuntime:
         hooks = list(options.get("hooks") or [])
         if options.get("observability"):
             hooks.append(DriveObservabilityHook())
+        if options.get("auth_enforce"):
+            hooks.append(
+                AuthMiddleware(
+                    self.auth,
+                    required_roles=tuple(options.get("auth_roles") or ("user",)),
+                )
+            )
         hooks.append(InstancePersistenceHook(self.instances))
 
         orch_options: dict[str, Any] = {
@@ -119,6 +130,7 @@ class BaseRuntime:
         self.orchestration.shutdown()
         self.behavior_tree.shutdown()
         self.resource.shutdown()
+        self.auth.shutdown()
         self.context.shutdown()
         self.event.shutdown()
         self._started = False

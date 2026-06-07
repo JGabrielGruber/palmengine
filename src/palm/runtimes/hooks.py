@@ -8,6 +8,8 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from palm.core.auth import AuthEngine, Principal
+from palm.core.orchestration.exceptions import JobAuthorizationError
 from palm.core.orchestration.hooks import JobHookAdapter
 
 if TYPE_CHECKING:
@@ -66,3 +68,48 @@ class DriveObservabilityHook(JobHookAdapter):
     def drive_count(self, job_id: str) -> int:
         """Return how many drive slices have been recorded for a job."""
         return sum(1 for slice_ in self.slices if slice_.job_id == job_id)
+
+
+@dataclass
+class AuthMiddleware(JobHookAdapter):
+    """
+    Stamp jobs with the active principal and optionally enforce drive authorization.
+
+    Pair with :class:`~palm.core.auth.AuthEngine` on
+    :class:`~palm.runtimes.base.BaseRuntime`. Enable via ``auth_enforce=True``
+    on :meth:`~palm.runtimes.base.BaseRuntime.start`.
+    """
+
+    auth: AuthEngine
+    required_roles: tuple[str, ...] = ("user",)
+    enforce_drive: bool = True
+
+    def on_job_submitted(self, engine: OrchestrationEngine, job: Job) -> None:
+        self._stamp_principal(job)
+
+    def on_before_drive(self, engine: OrchestrationEngine, job: Job) -> None:
+        self._stamp_principal(job)
+        if not self.enforce_drive:
+            return
+        principal = self.auth.principal
+        if principal is None or not self.auth.authorize(*self.required_roles):
+            raise JobAuthorizationError(job.id, principal_id=principal.id if principal else None)
+
+    def _stamp_principal(self, job: Job) -> None:
+        principal = self.auth.principal
+        if principal is None:
+            return
+        job.metadata.setdefault("principal_id", principal.id)
+        if principal.roles:
+            job.metadata.setdefault("principal_roles", list(principal.roles))
+
+
+def authenticate_runtime(auth: AuthEngine, credentials: dict[str, object] | Principal | None) -> None:
+    """Apply startup credentials to an auth engine."""
+    if credentials is None:
+        return
+    if isinstance(credentials, Principal):
+        auth.bind_principal(credentials)
+        return
+    if isinstance(credentials, dict):
+        auth.authenticate({k: v for k, v in credentials.items()})

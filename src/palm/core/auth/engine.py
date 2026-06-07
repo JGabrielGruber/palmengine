@@ -40,6 +40,11 @@ class AuthEngine(BasePalmEngine):
         self._principal = Principal(id=str(subject), roles=("user",))
         return self._principal
 
+    def bind_principal(self, principal: Principal) -> Principal:
+        """Set the active principal (runtime wiring and trusted callers)."""
+        self._principal = principal
+        return principal
+
     def authorize(self, *required_roles: str) -> bool:
         if self._principal is None:
             return False

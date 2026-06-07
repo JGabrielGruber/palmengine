@@ -4,6 +4,7 @@ Definition executor — submits flows and processes via a runtime.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, overload
 
 from palm.core.orchestration import Job
@@ -18,6 +19,7 @@ from palm.executions.exceptions import (
 )
 from palm.executions.flow_submission import prepare_flow_submission, prepare_resume_submission
 from palm.executions.plan import ExecutionPlan
+from palm.executions.process_submission import ProcessPlan, prepare_process_plans
 from palm.executions.instance_events import is_resumable_status
 from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
@@ -88,26 +90,71 @@ class DefinitionExecutor:
         metadata: dict[str, Any] | None = None,
     ) -> Job:
         """Build a pattern from a flow (or repository ref) and submit a job."""
+        return self.submit_plan(
+            self.prepare_flow_plan(
+                flow,
+                by_id=by_id,
+                job_id=job_id,
+                instance_id=instance_id,
+                state=state,
+                metadata=metadata,
+            )
+        )
+
+    @overload
+    def prepare_flow_plan(
+        self,
+        flow: FlowDefinition,
+        *,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ExecutionPlan: ...
+
+    @overload
+    def prepare_flow_plan(
+        self,
+        flow: str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ExecutionPlan: ...
+
+    def prepare_flow_plan(
+        self,
+        flow: FlowDefinition | str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ExecutionPlan:
+        """Prepare an :class:`~palm.executions.plan.ExecutionPlan` without submitting."""
         resolved = self._resolve_flow(flow, by_id=by_id)
         self._require_runtime()
-        build_ctx = PatternBuildContext(
-            event_engine=self._runtime.event,
-            resource_engine=getattr(self._runtime, "resource", None),
-        )
         submission = prepare_flow_submission(
             resolved,
             state=state,
             metadata=metadata,
             instances=self._instances,
-            build_ctx=build_ctx,
+            build_ctx=self._build_context(),
             instance_id=instance_id,
         )
-        return self.submit_plan(submission.to_plan(job_id=job_id))
+        return submission.to_plan(job_id=job_id)
 
     def submit_plan(self, plan: ExecutionPlan) -> Job:
         """Submit a prepared :class:`~palm.executions.plan.ExecutionPlan` to orchestration."""
         self._require_runtime()
         return plan.submit_to(self._runtime.orchestration)
+
+    def submit_plans(self, plans: Iterable[ExecutionPlan]) -> list[Job]:
+        """Submit multiple prepared plans in order."""
+        return [self.submit_plan(plan) for plan in plans]
 
     def resume_process(self, instance_id: str) -> Job:
         """
@@ -127,11 +174,7 @@ class DefinitionExecutor:
                 f"Instance {instance_id!r} is not resumable (status={instance.status})"
             )
 
-        build_ctx = PatternBuildContext(
-            event_engine=self._runtime.event,
-            resource_engine=getattr(self._runtime, "resource", None),
-        )
-        submission = prepare_resume_submission(instance, build_ctx=build_ctx)
+        submission = prepare_resume_submission(instance, build_ctx=self._build_context())
 
         try:
             existing = self._runtime.orchestration.get_job(instance.job_id)
@@ -178,32 +221,64 @@ class DefinitionExecutor:
         metadata: dict[str, Any] | None = None,
     ) -> list[Job]:
         """Submit one job per flow on a process (or repository ref)."""
+        return self.submit_plans(
+            self.prepare_process_plan(
+                process,
+                by_id=by_id,
+                job_id=job_id,
+                instance_id=instance_id,
+                state=state,
+                metadata=metadata,
+            ).plans
+        )
+
+    @overload
+    def prepare_process_plan(
+        self,
+        process: ProcessDefinition,
+        *,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ProcessPlan: ...
+
+    @overload
+    def prepare_process_plan(
+        self,
+        process: str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ProcessPlan: ...
+
+    def prepare_process_plan(
+        self,
+        process: ProcessDefinition | str,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        instance_id: str | None = None,
+        state: BaseState | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> ProcessPlan:
+        """Prepare a :class:`~palm.executions.process_submission.ProcessPlan` without submitting."""
         resolved = self._resolve_process(process, by_id=by_id)
         if not resolved.flows:
             raise DefinitionBuildError(f"Process {resolved.name!r} defines no flows")
-
-        jobs: list[Job] = []
-        for index, flow in enumerate(resolved.flows):
-            flow_meta = dict(metadata or {})
-            flow_meta.setdefault("definition_type", "process")
-            flow_meta.setdefault("process", resolved.name)
-            flow_meta.setdefault("process_id", resolved.definition_id)
-            flow_meta.setdefault("storage", resolved.storage)
-            if resolved.metadata:
-                flow_meta.setdefault("process_metadata", dict(resolved.metadata))
-
-            assigned_id = job_id if index == 0 else None
-            assigned_instance = instance_id if index == 0 else None
-            jobs.append(
-                self.submit_flow(
-                    flow,
-                    job_id=assigned_id,
-                    instance_id=assigned_instance,
-                    state=state,
-                    metadata=flow_meta,
-                )
-            )
-        return jobs
+        self._require_runtime()
+        return prepare_process_plans(
+            resolved,
+            state=state,
+            metadata=metadata,
+            instances=self._instances,
+            build_ctx=self._build_context(),
+            job_id=job_id,
+            instance_id=instance_id,
+        )
 
     def submit_flow_by_name(
         self,
@@ -313,6 +388,12 @@ class DefinitionExecutor:
             return repo.get_process(process, by_id=by_id)
         except DefinitionNotFoundError as exc:
             raise DefinitionBuildError(str(exc)) from exc
+
+    def _build_context(self) -> PatternBuildContext:
+        return PatternBuildContext(
+            event_engine=self._runtime.event,
+            resource_engine=getattr(self._runtime, "resource", None),
+        )
 
     def _require_runtime(self) -> None:
         if not self._runtime.is_started:
