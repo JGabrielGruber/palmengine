@@ -193,6 +193,24 @@ def test_wizard_registry_default_steps() -> None:
     assert wizard.tick(state) == PatternStatus.SUCCESS
 
 
+def test_wizard_pattern_via_behavior_tree_engine() -> None:
+    from palm.core import pattern_registry
+    from palm.core.behavior_tree import BehaviorTreeEngine
+
+    state = BlackboardState()
+    engine = BehaviorTreeEngine()
+    engine.initialize(state=state)
+    cls = pattern_registry.get("wizard")
+    wiz = cls(name="wiz", steps=2)
+    engine.set_root(wiz)
+    assert engine.tick() == PatternStatus.WAITING_FOR_INPUT
+    wiz.provide_input(engine.state, "first")
+    assert engine.tick() == PatternStatus.WAITING_FOR_INPUT
+    wiz.provide_input(engine.state, "second")
+    assert engine.tick() == PatternStatus.SUCCESS
+    assert wiz.answers(engine.state)["step_1"] == "first"
+
+
 def _transactional_config() -> WizardConfig:
     return WizardConfig(
         steps=(

@@ -6,9 +6,5 @@ Register or construct these outside ``palm.core`` and pass into engines via
 """
 
 from palm.states.blackboard_state import BlackboardState
-from palm.states.recording_state import RecordingState
 
-# Public alias for tests and examples
-TestState = RecordingState
-
-__all__ = ["BlackboardState", "RecordingState", "TestState"]
+__all__ = ["BlackboardState"]

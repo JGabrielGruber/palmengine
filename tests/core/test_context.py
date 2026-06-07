@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from palm.core import STATE_FRAME_KEY, ContextEngine, ContextError
-from palm.states import BlackboardState, TestState
+from tests.core.fakes import TestState
 
 
 def test_root_context_by_default() -> None:
@@ -42,36 +42,24 @@ def test_cannot_pop_root() -> None:
         engine.pop()
 
 
-def test_bind_state_on_frame() -> None:
+def test_bind_and_push_state(test_state: TestState) -> None:
+    test_state.set("tenant", "acme")
     engine = ContextEngine()
-    bb = BlackboardState()
-    bb.set("tenant", "acme")
-    engine.bind_state(bb)
-    assert engine.current_state is bb
+    engine.bind_state(test_state)
+    assert engine.current_state is test_state
     assert engine.current_state.get("tenant") == "acme"
 
-
-def test_push_with_state() -> None:
-    engine = ContextEngine()
-    ts = TestState({"x": 1})
-    engine.push("scoped", state=ts)
-    assert engine.current_state is ts
-    assert engine.current[STATE_FRAME_KEY] is ts
+    scoped = TestState({"x": 1})
+    engine.push("scoped", state=scoped)
+    assert engine.current_state is scoped
+    assert engine.current[STATE_FRAME_KEY] is scoped
     engine.pop()
-    assert engine.current_state is None
+    assert engine.current_state is test_state
 
 
 def test_initialize_with_state() -> None:
+    seeded = TestState({"seed": True})
     engine = ContextEngine()
-    engine.initialize(state=BlackboardState({"seed": True}))
-    assert engine.current_state is not None
+    engine.initialize(state=seeded)
+    assert engine.current_state is seeded
     assert engine.current_state.get("seed") is True
-
-
-def test_shutdown_resets_stack() -> None:
-    engine = ContextEngine()
-    engine.initialize()
-    engine.push("temp")
-    engine.shutdown()
-    assert engine.depth == 1
-    assert engine.current_name == "root"

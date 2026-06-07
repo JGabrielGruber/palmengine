@@ -1,6 +1,7 @@
 """
 Test doubles for core engine tests.
 
+State fakes: :class:`TestState`
 Orchestration fakes: :class:`TestMode`, :class:`TestBackend`
 Behavior-tree fakes: :class:`FakePattern`, :class:`StubInteractiveLeaf`
 Utility fakes: :class:`FakeScheduler`
@@ -15,6 +16,7 @@ from palm.core.behavior_tree import BasePattern, InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
 from tests.core.fakes.backend import TestBackend
 from tests.core.fakes.mode import TestMode
+from tests.core.fakes.state import TestState
 
 
 class FakePattern(BasePattern):
@@ -75,4 +77,5 @@ __all__ = [
     "StubInteractiveLeaf",
     "TestBackend",
     "TestMode",
+    "TestState",
 ]

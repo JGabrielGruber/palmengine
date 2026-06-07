@@ -1,8 +1,9 @@
 """
 Fixtures for pure ``palm.core`` engine tests.
 
-Orchestration tests use :class:`~tests.core.fakes.mode.TestMode` and
-:class:`~tests.core.fakes.backend.TestBackend` — never production core code.
+Uses test doubles from :mod:`tests.core.fakes` only — never production shortcuts
+inside ``palm.core``. Pattern- or runtime-specific tests belong in ``tests/`` or
+future ``tests/patterns/``, ``tests/executions/``, etc.
 """
 
 from __future__ import annotations
@@ -16,14 +17,22 @@ from palm.core.behavior_tree.nodes import ActionNode
 from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.core.orchestration import OrchestrationEngine
-from palm.states import BlackboardState
+from tests.core.fakes import TestState
 from tests.core.fakes.mode import TestMode
 
 
 @pytest.fixture
-def blackboard_state() -> BlackboardState:
-    """Fresh blackboard for behavior-tree and orchestration tests."""
-    return BlackboardState()
+def test_state() -> TestState:
+    """Fresh :class:`TestState` — the canonical blackboard double for core tests."""
+    return TestState()
+
+
+@pytest.fixture
+def test_mode() -> TestMode:
+    """Synchronous orchestration mode backed by :class:`~tests.core.fakes.backend.TestBackend`."""
+    mode = TestMode()
+    mode.start()
+    return mode
 
 
 @pytest.fixture
@@ -45,23 +54,23 @@ def event_engine() -> Iterator[EventEngine]:
 
 
 @pytest.fixture
-def bt_engine(blackboard_state: BlackboardState) -> Iterator[BehaviorTreeEngine]:
+def bt_engine(test_state: TestState) -> Iterator[BehaviorTreeEngine]:
     """Behavior tree engine with a trivial always-success root."""
     engine = BehaviorTreeEngine()
     root = RootNode(
         "root",
         child=ActionNode("noop", action=lambda _s: None),
     )
-    engine.initialize(state=blackboard_state, root=root)
+    engine.initialize(state=test_state, root=root)
     yield engine
     engine.shutdown()
 
 
 @pytest.fixture
-def orchestration_engine() -> Iterator[OrchestrationEngine]:
-    """Orchestration engine wired with :class:`TestMode` (synchronous test driver)."""
+def orchestration_engine(test_mode: TestMode) -> Iterator[OrchestrationEngine]:
+    """Orchestration engine wired with :class:`TestMode`."""
     engine = OrchestrationEngine()
-    engine.initialize(mode=TestMode())
+    engine.initialize(mode=test_mode)
     engine.start()
     yield engine
     engine.stop()
@@ -70,26 +79,28 @@ def orchestration_engine() -> Iterator[OrchestrationEngine]:
 
 @pytest.fixture
 def full_core_setup(
-    blackboard_state: BlackboardState,
+    test_state: TestState,
+    test_mode: TestMode,
 ) -> Iterator[dict[str, object]]:
-    """All core engines initialized and cross-wired for integration-style core tests."""
+    """All core engines initialized and cross-wired for contract-level integration tests."""
     ctx = ContextEngine()
     events = EventEngine()
     bt = BehaviorTreeEngine()
     orch = OrchestrationEngine()
 
-    ctx.initialize(state=blackboard_state)
+    ctx.initialize(state=test_state)
     events.initialize()
-    orch.initialize(mode=TestMode(), event_engine=events, context_engine=ctx)
-    bt.initialize(state=blackboard_state)
+    orch.initialize(mode=test_mode, event_engine=events, context_engine=ctx)
+    bt.initialize(state=test_state)
     orch.start()
 
     bundle = {
-        "blackboard_state": blackboard_state,
+        "test_state": test_state,
         "context_engine": ctx,
         "event_engine": events,
         "bt_engine": bt,
         "orchestration_engine": orch,
+        "test_mode": test_mode,
     }
     yield bundle
 

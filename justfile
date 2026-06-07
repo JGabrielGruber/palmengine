@@ -29,7 +29,7 @@ hygiene:
 # -----------------------------------------------------------------------------
 # 2. Quality & Checking (the most used group)
 # -----------------------------------------------------------------------------
-check: lint typecheck test-quick
+check: lint typecheck test-quick guard-core
 
 full-check: format lint typecheck test-full audit guard-core demo-full
 
@@ -74,15 +74,22 @@ refactor:
 # 4. Palm Architecture Guards (Critical for this project)
 # -----------------------------------------------------------------------------
 guard-core:
-    @echo "🔒 Checking Core Purity Rules (0.5.0-dev)..."
+    @echo "🔒 Checking Core Purity Rules (0.6+ direction)..."
     uv run python -c '
 import sys
 from pathlib import Path
 core = Path("src/palm/core")
 forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "utils")
+forbidden_test_artifacts = ("TestMode", "TestBackend", "StubInteractiveLeaf")
 violations = []
 for py in core.rglob("*.py"):
-    for line in py.read_text().splitlines():
+    if py.name.startswith("test_"):
+        violations.append(f"test module in core: {py}")
+    text = py.read_text()
+    for name in forbidden_test_artifacts:
+        if f"class {name}" in text:
+            violations.append(f"{py}: forbidden test class {name}")
+    for line in text.splitlines():
         stripped = line.strip()
         if not stripped.startswith("from palm.") and not stripped.startswith("import palm."):
             continue
@@ -164,7 +171,8 @@ clean:
 help:
     @echo "🌴 Palm Tooling Commands:"
     @echo "   just dev              → Full setup + hygiene"
-    @echo "   just check            → Fast quality check"
+    @echo "   just check            → Fast quality check + guard-core"
+    @echo "   just test-core        → Pure palm.core contract tests"
     @echo "   just full-check       → Everything + demo-full"
     @echo "   just prepr            → Pre-release gate (0.5.0-dev)"
     @echo "   just demo-full        → examples/full_demo.py"

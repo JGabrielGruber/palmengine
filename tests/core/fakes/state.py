@@ -1,5 +1,8 @@
 """
-TestState — in-memory state with optional operation recording for assertions.
+TestState — dict-backed :class:`~palm.core.context.BaseState` for core unit tests.
+
+Drop-in test double for production :class:`~palm.states.BlackboardState` with
+optional operation recording for assertions.
 """
 
 from __future__ import annotations
@@ -11,16 +14,16 @@ from palm.core.context import BaseState
 StateOp = tuple[Literal["get", "set", "delete", "clear"], str, Any]
 
 
-class RecordingState(BaseState):
-    """Dict-backed state that records mutations for unit tests."""
+class TestState(BaseState):
+    """In-memory state for isolated ``palm.core`` tests."""
 
-    __test__ = False  # not a pytest test class
+    __test__ = False
 
     def __init__(
         self,
         initial: dict[str, Any] | None = None,
         *,
-        record: bool = True,
+        record: bool = False,
     ) -> None:
         self._data: dict[str, Any] = dict(initial) if initial else {}
         self._record = record
