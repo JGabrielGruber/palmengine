@@ -11,10 +11,18 @@ from tests.core.fakes.mode import TestMode
 class _RecordingHook(JobHookAdapter):
     def __init__(self) -> None:
         self.submitted: list[str] = []
+        self.before_drive: list[str] = []
+        self.after_drive: list[str] = []
         self.statuses: list[str] = []
 
     def on_job_submitted(self, engine: OrchestrationEngine, job) -> None:
         self.submitted.append(job.id)
+
+    def on_before_drive(self, engine, job) -> None:
+        self.before_drive.append(job.id)
+
+    def on_after_drive(self, engine, job, result: RunResult) -> None:
+        self.after_drive.append(job.status.value)
 
     def on_job_status_changed(self, engine, job, result: RunResult | None = None) -> None:
         self.statuses.append(job.status.value)
@@ -31,4 +39,6 @@ def test_job_hooks_receive_submit_and_status_events() -> None:
     engine.shutdown()
 
     assert job.id in hook.submitted
+    assert job.id in hook.before_drive
+    assert JobStatus.SUCCEEDED.value in hook.after_drive
     assert JobStatus.SUCCEEDED.value in hook.statuses

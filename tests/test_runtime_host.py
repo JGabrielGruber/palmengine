@@ -8,6 +8,7 @@ from palm.core.event import EventEngine
 from palm.core.orchestration import OrchestrationEngine
 from palm.definitions.flow import FlowDefinition
 from palm.executions import DefinitionExecutor
+from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.host import RuntimeHost
 from palm.runtimes.schedulers import InlineScheduler
@@ -36,6 +37,11 @@ class _MinimalHost:
 
 def test_embedded_runtime_satisfies_runtime_host() -> None:
     rt = EmbeddedRuntime()
+    assert isinstance(rt, RuntimeHost)
+
+
+def test_daemon_runtime_satisfies_runtime_host() -> None:
+    rt = DaemonRuntime()
     assert isinstance(rt, RuntimeHost)
 
 

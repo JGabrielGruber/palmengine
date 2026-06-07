@@ -245,6 +245,16 @@ class OrchestrationEngine(BasePalmEngine):
         if result.propagate and result.error is not None:
             raise JobExecutionError(job.id, str(result.error), original=result.error)
 
+    def notify_before_drive(self, job: Job) -> None:
+        """Invoke drive-phase hooks before a scheduler runs a job slice."""
+        for hook in self._hooks:
+            hook.on_before_drive(self, job)
+
+    def notify_after_drive(self, job: Job, result: RunResult) -> None:
+        """Invoke drive-phase hooks after ``apply_result`` for a job slice."""
+        for hook in self._hooks:
+            hook.on_after_drive(self, job, result)
+
     def _notify_job_submitted(self, job: Job) -> None:
         for hook in self._hooks:
             hook.on_job_submitted(self, job)

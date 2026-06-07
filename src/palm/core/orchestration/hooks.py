@@ -19,6 +19,17 @@ class JobHook(Protocol):
     def on_job_submitted(self, engine: OrchestrationEngine, job: Job) -> None:
         """Called after a job is registered and the scheduler has driven it."""
 
+    def on_before_drive(self, engine: OrchestrationEngine, job: Job) -> None:
+        """Called immediately before each :func:`~palm.core.orchestration.drive.drive_job` slice."""
+
+    def on_after_drive(
+        self,
+        engine: OrchestrationEngine,
+        job: Job,
+        result: RunResult,
+    ) -> None:
+        """Called after each drive slice completes and ``apply_result`` has run."""
+
     def on_job_status_changed(
         self,
         engine: OrchestrationEngine,
@@ -32,6 +43,17 @@ class JobHookAdapter:
     """No-op defaults for optional hook methods."""
 
     def on_job_submitted(self, engine: OrchestrationEngine, job: Job) -> None:
+        return None
+
+    def on_before_drive(self, engine: OrchestrationEngine, job: Job) -> None:
+        return None
+
+    def on_after_drive(
+        self,
+        engine: OrchestrationEngine,
+        job: Job,
+        result: RunResult,
+    ) -> None:
         return None
 
     def on_job_status_changed(
