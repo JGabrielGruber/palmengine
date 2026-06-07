@@ -29,6 +29,7 @@ Constitution for AI coding agents and human developers working on Palm.
 
 | Package | Role |
 |---------|------|
+| `palm/app/` | Application orchestrator — `PalmApp`, `PalmSettings`, multi-runtime bootstrap |
 | `palm/common/` | Shared coordination — plans, submission, hooks, persistence, pattern builder |
 | `palm/patterns/` | **Extensible apps** — each pattern is a subpackage (`pattern.py`, `builder.py`, `registry.py`) |
 | `palm/providers/` | **Extensible apps** — each provider is a subpackage (`provider.py`, `registry.py`) |
@@ -61,6 +62,7 @@ Constitution for AI coding agents and human developers working on Palm.
 - New provider → `palm/providers/<name>/` with `provider.py`, `registry.py`; add to `INSTALLED_PROVIDERS`
 - New storage → `palm/storages/<name>/` with `backend.py`, `registry.py`; add to `INSTALLED_STORAGES`
 - Shared submission / plan / hook logic → `palm/common/<area>/` (not `patterns/`)
+- Application wiring / multi-runtime hosting → `palm/app/`
 - New engine capability → extend the relevant `palm/core/<engine>/` module only
 - Always add tests under `tests/`
 

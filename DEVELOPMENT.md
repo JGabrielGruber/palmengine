@@ -33,6 +33,7 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 
 ```
 src/palm/
+├── app/               # PalmApp, PalmSettings, bootstrap, multi-runtime registry
 ├── core/              # Pure engines — no external palm imports
 ├── patterns/          # Wizard, DAG, ETL (+ commit registry, validation)
 ├── providers/         # REST, GraphQL, Postgres
@@ -69,21 +70,22 @@ palm back <instance_id> <step_slug>
 palm process resume <instance_id>
 ```
 
-### Shared storage for resume demos
+### Shared storage and multi-runtime
 
-In-memory storage is per `EmbeddedRuntime` unless you pass a shared `StorageEngine`:
+Use :class:`~palm.app.PalmApp` to share storage across runtimes and sessions:
 
 ```python
-from palm.core import StorageEngine
-from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
+from palm.app import PalmApp, PalmSettings
 
-storage = StorageEngine()
-storage.initialize(backend="memory")
-ctx = bootstrap_runtime(storage=storage)
-# … submit, persist …
-shutdown_context(ctx)
-# New context with same storage object can resume instances
+with PalmApp(PalmSettings(storage_backend="memory")) as app:
+    cli = app.create_runtime("embedded", name="cli", autostart=True)
+    worker = app.create_runtime("daemon", name="worker", autostart=True)
+    app.load_definitions()
+    # … submit via cli, worker drives queued jobs …
 ```
+
+Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming
+across separate app lifetimes (the CLI uses this pattern internally).
 
 ## Adding a pattern (Django-style app)
 

@@ -121,6 +121,7 @@ Run `palm --help` for the full list.
 
 ```
 src/palm/
+├── app/            # PalmApp orchestrator, settings, multi-runtime bootstrap
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
 ├── common/         # Shared coordination (plans, hooks, persistence, submission)
 ├── instances/      # ProcessInstance snapshots

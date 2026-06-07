@@ -90,6 +90,19 @@ Shared, non-plugin coordination lives under `palm.common/`:
 
 Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
 
+### `palm.app` — application entrypoint
+
+:class:`~palm.app.PalmApp` is the top-level orchestrator:
+
+| Component | Role |
+|-----------|------|
+| `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
+| `bootstrap()` | Load plugin apps (patterns, providers, storages) |
+| `create_runtime()` | Register embedded, daemon, or server runtimes |
+| Shared `StorageEngine` | Durable definitions/instances across runtimes |
+| `load_definitions()` | Hydrate catalogs for all registered runtimes |
+| `shutdown()` | Stop runtimes and release owned storage |
+
 **Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — each is a Django-style app subpackage with its own `registry.py`. Add the app name to `INSTALLED_PATTERNS` / `INSTALLED_PROVIDERS` / `INSTALLED_STORAGES`; never modify core to add a plugin.
 
 ---

@@ -1,0 +1,195 @@
+"""
+PalmApp — central application orchestrator for Palm Engine.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Self
+
+from palm.app.bootstrap import (
+    ensure_plugins,
+    load_definitions_for_repository,
+    runtime_start_options,
+)
+from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
+from palm.app.settings import PalmSettings
+from palm.core.storage import StorageEngine
+from palm.runtimes.base import BaseRuntime
+from palm.runtimes.daemon import DaemonRuntime
+from palm.runtimes.embedded import EmbeddedRuntime
+from palm.runtimes.server import ServerRuntime
+
+
+class PalmApp:
+    """
+    Top-level Palm application — configuration, shared storage, and runtimes.
+
+    A single ``PalmApp`` can host multiple runtimes (embedded, daemon, server)
+    that share one :class:`~palm.core.storage.StorageEngine` for durable
+    definitions and instances.
+
+    Typical usage::
+
+        app = PalmApp().bootstrap()
+        embedded = app.create_runtime("embedded", autostart=True)
+        daemon = app.create_runtime("daemon", name="worker", autostart=True)
+        app.load_definitions()
+    """
+
+    def __init__(
+        self,
+        settings: PalmSettings | None = None,
+        *,
+        storage: StorageEngine | None = None,
+    ) -> None:
+        self.settings = settings or PalmSettings()
+        self._owns_storage = storage is None
+        self.storage = storage if storage is not None else StorageEngine()
+        self._runtimes = RuntimeRegistry()
+        self._primary: str | None = None
+        self._bootstrapped = False
+
+    @property
+    def is_bootstrapped(self) -> bool:
+        return self._bootstrapped
+
+    @property
+    def primary_name(self) -> str | None:
+        return self._primary
+
+    def bootstrap(self) -> Self:
+        """Load plugin apps and mark the application ready for runtime creation."""
+        ensure_plugins()
+        self._bootstrapped = True
+        return self
+
+    def create_runtime(
+        self,
+        kind: RuntimeKind,
+        *,
+        name: str | None = None,
+        autostart: bool = False,
+        set_primary: bool | None = None,
+        **start_options: Any,
+    ) -> BaseRuntime:
+        """
+        Construct and optionally start a named runtime sharing app storage.
+
+        Parameters
+        ----------
+        kind:
+            ``embedded``, ``daemon``, or ``server``.
+        name:
+            Registry key. Defaults to ``kind`` or ``{kind}-{n}`` when taken.
+        autostart:
+            When ``True``, call :meth:`start` before returning.
+        set_primary:
+            When ``True``, make this runtime the default for :attr:`runtime`.
+            Defaults to ``True`` when this is the first registered runtime.
+        """
+        self._require_bootstrapped()
+        runtime_name = name or self._default_runtime_name(kind)
+        runtime = self._build_runtime(kind, **start_options)
+        handle = RuntimeHandle(name=runtime_name, kind=kind, runtime=runtime)
+        self._runtimes.register(handle)
+
+        if set_primary is True or (set_primary is None and self._primary is None):
+            self._primary = runtime_name
+
+        if autostart:
+            self.start(runtime_name, **start_options)
+        return runtime
+
+    def runtime(self, name: str | None = None) -> BaseRuntime:
+        """Return a registered runtime (primary by default)."""
+        handle = self._runtimes.get(name or self._require_primary_name())
+        return handle.runtime
+
+    def get_handle(self, name: str) -> RuntimeHandle:
+        """Return the registry record for a named runtime."""
+        return self._runtimes.get(name)
+
+    def set_primary(self, name: str) -> None:
+        """Choose the default runtime returned by :attr:`runtime`."""
+        self._runtimes.get(name)  # validate
+        self._primary = name
+
+    def start(self, name: str, **options: Any) -> BaseRuntime:
+        """Start a registered runtime using app settings merged with ``options``."""
+        handle = self._runtimes.get(name)
+        if handle.runtime.is_started:
+            return handle.runtime
+        merged = runtime_start_options(self.settings, **options)
+        handle.runtime.start(**merged)
+        return handle.runtime
+
+    def stop(self, name: str) -> None:
+        """Stop a single runtime without shutting down shared storage."""
+        self._runtimes.get(name).runtime.stop()
+
+    def load_definitions(self, *, name: str | None = None) -> int:
+        """
+        Hydrate definition catalogs for one or all registered runtimes.
+
+        Returns the total number of definition records touched.
+        """
+        if name is not None:
+            handle = self._runtimes.get(name)
+            return load_definitions_for_repository(handle.runtime.repository, self.settings)
+
+        total = 0
+        for handle in self._runtimes.items():
+            total += load_definitions_for_repository(handle.runtime.repository, self.settings)
+        return total
+
+    def running(self) -> list[str]:
+        """Return names of runtimes that are currently started."""
+        return [handle.name for handle in self._runtimes.items() if handle.is_started]
+
+    def shutdown(self) -> None:
+        """Stop all runtimes and release shared storage when owned by the app."""
+        for handle in self._runtimes.items():
+            if handle.is_started:
+                handle.runtime.stop()
+        if self._owns_storage and self.storage.is_initialized:
+            self.storage.shutdown()
+        self._runtimes.clear()
+        self._primary = None
+
+    def __enter__(self) -> Self:
+        if not self._bootstrapped:
+            self.bootstrap()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.shutdown()
+
+    def _build_runtime(self, kind: RuntimeKind, **options: Any) -> BaseRuntime:
+        if kind == "embedded":
+            return EmbeddedRuntime(storage=self.storage)
+        if kind == "daemon":
+            return DaemonRuntime(storage=self.storage)
+        if kind == "server":
+            return ServerRuntime(
+                storage=self.storage,
+                host=str(options.pop("host", "127.0.0.1")),
+                port=int(options.pop("port", 8080)),
+            )
+        raise ValueError(f"Unknown runtime kind {kind!r}")
+
+    def _default_runtime_name(self, kind: RuntimeKind) -> str:
+        if kind not in self._runtimes.names():
+            return kind
+        index = 1
+        while f"{kind}-{index}" in self._runtimes:
+            index += 1
+        return f"{kind}-{index}"
+
+    def _require_primary_name(self) -> str:
+        if self._primary is None:
+            raise RuntimeError("No primary runtime; call create_runtime() first")
+        return self._primary
+
+    def _require_bootstrapped(self) -> None:
+        if not self._bootstrapped:
+            raise RuntimeError("PalmApp is not bootstrapped; call bootstrap() first")

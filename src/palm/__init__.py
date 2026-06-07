@@ -3,6 +3,7 @@ Palm Engine — lightweight orchestration for multi-step transactional workflows
 
 The ``palm`` package is organized in layers:
 
+- ``palm.app`` — application orchestrator (:class:`~palm.app.PalmApp`, settings, multi-runtime)
 - ``palm.core`` — pure foundational engines (no imports from outside core)
 - ``palm.common`` — shared coordination (plans, submission, hooks, persistence)
 - ``palm.instances`` — durable process instance snapshots

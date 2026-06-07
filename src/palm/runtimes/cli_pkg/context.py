@@ -11,7 +11,12 @@ from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.instances import ProcessInstance
+from typing import TYPE_CHECKING
+
 from palm.runtimes.embedded import EmbeddedRuntime
+
+if TYPE_CHECKING:
+    from palm.app import PalmApp
 
 
 @dataclass
@@ -20,6 +25,7 @@ class CliContext:
 
     runtime: EmbeddedRuntime
     console: Any
+    app: PalmApp | None = None
     active_instance_id: str | None = None
     _instance_to_job: dict[str, str] = field(default_factory=dict)
 
