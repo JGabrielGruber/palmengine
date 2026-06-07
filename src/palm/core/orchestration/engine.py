@@ -257,7 +257,11 @@ class OrchestrationEngine(BasePalmEngine):
         ctx = self._context_engine
         if ctx is None or not ctx.is_initialized:
             return
-        ctx.push(f"job:{job.id}", state=job.state, job_id=job.id)
+        frame: dict[str, Any] = {"job_id": job.id}
+        instance_id = job.metadata.get("instance_id")
+        if instance_id is not None:
+            frame["instance_id"] = instance_id
+        ctx.push(f"job:{job.id}", state=job.state, **frame)
 
     def _publish_job_status(self, job: Job) -> None:
         self._emit(

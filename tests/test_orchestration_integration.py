@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.backends.behavior_tree import BehaviorTreeBackend
+from palm.backends.behavior_tree import BehaviorTreeRunner
 from palm.core.event import EventEngine
 from palm.core.orchestration import JobStatus, OrchestrationEngine
 from palm.patterns.wizard import (
@@ -43,7 +43,7 @@ def test_wizard_job_via_behavior_tree_backend(event_engine: EventEngine) -> None
         event_engine=event_engine,
     )
 
-    mode = TestMode(backend=BehaviorTreeBackend())
+    mode = TestMode(runner=BehaviorTreeRunner())
     engine = OrchestrationEngine()
     engine.initialize(mode=mode, event_engine=event_engine)
     engine.start()

@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration.hooks import JobHookAdapter
+from palm.definitions.flow import FlowDefinition
+from palm.executions.exceptions import InstanceNotFoundError
 
 if TYPE_CHECKING:
     from palm.core.orchestration.engine import OrchestrationEngine
@@ -16,10 +18,17 @@ if TYPE_CHECKING:
 
 
 class InstancePersistenceHook(JobHookAdapter):
-    """Persist jobs that carry an ``instance_id`` in metadata on status changes."""
+    """
+    Track and persist jobs that carry an ``instance_id`` in metadata.
+
+    Creates the instance record on first submit, then updates on status changes.
+    """
 
     def __init__(self, instances: InstanceRepository) -> None:
         self._instances = instances
+
+    def on_job_submitted(self, engine: OrchestrationEngine, job: Job) -> None:
+        self._ensure_instance(job)
 
     def on_job_status_changed(
         self,
@@ -27,9 +36,32 @@ class InstancePersistenceHook(JobHookAdapter):
         job: Job,
         result: RunResult | None = None,
     ) -> None:
-        if not job.metadata.get("instance_id"):
+        self._ensure_instance(job)
+
+    def _ensure_instance(self, job: Job) -> None:
+        iid = job.metadata.get("instance_id")
+        if not iid:
             return
         try:
-            self._instances.update(job)
+            self._instances.get(str(iid))
+            self._instances.update(job, instance_id=str(iid))
+        except InstanceNotFoundError:
+            flow_def = job.metadata.get("flow_definition")
+            if not isinstance(flow_def, dict):
+                return
+            try:
+                flow = FlowDefinition.from_dict(flow_def)
+            except Exception:
+                return
+            try:
+                self._instances.create(
+                    job,
+                    flow=flow,
+                    instance_id=str(iid),
+                    process_id=job.metadata.get("process_id"),
+                    process_name=job.metadata.get("process"),
+                )
+            except Exception:
+                return None
         except Exception:
             return None

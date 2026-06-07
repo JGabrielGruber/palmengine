@@ -15,6 +15,7 @@ from palm.executions.exceptions import (
     InstanceResumeError,
 )
 from palm.executions.executor import DefinitionExecutor, ProcessExecutor
+from palm.executions.flow_submission import FlowSubmission, prepare_flow_submission
 from palm.executions.hooks import InstancePersistenceHook
 from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
@@ -26,6 +27,7 @@ __all__ = [
     "DefinitionExecutor",
     "DefinitionNotFoundError",
     "DefinitionRepository",
+    "FlowSubmission",
     "ExecutionError",
     "InstanceNotFoundError",
     "InstancePersistenceHook",
@@ -36,6 +38,7 @@ __all__ = [
     "ProcessInstance",
     "StatusHistoryEntry",
     "build_pattern",
+    "prepare_flow_submission",
     "parse_wizard_flow_options",
     "wizard_config_from_options",
     "wizard_metadata_from_flow",

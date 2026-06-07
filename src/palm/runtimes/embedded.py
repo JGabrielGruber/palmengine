@@ -13,7 +13,7 @@ import palm.patterns  # — register patterns
 import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register backends
 from palm import __version__
-from palm.backends.behavior_tree import BehaviorTreeBackend
+from palm.backends.behavior_tree import BehaviorTreeRunner
 from palm.core import (
     BehaviorTreeEngine,
     ContextEngine,
@@ -44,7 +44,7 @@ class EmbeddedRuntime:
     :meth:`resume_process`, and :meth:`stop` when finished.
 
     Orchestration uses :class:`~palm.runtimes.schedulers.inline.InlineScheduler` with
-    :class:`~palm.backends.behavior_tree.BehaviorTreeBackend` by default.
+    :class:`~palm.backends.behavior_tree.BehaviorTreeRunner` by default.
     Pass a shared :class:`~palm.core.storage.StorageEngine` to the constructor
     when instances must survive across multiple runtime lifetimes.
     """
@@ -113,7 +113,7 @@ class EmbeddedRuntime:
         if runner is None and legacy_backend is not None and not isinstance(legacy_backend, str):
             runner = legacy_backend
         if runner is None:
-            runner = BehaviorTreeBackend()
+            runner = BehaviorTreeRunner()
         return InlineScheduler(runner=runner)
 
     def stop(self) -> None:
@@ -206,9 +206,7 @@ class EmbeddedRuntime:
         Delegates to :meth:`~palm.core.orchestration.engine.OrchestrationEngine.deliver_input`.
         """
         self._require_started()
-        slug = self.orchestration.deliver_input(job_id, value)
-        self.executor.persist_job(self.orchestration.get_job(job_id))
-        return slug
+        return self.orchestration.deliver_input(job_id, value)
 
     def resume_process(self, instance_id: str) -> Job:
         """
@@ -218,21 +216,12 @@ class EmbeddedRuntime:
         job, and returns it ready for :meth:`provide_input` or inspection.
         """
         self._require_started()
-        job = self.executor.resume_process(instance_id)
-        self._bind_instance_context(job)
-        return job
+        return self.executor.resume_process(instance_id)
 
     def get_instance(self, instance_id: str) -> ProcessInstance:
         """Load a persisted process instance record."""
         self._require_started()
         return self.instances.get(instance_id)
-
-    def _bind_instance_context(self, job: Job) -> None:
-        ctx = self.context
-        if not ctx.is_initialized:
-            return
-        iid = job.metadata.get("instance_id", job.id)
-        ctx.push(f"job:{job.id}", state=job.state, job_id=job.id, instance_id=iid)
 
     def get_job(self, job_id: str) -> Job:
         """Return a registered orchestration job."""
