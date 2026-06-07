@@ -46,3 +46,4 @@ def test_cli_help_lists_commands() -> None:
     assert "doctor" in result.stdout
     assert "wizard" in result.stdout
     assert "full_demo.py" in result.stdout
+    assert "SCOPE.md" in result.stdout

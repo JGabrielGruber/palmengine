@@ -1,165 +1,287 @@
 # ARCHITECTURE.md
 
-## Overview
+**Palm Engine** · 0.5.0-dev · June 2026
 
-Palm is a layered orchestration engine. The **core** is pure and self-contained; concrete implementations, definitions, executions, and runtimes build on top without polluting core boundaries.
+High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
-Version **0.5.0-dev** continues the 0.4.0 layered architecture with **executions** (submit/resume/build), **instances** (durable snapshots), transactional **wizards**, and the modern CLI.
+---
+
+## Design stance
+
+Palm is a **layered orchestration engine** with a **pure core** and **registry-based extension**. Behavior Trees provide the execution model: workflows are trees of nodes, state lives on a pluggable blackboard, and jobs move through an explicit lifecycle.
+
+Three ideas recur everywhere:
+
+1. **Core purity** — `palm/core/` never imports patterns, providers, storages, definitions, or runtimes.
+2. **Definitions as contract** — `FlowDefinition` / `ProcessDefinition` describe *what* to run; executions build and submit *how*.
+3. **Hybrid middleware** — cross-cutting concerns (auth, observability, persistence) live primarily at the **runtime**; optional **BT guard nodes** handle step-level policy without polluting step definitions.
+
+---
 
 ## Layer diagram
 
 ```mermaid
 flowchart TB
-    subgraph Runtimes["palm.runtimes"]
-        cli[CLI + cli_pkg]
+    subgraph Runtimes["palm.runtimes — middleware & surfaces"]
+        cli[CLI + REPL + doctor]
         embedded[EmbeddedRuntime]
-        server[Server — planned]
-        daemon[Daemon — planned]
+        future[Server / Daemon / WS — planned]
     end
 
-    subgraph Executions["palm.executions"]
+    subgraph Executions["palm.executions — glue"]
         exec[DefinitionExecutor]
         repo[DefinitionRepository]
         inst_repo[InstanceRepository]
         builder[Pattern builder]
-        events[Instance persistence events]
+        events[Instance persistence]
     end
 
-    subgraph Instances["palm.instances"]
-        pi[ProcessInstance]
-    end
-
-    subgraph Definitions["palm.definitions"]
-        flow[FlowDefinition]
-        process[ProcessDefinition]
-    end
-
-    subgraph Concretes["Concrete implementations"]
+    subgraph Domain["Domain packages"]
+        instances[palm.instances]
+        definitions[palm.definitions]
         patterns[palm.patterns]
         providers[palm.providers]
         storages[palm.storages]
     end
 
     subgraph Core["palm.core — PURE"]
-        bt[Behavior Tree]
-        res[Resource]
-        sto[Storage]
-        orch[Orchestration]
-        ctx[Context]
-        evt[Event]
-        auth[Auth]
-        reg[Registry]
+        bt[BehaviorTreeEngine]
+        orch[OrchestrationEngine]
+        ctx[ContextEngine + BaseState]
+        sto[StorageEngine]
+        res[ResourceEngine]
+        evt[EventEngine]
+        auth[AuthEngine — primitives]
+        reg[Registries]
     end
 
     Runtimes --> Executions
-    Runtimes --> Instances
-    Executions --> Definitions
-    Executions --> Concretes
-    Executions --> Instances
-    Instances --> Core
-    Concretes --> Core
-    Definitions --> Core
+    Runtimes --> instances
+    Executions --> definitions
+    Executions --> patterns
+    Executions --> instances
+    patterns --> bt
+    patterns --> res
+    instances --> sto
+    providers --> res
+    storages --> sto
+    Executions --> orch
+    orch --> ctx
+    orch --> evt
 ```
+
+**Dependency rule:** arrows point inward toward core. Core never points outward.
+
+---
+
+## Control flow: Behavior Trees first
+
+All patterns ultimately execute through the behavior tree engine. A **pattern** (wizard, DAG, ETL) is a `BasePattern` that owns or builds a tree of nodes.
+
+```mermaid
+flowchart LR
+    subgraph Wizard["WizardPattern (example)"]
+        root[Root]
+        seq[Sequence]
+        step1[Step leaf]
+        action[Action leaf — resource]
+        summary[Summary leaf]
+        commit[Commit leaf]
+        root --> seq
+        seq --> step1 --> action --> summary --> commit
+    end
+
+    state[(BaseState / blackboard)]
+    step1 <--> state
+    commit <--> state
+```
+
+| Concept | Role |
+|---------|------|
+| **Node** | Unit of work — interactive leaf, action, guard, sequence |
+| **Tick** | Advance tree; returns running, waiting, success, or failure |
+| **State** | Pluggable `BaseState` (e.g. blackboard) holding answers, prompts, flags |
+| **Job** | Orchestration wrapper around an executable pattern + isolated state |
+
+Wizard steps are **nodes**, not callbacks scattered through a framework. Future **guard decorators** and **KernelLeaf** nodes follow the same model.
+
+---
 
 ## Core engines
 
 | Engine | Responsibility |
 |--------|----------------|
-| Behavior Tree | Execute `BasePattern` trees with shared blackboard state |
-| Resource | Resolve and lifecycle-manage `BaseProvider` instances |
-| Storage | Resolve and lifecycle-manage `BaseBackend` instances |
-| Orchestration | Create and track `Job` units with lifecycle transitions |
-| Context | Stack-scoped execution metadata |
-| Event | Synchronous publish/subscribe observability |
-| Auth | Principal and authorization stubs |
+| **BehaviorTreeEngine** | Tick trees, shared pattern state |
+| **OrchestrationEngine** | Job lifecycle: pending, running, waiting for input, terminal |
+| **ContextEngine** | Stack-scoped execution metadata (job, instance ids) |
+| **StorageEngine** | Active backend selection and key/value persistence |
+| **ResourceEngine** | Provider resolution and fetch lifecycle |
+| **EventEngine** | Synchronous observability bus |
+| **AuthEngine** | Minimal auth primitives (enforcement at runtime / BT) |
 
-**Rule:** `palm/core/` imports only from `palm/core/`.
+**Invariant:** `palm/core/` imports only from `palm/core/`.
+
+### Pluggable state
+
+`BaseState` in `core/context` decouples engines from a specific state implementation. Production wizards use a blackboard-style state; tests may substitute lightweight fakes. Job state and tree state can be coordinated without hard-coding dict semantics in core.
+
+---
 
 ## Registries
 
-`palm/core/registry.py` exposes:
+Extension is explicit and import-time registered:
 
-- `pattern_registry` — wizard, dag, etl
-- `provider_registry` — rest, graphql, postgres
-- `storage_registry` — memory, postgres, mongodb, filesystem
+| Registry | Examples |
+|----------|----------|
+| `pattern_registry` | wizard, dag, etl |
+| `provider_registry` | rest, graphql, postgres |
+| `storage_registry` | memory, filesystem, postgres, mongodb |
 
-Concrete modules register implementations at import time.
+New capabilities are added by new modules under `patterns/`, `providers/`, or `storages/`—not by editing orchestration internals.
+
+---
 
 ## Definitions
 
-`FlowDefinition` binds a **pattern** name and **options** (e.g. wizard steps, `include_commit`). `ProcessDefinition` groups one or more flows for batch submission.
+| Type | Purpose |
+|------|---------|
+| `FlowDefinition` | One runnable flow: pattern name + options (e.g. wizard steps, commit hook) |
+| `ProcessDefinition` | Ordered group of flows submitted together |
 
-Definitions are stored via `DefinitionRepository` (in-memory cache + optional `StorageEngine` persistence).
+Definitions serialize to storage records. They are the **stable contract** between authors, CLI, and executor.
 
-## Executions
+---
+
+## Executions layer
+
+Executions sit between runtimes and core: they understand definitions and patterns; core does not.
 
 | Component | Role |
 |-----------|------|
 | `DefinitionExecutor` | `submit_flow`, `submit_process`, `resume_process`, `persist_job` |
-| `builder` | Resolve `FlowDefinition` → `WizardPattern` / DAG / ETL with option parsing |
-| `DefinitionRepository` | CRUD for flows and processes |
-| `InstanceRepository` | CRUD for `ProcessInstance` records |
-| `instance_events` | Wire orchestration events → instance snapshots |
+| `builder` | `FlowDefinition` → `WizardPattern` / DAG / ETL |
+| `DefinitionRepository` | In-memory cache + storage-backed CRUD |
+| `InstanceRepository` | Durable `ProcessInstance` CRUD |
+| `instance_events` | Orchestration events → instance snapshots |
 
-The executor stays outside **core** so orchestration remains unaware of wizard options or definition shapes.
-
-## Instances
-
-`ProcessInstance` is a durable snapshot: `instance_id`, `job_id`, `status`, `state_snapshot`, flow metadata, wizard step slug, and status history.
-
-**Resume flow:**
-
-1. Load instance from storage
-2. Rebuild pattern from stored `flow_definition`
-3. Restore blackboard from `state_snapshot`
-4. Register a new job and continue via `provide_input` / orchestration resume
-
-`EmbeddedRuntime.resume_process(instance_id)` is the public API; the CLI calls it from `process resume`.
-
-## Transactional wizards
-
-Wizard flows support:
-
-- Per-step **validation** (declarative rules in definitions)
-- **Backtracking** (`allow_backtrack`, protected summary/commit steps)
-- **Resource action** steps (`step_kind: action`, `resource_provider`, `resource_id`)
-- Auto **summary** and **commit** steps (`include_summary`, `include_commit`, `commit_hook`)
-- Named **commit handlers** on `default_commit_registry()`
-
-Commit runs inside the wizard tree; failure surfaces as job failure without silent partial state.
-
-## Runtimes
-
-| Runtime | Status |
-|---------|--------|
-| `embedded` | In-process wiring; `submit_*`, `provide_input`, `resume_process` |
-| `cli` | `palm` command, REPL, Rich display, `doctor`, example auto-load |
-| `server` | Not implemented |
-| `daemon` | Not implemented |
-
-### CLI package (`runtimes/cli_pkg/`)
-
-| Module | Role |
-|--------|------|
-| `bootstrap` | Start runtime, hydrate storage, load `examples/definitions/` |
-| `context` | Active instance, instance→job resolution |
-| `actions` | Shared submit / input / backtrack / resume |
-| `display` | Rich panels and tables |
-| `doctor` | Full diagnostic report |
-| `commands/registry` | Extensible command phrases |
-| `repl` | Interactive shell |
-
-## Archive
-
-Pre-0.4.0 implementation lives under `archive/` (legacy CLI, old behavior tree, orchestration tests, wizards). Reference only — do not import from new code.
-
-## Design goals
-
-- **Core purity** — testable engines with zero domain coupling
-- **Registry-based extension** — open for new patterns, providers, backends
-- **Durable instances** — wizard and process state survives restarts when storage persists
-- **Runtime flexibility** — same engines in embedded tests, CLI, or future server modes
+Keeping the executor outside core preserves a single orchestration model while allowing rich wizard options and resume logic to evolve independently.
 
 ---
 
-Last updated: June 2026 (0.5.0-dev)
+## Instances & resume
+
+`ProcessInstance` captures durable orchestration state:
+
+- Stable `instance_id`, active `job_id`, status, `state_snapshot`
+- Flow metadata, wizard step slug, status history
+
+**Resume path:**
+
+1. Load instance from `InstanceRepository`
+2. Rebuild pattern from stored `flow_definition`
+3. Restore blackboard from `state_snapshot`
+4. Register job; continue via `provide_input` or orchestration resume
+
+`EmbeddedRuntime.resume_process()` and CLI `process resume` expose this path.
+
+---
+
+## Transactional wizards
+
+The wizard pattern is Palm’s most complete expression of **human-first, transactional** orchestration:
+
+- Declarative **validation** on input steps
+- **Backtracking** with protected summary/commit steps
+- **Resource action** steps via `ResourceEngine`
+- Auto **summary** and **commit** with named handlers
+- Commit failure → job failure (no silent partial commit)
+
+Commit handlers run inside the tree; results are visible on job state.
+
+---
+
+## Middleware architecture
+
+Palm uses a **hybrid** model:
+
+```mermaid
+flowchart TB
+    user[User / API client]
+    rt[Runtime middleware]
+    job[Job + OrchestrationEngine]
+    tree[Behavior Tree]
+    guard[Optional guard nodes]
+    leaf[Step / action / kernel leaves]
+
+    user --> rt
+    rt -->|"auth context, logging, storage, instance sync"| job
+    job --> tree
+    tree --> guard --> leaf
+```
+
+| Concern | Preferred home |
+|---------|----------------|
+| Session / principal | Runtime |
+| Instance persistence | Runtime + executions events |
+| Structured logging / tracing | Runtime (future: EventEngine subscribers) |
+| Step may run? / quota / feature flag | BT guard node |
+| User prompt & validation | Wizard step leaf (definition-driven) |
+
+Avoid encoding middleware chains inside step JSON. Keep steps declarative; compose policy in the tree and runtime.
+
+---
+
+## Runtimes
+
+| Runtime | Status | Role |
+|---------|--------|------|
+| **EmbeddedRuntime** | Shipped | In-process hub: `submit_*`, `provide_input`, `resume_process` |
+| **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
+| **Server** | Planned | HTTP submit/status/input |
+| **Daemon** | Planned | Background workers for long-running instances |
+| **WebSocket** | Planned | Streaming wizard context and job events |
+
+`EmbeddedRuntime` wires engines once; other runtimes are expected to reuse the same executions API rather than duplicate orchestration logic.
+
+---
+
+## Future: compute & data (architectural direction)
+
+Not yet in the main package, but aligned with the BT model:
+
+- **KernelLeaf** — GPU-resident kernels, fixed VRAM buffers, batch ticks
+- **Resource staging** — Parquet or large artifacts as provider-backed resources flowing through context into kernel nodes
+- Stronger coupling between **ResourceEngine** and pattern action/commit paths
+
+Prototypes under `archive/experimental/gpubatches/` explore batch GPU execution; they inform design but are not part of the supported architecture until promoted with tests and documentation.
+
+---
+
+## Archive & experiments
+
+| Path | Role |
+|------|------|
+| `archive/` | Pre-0.4.0 legacy — reference only |
+| `archive/experimental/gpubatches/` | GPU batch R&D — experimental |
+
+New production code must not import from `archive/`.
+
+---
+
+## Design goals (summary)
+
+- **Core purity** — testable engines, zero domain coupling
+- **BT-native control flow** — steps, guards, and kernels are nodes
+- **Registry extension** — patterns, providers, storages without forked core
+- **Durable truth** — definitions + instances survive restarts
+- **Runtime middleware** — auth and ops at the edge; guards in the tree when needed
+- **One engine, many surfaces** — embedded, CLI, future server/daemon share executions
+
+---
+
+## Related documents
+
+- [SCOPE.md](SCOPE.md) — vision, in/out of scope, roadmap
+- [README.md](README.md) — quick start and CLI
+- [DEVELOPMENT.md](DEVELOPMENT.md) — contributor guide
+- [AGENTS.md](AGENTS.md) — contribution rules

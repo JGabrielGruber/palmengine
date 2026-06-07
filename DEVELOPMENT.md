@@ -131,6 +131,13 @@ All code under `archive/` is historical. Never add new features there.
 | Embedded API | `tests/test_embedded.py` |
 | CLI dispatch | `tests/test_cli.py` |
 
+## Related documents
+
+- [SCOPE.md](SCOPE.md) — vision, scope, and roadmap
+- [ARCHITECTURE.md](ARCHITECTURE.md) — layers, BT model, middleware
+- [README.md](README.md) — quick start and CLI
+- [CHANGELOG.md](CHANGELOG.md) — release history
+
 ---
 
 Last updated: June 2026 (0.5.0-dev)

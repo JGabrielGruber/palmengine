@@ -28,7 +28,7 @@ examples:
   palm process resume <id>        resume a persisted instance
 
 documentation:
-  README.md · CHANGELOG.md · ARCHITECTURE.md · examples/full_demo.py
+  README.md · SCOPE.md · ARCHITECTURE.md · CHANGELOG.md · examples/full_demo.py
 """
 
 
