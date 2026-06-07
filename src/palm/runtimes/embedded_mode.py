@@ -1,58 +1,34 @@
 """
-EmbeddedMode — synchronous in-process orchestration for :class:`~palm.runtimes.embedded.EmbeddedRuntime`.
-
-Drives jobs immediately in the caller thread using a pluggable
-:class:`~palm.core.orchestration.execution.base_runner.JobRunner`.
+EmbeddedMode — deprecated alias for :class:`~palm.runtimes.schedulers.inline.InlineScheduler`.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import warnings
 
 from palm.core.orchestration.execution.base_runner import JobRunner
-from palm.core.orchestration.job import JobStatus
-from palm.core.orchestration.mode.base_mode import OrchestrationMode
-
-if TYPE_CHECKING:
-    from palm.core.orchestration.engine import OrchestrationEngine
-    from palm.core.orchestration.job import Job
+from palm.runtimes.schedulers.inline import InlineScheduler
 
 
-class EmbeddedMode(OrchestrationMode):
-    """Runs jobs synchronously in the caller thread using an external runner."""
+class EmbeddedMode(InlineScheduler):
+    """Deprecated: use :class:`~palm.runtimes.schedulers.inline.InlineScheduler`."""
 
     def __init__(
         self,
         *,
-        backend: JobRunner,
+        runner: JobRunner | None = None,
+        backend: JobRunner | None = None,
+        budget: int = 10_000,
         name: str = "EmbeddedMode",
     ) -> None:
-        super().__init__(name=name)
-        self._runner = backend
-        self._running = False
-
-    @property
-    def runner(self) -> JobRunner:
-        return self._runner
-
-    def start(self) -> None:
-        self._running = True
-
-    def shutdown(self, *, timeout: float = 5.0) -> None:
-        self._running = False
-
-    def is_running(self) -> bool:
-        return self._running
-
-    def submit_job(self, engine: OrchestrationEngine, job: Job) -> None:
-        if not self._running:
-            self.start()
-        self._drive_job(engine, job)
-
-    def resume_job(self, engine: OrchestrationEngine, job: Job) -> None:
-        if job.status == JobStatus.WAITING_FOR_INPUT:
-            self._drive_job(engine, job)
-
-    def _drive_job(self, engine: OrchestrationEngine, job: Job) -> None:
-        result = self._runner.run(engine.execution_context(job), budget=10_000)
-        engine.apply_result(job, result)
+        warnings.warn(
+            "EmbeddedMode is deprecated; use InlineScheduler from palm.runtimes.schedulers",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(
+            runner=runner,
+            backend=backend,
+            budget=budget,
+            name=name,
+        )

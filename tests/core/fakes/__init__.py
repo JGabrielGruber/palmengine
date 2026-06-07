@@ -54,6 +54,26 @@ class FakeScheduler:
         self.tasks.clear()
 
 
+class FakeInputCapable:
+    """Minimal :class:`~palm.core.orchestration.input_capable.InputCapable` double."""
+
+    def __init__(self, *, step: str = "ask") -> None:
+        self.step = step
+        self.values: list[Any] = []
+
+    def provide_input(self, state: BaseState, value: Any) -> str | None:
+        self.values.append(value)
+        state.set("__input__", value)
+        return self.step
+
+    def current_step_slug(self, state: BaseState) -> str | None:
+        return self.step
+
+    def answers(self, state: BaseState) -> dict[str, Any]:
+        value = state.get("__input__")
+        return {} if value is None else {"last": value}
+
+
 class StubInteractiveLeaf(InteractiveLeaf):
     """Stub implementation for testing the interactive leaf contract."""
 
@@ -72,6 +92,7 @@ class StubInteractiveLeaf(InteractiveLeaf):
 
 
 __all__ = [
+    "FakeInputCapable",
     "FakePattern",
     "FakeScheduler",
     "StubInteractiveLeaf",

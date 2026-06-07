@@ -15,6 +15,7 @@ from palm.executions.exceptions import (
     InstanceResumeError,
 )
 from palm.executions.executor import DefinitionExecutor, ProcessExecutor
+from palm.executions.hooks import InstancePersistenceHook
 from palm.executions.instance_repository import InstanceRepository
 from palm.executions.repository import DefinitionRepository
 from palm.executions.wizard_options import parse_wizard_flow_options, wizard_metadata_from_flow
@@ -27,6 +28,7 @@ __all__ = [
     "DefinitionRepository",
     "ExecutionError",
     "InstanceNotFoundError",
+    "InstancePersistenceHook",
     "InstanceRepository",
     "InstanceResumeError",
     "PatternBuildContext",

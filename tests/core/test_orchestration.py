@@ -17,7 +17,7 @@ from palm.core.orchestration import (
     RunResult,
 )
 from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorError
-from tests.core.fakes import TestState
+from tests.core.fakes import FakeInputCapable, TestState
 from tests.core.fakes.mode import TestMode
 
 
@@ -56,6 +56,41 @@ def test_waiting_job_survives_engine_stop(orchestration_engine: OrchestrationEng
     assert job.status == JobStatus.WAITING_FOR_INPUT
     orchestration_engine.stop()
     assert orchestration_engine.get_job(job.id).status == JobStatus.WAITING_FOR_INPUT
+
+
+class _WaitThenSucceedRunner(JobRunner):
+    def run(self, ctx: ExecutionContext, *, budget: int | None = None) -> RunResult:
+        if ctx.job.status == JobStatus.PENDING:
+            return RunResult(status=JobStatus.WAITING_FOR_INPUT)
+        if ctx.job.status == JobStatus.WAITING_FOR_INPUT:
+            if ctx.job.state.has("__input__"):
+                return RunResult(status=JobStatus.SUCCEEDED)
+            return RunResult(status=JobStatus.WAITING_FOR_INPUT)
+        return RunResult(status=JobStatus.SUCCEEDED)
+
+
+def test_deliver_input_resumes_input_capable_job() -> None:
+    executable = FakeInputCapable(step="name")
+    engine = OrchestrationEngine()
+    engine.initialize(mode=TestMode(runner=_WaitThenSucceedRunner()))
+    engine.start()
+
+    job = engine.submit(executable)
+    assert job.status == JobStatus.WAITING_FOR_INPUT
+
+    slug = engine.deliver_input(job.id, "Ada")
+    assert slug == "name"
+    assert executable.values == ["Ada"]
+    assert job.status == JobStatus.SUCCEEDED
+
+    engine.stop()
+    engine.shutdown()
+
+
+def test_deliver_input_rejects_non_capable_executable(orchestration_engine: OrchestrationEngine) -> None:
+    job = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
+    with pytest.raises(TypeError, match="does not accept delivered input"):
+        orchestration_engine.deliver_input(job.id, "x")
 
 
 def test_waiting_job_resumes_via_provide_input(orchestration_engine: OrchestrationEngine) -> None:

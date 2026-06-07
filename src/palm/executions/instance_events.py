@@ -1,14 +1,14 @@
 """
-Wire ``EventEngine`` job events to ``InstanceRepository`` updates.
+Legacy instance persistence wiring — prefer :class:`~palm.executions.hooks.InstancePersistenceHook`.
 """
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
-from palm.core.event import Event
-from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.orchestration.job import JobStatus
+from palm.executions.hooks import InstancePersistenceHook
 
 if TYPE_CHECKING:
     from palm.executions.instance_repository import InstanceRepository
@@ -19,31 +19,17 @@ def wire_instance_persistence(
     runtime: EmbeddedRuntime,
     instances: InstanceRepository,
 ) -> None:
-    """Subscribe to orchestration events and persist job snapshots."""
-
-    def _on_status_changed(event: Event) -> None:
-        job_id = event.payload.get("job_id")
-        if not isinstance(job_id, str):
-            return
-        try:
-            job = runtime.orchestration.get_job(job_id)
-        except Exception:
-            return
-        if not job.metadata.get("instance_id"):
-            return
-        try:
-            instances.update(job)
-        except Exception:
-            pass
-
-    runtime.event.subscribe(
-        OrchestrationEventType.JOB_STATUS_CHANGED,
-        _on_status_changed,
+    """
+    Deprecated: instance persistence is registered via ``InstancePersistenceHook`` at runtime start.
+    """
+    warnings.warn(
+        "wire_instance_persistence is deprecated; EmbeddedRuntime registers "
+        "InstancePersistenceHook automatically (0.6+)",
+        DeprecationWarning,
+        stacklevel=2,
     )
-    runtime.event.subscribe(
-        OrchestrationEventType.JOB_COMPLETED,
-        _on_status_changed,
-    )
+    hook = InstancePersistenceHook(instances)
+    runtime.orchestration._hooks.append(hook)
 
 
 def is_resumable_status(status: str) -> bool:

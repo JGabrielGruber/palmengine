@@ -39,7 +39,10 @@ from palm.core.exceptions import (
 from palm.core.orchestration import (
     ExecutionBackend,
     ExecutionContext,
+    InputCapable,
     Job,
+    JobHook,
+    JobHookAdapter,
     JobRunner,
     JobScheduler,
     JobState,
@@ -48,6 +51,7 @@ from palm.core.orchestration import (
     OrchestrationEventType,
     OrchestrationMode,
     RunResult,
+    StepInspectable,
 )
 from palm.core.registry import (
     pattern_registry,
@@ -75,7 +79,10 @@ __all__ = [
     "EventEngine",
     "ExecutionBackend",
     "ExecutionContext",
+    "InputCapable",
     "Job",
+    "JobHook",
+    "JobHookAdapter",
     "JobRunner",
     "JobScheduler",
     "JobState",
@@ -84,6 +91,7 @@ __all__ = [
     "OrchestrationEventType",
     "OrchestrationMode",
     "RunResult",
+    "StepInspectable",
     "PalmError",
     "PatternStatus",
     "Principal",

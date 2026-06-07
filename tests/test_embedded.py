@@ -80,5 +80,5 @@ def test_provide_input_requires_started() -> None:
 def test_provide_input_rejects_non_wizard_job(runtime: EmbeddedRuntime) -> None:
     job = runtime.orchestration.submit(FakePattern(name="noop"))
     assert job.status == JobStatus.SUCCEEDED
-    with pytest.raises(TypeError, match="not a wizard"):
+    with pytest.raises(TypeError, match="does not accept delivered input"):
         runtime.provide_input(job.id, "value")

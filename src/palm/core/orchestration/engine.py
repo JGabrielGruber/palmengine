@@ -1,8 +1,9 @@
 """
 Orchestration engine — job lifecycle and execution coordination.
 
-Delegates execution to an ``OrchestrationMode`` and optional ``EventEngine`` /
-``ContextEngine`` for observability and scoped state.
+Delegates execution to a :class:`~palm.core.orchestration.mode.base_mode.OrchestrationMode`
+(job scheduler) and optional :class:`~palm.core.event.EventEngine` /
+:class:`~palm.core.context.ContextEngine` for observability and scoped state.
 """
 
 from __future__ import annotations
@@ -20,6 +21,8 @@ from palm.core.orchestration.exceptions import (
     OrchestratorError,
 )
 from palm.core.orchestration.execution_context import ExecutionContext
+from palm.core.orchestration.hooks import JobHook
+from palm.core.orchestration.input_capable import InputCapable, StepInspectable
 from palm.core.orchestration.job import Job, JobStatus
 from palm.core.orchestration.job_state import JobState
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
@@ -43,12 +46,18 @@ class OrchestrationEngine(BasePalmEngine):
         self._mode: OrchestrationMode = UnconfiguredMode()
         self._event_engine: EventEngine | None = None
         self._context_engine: ContextEngine | None = None
+        self._hooks: list[JobHook] = []
         self._jobs: dict[str, Job] = {}
         self._running = False
         self.max_concurrent_jobs = 128
 
     @property
     def mode(self) -> OrchestrationMode:
+        return self._mode
+
+    @property
+    def scheduler(self) -> OrchestrationMode:
+        """Preferred alias for :attr:`mode` (0.6+)."""
         return self._mode
 
     @property
@@ -130,6 +139,7 @@ class OrchestrationEngine(BasePalmEngine):
         )
 
         self._mode.submit_job(self, job)
+        self._notify_job_submitted(job)
 
         return job
 
@@ -153,6 +163,7 @@ class OrchestrationEngine(BasePalmEngine):
         return True
 
     def provide_input(self, job_id: str, key: str, value: Any) -> None:
+        """Write input to job state by key (generic blackboard-style delivery)."""
         job = self.get_job(job_id)
         job.state.set(key, value)
         self._emit(
@@ -162,6 +173,43 @@ class OrchestrationEngine(BasePalmEngine):
 
         if job.status == JobStatus.WAITING_FOR_INPUT:
             self.resume_job(job_id)
+
+    def deliver_input(self, job_id: str, value: Any) -> str | None:
+        """
+        Deliver input through an :class:`~palm.core.orchestration.input_capable.InputCapable`
+        executable (e.g. wizards) and resume when waiting.
+        """
+        job = self.get_job(job_id)
+        executable = job.executable
+        if not isinstance(executable, InputCapable):
+            raise TypeError(f"Job {job_id!r} executable does not accept delivered input")
+
+        slug = executable.provide_input(job.state, value)
+        self._emit(
+            OrchestrationEventType.JOB_INPUT_RECEIVED,
+            {"job_id": job_id, "key": slug or "input", "value": value},
+        )
+
+        if job.status == JobStatus.WAITING_FOR_INPUT:
+            self.resume_job(job_id)
+
+        return slug
+
+    def inspect_step(self, job_id: str) -> str | None:
+        """Return the active step slug when the executable supports inspection."""
+        job = self.get_job(job_id)
+        executable = job.executable
+        if not isinstance(executable, StepInspectable):
+            raise TypeError(f"Job {job_id!r} executable does not expose step position")
+        return executable.current_step_slug(job.state)
+
+    def inspect_answers(self, job_id: str) -> dict[str, Any]:
+        """Return collected answers when the executable supports inspection."""
+        job = self.get_job(job_id)
+        executable = job.executable
+        if not isinstance(executable, StepInspectable):
+            raise TypeError(f"Job {job_id!r} executable does not expose answers")
+        return executable.answers(job.state)
 
     def resume_job(self, job_id: str) -> None:
         job = self.get_job(job_id)
@@ -192,9 +240,18 @@ class OrchestrationEngine(BasePalmEngine):
                 job.error = result.error
 
         self._publish_job_status(job)
+        self._notify_job_status_changed(job, result)
 
         if result.propagate and result.error is not None:
             raise JobExecutionError(job.id, str(result.error), original=result.error)
+
+    def _notify_job_submitted(self, job: Job) -> None:
+        for hook in self._hooks:
+            hook.on_job_submitted(self, job)
+
+    def _notify_job_status_changed(self, job: Job, result: RunResult) -> None:
+        for hook in self._hooks:
+            hook.on_job_status_changed(self, job, result)
 
     def _bind_job_context(self, job: Job) -> None:
         ctx = self._context_engine
@@ -220,9 +277,13 @@ class OrchestrationEngine(BasePalmEngine):
         bus.emit(event_type, **payload)
 
     def _do_initialize(self, **options: Any) -> None:
-        mode = options.get("mode")
-        if isinstance(mode, OrchestrationMode):
-            self._mode = mode
+        scheduler = options.get("scheduler") or options.get("mode")
+        if isinstance(scheduler, OrchestrationMode):
+            self._mode = scheduler
+
+        hooks = options.get("hooks")
+        if hooks is not None:
+            self._hooks = [hook for hook in hooks if isinstance(hook, JobHook)]
 
         event_engine = options.get("event_engine")
         if isinstance(event_engine, EventEngine):

@@ -1,29 +1,28 @@
 """
-TestMode — synchronous orchestration scheduler for unit tests.
-
-Lives outside ``palm.core`` to preserve core purity.
+InlineScheduler — synchronous in-process job scheduling.
 """
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration.drive import drive_job
 from palm.core.orchestration.execution.base_runner import JobRunner
 from palm.core.orchestration.job import JobStatus
 from palm.core.orchestration.mode.base_mode import OrchestrationMode
-from palm.core.orchestration.run_result import RunResult
-from tests.core.fakes.backend import TestBackend
 
 if TYPE_CHECKING:
     from palm.core.orchestration.engine import OrchestrationEngine
     from palm.core.orchestration.job import Job
 
 
-class TestMode(OrchestrationMode):
-    """Runs jobs synchronously in the caller thread using a runner."""
+class InlineScheduler(OrchestrationMode):
+    """
+    Runs jobs synchronously in the caller thread using a :class:`~palm.core.orchestration.execution.base_runner.JobRunner`.
 
-    __test__ = False
+    This is the default scheduler for :class:`~palm.runtimes.embedded.EmbeddedRuntime`.
+    """
 
     def __init__(
         self,
@@ -31,13 +30,21 @@ class TestMode(OrchestrationMode):
         runner: JobRunner | None = None,
         backend: JobRunner | None = None,
         budget: int = 10_000,
-        name: str = "TestMode",
+        name: str = "InlineScheduler",
     ) -> None:
+        if backend is not None and runner is None:
+            warnings.warn(
+                "backend= is deprecated on InlineScheduler; use runner= (0.6+)",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        resolved = runner if runner is not None else backend
+        if resolved is None:
+            raise TypeError("InlineScheduler requires runner=")
         super().__init__(name=name)
-        self._runner: JobRunner = runner or backend or TestBackend()
+        self._runner = resolved
         self._budget = budget
         self._running = False
-        self._force_next_status: dict[str, JobStatus] = {}
 
     @property
     def runner(self) -> JobRunner:
@@ -55,28 +62,11 @@ class TestMode(OrchestrationMode):
     def submit_job(self, engine: OrchestrationEngine, job: Job) -> None:
         if not self._running:
             self.start()
-        self._drive_job(engine, job)
+        self._drive(engine, job)
 
     def resume_job(self, engine: OrchestrationEngine, job: Job) -> None:
         if job.status == JobStatus.WAITING_FOR_INPUT:
-            self._drive_job(engine, job)
+            self._drive(engine, job)
 
-    def run_until_idle(self, engine: OrchestrationEngine) -> None:
-        for job in list(engine.list_jobs()):
-            if job.status == JobStatus.RUNNING:
-                self._drive_job(engine, job)
-
-    def force_job_status(self, job: Job, status: JobStatus) -> None:
-        job.status = status
-
-    def simulate_step(self, engine: OrchestrationEngine, job: Job) -> JobStatus:
-        drive_job(engine, self._runner, job, budget=1)
-        return job.status
-
-    def _drive_job(self, engine: OrchestrationEngine, job: Job) -> None:
-        if job.id in self._force_next_status:
-            forced = self._force_next_status.pop(job.id)
-            engine.apply_result(job, RunResult(status=forced))
-            return
-
+    def _drive(self, engine: OrchestrationEngine, job: Job) -> None:
         drive_job(engine, self._runner, job, budget=self._budget)

@@ -2,7 +2,7 @@
 Embedded runtime — in-process Palm execution for libraries and tests.
 
 Wires core engines and exposes high-level helpers for orchestrated patterns
-(e.g. interactive wizards) without pulling execution backends into core.
+(e.g. interactive wizards) without pulling concrete runners into core.
 """
 
 from __future__ import annotations
@@ -19,19 +19,19 @@ from palm.core import (
     ContextEngine,
     EventEngine,
     Job,
+    JobScheduler,
     OrchestrationEngine,
     ResourceEngine,
     StorageEngine,
 )
 from palm.core.context import BaseState
-from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
 from palm.executions import DefinitionExecutor, DefinitionRepository, InstanceRepository
-from palm.executions.instance_events import wire_instance_persistence
+from palm.executions.hooks import InstancePersistenceHook
 from palm.instances import ProcessInstance
-from palm.patterns.wizard import WizardConfig, WizardPattern
-from palm.runtimes.embedded_mode import EmbeddedMode
+from palm.patterns.wizard import WizardConfig
+from palm.runtimes.schedulers import InlineScheduler
 from palm.states import BlackboardState
 
 
@@ -43,9 +43,8 @@ class EmbeddedRuntime:
     :meth:`start` before :meth:`submit_flow`, :meth:`submit_process`, or
     :meth:`resume_process`, and :meth:`stop` when finished.
 
-    Orchestration uses :class:`~palm.runtimes.embedded_mode.EmbeddedMode` with
-    ``BehaviorTreeBackend`` by default so pattern executables (e.g.
-    ``WizardPattern``) advance through the job API.
+    Orchestration uses :class:`~palm.runtimes.schedulers.inline.InlineScheduler` with
+    :class:`~palm.backends.behavior_tree.BehaviorTreeBackend` by default.
     Pass a shared :class:`~palm.core.storage.StorageEngine` to the constructor
     when instances must survive across multiple runtime lifetimes.
     """
@@ -80,14 +79,15 @@ class EmbeddedRuntime:
         self.event.initialize()
         self.resource.initialize()
 
-        mode = options.get("mode")
-        if mode is None:
-            mode = EmbeddedMode(backend=BehaviorTreeBackend())
+        scheduler = self._resolve_scheduler(options)
+        hooks = list(options.get("hooks") or [])
+        hooks.append(InstancePersistenceHook(self.instances))
 
         orch_options: dict[str, Any] = {
-            "mode": mode,
+            "scheduler": scheduler,
             "event_engine": self.event,
             "context_engine": self.context,
+            "hooks": hooks,
         }
         max_jobs = options.get("max_concurrent_jobs")
         if isinstance(max_jobs, int) and max_jobs > 0:
@@ -101,8 +101,20 @@ class EmbeddedRuntime:
         self.storage.initialize(backend=options.get("backend", "memory"))
 
         self.orchestration.start()
-        wire_instance_persistence(self, self.instances)
         self._started = True
+
+    def _resolve_scheduler(self, options: dict[str, Any]) -> JobScheduler:
+        scheduler = options.get("scheduler") or options.get("mode")
+        if scheduler is not None:
+            return scheduler
+
+        runner = options.get("runner")
+        legacy_backend = options.get("backend")
+        if runner is None and legacy_backend is not None and not isinstance(legacy_backend, str):
+            runner = legacy_backend
+        if runner is None:
+            runner = BehaviorTreeBackend()
+        return InlineScheduler(runner=runner)
 
     def stop(self) -> None:
         """Stop orchestration and shut down all engines."""
@@ -189,17 +201,13 @@ class EmbeddedRuntime:
 
     def provide_input(self, job_id: str, value: Any) -> str | None:
         """
-        Provide input for a waiting wizard job and resume execution.
+        Provide input for a waiting interactive job and resume execution.
 
-        Returns the step slug that received the input, or ``None`` if the job
-        is not a wizard or no step is waiting.
+        Delegates to :meth:`~palm.core.orchestration.engine.OrchestrationEngine.deliver_input`.
         """
         self._require_started()
-        wizard = self._wizard_for_job(job_id)
-        job = self.orchestration.get_job(job_id)
-        slug = wizard.provide_input(job.state, value)
-        self.orchestration.resume_job(job_id)
-        self.executor.persist_job(job)
+        slug = self.orchestration.deliver_input(job_id, value)
+        self.executor.persist_job(self.orchestration.get_job(job_id))
         return slug
 
     def resume_process(self, instance_id: str) -> Job:
@@ -237,26 +245,14 @@ class EmbeddedRuntime:
         return self.orchestration.cancel_job(job_id)
 
     def current_wizard_step(self, job_id: str) -> str | None:
-        """Return the active wizard step slug for a job, if applicable."""
+        """Return the active step slug when the job executable supports inspection."""
         self._require_started()
-        wizard = self._wizard_for_job(job_id)
-        return wizard.current_step_slug(self.orchestration.get_job(job_id).state)
+        return self.orchestration.inspect_step(job_id)
 
     def wizard_answers(self, job_id: str) -> dict[str, Any]:
-        """Return collected wizard answers for a job."""
+        """Return collected answers when the job executable supports inspection."""
         self._require_started()
-        wizard = self._wizard_for_job(job_id)
-        return wizard.answers(self.orchestration.get_job(job_id).state)
-
-    def _wizard_for_job(self, job_id: str) -> WizardPattern:
-        try:
-            job = self.orchestration.get_job(job_id)
-        except JobNotFoundError:
-            raise
-        executable = job.executable
-        if not isinstance(executable, WizardPattern):
-            raise TypeError(f"Job {job_id!r} is not a wizard job")
-        return executable
+        return self.orchestration.inspect_answers(job_id)
 
     def _require_started(self) -> None:
         if not self._started:
