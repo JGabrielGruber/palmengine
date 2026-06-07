@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common import InstanceNotFoundError, InstanceRepository, InstanceResumeError
 from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
-from palm.executions import InstanceNotFoundError, InstanceRepository, InstanceResumeError
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardKeys
 from palm.patterns.wizard.config import WizardConfig

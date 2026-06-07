@@ -21,7 +21,7 @@ import palm.storages.memory  # noqa: F401
 from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard.commit import CommitResult, default_commit_registry
+from palm.patterns.wizard.handler import CommitResult, default_commit_registry
 from palm.patterns.wizard.keys import WizardKeys
 from palm.runtimes.embedded import EmbeddedRuntime
 

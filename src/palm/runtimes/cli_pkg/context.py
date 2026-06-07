@@ -7,9 +7,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.common.exceptions import InstanceNotFoundError
 from palm.instances import ProcessInstance
 from palm.runtimes.embedded import EmbeddedRuntime
 

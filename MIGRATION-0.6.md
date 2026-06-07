@@ -16,25 +16,23 @@ Palm 0.6 finalizes the orchestration maturation work started in 0.5.x:
 
 Deprecated aliases and transitional APIs from the 0.5 maturation period have been **removed**.
 
-Shared coordination logic now lives in **`palm.common`** (with `palm.executions` as a backward-compat alias).
+Shared coordination logic lives in **`palm.common`**. The `palm.executions` package has been **removed**.
 
 ---
 
 ## Package layout (`palm.common`)
 
-| Prefer (0.6+) | Was (0.5) | Notes |
-|---------------|-----------|-------|
-| `palm.common` | `palm.executions` | Top-level imports unchanged for most symbols |
+| 0.6 import | Was (0.5) | Notes |
+|------------|-----------|-------|
+| `palm.common` | `palm.executions` | `DefinitionExecutor`, repos, `build_pattern`, plans |
 | `palm.common.plans` | `palm.executions.plan` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
 | `palm.common.hooks` | `palm.executions.hooks` | `InstancePersistenceHook` |
 | `palm.common.persistence` | `palm.executions.repository`, `instance_*` | Repos and sync helpers |
-| `palm.common.patterns` | `palm.executions.builder`, `build_context` | Definition → pattern materialization |
-
-Old import paths under `palm.executions.*` continue to work via thin re-export shims.
+| `palm.common.patterns` | `palm.executions.builder`, `build_context` | Generic `build_pattern` dispatcher |
 
 ### Extensible modules (Django-style apps)
 
-Patterns, providers, and storages are now self-contained subpackages:
+Patterns, providers, and storages are self-contained subpackages:
 
 | App type | Layout | Registration |
 |----------|--------|--------------|
@@ -42,16 +40,13 @@ Patterns, providers, and storages are now self-contained subpackages:
 | Provider | `providers/<name>/provider.py`, `registry.py` | `INSTALLED_PROVIDERS` + `provider_registry` |
 | Storage | `storages/<name>/backend.py`, `registry.py` | `INSTALLED_STORAGES` + `storage_registry` |
 
-Wizard-specific build/options logic moved from `common/patterns/` into `patterns/wizard/`. `palm.patterns.wizard.commit` remains a shim for `wizard.handler`.
+Wizard-specific APIs live under `palm.patterns.wizard` (e.g. `handler`, `options`, `builder`).
 
 ```python
-# Recommended (0.6+)
 from palm.common import DefinitionExecutor, ExecutionPlan
 from palm.common.hooks import InstancePersistenceHook
 from palm.common.plans import PlanRegistry
-
-# Still works (compat)
-from palm.executions import DefinitionExecutor, ExecutionPlan
+from palm.patterns.wizard.handler import CommitResult, default_commit_registry
 ```
 
 ---

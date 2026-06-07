@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from palm.common import ProcessPlan
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.executions import ProcessPlan
 from palm.runtimes.embedded import EmbeddedRuntime
 
 

@@ -1,7 +1,7 @@
 """
 RuntimeHost — minimal contract between runtimes and the executions layer.
 
-Keeps :class:`~palm.executions.executor.DefinitionExecutor` decoupled from any
+Keeps :class:`~palm.common.executions.executor.DefinitionExecutor` decoupled from any
 single runtime implementation (embedded, daemon, server, test doubles).
 """
 

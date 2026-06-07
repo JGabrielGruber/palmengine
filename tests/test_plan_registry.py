@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common import ExecutionPlan, PlanNotFoundError, PlanRegistry, PlanValidationError
+from palm.common.plans import ProcessPlan
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.executions import ExecutionPlan, PlanNotFoundError, PlanRegistry, PlanValidationError
-from palm.executions.process_submission import ProcessPlan
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 

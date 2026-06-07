@@ -55,8 +55,8 @@ def test_queued_scheduler_drives_job_in_background(queued_engine: OrchestrationE
 
 
 def test_queued_scheduler_wizard_flow() -> None:
+    from palm.common import build_pattern
     from palm.definitions.flow import FlowDefinition
-    from palm.executions import build_pattern
 
     scheduler = QueuedScheduler(runner=BehaviorTreeRunner())
     events = EventEngine()

@@ -14,9 +14,8 @@ from palm.core.event import EventEngine
 from palm.core.registry import pattern_registry
 from palm.definitions.flow import FlowDefinition
 from palm.patterns._registry import get_builder
-from palm.patterns.wizard.builder import wizard_config_from_options
 
-__all__ = ["build_pattern", "wizard_config_from_options"]
+__all__ = ["build_pattern"]
 
 
 def build_pattern(

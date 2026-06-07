@@ -123,7 +123,6 @@ Run `palm --help` for the full list.
 src/palm/
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
 ├── common/         # Shared coordination (plans, hooks, persistence, submission)
-├── executions/     # Backward-compat alias for common
 ├── instances/      # ProcessInstance snapshots
 ├── definitions/    # FlowDefinition, ProcessDefinition
 ├── patterns/       # wizard, dag, etl (extensible)

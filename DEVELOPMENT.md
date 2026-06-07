@@ -39,7 +39,6 @@ src/palm/
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
 ├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/)
-├── executions/        # Backward-compat alias for common
 ├── instances/         # ProcessInstance, status history
 ├── runtimes/
 │   ├── embedded.py    # EmbeddedRuntime

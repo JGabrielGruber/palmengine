@@ -9,9 +9,9 @@ from typing import Any
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.commit import CommitContext, CommitRegistry, CommitResult
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitResult
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.step_leaf import EventEmitter, _get_answers
 

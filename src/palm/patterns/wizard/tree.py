@@ -7,9 +7,9 @@ from __future__ import annotations
 from palm.core.behavior_tree import BaseNode, RootNode, SequenceNode
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.action_leaf import WizardActionLeaf
-from palm.patterns.wizard.commit import CommitRegistry
 from palm.patterns.wizard.commit_leaf import WizardCommitLeaf
 from palm.patterns.wizard.config import WizardConfig
+from palm.patterns.wizard.handler import CommitRegistry
 from palm.patterns.wizard.step_leaf import EventEmitter, WizardStepLeaf
 from palm.patterns.wizard.summary_leaf import WizardSummaryLeaf
 

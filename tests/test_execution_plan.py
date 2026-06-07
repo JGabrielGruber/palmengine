@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from palm.common import ExecutionPlan, prepare_flow_submission
+from palm.common.patterns import PatternBuildContext
 from palm.core.orchestration import JobStatus
 from palm.definitions.flow import FlowDefinition
-from palm.executions import ExecutionPlan, prepare_flow_submission
-from palm.executions.build_context import PatternBuildContext
 from palm.runtimes.embedded import EmbeddedRuntime
 
 

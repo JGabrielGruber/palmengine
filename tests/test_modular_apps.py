@@ -42,8 +42,8 @@ def test_installed_storage_apps_register() -> None:
         storage_registry.get(name)
 
 
-def test_wizard_handler_compat_shim() -> None:
-    from palm.patterns.wizard.commit import CommitRegistry as ShimRegistry
+def test_wizard_handler_exports() -> None:
+    from palm.patterns.wizard import CommitRegistry
     from palm.patterns.wizard.handler import CommitRegistry as HandlerRegistry
 
-    assert ShimRegistry is HandlerRegistry
+    assert CommitRegistry is HandlerRegistry

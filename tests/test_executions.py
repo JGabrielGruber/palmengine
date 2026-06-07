@@ -4,18 +4,22 @@ from __future__ import annotations
 
 import pytest
 
-from palm.core import StorageEngine
-from palm.core.behavior_tree import BasePattern
-from palm.core.orchestration import Job, JobStatus
-from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.executions import (
+from palm.common import (
     DefinitionBuildError,
     DefinitionExecutor,
     DefinitionRepository,
     build_pattern,
+)
+from palm.core import StorageEngine
+from palm.core.behavior_tree import BasePattern
+from palm.core.orchestration import Job, JobStatus
+from palm.definitions import FlowDefinition, ProcessDefinition
+from palm.patterns.wizard import (
+    WizardEventType,
+    WizardKeys,
+    WizardPattern,
     wizard_config_from_options,
 )
-from palm.patterns.wizard import WizardEventType, WizardKeys, WizardPattern
 from palm.runtimes.embedded import EmbeddedRuntime
 
 
@@ -186,7 +190,7 @@ def test_persisted_process_executes_after_reload() -> None:
 
 
 def test_transactional_wizard_from_stored_flow(runtime: EmbeddedRuntime) -> None:
-    from palm.patterns.wizard.commit import CommitResult, default_commit_registry
+    from palm.patterns.wizard.handler import CommitResult, default_commit_registry
 
     default_commit_registry().register(
         "persist_user",

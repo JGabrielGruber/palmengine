@@ -6,9 +6,8 @@ The ``palm`` package is organized in layers:
 - ``palm.core`` — pure foundational engines (no imports from outside core)
 - ``palm.common`` — shared coordination (plans, submission, hooks, persistence)
 - ``palm.instances`` — durable process instance snapshots
-- ``palm.patterns`` / ``palm.providers`` / ``palm.storages`` — extensible plugin modules
-- ``palm.executions`` — backward-compat alias for ``palm.common``
-- ``palm.definitions`` — flow and process definitions
+- ``palm.patterns`` / ``palm.providers`` / ``palm.storages`` — extensible plugin apps
+- ``palm.definitions`` — flow and process definition models
 - ``palm.runtimes`` — CLI, embedded, server, and daemon surfaces
 
 Public API version: ``palm.__version__`` (currently 0.6.0).

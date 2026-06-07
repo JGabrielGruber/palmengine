@@ -8,11 +8,11 @@ import signal
 import threading
 from typing import Any, ClassVar
 
+from palm.common.exceptions import PlanNotFoundError
+from palm.common.plans import ExecutionPlan, PlanRegistry, ProcessPlan, StoredPlan
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.common.exceptions import PlanNotFoundError
-from palm.common.plans import ExecutionPlan, PlanRegistry, ProcessPlan, StoredPlan
 from palm.runtimes.base import BaseRuntime
 from palm.runtimes.server.auth import current_principal_id
 from palm.runtimes.server.http import PalmHttpServer, serve_runtime
@@ -76,7 +76,7 @@ class ServerRuntime(BaseRuntime):
         return self.plan_registry.store(plan, principal_id=current_principal_id(self))
 
     def store_process_plan(self, bundle: ProcessPlan) -> list[StoredPlan]:
-        """Stage every plan in a :class:`~palm.executions.process_submission.ProcessPlan`."""
+        """Stage every plan in a :class:`~palm.common.plans.process_plan.ProcessPlan`."""
         return [self.store_plan(plan) for plan in bundle.plans]
 
     def submit_stored_plan(self, plan_id: str) -> Job:

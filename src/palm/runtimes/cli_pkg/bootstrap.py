@@ -11,8 +11,8 @@ from typing import Any
 import palm.patterns
 import palm.providers
 import palm.storages  # noqa: F401
-from palm.core.storage import StorageEngine
 from palm.common.exceptions import DefinitionNotFoundError
+from palm.core.storage import StorageEngine
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.embedded import EmbeddedRuntime
 

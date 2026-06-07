@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common import DefinitionNotFoundError, DefinitionRepository
 from palm.core import StorageEngine, StorageNotConfiguredError
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.executions import DefinitionNotFoundError, DefinitionRepository
 from palm.storages import memory  # noqa: F401
 
 

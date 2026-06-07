@@ -1,4 +1,4 @@
-"""Smoke tests for palm.common package layout and backward-compat shims."""
+"""Smoke tests for palm.common package layout."""
 
 from __future__ import annotations
 
@@ -19,15 +19,6 @@ def test_common_public_api() -> None:
     assert PlanRegistry is not None
     assert InstancePersistenceHook is not None
     assert callable(build_pattern)
-
-
-def test_executions_compat_reexports_common() -> None:
-    import palm.common as common
-    import palm.executions as executions
-
-    assert executions.DefinitionExecutor is common.DefinitionExecutor
-    assert executions.ExecutionPlan is common.ExecutionPlan
-    assert executions.InstancePersistenceHook is common.InstancePersistenceHook
 
 
 def test_common_subpackage_imports() -> None:

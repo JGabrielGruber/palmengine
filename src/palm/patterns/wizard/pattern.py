@@ -11,9 +11,9 @@ from palm.core.context import BaseState
 from palm.core.event import EventEngine
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.backtrack import apply_backtrack, can_backtrack_to
-from palm.patterns.wizard.commit import CommitRegistry, default_commit_registry
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.handler import CommitRegistry, default_commit_registry
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.tree import build_wizard_tree
 

@@ -15,7 +15,7 @@ from palm.patterns.wizard import (
     WizardPattern,
     WizardStepConfig,
 )
-from palm.patterns.wizard.commit import CommitContext, CommitRegistry, CommitResult
+from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitResult
 from palm.states import BlackboardState
 
 
@@ -236,7 +236,7 @@ def _transactional_config() -> WizardConfig:
 
 
 def test_transactional_wizard_happy_path_with_commit() -> None:
-    from palm.patterns.wizard.commit import CommitRegistry, CommitResult
+    from palm.patterns.wizard.handler import CommitRegistry, CommitResult
 
     registry = CommitRegistry()
     committed: list[dict] = []
@@ -289,7 +289,7 @@ def test_validation_min_length_failure() -> None:
 
 
 def test_commit_handler_failure() -> None:
-    from palm.patterns.wizard.commit import CommitRegistry, CommitResult
+    from palm.patterns.wizard.handler import CommitRegistry, CommitResult
 
     registry = CommitRegistry()
 

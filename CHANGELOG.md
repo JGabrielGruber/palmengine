@@ -8,7 +8,7 @@ Major orchestration maturation release: authoritative lifecycle, layered runtime
 
 ### Added
 
-- **`palm.common` package** — shared coordination split into `executions/`, `plans/`, `hooks/`, `persistence/`, `patterns/`; `palm.executions` retained as compat alias
+- **`palm.common` package** — shared coordination split into `executions/`, `plans/`, `hooks/`, `persistence/`, `patterns/`
 - **Django-style extensible apps** — `patterns/`, `providers/`, `storages/` restructured as self-contained subpackages with per-app `registry.py` and `INSTALLED_*` autoload lists
 - **Pattern builder registry** — each pattern app registers its own `builder.py`; `common/patterns/builder.py` dispatches generically
 - **Lifecycle authority** — `RunResult` + `OrchestrationEngine.apply_result()` as sole job transition path
@@ -31,6 +31,8 @@ Major orchestration maturation release: authoritative lifecycle, layered runtime
 
 ### Removed
 
+- **`palm.executions` package** — use `palm.common` and subpackages (`common.plans`, `common.hooks`, etc.)
+- **`palm.patterns.wizard.commit`** — use `palm.patterns.wizard.handler`
 - `ExecutionBackend` alias (use `JobRunner`)
 - `BehaviorTreeBackend` alias (use `BehaviorTreeRunner`)
 - `EmbeddedMode` (use `InlineScheduler`)

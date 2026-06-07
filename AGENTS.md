@@ -36,7 +36,6 @@ Constitution for AI coding agents and human developers working on Palm.
 | `palm/definitions/` | Flow and process definition models |
 | `palm/instances/` | Durable process instance snapshots |
 | `palm/runtimes/` | Embedded, CLI, server, daemon surfaces |
-| `palm/executions/` | Backward-compat re-exports of `palm.common` (prefer `common` for new code) |
 | `palm/utils/` | Cross-cutting helpers (core must not import utils) |
 
 ### 3. Archive (`archive/`)

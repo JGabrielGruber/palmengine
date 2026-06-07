@@ -88,7 +88,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/persistence/` | Definition and instance repositories, resume/sync |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
 
-`palm.executions` remains as a **backward-compat alias** re-exporting `palm.common`. New code should import from `palm.common` directly.
+Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
 
 **Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — each is a Django-style app subpackage with its own `registry.py`. Add the app name to `INSTALLED_PATTERNS` / `INSTALLED_PROVIDERS` / `INSTALLED_STORAGES`; never modify core to add a plugin.
 
