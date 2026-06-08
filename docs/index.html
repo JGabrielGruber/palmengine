@@ -47,7 +47,10 @@
     }
 
     .neon-text {
-      text-shadow: 0 0 20px rgb(52 211 153);
+      text-shadow: 
+        0 0 10px #22d3ee,
+        0 0 20px #22d3ee,
+        0 0 40px #c026d3;
     }
   </style>
 </head>
@@ -58,16 +61,16 @@
     <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
         <img src="images/logo.png" alt="Palm Logo" class="h-10 w-auto">
-        <span class="text-3xl font-bold tracking-tighter neon-text">Palm</span>
+        <span class="text-3xl font-bold tracking-tighter">Palm</span>
       </div>
-      <div class="flex items-center gap-x-8 text-sm font-medium">
-        <a href="#features" class="hover:text-teal-400 transition-colors">Features</a>
-        <a href="#quickstart" class="hover:text-teal-400 transition-colors">Quick Start</a>
+      <div class="items-center gap-x-8 text-sm font-medium hidden sm:flex">
+        <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
+        <a href="#quickstart" class="hover:text-cyan-400 transition-colors">Quick Start</a>
         <a href="https://github.com/JGabrielGruber/palm" target="_blank"
-          class="hover:text-teal-400 transition-colors">GitHub</a>
-        <a href="#docs" class="hover:text-teal-400 transition-colors">Docs</a>
+          class="hover:text-cyan-400 transition-colors">GitHub</a>
+        <a href="#docs" class="hover:text-cyan-400 transition-colors">Docs</a>
         <a href="https://github.com/JGabrielGruber/palm/releases" target="_blank"
-          class="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 px-6 py-2.5 rounded-2xl font-semibold transition-all">
+          class="bg-gradient-to-r from-cyan-500 to-purple-400 hover:from-cyan-400 hover:to-purple-300 px-6 py-2.5 rounded-2xl font-semibold transition-all">
           Get Started
         </a>
       </div>
@@ -78,13 +81,13 @@
   <section class="hero-bg h-screen flex items-center text-center relative">
     <div class="max-w-5xl mx-auto px-6 z-10">
       <div
-        class="inline-flex items-center gap-x-2 bg-black/60 border border-teal-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
-        <span class="text-emerald-400">🌴</span>
+        class="inline-flex items-center gap-x-2 bg-black/60 border border-cyan-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
+        <span class="text-orange-200">🌴</span>
         <span class="text-sm font-medium tracking-widest">v0.6.0 — NOW WITH DURABLE INSTANCES</span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
         Orchestration that<br>feels <span
-          class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-orange-400">alive</span>
+          class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-orange-300">alive</span>
       </h1>
       <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
         Lightweight Behavior Tree engine for wizards, pipelines, and transactional workflows.
@@ -110,18 +113,18 @@
     <div class="max-w-7xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-16">Built for real life</h2>
       <div class="grid md:grid-cols-3 gap-8">
-        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
-          <i class="fa-solid fa-wand-magic-sparkles text-5xl text-teal-400 mb-6"></i>
+        <div class="bg-zinc-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-wand-magic-sparkles text-5xl text-cyan-400 mb-6"></i>
           <h3 class="text-2xl font-semibold mb-4">Interactive Wizards</h3>
           <p class="text-zinc-400">Backtracking, validation, summary &amp; transactional commits. Resume anytime.</p>
         </div>
-        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
-          <i class="fa-solid fa-diagram-project text-5xl text-teal-400 mb-6"></i>
+        <div class="bg-zinc-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-diagram-project text-5xl text-cyan-400 mb-6"></i>
           <h3 class="text-2xl font-semibold mb-4">Behavior Trees</h3>
           <p class="text-zinc-400">Compositional, observable, and powerful control flow.</p>
         </div>
-        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
-          <i class="fa-solid fa-database text-5xl text-teal-400 mb-6"></i>
+        <div class="bg-zinc-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-database text-5xl text-cyan-400 mb-6"></i>
           <h3 class="text-2xl font-semibold mb-4">Durable Instances</h3>
           <p class="text-zinc-400">Process state survives restarts. Shared across runtimes.</p>
         </div>
@@ -133,10 +136,14 @@
   <section id="quickstart" class="py-24">
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
-      <div class="bg-black border border-teal-900 rounded-3xl p-10 font-mono text-base overflow-x-auto">
-        <pre><code>uv sync --extra cli
-            uv run palm doctor
-            uv run palm wizard start onboard</code></pre>
+      <div class="bg-black border border-cyan-900 rounded-3xl p-10 font-mono text-base overflow-x-auto">
+        <pre>
+          <code>
+$ uv sync --extra cli
+$ uv run palm doctor
+$ uv run palm wizard start onboard
+          </code>
+        </pre>
       </div>
     </div>
   </section>
@@ -147,13 +154,13 @@
       <div>
         <div class="flex items-center gap-x-3 mb-6">
           <img src="images/logo.png" alt="Palm" class="h-9">
-          <span class="text-3xl font-bold neon-text">Palm</span>
+          <span class="text-3xl font-bold">Palm</span>
         </div>
         <p class="text-zinc-500">Orchestration where the sun meets the sea.</p>
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-teal-400">Product</h4>
+        <h4 class="font-semibold mb-4 text-cyan-400">Product</h4>
         <ul class="space-y-3 text-zinc-400">
           <li><a href="#features" class="hover:text-white">Features</a></li>
           <li><a href="https://github.com/JGabrielGruber/palm" target="_blank" class="hover:text-white">GitHub</a></li>
@@ -161,7 +168,7 @@
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-teal-400">Resources</h4>
+        <h4 class="font-semibold mb-4 text-cyan-400">Resources</h4>
         <ul class="space-y-3 text-zinc-400">
           <li><a href="https://github.com/JGabrielGruber/palm/blob/main/README.md"
               class="hover:text-white">Documentation</a></li>
@@ -171,7 +178,7 @@
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-teal-400">Connect</h4>
+        <h4 class="font-semibold mb-4 text-cyan-400">Connect</h4>
         <div class="flex flex-col gap-y-3 text-zinc-400">
           <a href="https://github.com/JGabrielGruber/palm" target="_blank"
             class="hover:text-white flex items-center gap-x-3">
