@@ -1,215 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palm Engine — Lightweight Python Orchestration</title>
-    <link rel="icon" href="logo.png" type="image/x-icon">
-    <meta name="description" content="Palm Engine: A clean, Python-first orchestration engine powered by Behavior Trees. Complex multi-step workflows, rich interactive wizards, and transactional processes.">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #0f172a 0%, #1e2937 100%);
-            color: #e2e8f0;
-            line-height: 1.6;
-        }
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at center, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
-        }
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2rem;
-            z-index: 1;
-        }
-        .logo {
-            width: 180px;
-            margin-bottom: 2rem;
-        }
-        h1 {
-            font-size: 3.5rem;
-            margin: 0 0 1rem 0;
-            background: linear-gradient(90deg, #f97316, #a78bfa, #22d3ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .tagline {
-            font-size: 1.4rem;
-            color: #94a3b8;
-            max-width: 700px;
-            margin: 0 auto 3rem;
-        }
-        .cta {
-            display: inline-flex;
-            gap: 1rem;
-        }
-        .btn {
-            padding: 14px 32px;
-            border-radius: 9999px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        .btn-primary {
-            background: #f97316;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #fb923c;
-            transform: translateY(-3px);
-        }
-        .btn-secondary {
-            border: 2px solid #64748b;
-            color: #e2e8f0;
-        }
-        .section {
-            padding: 5rem 0;
-        }
-        .mermaid-container {
-            background: #1e2937;
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 3rem 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .philosophy {
-            background: linear-gradient(to bottom, #1e2937, #0f172a);
-            text-align: center;
-        }
-        .philosophy img {
-            max-width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            margin: 2rem 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary Meta -->
+  <title>Palm Engine 🌴 | Orchestration That Feels Human</title>
+  <meta name="description"
+    content="Palm Engine — Lightweight Behavior Tree orchestration with interactive wizards, durable instances, and transactional workflows.">
+  <meta name="keywords"
+    content="orchestration, behavior tree, python workflow, wizard, transactional workflow, durable execution">
+  <meta name="author" content="José Gabriel Gruber">
+  <link rel="canonical" href="https://palmengine.org">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Palm Engine 🌴 — Orchestration That Feels Human">
+  <meta property="og:description"
+    content="Interactive wizards, durable process instances, and extensible Behavior Trees.">
+  <meta property="og:image" content="https://palmengine.org/images/philosophy-sunset.jpg">
+  <meta property="og:url" content="https://palmengine.org">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Palm Engine">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Palm Engine 🌴 — Orchestration That Feels Human">
+  <meta name="twitter:description" content="Interactive wizards, durable instances, Behavior Trees.">
+  <meta name="twitter:image" content="https://palmengine.org/images/philosophy-sunset.jpg">
+  <meta name="twitter:site" content="@PalmEngine">
+
+  <!-- Favicon -->
+  <link rel="icon" href="images/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="images/logo.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .hero-bg {
+      background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('images/philosophy-sunset.jpg') center/cover no-repeat;
+    }
+
+    .neon-text {
+      text-shadow: 0 0 20px rgb(52 211 153);
+    }
+  </style>
 </head>
-<body>
 
-    <section class="hero">
-        <div class="container">
-            <img src="logo.png" alt="Palm Engine Logo" class="logo" style="filter: drop-shadow(0 0 30px rgba(249,115,22,0.6));">
-            
-            <h1>Palm Engine</h1>
-            <p class="tagline">
-                A lightweight, Python-first orchestration engine powered by a clean Behavior Tree foundation.<br>
-                Complex multi-step workflows • Rich interactive wizards • Transactional processes
-            </p>
-            
-            <div class="cta">
-                <a href="#get-started" class="btn btn-primary">Get Started</a>
-                <a href="https://github.com/JGabrielGruber/palm" class="btn btn-secondary">GitHub</a>
-            </div>
-            
-            <div style="margin-top: 4rem;">
-                <p style="color: #64748b; font-size: 0.95rem;">Human-in-the-loop • Fully automated • Built with ❤️ in Brazil, powered by xAI</p>
-            </div>
+<body class="bg-zinc-950 text-zinc-100">
+  <!-- Navbar -->
+  <nav class="border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-x-3">
+        <img src="images/logo.png" alt="Palm Logo" class="h-10 w-auto">
+        <span class="text-3xl font-bold tracking-tighter neon-text">Palm</span>
+      </div>
+      <div class="flex items-center gap-x-8 text-sm font-medium">
+        <a href="#features" class="hover:text-teal-400 transition-colors">Features</a>
+        <a href="#quickstart" class="hover:text-teal-400 transition-colors">Quick Start</a>
+        <a href="https://github.com/JGabrielGruber/palm" target="_blank"
+          class="hover:text-teal-400 transition-colors">GitHub</a>
+        <a href="#docs" class="hover:text-teal-400 transition-colors">Docs</a>
+        <a href="https://github.com/JGabrielGruber/palm/releases" target="_blank"
+          class="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 px-6 py-2.5 rounded-2xl font-semibold transition-all">
+          Get Started
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-bg h-screen flex items-center text-center relative">
+    <div class="max-w-5xl mx-auto px-6 z-10">
+      <div
+        class="inline-flex items-center gap-x-2 bg-black/60 border border-teal-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
+        <span class="text-emerald-400">🌴</span>
+        <span class="text-sm font-medium tracking-widest">v0.6.0 — NOW WITH DURABLE INSTANCES</span>
+      </div>
+      <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
+        Orchestration that<br>feels <span
+          class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-orange-400">alive</span>
+      </h1>
+      <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
+        Lightweight Behavior Tree engine for wizards, pipelines, and transactional workflows.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#quickstart"
+          class="bg-white text-zinc-900 hover:bg-zinc-100 px-10 py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-x-3">
+          <i class="fa-solid fa-rocket"></i> Start Now
+        </a>
+        <a href="https://github.com/JGabrielGruber/palm" target="_blank"
+          class="border border-white/50 hover:border-white px-10 py-4 rounded-2xl font-medium flex items-center justify-center gap-x-3">
+          <i class="fa-brands fa-github"></i> Star on GitHub
+        </a>
+      </div>
+    </div>
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/60">
+      <i class="fa-solid fa-chevron-down animate-bounce text-3xl"></i>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-24 bg-zinc-900">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-16">Built for real life</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-wand-magic-sparkles text-5xl text-teal-400 mb-6"></i>
+          <h3 class="text-2xl font-semibold mb-4">Interactive Wizards</h3>
+          <p class="text-zinc-400">Backtracking, validation, summary &amp; transactional commits. Resume anytime.</p>
         </div>
-    </section>
-
-    <section class="section philosophy" id="philosophy">
-        <div class="container">
-            <h2 style="text-align:center; margin-bottom: 2rem;">Philosophy</h2>
-            
-            <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto 2rem;">
-                <strong>🌴 Palm grows where the sun meets the sea.</strong><br><br>
-                
-                We believe orchestration should be:<br>
-                • Simple at the core, powerful at the edges<br>
-                • Human-first — interactive, resumable, and beautiful<br>
-                • Truth-seeking & High-agency — explicit, pluggable, durable<br>
-                • Built for the long run — transactional, persistent, extensible
-            </p>
-
-            <img src="images/philosophy-sunset.jpg" alt="Palm at golden hour — where structure meets beauty" style="max-width: 100%; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-
-            <p style="margin-top: 2rem; font-style: italic; color: #94a3b8;">
-                Palm is a <strong>philosophical son</strong> — balancing structure with flexibility,<br>
-                precision with humanity, and automation with mindful participation.
-            </p>
+        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-diagram-project text-5xl text-teal-400 mb-6"></i>
+          <h3 class="text-2xl font-semibold mb-4">Behavior Trees</h3>
+          <p class="text-zinc-400">Compositional, observable, and powerful control flow.</p>
         </div>
-    </section>
-
-    <section class="section" style="background: #0f172a;">
-        <div class="container">
-            <h2 style="text-align:center; margin-bottom: 3rem;">Architecture</h2>
-            
-            <div class="mermaid-container mermaid">
-flowchart LR
-    palm[🌴 Palm]:::root
-    
-    subgraph Core["Core Engines"]
-        direction LR
-        orchestration[Orchestration Engine]
-        behaviortree[Behavior Tree Engine]
-        context[Context + State]
-        event[Event Engine]
-    end
-
-    subgraph Executions["Executions Layer"]
-        direction LR
-        definitions[Definitions]
-        repository[Repositories]
-        executor[DefinitionExecutor]
-    end
-
-    subgraph Runtimes["Runtimes"]
-        direction LR
-        embedded[Embedded]
-        cli[CLI + REPL]
-        daemon[Daemon]
-        server[Server]
-    end
-
-    palm --> Core
-    palm --> Executions
-    Executions --> Core
-    Executions --> Runtimes
-    Core --> Runtimes
-            </div>
+        <div class="bg-zinc-950 border border-teal-900/50 rounded-3xl p-10 card-hover">
+          <i class="fa-solid fa-database text-5xl text-teal-400 mb-6"></i>
+          <h3 class="text-2xl font-semibold mb-4">Durable Instances</h3>
+          <p class="text-zinc-400">Process state survives restarts. Shared across runtimes.</p>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <section class="section" id="get-started">
-        <div class="container" style="text-align: center;">
-            <h2>Get Started</h2>
-            <pre style="background:#1e2937; padding: 1.5rem; border-radius: 12px; display: inline-block; text-align: left;">
-uv sync --group dev --extra cli
-palm doctor
-palm wizard start onboard</pre>
-            <p style="margin-top: 2rem;">
-                <a href="https://github.com/JGabrielGruber/palm" class="btn btn-primary">View on GitHub →</a>
-            </p>
+  <!-- Quick Start -->
+  <section id="quickstart" class="py-24">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
+      <div class="bg-black border border-teal-900 rounded-3xl p-10 font-mono text-base overflow-x-auto">
+        <pre><code>uv sync --extra cli
+            uv run palm doctor
+            uv run palm wizard start onboard</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black border-t border-zinc-900 py-16">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10">
+      <div>
+        <div class="flex items-center gap-x-3 mb-6">
+          <img src="images/logo.png" alt="Palm" class="h-9">
+          <span class="text-3xl font-bold neon-text">Palm</span>
         </div>
-    </section>
+        <p class="text-zinc-500">Orchestration where the sun meets the sea.</p>
+      </div>
 
-    <footer style="text-align: center; padding: 3rem; background: #0f172a; color: #64748b; font-size: 0.9rem;">
-        Palm Engine — Crafted with ❤️ in Brazil • Powered by <a href="https://x.ai" style="color: #f97316;">xAI</a><br>
-        <span style="font-size: 0.8rem;">Thank you for the tokens and the powerful collaborators (🐒 + 🤖).</span>
-    </footer>
+      <div>
+        <h4 class="font-semibold mb-4 text-teal-400">Product</h4>
+        <ul class="space-y-3 text-zinc-400">
+          <li><a href="#features" class="hover:text-white">Features</a></li>
+          <li><a href="https://github.com/JGabrielGruber/palm" target="_blank" class="hover:text-white">GitHub</a></li>
+        </ul>
+      </div>
 
-    <script>
-    mermaid.initialize({
-        startOnLoad: true,
-        theme: 'dark',
-        securityLevel: 'strict'
-    });
-    </script>
+      <div>
+        <h4 class="font-semibold mb-4 text-teal-400">Resources</h4>
+        <ul class="space-y-3 text-zinc-400">
+          <li><a href="https://github.com/JGabrielGruber/palm/blob/main/README.md"
+              class="hover:text-white">Documentation</a></li>
+          <li><a href="https://github.com/JGabrielGruber/palm/blob/main/ARCHITECTURE.md"
+              class="hover:text-white">Architecture</a></li>
+        </ul>
+      </div>
 
+      <div>
+        <h4 class="font-semibold mb-4 text-teal-400">Connect</h4>
+        <div class="flex flex-col gap-y-3 text-zinc-400">
+          <a href="https://github.com/JGabrielGruber/palm" target="_blank"
+            class="hover:text-white flex items-center gap-x-3">
+            <i class="fa-brands fa-github text-xl"></i> github.com/JGabrielGruber/palm
+          </a>
+          <a href="https://x.com/PalmEngine" target="_blank" class="hover:text-white flex items-center gap-x-3">
+            <i class="fa-brands fa-x-twitter text-xl"></i> @PalmEngine
+          </a>
+          <a href="mailto:palmengineorg@gmail.com" class="hover:text-white flex items-center gap-x-3">
+            <i class="fa-solid fa-envelope text-xl"></i> palmengineorg@gmail.com
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center text-zinc-500 text-sm mt-16 pt-8 border-t border-zinc-900">
+      © 2026 Palm Engine • MIT License
+    </div>
+  </footer>
 </body>
+
 </html>
