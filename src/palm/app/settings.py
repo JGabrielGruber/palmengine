@@ -38,6 +38,11 @@ class PalmSettings(BaseSettings):
     load_example_definitions: bool = True
     default_scheduler: SchedulerPolicy = "inline"
     max_concurrent_jobs: int | None = None
+    enable_state_snapshot: bool = False
+    snapshot_on_status: list[str] = Field(
+        default_factory=lambda: ["WAITING_FOR_INPUT", "SUCCEEDED", "FAILED"]
+    )
+    max_snapshots_per_instance: int = 10
 
     def definition_roots(self) -> list[Path]:
         """Directories scanned for ``register_definitions`` modules."""

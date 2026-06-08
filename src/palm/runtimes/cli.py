@@ -99,6 +99,8 @@ def build_parser() -> argparse.ArgumentParser:
     inst = sub.add_parser("instance", help="Process instance commands")
     inst_sub = inst.add_subparsers(dest="instance_cmd", required=True)
     inst_sub.add_parser("list", help="List persisted instances")
+    snapshots_p = inst_sub.add_parser("snapshots", help="List recorded state snapshots")
+    snapshots_p.add_argument("instance_id", help="Process instance id")
 
     wiz = sub.add_parser("wizard", help="Wizard flow commands")
     wiz_sub = wiz.add_subparsers(dest="wizard_cmd", required=True)
@@ -180,7 +182,12 @@ def main(argv: list[str] | None = None) -> int:
                 extra = [args.instance_id]
             exit_code = registry.dispatch(ctx, " ".join([phrase, *extra]).strip())
         elif args.command == "instance":
-            exit_code = registry.dispatch(ctx, f"instance {args.instance_cmd}")
+            extra: list[str] = []
+            if args.instance_cmd == "snapshots":
+                extra = [args.instance_id]
+            exit_code = registry.dispatch(
+                ctx, " ".join([f"instance {args.instance_cmd}", *extra]).strip()
+            )
         elif args.command == "wizard":
             extra = [getattr(args, "flow", "")] if args.wizard_cmd == "start" else []
             exit_code = registry.dispatch(

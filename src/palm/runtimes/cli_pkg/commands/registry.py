@@ -59,6 +59,7 @@ def build_registry() -> CommandRegistry:
     reg.register("process resume", _cmd_process_resume)
 
     reg.register("instance list", _cmd_instance_list)
+    reg.register("instance snapshots", _cmd_instance_snapshots)
 
     reg.register("wizard list", _cmd_wizard_list)
     reg.register("wizard start", _cmd_wizard_start)
@@ -90,6 +91,7 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
 
 [bold]Instances[/]
   instance list             List process instances (alias: sessions)
+  instance snapshots <id>   List recorded state snapshots for an instance
   status [<instance_id>]    Job + wizard status (active instance if omitted)
 
 [bold]Wizard[/]
@@ -150,6 +152,43 @@ def _cmd_process_list(ctx: CliContext, _args: list[str]) -> int:
 def _cmd_instance_list(ctx: CliContext, _args: list[str]) -> int:
     instances = ctx.app.list_instances()
     render_instance_table(ctx.console, instances)
+    return 0
+
+
+def _cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
+    from rich.table import Table
+
+    if not args:
+        ctx.console.print("[red]Usage:[/] instance snapshots <instance_id>")
+        return 1
+    try:
+        snapshots = ctx.app.list_instance_snapshots(args[0])
+    except Exception as exc:
+        ctx.console.print(f"[red]{exc}[/]")
+        return 1
+    if not snapshots:
+        ctx.console.print("[yellow]No state snapshots recorded for this instance.[/]")
+        ctx.console.print(
+            "[dim]Enable with[/] [cyan]PALM_ENABLE_STATE_SNAPSHOT=true[/] "
+            "[dim]in settings.[/]"
+        )
+        return 0
+
+    table = Table(title=f"State Snapshots — {args[0][:16]}", show_lines=True)
+    table.add_column("#", justify="right", style="dim")
+    table.add_column("Status", style="yellow")
+    table.add_column("Recorded At", style="cyan")
+    table.add_column("Step")
+    table.add_column("Job", style="dim")
+    for index, snapshot in enumerate(snapshots, start=1):
+        table.add_row(
+            str(index),
+            snapshot.status,
+            snapshot.recorded_at,
+            snapshot.wizard_step_slug or "—",
+            snapshot.job_id[:14],
+        )
+    ctx.console.print(table)
     return 0
 
 

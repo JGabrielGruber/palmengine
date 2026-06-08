@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from palm.core.orchestration import Job
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
-    from palm.instances import ProcessInstance
+    from palm.instances import ProcessInstance, StateSnapshot
     from palm.runtimes.base import BaseRuntime
 
 CLI_RUNTIME_NAME = "cli"
@@ -201,6 +201,12 @@ class PalmApp:
     def list_instances(self, *, runtime_name: str | None = None) -> list[ProcessInstance]:
         """List durable process instances for a registered runtime."""
         return self.runtime(runtime_name).instances.list_instances()
+
+    def list_instance_snapshots(
+        self, instance_id: str, *, runtime_name: str | None = None
+    ) -> list[StateSnapshot]:
+        """Return point-in-time state snapshots for a persisted instance."""
+        return self.runtime(runtime_name).instances.list_state_snapshots(instance_id)
 
     def list_flows(self, *, runtime_name: str | None = None) -> list[FlowDefinition]:
         """List flow definitions from a registered runtime repository."""

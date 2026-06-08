@@ -99,6 +99,9 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
     }
     if settings.max_concurrent_jobs is not None:
         options["max_concurrent_jobs"] = settings.max_concurrent_jobs
+    options["enable_state_snapshot"] = settings.enable_state_snapshot
+    options["snapshot_on_status"] = list(settings.snapshot_on_status)
+    options["max_snapshots_per_instance"] = settings.max_snapshots_per_instance
     options.update(overrides)
     return options
 

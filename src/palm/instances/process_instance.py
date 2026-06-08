@@ -8,9 +8,10 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+from palm.instances.state_snapshot import StateSnapshot
 from palm.instances.status_history import StatusHistoryEntry
 
-_INSTANCE_VERSION = 1
+_INSTANCE_VERSION = 2
 
 
 @dataclass
@@ -35,6 +36,7 @@ class ProcessInstance:
     metadata: dict[str, Any] = field(default_factory=dict)
     version: int = 1
     status_history: list[StatusHistoryEntry] = field(default_factory=list)
+    state_snapshots: list[StateSnapshot] = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     wizard_step_slug: str | None = None
@@ -57,6 +59,7 @@ class ProcessInstance:
             "metadata": dict(self.metadata),
             "version_number": self.version,
             "status_history": [entry.to_dict() for entry in self.status_history],
+            "state_snapshots": [entry.to_dict() for entry in self.state_snapshots],
             "created_at": self.created_at,
             "updated_at": self.updated_at,
             "wizard_step_slug": self.wizard_step_slug,
@@ -68,6 +71,10 @@ class ProcessInstance:
         history_raw = data.get("status_history") or []
         history = [
             StatusHistoryEntry.from_dict(item) for item in history_raw if isinstance(item, dict)
+        ]
+        snapshots_raw = data.get("state_snapshots") or []
+        snapshots = [
+            StateSnapshot.from_dict(item) for item in snapshots_raw if isinstance(item, dict)
         ]
         return cls(
             instance_id=str(data["instance_id"]),
@@ -83,6 +90,7 @@ class ProcessInstance:
             metadata=dict(data.get("metadata") or {}),
             version=int(data.get("version_number", data.get("version", 1))),
             status_history=history,
+            state_snapshots=snapshots,
             created_at=str(data.get("created_at", datetime.now(UTC).isoformat())),
             updated_at=str(data.get("updated_at", datetime.now(UTC).isoformat())),
             wizard_step_slug=data.get("wizard_step_slug"),
@@ -92,5 +100,14 @@ class ProcessInstance:
     def append_status(self, status: str, **detail: Any) -> None:
         self.status_history.append(StatusHistoryEntry.now(status, **detail))
         self.status = status
+        self.updated_at = datetime.now(UTC).isoformat()
+        self.version += 1
+
+    def append_state_snapshot(self, snapshot: StateSnapshot, *, max_snapshots: int = 10) -> None:
+        """Attach a point-in-time snapshot, retaining only the most recent ``max_snapshots``."""
+        limit = max(1, max_snapshots)
+        self.state_snapshots.append(snapshot)
+        if len(self.state_snapshots) > limit:
+            self.state_snapshots = self.state_snapshots[-limit:]
         self.updated_at = datetime.now(UTC).isoformat()
         self.version += 1

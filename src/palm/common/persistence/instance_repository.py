@@ -14,6 +14,7 @@ from palm.core.orchestration import Job
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
+from palm.instances.state_snapshot import StateSnapshot
 
 _DEFAULT_PREFIX = "palm:instances"
 
@@ -57,6 +58,22 @@ class InstanceRepository:
         instance = self.get(iid)
         update_instance_from_job(instance, job)
         return self.save(instance)
+
+    def append_state_snapshot(
+        self,
+        instance_id: str,
+        snapshot: StateSnapshot,
+        *,
+        max_snapshots: int = 10,
+    ) -> ProcessInstance:
+        """Attach a historical state snapshot to a persisted instance."""
+        instance = self.get(instance_id)
+        instance.append_state_snapshot(snapshot, max_snapshots=max_snapshots)
+        return self.save(instance)
+
+    def list_state_snapshots(self, instance_id: str) -> list[StateSnapshot]:
+        """Return point-in-time snapshots recorded for an instance."""
+        return list(self.get(instance_id).state_snapshots)
 
     def save(self, instance: ProcessInstance) -> ProcessInstance:
         """Persist instance to memory and storage."""

@@ -15,7 +15,7 @@ import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register backends
 from palm import __version__
 from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
-from palm.common.hooks import InstancePersistenceHook
+from palm.common.hooks import InstancePersistenceHook, StateSnapshotHook
 from palm.core import (
     AuthEngine,
     BehaviorTreeEngine,
@@ -103,6 +103,16 @@ class BaseRuntime:
                 )
             )
         hooks.append(InstancePersistenceHook(self.instances))
+        if options.get("enable_state_snapshot"):
+            hooks.append(
+                StateSnapshotHook(
+                    self.instances,
+                    snapshot_on_status=options.get("snapshot_on_status"),
+                    max_snapshots_per_instance=int(
+                        options.get("max_snapshots_per_instance", 10)
+                    ),
+                )
+            )
 
         orch_options: dict[str, Any] = {
             "scheduler": scheduler,

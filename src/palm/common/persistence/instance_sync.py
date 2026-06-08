@@ -91,6 +91,14 @@ def prepare_resume_state(
     return state
 
 
+def wizard_step_slug_for_job(job: Job) -> str | None:
+    return _wizard_step_slug(job)
+
+
+def wizard_runtime_position_for_job(job: Job) -> dict[str, Any]:
+    return _runtime_position(job)
+
+
 def _wizard_step_slug(job: Job) -> str | None:
     if not isinstance(job.executable, WizardPattern):
         slug = job.state.get(WizardKeys.CURRENT_STEP)
