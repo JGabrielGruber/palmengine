@@ -52,7 +52,7 @@ def print_version_full(console: Any | None = None) -> int:
         Panel(
             "\n".join(lines),
             title="🌴 Palm",
-            subtitle="https://github.com/example/palm",
+            subtitle="https://github.com/JGabrielGruber/palmengine",
             border_style="cyan",
         )
     )

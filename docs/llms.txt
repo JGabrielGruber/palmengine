@@ -1,0 +1,15 @@
+# Palm Engine — LLM Guide
+
+> Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
+
+## Key Resources
+- **Repository**: https://github.com/JGabrielGruber/palmengine
+- **Live Demo / REPL**: Run `uv run palm repl`
+- **Architecture**: https://palmengine.org#architecture or ARCHITECTURE.md
+- **Core Concepts**: Behavior Trees, Execution Plans, Wizard Pattern, Instance Persistence
+- **Quickstart**: `uv sync --extra cli && palm doctor && palm wizard start onboard`
+
+## Philosophy
+Filius philosophorum — orchestration that feels human, transactional, resumable.
+
+For full code structure, see the repomix-output or explore src/palm/core/ (pure layer).

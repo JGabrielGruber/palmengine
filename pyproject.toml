@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 authors = [
-    {name = "Palm Team"},
+    {name = "José Gabriel Gruber"},
 ]
 keywords = ["orchestration", "workflow", "wizard", "behavior-tree", "engine"]
 classifiers = [
@@ -60,9 +60,9 @@ test = [
 palm = "palm.runtimes.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/example/palm"
-Repository = "https://github.com/example/palm"
-Issues = "https://github.com/example/palm/issues"
+Homepage = "https://palmengine.org"
+Repository = "https://github.com/JGabrielGruber/palmengine"
+Issues = "https://github.com/JGabrielGruber/palmengine/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
