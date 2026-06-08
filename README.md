@@ -27,8 +27,9 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Patterns** | Transactional **wizard** (validation, summary, commit, resources); DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
 | **Persistence** | `DefinitionRepository`, `InstanceRepository`, `InstancePersistenceHook`, resume across restarts |
+| **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
-| **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, plan validation & staging |
+| **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
 | **DX** | Example definitions, `full_demo.py`, docs, `just` quality recipes |
 
 ```mermaid
@@ -81,6 +82,42 @@ Shared `StorageEngine` across runtime lifetimes is required for cross-process re
 
 ---
 
+## State snapshots (optional)
+
+Palm can record **point-in-time blackboard captures** at selected job status transitions—useful for audit trails, debugging wizard flows, and future time-travel replay. Snapshots are stored on each `ProcessInstance` as a bounded ring buffer (`state_snapshots[]`). The feature is **off by default**.
+
+**Enable via environment:**
+
+```bash
+export PALM_ENABLE_STATE_SNAPSHOT=true
+export PALM_SNAPSHOT_ON_STATUS='["WAITING_FOR_INPUT","SUCCEEDED","FAILED"]'
+export PALM_MAX_SNAPSHOTS_PER_INSTANCE=10
+
+palm wizard start onboard
+palm input Ada
+palm instance snapshots <instance_id>   # inspect captured history
+```
+
+**Enable in code:**
+
+```python
+from palm.app import PalmApp, PalmSettings
+
+settings = PalmSettings(
+    enable_state_snapshot=True,
+    snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
+    max_snapshots_per_instance=5,
+)
+with PalmApp(settings) as app:
+    app.create_runtime("embedded", autostart=True)
+    job = app.submit_flow("onboard")
+    snapshots = app.list_instance_snapshots(job.metadata["instance_id"])
+```
+
+Resume still uses the latest `state_snapshot` field (maintained by `InstancePersistenceHook`). Historical entries are for inspection—not replay yet. See [ARCHITECTURE.md](ARCHITECTURE.md) for middleware design and trade-offs.
+
+---
+
 ## Example flows
 
 Definitions under [`examples/definitions/`](examples/definitions/) auto-register at CLI startup.
@@ -110,6 +147,7 @@ Details: [examples/README.md](examples/README.md)
 | `palm version --full` | Version, Python, registered patterns/providers/storages |
 | `palm process list` \| `submit` \| `resume` | Definition catalog and lifecycle |
 | `palm instance list` | Persisted instances |
+| `palm instance snapshots <id>` | State snapshot history for an instance (when enabled) |
 | `palm wizard start <flow>` | Submit a wizard flow |
 | `palm input` / `palm back` | Drive or rewind an active wizard |
 
@@ -124,7 +162,7 @@ src/palm/
 ├── app/            # PalmApp orchestrator, settings, multi-runtime bootstrap
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
 ├── common/         # Shared coordination (plans, hooks, persistence, submission)
-├── instances/      # ProcessInstance snapshots
+├── instances/      # ProcessInstance + StateSnapshot models
 ├── definitions/    # FlowDefinition, ProcessDefinition
 ├── patterns/       # wizard, dag, etl (extensible)
 ├── providers/      # rest, graphql, postgres (extensible)

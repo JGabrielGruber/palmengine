@@ -41,6 +41,7 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 - Declarative `FlowDefinition` and `ProcessDefinition` with serialization
 - `DefinitionRepository` — register and persist flow/process catalogs
 - `InstanceRepository` — durable `ProcessInstance` snapshots with status history
+- Optional **state snapshot history** (`StateSnapshotHook`) — bounded blackboard captures for audit and debugging (off by default)
 - Resume across runtime restarts when storage is shared
 
 ### Common coordination layer (`palm.common`)
@@ -48,7 +49,7 @@ Behavior Trees are the **control-flow foundation**: steps are nodes, composition
 - `DefinitionExecutor` — submit flows/processes, resume instances, persist jobs
 - `common/plans/` — `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` (prepare → stage → submit)
 - `common/patterns/` — materialize definitions into concrete patterns via registry
-- `common/hooks/` + `common/persistence/` — instance sync wired through orchestration hooks
+- `common/hooks/` + `common/persistence/` — `InstancePersistenceHook` (resume) and optional `StateSnapshotHook` (audit history)
 
 ### Interactive wizards (flagship pattern)
 
@@ -106,7 +107,7 @@ flowchart TB
 
 | Layer | Responsibility |
 |-------|----------------|
-| **Runtime** | Authentication context, logging, tracing, storage selection, instance persistence, CLI/session policy |
+| **Runtime** | Authentication context, logging, tracing, storage selection, instance persistence, optional state snapshot history, CLI/session policy |
 | **BT nodes** | Optional per-step guards (authorization checks, rate limits, preconditions) expressed as dedicated nodes or decorators—not inline middleware in step JSON |
 
 Step definitions stay focused on **user-facing intent** (prompt, validation, resource id). Policy and infrastructure wrap execution at the edges.
@@ -118,13 +119,14 @@ Step definitions stay focused on **user-facing intent** (prompt, validation, res
 ### Near term (0.6.x)
 
 - Harden transactional wizard and instance resume across storage backends
+- Time-travel replay from `state_snapshots[]` (inspection shipped in 0.6.0)
 - Stronger **ResourceEngine** usage in patterns and commit handlers
 - Expand runtime middleware (auth policies, observability exporters) without core pollution
 - WebSocket runtime for live wizard and job streaming
 
 ### Medium term
 
-- **Improved observability** — structured events, instance audit trails, long-running job dashboards
+- **Improved observability** — structured events, richer audit dashboards atop `state_snapshots[]`, long-running job management UI
 - **Long-running process management** — cancel, pause, progress reporting across runtimes
 - Richer **DAG** and **ETL** patterns aligned with definition-driven submission
 - Optional **BT guard nodes** catalog (auth guard, validation decorator, retry)

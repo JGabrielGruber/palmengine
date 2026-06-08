@@ -32,7 +32,7 @@ flowchart TB
     subgraph Common["palm.common — shared coordination"]
         exec[DefinitionExecutor]
         plans[ExecutionPlan / PlanRegistry]
-        hooks[InstancePersistenceHook]
+        hooks[Job hooks — persistence, snapshots]
         persist[Definition + Instance repos]
         builder[Pattern materialization]
     end
@@ -84,7 +84,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 |------------|----------------|
 | `common/executions/` | `DefinitionExecutor`, flow/process submission prep |
 | `common/plans/` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
-| `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`) |
+| `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`, `StateSnapshotHook`) |
 | `common/persistence/` | Definition and instance repositories, resume/sync |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
 
@@ -197,7 +197,8 @@ Executions sit between runtimes and core: they understand definitions and patter
 | `builder` | `FlowDefinition` → `WizardPattern` / DAG / ETL |
 | `DefinitionRepository` | In-memory cache + storage-backed CRUD |
 | `InstanceRepository` | Durable `ProcessInstance` CRUD |
-| `InstancePersistenceHook` | Job lifecycle → instance snapshots |
+| `InstancePersistenceHook` | Job lifecycle → latest instance state (resume authority) |
+| `StateSnapshotHook` | Optional status transitions → bounded snapshot history (audit/replay) |
 
 Keeping the executor outside core preserves a single orchestration model while allowing rich wizard options and resume logic to evolve independently.
 
@@ -207,17 +208,24 @@ Keeping the executor outside core preserves a single orchestration model while a
 
 `ProcessInstance` captures durable orchestration state:
 
-- Stable `instance_id`, active `job_id`, status, `state_snapshot`
+- Stable `instance_id`, active `job_id`, status
+- **`state_snapshot`** — authoritative latest blackboard (used for resume)
+- **`state_snapshots[]`** — optional ring buffer of point-in-time captures (audit, debugging, future replay)
 - Flow metadata, wizard step slug, status history
 
-**Resume path:**
+| Field | Written by | Purpose |
+|-------|------------|---------|
+| `state_snapshot` | `InstancePersistenceHook` on every status change | Resume after restart |
+| `state_snapshots[]` | `StateSnapshotHook` at configured transitions | Historical audit trail |
+
+**Resume path** (uses `state_snapshot` only):
 
 1. Load instance from `InstanceRepository`
 2. Rebuild pattern from stored `flow_definition`
 3. Restore blackboard from `state_snapshot`
 4. Register job; continue via `provide_input` or orchestration resume
 
-`EmbeddedRuntime.resume_process()` and CLI `process resume` expose this path.
+`EmbeddedRuntime.resume_process()`, `PalmApp.resume_process()`, and CLI `process resume` expose this path. Historical `state_snapshots[]` entries are **not** used for resume today—they are for inspection and future time-travel replay.
 
 ---
 
@@ -257,12 +265,68 @@ flowchart TB
 | Concern | Preferred home |
 |---------|----------------|
 | Session / principal | Runtime |
-| Instance persistence | Runtime + `palm.common.hooks` |
+| Instance persistence | Runtime + `InstancePersistenceHook` |
+| State snapshot history | Runtime + `StateSnapshotHook` (optional, settings-driven) |
 | Structured logging / tracing | Runtime (future: EventEngine subscribers) |
 | Step may run? / quota / feature flag | BT guard node |
 | User prompt & validation | Wizard step leaf (definition-driven) |
 
 Avoid encoding middleware chains inside step JSON. Keep steps declarative; compose policy in the tree and runtime.
+
+### Job hooks (orchestration middleware)
+
+Hooks implement the `JobHook` protocol and register on `OrchestrationEngine` at runtime start. `BaseRuntime.start()` wires the default chain; `PalmSettings` controls optional hooks.
+
+```mermaid
+sequenceDiagram
+    participant Job
+    participant Orch as OrchestrationEngine
+    participant Persist as InstancePersistenceHook
+    participant Snap as StateSnapshotHook
+    participant Repo as InstanceRepository
+
+    Job->>Orch: apply_result (status change)
+    Orch->>Persist: on_job_status_changed
+    Persist->>Repo: update instance (state_snapshot)
+    opt enable_state_snapshot
+        Orch->>Snap: on_job_status_changed
+        Snap->>Repo: append state_snapshots[]
+    end
+```
+
+| Hook | Default | Role |
+|------|---------|------|
+| `InstancePersistenceHook` | Always on | Maintain latest `ProcessInstance` for resume |
+| `StateSnapshotHook` | Off (`enable_state_snapshot=False`) | Append historical `StateSnapshot` records |
+| `AuthMiddleware` | When `auth_enforce=True` | Gate job drive by principal/roles |
+| `DriveObservabilityHook` | When `observability=True` | Log drive slices |
+
+**`StateSnapshotHook` design:**
+
+- Lives in `palm/common/hooks/state_snapshot.py` (not core—respects layer boundaries).
+- Fires on `on_job_status_changed` after `apply_result` has committed the new status.
+- Captures `BlackboardState` via `snapshot_state()` plus wizard position metadata.
+- Appends to `ProcessInstance.state_snapshots[]`; trims to `max_snapshots_per_instance` (ring buffer).
+- **Non-blocking** — all failures are swallowed; job execution never depends on snapshot I/O.
+- Registered **after** `InstancePersistenceHook` so the instance record exists before history attaches.
+
+**Configuration** (`PalmSettings`, env prefix `PALM_`):
+
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| `enable_state_snapshot` | `False` | Master switch |
+| `snapshot_on_status` | `WAITING_FOR_INPUT`, `SUCCEEDED`, `FAILED` | Statuses that trigger a capture |
+| `max_snapshots_per_instance` | `10` | Ring buffer size per instance |
+
+Wiring path: `PalmSettings` → `runtime_start_options()` → `BaseRuntime.start()` → hook list on `OrchestrationEngine`.
+
+**Trade-offs:**
+
+- **Storage:** each snapshot duplicates blackboard dicts; bounded by ring buffer but still proportional to state size × capture count.
+- **Performance:** one serialize + repository read/write per matching transition when enabled; zero cost when disabled (hook not registered).
+- **Operational:** narrow `snapshot_on_status` in high-throughput deployments; use durable storage backends when snapshots must survive restarts.
+
+**Inspection:** `PalmApp.list_instance_snapshots(instance_id)` and CLI `palm instance snapshots <id>`.
 
 ---
 

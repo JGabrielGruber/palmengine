@@ -40,7 +40,7 @@ src/palm/
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
 ├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/)
-├── instances/         # ProcessInstance, status history
+├── instances/         # ProcessInstance, StateSnapshot, status history
 ├── runtimes/
 │   ├── embedded.py    # EmbeddedRuntime
 │   ├── cli.py         # Entry point
@@ -87,6 +87,89 @@ with PalmApp(PalmSettings(storage_backend="memory")) as app:
 Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming
 across separate app lifetimes (the CLI uses this pattern internally).
 
+## State snapshots
+
+Optional middleware (`StateSnapshotHook`) captures blackboard state at configured job status transitions. Disabled by default—no hook registered, zero overhead.
+
+### Enable for local development
+
+**Environment variables** (loaded by `PalmSettings`, prefix `PALM_`):
+
+```bash
+export PALM_ENABLE_STATE_SNAPSHOT=true
+# Optional — defaults shown:
+export PALM_SNAPSHOT_ON_STATUS='["WAITING_FOR_INPUT","SUCCEEDED","FAILED"]'
+export PALM_MAX_SNAPSHOTS_PER_INSTANCE=10
+```
+
+**In tests or scripts:**
+
+```python
+from palm.app import PalmApp, PalmSettings
+from palm.runtimes.embedded import EmbeddedRuntime
+
+rt = EmbeddedRuntime()
+rt.start(
+    enable_state_snapshot=True,
+    snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
+    max_snapshots_per_instance=5,
+)
+```
+
+Or via `PalmApp` (settings flow through `runtime_start_options()` automatically):
+
+```python
+app = PalmApp(PalmSettings(enable_state_snapshot=True)).bootstrap()
+app.create_runtime("embedded", autostart=True)
+```
+
+### Inspect snapshots
+
+**CLI** (REPL or one-shot):
+
+```bash
+palm instance snapshots <instance_id>
+```
+
+**Python API:**
+
+```python
+snapshots = app.list_instance_snapshots(instance_id)
+for snap in snapshots:
+    print(snap.status, snap.recorded_at, snap.wizard_step_slug)
+    print(snap.state_snapshot)  # blackboard dict
+```
+
+Snapshots persist with the `ProcessInstance` record in `InstanceRepository` (same storage backend as instances). Use a durable backend (`filesystem`, `postgres`, etc.) if snapshots must survive process restarts.
+
+### How it relates to instance persistence
+
+| Mechanism | Field | Purpose |
+|-----------|-------|---------|
+| `InstancePersistenceHook` | `state_snapshot` | Latest state — **resume authority** |
+| `StateSnapshotHook` | `state_snapshots[]` | Historical ring buffer — **audit/debug** |
+
+`StateSnapshotHook` runs after `InstancePersistenceHook` on `on_job_status_changed`. Snapshot failures are swallowed so jobs never fail because of snapshot I/O.
+
+### Trade-offs
+
+- **Storage cost:** each capture duplicates the blackboard dict; large wizards or high capture frequency increase backend size. Lower `max_snapshots_per_instance` or narrow `snapshot_on_status` to reduce footprint.
+- **Performance:** one serialize + repository write per matching transition when enabled. Leave disabled in latency-sensitive paths unless you need the audit trail.
+- **Replay:** inspection is supported today; programmatic time-travel replay from `state_snapshots[]` is a future extension.
+
+### Tests
+
+| File | Coverage |
+|------|----------|
+| `tests/test_state_snapshot_hook.py` | Hook behavior, ring buffer trim, non-blocking errors, embedded integration, `PalmApp` wiring |
+| `tests/test_instances.py` | `ProcessInstance` persistence and resume (uses `state_snapshot`, not history) |
+
+Run snapshot tests only:
+
+```bash
+pytest tests/test_state_snapshot_hook.py -q
+```
+
 ## Adding a pattern (Django-style app)
 
 1. Create `palm/patterns/<name>/` with:
@@ -132,6 +215,7 @@ All code under `archive/` is historical. Never add new features there.
 | Wizard pattern | `tests/test_wizard.py` |
 | Executions / builder | `tests/test_executions.py` |
 | Instances / resume | `tests/test_instances.py` |
+| State snapshot hook | `tests/test_state_snapshot_hook.py` |
 | Embedded API | `tests/test_embedded.py` |
 | CLI dispatch | `tests/test_cli.py` |
 
