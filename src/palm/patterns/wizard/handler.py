@@ -4,6 +4,7 @@ Wizard commit handlers — transactional finalize hooks for wizard flows.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -53,21 +54,31 @@ class CommitContext:
 
 
 class CommitRegistry:
-    """Register named commit handlers (code-defined)."""
+    """Thread-safe registry of named commit handlers (code-defined)."""
 
     def __init__(self) -> None:
         self._handlers: dict[str, CommitHandler] = {}
+        self._lock = threading.RLock()
 
     def register(self, name: str, handler: CommitHandler) -> None:
         if not name:
             raise ValueError("Commit handler name must be non-empty")
-        self._handlers[name] = handler
+        with self._lock:
+            if self._handlers.get(name) is handler:
+                return
+            self._handlers[name] = handler
 
     def has(self, name: str) -> bool:
-        return name in self._handlers
+        with self._lock:
+            return name in self._handlers
+
+    def names(self) -> list[str]:
+        with self._lock:
+            return sorted(self._handlers)
 
     def run(self, name: str, context: CommitContext) -> CommitResult:
-        handler = self._handlers.get(name)
+        with self._lock:
+            handler = self._handlers.get(name)
         if handler is None:
             return CommitResult.failure(f"Unknown commit handler: {name!r}")
         try:

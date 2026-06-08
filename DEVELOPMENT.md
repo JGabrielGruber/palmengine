@@ -193,6 +193,27 @@ pytest tests/test_state_snapshot_hook.py -q
 2. Register with `storage_registry`.
 3. Add tests.
 
+## Registry registration and thread safety
+
+Plugin registries (`pattern_registry`, `provider_registry`, `storage_registry`, pattern builders, commit handlers) are **thread-safe** but should be populated **once during bootstrap**, not from job-drive hot paths.
+
+**Do:**
+
+- Register patterns/providers/storages in each app's `registry.py`, imported via `INSTALLED_*` autoload lists.
+- Register commit handlers in `register_definitions()` or module import side effects before serving traffic.
+- Use `PalmApp.bootstrap()` (or `ensure_plugins()`) before creating runtimes in multi-threaded deployments.
+
+**Avoid:**
+
+- Calling `register()` from orchestration hooks, scheduler workers, or per-request handlers.
+- Assuming single-threaded access — `QueuedScheduler`, daemon runtimes, and multi-runtime apps read registries concurrently.
+
+Concurrency tests live in `tests/test_core_registry.py`. Run them after registry changes:
+
+```bash
+pytest tests/test_core_registry.py -q
+```
+
 ## Core purity check
 
 ```bash
@@ -216,6 +237,7 @@ All code under `archive/` is historical. Never add new features there.
 | Executions / builder | `tests/test_executions.py` |
 | Instances / resume | `tests/test_instances.py` |
 | State snapshot hook | `tests/test_state_snapshot_hook.py` |
+| Registry thread safety | `tests/test_core_registry.py` |
 | Embedded API | `tests/test_embedded.py` |
 | CLI dispatch | `tests/test_cli.py` |
 

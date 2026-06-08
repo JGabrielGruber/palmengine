@@ -48,6 +48,7 @@ Constitution for AI coding agents and human developers working on Palm.
 
 - One primary class per file in core engines.
 - Register concretes at module import time in patterns/providers/storages.
+- **Registry thread safety:** all registry maps use `threading.RLock`; register during bootstrap only, never from job-drive hot paths.
 
 ## Forbidden Patterns
 

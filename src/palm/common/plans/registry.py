@@ -32,7 +32,7 @@ class PlanRegistry:
 
     def __init__(self) -> None:
         self._entries: dict[str, StoredPlan] = {}
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
     def store(self, plan: ExecutionPlan, *, principal_id: str | None = None) -> StoredPlan:
         """Validate and stage a plan; returns the stored record."""

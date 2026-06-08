@@ -7,6 +7,7 @@ importing concrete classes. Registration of implementations happens outside core
 
 from __future__ import annotations
 
+import threading
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from palm.core.exceptions import RegistryError
@@ -21,7 +22,11 @@ T = TypeVar("T")
 
 class Registry(Generic[T]):
     """
-    Thread-safe-style name → implementation map for extensible Palm components.
+    Thread-safe name → implementation map for extensible Palm components.
+
+    Uses a reentrant lock so concurrent readers and bootstrap-time writers
+    do not corrupt the map. Re-registering the same ``(name, implementation)``
+    pair is a no-op.
 
     Parameters
     ----------
@@ -32,27 +37,35 @@ class Registry(Generic[T]):
     def __init__(self, label: str) -> None:
         self._label = label
         self._entries: dict[str, type[T]] = {}
+        self._lock = threading.RLock()
 
     def register(self, name: str, implementation: type[T]) -> None:
-        """Register an implementation under ``name``. Overwrites on duplicate."""
-        self._entries[name] = implementation
+        """Register an implementation under ``name``. Overwrites on duplicate type change."""
+        with self._lock:
+            if self._entries.get(name) is implementation:
+                return
+            self._entries[name] = implementation
 
     def get(self, name: str) -> type[T]:
         """Return the implementation class registered under ``name``."""
-        try:
-            return self._entries[name]
-        except KeyError as exc:
-            raise RegistryError(
-                f"Unknown {self._label} {name!r}. " f"Available: {sorted(self._entries)}"
-            ) from exc
+        with self._lock:
+            try:
+                return self._entries[name]
+            except KeyError as exc:
+                available = sorted(self._entries)
+                raise RegistryError(
+                    f"Unknown {self._label} {name!r}. Available: {available}"
+                ) from exc
 
     def names(self) -> list[str]:
         """Return sorted registered names."""
-        return sorted(self._entries)
+        with self._lock:
+            return sorted(self._entries)
 
     def clear(self) -> None:
         """Remove all registrations (primarily for tests)."""
-        self._entries.clear()
+        with self._lock:
+            self._entries.clear()
 
 
 pattern_registry: Registry[BasePattern] = Registry("pattern")

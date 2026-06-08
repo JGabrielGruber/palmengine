@@ -164,13 +164,34 @@ Wizard steps are **nodes**, not callbacks scattered through a framework. Future 
 
 Extension is explicit and import-time registered:
 
-| Registry | Examples |
-|----------|----------|
-| `pattern_registry` | wizard, dag, etl |
-| `provider_registry` | rest, graphql, postgres |
-| `storage_registry` | memory, filesystem, postgres, mongodb |
+| Registry | Location | Examples |
+|----------|----------|----------|
+| `pattern_registry` | `core/registry.py` | wizard, dag, etl |
+| `provider_registry` | `core/registry.py` | rest, graphql, postgres |
+| `storage_registry` | `core/registry.py` | memory, filesystem, postgres, mongodb |
+| Pattern builder map | `patterns/_registry.py` | per-pattern `build()` functions |
+| `CommitRegistry` | `patterns/wizard/handler.py` | named commit handlers |
+| `PlanRegistry` | `common/plans/registry.py` | deferred execution plans |
+| `RuntimeRegistry` | `app/registry.py` | named `PalmApp` runtimes |
 
 New capabilities are added by new modules under `patterns/`, `providers/`, or `storages/`—not by editing orchestration internals.
+
+### Thread-safety contract
+
+Registries are **read from multiple threads** after bootstrap (queued schedulers, daemon workers, multi-runtime `PalmApp` setups, CLI + background runtimes). All registry-like maps use **`threading.RLock`** (reentrant) to protect mutations and consistent reads:
+
+- `Registry.register()` / `get()` / `names()` / `clear()`
+- Pattern `register_builder()` / `get_builder()` / `registered_builders()`
+- `CommitRegistry`, `PlanRegistry`, `RuntimeRegistry`
+
+**Design choices:**
+
+- **RLock** — cheap reentrant guard; registration during bootstrap may nest (e.g. plugin import chains).
+- **Idempotent re-registration** — registering the same `(name, implementation)` pair is a no-op; changing the implementation still overwrites.
+- **Handler invocation outside the lock** — `CommitRegistry.run()` resolves the handler under lock, then calls it unlocked to avoid deadlocks during user code.
+- **Read-heavy after bootstrap** — lock hold time is minimal (dict get/set); no read-copy-update needed at current scale.
+
+**Operational guidance:** register plugins during `PalmApp.bootstrap()` / module autoload, not from hot job-drive paths. Runtime code should only **read** registries during job execution.
 
 ---
 

@@ -4,6 +4,7 @@ Runtime registry — named runtime handles managed by :class:`~palm.app.app.Palm
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
@@ -27,35 +28,45 @@ class RuntimeHandle:
 
 
 class RuntimeRegistry:
-    """In-memory map of named runtimes."""
+    """Thread-safe in-memory map of named runtimes."""
 
     def __init__(self) -> None:
         self._entries: dict[str, RuntimeHandle] = {}
+        self._lock = threading.RLock()
 
     def __len__(self) -> int:
-        return len(self._entries)
+        with self._lock:
+            return len(self._entries)
 
     def __contains__(self, name: str) -> bool:
-        return name in self._entries
+        with self._lock:
+            return name in self._entries
 
     def names(self) -> list[str]:
-        return sorted(self._entries)
+        with self._lock:
+            return sorted(self._entries)
 
     def register(self, handle: RuntimeHandle) -> RuntimeHandle:
-        if handle.name in self._entries:
-            raise ValueError(f"Runtime {handle.name!r} is already registered")
-        self._entries[handle.name] = handle
-        return handle
+        with self._lock:
+            if handle.name in self._entries:
+                raise ValueError(f"Runtime {handle.name!r} is already registered")
+            self._entries[handle.name] = handle
+            return handle
 
     def get(self, name: str) -> RuntimeHandle:
-        try:
-            return self._entries[name]
-        except KeyError as exc:
-            available = ", ".join(self.names()) or "(none)"
-            raise KeyError(f"Unknown runtime {name!r}. Registered: {available}") from exc
+        with self._lock:
+            try:
+                return self._entries[name]
+            except KeyError as exc:
+                available = ", ".join(sorted(self._entries)) or "(none)"
+                raise KeyError(
+                    f"Unknown runtime {name!r}. Registered: {available}"
+                ) from exc
 
     def items(self) -> list[RuntimeHandle]:
-        return [self._entries[name] for name in self.names()]
+        with self._lock:
+            return [self._entries[name] for name in sorted(self._entries)]
 
     def clear(self) -> None:
-        self._entries.clear()
+        with self._lock:
+            self._entries.clear()
