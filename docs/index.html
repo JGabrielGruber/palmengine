@@ -55,6 +55,67 @@
         0 0 40px #c026d3;
     }
   </style>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://palmengine.org/#software",
+      "name": "Palm Engine",
+      "alternateName": "Palm 🌴",
+      "url": "https://palmengine.org",
+      "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for interactive wizards, data pipelines, transactional workflows, and durable process instances.",
+      "version": "0.6.0",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Workflow Engine, Orchestration Library",
+      "operatingSystem": "Any (Python)",
+      "softwareVersion": "0.6.0",
+      "programmingLanguage": "Python",
+      "license": "https://opensource.org/licenses/MIT",
+      "sameAs": "https://github.com/JGabrielGruber/palmengine",
+      "author": {
+        "@type": "Person",
+        "name": "José Gabriel Gruber",
+        "url": "https://jgabrielgruber.dev"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Behavior Trees",
+        "Interactive Wizards with backtracking & resume",
+        "Durable Instances (state survives restarts)",
+        "Transactional commits",
+        "CLI + REPL",
+        "Embedded, Daemon & Server Runtimes"
+      ],
+      "downloadUrl": "https://github.com/JGabrielGruber/palmengine",
+      "softwareRequirements": "Python"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://palmengine.org/#website",
+      "url": "https://palmengine.org",
+      "name": "Palm Engine 🌴",
+      "description": "Orchestration That Feels Human — Lightweight Behavior Tree engine for wizards, pipelines, and durable workflows.",
+      "publisher": {
+        "@id": "https://palmengine.org/#software"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://palmengine.org/?s={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
+</script>
 </head>
 
 <body class="bg-slate-950 text-zinc-100">
