@@ -10,7 +10,7 @@
   <meta name="description"
     content="Palm Engine — Lightweight Behavior Tree orchestration with interactive wizards, durable instances, and transactional workflows.">
   <meta name="keywords"
-    content="orchestration, behavior tree, python workflow, wizard, transactional workflow, durable execution">
+    content="palmengine, palm, orchestration, behavior tree, python workflow, wizard, transactional workflow, durable execution">
   <meta name="author" content="José Gabriel Gruber">
   <link rel="canonical" href="https://palmengine.org">
 
@@ -28,7 +28,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Palm Engine - Orchestration with Behavior Trees">
 
-  <!-- Wide -->
+  <!-- Square -->
   <meta property="og:image" content="https://palmengine.org/images/palmengine-opengraph-square.webp">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="1200">
@@ -63,6 +63,7 @@
         0 0 40px #c026d3;
     }
   </style>
+
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -74,11 +75,11 @@
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
       "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for interactive wizards, data pipelines, transactional workflows, and durable process instances.",
-      "version": "0.6.0",
+      "version": "0.7.4",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.6.0",
+      "softwareVersion": "0.7.4",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -150,7 +151,7 @@
 
   <!-- Hero -->
   <section class="h-screen flex items-center text-center relative">
-    <img src="/images/philosophy-sunset.webp" alt="Philosophy sunset background"
+    <img src="images/philosophy-sunset.webp" alt="Philosophy sunset background"
       class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" loading="eager">
 
     <!-- Dark overlay -->
@@ -159,7 +160,8 @@
       <div
         class="inline-flex items-center gap-x-2 bg-slate-950/60 border border-cyan-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.7.4 — PYPI: PALMENGINE</span>
+        <span class="text-sm font-medium tracking-widest">v0.7.4 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
+            install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
         Orchestration that<br>feels <span
@@ -252,11 +254,12 @@
   <section id="quickstart" class="py-24">
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
-      <div class="bg-black border border-cyan-900 rounded-3xl p-10 font-mono text-base overflow-x-auto">
-        <pre>
-          <code><br>$ pip install palmengine[cli]<br>$ palm doctor<br>$ palm wizard start onboard</code>
-        </pre>
+      <div class="bg-black border border-cyan-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
+        <pre><code>$ pip install palmengine[cli]<br>$ palm doctor</br>$ palm wizard start onboard</code></pre>
       </div>
+      <p class="text-center text-zinc-400 mt-6">
+        Or with uv (recommended): <code class="bg-zinc-900 px-2 py-1 rounded">uvx palmengine palm doctor</code>
+      </p>
     </div>
   </section>
 
