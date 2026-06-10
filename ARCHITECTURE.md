@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.6.0 · June 2026
+**Palm Engine** · 0.7.0 · June 2026
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -86,6 +86,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/plans/` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
 | `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`, `StateSnapshotHook`) |
 | `common/persistence/` | Definition and instance repositories, resume/sync |
+| `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
 
 Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
@@ -175,6 +176,23 @@ Extension is explicit and import-time registered:
 | `RuntimeRegistry` | `app/registry.py` | named `PalmApp` runtimes |
 
 New capabilities are added by new modules under `patterns/`, `providers/`, or `storages/`—not by editing orchestration internals.
+
+### Storage layer (0.7)
+
+Persistence is coordinated by `StorageEngine` in core; concrete backends live in `palm.storages/`.
+
+| Component | Role |
+|-----------|------|
+| `StorageEngine` | Select active backend, CRUD through `get` / `set` / `delete` |
+| `StorageFactory` | Lazy-import backends, build `backend_options` from `PalmSettings`, initialize engines |
+| `FilesystemStorageBackend` | Production JSON files under `data_dir` with atomic writes |
+| `DefinitionRepository` / `InstanceRepository` | Namespace keys (`palm:definitions:*`, `palm:instances:*`) + index keys |
+
+**Filesystem key layout:** colon-separated keys map to nested JSON paths — e.g. `palm:instances:inst-abc` → `<data_dir>/palm/instances/inst-abc.json`. Writes use a temp file in the target directory followed by `os.replace()` for crash safety. Corrupted or missing files return `None` on read (logged); permission failures raise `StoragePermissionError`.
+
+**Lazy loading:** `memory` and `filesystem` register at import (`CORE_STORAGES`). `postgres` and `mongodb` register on first `StorageFactory.ensure_registered()` — optional uv extras gate future driver dependencies.
+
+**v0.6 compatibility:** legacy flat files (`<data_dir>/palm:instances:…` without `.json`) are still readable when they contain valid JSON; new writes always use the nested layout.
 
 ### Thread-safety contract
 

@@ -10,9 +10,10 @@ from typing import Any
 
 import palm.patterns  # — autoload pattern apps
 import palm.providers  # — autoload provider apps
-import palm.storages  # noqa: F401 — autoload storage apps
+import palm.storages  # noqa: F401 — autoload core storage apps
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
+from palm.common.storage import StorageFactory
 
 
 def ensure_plugins() -> None:
@@ -93,6 +94,7 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
     """Build keyword arguments for :meth:`~palm.runtimes.base.BaseRuntime.start`."""
     options: dict[str, Any] = {
         "storage_backend": settings.storage_backend,
+        "backend_options": StorageFactory.backend_options(settings=settings),
         "observability": settings.observability,
         "auth_enforce": settings.auth_enforce,
         "auth_roles": list(settings.auth_roles),

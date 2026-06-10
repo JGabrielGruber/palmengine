@@ -101,7 +101,13 @@ class DefinitionRepository:
     def list_flows(self) -> list[FlowDefinition]:
         """Return all flows known in memory or storage indexes."""
         ids = self._collect_ids("flow", self._flows_by_id)
-        return [self.get_flow_by_id(definition_id) for definition_id in ids]
+        flows: list[FlowDefinition] = []
+        for definition_id in ids:
+            try:
+                flows.append(self.get_flow_by_id(definition_id))
+            except DefinitionNotFoundError:
+                continue
+        return flows
 
     def has_flow(self, ref: str, *, by_id: bool = True) -> bool:
         try:
@@ -170,7 +176,13 @@ class DefinitionRepository:
 
     def list_processes(self) -> list[ProcessDefinition]:
         ids = self._collect_ids("process", self._processes_by_id)
-        return [self.get_process_by_id(definition_id) for definition_id in ids]
+        processes: list[ProcessDefinition] = []
+        for definition_id in ids:
+            try:
+                processes.append(self.get_process_by_id(definition_id))
+            except DefinitionNotFoundError:
+                continue
+        return processes
 
     def has_process(self, ref: str, *, by_id: bool = True) -> bool:
         try:

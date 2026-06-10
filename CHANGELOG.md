@@ -2,6 +2,33 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] — 2026-06-10
+
+Production-ready persistence foundation and storage factory for extensible runtimes.
+
+### Added
+
+- **`FilesystemStorageBackend`** — production filesystem persistence with atomic writes (temp file + rename), JSON serialization, namespace key paths (`palm:instances:*` → nested `.json` files), thread-safe operations, and v0.6 flat-file read compatibility
+- **`StorageFactory`** (`palm.common.storage`) — lazy backend registration, `PalmSettings`-driven `backend_options`, and `initialize_engine()` / `select()` helpers
+- **Storage exceptions** — `StoragePermissionError`, `StorageCorruptionError` in `palm.core.exceptions`
+- **Optional storage extras** — `postgres` and `mongodb` uv extras for lazy-loaded backends
+- **Filesystem tests** — `tests/test_filesystem_storage.py` (unit + repository + `PalmApp` integration)
+
+### Changed
+
+- **`BaseRuntime.start()`** — initializes shared `StorageEngine` via `StorageFactory` (respects `backend_options` from `PalmSettings.data_dir`)
+- **`runtime_start_options()`** — forwards filesystem `data_dir` through `backend_options`
+- **Repository list methods** — skip missing or corrupted index entries instead of failing entire listings
+- **Storage autoload** — core backends (`memory`, `filesystem`) register at import; `postgres` / `mongodb` load lazily on first use
+- **`FilesystemBackend`** — alias retained; canonical class is `FilesystemStorageBackend`
+
+### Configuration
+
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data   # optional; defaults to ./data
+```
+
 ## [0.6.0] — 2026-06-07
 
 Major orchestration maturation release: authoritative lifecycle, layered runtimes, execution plans, and production-oriented server/daemon surfaces.

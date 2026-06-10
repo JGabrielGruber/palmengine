@@ -12,10 +12,11 @@ from typing import Any, ClassVar
 
 import palm.patterns  # — register patterns
 import palm.providers  # — register providers
-import palm.storages  # noqa: F401 — register backends
+import palm.storages  # noqa: F401 — register core backends
 from palm import __version__
 from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
 from palm.common.hooks import InstancePersistenceHook, StateSnapshotHook
+from palm.common.storage import StorageFactory
 from palm.core import (
     AuthEngine,
     BehaviorTreeEngine,
@@ -129,8 +130,12 @@ class BaseRuntime:
         bt_state: BaseState = state if isinstance(state, BaseState) else BlackboardState()
         self.behavior_tree.initialize(state=bt_state)
 
-        storage_backend = str(options.get("storage_backend", "memory"))
-        self.storage.initialize(backend=storage_backend)
+        if not self.storage.is_initialized:
+            StorageFactory.initialize_engine(
+                self.storage,
+                storage_backend=str(options.get("storage_backend", "memory")),
+                **dict(options.get("backend_options") or {}),
+            )
 
         self.orchestration.start()
         self._started = True

@@ -36,6 +36,14 @@ class BackendNotOpenError(StorageError):
     """Raised when an operation requires an open backend."""
 
 
+class StoragePermissionError(StorageError):
+    """Raised when the active backend cannot read or write due to permissions."""
+
+
+class StorageCorruptionError(StorageError):
+    """Raised when persisted data cannot be decoded."""
+
+
 class ContextError(EngineError):
     """Raised when context stack operations fail."""
 

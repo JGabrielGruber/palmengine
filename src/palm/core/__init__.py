@@ -33,8 +33,10 @@ from palm.core.exceptions import (
     RegistryError,
     StateError,
     StateNotConfiguredError,
+    StorageCorruptionError,
     StorageError,
     StorageNotConfiguredError,
+    StoragePermissionError,
 )
 from palm.core.orchestration import (
     ExecutionContext,
@@ -96,9 +98,11 @@ __all__ = [
     "RootNode",
     "RegistryError",
     "ResourceEngine",
+    "StorageCorruptionError",
     "StorageEngine",
     "StorageError",
     "StorageNotConfiguredError",
+    "StoragePermissionError",
     "pattern_registry",
     "provider_registry",
     "storage_registry",

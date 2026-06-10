@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.6.0**.
+Guide for contributors working on Palm **0.7.0**.
 
 ## Setup
 
@@ -39,7 +39,7 @@ src/palm/
 ├── providers/         # REST, GraphQL, Postgres
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
-├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/)
+├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/, storage/)
 ├── instances/         # ProcessInstance, StateSnapshot, status history
 ├── runtimes/
 │   ├── embedded.py    # EmbeddedRuntime
@@ -75,14 +75,28 @@ palm process resume <instance_id>
 Use :class:`~palm.app.PalmApp` to share storage across runtimes and sessions:
 
 ```python
+from pathlib import Path
+
 from palm.app import PalmApp, PalmSettings
 
-with PalmApp(PalmSettings(storage_backend="memory")) as app:
+with PalmApp(PalmSettings(storage_backend="filesystem", data_dir=Path("data"))) as app:
     cli = app.create_runtime("embedded", name="cli", autostart=True)
     worker = app.create_runtime("daemon", name="worker", autostart=True)
     app.load_definitions()
     # … submit via cli, worker drives queued jobs …
 ```
+
+Environment variables (prefix `PALM_`):
+
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data
+```
+
+:class:`~palm.common.storage.StorageFactory` resolves backends lazily and builds
+constructor options from :class:`~palm.app.settings.PalmSettings` (notably
+``data_dir`` for the filesystem backend). ``BaseRuntime.start()`` and
+``runtime_start_options()`` wire this automatically.
 
 Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming
 across separate app lifetimes (the CLI uses this pattern internally).
@@ -189,9 +203,11 @@ pytest tests/test_state_snapshot_hook.py -q
 
 ## Adding a storage backend
 
-1. Create `palm/storages/<name>.py` subclassing `BaseBackend`.
-2. Register with `storage_registry`.
-3. Add tests.
+1. Create `palm/storages/<name>/` with `backend.py` and `registry.py`.
+2. Register with `storage_registry.register("<name>", YourBackend)`.
+3. Add the name to `INSTALLED_STORAGES` in `storages/_apps.py` (use `OPTIONAL_STORAGES` when the backend needs extra dependencies).
+4. Declare a uv extra in `pyproject.toml` when optional drivers are required.
+5. Add tests; use `StorageFactory.ensure_registered("<name>")` in tests for optional backends.
 
 ## Registry registration and thread safety
 
@@ -250,4 +266,4 @@ All code under `archive/` is historical. Never add new features there.
 
 ---
 
-Last updated: June 2026 (0.6.0)
+Last updated: June 2026 (0.7.0)

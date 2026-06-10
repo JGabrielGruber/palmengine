@@ -346,7 +346,7 @@ wheels = [
 
 [[package]]
 name = "palm"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -395,7 +395,7 @@ requires-dist = [
     { name = "rich", marker = "extra == 'cli'", specifier = ">=13.7,<14.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4,<0.5" },
 ]
-provides-extras = ["dev", "cli", "test"]
+provides-extras = ["dev", "cli", "test", "postgres", "mongodb"]
 
 [package.metadata.requires-dev]
 dev = [

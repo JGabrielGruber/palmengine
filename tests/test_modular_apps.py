@@ -10,7 +10,8 @@ from palm.core.registry import pattern_registry, provider_registry, storage_regi
 from palm.patterns._apps import INSTALLED_PATTERNS
 from palm.patterns._registry import get_builder, registered_builders
 from palm.providers._apps import INSTALLED_PROVIDERS
-from palm.storages._apps import INSTALLED_STORAGES
+from palm.common.storage import StorageFactory
+from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 
 @pytest.fixture(autouse=True)
@@ -38,7 +39,12 @@ def test_installed_provider_apps_register() -> None:
 
 def test_installed_storage_apps_register() -> None:
     assert set(INSTALLED_STORAGES) == {"memory", "postgres", "mongodb", "filesystem"}
-    for name in INSTALLED_STORAGES:
+    assert set(CORE_STORAGES) == {"memory", "filesystem"}
+    assert set(OPTIONAL_STORAGES) == {"postgres", "mongodb"}
+    for name in CORE_STORAGES:
+        storage_registry.get(name)
+    for name in OPTIONAL_STORAGES:
+        StorageFactory.ensure_registered(name)
         storage_registry.get(name)
 
 

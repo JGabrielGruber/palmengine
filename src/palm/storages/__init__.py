@@ -1,13 +1,21 @@
 """
 Concrete storage backends — memory, postgres, mongodb, filesystem (Django-style apps).
 
-Each subpackage registers via its own ``registry.py``.
+Each subpackage registers via its own ``registry.py``. Core backends autoload at
+import; optional backends register lazily through :class:`~palm.common.storage.StorageFactory`.
 """
 
-from palm.storages._apps import INSTALLED_STORAGES, autoload
+from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES, autoload
 
 autoload()
 
-from palm.storages import filesystem, memory, mongodb, postgres  # noqa: E402
+from palm.storages import filesystem, memory  # noqa: E402
 
-__all__ = ["INSTALLED_STORAGES", "autoload", "filesystem", "memory", "mongodb", "postgres"]
+__all__ = [
+    "CORE_STORAGES",
+    "INSTALLED_STORAGES",
+    "OPTIONAL_STORAGES",
+    "autoload",
+    "filesystem",
+    "memory",
+]

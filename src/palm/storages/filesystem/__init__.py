@@ -1,6 +1,6 @@
-"""Filesystem storage app — Stub filesystem persistence backend."""
+"""Filesystem storage app — production JSON persistence backend."""
 
 from palm.storages.filesystem import registry as registry
-from palm.storages.filesystem.backend import FilesystemBackend
+from palm.storages.filesystem.backend import FilesystemBackend, FilesystemStorageBackend
 
-__all__ = ["FilesystemBackend", "registry"]
+__all__ = ["FilesystemBackend", "FilesystemStorageBackend", "registry"]

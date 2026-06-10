@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from palm.app.app import PalmApp
+from palm.app.bootstrap import runtime_start_options
 from palm.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
 
@@ -45,8 +46,5 @@ def create_cli_app(
 
     app = PalmApp(cfg, storage=storage)
     app.bootstrap()
-    if storage is None:
-        app.bootstrap_cli(storage_backend=cfg.storage_backend)
-    else:
-        app.bootstrap_cli()
+    app.bootstrap_cli(**runtime_start_options(cfg))
     return app

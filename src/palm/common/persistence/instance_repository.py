@@ -120,7 +120,13 @@ class InstanceRepository:
                     ids.update(str(item) for item in indexed)
             except StorageNotConfiguredError:
                 pass
-        return [self.get(iid) for iid in sorted(ids)]
+        instances: list[ProcessInstance] = []
+        for instance_id in sorted(ids):
+            try:
+                instances.append(self.get(instance_id))
+            except InstanceNotFoundError:
+                continue
+        return instances
 
     def new_instance_id(self) -> str:
         return f"inst-{uuid4().hex[:12]}"

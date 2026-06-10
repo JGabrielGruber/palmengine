@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.6.0` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.7.0` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
 
 ---
 
@@ -19,14 +19,14 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.6.0)
+## What works today (0.7.0)
 
 | Area | Capabilities |
 |------|----------------|
 | **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
 | **Patterns** | Transactional **wizard** (validation, summary, commit, resources); DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
-| **Persistence** | `DefinitionRepository`, `InstanceRepository`, `InstancePersistenceHook`, resume across restarts |
+| **Persistence** | Production **filesystem** backend, `StorageFactory`, `DefinitionRepository`, `InstanceRepository`, resume across restarts |
 | **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
 | **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
@@ -79,6 +79,18 @@ palm input ada@example.com
 ```
 
 Shared `StorageEngine` across runtime lifetimes is required for cross-process resume (see [DEVELOPMENT.md](DEVELOPMENT.md)).
+
+**Durable filesystem storage (recommended for local dev and single-node deploys):**
+
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data   # optional; defaults to ./data
+
+palm wizard start onboard
+palm input Ada
+# Restart the CLI — instances and definitions persist under ./data/
+palm process resume <instance_id>
+```
 
 ---
 
@@ -161,7 +173,7 @@ Run `palm --help` for the full list.
 src/palm/
 ├── app/            # PalmApp orchestrator, settings, multi-runtime bootstrap
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
-├── common/         # Shared coordination (plans, hooks, persistence, submission)
+├── common/         # Shared coordination (plans, hooks, persistence, StorageFactory)
 ├── instances/      # ProcessInstance + StateSnapshot models
 ├── definitions/    # FlowDefinition, ProcessDefinition
 ├── patterns/       # wizard, dag, etl (extensible)
