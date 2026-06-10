@@ -13,6 +13,8 @@ from palm.app.bootstrap import (
 )
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from palm.app.settings import PalmSettings
+from palm.common.managers import InstanceManager
+from palm.common.persistence.instance_repository import InstanceRepository
 from palm.core.storage import StorageEngine
 
 if TYPE_CHECKING:
@@ -51,6 +53,11 @@ class PalmApp:
         self.settings = settings or PalmSettings()
         self._owns_storage = storage is None
         self.storage = storage if storage is not None else StorageEngine()
+        self._instance_repository = InstanceRepository(self.storage)
+        self._instance_manager = InstanceManager(
+            self._instance_repository,
+            settings=self.settings,
+        )
         self._runtimes = RuntimeRegistry()
         self._primary: str | None = None
         self._bootstrapped = False
@@ -62,6 +69,11 @@ class PalmApp:
     @property
     def primary_name(self) -> str | None:
         return self._primary
+
+    @property
+    def instance_manager(self) -> InstanceManager:
+        """Shared instance lifecycle coordinator across runtimes."""
+        return self._instance_manager
 
     def bootstrap(self) -> Self:
         """Load plugin apps and mark the application ready for runtime creation."""
@@ -195,18 +207,26 @@ class PalmApp:
         return self.runtime(runtime_name).get_job(job_id)
 
     def get_instance(self, instance_id: str, *, runtime_name: str | None = None) -> ProcessInstance:
-        """Load a persisted process instance from a registered runtime."""
-        return self.runtime(runtime_name).get_instance(instance_id)
+        """Load a persisted process instance from the shared manager."""
+        _ = runtime_name
+        return self._instance_manager.get(instance_id)
 
     def list_instances(self, *, runtime_name: str | None = None) -> list[ProcessInstance]:
-        """List durable process instances for a registered runtime."""
-        return self.runtime(runtime_name).instances.list_instances()
+        """List durable process instances (full load via manager)."""
+        _ = runtime_name
+        return self._instance_manager.list_instances()
+
+    def list_instance_summaries(self, *, runtime_name: str | None = None) -> list:
+        """List lightweight instance summaries without loading full payloads."""
+        _ = runtime_name
+        return self._instance_manager.list_summaries()
 
     def list_instance_snapshots(
         self, instance_id: str, *, runtime_name: str | None = None
     ) -> list[StateSnapshot]:
         """Return point-in-time state snapshots for a persisted instance."""
-        return self.runtime(runtime_name).instances.list_state_snapshots(instance_id)
+        _ = runtime_name
+        return self._instance_manager.list_state_snapshots(instance_id)
 
     def list_flows(self, *, runtime_name: str | None = None) -> list[FlowDefinition]:
         """List flow definitions from a registered runtime repository."""
@@ -278,6 +298,7 @@ class PalmApp:
         for handle in self._runtimes.items():
             if handle.is_started:
                 handle.runtime.stop()
+        self._instance_manager.shutdown()
         if self._owns_storage and self.storage.is_initialized:
             self.storage.shutdown()
         self._runtimes.clear()
@@ -295,16 +316,23 @@ class PalmApp:
         if kind == "embedded":
             from palm.runtimes.embedded import EmbeddedRuntime
 
-            return EmbeddedRuntime(storage=self.storage)
+            return EmbeddedRuntime(
+                storage=self.storage,
+                instance_manager=self._instance_manager,
+            )
         if kind == "daemon":
             from palm.runtimes.daemon import DaemonRuntime
 
-            return DaemonRuntime(storage=self.storage)
+            return DaemonRuntime(
+                storage=self.storage,
+                instance_manager=self._instance_manager,
+            )
         if kind == "server":
             from palm.runtimes.server import ServerRuntime
 
             return ServerRuntime(
                 storage=self.storage,
+                instance_manager=self._instance_manager,
                 host=str(options.pop("host", "127.0.0.1")),
                 port=int(options.pop("port", 8080)),
             )

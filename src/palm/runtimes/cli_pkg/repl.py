@@ -36,11 +36,14 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         style=Style.from_dict({"prompt": "ansicyan bold"}),
     )
 
+    from palm.runtimes.cli_pkg.startup import format_persistence_notice
+
     ctx.console.print(
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
             "Type [bold]help[/] for commands. "
-            "Try [cyan]wizard start onboard[/] or [cyan]process list[/].",
+            "Try [cyan]wizard start onboard[/] or [cyan]process list[/].\n\n"
+            f"{format_persistence_notice(ctx.app)}",
             title="🌴 Palm REPL",
             border_style="green",
         )

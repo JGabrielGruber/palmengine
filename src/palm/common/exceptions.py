@@ -34,6 +34,10 @@ class InstanceResumeError(ExecutionError):
     """Raised when an instance cannot be resumed (terminal, missing flow, etc.)."""
 
 
+class InstanceActiveLimitError(ExecutionError):
+    """Raised when the active instance limit is exceeded."""
+
+
 class PlanValidationError(ExecutionError):
     """Raised when an :class:`~palm.common.plans.execution_plan.ExecutionPlan` fails pre-submit checks."""
 

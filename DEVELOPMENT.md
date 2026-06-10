@@ -39,7 +39,7 @@ src/palm/
 ├── providers/         # REST, GraphQL, Postgres
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
-├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/, storage/)
+├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/, managers/, storage/)
 ├── instances/         # ProcessInstance, StateSnapshot, status history
 ├── runtimes/
 │   ├── embedded.py    # EmbeddedRuntime
@@ -53,6 +53,30 @@ tests/
 ```
 
 ## Working with the CLI
+
+The CLI is a **thin client of `PalmApp`** — all wiring (storage, `InstanceManager`,
+persistence hooks, definitions) happens in :func:`~palm.app.session.create_cli_app`.
+No manual runtime assembly in command handlers.
+
+| Mode | How | Persists? |
+|------|-----|-----------|
+| Default (dev) | `palm` / `palm repl` | No — in-memory; startup warns |
+| Durable (local) | `PALM_STORAGE_BACKEND=filesystem` | Yes — under `PALM_DATA_DIR` (default `./data`) |
+| Override | `palm --storage-backend filesystem --data-dir ./data` | Yes |
+
+Environment variables load via `PalmSettings` (`PALM_*` prefix). CLI flags override
+env **only when explicitly passed** — omit `--storage-backend` to respect
+`PALM_STORAGE_BACKEND`.
+
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data
+export PALM_ENABLE_STATE_SNAPSHOT=true   # optional snapshot history
+
+palm doctor          # shows durable vs in-memory notice
+palm wizard start onboard
+palm instance list   # via InstanceManager summaries
+```
 
 Example definitions register on every CLI start:
 
@@ -100,6 +124,26 @@ constructor options from :class:`~palm.app.settings.PalmSettings` (notably
 
 Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming
 across separate app lifetimes (the CLI uses this pattern internally).
+
+### InstanceManager
+
+:class:`~palm.common.managers.InstanceManager` coordinates instance lifecycle across
+runtimes — LRU cache, active tracking, lightweight summaries, and startup
+reconciliation. Access via ``app.instance_manager`` or ``runtime.instance_manager``.
+
+```python
+summaries = app.list_instance_summaries()  # fast CLI-style listing
+instance = app.instance_manager.acquire("inst-abc")  # load + mark active
+snapshots = app.list_instance_snapshots("inst-abc")
+```
+
+**Settings** (``PALM_*`` env vars):
+
+| Setting | Default | Purpose |
+|---------|---------|---------|
+| `max_loaded_instances` | 128 | LRU cache size for loaded `ProcessInstance` objects |
+| `max_concurrent_active` | 32 | Cap on concurrently tracked active instances |
+| `reconcile_instances_on_startup` | true | Mark stale `RUNNING` records; purge orphan index entries |
 
 ## State snapshots
 

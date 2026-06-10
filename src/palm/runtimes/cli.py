@@ -50,14 +50,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--storage-backend",
-        default="memory",
-        help="Storage backend name (default: memory)",
+        default=None,
+        help="Storage backend (default: PALM_STORAGE_BACKEND or memory)",
     )
     parser.add_argument(
         "--data-dir",
         type=Path,
         default=None,
-        help="Optional data directory (definitions under data-dir/definitions)",
+        help="Data directory for durable backends (default: PALM_DATA_DIR or ./data)",
     )
     sub = parser.add_subparsers(dest="command", metavar="command")
 
@@ -157,7 +157,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         args.command = "repl"
 
-    ctx = bootstrap_runtime(storage_backend=args.storage_backend, data_dir=args.data_dir)
+    show_banner = args.command not in ("repl", "doctor")
+    ctx = bootstrap_runtime(
+        storage_backend=args.storage_backend,
+        data_dir=args.data_dir,
+        show_banner=show_banner,
+    )
     registry = build_registry()
     exit_code = 0
 

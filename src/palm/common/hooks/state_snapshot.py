@@ -11,6 +11,7 @@ from palm.core.orchestration.hooks import JobHookAdapter
 from palm.instances.state_snapshot import StateSnapshot
 
 if TYPE_CHECKING:
+    from palm.common.managers.instance_manager import InstanceManager
     from palm.common.persistence.instance_repository import InstanceRepository
     from palm.core.orchestration.engine import OrchestrationEngine
     from palm.core.orchestration.job import Job
@@ -30,7 +31,7 @@ class StateSnapshotHook(JobHookAdapter):
 
     def __init__(
         self,
-        instances: InstanceRepository,
+        instances: InstanceRepository | InstanceManager,
         *,
         snapshot_on_status: Collection[str] | None = None,
         max_snapshots_per_instance: int = 10,

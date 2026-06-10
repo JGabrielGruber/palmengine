@@ -26,7 +26,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
 | **Patterns** | Transactional **wizard** (validation, summary, commit, resources); DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
-| **Persistence** | Production **filesystem** backend, `StorageFactory`, `DefinitionRepository`, `InstanceRepository`, resume across restarts |
+| **Persistence** | Production **filesystem** backend, `StorageFactory`, `InstanceManager`, durable resume across restarts |
 | **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
 | **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
@@ -60,6 +60,19 @@ palm wizard start onboard
 ```
 
 CLI-only install: `uv sync --extra cli`
+
+**CLI persistence:** the CLI is a thin client of `PalmApp`. By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
+
+```bash
+# Recommended for local work — persists instances under ./data/
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data
+
+# Or per invocation:
+palm --storage-backend filesystem --data-dir ./data wizard start onboard
+```
+
+`palm doctor` and REPL startup show whether state will survive restarts.
 
 ---
 
@@ -173,7 +186,7 @@ Run `palm --help` for the full list.
 src/palm/
 ├── app/            # PalmApp orchestrator, settings, multi-runtime bootstrap
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
-├── common/         # Shared coordination (plans, hooks, persistence, StorageFactory)
+├── common/         # Shared coordination (plans, hooks, persistence, managers, StorageFactory)
 ├── instances/      # ProcessInstance + StateSnapshot models
 ├── definitions/    # FlowDefinition, ProcessDefinition
 ├── patterns/       # wizard, dag, etl (extensible)

@@ -87,6 +87,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`, `StateSnapshotHook`) |
 | `common/persistence/` | Definition and instance repositories, resume/sync |
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
+| `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
 
 Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
@@ -193,6 +194,19 @@ Persistence is coordinated by `StorageEngine` in core; concrete backends live in
 **Lazy loading:** `memory` and `filesystem` register at import (`CORE_STORAGES`). `postgres` and `mongodb` register on first `StorageFactory.ensure_registered()` — optional uv extras gate future driver dependencies.
 
 **v0.6 compatibility:** legacy flat files (`<data_dir>/palm:instances:…` without `.json`) are still readable when they contain valid JSON; new writes always use the nested layout.
+
+### Instance coordination (0.7)
+
+`InstanceManager` sits above `InstanceRepository` as the single lifecycle coordinator shared by `PalmApp` runtimes:
+
+| Concern | Approach |
+|---------|----------|
+| **Cache** | `OrderedDict` LRU (`max_loaded_instances`); active instances are never evicted |
+| **Active tracking** | `mark_active` / `release_active`; terminal statuses auto-release; `max_concurrent_active` limit |
+| **List performance** | `list_summaries()` reads raw storage records — CLI `instance list` avoids full deserialization |
+| **Reconciliation** | On startup (configurable): `RUNNING` → `WAITING_FOR_INPUT`; orphan index entries removed |
+| **Thread safety** | `RLock` around cache, active set, and eviction |
+| **Hooks** | `InstancePersistenceHook` and `StateSnapshotHook` delegate through the manager |
 
 ### Thread-safety contract
 

@@ -19,6 +19,7 @@ from palm.common.executions.flow_submission import (
 from palm.common.executions.process_submission import prepare_process_plans
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.persistence.definition_repository import DefinitionRepository
+from palm.common.managers.instance_manager import InstanceManager
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.common.persistence.instance_resume import is_resumable_status
 from palm.common.plans.execution_plan import ExecutionPlan
@@ -46,7 +47,7 @@ class DefinitionExecutor:
         self,
         runtime: RuntimeHost,
         repository: DefinitionRepository | None = None,
-        instances: InstanceRepository | None = None,
+        instances: InstanceRepository | InstanceManager | None = None,
     ) -> None:
         self._runtime = runtime
         self._repository = repository
@@ -57,7 +58,7 @@ class DefinitionExecutor:
         return self._repository
 
     @property
-    def instances(self) -> InstanceRepository | None:
+    def instances(self) -> InstanceRepository | InstanceManager | None:
         return self._instances
 
     @overload
@@ -173,7 +174,10 @@ class DefinitionExecutor:
         if repo is None:
             raise InstanceResumeError("InstanceRepository is not configured")
 
-        instance = repo.get(instance_id)
+        if isinstance(repo, InstanceManager):
+            instance = repo.acquire(instance_id)
+        else:
+            instance = repo.get(instance_id)
         if not is_resumable_status(instance.status):
             raise InstanceResumeError(
                 f"Instance {instance_id!r} is not resumable (status={instance.status})"

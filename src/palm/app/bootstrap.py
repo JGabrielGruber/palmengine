@@ -104,6 +104,9 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
     options["enable_state_snapshot"] = settings.enable_state_snapshot
     options["snapshot_on_status"] = list(settings.snapshot_on_status)
     options["max_snapshots_per_instance"] = settings.max_snapshots_per_instance
+    options["max_loaded_instances"] = settings.max_loaded_instances
+    options["max_concurrent_active"] = settings.max_concurrent_active
+    options["reconcile_on_startup"] = settings.reconcile_instances_on_startup
     options.update(overrides)
     return options
 

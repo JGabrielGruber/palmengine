@@ -16,6 +16,7 @@ import palm.storages  # noqa: F401 — register core backends
 from palm import __version__
 from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
 from palm.common.hooks import InstancePersistenceHook, StateSnapshotHook
+from palm.common.managers import InstanceManager
 from palm.common.storage import StorageFactory
 from palm.core import (
     AuthEngine,
@@ -49,7 +50,12 @@ class BaseRuntime:
     runtime_name: ClassVar[str] = "Runtime"
     default_scheduler_policy: ClassVar[SchedulerPolicy] = "inline"
 
-    def __init__(self, *, storage: StorageEngine | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        storage: StorageEngine | None = None,
+        instance_manager: InstanceManager | None = None,
+    ) -> None:
         self.context = ContextEngine()
         self.event = EventEngine()
         self.behavior_tree = BehaviorTreeEngine()
@@ -59,8 +65,14 @@ class BaseRuntime:
         self._owns_storage = storage is None
         self.storage = storage if storage is not None else StorageEngine()
         self.repository = DefinitionRepository(self.storage)
-        self.instances = InstanceRepository(self.storage)
-        self.executor = DefinitionExecutor(self, self.repository, self.instances)
+        if instance_manager is not None:
+            self.instance_manager = instance_manager
+            self.instances = instance_manager.repository
+        else:
+            self.instances = InstanceRepository(self.storage)
+            self.instance_manager = InstanceManager(self.instances)
+        self._owns_instance_manager = instance_manager is None
+        self.executor = DefinitionExecutor(self, self.repository, self.instance_manager)
         self._started = False
         self._auth_enforce = False
 
@@ -103,11 +115,11 @@ class BaseRuntime:
                     required_roles=tuple(options.get("auth_roles") or ("user",)),
                 )
             )
-        hooks.append(InstancePersistenceHook(self.instances))
+        hooks.append(InstancePersistenceHook(self.instance_manager))
         if options.get("enable_state_snapshot"):
             hooks.append(
                 StateSnapshotHook(
-                    self.instances,
+                    self.instance_manager,
                     snapshot_on_status=options.get("snapshot_on_status"),
                     max_snapshots_per_instance=int(
                         options.get("max_snapshots_per_instance", 10)
@@ -137,6 +149,14 @@ class BaseRuntime:
                 **dict(options.get("backend_options") or {}),
             )
 
+        if not self.instance_manager.is_initialized:
+            self.instance_manager.initialize(
+                max_loaded_instances=options.get("max_loaded_instances"),
+                max_concurrent_active=options.get("max_concurrent_active"),
+                max_snapshots_per_instance=options.get("max_snapshots_per_instance"),
+                reconcile_on_startup=options.get("reconcile_on_startup"),
+            )
+
         self.orchestration.start()
         self._started = True
 
@@ -146,6 +166,8 @@ class BaseRuntime:
             return
 
         self.orchestration.stop()
+        if self._owns_instance_manager:
+            self.instance_manager.shutdown()
         if self._owns_storage:
             self.storage.shutdown()
         self.orchestration.shutdown()
@@ -227,7 +249,7 @@ class BaseRuntime:
     def get_instance(self, instance_id: str) -> ProcessInstance:
         """Load a persisted process instance record."""
         self._require_started()
-        return self.instances.get(instance_id)
+        return self.instance_manager.get(instance_id)
 
     def get_job(self, job_id: str) -> Job:
         """Return a registered orchestration job."""

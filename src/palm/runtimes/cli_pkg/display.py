@@ -88,6 +88,8 @@ def render_instance_table(console: Any, instances: list[Any]) -> None:
         console.print("[dim]No process instances.[/]")
         return
 
+    show_snapshots = any(getattr(inst, "snapshot_count", 0) for inst in instances)
+
     table = Table(title="Process Instances", show_lines=True)
     table.add_column("Instance", style="cyan")
     table.add_column("Process")
@@ -95,16 +97,21 @@ def render_instance_table(console: Any, instances: list[Any]) -> None:
     table.add_column("Status", style="yellow")
     table.add_column("Step")
     table.add_column("Job", style="dim")
+    if show_snapshots:
+        table.add_column("Snaps", justify="right", style="dim")
 
     for inst in instances:
-        table.add_row(
+        row = [
             inst.instance_id[:14],
             inst.process_name or "—",
             inst.flow_name or "—",
             inst.status,
             inst.wizard_step_slug or "—",
             inst.job_id[:14],
-        )
+        ]
+        if show_snapshots:
+            row.append(str(getattr(inst, "snapshot_count", 0)))
+        table.add_row(*row)
     console.print(table)
 
 

@@ -11,6 +11,7 @@ from palm.core.orchestration.hooks import JobHookAdapter
 from palm.definitions.flow import FlowDefinition
 
 if TYPE_CHECKING:
+    from palm.common.managers.instance_manager import InstanceManager
     from palm.common.persistence.instance_repository import InstanceRepository
     from palm.core.orchestration.engine import OrchestrationEngine
     from palm.core.orchestration.job import Job
@@ -24,7 +25,7 @@ class InstancePersistenceHook(JobHookAdapter):
     Creates the instance record on first submit, then updates on status changes.
     """
 
-    def __init__(self, instances: InstanceRepository) -> None:
+    def __init__(self, instances: InstanceRepository | InstanceManager) -> None:
         self._instances = instances
 
     def on_job_submitted(self, engine: OrchestrationEngine, job: Job) -> None:

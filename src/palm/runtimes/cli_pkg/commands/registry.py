@@ -8,7 +8,6 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from palm.runtimes.cli_pkg import actions
-
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import (
     render_definition_catalog,
@@ -150,8 +149,8 @@ def _cmd_process_list(ctx: CliContext, _args: list[str]) -> int:
 
 
 def _cmd_instance_list(ctx: CliContext, _args: list[str]) -> int:
-    instances = ctx.app.list_instances()
-    render_instance_table(ctx.console, instances)
+    summaries = ctx.list_instance_summaries()
+    render_instance_table(ctx.console, summaries)
     return 0
 
 
@@ -162,7 +161,7 @@ def _cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] instance snapshots <instance_id>")
         return 1
     try:
-        snapshots = ctx.app.list_instance_snapshots(args[0])
+        snapshots = ctx.list_instance_snapshots(args[0])
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1

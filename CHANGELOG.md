@@ -4,7 +4,22 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [0.7.0] — 2026-06-10
 
-Production-ready persistence foundation and storage factory for extensible runtimes.
+Production-ready persistence foundation, storage factory, and instance lifecycle coordination.
+
+### Added (continued)
+
+- **`InstanceManager`** (`palm.common.managers`) — LRU cache, active-instance tracking, lightweight summaries, startup reconciliation, and thread-safe coordination over `InstanceRepository`
+- **`BaseManager`** — minimal `initialize` / `shutdown` lifecycle contract for managers
+- **`InstanceSummary`** — fast listing view for CLI `instance list` without full payload loads
+- **Instance settings** — `max_loaded_instances`, `max_concurrent_active`, `reconcile_instances_on_startup` on `PalmSettings`
+- **Manager tests** — `tests/test_instance_manager.py`
+
+### Changed (continued)
+
+- **CLI bootstrap** — thin `PalmApp` client; `resolve_cli_settings()` respects `PALM_*` env unless flags are explicit; persistence banner in REPL/doctor
+- **`PalmApp`** — shared `instance_manager` property; instance APIs route through the manager
+- **`BaseRuntime`** — wires hooks and executor through `InstanceManager`; shared manager across app runtimes
+- **CLI** — `instance list`, `doctor`, and snapshot commands use the manager layer
 
 ### Added
 

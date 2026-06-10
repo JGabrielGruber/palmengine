@@ -1,5 +1,5 @@
 """
-CLI session context — PalmApp, console, and active instance tracking.
+CLI session context — thin delegate over :class:`~palm.app.app.PalmApp`.
 """
 
 from __future__ import annotations
@@ -8,10 +8,12 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from palm.app.app import PalmApp
+from palm.app.settings import PalmSettings
 from palm.common.exceptions import InstanceNotFoundError
+from palm.common.managers import InstanceManager, InstanceSummary
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.instances import ProcessInstance
+from palm.instances import ProcessInstance, StateSnapshot
 
 
 @dataclass
@@ -23,9 +25,24 @@ class CliContext:
     active_instance_id: str | None = None
     _instance_to_job: dict[str, str] = field(default_factory=dict)
 
+    @property
+    def settings(self) -> PalmSettings:
+        return self.app.settings
+
+    @property
+    def instance_manager(self) -> InstanceManager:
+        return self.app.instance_manager
+
     def set_active(self, instance_id: str, job_id: str) -> None:
         self.active_instance_id = instance_id
         self._instance_to_job[instance_id] = job_id
+        self.instance_manager.mark_active(instance_id)
+
+    def list_instance_summaries(self) -> list[InstanceSummary]:
+        return self.app.list_instance_summaries()
+
+    def list_instance_snapshots(self, instance_id: str) -> list[StateSnapshot]:
+        return self.app.list_instance_snapshots(instance_id)
 
     def resolve_job_id(self, instance_or_job_id: str) -> str:
         """Map instance id to live job id, resuming from storage if needed."""
@@ -51,9 +68,9 @@ class CliContext:
             return self.app.get_instance(ref)
         except InstanceNotFoundError:
             pass
-        for inst in self.app.list_instances():
-            if inst.flow_name == ref or inst.process_name == ref:
-                return inst
+        for summary in self.list_instance_summaries():
+            if summary.flow_name == ref or summary.process_name == ref:
+                return self.app.get_instance(summary.instance_id)
         raise InstanceNotFoundError(ref)
 
     def job_for_instance(self, instance_id: str) -> Job:

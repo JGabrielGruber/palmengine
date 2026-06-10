@@ -43,6 +43,9 @@ class PalmSettings(BaseSettings):
         default_factory=lambda: ["WAITING_FOR_INPUT", "SUCCEEDED", "FAILED"]
     )
     max_snapshots_per_instance: int = 10
+    max_loaded_instances: int = 128
+    max_concurrent_active: int = 32
+    reconcile_instances_on_startup: bool = True
 
     def definition_roots(self) -> list[Path]:
         """Directories scanned for ``register_definitions`` modules."""
@@ -55,3 +58,4 @@ class PalmSettings(BaseSettings):
             ]
         )
         return roots
+

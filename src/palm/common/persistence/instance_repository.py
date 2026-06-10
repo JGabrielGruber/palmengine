@@ -110,7 +110,8 @@ class InstanceRepository:
         except StorageNotConfiguredError:
             return False
 
-    def list_instances(self) -> list[ProcessInstance]:
+    def list_instance_ids(self) -> list[str]:
+        """Return instance ids from the in-memory cache and storage index."""
         ids = set(self._cache.keys())
         storage = self._storage
         if storage is not None and storage.is_initialized:
@@ -120,6 +121,25 @@ class InstanceRepository:
                     ids.update(str(item) for item in indexed)
             except StorageNotConfiguredError:
                 pass
+        return sorted(ids)
+
+    def load_record(self, instance_id: str) -> dict[str, Any] | None:
+        """Load a raw persisted record without building a :class:`~palm.instances.ProcessInstance`."""
+        return self._load(instance_id)
+
+    def purge_index_entry(self, instance_id: str) -> bool:
+        """Remove an instance id from the storage index when its record is missing."""
+        storage = self._storage
+        if storage is None or not storage.is_initialized:
+            return False
+        try:
+            self._remove_from_index(instance_id)
+            return True
+        except StorageNotConfiguredError:
+            return False
+
+    def list_instances(self) -> list[ProcessInstance]:
+        ids = set(self.list_instance_ids())
         instances: list[ProcessInstance] = []
         for instance_id in sorted(ids):
             try:

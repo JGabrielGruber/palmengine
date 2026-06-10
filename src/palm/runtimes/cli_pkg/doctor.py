@@ -8,6 +8,8 @@ from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import render_definition_catalog, render_instance_table
+from palm.runtimes.cli_pkg.settings import is_durable_storage
+from palm.runtimes.cli_pkg.startup import format_persistence_notice
 
 
 def run_doctor(ctx: CliContext) -> int:
@@ -32,6 +34,7 @@ def run_doctor(ctx: CliContext) -> int:
     if not backend_open:
         issues.append(f"Storage backend {backend_name!r} is not open")
 
+    persistence_style = "green" if is_durable_storage(backend_name) else "yellow"
     console.print(
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
@@ -41,6 +44,13 @@ def run_doctor(ctx: CliContext) -> int:
             f"{'[green]ready[/]' if backend_open else '[red]unavailable[/]'}",
             title="Engine Health",
             border_style="green" if not issues else "yellow",
+        )
+    )
+    console.print(
+        Panel(
+            format_persistence_notice(app),
+            title="Persistence",
+            border_style=persistence_style,
         )
     )
 
@@ -60,13 +70,13 @@ def run_doctor(ctx: CliContext) -> int:
     inst_table.add_column("Notes")
     inst_table.add_row("flow definitions", str(len(flows)), "in-memory + storage index")
     inst_table.add_row("process definitions", str(len(processes)), "")
-    instances = app.list_instances()
-    inst_table.add_row("process instances", str(len(instances)), "durable snapshots")
+    summaries = app.list_instance_summaries()
+    inst_table.add_row("process instances", str(len(summaries)), "durable snapshots")
     console.print(inst_table)
 
     render_definition_catalog(ctx)
 
-    recent = sorted(instances, key=lambda i: i.updated_at, reverse=True)[:10]
+    recent = summaries[:10]
     if recent:
         console.print("[bold]Recent instances[/] [dim](newest first, up to 10)[/]")
         render_instance_table(console, recent)

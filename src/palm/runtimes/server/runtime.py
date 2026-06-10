@@ -34,10 +34,11 @@ class ServerRuntime(BaseRuntime):
         self,
         *,
         storage: Any | None = None,
+        instance_manager: Any | None = None,
         host: str = "127.0.0.1",
         port: int = 8080,
     ) -> None:
-        super().__init__(storage=storage)
+        super().__init__(storage=storage, instance_manager=instance_manager)
         self._host = host
         self._port = port
         self._http_server: PalmHttpServer | None = None

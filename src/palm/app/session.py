@@ -1,5 +1,5 @@
 """
-CLI session bootstrap — authoritative PalmApp wiring for terminal clients.
+CLI session bootstrap — thin PalmApp client for terminal entrypoints.
 """
 
 from __future__ import annotations
@@ -9,6 +9,7 @@ from typing import Any
 
 from palm.app.app import PalmApp
 from palm.app.bootstrap import runtime_start_options
+from palm.app.cli_settings import resolve_cli_settings
 from palm.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
 
@@ -27,22 +28,26 @@ def create_console() -> Any:
 
 def create_cli_app(
     *,
-    storage_backend: str = "memory",
+    storage_backend: str | None = None,
     data_dir: Path | None = None,
     storage: StorageEngine | None = None,
     settings: PalmSettings | None = None,
 ) -> PalmApp:
     """
-    Construct a bootstrapped :class:`~palm.app.app.PalmApp` with the CLI runtime.
+    Construct a fully bootstrapped :class:`~palm.app.app.PalmApp` for the CLI.
+
+    Settings resolve from ``PALM_*`` environment variables, with optional CLI flag
+    overrides. ``bootstrap_cli`` wires the embedded runtime, ``InstanceManager``,
+    persistence hooks, and definition catalog — no manual runtime assembly.
 
     Shared ``storage`` enables resume across separate CLI invocations (daemon +
-    terminal) when both use the same engine instance or backend.
+    terminal) when both use the same engine instance or durable backend + data dir.
     """
-    cfg = settings or PalmSettings(storage_backend=storage_backend, data_dir=data_dir)
-    if storage_backend and settings is None:
-        cfg.storage_backend = storage_backend
-    if data_dir is not None and settings is None:
-        cfg.data_dir = data_dir
+    cfg = resolve_cli_settings(
+        storage_backend=storage_backend,
+        data_dir=data_dir,
+        settings=settings,
+    )
 
     app = PalmApp(cfg, storage=storage)
     app.bootstrap()
