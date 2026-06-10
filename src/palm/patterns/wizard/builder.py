@@ -29,11 +29,17 @@ def build(
     if not issubclass(pattern_cls, WizardPattern):
         raise DefinitionBuildError("Registry entry for 'wizard' is not WizardPattern")
 
+    commit_registry = context.commit_registry
+    if commit_registry is None:
+        from palm.patterns.wizard.handler import default_commit_registry
+
+        commit_registry = default_commit_registry()
+
     kwargs: dict[str, Any] = {
         "name": flow.name,
         "event_engine": context.event_engine,
         "resource_engine": context.resource_engine,
-        "commit_registry": context.resolved_commit_registry,
+        "commit_registry": commit_registry,
     }
 
     options = flow.options

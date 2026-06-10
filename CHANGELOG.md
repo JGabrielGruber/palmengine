@@ -6,6 +6,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 Production-ready persistence foundation, storage factory, and instance lifecycle coordination.
 
+### Changed (architectural boundaries)
+
+- **Wizard logic removed from `palm.common`** — instance field extraction, resume restoration, and submission metadata now live in `palm.patterns.wizard.persistence` and `palm.patterns.wizard.submission`, registered via `palm.patterns._registry`
+- **`PatternBuildContext` slimmed** — no wizard metadata or default commit/validation registry resolution; wizard builder owns its defaults
+- **Generic persistence preserved** — `snapshot_state`, `state_from_snapshot`, `build_instance_from_job`, `update_instance_from_job`, `prepare_resume_state` remain in `palm.common.persistence.instance_sync` and delegate to pattern hooks
+
 ### Added (CLI usability)
 
 - **Global CLI flags** — `-b`/`-d`, `--config`, `-S`/`--enable-state-snapshot`, `--max-loaded-instances`, `--max-concurrent-active`, `--scheduler`, `--format` (`table`|`json`); merged via `settings_from_invocation()` with documented env precedence

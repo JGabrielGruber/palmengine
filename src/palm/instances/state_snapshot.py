@@ -27,20 +27,17 @@ class StateSnapshot:
     @classmethod
     def now(cls, job: Job, **detail: Any) -> StateSnapshot:
         """Build a snapshot from the current job state."""
-        from palm.common.persistence.instance_sync import (
-            snapshot_state,
-            wizard_runtime_position_for_job,
-            wizard_step_slug_for_job,
-        )
+        from palm.common.persistence.instance_sync import snapshot_state
 
+        step_slug, runtime_position = _pattern_snapshot_fields(job)
         payload = {k: v for k, v in detail.items() if v is not None}
         return cls(
             status=job.status.value,
             recorded_at=datetime.now(UTC).isoformat(),
             state_snapshot=snapshot_state(job.state),
             job_id=job.id,
-            wizard_step_slug=wizard_step_slug_for_job(job),
-            runtime_position=wizard_runtime_position_for_job(job),
+            wizard_step_slug=step_slug,
+            runtime_position=runtime_position,
             detail=payload,
         )
 
@@ -66,3 +63,18 @@ class StateSnapshot:
             runtime_position=dict(data.get("runtime_position") or {}),
             detail=dict(data.get("detail") or {}),
         )
+
+
+def _pattern_snapshot_fields(job: Job) -> tuple[str | None, dict[str, Any]]:
+    """Resolve optional step slug and runtime position via the pattern registry."""
+    import palm.patterns  # noqa: F401 — register pattern extension hooks
+
+    from palm.patterns._registry import get_instance_fields
+
+    pattern = job.metadata.get("pattern")
+    if not isinstance(pattern, str):
+        return None, {}
+    fields_fn = get_instance_fields(pattern)
+    if fields_fn is None:
+        return None, {}
+    return fields_fn(job)

@@ -1,5 +1,10 @@
 """
 Sync orchestration jobs with durable ``ProcessInstance`` records.
+
+Generic snapshot and instance shell logic only. Pattern-specific field
+extraction and resume restoration register via
+:mod:`palm.patterns._registry` (e.g. wizard hooks in
+``palm.patterns.wizard.persistence``).
 """
 
 from __future__ import annotations
@@ -11,9 +16,6 @@ from palm.core.context import BaseState
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
-from palm.patterns.wizard import WizardPattern
-from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.resume import restore_wizard_position, wizard_runtime_position
 from palm.states import BlackboardState
 
 
@@ -37,8 +39,7 @@ def build_instance_from_job(
 ) -> ProcessInstance:
     """Create a new instance record from a submitted job."""
     iid = instance_id or str(job.metadata.get("instance_id") or job.id)
-    wizard_slug = _wizard_step_slug(job)
-    position = _runtime_position(job)
+    step_slug, position = _pattern_instance_fields(job, flow.pattern)
     return ProcessInstance(
         instance_id=iid,
         job_id=job.id,
@@ -52,18 +53,19 @@ def build_instance_from_job(
         process_name=process_name or job.metadata.get("process"),
         metadata=dict(job.metadata),
         status_history=[],
-        wizard_step_slug=wizard_slug,
+        wizard_step_slug=step_slug,
         runtime_position=position,
     )
 
 
 def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInstance:
     """Refresh mutable fields and append status history."""
+    step_slug, position = _pattern_instance_fields(job, instance.pattern)
     instance.job_id = job.id
     instance.state_snapshot = snapshot_state(job.state)
     instance.metadata = dict(job.metadata)
-    instance.wizard_step_slug = _wizard_step_slug(job)
-    instance.runtime_position = _runtime_position(job)
+    instance.wizard_step_slug = step_slug
+    instance.runtime_position = position
     if instance.status != job.status.value:
         instance.append_status(
             job.status.value,
@@ -78,35 +80,31 @@ def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInst
 
 def prepare_resume_state(
     instance: ProcessInstance,
-    pattern: Any,
+    executable: Any,
 ) -> BlackboardState:
-    """Load blackboard state and restore wizard tree position when applicable."""
+    """Load blackboard state and delegate pattern-specific resume restoration."""
     state = state_from_snapshot(instance.state_snapshot)
-    if isinstance(pattern, WizardPattern):
-        restore_wizard_position(pattern, state)
-        if instance.runtime_position.get("sequence_index") is not None:
-            idx = instance.runtime_position["sequence_index"]
-            if isinstance(idx, int):
-                pattern._sequence._current_index = idx
+    handler = _resume_handler(instance.pattern)
+    if handler is not None:
+        return handler(instance, executable, state)
     return state
 
 
-def wizard_step_slug_for_job(job: Job) -> str | None:
-    return _wizard_step_slug(job)
+def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
+    """Resolve optional step slug and runtime position via the pattern registry."""
+    import palm.patterns  # noqa: F401 — register pattern extension hooks
+
+    from palm.patterns._registry import get_instance_fields
+
+    fields_fn = get_instance_fields(pattern)
+    if fields_fn is None:
+        return None, {}
+    return fields_fn(job)
 
 
-def wizard_runtime_position_for_job(job: Job) -> dict[str, Any]:
-    return _runtime_position(job)
+def _resume_handler(pattern: str) -> Any:
+    import palm.patterns  # noqa: F401 — register pattern extension hooks
 
+    from palm.patterns._registry import get_resume_handler
 
-def _wizard_step_slug(job: Job) -> str | None:
-    if not isinstance(job.executable, WizardPattern):
-        slug = job.state.get(WizardKeys.CURRENT_STEP)
-        return str(slug) if slug is not None else None
-    return job.executable.current_step_slug(job.state)
-
-
-def _runtime_position(job: Job) -> dict[str, Any]:
-    if isinstance(job.executable, WizardPattern):
-        return wizard_runtime_position(job.executable, job.state)
-    return {}
+    return get_resume_handler(pattern)

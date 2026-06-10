@@ -1,5 +1,8 @@
 """
 Flow submission preparation — definitions to orchestration-ready payloads.
+
+Pattern-specific metadata enrichment registers via
+:mod:`palm.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.submission``).
 """
 
 from __future__ import annotations
@@ -14,7 +17,6 @@ from palm.common.plans.execution_plan import ExecutionPlan
 from palm.core.context import BaseState
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
-from palm.patterns.wizard.options import wizard_metadata_from_flow
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:
@@ -51,9 +53,6 @@ def prepare_flow_submission(
     instance_id: str | None = None,
 ) -> FlowSubmission:
     """Build a pattern executable and job metadata from a flow definition."""
-    if flow.pattern == "wizard":
-        build_ctx.wizard_metadata = wizard_metadata_from_flow(flow.options)
-
     executable = build_pattern(flow, context=build_ctx)
     job_state = state if state is not None else BlackboardState()
     meta = dict(metadata or {})
@@ -62,8 +61,7 @@ def prepare_flow_submission(
     meta.setdefault("flow_id", flow.definition_id)
     meta.setdefault("pattern", flow.pattern)
     meta["flow_definition"] = flow.to_dict()
-    if build_ctx.wizard_metadata:
-        meta.setdefault("wizard", dict(build_ctx.wizard_metadata))
+    _apply_pattern_submission_metadata(flow, meta)
 
     iid = instance_id
     if iid is None and instances is not None:
@@ -87,9 +85,6 @@ def prepare_resume_submission(
 ) -> FlowSubmission:
     """Rebuild a submission payload from a persisted process instance."""
     flow = FlowDefinition.from_dict(instance.flow_definition)
-    if flow.pattern == "wizard":
-        build_ctx.wizard_metadata = wizard_metadata_from_flow(flow.options)
-
     executable = build_pattern(flow, context=build_ctx)
     state = prepare_resume_state(instance, executable)
     meta = dict(instance.metadata)
@@ -104,3 +99,16 @@ def prepare_resume_submission(
         metadata=meta,
         instance_id=instance.instance_id,
     )
+
+
+def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
+    import palm.patterns  # noqa: F401 — register pattern extension hooks
+
+    from palm.patterns._registry import get_submission_metadata
+
+    enricher = get_submission_metadata(flow.pattern)
+    if enricher is None:
+        return
+    extra = enricher(flow)
+    for key, value in extra.items():
+        meta.setdefault(key, value)
