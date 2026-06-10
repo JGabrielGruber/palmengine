@@ -7,146 +7,24 @@ plugin details without starting the embedded runtime.
 
 from __future__ import annotations
 
-import argparse
 import sys
-from pathlib import Path
 
-from palm import __version__
-from palm.core.registry import pattern_registry, storage_registry
 from palm.app.session import create_console
+from palm.runtimes.cli_pkg.args import build_parser, invocation_from_namespace
 from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
-from palm.runtimes.cli_pkg.doctor import run_doctor
 from palm.runtimes.cli_pkg.repl import run_repl
 from palm.runtimes.cli_pkg.version_info import print_version_brief, print_version_full
-
-_CLI_EPILOG = """
-examples:
-  palm                          interactive REPL (default)
-  palm doctor                   engine health and loaded definitions
-  palm version --full             version, Python, registered plugins
-  palm wizard start onboard       run the onboarding example wizard
-  palm process resume <id>        resume a persisted instance
-
-documentation:
-  README.md · SCOPE.md · ARCHITECTURE.md · CHANGELOG.md · examples/full_demo.py
-"""
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="palm",
-        description=(
-            "Palm Engine — multi-step transactional workflow orchestration " f"({__version__})"
-        ),
-        epilog=_CLI_EPILOG,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"Palm {__version__}",
-        help="Show version and exit",
-    )
-    parser.add_argument(
-        "--storage-backend",
-        default=None,
-        help="Storage backend (default: PALM_STORAGE_BACKEND or memory)",
-    )
-    parser.add_argument(
-        "--data-dir",
-        type=Path,
-        default=None,
-        help="Data directory for durable backends (default: PALM_DATA_DIR or ./data)",
-    )
-    sub = parser.add_subparsers(dest="command", metavar="command")
-
-    sub.add_parser("repl", help="Interactive REPL (default when no subcommand)")
-
-    version_p = sub.add_parser("version", help="Show version information")
-    version_p.add_argument(
-        "--full",
-        action="store_true",
-        help="Show Python platform and registered patterns/providers/storages",
-    )
-
-    status_p = sub.add_parser(
-        "status",
-        help="Engine status, or instance/job status when instance_id is given",
-    )
-    status_p.add_argument(
-        "--full",
-        action="store_true",
-        help="Full diagnostic report (same as palm doctor)",
-    )
-    status_p.add_argument(
-        "instance_id",
-        nargs="?",
-        default=None,
-        help="Process instance id (optional)",
-    )
-
-    sub.add_parser("doctor", help="Engine health, definitions, storage, and instances")
-
-    proc = sub.add_parser("process", help="Process definition commands")
-    proc_sub = proc.add_subparsers(dest="process_cmd", required=True)
-    proc_sub.add_parser("list", help="List process and flow definitions")
-    submit_p = proc_sub.add_parser("submit", help="Submit a process by name or id")
-    submit_p.add_argument("ref", help="Process name or definition id")
-    resume_p = proc_sub.add_parser("resume", help="Resume a persisted instance")
-    resume_p.add_argument("instance_id", help="Process instance id")
-
-    inst = sub.add_parser("instance", help="Process instance commands")
-    inst_sub = inst.add_subparsers(dest="instance_cmd", required=True)
-    inst_sub.add_parser("list", help="List persisted instances")
-    snapshots_p = inst_sub.add_parser("snapshots", help="List recorded state snapshots")
-    snapshots_p.add_argument("instance_id", help="Process instance id")
-
-    wiz = sub.add_parser("wizard", help="Wizard flow commands")
-    wiz_sub = wiz.add_subparsers(dest="wizard_cmd", required=True)
-    wiz_sub.add_parser("list", help="List wizard flows")
-    start_p = wiz_sub.add_parser("start", help="Start a wizard flow")
-    start_p.add_argument("flow", help="Flow name or definition id")
-
-    for name, help_text in (
-        ("input", "Provide input to a waiting wizard instance"),
-        ("back", "Backtrack to a previous wizard step"),
-    ):
-        p = sub.add_parser(name, help=help_text)
-        p.add_argument(
-            "args",
-            nargs=argparse.REMAINDER,
-            help="[<instance_id>] <value> or [<instance_id>] <step_slug>",
-        )
-
-    return parser
-
-
-def _print_engine_status(ctx: object) -> int:
-    console = ctx.console  # type: ignore[attr-defined]
-    from rich.panel import Panel
-
-    console.print(
-        Panel(
-            f"[bold]Palm Engine v{__version__}[/]\n"
-            f"Runtime: embedded\n"
-            f"Patterns: {', '.join(pattern_registry.names())}\n"
-            f"Storage:  {', '.join(storage_registry.names())}\n\n"
-            f"[dim]Tip:[/] [cyan]palm doctor[/] or [cyan]palm version --full[/]",
-            title="Status",
-            border_style="green",
-        )
-    )
-    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point registered in ``pyproject.toml`` as the ``palm`` script."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    inv = invocation_from_namespace(args)
 
-    if args.command == "version":
-        if getattr(args, "full", False):
+    if inv.command == "version":
+        if inv.full:
             try:
                 return print_version_full(create_console())
             except SystemExit:
@@ -154,55 +32,60 @@ def main(argv: list[str] | None = None) -> int:
         print_version_brief()
         return 0
 
-    if args.command is None:
-        args.command = "repl"
+    if inv.command is None:
+        inv.command = "repl"
 
-    show_banner = args.command not in ("repl", "doctor")
-    ctx = bootstrap_runtime(
-        storage_backend=args.storage_backend,
-        data_dir=args.data_dir,
-        show_banner=show_banner,
-    )
+    show_banner = inv.command not in ("repl", "doctor")
+    ctx = bootstrap_runtime(invocation=inv, show_banner=show_banner)
     registry = build_registry()
     exit_code = 0
 
     try:
-        if args.command == "repl":
+        if inv.command == "repl":
             exit_code = run_repl(ctx)
-        elif args.command == "doctor":
-            exit_code = run_doctor(ctx)
-        elif args.command == "status":
-            if getattr(args, "full", False):
-                exit_code = run_doctor(ctx)
-            elif args.instance_id:
-                exit_code = registry.dispatch(ctx, f"status {args.instance_id}")
+        elif inv.command == "doctor":
+            exit_code = registry.dispatch(ctx, "doctor")
+        elif inv.command == "status":
+            if inv.full:
+                exit_code = registry.dispatch(ctx, "doctor")
+            elif inv.instance_id:
+                exit_code = registry.dispatch(ctx, f"status {inv.instance_id}")
             else:
-                exit_code = _print_engine_status(ctx)
-        elif args.command == "process":
-            phrase = f"process {args.process_cmd}"
+                exit_code = registry.dispatch(ctx, "status")
+        elif inv.command == "process":
+            phrase = f"process {inv.process_cmd}"
             extra: list[str] = []
-            if args.process_cmd == "submit":
-                extra = [args.ref]
-            elif args.process_cmd == "resume":
-                extra = [args.instance_id]
+            if inv.process_cmd == "submit" and inv.ref:
+                extra = [inv.ref]
+            elif inv.process_cmd == "resume" and inv.instance_id:
+                extra = [inv.instance_id]
             exit_code = registry.dispatch(ctx, " ".join([phrase, *extra]).strip())
-        elif args.command == "instance":
-            extra: list[str] = []
-            if args.instance_cmd == "snapshots":
-                extra = [args.instance_id]
+        elif inv.command == "instance":
+            if inv.instance_cmd == "list":
+                extra = _instance_list_argv(inv)
+                exit_code = registry.dispatch(ctx, " ".join(["instance list", *extra]).strip())
+            elif inv.instance_cmd == "status":
+                ref = inv.instance_id or ""
+                exit_code = registry.dispatch(ctx, f"instance status {ref}".strip())
+            elif inv.instance_cmd == "snapshots" and inv.instance_id:
+                exit_code = registry.dispatch(ctx, f"instance snapshots {inv.instance_id}")
+            elif inv.instance_cmd == "resume" and inv.instance_id:
+                exit_code = registry.dispatch(ctx, f"instance resume {inv.instance_id}")
+            elif inv.instance_cmd == "prune":
+                extra = ["--dry-run"] if inv.prune_dry_run else []
+                exit_code = registry.dispatch(ctx, " ".join(["instance prune", *extra]).strip())
+            else:
+                exit_code = 1
+        elif inv.command == "wizard":
+            extra = [inv.flow] if inv.wizard_cmd == "start" and inv.flow else []
             exit_code = registry.dispatch(
-                ctx, " ".join([f"instance {args.instance_cmd}", *extra]).strip()
+                ctx, " ".join([f"wizard {inv.wizard_cmd}", *extra]).strip()
             )
-        elif args.command == "wizard":
-            extra = [getattr(args, "flow", "")] if args.wizard_cmd == "start" else []
-            exit_code = registry.dispatch(
-                ctx, " ".join([f"wizard {args.wizard_cmd}", *extra]).strip()
-            )
-        elif args.command == "input":
-            line = "input " + " ".join(getattr(args, "args", []))
+        elif inv.command == "input":
+            line = "input " + " ".join(inv.input_args or [])
             exit_code = registry.dispatch(ctx, line.strip())
-        elif args.command == "back":
-            line = "back " + " ".join(getattr(args, "args", []))
+        elif inv.command == "back":
+            line = "back " + " ".join(inv.input_args or [])
             exit_code = registry.dispatch(ctx, line.strip())
         else:
             parser.print_help()
@@ -213,6 +96,22 @@ def main(argv: list[str] | None = None) -> int:
         shutdown_context(ctx)
 
     return exit_code
+
+
+def _instance_list_argv(inv: object) -> list[str]:
+    argv: list[str] = []
+    if getattr(inv, "instance_list_all", False):
+        argv.append("--all")
+    if getattr(inv, "instance_status", None):
+        argv.extend(["--status", str(inv.instance_status)])
+    if getattr(inv, "instance_flow", None):
+        argv.extend(["--flow", str(inv.instance_flow)])
+    if getattr(inv, "instance_limit", None):
+        argv.extend(["--limit", str(inv.instance_limit)])
+    if getattr(inv, "output_format", "table") == "json":
+        argv.append("--format")
+        argv.append("json")
+    return argv
 
 
 if __name__ == "__main__":

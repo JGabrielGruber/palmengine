@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from palm import __version__
-from palm.runtimes.cli_pkg.commands.registry import CommandRegistry, build_registry
+from palm.runtimes.cli_pkg.commands.registry import build_registry
 from palm.runtimes.cli_pkg.context import CliContext
 
 
@@ -24,8 +24,10 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
 
     from prompt_toolkit.completion import Completer, Completion
 
+    from palm.runtimes.cli_pkg.completion import build_repl_completer
+
     registry = build_registry()
-    completer = _make_completer(registry, Completer, Completion)
+    completer = build_repl_completer(ctx, registry, completer_cls=Completer, completion_cls=Completion)
 
     hist = history_path or Path.home() / ".palm" / "history"
     hist.parent.mkdir(parents=True, exist_ok=True)
@@ -67,34 +69,18 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
 
 
 def _prompt(ctx: CliContext) -> str:
-    if ctx.active_instance_id:
-        short = ctx.active_instance_id[:8]
-        return f"palm:{short} ●> "
-    return "palm> "
+    if not ctx.active_instance_id:
+        return "palm> "
 
-
-def _make_completer(registry: CommandRegistry, completer_cls: Any, completion_cls: Any) -> Any:
-    phrases = sorted(registry.handlers.keys(), key=len)
-    tokens = sorted({p.split()[0] for p in phrases})
-
-    class _ReplCompleter(completer_cls):  # type: ignore[misc]
-        def get_completions(self, document: Any, complete_event: Any) -> Any:
-            text = document.text_before_cursor.lower()
-            words = text.split()
-
-            if len(words) <= 1:
-                prefix = text
-                for token in tokens:
-                    if token.startswith(prefix):
-                        yield completion_cls(token, start_position=-len(prefix))
-                for phrase in phrases:
-                    if phrase.startswith(prefix):
-                        yield completion_cls(phrase, start_position=-len(prefix))
-                return
-
-            prefix = " ".join(words)
-            for phrase in phrases:
-                if phrase.startswith(prefix):
-                    yield completion_cls(phrase, start_position=-len(prefix))
-
-    return _ReplCompleter()
+    short = ctx.active_instance_id[:8]
+    suffix = ""
+    for summary in ctx.list_instance_summaries():
+        if summary.instance_id == ctx.active_instance_id:
+            flow = summary.flow_name or summary.process_name
+            step = summary.wizard_step_slug
+            if flow and step:
+                suffix = f" {flow}:{step}"
+            elif flow:
+                suffix = f" {flow}"
+            break
+    return f"palm:{short}{suffix} ●> "

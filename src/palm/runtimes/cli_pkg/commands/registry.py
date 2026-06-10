@@ -7,6 +7,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+from palm import __version__
+from palm.core.registry import pattern_registry, storage_registry
 from palm.runtimes.cli_pkg import actions
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import (
@@ -15,6 +17,13 @@ from palm.runtimes.cli_pkg.display import (
     render_job_status,
 )
 from palm.runtimes.cli_pkg.doctor import run_doctor
+from palm.runtimes.cli_pkg.instance_ops import (
+    InstanceListOptions,
+    filter_summaries,
+    parse_instance_list_flags,
+    prune_terminal_instances,
+)
+from palm.runtimes.cli_pkg.output import emit_json, snapshots_to_json, summaries_payload
 
 Handler = Callable[[CliContext, list[str]], int]
 
@@ -59,6 +68,9 @@ def build_registry() -> CommandRegistry:
 
     reg.register("instance list", _cmd_instance_list)
     reg.register("instance snapshots", _cmd_instance_snapshots)
+    reg.register("instance status", _cmd_status)
+    reg.register("instance resume", _cmd_process_resume)
+    reg.register("instance prune", _cmd_instance_prune)
 
     reg.register("wizard list", _cmd_wizard_list)
     reg.register("wizard start", _cmd_wizard_start)
@@ -89,9 +101,12 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
   process resume <id>       Resume a persisted instance
 
 [bold]Instances[/]
-  instance list             List process instances (alias: sessions)
-  instance snapshots <id>   List recorded state snapshots for an instance
-  status [<instance_id>]    Job + wizard status (active instance if omitted)
+  instance list [--all] [--status S] [--flow F] [--limit N] [--format json]
+  instance status [<id>]    Job + wizard status (alias: status)
+  instance snapshots <id>   State snapshot history for an instance
+  instance resume <id>        Resume a persisted instance
+  instance prune [--dry-run]  Remove terminal instances from storage
+  status [<instance_id>]      Same as instance status
 
 [bold]Wizard[/]
   wizard list               Wizard-capable flows
@@ -133,13 +148,47 @@ def _cmd_doctor(ctx: CliContext, _args: list[str]) -> int:
 def _cmd_status(ctx: CliContext, args: list[str]) -> int:
     if args and args[0] == "--full":
         return run_doctor(ctx)
+    if not args and not ctx.active_instance_id:
+        return _cmd_engine_status(ctx)
     try:
-        iid = actions.resolve_instance_ref(ctx, args[0] if args else None)
+        ref = args[0] if args else None
+        iid = actions.resolve_instance_ref(ctx, ref)
     except (ValueError, Exception) as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1
     job = ctx.job_for_instance(iid)
+    if ctx.output_format == "json":
+        payload: dict[str, object] = {
+            "instance_id": iid,
+            "job_id": job.id,
+            "status": job.status.value,
+        }
+        from palm.patterns.wizard.pattern import WizardPattern
+
+        if isinstance(job.executable, WizardPattern):
+            payload["current_step"] = job.executable.current_step_slug(job.state)
+            payload["answers"] = job.executable.answers(job.state)
+        emit_json(ctx.console, payload)
+        return 0
     render_job_status(ctx.console, job, iid)
+    return 0
+
+
+def _cmd_engine_status(ctx: CliContext) -> int:
+    from rich.panel import Panel
+
+    ctx.console.print(
+        Panel(
+            f"[bold]Palm Engine v{__version__}[/]\n"
+            f"Runtime: embedded — "
+            f"{'[green]started[/]' if ctx.app.is_runtime_started() else '[red]stopped[/]'}\n"
+            f"Patterns: {', '.join(pattern_registry.names())}\n"
+            f"Storage:  {', '.join(storage_registry.names())}\n\n"
+            f"[dim]Tip:[/] [cyan]palm doctor[/] or [cyan]status <instance_id>[/]",
+            title="Status",
+            border_style="green",
+        )
+    )
     return 0
 
 
@@ -148,9 +197,25 @@ def _cmd_process_list(ctx: CliContext, _args: list[str]) -> int:
     return 0
 
 
-def _cmd_instance_list(ctx: CliContext, _args: list[str]) -> int:
-    summaries = ctx.list_instance_summaries()
-    render_instance_table(ctx.console, summaries)
+def _cmd_instance_list(ctx: CliContext, args: list[str]) -> int:
+    options, _remaining = parse_instance_list_flags(args)
+    if "--format" in args:
+        index = args.index("--format")
+        if index + 1 < len(args) and args[index + 1] == "json":
+            ctx.output_format = "json"
+
+    summaries = filter_summaries(
+        ctx.list_instance_summaries(),
+        options=options,
+    )
+    if ctx.output_format == "json":
+        emit_json(ctx.console, summaries_payload(summaries))
+        return 0
+
+    hint = None
+    if not options.include_all:
+        hint = "Showing active (non-terminal) instances — append [cyan]--all[/] to include completed."
+    render_instance_table(ctx.console, summaries, hint=hint)
     return 0
 
 
@@ -166,11 +231,18 @@ def _cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1
+    if ctx.output_format == "json":
+        emit_json(
+            ctx.console,
+            {"instance_id": instance_id, "snapshots": snapshots_to_json(snapshots)},
+        )
+        return 0
+
     if not snapshots:
         ctx.console.print("[yellow]No state snapshots recorded for this instance.[/]")
         ctx.console.print(
             "[dim]Enable with[/] [cyan]PALM_ENABLE_STATE_SNAPSHOT=true[/] "
-            "[dim]in settings.[/]"
+            "[dim]or[/] [cyan]--enable-state-snapshot[/]"
         )
         return 0
 
@@ -203,6 +275,22 @@ def _cmd_process_submit(ctx: CliContext, args: list[str]) -> int:
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1
+    return 0
+
+
+def _cmd_instance_prune(ctx: CliContext, args: list[str]) -> int:
+    dry_run = "--dry-run" in args
+    removed = prune_terminal_instances(ctx, dry_run=dry_run)
+    if ctx.output_format == "json":
+        emit_json(ctx.console, {"dry_run": dry_run, "removed": removed})
+        return 0
+    label = "Would remove" if dry_run else "Removed"
+    if not removed:
+        ctx.console.print("[dim]No terminal instances to prune.[/]")
+        return 0
+    ctx.console.print(f"[green]{label}[/] {len(removed)} instance(s):")
+    for instance_id in removed:
+        ctx.console.print(f"  • {instance_id}")
     return 0
 
 
@@ -320,3 +408,6 @@ def _cmd_clear(ctx: CliContext, _args: list[str]) -> int:
 
 def _cmd_exit(ctx: CliContext, _args: list[str]) -> int:
     raise EOFError()
+
+
+

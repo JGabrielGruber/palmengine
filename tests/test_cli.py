@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
+from palm.app.cli_settings import resolve_cli_settings
+from palm.runtimes.cli_pkg.args import CliInvocation, settings_from_invocation
 from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
-from palm.runtimes.cli_pkg.settings import resolve_cli_settings
+from palm.runtimes.cli_pkg.completion import build_repl_completer
+from palm.runtimes.cli_pkg.instance_ops import (
+    filter_summaries,
+    is_terminal_status,
+    parse_instance_list_flags,
+)
 
 
 @pytest.fixture
@@ -189,6 +198,80 @@ def test_shared_storage_aligns_settings() -> None:
     finally:
         shutdown_context(ctx)
         storage.shutdown()
+
+
+def test_status_defaults_to_active_instance(cli_ctx) -> None:
+    reg = build_registry()
+    reg.dispatch(cli_ctx, "wizard start quick")
+    iid = cli_ctx.active_instance_id
+    assert iid is not None
+    assert reg.dispatch(cli_ctx, "status") == 0
+    assert reg.dispatch(cli_ctx, "instance status") == 0
+
+
+def test_instance_list_json_format(cli_ctx) -> None:
+    from io import StringIO
+
+    from rich.console import Console
+
+    reg = build_registry()
+    reg.dispatch(cli_ctx, "wizard start quick")
+    cli_ctx.output_format = "json"
+
+    buf = StringIO()
+    cli_ctx.console = Console(file=buf, force_terminal=False, width=120)
+    assert reg.dispatch(cli_ctx, "instance list") == 0
+    payload = json.loads(buf.getvalue())
+    assert isinstance(payload, list)
+    assert len(payload) >= 1
+    assert "instance_id" in payload[0]
+    assert "short_id" in payload[0]
+
+
+def test_instance_list_active_vs_all(cli_ctx) -> None:
+    reg = build_registry()
+    reg.dispatch(cli_ctx, "wizard start quick")
+    summaries = cli_ctx.list_instance_summaries()
+    active = [s for s in summaries if not is_terminal_status(s.status)]
+    assert len(active) >= 1
+
+    options_active, _ = parse_instance_list_flags([])
+    filtered = filter_summaries(summaries, options=options_active)
+    assert all(not is_terminal_status(s.status) for s in filtered)
+
+    options_all, _ = parse_instance_list_flags(["--all"])
+    filtered_all = filter_summaries(summaries, options=options_all)
+    assert len(filtered_all) >= len(filtered)
+
+
+def test_instance_prune_dry_run(cli_ctx) -> None:
+    reg = build_registry()
+    cli_ctx.output_format = "json"
+    assert reg.dispatch(cli_ctx, "instance prune --dry-run") == 0
+
+
+def test_cli_flags_override_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PALM_STORAGE_BACKEND", "filesystem")
+    monkeypatch.setenv("PALM_MAX_LOADED_INSTANCES", "99")
+
+    inv = CliInvocation(
+        command="repl",
+        storage_backend="memory",
+        max_loaded_instances=5,
+    )
+    cfg = settings_from_invocation(inv)
+    assert cfg.storage_backend == "memory"
+    assert cfg.max_loaded_instances == 5
+
+
+def test_repl_completer_builds(cli_ctx) -> None:
+    from prompt_toolkit.completion import Completer, Completion
+
+    reg = build_registry()
+    completer = build_repl_completer(
+        cli_ctx, reg, completer_cls=Completer, completion_cls=Completion
+    )
+    assert completer is not None
 
 
 def test_process_resume() -> None:

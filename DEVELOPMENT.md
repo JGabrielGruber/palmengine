@@ -68,19 +68,29 @@ Environment variables load via `PalmSettings` (`PALM_*` prefix). CLI flags overr
 env **only when explicitly passed** — omit `--storage-backend` to respect
 `PALM_STORAGE_BACKEND`.
 
+Settings precedence (highest last): `PALM_*` env → `--config` file → CLI flags.
+
 ```bash
 export PALM_STORAGE_BACKEND=filesystem
 export PALM_DATA_DIR=./data
 export PALM_ENABLE_STATE_SNAPSHOT=true   # optional snapshot history
 
-palm doctor          # shows durable vs in-memory notice
+palm doctor                              # persistence mode + active instance summary
 palm wizard start onboard
-palm instance list   # via InstanceManager summaries
-palm status <id>     # same manager; prefix ids from list work
+palm instance list                       # active instances (non-terminal) by default
+palm instance list --all --format json   # scripting output
+palm instance prune --dry-run            # preview terminal cleanup
+palm status                              # active instance when one is set
+palm status <id>                         # prefix ids from list work
 ```
 
+Global flags live in `palm/runtimes/cli_pkg/args.py` (`-b`, `-d`, `--config`, `-S`,
+`--max-loaded-instances`, `--scheduler`, `--format`, …). Parsed into
+`CliInvocation` and merged via `settings_from_invocation()`.
+
 All instance commands resolve through `CliContext.instance_manager` (backed by
-`PalmApp`). Settings precedence: `PALM_*` env → explicit `settings` arg → CLI flags.
+`PalmApp`). REPL tab-completion (`completion.py`) suggests commands, definitions,
+and instance ids from the same manager layer.
 
 Example definitions register on every CLI start:
 

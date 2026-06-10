@@ -24,6 +24,7 @@ class CliContext:
     app: PalmApp
     console: Any
     active_instance_id: str | None = None
+    output_format: str = "table"
     _instance_to_job: dict[str, str] = field(default_factory=dict)
 
     @property

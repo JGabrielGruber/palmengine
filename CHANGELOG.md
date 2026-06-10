@@ -6,6 +6,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 Production-ready persistence foundation, storage factory, and instance lifecycle coordination.
 
+### Added (CLI usability)
+
+- **Global CLI flags** — `-b`/`-d`, `--config`, `-S`/`--enable-state-snapshot`, `--max-loaded-instances`, `--max-concurrent-active`, `--scheduler`, `--format` (`table`|`json`); merged via `settings_from_invocation()` with documented env precedence
+- **REPL auto-completion** — context-aware suggestions for commands, wizard/process names, and instance ids (active by default; `--all` for terminal); snapshot command scoped to instances with snapshots
+- **Instance workflows** — `instance list` filters (`--all`, `--status`, `--flow`, `--limit`), `instance prune [--dry-run]`, richer tables (status emoji, short + full ids), JSON output for scripting
+- **`palm doctor`** — persistence mode panel and active (non-terminal) instance summary
+
 ### Added (continued)
 
 - **`InstanceManager`** (`palm.common.managers`) — LRU cache, active-instance tracking, lightweight summaries, startup reconciliation, and thread-safe coordination over `InstanceRepository`

@@ -73,8 +73,34 @@ palm --storage-backend filesystem --data-dir ./data wizard start onboard
 ```
 
 `palm doctor` and REPL startup show whether state will survive restarts. Instance
-commands (`list`, `status`, `snapshots`, `resume`) all resolve through the same
-`PalmApp.instance_manager` — ids shown in `instance list` work with prefix matching.
+commands (`list`, `status`, `snapshots`, `resume`, `prune`) all resolve through the same
+`PalmApp.instance_manager` — short ids from `instance list` work with prefix matching.
+
+**Global CLI flags** (override env only when explicitly passed):
+
+| Flag | Env | Purpose |
+|------|-----|---------|
+| `-b` / `--storage-backend` | `PALM_STORAGE_BACKEND` | Storage backend (`memory`, `filesystem`, …) |
+| `-d` / `--data-dir` | `PALM_DATA_DIR` | Data directory for durable backends |
+| `--config` | — | Optional `.env`-style config file |
+| `-S` / `--enable-state-snapshot` | `PALM_ENABLE_STATE_SNAPSHOT` | Capture state snapshot history |
+| `--max-loaded-instances` | `PALM_MAX_LOADED_INSTANCES` | InstanceManager LRU size |
+| `--max-concurrent-active` | `PALM_MAX_CONCURRENT_ACTIVE` | Active instance cap |
+| `--scheduler` | `PALM_DEFAULT_SCHEDULER` | `inline` or `queued` |
+| `--format` | — | `table` (default) or `json` for scripting |
+
+Settings precedence: `PALM_*` environment → `--config` file → CLI flags.
+
+```bash
+palm instance list                          # active (non-terminal) instances
+palm instance list --all --format json      # all instances, JSON for scripts
+palm instance list --status WAITING_FOR_INPUT --flow quick
+palm instance prune --dry-run               # preview terminal instance cleanup
+palm --format json instance status <id>     # machine-readable status
+```
+
+The REPL uses smart tab-completion for commands, flow/process names, and instance ids
+(active by default; `--all` includes terminal instances).
 
 ---
 

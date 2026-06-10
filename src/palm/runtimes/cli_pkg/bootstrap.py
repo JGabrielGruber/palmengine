@@ -9,6 +9,7 @@ from pathlib import Path
 from palm.app.session import create_cli_app, create_console
 from palm.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
+from palm.runtimes.cli_pkg.args import CliInvocation, settings_from_invocation
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.startup import print_startup_banner
 
@@ -19,7 +20,9 @@ def bootstrap_runtime(
     data_dir: Path | None = None,
     storage: StorageEngine | None = None,
     settings: PalmSettings | None = None,
+    invocation: CliInvocation | None = None,
     show_banner: bool = True,
+    output_format: str = "table",
 ) -> CliContext:
     """
     Open a CLI session backed by a bootstrapped :class:`~palm.app.app.PalmApp`.
@@ -28,13 +31,19 @@ def bootstrap_runtime(
     handled by :func:`~palm.app.session.create_cli_app`.
     """
     console = create_console()
+    resolved = (
+        settings_from_invocation(invocation)
+        if invocation is not None
+        else settings
+    )
     app = create_cli_app(
         storage_backend=storage_backend,
         data_dir=data_dir,
         storage=storage,
-        settings=settings,
+        settings=resolved,
     )
-    ctx = CliContext(app=app, console=console)
+    fmt = invocation.output_format if invocation is not None else output_format
+    ctx = CliContext(app=app, console=console, output_format=fmt)
     if show_banner:
         print_startup_banner(console, app)
     return ctx

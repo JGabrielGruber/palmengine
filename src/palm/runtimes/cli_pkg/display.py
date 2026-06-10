@@ -9,6 +9,7 @@ from typing import Any
 from palm.core.orchestration import Job, JobStatus
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
+from palm.runtimes.cli_pkg.instance_ops import short_instance_id, status_emoji
 
 _TERMINAL = frozenset({JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED})
 
@@ -81,7 +82,7 @@ def render_wizard_panel(
     console.print(f"[dim]Job {job.id[:12]}… status={job.status.value} (no active prompt)[/]")
 
 
-def render_instance_table(console: Any, instances: list[Any]) -> None:
+def render_instance_table(console: Any, instances: list[Any], *, hint: str | None = None) -> None:
     from rich.table import Table
 
     if not instances:
@@ -91,21 +92,24 @@ def render_instance_table(console: Any, instances: list[Any]) -> None:
     show_snapshots = any(getattr(inst, "snapshot_count", 0) for inst in instances)
 
     table = Table(title="Process Instances", show_lines=True)
-    table.add_column("Instance", style="cyan")
+    table.add_column("ID", style="cyan", no_wrap=True)
+    table.add_column("Full Instance ID", style="dim", overflow="fold")
     table.add_column("Process")
     table.add_column("Flow")
     table.add_column("Status", style="yellow")
     table.add_column("Step")
-    table.add_column("Job", style="dim")
+    table.add_column("Job", style="dim", overflow="fold")
     if show_snapshots:
         table.add_column("Snaps", justify="right", style="dim")
 
     for inst in instances:
+        emoji = status_emoji(inst.status)
         row = [
+            short_instance_id(inst.instance_id),
             inst.instance_id,
             inst.process_name or "—",
             inst.flow_name or "—",
-            inst.status,
+            f"{emoji} {inst.status}",
             inst.wizard_step_slug or "—",
             inst.job_id,
         ]
@@ -113,6 +117,13 @@ def render_instance_table(console: Any, instances: list[Any]) -> None:
             row.append(str(getattr(inst, "snapshot_count", 0)))
         table.add_row(*row)
     console.print(table)
+    if hint:
+        console.print(f"[dim]{hint}[/]")
+    else:
+        console.print(
+            "[dim]Tip:[/] use short ID prefix with "
+            "[cyan]status <id>[/], [cyan]instance snapshots <id>[/], or [cyan]instance resume <id>[/]"
+        )
 
 
 def render_definition_catalog(ctx: Any) -> None:

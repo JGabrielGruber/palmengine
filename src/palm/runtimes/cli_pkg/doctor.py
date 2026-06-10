@@ -8,6 +8,7 @@ from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import render_definition_catalog, render_instance_table
+from palm.runtimes.cli_pkg.instance_ops import is_terminal_status
 from palm.runtimes.cli_pkg.settings import is_durable_storage
 from palm.runtimes.cli_pkg.startup import format_persistence_notice
 
@@ -71,16 +72,30 @@ def run_doctor(ctx: CliContext) -> int:
     inst_table.add_row("flow definitions", str(len(flows)), "in-memory + storage index")
     inst_table.add_row("process definitions", str(len(processes)), "")
     summaries = app.list_instance_summaries()
+    active = [item for item in summaries if not is_terminal_status(item.status)]
     inst_table.add_row("process instances", str(len(summaries)), "durable snapshots")
+    inst_table.add_row(
+        "active instances",
+        str(len(active)),
+        "non-terminal (running, waiting, pending)",
+    )
     console.print(inst_table)
+
+    if active:
+        console.print(
+            f"[bold]Active instances[/] [dim]({len(active)} non-terminal)[/]"
+        )
+        render_instance_table(console, active[:10])
+    elif summaries:
+        console.print("[dim]No active instances — all persisted runs are terminal.[/]")
 
     render_definition_catalog(ctx)
 
     recent = summaries[:10]
-    if recent:
+    if recent and not active:
         console.print("[bold]Recent instances[/] [dim](newest first, up to 10)[/]")
         render_instance_table(console, recent)
-    else:
+    elif not summaries:
         console.print("[dim]No process instances yet — try[/] [cyan]wizard start onboard[/]")
 
     if issues:
