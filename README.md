@@ -2,7 +2,37 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.7.0` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.7.4` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+
+---
+
+## Installation
+
+Palm is published on PyPI as **`palmengine`**. After install, you **import** `palm` and run the **`palm`** CLI — same names as in source development.
+
+| What | Name |
+|------|------|
+| PyPI package | `palmengine` |
+| `pip install` | `pip install palmengine[cli]` |
+| Python import | `import palm` |
+| CLI command | `palm` |
+
+```bash
+# End users — CLI + REPL
+pip install palmengine[cli]
+palm version --full
+palm doctor
+
+# Library only (no Rich / REPL)
+pip install palmengine
+
+# From source (contributors)
+git clone https://github.com/JGabrielGruber/palmengine.git && cd palmengine
+uv sync --group dev --extra cli
+uv pip install -e ".[cli]"
+```
+
+Optional extras: `[cli]`, `[test]`, `[dev]`, `[all]`, `[postgres]`, `[mongodb]`.
 
 ---
 
@@ -19,7 +49,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.7.0)
+## What works today (0.7.4)
 
 | Area | Capabilities |
 |------|----------------|
@@ -48,18 +78,15 @@ flowchart LR
 ## Quick start
 
 ```bash
-uv sync --group dev --extra cli
-uv pip install -e .
+pip install palmengine[cli]
 
 palm version --full      # version + registered plugins
 palm doctor              # health, definitions, instances
-uv run python examples/full_demo.py   # submit → input → restart → resume → commit
-
 palm repl                # interactive shell (default: `palm`)
 palm wizard start onboard
 ```
 
-CLI-only install: `uv sync --extra cli`
+**From source:** `uv sync --group dev --extra cli && uv pip install -e ".[cli]"` then the same `palm` commands. Demo script: `uv run python examples/full_demo.py`.
 
 **CLI persistence:** the CLI is a thin client of `PalmApp`. By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
 

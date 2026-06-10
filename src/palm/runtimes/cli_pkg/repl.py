@@ -20,7 +20,9 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         from prompt_toolkit.styles import Style
         from rich.panel import Panel
     except ImportError as exc:
-        raise SystemExit("REPL requires prompt-toolkit. Install with: uv sync --extra cli") from exc
+        raise SystemExit(
+            "REPL requires prompt-toolkit. Install with: pip install palmengine[cli]"
+        ) from exc
 
     from prompt_toolkit.completion import Completer, Completion
 

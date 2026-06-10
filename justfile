@@ -1,11 +1,14 @@
 # =============================================================================
 # Palm Orchestration Engine — Justfile
+# PyPI distribution: palmengine · import package: palm · CLI: palm
 # Run `just --list` to see all commands
-# Highly structured, discoverable, and terminal-first.
 # =============================================================================
 
 set dotenv-load
 set export
+
+package := "palmengine"
+dist_dir := "dist"
 
 # Default: show help
 default:
@@ -19,8 +22,9 @@ dev: setup hygiene
 
 setup:
     uv sync --group dev --extra cli
+    bash -c 'uv pip install --reinstall -e ".[cli]"'
     uv run pre-commit install
-    @echo "✅ Environment synced (dev + cli extras) + pre-commit installed"
+    @echo "✅ Environment synced ({{package}} editable + cli extra) + pre-commit installed"
 
 hygiene:
     just format
@@ -75,33 +79,7 @@ refactor:
 # -----------------------------------------------------------------------------
 guard-core:
     @echo "🔒 Checking Core Purity Rules (0.6+ direction)..."
-    uv run python -c '
-import sys
-from pathlib import Path
-core = Path("src/palm/core")
-forbidden = ("patterns", "providers", "storages", "runtimes", "definitions", "common", "executions", "utils")
-forbidden_test_artifacts = ("TestMode", "TestRunner", "StubInteractiveLeaf")
-violations = []
-for py in core.rglob("*.py"):
-    if py.name.startswith("test_"):
-        violations.append(f"test module in core: {py}")
-    text = py.read_text()
-    for name in forbidden_test_artifacts:
-        if f"class {name}" in text:
-            violations.append(f"{py}: forbidden test class {name}")
-    for line in text.splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("from palm.") and not stripped.startswith("import palm."):
-            continue
-        for pkg in forbidden:
-            if f"palm.{pkg}" in stripped:
-                violations.append(f"{py}: {stripped}")
-if violations:
-    print("Core purity violations:")
-    print("\n".join(violations))
-    sys.exit(1)
-print("✅ Core architecture rules respected")
-'
+    uv run python scripts/guard_core.py
 
 guard-legacy:
     @echo "📌 Legacy package is reference-only — no new features here"
@@ -124,7 +102,7 @@ deps:
     @echo "✅ Dependency audit complete"
 
 # -----------------------------------------------------------------------------
-# 6. Palm CLI (requires --extra cli)
+# 6. Palm CLI (requires palmengine[cli] or uv --extra cli)
 # -----------------------------------------------------------------------------
 palm *ARGS='--help':
     uv run --extra cli palm {{ARGS}}
@@ -156,14 +134,56 @@ demo-full:
     uv run python examples/full_demo.py
 
 # -----------------------------------------------------------------------------
-# 7. Convenience & CI-friendly
+# 7. Packaging & Release (PyPI name: palmengine)
+# -----------------------------------------------------------------------------
+clean-dist:
+    rm -rf {{dist_dir}} build *.egg-info src/*.egg-info
+    @echo "🧼 Cleaned build artifacts"
+
+build: clean-dist
+    uv build
+    @ls -lh {{dist_dir}}/
+    @echo "✅ Built {{package}} wheel + sdist in {{dist_dir}}/"
+
+install-local:
+    bash -c 'uv pip install --reinstall -e ".[cli,dev]"'
+    @echo "✅ Editable install: {{package}} (import: palm, CLI: palm)"
+
+publish-test: build
+    @echo "📤 Publishing {{package}} to TestPyPI (test.pypi.org)..."
+    @test -n "${TEST_PYPI_TOKEN:-}" || (echo "Set TEST_PYPI_TOKEN (PyPI API token for TestPyPI)" && exit 1)
+    uv publish --publish-url https://test.pypi.org/legacy/ --token "${TEST_PYPI_TOKEN}"
+    @echo '✅ Published to TestPyPI. Try: pip install -i https://test.pypi.org/simple/ palmengine[cli]'
+
+publish: build
+    @echo "⚠️  WARNING: Publishing {{package}} to PRODUCTION PyPI!"
+    @echo "    Verify version in pyproject.toml and CHANGELOG.md first."
+    @echo "    Press Ctrl+C within 5 seconds to abort..."
+    @sleep 5
+    @test -n "${PYPI_TOKEN:-}" || (echo "Set PYPI_TOKEN (PyPI API token)" && exit 1)
+    uv publish --token "${PYPI_TOKEN}"
+    @echo '✅ Published to PyPI. Users can: pip install palmengine[cli]'
+
+release-prep:
+    @echo "📋 Release prep for {{package}}"
+    @echo "   1. Bump version in pyproject.toml and src/palm/__init__.py"
+    @echo "   2. Update CHANGELOG.md under [Unreleased] or new version heading"
+    @echo "   3. Run: just full-check && just build"
+    @echo "   4. Tag: git tag v$(uv run python -c 'import palm; print(palm.__version__)')"
+    @echo "   5. Publish: just publish-test (optional) then just publish"
+    just full-check
+    just build
+    @echo "🎉 Release prep complete — review dist/ and CHANGELOG before publishing"
+
+# -----------------------------------------------------------------------------
+# 8. Convenience & CI-friendly
 # -----------------------------------------------------------------------------
 prepr: full-check
-    @echo "🎉 Palm 0.6.0 quality gates passed — ready for release review!"
+    @echo "🎉 Palm quality gates passed — ready for release review!"
 
-clean:
+clean: clean-dist
     rm -rf .pytest_cache .ruff_cache .mypy_cache __pycache__ *.db
-    @echo "🧼 Cleaned temporary files"
+    @echo "🧼 Cleaned temporary and build files"
 
 # -----------------------------------------------------------------------------
 # Help & Discovery
@@ -174,10 +194,12 @@ help:
     @echo "   just check            → Fast quality check + guard-core"
     @echo "   just test-core        → Pure palm.core contract tests"
     @echo "   just full-check       → Everything + demo-full"
-    @echo "   just prepr            → Pre-release gate (0.6.0)"
+    @echo "   just prepr            → Pre-release gate"
+    @echo "   just build            → Clean + wheel + sdist"
+    @echo "   just install-local    → Editable palmengine install"
+    @echo "   just publish-test     → Build + TestPyPI"
+    @echo "   just publish          → Build + PyPI (5s warning)"
+    @echo "   just release-prep     → Full checks + build + checklist"
     @echo "   just demo-full        → examples/full_demo.py"
     @echo "   just palm --help      → CLI command list"
-    @echo "   just palm-version     → palm version --full"
-    @echo "   just palm-doctor      → CLI health + examples"
-    @echo "   just palm-repl        → Interactive Palm shell"
     @echo "Run 'just --list' for full list"

@@ -1,16 +1,19 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.7.0**.
+Guide for contributors working on Palm **0.7.4**.
 
 ## Setup
 
 ```bash
+git clone https://github.com/JGabrielGruber/palmengine.git && cd palmengine
 uv sync --group dev --extra cli   # recommended: includes Rich + REPL
-uv pip install -e .
-just dev          # optional: sync + pre-commit + format
+uv pip install -e ".[cli]"       # editable install (PyPI name: palmengine)
+just dev                          # optional: sync + pre-commit + format
 ```
 
 The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
+
+**PyPI vs import:** distribution name is `palmengine`; Python package and CLI remain `palm`. End-user install: `pip install palmengine[cli]`.
 
 ## Daily commands
 
@@ -315,6 +318,29 @@ All code under `archive/` is historical. Never add new features there.
 | Embedded API | `tests/test_embedded.py` |
 | CLI dispatch | `tests/test_cli.py` |
 
+## Release & publishing
+
+PyPI distribution: **`palmengine`** · import: **`palm`** · CLI: **`palm`**
+
+```bash
+just release-prep     # full-check + build + checklist
+just publish-test     # TestPyPI (set TEST_PYPI_TOKEN)
+just publish          # production PyPI (set PYPI_TOKEN)
+```
+
+Before publishing:
+
+1. Bump `version` in `pyproject.toml` and `src/palm/__init__.py`
+2. Update `CHANGELOG.md`
+3. Run `just release-prep`
+4. Tag `vX.Y.Z` and push; CI can publish via `.github/workflows/publish.yml`
+
+Test install from TestPyPI:
+
+```bash
+pip install -i https://test.pypi.org/simple/ palmengine[cli]
+```
+
 ## Related documents
 
 - [SCOPE.md](SCOPE.md) — vision, scope, and roadmap
@@ -324,4 +350,4 @@ All code under `archive/` is historical. Never add new features there.
 
 ---
 
-Last updated: June 2026 (0.7.0)
+Last updated: June 2026 (0.7.4)

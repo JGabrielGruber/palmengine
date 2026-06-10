@@ -2,6 +2,16 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.4] — 2026-06-10
+
+Distribution and adoption improvements — no breaking API changes.
+
+### Changed
+
+- **PyPI package renamed to `palmengine`** — install with `pip install palmengine[cli]`; Python import remains `import palm`; CLI command remains `palm`
+- **Packaging** — `just build`, `just publish-test`, `just publish`, `just install-local`, `just release-prep`; GitHub Actions publish workflow
+- **Documentation** — README installation section, DEVELOPMENT release guide, install commands updated across docs
+
 ## [0.7.0] — 2026-06-10
 
 Production-ready persistence foundation, storage factory, and instance lifecycle coordination.

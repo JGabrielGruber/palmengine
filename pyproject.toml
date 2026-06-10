@@ -3,8 +3,8 @@ requires = ["hatchling>=1.21.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "palm"
-version = "0.7.0"
+name = "palmengine"
+version = "0.7.4"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -12,7 +12,15 @@ requires-python = ">=3.11"
 authors = [
     {name = "José Gabriel Gruber"},
 ]
-keywords = ["orchestration", "workflow", "wizard", "behavior-tree", "engine"]
+keywords = [
+    "palmengine",
+    "palm",
+    "orchestration",
+    "workflow",
+    "wizard",
+    "behavior-tree",
+    "engine",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -22,6 +30,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 
 dependencies = [
@@ -40,6 +50,10 @@ dev = [
 ]
 
 [project.optional-dependencies]
+cli = [
+    "rich>=13.7,<14.0",
+    "prompt-toolkit>=3.0.43,<4.0",
+]
 dev = [
     "pytest>=8.2,<9.0",
     "pytest-asyncio>=0.23,<0.24",
@@ -47,11 +61,13 @@ dev = [
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
 ]
-cli = [
+test = [
+    "pytest>=8.2,<9.0",
+    "pytest-cov>=5.0,<6.0",
+]
+all = [
     "rich>=13.7,<14.0",
     "prompt-toolkit>=3.0.43,<4.0",
-]
-test = [
     "pytest>=8.2,<9.0",
     "pytest-cov>=5.0,<6.0",
 ]
@@ -63,8 +79,10 @@ palm = "palm.runtimes.cli:main"
 
 [project.urls]
 Homepage = "https://palmengine.org"
+Documentation = "https://github.com/JGabrielGruber/palmengine#readme"
 Repository = "https://github.com/JGabrielGruber/palmengine"
 Issues = "https://github.com/JGabrielGruber/palmengine/issues"
+Changelog = "https://github.com/JGabrielGruber/palmengine/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
@@ -76,6 +94,7 @@ include = [
     "examples/",
     "README.md",
     "LICENSE",
+    "CHANGELOG.md",
 ]
 
 [tool.ruff]

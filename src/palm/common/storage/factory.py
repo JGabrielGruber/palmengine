@@ -54,7 +54,7 @@ class StorageFactory:
             if extra is not None:
                 raise ConfigurationError(
                     f"Storage backend {name!r} requires optional dependencies. "
-                    f"Install with: uv sync --extra {extra}"
+                    f"Install with: pip install palmengine[{extra}]"
                 ) from exc
             raise ConfigurationError(
                 f"Failed to import storage backend {name!r} from {module_path}: {exc}"

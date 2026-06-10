@@ -7,7 +7,9 @@
 - **Live Demo / REPL**: Run `uv run palm repl`
 - **Architecture**: https://palmengine.org#architecture or ARCHITECTURE.md
 - **Core Concepts**: Behavior Trees, Execution Plans, Wizard Pattern, Instance Persistence
-- **Quickstart**: `uv sync --extra cli && palm doctor && palm wizard start onboard`
+- **Install**: `pip install palmengine[cli]` (PyPI name; import `palm`, CLI `palm`)
+- **Quickstart**: `pip install palmengine[cli] && palm doctor && palm wizard start onboard`
+- **From source**: `uv sync --extra cli && uv pip install -e ".[cli]"`
 
 ## Philosophy
 Filius philosophorum — orchestration that feels human, transactional, resumable.

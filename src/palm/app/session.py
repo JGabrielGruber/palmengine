@@ -22,7 +22,7 @@ def create_console() -> Any:
         return Console(highlight=False)
     except ImportError as exc:
         raise SystemExit(
-            "Rich is required for the Palm CLI. Install with: uv sync --extra cli"
+            "Rich is required for the Palm CLI. Install with: pip install palmengine[cli]"
         ) from exc
 
 
