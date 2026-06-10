@@ -14,6 +14,7 @@ from palm.common.managers import InstanceManager, InstanceSummary
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.instances import ProcessInstance, StateSnapshot
+from palm.runtimes.cli_pkg.instances import resolve_instance_id as _resolve_instance_id
 
 
 @dataclass
@@ -39,10 +40,19 @@ class CliContext:
         self.instance_manager.mark_active(instance_id)
 
     def list_instance_summaries(self) -> list[InstanceSummary]:
-        return self.app.list_instance_summaries()
+        return self.instance_manager.list_summaries()
+
+    def resolve_instance_id(self, ref: str) -> str:
+        """Resolve exact id, unique prefix, or flow/process name to ``instance_id``."""
+        return _resolve_instance_id(self, ref)
+
+    def get_instance(self, ref: str) -> ProcessInstance:
+        instance_id = self.resolve_instance_id(ref)
+        return self.instance_manager.get(instance_id)
 
     def list_instance_snapshots(self, instance_id: str) -> list[StateSnapshot]:
-        return self.app.list_instance_snapshots(instance_id)
+        resolved = self.resolve_instance_id(instance_id)
+        return self.instance_manager.list_state_snapshots(resolved)
 
     def resolve_job_id(self, instance_or_job_id: str) -> str:
         """Map instance id to live job id, resuming from storage if needed."""
@@ -50,10 +60,11 @@ class CliContext:
             return self._instance_to_job[instance_or_job_id]
 
         try:
-            inst = self.app.get_instance(instance_or_job_id)
+            instance_id = self.resolve_instance_id(instance_or_job_id)
         except InstanceNotFoundError:
             return instance_or_job_id
 
+        inst = self.instance_manager.get(instance_id)
         job_id = inst.job_id
         try:
             self.app.get_job(job_id)
@@ -62,16 +73,6 @@ class CliContext:
             job_id = job.id
         self.set_active(inst.instance_id, job_id)
         return job_id
-
-    def get_instance(self, ref: str) -> ProcessInstance:
-        try:
-            return self.app.get_instance(ref)
-        except InstanceNotFoundError:
-            pass
-        for summary in self.list_instance_summaries():
-            if summary.flow_name == ref or summary.process_name == ref:
-                return self.app.get_instance(summary.instance_id)
-        raise InstanceNotFoundError(ref)
 
     def job_for_instance(self, instance_id: str) -> Job:
         job_id = self.resolve_job_id(instance_id)

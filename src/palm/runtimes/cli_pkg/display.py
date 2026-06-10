@@ -102,12 +102,12 @@ def render_instance_table(console: Any, instances: list[Any]) -> None:
 
     for inst in instances:
         row = [
-            inst.instance_id[:14],
+            inst.instance_id,
             inst.process_name or "—",
             inst.flow_name or "—",
             inst.status,
             inst.wizard_step_slug or "—",
-            inst.job_id[:14],
+            inst.job_id,
         ]
         if show_snapshots:
             row.append(str(getattr(inst, "snapshot_count", 0)))

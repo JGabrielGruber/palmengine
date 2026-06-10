@@ -161,7 +161,8 @@ def _cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] instance snapshots <instance_id>")
         return 1
     try:
-        snapshots = ctx.list_instance_snapshots(args[0])
+        instance_id = ctx.resolve_instance_id(args[0])
+        snapshots = ctx.list_instance_snapshots(instance_id)
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1
@@ -173,7 +174,7 @@ def _cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
         )
         return 0
 
-    table = Table(title=f"State Snapshots — {args[0][:16]}", show_lines=True)
+    table = Table(title=f"State Snapshots — {instance_id[:20]}", show_lines=True)
     table.add_column("#", justify="right", style="dim")
     table.add_column("Status", style="yellow")
     table.add_column("Recorded At", style="cyan")
@@ -210,7 +211,8 @@ def _cmd_process_resume(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] process resume <instance_id>")
         return 1
     try:
-        actions.resume_instance(ctx, args[0])
+        instance_id = ctx.resolve_instance_id(args[0])
+        actions.resume_instance(ctx, instance_id)
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1

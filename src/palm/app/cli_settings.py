@@ -24,17 +24,27 @@ def resolve_cli_settings(
     storage_backend: str | None = None,
     data_dir: Path | None = None,
     settings: PalmSettings | None = None,
+    align_shared_storage: str | None = None,
 ) -> PalmSettings:
     """
     Build CLI settings with environment variables as the base.
 
-    Explicit CLI flags override ``PALM_*`` values only when provided (non-``None``).
+    Precedence (highest last):
+
+    1. ``PALM_*`` environment variables via :class:`~palm.app.settings.PalmSettings`
+    2. Explicit ``settings`` argument (when passed to bootstrap)
+    3. CLI flags ``storage_backend`` / ``data_dir`` (only when not ``None``)
+    4. ``align_shared_storage`` — backend name from a pre-opened shared engine
     """
-    cfg = settings or PalmSettings()
+    cfg = settings.model_copy(deep=True) if settings is not None else PalmSettings()
+
     if storage_backend is not None:
         cfg.storage_backend = storage_backend
     if data_dir is not None:
         cfg.data_dir = data_dir
+    if align_shared_storage is not None:
+        cfg.storage_backend = align_shared_storage
+
     if is_durable_storage(cfg.storage_backend) and cfg.data_dir is None:
         cfg.data_dir = StorageFactory.resolve_data_dir(None)
     return cfg

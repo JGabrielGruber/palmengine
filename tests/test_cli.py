@@ -119,6 +119,78 @@ def test_cli_env_settings_used_when_flags_omitted(
         shutdown_context(ctx)
 
 
+def test_instance_list_status_snapshots_consistent(cli_ctx) -> None:
+    reg = build_registry()
+    reg.dispatch(cli_ctx, "wizard start quick")
+    iid = cli_ctx.active_instance_id
+    assert iid is not None
+
+    assert reg.dispatch(cli_ctx, "instance list") == 0
+    prefix = iid[:14]
+    assert reg.dispatch(cli_ctx, f"status {prefix}") == 0
+    assert reg.dispatch(cli_ctx, f"instance snapshots {prefix}") == 0
+
+
+def test_instance_list_to_status_filesystem(tmp_path) -> None:
+    reg = build_registry()
+
+    ctx1 = bootstrap_runtime(
+        storage_backend="filesystem",
+        data_dir=tmp_path,
+        show_banner=False,
+    )
+    try:
+        reg.dispatch(ctx1, "wizard start quick")
+        iid = ctx1.active_instance_id
+        assert iid is not None
+        reg.dispatch(ctx1, f"input {iid} first")
+    finally:
+        shutdown_context(ctx1)
+
+    ctx2 = bootstrap_runtime(
+        storage_backend="filesystem",
+        data_dir=tmp_path,
+        show_banner=False,
+    )
+    try:
+        summaries = ctx2.list_instance_summaries()
+        assert len(summaries) == 1
+        listed_id = summaries[0].instance_id
+
+        assert reg.dispatch(ctx2, "instance list") == 0
+        assert reg.dispatch(ctx2, f"status {listed_id}") == 0
+        assert reg.dispatch(ctx2, f"status {listed_id[:14]}") == 0
+        assert reg.dispatch(ctx2, f"instance snapshots {listed_id}") == 0
+    finally:
+        shutdown_context(ctx2)
+
+    ctx3 = bootstrap_runtime(
+        storage_backend="filesystem",
+        data_dir=tmp_path,
+        show_banner=False,
+    )
+    try:
+        assert reg.dispatch(ctx3, f"process resume {listed_id[:14]}") == 0
+    finally:
+        shutdown_context(ctx3)
+
+
+def test_shared_storage_aligns_settings() -> None:
+    import palm.storages.memory  # noqa: F401
+    from palm.core import StorageEngine
+
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    ctx = bootstrap_runtime(storage=storage, show_banner=False)
+    try:
+        assert ctx.app.settings.storage_backend == "memory"
+        assert ctx.app.storage.backend_name == "memory"
+        assert ctx.app.instance_manager is ctx.instance_manager
+    finally:
+        shutdown_context(ctx)
+        storage.shutdown()
+
+
 def test_process_resume() -> None:
     import palm.storages.memory  # noqa: F401
     from palm.core import StorageEngine

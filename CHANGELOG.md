@@ -17,6 +17,7 @@ Production-ready persistence foundation, storage factory, and instance lifecycle
 ### Changed (continued)
 
 - **CLI bootstrap** — thin `PalmApp` client; `resolve_cli_settings()` respects `PALM_*` env unless flags are explicit; persistence banner in REPL/doctor
+- **CLI instance resolution** — `instance list` shows full ids; prefix/name resolution shared across `status`, `snapshots`, and `resume`; all commands use `instance_manager`
 - **`PalmApp`** — shared `instance_manager` property; instance APIs route through the manager
 - **`BaseRuntime`** — wires hooks and executor through `InstanceManager`; shared manager across app runtimes
 - **CLI** — `instance list`, `doctor`, and snapshot commands use the manager layer

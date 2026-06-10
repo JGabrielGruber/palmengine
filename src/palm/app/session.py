@@ -43,10 +43,16 @@ def create_cli_app(
     Shared ``storage`` enables resume across separate CLI invocations (daemon +
     terminal) when both use the same engine instance or durable backend + data dir.
     """
+    shared_backend = (
+        storage.backend_name
+        if storage is not None and storage.is_initialized and storage.backend_name
+        else None
+    )
     cfg = resolve_cli_settings(
         storage_backend=storage_backend,
         data_dir=data_dir,
         settings=settings,
+        align_shared_storage=shared_backend if storage_backend is None else None,
     )
 
     app = PalmApp(cfg, storage=storage)

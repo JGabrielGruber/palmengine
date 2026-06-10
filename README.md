@@ -72,7 +72,9 @@ export PALM_DATA_DIR=./data
 palm --storage-backend filesystem --data-dir ./data wizard start onboard
 ```
 
-`palm doctor` and REPL startup show whether state will survive restarts.
+`palm doctor` and REPL startup show whether state will survive restarts. Instance
+commands (`list`, `status`, `snapshots`, `resume`) all resolve through the same
+`PalmApp.instance_manager` — ids shown in `instance list` work with prefix matching.
 
 ---
 

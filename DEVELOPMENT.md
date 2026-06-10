@@ -76,7 +76,11 @@ export PALM_ENABLE_STATE_SNAPSHOT=true   # optional snapshot history
 palm doctor          # shows durable vs in-memory notice
 palm wizard start onboard
 palm instance list   # via InstanceManager summaries
+palm status <id>     # same manager; prefix ids from list work
 ```
+
+All instance commands resolve through `CliContext.instance_manager` (backed by
+`PalmApp`). Settings precedence: `PALM_*` env → explicit `settings` arg → CLI flags.
 
 Example definitions register on every CLI start:
 

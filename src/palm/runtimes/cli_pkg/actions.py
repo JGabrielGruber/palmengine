@@ -62,8 +62,7 @@ def backtrack(ctx: CliContext, instance_id: str, to_slug: str) -> None:
 
 def resolve_instance_ref(ctx: CliContext, ref: str | None) -> str:
     if ref:
-        inst = ctx.get_instance(ref)
-        return inst.instance_id
+        return ctx.resolve_instance_id(ref)
     if ctx.active_instance_id:
         return ctx.active_instance_id
     raise ValueError("No instance id provided and no active instance")
