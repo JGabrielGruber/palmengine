@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from palm.core.behavior_tree.base_pattern import BasePattern
     from palm.core.resource.base_provider import BaseProvider
     from palm.core.storage.base_backend import BaseBackend
+    from palm.core.transform.base_transform import BaseTransform
 
 T = TypeVar("T")
 
@@ -71,3 +72,4 @@ class Registry(Generic[T]):
 pattern_registry: Registry[BasePattern] = Registry("pattern")
 provider_registry: Registry[BaseProvider] = Registry("provider")
 storage_registry: Registry[BaseBackend] = Registry("storage backend")
+transform_registry: Registry[BaseTransform] = Registry("transform")

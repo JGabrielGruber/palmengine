@@ -13,7 +13,9 @@ from palm.core.behavior_tree import (
     RootNode,
     SelectorNode,
     SequenceNode,
+    TransformLeaf,
 )
+from palm.core.transform import TransformEngine
 from palm.core.context import BaseState
 from palm.core.exceptions import StateNotConfiguredError
 from tests.core.fakes import StubInteractiveLeaf, TestState
@@ -131,3 +133,32 @@ def test_engine_reset_clears_sequence_index(test_state: TestState) -> None:
     engine.reset()
     calls["n"] = 0
     assert engine.tick() == PatternStatus.SUCCESS
+
+
+def test_transform_leaf_maps_resource_choices(test_state: TestState) -> None:
+    engine = TransformEngine()
+    engine.initialize()
+    test_state.set(
+        "resource_rows",
+        [
+            {"value": "a", "label": "Alpha"},
+            {"value": "b", "label": "Beta"},
+        ],
+    )
+    leaf = TransformLeaf(
+        "choices",
+        engine=engine,
+        source_key="resource_rows",
+        target_key="wizard_choices",
+        rule="pick_fields",
+        options={"fields": ["value", "label"]},
+    )
+    assert leaf.tick(test_state) == PatternStatus.SUCCESS
+    assert test_state.get("wizard_choices") == [
+        {"value": "a", "label": "Alpha"},
+        {"value": "b", "label": "Beta"},
+    ]
+    trace = test_state.get(leaf.trace_key())
+    assert trace is not None
+    assert trace["mode"] == "batch"
+    assert trace["items"][0]["steps"] == ["pick_fields"]

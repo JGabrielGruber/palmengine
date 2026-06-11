@@ -54,3 +54,11 @@ class StateError(EngineError):
 
 class StateNotConfiguredError(StateError):
     """Raised when an engine requires state but none is bound."""
+
+
+class TransformError(EngineError):
+    """Raised when transform coordination fails."""
+
+
+class TransformApplicationError(TransformError):
+    """Raised when a transform rule cannot be applied to a value."""

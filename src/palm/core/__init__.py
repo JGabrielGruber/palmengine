@@ -7,6 +7,7 @@ Engines:
 - ``behavior_tree`` — control-flow patterns with pluggable state
 - ``context`` — scoped metadata and ``BaseState`` for execution state
 - ``resource`` — external provider coordination
+- ``transform`` — data transformation rules and pipelines
 - ``storage`` — persistence backend coordination
 - ``orchestration`` — job lifecycle
 - ``event`` — observability bus
@@ -37,6 +38,8 @@ from palm.core.exceptions import (
     StorageError,
     StorageNotConfiguredError,
     StoragePermissionError,
+    TransformApplicationError,
+    TransformError,
 )
 from palm.core.orchestration import (
     ExecutionContext,
@@ -58,9 +61,17 @@ from palm.core.registry import (
     pattern_registry,
     provider_registry,
     storage_registry,
+    transform_registry,
 )
 from palm.core.resource import BaseProvider, ResourceEngine
 from palm.core.storage import BaseBackend, StorageEngine
+from palm.core.transform import (
+    BaseTransform,
+    TransformContext,
+    TransformEngine,
+    TransformFrame,
+    TransformMode,
+)
 
 __all__ = [
     "AuthEngine",
@@ -103,9 +114,17 @@ __all__ = [
     "StorageError",
     "StorageNotConfiguredError",
     "StoragePermissionError",
+    "BaseTransform",
+    "TransformApplicationError",
+    "TransformContext",
+    "TransformEngine",
+    "TransformError",
+    "TransformFrame",
+    "TransformMode",
     "pattern_registry",
     "provider_registry",
     "storage_registry",
+    "transform_registry",
     "STATE_FRAME_KEY",
     "StateError",
     "StateNotConfiguredError",

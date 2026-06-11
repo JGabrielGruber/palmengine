@@ -18,6 +18,7 @@ Constitution for AI coding agents and human developers working on Palm.
 - Contains abstract bases, registries, shared primitives, and engine skeletons:
   - `behavior_tree/` — patterns and blackboard execution
   - `resource/` — provider coordination
+  - `transform/` — data transformation rules and pipelines
   - `storage/` — backend coordination
   - `orchestration/` — job lifecycle
   - `context/` — scoped execution metadata

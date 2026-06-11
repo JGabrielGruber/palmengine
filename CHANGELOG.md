@@ -2,6 +2,19 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] — 2026-06-10
+
+Foundational transformation system in the behavior-tree core.
+
+### Added
+
+- **`TransformEngine`** (`palm.core.transform`) — register and apply transformation rules with single-value, batch, and chained pipelines
+- **`TransformContext`** / **`TransformFrame`** — immutable original + intermediate views (lens-style access to each step)
+- **`TransformLeaf`** — first-class BT leaf that reads/writes blackboard keys via the transform engine
+- **Core primitives** — `identity`, `rename_field`, `pick_fields`, `format_value`, `filter_list`, `map_list`
+- **`transform_registry`** — thread-safe rule lookup parallel to provider/storage registries
+- **Tests** — `tests/core/test_transform.py`, transform leaf BT integration, core purity guard
+
 ## [0.7.4] — 2026-06-10
 
 Distribution and adoption improvements — no breaking API changes.
