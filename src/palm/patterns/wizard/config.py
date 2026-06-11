@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+from palm.common.transforms.spec import TransformPipeline
 from palm.patterns.wizard.step_kinds import PROTECTED_KINDS, WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
@@ -28,13 +29,20 @@ class WizardStepConfig:
     commit_hook: str | None = None
     resource_provider: str | None = None
     resource_id: str | None = None
+    transform: TransformPipeline | None = None
+    choices_label_key: str = "label"
+    choices_value_key: str | None = None
     allow_backtrack: bool | None = None
 
     def __post_init__(self) -> None:
         if not self.slug:
             raise ValueError("Wizard step slug must be non-empty")
         if self.field_type == "choice" and not self.choices:
-            raise ValueError(f"Step {self.slug!r} with field_type=choice requires choices")
+            if not (self.resource_provider and self.transform):
+                raise ValueError(
+                    f"Step {self.slug!r} with field_type=choice requires choices "
+                    "or resource_provider + transform"
+                )
         if self.step_kind == "commit" and not self.commit_hook:
             object.__setattr__(self, "field_type", "confirm")
 

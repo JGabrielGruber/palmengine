@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from palm.core.behavior_tree import BaseNode, RootNode, SequenceNode
 from palm.core.resource import ResourceEngine
+from palm.core.transform.engine import TransformEngine
 from palm.patterns.wizard.action_leaf import WizardActionLeaf
 from palm.patterns.wizard.commit_leaf import WizardCommitLeaf
 from palm.patterns.wizard.config import WizardConfig
@@ -21,6 +22,7 @@ def build_wizard_tree(
     *,
     commit_registry: CommitRegistry | None = None,
     resource_engine: ResourceEngine | None = None,
+    transform_engine: TransformEngine | None = None,
 ) -> tuple[RootNode, SequenceNode]:
     """Return ``(root, sequence)`` for the given wizard configuration."""
     registry = commit_registry
@@ -60,6 +62,7 @@ def build_wizard_tree(
                     wizard_name=wizard_name,
                     step_index=idx,
                     resource_engine=resource_engine,
+                    transform_engine=transform_engine,
                     emit=emit,
                 )
             )
@@ -70,6 +73,8 @@ def build_wizard_tree(
                     wizard_name=wizard_name,
                     step_index=idx,
                     emit=emit,
+                    resource_engine=resource_engine,
+                    transform_engine=transform_engine,
                 )
             )
 

@@ -339,6 +339,7 @@ def test_backtrack_blocked_for_commit_step() -> None:
 
 
 def test_action_step_uses_resource_engine() -> None:
+    import palm.providers  # noqa: F401
     from palm.core.resource import ResourceEngine
 
     resource = ResourceEngine()

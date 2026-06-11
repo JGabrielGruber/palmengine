@@ -8,6 +8,8 @@ Foundational transformation system in the behavior-tree core.
 
 ### Added
 
+- **`palm.common.transforms`** — rich rule library (`rename`, `pick_fields`, `drop_fields`, `format_string`, `format_date`, `uppercase`, `lowercase`, `filter_list`, `map_list`, `calculate`) with `TransformPipeline` declarative chains and `register_common_transform` extensibility
+- **Wizard transform integration** — steps support `transform` blocks; choice steps can fetch a resource, apply transforms, and populate dynamic `choices`; action steps store transformed resource results
 - **`TransformEngine`** (`palm.core.transform`) — register and apply transformation rules with single-value, batch, and chained pipelines
 - **`TransformContext`** / **`TransformFrame`** — immutable original + intermediate views (lens-style access to each step)
 - **`TransformLeaf`** — first-class BT leaf that reads/writes blackboard keys via the transform engine

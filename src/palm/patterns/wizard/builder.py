@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.common.exceptions import DefinitionBuildError
+from palm.common.transforms.spec import TransformPipeline
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.core.behavior_tree import BasePattern
 from palm.definitions.flow import FlowDefinition
@@ -166,5 +167,8 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         commit_hook=data.get("commit_hook"),
         resource_provider=data.get("resource_provider"),
         resource_id=data.get("resource_id"),
+        transform=TransformPipeline.parse(data.get("transform")),
+        choices_label_key=str(data.get("choices_label_key", "label")),
+        choices_value_key=data.get("choices_value_key"),
         allow_backtrack=data.get("allow_backtrack"),
     )

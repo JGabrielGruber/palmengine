@@ -21,3 +21,4 @@ class WizardKeys:
     VALIDATION_ERROR = f"{PREFIX}.validation_error"
     SUMMARY_ACK = f"{PREFIX}.summary_ack"
     RESOURCE_RESULT = f"{PREFIX}.resource_result"
+    TRANSFORM_RESULT = f"{PREFIX}.transform_result"

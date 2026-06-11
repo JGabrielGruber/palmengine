@@ -9,7 +9,9 @@ from typing import Any
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
 from palm.core.resource import ResourceEngine
+from palm.core.transform.engine import TransformEngine
 from palm.patterns.wizard.config import WizardStepConfig
+from palm.patterns.wizard.transforms import apply_step_transform
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.step_leaf import EventEmitter
@@ -26,6 +28,7 @@ class WizardActionLeaf(InteractiveLeaf):
         wizard_name: str,
         step_index: int,
         resource_engine: ResourceEngine | None,
+        transform_engine: TransformEngine | None = None,
         emit: EventEmitter | None = None,
     ) -> None:
         super().__init__(step.slug)
@@ -33,6 +36,7 @@ class WizardActionLeaf(InteractiveLeaf):
         self._wizard_name = wizard_name
         self._step_index = step_index
         self._resource_engine = resource_engine
+        self._transform_engine = transform_engine
         self._emit = emit
 
     def _request_input(self, state: BaseState) -> PatternStatus:
@@ -78,6 +82,13 @@ class WizardActionLeaf(InteractiveLeaf):
         provider = self._resource_engine.use(self._step.resource_provider)
         result = provider.fetch(resource_id)
         state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}", result)
+        if self._step.transform is not None:
+            result = apply_step_transform(
+                self._step,
+                result,
+                transform_engine=self._transform_engine,
+            )
+            state.set(f"{WizardKeys.TRANSFORM_RESULT}:{self._step.slug}", result)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         state.delete(WizardKeys.VALIDATION_ERROR)
         self._fire(

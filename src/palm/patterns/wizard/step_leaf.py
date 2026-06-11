@@ -9,7 +9,10 @@ from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
+from palm.core.resource import ResourceEngine
+from palm.core.transform.engine import TransformEngine
 from palm.patterns.wizard.config import WizardStepConfig
+from palm.patterns.wizard.transforms import resolve_step_choices
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.validation import validate_step_value
@@ -27,25 +30,42 @@ class WizardStepLeaf(InteractiveLeaf):
         wizard_name: str,
         step_index: int,
         emit: EventEmitter | None = None,
+        resource_engine: ResourceEngine | None = None,
+        transform_engine: TransformEngine | None = None,
     ) -> None:
         super().__init__(step.slug)
         self._step = step
         self._wizard_name = wizard_name
         self._step_index = step_index
         self._emit = emit
+        self._resource_engine = resource_engine
+        self._transform_engine = transform_engine
 
     @property
     def step(self) -> WizardStepConfig:
         return self._step
 
     def _request_input(self, state: BaseState) -> PatternStatus:
+        choices = self._step.choices
+        if self._step.field_type == "choice" and not choices and self._step.transform:
+            try:
+                choices = resolve_step_choices(
+                    self._step,
+                    resource_engine=self._resource_engine,
+                    transform_engine=self._transform_engine,
+                    state=state,
+                )
+            except Exception as exc:
+                state.set(WizardKeys.VALIDATION_ERROR, str(exc))
+                return PatternStatus.FAILURE
+
         prompt_bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
             "prompt": self._step.prompt,
             "field_type": self._step.field_type,
-            "choices": list(self._step.choices),
+            "choices": list(choices),
             "step_index": self._step_index,
             "input_key": self.input_key(),
         }
@@ -62,7 +82,17 @@ class WizardStepLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        validation = validate_step_value(self._step, value)
+        prompt = state.get(self.prompt_key())
+        resolved_choices: tuple[str, ...] | None = None
+        if isinstance(prompt, dict) and self._step.field_type == "choice":
+            raw_choices = prompt.get("choices")
+            if isinstance(raw_choices, list):
+                resolved_choices = tuple(str(item) for item in raw_choices)
+        validation = validate_step_value(
+            self._step,
+            value,
+            choices=resolved_choices,
+        )
         if not validation.ok:
             state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
             self._fire(

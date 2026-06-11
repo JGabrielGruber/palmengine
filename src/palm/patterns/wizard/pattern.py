@@ -10,6 +10,7 @@ from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, Sequen
 from palm.core.context import BaseState
 from palm.core.event import EventEngine
 from palm.core.resource import ResourceEngine
+from palm.core.transform.engine import TransformEngine
 from palm.patterns.wizard.backtrack import apply_backtrack, can_backtrack_to
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.events import WizardEventType
@@ -34,6 +35,7 @@ class WizardPattern(BasePattern):
         steps: int | None = None,
         event_engine: EventEngine | None = None,
         resource_engine: ResourceEngine | None = None,
+        transform_engine: TransformEngine | None = None,
         commit_registry: CommitRegistry | None = None,
     ) -> None:
         super().__init__(name=name)
@@ -43,6 +45,7 @@ class WizardPattern(BasePattern):
         self._config = config
         self._event_engine = event_engine
         self._resource_engine = resource_engine
+        self._transform_engine = transform_engine
         self._commit_registry = commit_registry or default_commit_registry()
         self._root: RootNode
         self._sequence: SequenceNode
@@ -52,6 +55,7 @@ class WizardPattern(BasePattern):
             emit=self._bridge_emit,
             commit_registry=self._commit_registry,
             resource_engine=self._resource_engine,
+            transform_engine=self._transform_engine,
         )
 
     @property

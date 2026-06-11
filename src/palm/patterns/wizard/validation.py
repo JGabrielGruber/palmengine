@@ -65,23 +65,31 @@ def validate_step_value(
     value: Any,
     *,
     registry: ValidationRegistry | None = None,
+    choices: tuple[str, ...] | None = None,
 ) -> ValidationResult:
     """Validate ``value`` for an input step."""
     reg = registry or default_validation_registry()
     rules = step.validation
     if not rules:
-        return _builtin_field_validation(step, value)
-    base = _builtin_field_validation(step, value)
+        return _builtin_field_validation(step, value, choices=choices)
+    base = _builtin_field_validation(step, value, choices=choices)
     if not base.ok:
         return base
     return reg.validate(step, value, rules)
 
 
-def _builtin_field_validation(step: WizardStepConfig, value: Any) -> ValidationResult:
+def _builtin_field_validation(
+    step: WizardStepConfig,
+    value: Any,
+    *,
+    choices: tuple[str, ...] | None = None,
+) -> ValidationResult:
     if step.required and (value is None or value == ""):
         return ValidationResult.failure("Value is required")
-    if step.field_type == "choice" and value not in step.choices:
-        return ValidationResult.failure(f"Value must be one of {step.choices}")
+    if step.field_type == "choice":
+        allowed = choices if choices is not None else step.choices
+        if allowed and value not in allowed:
+            return ValidationResult.failure(f"Value must be one of {allowed}")
     if step.field_type == "confirm":
         allowed = {True, False, "yes", "no", "Yes", "No"}
         if value not in allowed:
