@@ -10,7 +10,11 @@ from typing import TYPE_CHECKING, Any
 
 from palm.core.context import BaseState
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.validation import ValidationResult, validate_step_input
+from palm.patterns.wizard.validation import (
+    ValidationResult,
+    coerce_step_input,
+    validate_step_input,
+)
 
 if TYPE_CHECKING:
     from palm.core.context import ContextEngine
@@ -151,6 +155,7 @@ def complete_step_input(
     registry: ValidationRegistry | None = None,
 ) -> ValidationResult:
     """Validate ``value`` and persist it when all checks pass."""
+    value = coerce_step_input(state, step, value)
     validation = validate_step_input(state, step, value, registry=registry)
     if not validation.ok:
         return validation

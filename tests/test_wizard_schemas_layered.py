@@ -39,6 +39,35 @@ def _layered_config() -> WizardConfig:
     )
 
 
+def test_layered_schemas_coerce_cli_string_input_for_integer_steps() -> None:
+    from palm.core import DictStateSchema
+    from palm.patterns.wizard.builder import materialize_wizard_step_schemas
+
+    flow_schema = DictStateSchema(
+        {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "age": {"type": "integer", "minimum": 18},
+                "role": {"type": "string", "enum": ["dev", "mgr"]},
+            },
+            "required": ["name", "age", "role"],
+        },
+    )
+    config = materialize_wizard_step_schemas(_layered_config())
+    state = BlackboardState(schema=flow_schema)
+    wizard = WizardPattern(name="layered", config=config)
+
+    wizard.tick(state)
+    wizard.provide_input(state, "Ada")
+    wizard.tick(state)
+
+    wizard.provide_input(state, "27")
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert wizard.current_step_slug(state) == "role"
+    assert wizard.answers(state)["age"] == 27
+
+
 def test_layered_schemas_validate_step_and_flow_levels() -> None:
     from palm.core import DictStateSchema
 

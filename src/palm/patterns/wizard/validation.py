@@ -174,6 +174,18 @@ def validate_collected_answers(
     return _result_from_errors(_validate_collected_answers_errors(state, answers))
 
 
+def coerce_step_input(
+    state: BaseState,
+    step: WizardStepConfig,
+    value: Any,
+) -> Any:
+    """Coerce raw user input (often strings from CLI) to schema-expected types."""
+    spec = _step_value_schema_spec(state, step)
+    if spec is None:
+        return value
+    return _coerce_value_for_schema(value, spec)
+
+
 def validate_step_input(
     state: BaseState,
     step: WizardStepConfig,
@@ -182,6 +194,7 @@ def validate_step_input(
     registry: ValidationRegistry | None = None,
 ) -> ValidationResult:
     """Run built-in, declarative, step-schema, and flow-schema validation."""
+    value = coerce_step_input(state, step, value)
     result = validate_step_value(step, value, registry=registry)
     if not result.ok:
         return _result_from_errors(format_validation_messages(result.errors))
@@ -196,6 +209,70 @@ def validate_step_input(
 
 def _validate_schema_value(schema: StateSchema, value: Any, *, path: str) -> list[str]:
     return schema.validate_value(value, path=path)
+
+
+def _step_value_schema_spec(
+    state: BaseState,
+    step: WizardStepConfig,
+) -> dict[str, Any] | None:
+    if step.schema is not None:
+        definition = step.schema.definition
+        if isinstance(definition, dict):
+            return definition
+    if step.state_schema is not None:
+        return dict(step.state_schema)
+    if state is not None:
+        scope_schema = state.scope_schemas().get(step.slug)
+        if scope_schema is not None:
+            definition = scope_schema.definition
+            if isinstance(definition, dict):
+                return definition
+        flow_schema = state.schema
+        if flow_schema is not None:
+            properties = flow_schema.definition.get("properties", {})
+            if isinstance(properties, dict):
+                property_spec = properties.get(step.slug)
+                if isinstance(property_spec, dict):
+                    return property_spec
+    return None
+
+
+def _coerce_value_for_schema(value: Any, spec: Mapping[str, Any]) -> Any:
+    if not isinstance(value, str):
+        return value
+
+    stripped = value.strip()
+    if stripped == "":
+        return value
+
+    expected_type = spec.get("type")
+    if expected_type == "integer":
+        coerced = _coerce_string_to_integer(stripped)
+        return coerced if coerced is not None else value
+    if expected_type == "number":
+        try:
+            return float(stripped)
+        except ValueError:
+            return value
+    if expected_type == "boolean":
+        lowered = stripped.lower()
+        if lowered in {"true", "yes", "1"}:
+            return True
+        if lowered in {"false", "no", "0"}:
+            return False
+    return value
+
+
+def _coerce_string_to_integer(text: str) -> int | None:
+    try:
+        if "." in text or "e" in text.lower():
+            parsed = float(text)
+            if parsed.is_integer():
+                return int(parsed)
+            return None
+        return int(text)
+    except ValueError:
+        return None
 
 
 def _validate_step_schema_errors(
