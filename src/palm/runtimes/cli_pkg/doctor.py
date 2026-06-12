@@ -8,6 +8,7 @@ from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import render_definition_catalog, render_instance_table
+from palm.runtimes.cli_pkg.job_context import context_lines, inspect_job
 from palm.runtimes.cli_pkg.instance_ops import is_terminal_status
 from palm.runtimes.cli_pkg.settings import is_durable_storage
 from palm.runtimes.cli_pkg.startup import format_persistence_notice
@@ -86,6 +87,7 @@ def run_doctor(ctx: CliContext) -> int:
     if active:
         console.print(f"[bold]Active instances[/] [dim]({len(active)} non-terminal)[/]")
         render_instance_table(console, active[:10])
+        _render_active_job_context(ctx, active[:5])
     elif summaries:
         console.print("[dim]No active instances — all persisted runs are terminal.[/]")
 
@@ -110,3 +112,38 @@ def run_doctor(ctx: CliContext) -> int:
 
     console.print("[green]All checks passed.[/]")
     return 0
+
+
+def _render_active_job_context(ctx: CliContext, active: list[Any]) -> None:
+    """Show scope, branch, and schema detail for active instances."""
+    from rich.panel import Panel
+
+    console = ctx.console
+    shown = 0
+    for summary in active:
+        try:
+            job = ctx.job_for_instance(summary.instance_id)
+        except Exception:
+            continue
+        ctx_lines = context_lines(job)
+        job_ctx = inspect_job(job)
+        if not ctx_lines and job_ctx.pattern == "unknown":
+            continue
+        title = summary.flow_name or summary.process_name or summary.instance_id[:12]
+        body = "\n".join(ctx_lines) if ctx_lines else f"[dim]pattern[/] {job_ctx.pattern}"
+        if job_ctx.prompt:
+            body = f"[bold]{job_ctx.prompt}[/]\n\n{body}"
+        console.print(
+            Panel(
+                body.strip(),
+                title=f"[cyan]{title}[/] — {summary.status}",
+                subtitle=summary.instance_id[:20],
+                border_style="magenta" if job_ctx.pattern == "parallel" else "blue",
+            )
+        )
+        shown += 1
+    if shown:
+        console.print(
+            "[dim]Tip:[/] [cyan]status <id>[/] for full detail, "
+            "[cyan]wizard start parallel-demo[/] to try parallel branches"
+        )

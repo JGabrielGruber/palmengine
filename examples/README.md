@@ -91,14 +91,19 @@ Snapshots embed `__palm:meta` with `scope_stack`, `scope_schemas`, and `effectiv
 
 ## Parallel demo (`parallel-demo`)
 
-Runs **two wizard branches in parallel** with isolated scopes and merges results when both complete.
+Runs **two multi-step wizard branches in parallel** with isolated scopes, per-step schemas, and merged validation.
 
 - **Branches** — inline `pattern: wizard` or `flow_ref` to an existing flow
+- **Per-step schemas** — integer age on alpha, enum role on beta
 - **Merge** — `all`, `any`, or `first` strategy
-- **Parent schema** — validates merged branch answers
+- **Parent schema** — validates merged branch answers at completion
+- **CLI** — REPL prompt shows `@parallel:<branch>`; `doctor` and `status` show branch progress
 
 ```bash
 palm wizard start parallel-demo
+# Example answers: Ada → 27 → Platform → developer → …
+palm doctor
+palm status <instance_id>
 ```
 
 ## Quick wizard (`quick`)

@@ -42,6 +42,27 @@ def test_observer_can_enable_value_events() -> None:
     assert STATE_VALUE_SET in events
 
 
+def test_observer_ignores_parallel_internal_keys() -> None:
+    payloads: list[dict] = []
+    engine = EventEngine()
+    engine.initialize()
+    engine.subscribe("*", lambda event: payloads.append(dict(event.payload)))
+
+    state = TestState()
+    observe_state(
+        state,
+        engine,
+        config=StateObserverConfig(emit_value_events=True),
+    )
+    state.set("__parallel__.active_branch", "alpha")
+    state.set("__branch_state__", {"answers": {}})
+    state.set("user_input", "hello")
+
+    value_events = [payload for payload in payloads if payload.get("key")]
+    assert len(value_events) == 1
+    assert value_events[0]["key"] == "user_input"
+
+
 def test_observer_ignores_internal_key_prefixes() -> None:
     payloads: list[dict] = []
     engine = EventEngine()

@@ -68,6 +68,9 @@ class ParallelPattern(BasePattern, InputCapable, StepInspectable):
             return PatternStatus.SUCCESS
 
         status = self._root.tick(state)
+        if status == PatternStatus.WAITING_FOR_INPUT:
+            self._emit_branch_waiting(state)
+            return status
         if status != PatternStatus.SUCCESS:
             return status
 
@@ -113,6 +116,21 @@ class ParallelPattern(BasePattern, InputCapable, StepInspectable):
 
     def branch_runners(self) -> dict[str, BranchRunner]:
         return dict(self._runners)
+
+    def _emit_branch_waiting(self, state: BaseState) -> None:
+        if self._event_engine is None:
+            return
+        active = state.get(ParallelKeys.ACTIVE_BRANCH)
+        if not isinstance(active, str):
+            return
+        runner = self._runners.get(active)
+        step = runner.current_step_slug(state) if runner is not None else None
+        self._event_engine.emit(
+            "parallel.branch_waiting",
+            pattern=self.name,
+            branch=active,
+            step=step,
+        )
 
     def _emit_completed(self, state: BaseState) -> None:
         if self._event_engine is None:

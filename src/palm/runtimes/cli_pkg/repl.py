@@ -32,7 +32,7 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         ctx, registry, completer_cls=Completer, completion_cls=Completion
     )
 
-    hist = history_path or Path.home() / ".palm" / "history"
+    hist = history_path or Path.home() / ".palm" / ".history"
     hist.parent.mkdir(parents=True, exist_ok=True)
 
     session: PromptSession[str] = PromptSession(
@@ -47,7 +47,8 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
             "Type [bold]help[/] for commands. "
-            "Try [cyan]wizard start onboard[/] or [cyan]process list[/].\n\n"
+            "Try [cyan]wizard start onboard[/], [cyan]wizard start parallel-demo[/], "
+            "or [cyan]process list[/].\n\n"
             f"{format_persistence_notice(ctx.app)}",
             title="🌴 Palm REPL",
             border_style="green",
@@ -77,26 +78,37 @@ def _prompt(ctx: CliContext) -> str:
 
     short = ctx.active_instance_id[:8]
     suffix = ""
-    for summary in ctx.list_instance_summaries():
-        if summary.instance_id == ctx.active_instance_id:
-            flow = summary.flow_name or summary.process_name
-            step = summary.wizard_step_slug
-            if flow and step:
-                suffix = f" {flow}:{step}"
-            elif flow:
-                suffix = f" {flow}"
-            break
 
     try:
-        from palm.runtimes.cli_pkg.display import wizard_scope_label, wizard_validation_hint
+        from palm.runtimes.cli_pkg.job_context import inspect_job
 
         job = ctx.job_for_instance(ctx.active_instance_id)
-        scope = wizard_scope_label(job)
-        if scope and scope not in suffix:
-            suffix = f"{suffix} @{scope}" if suffix else f" @{scope}"
-        validation = wizard_validation_hint(job)
-        if validation:
-            preview = validation if len(validation) <= 24 else f"{validation[:21]}…"
+        context = inspect_job(job)
+
+        flow = None
+        for summary in ctx.list_instance_summaries():
+            if summary.instance_id == ctx.active_instance_id:
+                flow = summary.flow_name or summary.process_name
+                break
+
+        if flow and context.step:
+            suffix = f" {flow}:{context.step}"
+        elif flow:
+            suffix = f" {flow}"
+
+        scope_suffix = context.repl_scope_suffix
+        if scope_suffix and scope_suffix not in suffix:
+            suffix = f"{suffix}{scope_suffix}"
+
+        if context.branch_progress and context.pattern == "parallel":
+            suffix = f"{suffix} [{context.branch_progress}]"
+
+        if context.validation_error:
+            preview = (
+                context.validation_error
+                if len(context.validation_error) <= 20
+                else f"{context.validation_error[:17]}…"
+            )
             suffix = f"{suffix} !{preview}"
     except Exception:
         pass

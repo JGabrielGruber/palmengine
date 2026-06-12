@@ -112,6 +112,8 @@ def prune_terminal_instances(ctx: CliContext, *, dry_run: bool = False) -> list[
 
 
 def summary_to_dict(summary: InstanceSummary) -> dict[str, Any]:
+    from palm.runtimes.cli_pkg.job_context import format_step_context
+
     return {
         "instance_id": summary.instance_id,
         "short_id": short_instance_id(summary.instance_id),
@@ -120,6 +122,7 @@ def summary_to_dict(summary: InstanceSummary) -> dict[str, Any]:
         "flow_name": summary.flow_name,
         "process_name": summary.process_name,
         "wizard_step_slug": summary.wizard_step_slug,
+        "context": format_step_context(summary.wizard_step_slug),
         "updated_at": summary.updated_at,
         "snapshot_count": summary.snapshot_count,
     }

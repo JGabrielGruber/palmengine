@@ -20,7 +20,7 @@ STATE_SCOPE_EXITED = "palm.state.scope_exited"
 STATE_VALUE_SET = "palm.state.value_set"
 STATE_SCHEMA_BOUND = "palm.state.schema_bound"
 
-_DEFAULT_IGNORED_PREFIXES = ("__wizard__", "__bt_", "__palm:")
+_DEFAULT_IGNORED_PREFIXES = ("__wizard__", "__parallel__", "__branch_state__", "__bt_", "__palm:")
 
 
 @dataclass(frozen=True)

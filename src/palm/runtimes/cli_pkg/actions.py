@@ -7,7 +7,8 @@ from __future__ import annotations
 from palm.core.orchestration import Job, JobStatus
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.runtimes.cli_pkg.context import CliContext
-from palm.runtimes.cli_pkg.display import instance_id_for_job, render_wizard_panel
+from palm.runtimes.cli_pkg.display import instance_id_for_job, render_job_panel
+from palm.runtimes.cli_pkg.job_context import inspect_job
 
 
 def submit_process(ctx: CliContext, ref: str) -> Job:
@@ -16,7 +17,7 @@ def submit_process(ctx: CliContext, ref: str) -> Job:
         job = job[0]
     iid = instance_id_for_job(job)
     ctx.set_active(iid, job.id)
-    render_wizard_panel(ctx.console, job, instance_id=iid)
+    render_job_panel(ctx.console, job, instance_id=iid)
     return job
 
 
@@ -24,24 +25,30 @@ def submit_flow(ctx: CliContext, ref: str) -> Job:
     job = ctx.app.submit_flow(ref)
     iid = instance_id_for_job(job)
     ctx.set_active(iid, job.id)
-    render_wizard_panel(ctx.console, job, instance_id=iid)
+    render_job_panel(ctx.console, job, instance_id=iid)
     return job
 
 
 def resume_instance(ctx: CliContext, instance_id: str) -> Job:
     job = ctx.app.resume_process(instance_id)
     ctx.set_active(instance_id, job.id)
-    render_wizard_panel(ctx.console, job, instance_id=instance_id)
+    render_job_panel(ctx.console, job, instance_id=instance_id)
     return job
 
 
 def provide_input(ctx: CliContext, instance_id: str, value: str) -> str | None:
     job_id = ctx.resolve_job_id(instance_id)
+    before = inspect_job(ctx.app.get_job(job_id))
     slug = ctx.app.provide_input(job_id, value)
     job = ctx.app.get_job(job_id)
     iid = instance_id_for_job(job)
     ctx.set_active(iid, job_id)
-    render_wizard_panel(ctx.console, job, instance_id=iid)
+    if before.active_branch:
+        ctx.console.print(
+            f"[dim]→[/] input for branch [magenta]{before.active_branch}[/]"
+            + (f" (step {slug})" if slug else ""),
+        )
+    render_job_panel(ctx.console, job, instance_id=iid)
     if job.status in (JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED):
         ctx.active_instance_id = None
     return slug
@@ -56,7 +63,7 @@ def backtrack(ctx: CliContext, instance_id: str, to_slug: str) -> None:
     ctx.app.resume_job(job.id)
     ctx.app.persist_job(job)
     job = ctx.app.get_job(job.id)
-    render_wizard_panel(ctx.console, job, instance_id=instance_id)
+    render_job_panel(ctx.console, job, instance_id=instance_id)
     ctx.console.print(f"[green]Backtracked to[/] [bold]{to_slug}[/]")
 
 

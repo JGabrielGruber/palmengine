@@ -1,16 +1,19 @@
 """
-Parallel sub-workflow demo — two wizard branches merged with schema validation.
+Parallel sub-workflow demo — schemas, scoped branches, and merge validation.
 
-Demonstrates Phase 4 capabilities:
+Demonstrates Phase 4 + Phase 5 CLI visibility:
 
 - **Parallel branches** — each runs in an isolated scope + blackboard
-- **Sub-workflows** — inline wizard patterns per branch
-- **Merge strategy** — ``all`` requires every branch to succeed
+- **Multi-step sub-workflows** — two wizard steps per branch
+- **Per-step schemas** — integer age on alpha, string role on beta
 - **Parent schema** — merged branch answers validated at completion
+- **Merge strategy** — ``all`` requires every branch to succeed
 
 ```bash
 palm wizard start parallel-demo
-# alpha → beta (branches interleave input prompts)
+# Branches interleave prompts — watch REPL prompt for @parallel:<branch>
+palm doctor                   # active branch + schema context
+palm status <instance_id>     # branch progress + scope path
 ```
 """
 
@@ -25,8 +28,22 @@ PARALLEL_DEMO_FLOW = FlowDefinition(
     state_schema={
         "type": "object",
         "properties": {
-            "alpha": {"type": "object"},
-            "beta": {"type": "object"},
+            "alpha": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "minLength": 1},
+                    "age": {"type": "integer", "minimum": 1},
+                },
+                "required": ["name", "age"],
+            },
+            "beta": {
+                "type": "object",
+                "properties": {
+                    "team": {"type": "string", "minLength": 1},
+                    "role": {"type": "string", "enum": ["developer", "designer", "pm"]},
+                },
+                "required": ["team", "role"],
+            },
         },
         "required": ["alpha", "beta"],
     },
@@ -39,10 +56,16 @@ PARALLEL_DEMO_FLOW = FlowDefinition(
                 "options": {
                     "steps": [
                         {
-                            "slug": "alpha",
-                            "title": "Alpha",
-                            "prompt": "Value for alpha branch?",
+                            "slug": "name",
+                            "title": "Alpha — Name",
+                            "prompt": "Contributor name for alpha branch?",
                             "state_schema": {"type": "string", "minLength": 1},
+                        },
+                        {
+                            "slug": "age",
+                            "title": "Alpha — Age",
+                            "prompt": "Contributor age (integer)?",
+                            "state_schema": {"type": "integer", "minimum": 1},
                         },
                     ],
                 },
@@ -54,10 +77,21 @@ PARALLEL_DEMO_FLOW = FlowDefinition(
                 "options": {
                     "steps": [
                         {
-                            "slug": "beta",
-                            "title": "Beta",
-                            "prompt": "Value for beta branch?",
+                            "slug": "team",
+                            "title": "Beta — Team",
+                            "prompt": "Team name for beta branch?",
                             "state_schema": {"type": "string", "minLength": 1},
+                        },
+                        {
+                            "slug": "role",
+                            "title": "Beta — Role",
+                            "prompt": "Role (developer, designer, or pm)?",
+                            "field_type": "choice",
+                            "choices": ["developer", "designer", "pm"],
+                            "state_schema": {
+                                "type": "string",
+                                "enum": ["developer", "designer", "pm"],
+                            },
                         },
                     ],
                 },
@@ -73,7 +107,7 @@ PARALLEL_DEMO_PROCESS = ProcessDefinition(
     flows=[PARALLEL_DEMO_FLOW],
     metadata={
         "example": True,
-        "description": "Parallel wizard branches with scoped isolation and merge",
+        "description": "Parallel wizard branches with schemas, scopes, and merge",
     },
 )
 

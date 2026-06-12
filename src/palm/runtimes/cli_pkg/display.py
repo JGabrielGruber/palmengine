@@ -7,9 +7,10 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.orchestration import Job, JobStatus
-from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.parallel.pattern import ParallelPattern
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.runtimes.cli_pkg.instance_ops import short_instance_id, status_emoji
+from palm.runtimes.cli_pkg.job_context import context_lines, format_step_context, inspect_job
 
 _TERMINAL = frozenset({JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED})
 
@@ -19,46 +20,85 @@ def instance_id_for_job(job: Job) -> str:
     return str(raw) if raw else job.id
 
 
-def wizard_prompt_bundle(job: Job) -> dict[str, Any] | None:
-    raw = job.state.get(WizardKeys.ACTIVE_PROMPT)
-    return dict(raw) if isinstance(raw, dict) else None
+def render_job_panel(
+    console: Any,
+    job: Job,
+    *,
+    instance_id: str | None = None,
+) -> None:
+    """Render an interactive or terminal panel for any input-capable pattern."""
+    from rich.panel import Panel
 
+    iid = instance_id or instance_id_for_job(job)
+    ctx = inspect_job(job)
+    executable = job.executable
+    pattern_name = getattr(executable, "name", ctx.pattern)
 
-def wizard_scope_label(job: Job) -> str | None:
-    """Return a compact scope label for prompts and status displays."""
-    prompt = wizard_prompt_bundle(job)
-    if prompt:
-        current = prompt.get("current_scope")
-        if isinstance(current, str) and current:
-            return current
-        stack = prompt.get("scope_stack")
-        if isinstance(stack, list) and stack:
-            return " > ".join(str(item) for item in stack)
-    scope = job.state.current_scope()
-    return str(scope) if scope is not None else None
+    if ctx.prompt or (job.status == JobStatus.WAITING_FOR_INPUT and ctx.branches):
+        body = ""
+        if ctx.prompt:
+            body = f"[bold]{ctx.prompt}[/]\n"
+        if ctx.choices:
+            body += "\n[bold]Choices:[/]\n"
+            for choice in ctx.choices:
+                body += f"  • [green]{choice}[/]\n"
+        if ctx.field_type == "confirm":
+            body += (
+                "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"
+            )
+        if ctx.active_branch:
+            body += f"\n[dim]Input goes to branch[/] [magenta]{ctx.active_branch}[/]"
+            if ctx.branch_progress:
+                body += f" [dim]({ctx.branch_progress} branches complete)[/]"
+            body += "\n"
+        if ctx.answers_preview and ctx.pattern == "wizard":
+            body += "\n[dim]Collected:[/]\n"
+            for key, value in list(ctx.answers_preview.items())[:8]:
+                body += f"  {key}: [white]{value}[/]\n"
+        if ctx.answers_preview and ctx.pattern == "parallel":
+            body += "\n[dim]Branch results:[/]\n"
+            for key, value in list(ctx.answers_preview.items())[:8]:
+                body += f"  {key}: [white]{value}[/]\n"
+        for line in context_lines(job):
+            body += f"\n{line}"
 
+        title_slug = ctx.prompt_title or ctx.step or "?"
+        field = ctx.field_type or "text"
+        panel = Panel(
+            body.strip() or "[dim]Waiting for input…[/]",
+            title=f"[bold]{pattern_name}[/] — [cyan]{title_slug}[/] ({field})",
+            subtitle=f"instance {iid[:12]}…  |  job {job.status.value}",
+            border_style="magenta" if ctx.pattern == "parallel" else "blue",
+        )
+        console.print(panel)
+        return
 
-def wizard_validation_hint(job: Job) -> str | None:
-    """Return the primary validation message when the wizard is retrying input."""
-    prompt = wizard_prompt_bundle(job)
-    if prompt:
-        error = prompt.get("validation_error")
-        if isinstance(error, str) and error:
-            return error
-    error = job.state.get(WizardKeys.VALIDATION_ERROR)
-    return str(error) if error is not None else None
+    if job.status in _TERMINAL:
+        answers: dict[str, Any] = {}
+        if isinstance(job.executable, (WizardPattern, ParallelPattern)):
+            answers = job.executable.answers(job.state)
+        style = "green" if job.status == JobStatus.SUCCEEDED else "red"
+        label = "completed" if job.status == JobStatus.SUCCEEDED else job.status.value
+        console.print(
+            Panel(
+                f"[bold {style}]{ctx.pattern.title()} {label}[/]\n\nResults: {answers}",
+                border_style=style,
+            )
+        )
+        return
 
+    lines = context_lines(job)
+    if lines:
+        console.print(
+            Panel(
+                "\n".join(lines),
+                title=f"[bold]{pattern_name}[/] — {job.status.value}",
+                border_style="yellow",
+            )
+        )
+        return
 
-def wizard_context_lines(job: Job) -> list[str]:
-    """Build dim context lines for scope and validation (CLI panels)."""
-    lines: list[str] = []
-    scope = wizard_scope_label(job)
-    if scope:
-        lines.append(f"[dim]Scope:[/] [cyan]{scope}[/]")
-    validation = wizard_validation_hint(job)
-    if validation:
-        lines.append(f"[dim]Validation:[/] [yellow]{validation}[/]")
-    return lines
+    console.print(f"[dim]Job {job.id[:12]}… status={job.status.value}[/]")
 
 
 def render_wizard_panel(
@@ -67,58 +107,8 @@ def render_wizard_panel(
     *,
     instance_id: str | None = None,
 ) -> None:
-    from rich.panel import Panel
-
-    iid = instance_id or instance_id_for_job(job)
-    prompt = wizard_prompt_bundle(job)
-    executable = job.executable
-    wizard_name = executable.name if isinstance(executable, WizardPattern) else "wizard"
-
-    if prompt:
-        slug = prompt.get("slug", "?")
-        title = prompt.get("title", slug)
-        field_type = prompt.get("field_type", "text")
-        body = f"[bold]{prompt.get('prompt', '')}[/]\n"
-        choices = prompt.get("choices") or []
-        if choices:
-            body += "\n[bold]Choices:[/]\n"
-            for choice in choices:
-                body += f"  • [green]{choice}[/]\n"
-        if field_type == "confirm":
-            body += (
-                "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"
-            )
-        answers = job.state.get(WizardKeys.ANSWERS)
-        if isinstance(answers, dict) and answers:
-            body += "\n[dim]Collected:[/]\n"
-            for key, value in list(answers.items())[:8]:
-                body += f"  {key}: [white]{value}[/]\n"
-        for line in wizard_context_lines(job):
-            body += f"\n{line}"
-        panel = Panel(
-            body.strip(),
-            title=f"[bold]{wizard_name}[/] — [cyan]{title}[/] ({field_type})",
-            subtitle=f"instance {iid[:12]}…  |  job {job.status.value}",
-            border_style="blue",
-        )
-        console.print(panel)
-        return
-
-    if job.status in _TERMINAL:
-        answers = {}
-        if isinstance(job.executable, WizardPattern):
-            answers = job.executable.answers(job.state)
-        style = "green" if job.status == JobStatus.SUCCEEDED else "red"
-        label = "completed" if job.status == JobStatus.SUCCEEDED else job.status.value
-        console.print(
-            Panel(
-                f"[bold {style}]Wizard {label}[/]\n\nAnswers: {answers}",
-                border_style=style,
-            )
-        )
-        return
-
-    console.print(f"[dim]Job {job.id[:12]}… status={job.status.value} (no active prompt)[/]")
+    """Backward-compatible alias for :func:`render_job_panel`."""
+    render_job_panel(console, job, instance_id=instance_id)
 
 
 def render_instance_table(console: Any, instances: list[Any], *, hint: str | None = None) -> None:
@@ -136,20 +126,21 @@ def render_instance_table(console: Any, instances: list[Any], *, hint: str | Non
     table.add_column("Process")
     table.add_column("Flow")
     table.add_column("Status", style="yellow")
-    table.add_column("Step")
+    table.add_column("Step / Context")
     table.add_column("Job", style="dim", overflow="fold")
     if show_snapshots:
         table.add_column("Snaps", justify="right", style="dim")
 
     for inst in instances:
         emoji = status_emoji(inst.status)
+        context = _instance_context_label(inst)
         row = [
             short_instance_id(inst.instance_id),
             inst.instance_id,
             inst.process_name or "—",
             inst.flow_name or "—",
             f"{emoji} {inst.status}",
-            inst.wizard_step_slug or "—",
+            context,
             inst.job_id,
         ]
         if show_snapshots:
@@ -160,9 +151,13 @@ def render_instance_table(console: Any, instances: list[Any], *, hint: str | Non
         console.print(f"[dim]{hint}[/]")
     else:
         console.print(
-            "[dim]Tip:[/] use short ID prefix with "
-            "[cyan]status <id>[/], [cyan]instance snapshots <id>[/], or [cyan]instance resume <id>[/]"
+            "[dim]Tip:[/] use [cyan]status <id>[/] for scope/branch detail, "
+            "[cyan]instance resume <id>[/] to continue"
         )
+
+
+def _instance_context_label(inst: Any) -> str:
+    return format_step_context(inst.wizard_step_slug)
 
 
 def render_definition_catalog(ctx: Any) -> None:
@@ -191,39 +186,71 @@ def render_definition_catalog(ctx: Any) -> None:
         ft.add_column("ID", style="cyan")
         ft.add_column("Pattern")
         ft.add_column("Schema", style="dim")
+        ft.add_column("Detail", style="dim")
         for flow in flows:
             schema = "flow" if flow.has_state_schema else "—"
-            ft.add_row(flow.name, flow.definition_id, flow.pattern, schema)
+            detail = _flow_detail_label(flow)
+            ft.add_row(flow.name, flow.definition_id, flow.pattern, schema, detail)
         console.print(ft)
 
     if not flows and not processes:
         console.print("[yellow]No definitions registered.[/]")
 
 
+def _flow_detail_label(flow: Any) -> str:
+    if flow.pattern == "parallel":
+        branches = flow.options.get("branches") if isinstance(flow.options, dict) else None
+        if isinstance(branches, list):
+            slugs = [
+                str(item.get("slug", "?"))
+                for item in branches
+                if isinstance(item, dict)
+            ]
+            merge = flow.options.get("merge_strategy", "all")
+            return f"{len(slugs)} branches ({merge}): {', '.join(slugs)}"
+        return "parallel"
+    if flow.pattern == "wizard" and isinstance(flow.options, dict):
+        steps = flow.options.get("steps")
+        if isinstance(steps, list):
+            return f"{len(steps)} steps"
+    return "—"
+
+
 def render_job_status(console: Any, job: Job, instance_id: str) -> None:
     from rich.table import Table
 
+    ctx = inspect_job(job)
     table = Table(title=f"Status — {instance_id[:16]}", show_header=False)
     table.add_row("instance_id", instance_id)
     table.add_row("job_id", job.id)
     table.add_row("status", job.status.value)
-    if isinstance(job.executable, WizardPattern):
-        table.add_row("current_step", job.executable.current_step_slug(job.state) or "—")
-        table.add_row("answers", str(job.executable.answers(job.state)))
-    scope = wizard_scope_label(job)
-    if scope:
-        table.add_row("scope", scope)
-    validation = wizard_validation_hint(job)
-    if validation:
-        table.add_row("validation_error", validation)
-    effective = job.state.effective_schema()
-    if effective is not None and effective.definition:
-        schema_type = effective.definition.get("type", "object")
-        table.add_row("effective_schema", str(schema_type))
-    prompt = wizard_prompt_bundle(job)
-    if prompt:
-        table.add_row("prompt", str(prompt.get("prompt", "")))
-        table.add_row("field_type", str(prompt.get("field_type", "")))
+    table.add_row("pattern", ctx.pattern)
+    if ctx.step:
+        table.add_row("current_step", ctx.step)
+    if ctx.active_branch:
+        table.add_row("active_branch", ctx.active_branch)
+    if ctx.scope_path:
+        table.add_row("scope", ctx.scope_path)
+    if ctx.branch_progress:
+        table.add_row("branch_progress", ctx.branch_progress)
+    if ctx.branches:
+        branch_summary = ", ".join(
+            f"{branch.slug}{'✓' if branch.completed else '●' if branch.active else '…'}"
+            for branch in ctx.branches
+        )
+        table.add_row("branches", branch_summary)
+    if ctx.answers_preview:
+        table.add_row("answers", str(ctx.answers_preview))
+    if ctx.merged_preview:
+        table.add_row("merged", str(ctx.merged_preview))
+    if ctx.validation_error:
+        table.add_row("validation_error", ctx.validation_error)
+    if ctx.effective_schema_type:
+        table.add_row("effective_schema", ctx.effective_schema_type)
+    if ctx.prompt:
+        table.add_row("prompt", ctx.prompt)
+    if ctx.field_type:
+        table.add_row("field_type", ctx.field_type)
     console.print(table)
     if job.status == JobStatus.WAITING_FOR_INPUT:
-        render_wizard_panel(console, job, instance_id=instance_id)
+        render_job_panel(console, job, instance_id=instance_id)

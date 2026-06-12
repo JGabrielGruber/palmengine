@@ -73,3 +73,20 @@ def save_branch_snapshot(state: BaseState, snapshot: dict[str, Any]) -> None:
 def load_branch_snapshot(state: BaseState) -> dict[str, Any] | None:
     raw = state.get_scoped(ParallelKeys.BRANCH_STATE)
     return dict(raw) if isinstance(raw, dict) else None
+
+
+def load_branch_snapshot_for(state: BaseState, branch_slug: str) -> dict[str, Any] | None:
+    """Load a branch blackboard snapshot without entering the branch scope."""
+    storage = state.scope_storage()
+    if storage is None:
+        return None
+    from palm.core.context.scoping import SCOPES_ROOT_KEY
+
+    scopes_root = storage.get(SCOPES_ROOT_KEY)
+    if not isinstance(scopes_root, dict):
+        return None
+    node = scopes_root.get(branch_slug)
+    if not isinstance(node, dict):
+        return None
+    raw = node.get(ParallelKeys.BRANCH_STATE)
+    return dict(raw) if isinstance(raw, dict) else None
