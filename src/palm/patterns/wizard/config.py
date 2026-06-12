@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
+from palm.patterns.wizard.collection import CollectionFieldConfig
 from palm.patterns.wizard.step_kinds import PROTECTED_KINDS, WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
@@ -36,6 +37,9 @@ class WizardStepConfig:
     resource_provider: str | None = None
     resource_id: str | None = None
     allow_backtrack: bool | None = None
+    collection_key: str | None = None
+    item_fields: tuple[CollectionFieldConfig, ...] = ()
+    min_items: int = 1
 
     def __post_init__(self) -> None:
         if not self.slug:
@@ -44,6 +48,11 @@ class WizardStepConfig:
             raise ValueError(f"Step {self.slug!r} with field_type=choice requires choices")
         if self.step_kind == "commit" and not self.commit_hook:
             object.__setattr__(self, "field_type", "confirm")
+        if self.step_kind == "collection":
+            if not self.item_fields:
+                raise ValueError(f"Collection step {self.slug!r} requires item_fields")
+            if not self.collection_key:
+                object.__setattr__(self, "collection_key", self.slug)
 
     @property
     def has_state_schema(self) -> bool:

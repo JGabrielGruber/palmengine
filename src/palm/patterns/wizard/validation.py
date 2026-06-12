@@ -368,10 +368,12 @@ def _run_rule(
 
     if name == "regex":
         pattern = str(params.get("pattern", ""))
-        if pattern and not re.search(pattern, str(value)):
-            return ValidationResult.failure(
-                params.get("message", "Value does not match the required pattern")
-            )
+        if pattern:
+            candidate = "" if value is None else str(value)
+            if not re.search(pattern, candidate):
+                return ValidationResult.failure(
+                    params.get("message", "Value does not match the required pattern")
+                )
         return ValidationResult.success()
 
     if name == "not_empty":

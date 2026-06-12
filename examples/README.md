@@ -12,7 +12,8 @@ examples/
     ├── approval_workflow.py # Spend approval
     ├── quick_wizard.py      # Minimal two-step demo
     ├── schema_wizard.py     # Flow + per-step state schemas
-    └── parallel_demo.py     # Parallel branches + sub-workflows
+    ├── parallel_demo.py     # Parallel branches + sub-workflows
+    └── todo_builder.py      # Collection step + todo list schemas
 ```
 
 Each module exposes `register_definitions(repository)` which:
@@ -108,6 +109,22 @@ palm doctor
 palm status <instance_id>
 ```
 
+## Todo builder (`todo-builder`)
+
+Dynamic **todo list wizard** using the new `collection` step kind.
+
+- **Collection step** — add, edit, and remove items in a loop before continuing
+- **Per-item scopes** — `todos > item-N > field` for isolated editing
+- **Per-field schemas** — title (required), optional due date, priority enum
+- **Flow schema** — validates the full `todos` array at summary and commit
+- **Resume** — list, draft, and editing phase preserved in snapshots
+
+```bash
+palm flow start todo-builder
+# intro → Add a new item → title → due date → priority → (repeat) → Continue to summary → yes → yes
+palm status <instance_id>
+```
+
 ## Quick wizard (`quick`)
 
 Two text steps (`alpha`, `beta`) with backtracking enabled — useful for resume demos.
@@ -146,6 +163,9 @@ Wizard flow options commonly used in examples:
 | `state_schema` | Flow-level JSON Schema on `FlowDefinition` |
 | `state_schema` (step) | Per-step value schema in step dicts |
 | `state_schema_ref` | Reference a named schema in the definition repository |
+| `step_kind: collection` | Repeatable item builder with `item_fields` and `collection_key` |
+| `item_fields` | Per-item field defs (slug, prompt, schema) for collection steps |
+| `min_items` | Minimum items required before leaving a collection step |
 
 Commit handlers receive a `CommitContext` with `answers`, `state`, and optional `resource_engine` for `fetch_resource()`.
 

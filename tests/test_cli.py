@@ -58,6 +58,44 @@ def test_start_alias_schema_onboard(cli_ctx) -> None:
     assert cli_ctx.active_instance_id is not None
 
 
+def test_flow_start_todo_builder(cli_ctx) -> None:
+    import shlex
+
+    from palm.runtimes.cli_pkg.job_context import inspect_job
+
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "flow start todo-builder") == 0
+    iid = cli_ctx.active_instance_id
+    assert iid is not None
+
+    steps = [
+        "yes",
+        "Add a new item",
+        "Buy milk",
+        "",
+        "high",
+        "Add a new item",
+        "Walk dog",
+        "",
+        "medium",
+        "Continue to summary",
+        "yes",
+        "yes",
+    ]
+    for value in steps:
+        cmd = "input " + shlex.quote(value)
+        assert reg.dispatch(cli_ctx, cmd) == 0, cmd
+        job = inspect_job(cli_ctx.job_for_instance(iid))
+        assert job.validation_error is None, f"failed on input {value!r}: {job.validation_error}"
+
+    job = inspect_job(cli_ctx.job_for_instance(iid))
+    assert job.pattern == "wizard"
+    assert job.answers_preview.get("todos") == [
+        {"title": "Buy milk", "priority": "high"},
+        {"title": "Walk dog", "priority": "medium"},
+    ]
+
+
 def test_flow_start_parallel_demo(cli_ctx) -> None:
     from palm.runtimes.cli_pkg.job_context import inspect_job
 

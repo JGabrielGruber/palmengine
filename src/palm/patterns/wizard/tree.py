@@ -12,6 +12,7 @@ from palm.core.resource import ResourceEngine
 if TYPE_CHECKING:
     from palm.core.context import ContextEngine
 from palm.patterns.wizard.action_leaf import WizardActionLeaf
+from palm.patterns.wizard.collection_leaf import WizardCollectionLeaf
 from palm.patterns.wizard.commit_leaf import WizardCommitLeaf
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.handler import CommitRegistry
@@ -57,6 +58,16 @@ def build_wizard_tree(
                     hook_name=hook,
                     commit_registry=registry,
                     resource_engine=resource_engine,
+                    emit=emit,
+                    context_engine=context_engine,
+                )
+            )
+        elif step.step_kind == "collection":
+            leaves.append(
+                WizardCollectionLeaf(
+                    step,
+                    wizard_name=wizard_name,
+                    step_index=idx,
                     emit=emit,
                     context_engine=context_engine,
                 )

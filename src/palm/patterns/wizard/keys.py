@@ -22,3 +22,8 @@ class WizardKeys:
     VALIDATION_ERRORS = f"{PREFIX}.validation_errors"
     SUMMARY_ACK = f"{PREFIX}.summary_ack"
     RESOURCE_RESULT = f"{PREFIX}.resource_result"
+    COLLECTION_PHASE = f"{PREFIX}.collection_phase"
+    COLLECTION_EDIT_INDEX = f"{PREFIX}.collection_edit_index"
+    COLLECTION_FIELD_INDEX = f"{PREFIX}.collection_field_index"
+    COLLECTION_DRAFT = f"{PREFIX}.collection_draft"
+    COLLECTION_REMOVE_INDEX = f"{PREFIX}.collection_remove_index"

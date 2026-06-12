@@ -143,6 +143,9 @@ def _validate_value(value: Any, spec: Mapping[str, Any], *, path: str) -> list[s
         if isinstance(allowed, list) and value not in allowed:
             errors.append(f"{path}: value {value!r} not in enum {allowed!r}")
 
+    if isinstance(expected_type, list):
+        return errors
+
     if expected_type in {"integer", "number"}:
         if "minimum" in spec and value < spec["minimum"]:
             errors.append(f"{path}: {value} < minimum {spec['minimum']}")

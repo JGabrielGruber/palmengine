@@ -42,6 +42,18 @@ def render_job_panel(
             body += "\n[bold]Choices:[/]\n"
             for choice in ctx.choices:
                 body += f"  • [green]{choice}[/]\n"
+        if ctx.collection_items:
+            body += "\n[bold]Current list:[/]\n"
+            for index, item in enumerate(ctx.collection_items, start=1):
+                title = item.get("title", f"Item {index}")
+                priority = item.get("priority")
+                due = item.get("due_date")
+                line = f"  {index}. {title}"
+                if priority:
+                    line += f" [dim]({priority})[/]"
+                if due:
+                    line += f" [dim]due {due}[/]"
+                body += line + "\n"
         if ctx.field_type == "confirm":
             body += (
                 "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"

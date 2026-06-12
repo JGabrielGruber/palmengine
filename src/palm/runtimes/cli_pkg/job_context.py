@@ -43,6 +43,8 @@ class JobContext:
     choices: tuple[str, ...] = ()
     answers_preview: dict[str, Any] = field(default_factory=dict)
     merged_preview: dict[str, Any] = field(default_factory=dict)
+    collection_items: tuple[dict[str, Any], ...] = ()
+    collection_phase: str | None = None
 
     @property
     def repl_scope_suffix(self) -> str:
@@ -145,6 +147,7 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
     prompt_bundle = _prompt_from_state(state)
     answers = wizard.answers(state)
 
+    collection_items, collection_phase = _collection_from_bundle(prompt_bundle)
     return JobContext(
         pattern="wizard",
         step=wizard.current_step_slug(state),
@@ -157,6 +160,8 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         field_type=_field_type(prompt_bundle),
         choices=_choices(prompt_bundle),
         answers_preview=dict(answers) if answers else {},
+        collection_items=collection_items,
+        collection_phase=collection_phase,
     )
 
 
@@ -250,6 +255,20 @@ def _field_type(bundle: dict[str, Any] | None) -> str | None:
         return None
     value = bundle.get("field_type", "text")
     return str(value)
+
+
+def _collection_from_bundle(
+    bundle: dict[str, Any] | None,
+) -> tuple[tuple[dict[str, Any], ...], str | None]:
+    if not bundle:
+        return (), None
+    phase = bundle.get("collection_phase")
+    phase_str = str(phase) if phase is not None else None
+    raw = bundle.get("collection_items")
+    if isinstance(raw, list):
+        items = tuple(dict(item) for item in raw if isinstance(item, dict))
+        return items, phase_str
+    return (), phase_str
 
 
 def _choices(bundle: dict[str, Any] | None) -> tuple[str, ...]:

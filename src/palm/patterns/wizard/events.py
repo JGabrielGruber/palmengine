@@ -17,3 +17,6 @@ class WizardEventType:
     COMMIT_FAILED = "wizard.commit.failed"
     ACTION_EXECUTED = "wizard.action.executed"
     COMPLETED = "wizard.completed"
+    COLLECTION_ITEM_SAVED = "wizard.collection.item_saved"
+    COLLECTION_ITEM_REMOVED = "wizard.collection.item_removed"
+    COLLECTION_COMPLETED = "wizard.collection.completed"

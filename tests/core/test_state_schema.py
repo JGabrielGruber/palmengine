@@ -87,3 +87,11 @@ def test_base_state_validate_key_without_schema() -> None:
     state = TestState({"x": 1})
     assert state.validate() == []
     assert state.validate_key("x") == []
+
+
+def test_dict_schema_validate_union_type_accepts_null() -> None:
+    schema = DictStateSchema({"type": ["string", "null"]})
+    assert schema.validate_value(None, path="due_date") == []
+    assert schema.validate_value("2026-06-12", path="due_date") == []
+    errors = schema.validate_value(42, path="due_date")
+    assert errors == ["due_date: expected ['string', 'null'], got int"]

@@ -17,7 +17,7 @@ from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
-_WIZARD_STEP_KINDS = frozenset({"input", "introduction", "summary", "commit", "action"})
+_WIZARD_STEP_KINDS = frozenset({"input", "introduction", "summary", "commit", "action", "collection"})
 
 
 def build(
@@ -164,6 +164,14 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
     ref = data.get("state_schema_ref")
     state_schema_ref = str(ref) if ref else None
 
+    item_fields = ()
+    collection_key = data.get("collection_key")
+    min_items = int(data.get("min_items", 1))
+    if step_kind == "collection":
+        from palm.patterns.wizard.collection import item_fields_from_mapping
+
+        item_fields = item_fields_from_mapping(data.get("item_fields"), repository=None)
+
     return WizardStepConfig(
         slug=str(slug),
         title=str(title),
@@ -179,6 +187,9 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         resource_provider=data.get("resource_provider"),
         resource_id=data.get("resource_id"),
         allow_backtrack=data.get("allow_backtrack"),
+        collection_key=str(collection_key) if collection_key else None,
+        item_fields=item_fields,
+        min_items=min_items,
     )
 
 
@@ -187,7 +198,7 @@ def materialize_wizard_step_schemas(
     repository: Any | None = None,
 ) -> WizardConfig:
     """Resolve declarative step schemas and attach materialized instances."""
-    steps = tuple(_materialize_step_schema(step, repository) for step in config.steps)
+    steps = tuple(_materialize_step(step, repository) for step in config.steps)
     if steps == config.steps:
         return config
     return WizardConfig(
@@ -202,15 +213,39 @@ def materialize_wizard_step_schemas(
     )
 
 
-def _materialize_step_schema(
+def _materialize_step(
     step: WizardStepConfig,
     repository: Any | None,
 ) -> WizardStepConfig:
-    if step.schema is not None or not step.has_state_schema:
+    item_fields = step.item_fields
+    if step.step_kind == "collection" and item_fields:
+        from palm.patterns.wizard.collection import CollectionFieldConfig, item_fields_from_mapping
+
+        raw_fields = [
+            {
+                "slug": field.slug,
+                "title": field.title,
+                "prompt": field.prompt,
+                "field_type": field.field_type,
+                "choices": list(field.choices),
+                "required": field.required,
+                "validation": [
+                    {"rule": rule.rule, "params": dict(rule.params)} for rule in field.validation
+                ],
+                "state_schema": field.state_schema,
+                "state_schema_ref": field.state_schema_ref,
+            }
+            for field in item_fields
+        ]
+        item_fields = item_fields_from_mapping(raw_fields, repository=repository)
+
+    schema = step.schema
+    if schema is None and step.has_state_schema:
+        schema = step.materialize_state_schema(repository)
+
+    if schema is step.schema and item_fields == step.item_fields:
         return step
-    schema = step.materialize_state_schema(repository)
-    if schema is None:
-        return step
+
     return WizardStepConfig(
         slug=step.slug,
         title=step.title,
@@ -227,4 +262,7 @@ def _materialize_step_schema(
         resource_provider=step.resource_provider,
         resource_id=step.resource_id,
         allow_backtrack=step.allow_backtrack,
+        collection_key=step.collection_key,
+        item_fields=item_fields,
+        min_items=step.min_items,
     )
