@@ -11,7 +11,8 @@ examples/
     ├── data_ingestion.py    # Dataset registration + ETL stub
     ├── approval_workflow.py # Spend approval
     ├── quick_wizard.py      # Minimal two-step demo
-    └── schema_wizard.py     # Flow + per-step state schemas
+    ├── schema_wizard.py     # Flow + per-step state schemas
+    └── parallel_demo.py     # Parallel branches + sub-workflows
 ```
 
 Each module exposes `register_definitions(repository)` which:
@@ -87,6 +88,18 @@ palm process resume <instance_id>
 ### Resume
 
 Snapshots embed `__palm:meta` with `scope_stack`, `scope_schemas`, and `effective_schema`. Resuming a waiting wizard restores the exact scope context — not just flat answers.
+
+## Parallel demo (`parallel-demo`)
+
+Runs **two wizard branches in parallel** with isolated scopes and merges results when both complete.
+
+- **Branches** — inline `pattern: wizard` or `flow_ref` to an existing flow
+- **Merge** — `all`, `any`, or `first` strategy
+- **Parent schema** — validates merged branch answers
+
+```bash
+palm wizard start parallel-demo
+```
 
 ## Quick wizard (`quick`)
 

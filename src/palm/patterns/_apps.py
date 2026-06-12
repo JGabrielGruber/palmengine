@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import importlib
 
-INSTALLED_PATTERNS: tuple[str, ...] = ("dag", "etl", "wizard")
+INSTALLED_PATTERNS: tuple[str, ...] = ("dag", "etl", "parallel", "wizard")
 
 
 def autoload() -> None:

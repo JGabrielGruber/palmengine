@@ -23,7 +23,7 @@ def _reload_apps() -> None:
 
 
 def test_installed_pattern_apps_register() -> None:
-    assert set(INSTALLED_PATTERNS) == {"dag", "etl", "wizard"}
+    assert set(INSTALLED_PATTERNS) == {"dag", "etl", "parallel", "wizard"}
     for name in INSTALLED_PATTERNS:
         pattern_registry.get(name)
     assert set(registered_builders()) == set(INSTALLED_PATTERNS)

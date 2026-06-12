@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from palm.core.context import StateSchema
+from palm.core.context import ContextEngine, StateSchema
 from palm.core.event import EventEngine
 from palm.core.resource import ResourceEngine
 
@@ -24,6 +24,7 @@ class PatternBuildContext:
     """Runtime services used when constructing executable patterns."""
 
     event_engine: EventEngine | None = None
+    context_engine: ContextEngine | None = None
     resource_engine: ResourceEngine | None = None
     commit_registry: Any | None = None
     definition_repository: DefinitionRepository | None = None
