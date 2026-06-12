@@ -48,6 +48,13 @@ def test_dict_schema_validate_key_enum() -> None:
         USER_SCHEMA.validate_key("role", "guest")
 
 
+def test_dict_schema_validate_value_scalar() -> None:
+    age_schema = DictStateSchema({"type": "integer", "minimum": 18})
+    assert age_schema.validate_value(25, path="age") == []
+    errors = age_schema.validate_value(16, path="age")
+    assert errors == ["age: 16 < minimum 18"]
+
+
 def test_base_state_apply_defaults() -> None:
     state = TestState(schema=USER_SCHEMA)
     state.apply_defaults()

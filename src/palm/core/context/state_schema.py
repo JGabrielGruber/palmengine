@@ -41,6 +41,10 @@ class StateSchema(ABC):
         """Validate a full state mapping. Return human-readable error messages."""
 
     @abstractmethod
+    def validate_value(self, value: Any, *, path: str = "value") -> list[str]:
+        """Validate a single value against the root schema document."""
+
+    @abstractmethod
     def defaults(self) -> dict[str, Any]:
         """Return default values declared by the schema."""
 
@@ -84,6 +88,9 @@ class DictStateSchema(StateSchema):
             errors.extend(_validate_value(value, properties[key], path=key))
 
         return errors
+
+    def validate_value(self, value: Any, *, path: str = "value") -> list[str]:
+        return _validate_value(value, self._definition, path=path)
 
     def defaults(self) -> dict[str, Any]:
         result: dict[str, Any] = {}

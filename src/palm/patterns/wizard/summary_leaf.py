@@ -13,6 +13,7 @@ from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.state import enter_step, get_answers, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
+from palm.patterns.wizard.validation import validate_collected_answers
 
 
 class WizardSummaryLeaf(InteractiveLeaf):
@@ -34,6 +35,17 @@ class WizardSummaryLeaf(InteractiveLeaf):
 
     def _request_input(self, state: BaseState) -> PatternStatus:
         answers = get_answers(state)
+        validation = validate_collected_answers(state, answers)
+        if not validation.ok:
+            state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
+            self._fire(
+                WizardEventType.VALIDATION_FAILED,
+                slug=self._step.slug,
+                errors=list(validation.errors),
+                reason="summary_schema",
+            )
+            return PatternStatus.FAILURE
+
         prompt_bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
@@ -60,6 +72,18 @@ class WizardSummaryLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
+        answers = get_answers(state)
+        validation = validate_collected_answers(state, answers)
+        if not validation.ok:
+            state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
+            self._fire(
+                WizardEventType.VALIDATION_FAILED,
+                slug=self._step.slug,
+                errors=list(validation.errors),
+                reason="summary_schema",
+            )
+            return PatternStatus.FAILURE
+
         if not _is_affirmative(value):
             state.set(WizardKeys.VALIDATION_ERROR, "Summary must be confirmed to continue")
             self._fire(WizardEventType.VALIDATION_FAILED, slug=self._step.slug, reason="summary")

@@ -13,6 +13,7 @@ from palm.definitions.flow import FlowDefinition
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
+from palm.patterns.wizard.schema_validation import materialize_wizard_step_schemas
 from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
@@ -48,9 +49,14 @@ def build(
 
     raw_config = options.get("config")
     if isinstance(raw_config, WizardConfig):
-        return pattern_cls(config=raw_config, **kwargs)
+        config = materialize_wizard_step_schemas(
+            raw_config,
+            context.definition_repository,
+        )
+        return pattern_cls(config=config, **kwargs)
 
     config = wizard_config_from_options(options)
+    config = materialize_wizard_step_schemas(config, context.definition_repository)
     if config.include_commit and not config.commit_hook:
         hook = options.get("commit_hook")
         if not hook:
@@ -154,6 +160,11 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
     if step_kind not in _WIZARD_STEP_KINDS:
         raise DefinitionBuildError(f"Invalid wizard step_kind: {step_kind!r}")
 
+    inline_schema = data.get("state_schema")
+    state_schema = dict(inline_schema) if isinstance(inline_schema, dict) else None
+    ref = data.get("state_schema_ref")
+    state_schema_ref = str(ref) if ref else None
+
     return WizardStepConfig(
         slug=str(slug),
         title=str(title),
@@ -163,6 +174,8 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         required=bool(data.get("required", True)),
         step_kind=step_kind,
         validation=validation,
+        state_schema=state_schema,
+        state_schema_ref=state_schema_ref,
         commit_hook=data.get("commit_hook"),
         resource_provider=data.get("resource_provider"),
         resource_id=data.get("resource_id"),

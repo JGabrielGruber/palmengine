@@ -5,10 +5,14 @@ Wizard configuration — step definitions and pattern-level options.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from palm.patterns.wizard.step_kinds import PROTECTED_KINDS, WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
+
+if TYPE_CHECKING:
+    from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.core.context import StateSchema
 
 WizardFieldType = Literal["text", "choice", "confirm"]
 
@@ -25,6 +29,9 @@ class WizardStepConfig:
     required: bool = True
     step_kind: WizardStepKind = "input"
     validation: tuple[StepValidationRule, ...] = ()
+    state_schema: dict[str, Any] | None = None
+    state_schema_ref: str | None = None
+    schema: StateSchema | None = None
     commit_hook: str | None = None
     resource_provider: str | None = None
     resource_id: str | None = None
@@ -37,6 +44,30 @@ class WizardStepConfig:
             raise ValueError(f"Step {self.slug!r} with field_type=choice requires choices")
         if self.step_kind == "commit" and not self.commit_hook:
             object.__setattr__(self, "field_type", "confirm")
+
+    @property
+    def has_state_schema(self) -> bool:
+        """Return whether inline or referenced step schema is configured."""
+        return (
+            self.state_schema is not None
+            or self.state_schema_ref is not None
+            or self.schema is not None
+        )
+
+    def materialize_state_schema(
+        self,
+        repository: DefinitionRepository | None = None,
+    ) -> StateSchema | None:
+        """Resolve inline schema first, then a repository reference."""
+        if self.schema is not None:
+            return self.schema
+        from palm.common.state.schema_binding import materialize_state_schema
+
+        return materialize_state_schema(
+            inline=self.state_schema,
+            ref=self.state_schema_ref,
+            repository=repository,
+        )
 
     @property
     def is_protected(self) -> bool:
