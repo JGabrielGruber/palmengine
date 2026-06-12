@@ -65,8 +65,7 @@ def filter_summaries(
         filtered = [
             item
             for item in filtered
-            if (item.flow_name or "").lower() == needle
-            or needle in (item.flow_name or "").lower()
+            if (item.flow_name or "").lower() == needle or needle in (item.flow_name or "").lower()
         ]
     if options.limit is not None and options.limit > 0:
         filtered = filtered[: options.limit]

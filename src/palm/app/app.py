@@ -146,9 +146,7 @@ class PalmApp:
 
         return resolve_flow_for_app(self, ref, runtime_name=runtime_name)
 
-    def resolve_process(
-        self, ref: str, *, runtime_name: str | None = None
-    ) -> ProcessDefinition:
+    def resolve_process(self, ref: str, *, runtime_name: str | None = None) -> ProcessDefinition:
         """Resolve a process by display name, falling back to definition id."""
         from palm.app.resolvers import resolve_process_for_app
 

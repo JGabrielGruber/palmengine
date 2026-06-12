@@ -106,7 +106,12 @@ def _context_completions(
             return
 
     if _matches_phrase(lower, ("instance", "list")):
-        if words[-1].startswith("--") and words[-1] not in ("--status", "--flow", "--limit", "--format"):
+        if words[-1].startswith("--") and words[-1] not in (
+            "--status",
+            "--flow",
+            "--limit",
+            "--format",
+        ):
             for flag in ("--all", "--status", "--flow", "--limit", "--format"):
                 if flag.startswith(words[-1]):
                     yield completion_cls(flag, start_position=-len(words[-1]))

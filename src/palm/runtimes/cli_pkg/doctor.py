@@ -84,9 +84,7 @@ def run_doctor(ctx: CliContext) -> int:
     console.print(inst_table)
 
     if active:
-        console.print(
-            f"[bold]Active instances[/] [dim]({len(active)} non-terminal)[/]"
-        )
+        console.print(f"[bold]Active instances[/] [dim]({len(active)} non-terminal)[/]")
         render_instance_table(console, active[:10])
     elif summaries:
         console.print("[dim]No active instances — all persisted runs are terminal.[/]")

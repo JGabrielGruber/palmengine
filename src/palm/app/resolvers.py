@@ -31,7 +31,9 @@ def resolve_process(repository: DefinitionRepository, ref: str) -> ProcessDefini
         return repository.get_process(ref, by_id=True)
 
 
-def resolve_flow_for_app(app: PalmApp, ref: str, *, runtime_name: str | None = None) -> FlowDefinition:
+def resolve_flow_for_app(
+    app: PalmApp, ref: str, *, runtime_name: str | None = None
+) -> FlowDefinition:
     """Resolve a flow via a :class:`~palm.app.app.PalmApp` runtime repository."""
     return resolve_flow(app.repository(runtime_name=runtime_name), ref)
 

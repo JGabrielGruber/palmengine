@@ -18,7 +18,6 @@ from palm.runtimes.cli_pkg.display import (
 )
 from palm.runtimes.cli_pkg.doctor import run_doctor
 from palm.runtimes.cli_pkg.instance_ops import (
-    InstanceListOptions,
     filter_summaries,
     parse_instance_list_flags,
     prune_terminal_instances,
@@ -225,7 +224,9 @@ def _cmd_instance_list(ctx: CliContext, args: list[str]) -> int:
 
     hint = None
     if not options.include_all:
-        hint = "Showing active (non-terminal) instances — append [cyan]--all[/] to include completed."
+        hint = (
+            "Showing active (non-terminal) instances — append [cyan]--all[/] to include completed."
+        )
     render_instance_table(ctx.console, summaries, hint=hint)
     return 0
 
@@ -419,6 +420,3 @@ def _cmd_clear(ctx: CliContext, _args: list[str]) -> int:
 
 def _cmd_exit(ctx: CliContext, _args: list[str]) -> int:
     raise EOFError()
-
-
-

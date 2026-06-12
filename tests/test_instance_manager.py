@@ -24,7 +24,9 @@ def _wizard_flow() -> FlowDefinition:
     )
 
 
-def _sample_instance(instance_id: str = "inst-1", *, status: str = "WAITING_FOR_INPUT") -> ProcessInstance:
+def _sample_instance(
+    instance_id: str = "inst-1", *, status: str = "WAITING_FOR_INPUT"
+) -> ProcessInstance:
     return ProcessInstance(
         instance_id=instance_id,
         job_id=f"job-{instance_id}",

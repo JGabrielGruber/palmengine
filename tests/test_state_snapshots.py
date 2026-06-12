@@ -49,7 +49,12 @@ def test_nested_scope_stack_roundtrip() -> None:
     restored = state_from_snapshot(snapshot_state(state))
     assert restored.scope_stack() == ("wizard", "session", "age")
     assert restored.get_scoped("answer") == 30
-    assert restored.snapshot()[SCOPES_ROOT_KEY]["wizard"]["__scopes"]["session"]["__scopes"]["age"]["answer"] == 30
+    assert (
+        restored.snapshot()[SCOPES_ROOT_KEY]["wizard"]["__scopes"]["session"]["__scopes"]["age"][
+            "answer"
+        ]
+        == 30
+    )
 
 
 def test_scope_schema_conflict_inner_wins_for_effective_schema() -> None:
@@ -69,7 +74,10 @@ def test_scope_schema_conflict_inner_wins_for_effective_schema() -> None:
 
 def test_resume_prefers_snapshot_schema_over_flow_definition() -> None:
     snapshot_schema = DictStateSchema(
-        {"type": "object", "properties": {"tenant": {"type": "string", "default": "from-snapshot"}}},
+        {
+            "type": "object",
+            "properties": {"tenant": {"type": "string", "default": "from-snapshot"}},
+        },
     )
     state = BlackboardState(schema=snapshot_schema)
     state.set("tenant", "persisted")

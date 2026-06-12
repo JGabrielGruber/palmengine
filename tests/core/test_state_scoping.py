@@ -7,11 +7,11 @@ from typing import Any
 import pytest
 
 from palm.core import (
-    DictStateSchema,
     NESTED_SCOPES_KEY,
     SCOPES_ROOT_KEY,
     BaseState,
     ContextError,
+    DictStateSchema,
 )
 from palm.states import BlackboardState, DictBackedState
 from tests.core.fakes import TestState

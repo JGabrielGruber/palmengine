@@ -67,11 +67,7 @@ class StateScopeManager:
         node = self._navigate(storage, self._stack, create=False)
         if node is None:
             return {}
-        return {
-            key: value
-            for key, value in node.items()
-            if key not in _RESERVED_SCOPE_KEYS
-        }
+        return {key: value for key, value in node.items() if key not in _RESERVED_SCOPE_KEYS}
 
     def _navigate(
         self,

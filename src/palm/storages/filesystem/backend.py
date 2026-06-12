@@ -160,9 +160,7 @@ class FilesystemStorageBackend(BaseBackend):
             os.replace(tmp_path, path)
             tmp_path = None
         except OSError as exc:
-            raise StoragePermissionError(
-                f"Cannot write storage file {path}: {exc}"
-            ) from exc
+            raise StoragePermissionError(f"Cannot write storage file {path}: {exc}") from exc
         finally:
             if tmp_path is not None:
                 try:

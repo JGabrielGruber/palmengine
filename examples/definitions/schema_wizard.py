@@ -1,7 +1,7 @@
 """
 Schema-aware onboarding wizard — flow-level + per-step schemas and scopes.
 
-Demonstrates layered validation (Phases 1–3 of the 0.8 state work):
+Demonstrates layered validation (Phases 1.3 of the 0.8 state work):
 
 1. **Per-step schemas** — validate each answer as it is entered (e.g. age must be
    an integer ≥ 18). Bound to a named wizard step scope.

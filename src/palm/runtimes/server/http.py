@@ -179,7 +179,9 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
 
         plan_ids = body.get("plan_ids")
         if not isinstance(plan_ids, list) or not plan_ids:
-            self._json(400, {"error": "invalid_request", "detail": "plan_ids must be a non-empty list"})
+            self._json(
+                400, {"error": "invalid_request", "detail": "plan_ids must be a non-empty list"}
+            )
             return
 
         runtime = self.server.runtime

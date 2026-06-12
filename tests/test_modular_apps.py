@@ -6,11 +6,11 @@ import importlib
 
 import pytest
 
+from palm.common.storage import StorageFactory
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.patterns._apps import INSTALLED_PATTERNS
 from palm.patterns._registry import get_builder, registered_builders
 from palm.providers._apps import INSTALLED_PROVIDERS
-from palm.common.storage import StorageFactory
 from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 

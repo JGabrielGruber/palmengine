@@ -77,5 +77,3 @@ class MongoStorageBackend(BaseBackend):
         self._client = None
         self._documents.clear()
         self._is_open = False
-
-

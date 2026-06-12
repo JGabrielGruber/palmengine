@@ -16,7 +16,9 @@ def test_common_has_no_wizard_imports() -> None:
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:
                 if "patterns.wizard" in node.module or node.module == "palm.patterns.wizard":
-                    violations.append(f"{path.relative_to(common_root.parents[1])}: from {node.module}")
+                    violations.append(
+                        f"{path.relative_to(common_root.parents[1])}: from {node.module}"
+                    )
             elif isinstance(node, ast.Import):
                 for alias in node.names:
                     if "patterns.wizard" in alias.name:

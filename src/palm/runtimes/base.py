@@ -121,9 +121,7 @@ class BaseRuntime:
                 StateSnapshotHook(
                     self.instance_manager,
                     snapshot_on_status=options.get("snapshot_on_status"),
-                    max_snapshots_per_instance=int(
-                        options.get("max_snapshots_per_instance", 10)
-                    ),
+                    max_snapshots_per_instance=int(options.get("max_snapshots_per_instance", 10)),
                 )
             )
 

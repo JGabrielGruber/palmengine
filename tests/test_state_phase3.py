@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from palm.common.persistence.instance_sync import build_instance_from_job, update_instance_from_job
-from palm.common.persistence.state_snapshot import SNAPSHOT_META_KEY, snapshot_state, state_from_snapshot
+from palm.common.persistence.state_snapshot import (
+    SNAPSHOT_META_KEY,
+    snapshot_state,
+    state_from_snapshot,
+)
 from palm.common.state import (
     STATE_SCOPE_ENTERED,
     STATE_VALUE_SET,
@@ -15,7 +19,7 @@ from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard import WizardConfig, WizardKeys, WizardPattern, WizardStepConfig
+from palm.patterns.wizard import WizardConfig, WizardPattern
 from palm.states import BlackboardState
 from tests.core.fakes import TestState
 

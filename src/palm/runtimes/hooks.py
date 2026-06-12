@@ -104,7 +104,9 @@ class AuthMiddleware(JobHookAdapter):
             job.metadata.setdefault("principal_roles", list(principal.roles))
 
 
-def authenticate_runtime(auth: AuthEngine, credentials: dict[str, object] | Principal | None) -> None:
+def authenticate_runtime(
+    auth: AuthEngine, credentials: dict[str, object] | Principal | None
+) -> None:
     """Apply startup credentials to an auth engine."""
     if credentials is None:
         return

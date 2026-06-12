@@ -59,9 +59,7 @@ class RuntimeRegistry:
                 return self._entries[name]
             except KeyError as exc:
                 available = ", ".join(sorted(self._entries)) or "(none)"
-                raise KeyError(
-                    f"Unknown runtime {name!r}. Registered: {available}"
-                ) from exc
+                raise KeyError(f"Unknown runtime {name!r}. Registered: {available}") from exc
 
     def items(self) -> list[RuntimeHandle]:
         with self._lock:

@@ -5,7 +5,6 @@ Interactive REPL — prompt_toolkit + Rich, EmbeddedRuntime-backed commands.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from palm import __version__
 from palm.runtimes.cli_pkg.commands.registry import build_registry
@@ -29,7 +28,9 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
     from palm.runtimes.cli_pkg.completion import build_repl_completer
 
     registry = build_registry()
-    completer = build_repl_completer(ctx, registry, completer_cls=Completer, completion_cls=Completion)
+    completer = build_repl_completer(
+        ctx, registry, completer_cls=Completer, completion_cls=Completion
+    )
 
     hist = history_path or Path.home() / ".palm" / "history"
     hist.parent.mkdir(parents=True, exist_ok=True)

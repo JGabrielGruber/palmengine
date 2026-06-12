@@ -32,5 +32,3 @@ class PostgresStorageBackend(BaseBackend):
 
     def close(self) -> None:
         self._is_open = False
-
-

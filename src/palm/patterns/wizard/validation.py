@@ -233,7 +233,10 @@ def _step_value_schema_spec(
                 return definition
         flow_schema = state.schema
         if flow_schema is not None:
-            properties = flow_schema.definition.get("properties", {})
+            flow_definition = flow_schema.definition
+            if not isinstance(flow_definition, dict):
+                return None
+            properties = flow_definition.get("properties", {})
             if isinstance(properties, dict):
                 property_spec = properties.get(step.slug)
                 if isinstance(property_spec, dict):
@@ -366,7 +369,9 @@ def _run_rule(
     if name == "regex":
         pattern = str(params.get("pattern", ""))
         if pattern and not re.search(pattern, str(value)):
-            return ValidationResult.failure(params.get("message", "Value does not match the required pattern"))
+            return ValidationResult.failure(
+                params.get("message", "Value does not match the required pattern")
+            )
         return ValidationResult.success()
 
     if name == "not_empty":

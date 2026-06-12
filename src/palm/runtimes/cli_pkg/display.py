@@ -33,7 +33,7 @@ def wizard_scope_label(job: Job) -> str | None:
             return current
         stack = prompt.get("scope_stack")
         if isinstance(stack, list) and stack:
-            return " › ".join(str(item) for item in stack)
+            return " > ".join(str(item) for item in stack)
     scope = job.state.current_scope()
     return str(scope) if scope is not None else None
 

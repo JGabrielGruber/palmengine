@@ -22,9 +22,7 @@ from tests.core.fakes.mode import TestMode
 
 
 def test_submit_succeeds_with_test_backend(orchestration_engine: OrchestrationEngine) -> None:
-    job = orchestration_engine.submit(
-        {"steps": 1, "final_status": "SUCCEEDED", "result": "ok"}
-    )
+    job = orchestration_engine.submit({"steps": 1, "final_status": "SUCCEEDED", "result": "ok"})
     assert isinstance(job, Job)
     assert job.status == JobStatus.SUCCEEDED
     assert job.result == "ok"
@@ -87,7 +85,9 @@ def test_deliver_input_resumes_input_capable_job() -> None:
     engine.shutdown()
 
 
-def test_deliver_input_rejects_non_capable_executable(orchestration_engine: OrchestrationEngine) -> None:
+def test_deliver_input_rejects_non_capable_executable(
+    orchestration_engine: OrchestrationEngine,
+) -> None:
     job = orchestration_engine.submit({"steps": 1, "final_status": "WAITING_FOR_INPUT"})
     with pytest.raises(TypeError, match="does not accept delivered input"):
         orchestration_engine.deliver_input(job.id, "x")
@@ -115,7 +115,9 @@ class _StatusOnlyRunner(JobRunner):
 
 def test_apply_result_is_lifecycle_authority() -> None:
     engine = OrchestrationEngine()
-    engine.initialize(scheduler=TestMode(runner=_StatusOnlyRunner(JobStatus.SUCCEEDED, result="ok")))
+    engine.initialize(
+        scheduler=TestMode(runner=_StatusOnlyRunner(JobStatus.SUCCEEDED, result="ok"))
+    )
     engine.start()
     job = engine.submit({"steps": 99})
     assert job.status == JobStatus.SUCCEEDED

@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from palm import __version__
 from palm.app.cli_settings import resolve_cli_settings

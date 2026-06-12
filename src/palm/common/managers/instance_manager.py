@@ -117,7 +117,9 @@ class InstanceManager(BaseManager):
 
         settings = options.pop("settings", None) or self._settings
         if settings is not None:
-            self._max_loaded = max(1, int(getattr(settings, "max_loaded_instances", self._max_loaded)))
+            self._max_loaded = max(
+                1, int(getattr(settings, "max_loaded_instances", self._max_loaded))
+            )
             self._max_active = max(
                 1, int(getattr(settings, "max_concurrent_active", self._max_active))
             )

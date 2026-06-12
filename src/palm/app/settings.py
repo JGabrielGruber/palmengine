@@ -58,4 +58,3 @@ class PalmSettings(BaseSettings):
             ]
         )
         return roots
-

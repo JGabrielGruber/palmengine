@@ -38,5 +38,3 @@ class MemoryBackend(BaseBackend):
             return
         self._data.clear()
         self._is_open = False
-
-

@@ -11,7 +11,6 @@ from palm.common.hooks.state_snapshot import StateSnapshotHook
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.core import StorageEngine
 from palm.core.orchestration import Job, JobStatus, OrchestrationEngine
-
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from palm.patterns.wizard import WizardKeys
@@ -124,7 +123,9 @@ def test_state_snapshot_hook_trims_to_max() -> None:
     storage = StorageEngine()
     storage.initialize(backend="memory")
     repo = InstanceRepository(storage)
-    hook = StateSnapshotHook(repo, snapshot_on_status=["WAITING_FOR_INPUT"], max_snapshots_per_instance=2)
+    hook = StateSnapshotHook(
+        repo, snapshot_on_status=["WAITING_FOR_INPUT"], max_snapshots_per_instance=2
+    )
 
     engine = OrchestrationEngine()
     engine.initialize(scheduler=MagicMock(), hooks=[hook])

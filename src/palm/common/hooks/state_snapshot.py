@@ -4,7 +4,8 @@ StateSnapshotHook — optional point-in-time blackboard captures on status trans
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Collection
+from collections.abc import Collection
+from typing import TYPE_CHECKING
 
 from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration.hooks import JobHookAdapter

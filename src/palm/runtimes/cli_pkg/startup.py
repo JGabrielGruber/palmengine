@@ -34,8 +34,7 @@ def format_persistence_notice(app: PalmApp) -> str:
             )
     else:
         lines.append(
-            "[yellow]In-memory storage[/] — "
-            "[bold]state will NOT persist across restarts[/]"
+            "[yellow]In-memory storage[/] — " "[bold]state will NOT persist across restarts[/]"
         )
         lines.append(
             "[dim]Use[/] [cyan]--storage-backend filesystem[/] "

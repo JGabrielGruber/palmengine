@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common.storage import StorageFactory
 from palm.core import (
     BackendNotOpenError,
     StorageEngine,
     StorageNotConfiguredError,
     storage_registry,
 )
-from palm.common.storage import StorageFactory
 from palm.storages import memory  # noqa: F401 — register backends
 from palm.storages.memory import MemoryBackend
 from palm.storages.mongodb import MongoStorageBackend

@@ -97,7 +97,6 @@ def prepare_resume_state(
 def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
     """Resolve optional step slug and runtime position via the pattern registry."""
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-
     from palm.patterns._registry import get_instance_fields
 
     fields_fn = get_instance_fields(pattern)
@@ -108,7 +107,6 @@ def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[s
 
 def _resume_handler(pattern: str) -> Any:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-
     from palm.patterns._registry import get_resume_handler
 
     return get_resume_handler(pattern)

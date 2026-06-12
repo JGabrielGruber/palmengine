@@ -128,9 +128,7 @@ def test_runtime_registry_concurrent_access() -> None:
     runtimes = [EmbeddedRuntime() for _ in range(4)]
 
     for index, runtime in enumerate(runtimes):
-        registry.register(
-            RuntimeHandle(name=f"rt-{index}", kind="embedded", runtime=runtime)
-        )
+        registry.register(RuntimeHandle(name=f"rt-{index}", kind="embedded", runtime=runtime))
 
     def reader(index: int) -> None:
         try:

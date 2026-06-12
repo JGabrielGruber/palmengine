@@ -31,11 +31,7 @@ def bootstrap_runtime(
     handled by :func:`~palm.app.session.create_cli_app`.
     """
     console = create_console()
-    resolved = (
-        settings_from_invocation(invocation)
-        if invocation is not None
-        else settings
-    )
+    resolved = settings_from_invocation(invocation) if invocation is not None else settings
     app = create_cli_app(
         storage_backend=storage_backend,
         data_dir=data_dir,
