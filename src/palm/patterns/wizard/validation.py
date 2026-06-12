@@ -9,7 +9,7 @@ schema-expected types (e.g. ``"27"`` → ``27``) before checks run.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -190,15 +190,86 @@ def coerce_step_input(
     return _coerce_value_for_schema(value, spec)
 
 
-def validate_step_input(
+def format_numbered_choices(choices: Sequence[str]) -> str:
+    """Format choices as a numbered list for prompts and error messages."""
+    return "\n".join(f"{index}. {choice}" for index, choice in enumerate(choices, start=1))
+
+
+def choice_selection_error(raw: Any, choices: Sequence[str]) -> str:
+    """Build a user-facing error when a choice could not be resolved."""
+    if not choices:
+        return f"Invalid selection: {raw!r}"
+    return (
+        f"Invalid selection {raw!r}. Enter a number (1–{len(choices)}) "
+        f"or matching option name:\n{format_numbered_choices(choices)}"
+    )
+
+
+def resolve_choice_value(value: Any, choices: Sequence[str]) -> str | None:
+    """Resolve raw input to a canonical choice value, if possible."""
+    if not choices:
+        return None
+
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        if text in choices:
+            return text
+
+        lowered = text.lower()
+        case_insensitive = [choice for choice in choices if choice.lower() == lowered]
+        if len(case_insensitive) == 1:
+            return case_insensitive[0]
+
+        if text.isdigit():
+            index = int(text)
+            if 1 <= index <= len(choices):
+                return choices[index - 1]
+
+        prefix_matches = [choice for choice in choices if choice.lower().startswith(lowered)]
+        if len(prefix_matches) == 1:
+            return prefix_matches[0]
+
+        substring_matches = [choice for choice in choices if lowered in choice.lower()]
+        if len(substring_matches) == 1:
+            return substring_matches[0]
+
+        return None
+
+    if isinstance(value, int) and not isinstance(value, bool):
+        if 1 <= value <= len(choices):
+            return choices[value - 1]
+
+    if value in choices:
+        return str(value)
+
+    return None
+
+
+def prepare_step_input(
+    state: BaseState,
+    step: WizardStepConfig,
+    value: Any,
+) -> tuple[Any, ValidationResult | None]:
+    """Resolve choice aliases and coerce raw input before validation."""
+    if step.field_type == "choice" and step.choices:
+        resolved = resolve_choice_value(value, step.choices)
+        if resolved is None:
+            return value, ValidationResult.failure(choice_selection_error(value, step.choices))
+        value = resolved
+    value = coerce_step_input(state, step, value)
+    return value, None
+
+
+def validate_prepared_step_input(
     state: BaseState,
     step: WizardStepConfig,
     value: Any,
     *,
     registry: ValidationRegistry | None = None,
 ) -> ValidationResult:
-    """Run built-in, declarative, step-schema, and flow-schema validation."""
-    value = coerce_step_input(state, step, value)
+    """Validate input that has already been resolved and coerced."""
     result = validate_step_value(step, value, registry=registry)
     if not result.ok:
         return _result_from_errors(format_validation_messages(result.errors))
@@ -209,6 +280,20 @@ def validate_step_input(
     if not result.ok:
         return _result_from_errors(format_validation_messages(result.errors))
     return result
+
+
+def validate_step_input(
+    state: BaseState,
+    step: WizardStepConfig,
+    value: Any,
+    *,
+    registry: ValidationRegistry | None = None,
+) -> ValidationResult:
+    """Run built-in, declarative, step-schema, and flow-schema validation."""
+    value, choice_error = prepare_step_input(state, step, value)
+    if choice_error is not None:
+        return choice_error
+    return validate_prepared_step_input(state, step, value, registry=registry)
 
 
 def _validate_schema_value(schema: StateSchema, value: Any, *, path: str) -> list[str]:
@@ -331,7 +416,7 @@ def _builtin_field_validation(step: WizardStepConfig, value: Any) -> ValidationR
     if step.required and (value is None or value == ""):
         return ValidationResult.failure("This field is required")
     if step.field_type == "choice" and value not in step.choices:
-        return ValidationResult.failure(f"Choose one of: {', '.join(step.choices)}")
+        return ValidationResult.failure(choice_selection_error(value, step.choices))
     if step.field_type == "confirm":
         allowed = {True, False, "yes", "no", "Yes", "No"}
         if value not in allowed:

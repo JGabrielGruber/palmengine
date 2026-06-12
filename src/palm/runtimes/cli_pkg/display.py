@@ -39,9 +39,9 @@ def render_job_panel(
         if ctx.prompt:
             body = f"[bold]{ctx.prompt}[/]\n"
         if ctx.choices:
-            body += "\n[bold]Choices:[/]\n"
-            for choice in ctx.choices:
-                body += f"  • [green]{choice}[/]\n"
+            body += "\n[bold]Options:[/] [dim](enter number or name)[/]\n"
+            for index, choice in enumerate(ctx.choices, start=1):
+                body += f"  [cyan]{index}.[/] [green]{choice}[/]\n"
         if ctx.collection_items:
             body += "\n[bold]Current list:[/]\n"
             for index, item in enumerate(ctx.collection_items, start=1):

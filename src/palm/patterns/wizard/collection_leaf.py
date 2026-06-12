@@ -40,9 +40,11 @@ from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
+    choice_selection_error,
     clear_validation_feedback,
-    coerce_step_input,
+    prepare_step_input,
     publish_validation_feedback,
+    resolve_choice_value,
     validate_collected_answers,
     validate_step_input,
 )
@@ -116,10 +118,11 @@ class WizardCollectionLeaf(InteractiveLeaf):
     def _handle_menu_input(self, value: Any, state: BaseState) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
         choices, actions = self._menu_choices(items)
-        if value not in choices:
+        resolved = resolve_choice_value(value, choices)
+        if resolved is None:
             return self._fail(
                 state,
-                (f"Choose one of: {', '.join(choices)}",),
+                (choice_selection_error(value, choices),),
                 prompt_bundle=self._prompt_bundle(
                     state,
                     prompt=self._step.prompt,
@@ -133,7 +136,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
                 ),
             )
 
-        action = actions[choices.index(value)]
+        action = actions[choices.index(resolved)]
         if action == ACTION_ADD:
             return self._start_item(state, edit_index=None)
         if action == ACTION_DONE:
@@ -202,7 +205,25 @@ class WizardCollectionLeaf(InteractiveLeaf):
         field = self._fields[field_index]
         step_field = field_as_step(field)
         value = normalize_optional_field_value(field, value)
-        value = coerce_step_input(state, step_field, value)
+        value, choice_error = prepare_step_input(state, step_field, value)
+        if choice_error is not None:
+            return self._fail(
+                state,
+                choice_error.errors,
+                prompt_bundle=self._prompt_bundle(
+                    state,
+                    prompt=field.prompt,
+                    field_type=field.field_type,
+                    choices=list(field.choices),
+                    title=field.title,
+                    extra={
+                        "step_kind": "collection",
+                        "collection_phase": "field",
+                        "collection_field": field.slug,
+                        "collection_draft": collection_draft(state),
+                    },
+                ),
+            )
         validation = validate_step_input(state, step_field, value)
         if not validation.ok:
             return self._fail(
