@@ -85,4 +85,19 @@ def _prompt(ctx: CliContext) -> str:
             elif flow:
                 suffix = f" {flow}"
             break
+
+    try:
+        from palm.runtimes.cli_pkg.display import wizard_scope_label, wizard_validation_hint
+
+        job = ctx.job_for_instance(ctx.active_instance_id)
+        scope = wizard_scope_label(job)
+        if scope and scope not in suffix:
+            suffix = f"{suffix} @{scope}" if suffix else f" @{scope}"
+        validation = wizard_validation_hint(job)
+        if validation:
+            preview = validation if len(validation) <= 24 else f"{validation[:21]}…"
+            suffix = f"{suffix} !{preview}"
+    except Exception:
+        pass
+
     return f"palm:{short}{suffix} ●> "

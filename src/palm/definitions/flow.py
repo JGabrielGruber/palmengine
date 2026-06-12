@@ -18,7 +18,12 @@ _DEFINITION_VERSION = 1
 
 @dataclass
 class FlowDefinition:
-    """Named flow with pattern binding and optional metadata."""
+    """Named flow with pattern binding, optional metadata, and optional state schema.
+
+    ``state_schema`` (inline dict) or ``state_schema_ref`` (repository lookup) attach
+    validation to the execution blackboard. Wizard flows use this for summary/commit
+    gates; per-step schemas are configured in wizard step options.
+    """
 
     name: str
     pattern: str

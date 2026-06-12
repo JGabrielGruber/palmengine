@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.7.4 · June 2026 · PyPI: `palmengine`
+**Palm Engine** · 0.8.8 · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -160,6 +160,35 @@ Wizard steps are **nodes**, not callbacks scattered through a framework. Future 
 
 `BaseState` in `core/context` decouples engines from a specific state implementation. Production wizards use a blackboard-style state; tests may substitute lightweight fakes. Job state and tree state can be coordinated without hard-coding dict semantics in core.
 
+### State schemas & scoping (0.8)
+
+Execution state can carry optional **schemas** and **named scopes** without leaving core:
+
+| Concept | API | Role |
+|---------|-----|------|
+| **Flow schema** | `FlowDefinition.state_schema` / `state_schema_ref` | Validates full answers at summary/commit |
+| **Per-scope schema** | `bind_scope_schema(name, schema)` | Validates values while a scope is active |
+| **Scope stack** | `enter_scope` / `exit_scope` | Nested execution contexts (wizard steps, sessions) |
+| **Effective schema** | `effective_schema()` | Innermost bound schema on the active stack |
+| **Validated writes** | `set_validated(key, value)` | Root key write + schema check |
+
+**Schema engine:** `DictStateSchema` implements a JSON Schema-inspired subset (`type`, `enum`, `minimum`/`maximum`, nested `object`/`array`, `default`) with zero external validation dependencies. All logic stays in `palm.core`.
+
+**Wizard integration:** each input step enters a scope named by its slug. Per-step `state_schema` binds to that scope; flow schema validates the aggregated answers. CLI text input is coerced to schema types before validation (`coerce_step_input`).
+
+**Snapshots:** `snapshot_state()` embeds `__palm:meta` with `scope_stack`, `scope_schemas`, and `effective_schema`. `state_from_snapshot()` restores scope context for resume — not just flat key/value data.
+
+**Observability:** `palm.common.state.observe_state()` attaches an `EventEngineStateObserver`. Scope and schema events emit by default; per-value events are opt-in to avoid tick noise.
+
+```mermaid
+flowchart TB
+    input[User input] --> coerce[coerce_step_input]
+    coerce --> stepVal[Per-step schema]
+    stepVal --> flowVal[Flow schema at summary/commit]
+    flowVal --> persist[persist_step_answer]
+    persist --> scope[Step scope + set_validated]
+```
+
 ---
 
 ## Registries
@@ -286,13 +315,15 @@ Keeping the executor outside core preserves a single orchestration model while a
 
 The wizard pattern is Palm’s most complete expression of **human-first, transactional** orchestration:
 
-- Declarative **validation** on input steps
+- Declarative **validation** on input steps (built-in, rule-based, per-step schema, flow schema)
+- **Step scopes** with schema binding and scope-aware prompt bundles
+- **CLI coercion** — string input converted to schema types before validation
 - **Backtracking** with protected summary/commit steps
 - **Resource action** steps via `ResourceEngine`
 - Auto **summary** and **commit** with named handlers
 - Commit failure → job failure (no silent partial commit)
 
-Commit handlers run inside the tree; results are visible on job state.
+Commit handlers run inside the tree; results are visible on job state. See `examples/definitions/schema_wizard.py` for the layered schema reference flow (`schema-onboard`).
 
 ---
 

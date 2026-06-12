@@ -3,6 +3,14 @@ Abstract execution state for behavior trees and context frames.
 
 Engines and nodes depend only on ``BaseState``. Concrete implementations
 (dict-backed blackboard, scoped test doubles, etc.) live outside ``palm.core``.
+
+**Schemas:** optional :class:`~palm.core.context.state_schema.StateSchema` on the
+root state and per-scope via :meth:`bind_scope_schema`. Use
+:meth:`effective_schema` for the innermost active schema.
+
+**Scopes:** push/pop named scopes with :meth:`enter_scope` / :meth:`exit_scope`.
+Scoped values isolate step-local data; the scope stack serializes into snapshots
+for resume (see ``palm.common.persistence.state_snapshot``).
 """
 
 from __future__ import annotations

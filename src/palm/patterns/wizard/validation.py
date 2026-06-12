@@ -1,5 +1,9 @@
 """
-Wizard validation — field rules, schema checks, and user-facing error feedback.
+Wizard validation — field rules, schema checks, coercion, and error feedback.
+
+Validation runs in order: built-in field rules → declarative rules → per-step
+schema → flow schema. :func:`coerce_step_input` converts CLI string input to
+schema-expected types (e.g. ``"27"`` → ``27``) before checks run.
 """
 
 from __future__ import annotations

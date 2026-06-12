@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.7.4` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.8.8` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
 
 ---
 
@@ -49,18 +49,19 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.7.4)
+## What works today (0.8.8)
 
 | Area | Capabilities |
 |------|----------------|
 | **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
-| **Patterns** | Transactional **wizard** (validation, summary, commit, resources); DAG and ETL stubs |
+| **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`), observability events |
+| **Patterns** | Transactional **wizard** (layered validation, step scopes, summary, commit, resources); DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
 | **Persistence** | Production **filesystem** backend, `StorageFactory`, `InstanceManager`, durable resume across restarts |
 | **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
 | **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
-| **DX** | Example definitions, `full_demo.py`, docs, `just` quality recipes |
+| **DX** | Example definitions (`schema-onboard`), `full_demo.py`, docs, `just` quality recipes |
 
 ```mermaid
 flowchart LR

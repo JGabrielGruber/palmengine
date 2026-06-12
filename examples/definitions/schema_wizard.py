@@ -1,10 +1,13 @@
 """
 Schema-aware onboarding wizard — flow-level + per-step schemas and scopes.
 
-Demonstrates layered validation:
+Demonstrates layered validation (Phases 1–3 of the 0.8 state work):
 
-- **Flow schema** — validates the full answers object at summary/commit
-- **Step schemas** — validate individual inputs (age integer, role enum)
+1. **Per-step schemas** — validate each answer as it is entered (e.g. age must be
+   an integer ≥ 18). Bound to a named wizard step scope.
+2. **Flow schema** — validate the full answers object at summary and commit.
+3. **CLI coercion** — text input like ``27`` is coerced to integer before schema
+   checks, so operators can type naturally in the REPL.
 
 Resume preserves scope stack and schema metadata via ``__palm:meta`` snapshots.
 """
@@ -14,6 +17,8 @@ from __future__ import annotations
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.patterns.wizard.handler import CommitResult, default_commit_registry
 
+# Flow-level schema: validates the collected answers dict at summary/commit.
+# Individual steps still have their own per-step schemas for immediate feedback.
 SCHEMA_WIZARD_FLOW = FlowDefinition(
     id="flow-schema-onboard",
     name="schema-onboard",
@@ -44,6 +49,7 @@ SCHEMA_WIZARD_FLOW = FlowDefinition(
                 "slug": "age",
                 "title": "Your Age",
                 "prompt": "How old are you?",
+                # Per-step schema: checked on every input before advancing.
                 "state_schema": {"type": "integer", "minimum": 18},
             },
             {
@@ -70,6 +76,7 @@ SCHEMA_WIZARD_PROCESS = ProcessDefinition(
 
 
 def _persist_schema_profile(ctx: object) -> CommitResult:
+    """Commit handler — only runs after flow schema re-validates all answers."""
     answers = getattr(ctx, "answers", {})
     profile = {
         "name": answers.get("name"),

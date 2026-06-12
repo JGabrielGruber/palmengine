@@ -168,6 +168,17 @@ def _cmd_status(ctx: CliContext, args: list[str]) -> int:
         if isinstance(job.executable, WizardPattern):
             payload["current_step"] = job.executable.current_step_slug(job.state)
             payload["answers"] = job.executable.answers(job.state)
+        from palm.runtimes.cli_pkg.display import wizard_scope_label, wizard_validation_hint
+
+        scope = wizard_scope_label(job)
+        if scope:
+            payload["scope"] = scope
+        validation = wizard_validation_hint(job)
+        if validation:
+            payload["validation_error"] = validation
+        effective = job.state.effective_schema()
+        if effective is not None and effective.definition:
+            payload["effective_schema_type"] = effective.definition.get("type")
         emit_json(ctx.console, payload)
         return 0
     render_job_status(ctx.console, job, iid)

@@ -2,6 +2,34 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.8] — 2026-06-12
+
+State schema and scoping release — layered validation, durable scope resume, and CLI polish.
+
+### Added
+
+- **State schemas** (`palm.core.context.state_schema`) — lightweight JSON Schema-inspired validation (`DictStateSchema`) with no external dependencies; supports `type`, `enum`, `minimum`/`maximum`, nested `object`/`array`, and `default`
+- **Scoped state** (`BaseState`) — `enter_scope` / `exit_scope`, per-scope values (`set_scoped` / `get_scoped`), per-scope schemas (`bind_scope_schema`), and `effective_schema()` (innermost wins)
+- **Flow-level schemas** — `state_schema` / `state_schema_ref` on `FlowDefinition`; materialized at submission via `palm.common.state.schema_binding`
+- **Wizard layered validation** — built-in field rules → declarative rules → per-step schema → flow schema; `coerce_step_input` converts CLI string input to schema types (e.g. `"27"` → `27`)
+- **Wizard step scopes** — each input step enters a named scope; prompt bundles expose `scope_stack`, `current_scope`, `scope_depth`
+- **Schema-aware snapshots** — `__palm:meta` in `snapshot_state()` preserves `scope_stack`, `scope_schemas`, and `effective_schema`; `state_from_snapshot()` restores full scope context for resume
+- **State observability** (`palm.common.state`) — opt-in `EventEngineStateObserver` for scope and schema events; value events off by default to avoid tick noise
+- **`schema-onboard` example** — flow + per-step schemas demonstrating layered validation and resume
+- **CLI context display** — wizard panels, `status`, and REPL prompt show scope and validation feedback when present
+- **`palm doctor`** — flow catalog indicates which definitions declare state schemas
+
+### Changed
+
+- **Wizard validation** — failed schema checks keep the user on the current step with formatted, actionable messages
+- **Documentation** — `ARCHITECTURE.md`, `DEVELOPMENT.md`, and `examples/README.md` updated for schema/scoping workflows
+- **Version** — release line advances to **0.8.8**
+
+### Tests
+
+- `tests/core/test_state_scoping.py`, `tests/test_state_phase3.py`, `tests/test_state_snapshots.py`, `tests/test_state_observability.py`
+- `tests/test_wizard_schema.py`, `tests/test_wizard_schemas_layered.py`
+
 ## [0.7.4] — 2026-06-10
 
 Distribution and adoption improvements — no breaking API changes.

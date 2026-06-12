@@ -65,11 +65,13 @@ def run_doctor(ctx: CliContext) -> int:
 
     flows = app.list_flows()
     processes = app.list_processes()
+    schema_flows = sum(1 for flow in flows if flow.has_state_schema)
     inst_table = Table(title="Catalog & Persistence", show_lines=True)
     inst_table.add_column("Resource", style="cyan")
     inst_table.add_column("Count", justify="right")
     inst_table.add_column("Notes")
-    inst_table.add_row("flow definitions", str(len(flows)), "in-memory + storage index")
+    schema_note = f"{schema_flows} with state_schema" if schema_flows else "none with state_schema"
+    inst_table.add_row("flow definitions", str(len(flows)), f"in-memory + storage ({schema_note})")
     inst_table.add_row("process definitions", str(len(processes)), "")
     summaries = app.list_instance_summaries()
     active = [item for item in summaries if not is_terminal_status(item.status)]

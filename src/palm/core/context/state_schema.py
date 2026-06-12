@@ -3,6 +3,19 @@ State schema contracts — validation and defaults for execution state.
 
 Provides a lightweight JSON Schema-inspired subset for dict-based dynamic flows
 without external validation dependencies. All logic stays inside ``palm.core``.
+
+Typical usage::
+
+    schema = DictStateSchema({
+        "type": "object",
+        "properties": {"age": {"type": "integer", "minimum": 18}},
+        "required": ["age"],
+    })
+    schema.validate_key("age", 25)   # ok
+    schema.validate_state({"age": 16})  # ["age: 16 < minimum 18"]
+
+Flow and wizard layers bind schemas at submission time; wizards may also bind
+per-step schemas to named scopes for immediate input validation.
 """
 
 from __future__ import annotations

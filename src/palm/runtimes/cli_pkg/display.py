@@ -24,6 +24,43 @@ def wizard_prompt_bundle(job: Job) -> dict[str, Any] | None:
     return dict(raw) if isinstance(raw, dict) else None
 
 
+def wizard_scope_label(job: Job) -> str | None:
+    """Return a compact scope label for prompts and status displays."""
+    prompt = wizard_prompt_bundle(job)
+    if prompt:
+        current = prompt.get("current_scope")
+        if isinstance(current, str) and current:
+            return current
+        stack = prompt.get("scope_stack")
+        if isinstance(stack, list) and stack:
+            return " › ".join(str(item) for item in stack)
+    scope = job.state.current_scope()
+    return str(scope) if scope is not None else None
+
+
+def wizard_validation_hint(job: Job) -> str | None:
+    """Return the primary validation message when the wizard is retrying input."""
+    prompt = wizard_prompt_bundle(job)
+    if prompt:
+        error = prompt.get("validation_error")
+        if isinstance(error, str) and error:
+            return error
+    error = job.state.get(WizardKeys.VALIDATION_ERROR)
+    return str(error) if error is not None else None
+
+
+def wizard_context_lines(job: Job) -> list[str]:
+    """Build dim context lines for scope and validation (CLI panels)."""
+    lines: list[str] = []
+    scope = wizard_scope_label(job)
+    if scope:
+        lines.append(f"[dim]Scope:[/] [cyan]{scope}[/]")
+    validation = wizard_validation_hint(job)
+    if validation:
+        lines.append(f"[dim]Validation:[/] [yellow]{validation}[/]")
+    return lines
+
+
 def render_wizard_panel(
     console: Any,
     job: Job,
@@ -56,6 +93,8 @@ def render_wizard_panel(
             body += "\n[dim]Collected:[/]\n"
             for key, value in list(answers.items())[:8]:
                 body += f"  {key}: [white]{value}[/]\n"
+        for line in wizard_context_lines(job):
+            body += f"\n{line}"
         panel = Panel(
             body.strip(),
             title=f"[bold]{wizard_name}[/] — [cyan]{title}[/] ({field_type})",
@@ -151,8 +190,10 @@ def render_definition_catalog(ctx: Any) -> None:
         ft.add_column("Name", style="green")
         ft.add_column("ID", style="cyan")
         ft.add_column("Pattern")
+        ft.add_column("Schema", style="dim")
         for flow in flows:
-            ft.add_row(flow.name, flow.definition_id, flow.pattern)
+            schema = "flow" if flow.has_state_schema else "—"
+            ft.add_row(flow.name, flow.definition_id, flow.pattern, schema)
         console.print(ft)
 
     if not flows and not processes:
@@ -169,6 +210,16 @@ def render_job_status(console: Any, job: Job, instance_id: str) -> None:
     if isinstance(job.executable, WizardPattern):
         table.add_row("current_step", job.executable.current_step_slug(job.state) or "—")
         table.add_row("answers", str(job.executable.answers(job.state)))
+    scope = wizard_scope_label(job)
+    if scope:
+        table.add_row("scope", scope)
+    validation = wizard_validation_hint(job)
+    if validation:
+        table.add_row("validation_error", validation)
+    effective = job.state.effective_schema()
+    if effective is not None and effective.definition:
+        schema_type = effective.definition.get("type", "object")
+        table.add_row("effective_schema", str(schema_type))
     prompt = wizard_prompt_bundle(job)
     if prompt:
         table.add_row("prompt", str(prompt.get("prompt", "")))

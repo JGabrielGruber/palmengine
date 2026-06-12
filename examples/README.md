@@ -57,19 +57,36 @@ palm wizard start approval
 
 ## Schema wizard (`schema-onboard`)
 
-Demonstrates **layered state schemas** and scope-aware snapshots.
+Demonstrates **layered state schemas**, **step scopes**, and **schema-aware resume** (0.8+).
 
-- **Flow schema** (`state_schema` on `FlowDefinition`) — validates the full answers object at summary/commit
-- **Step schemas** (`state_schema` on each step dict) — validate individual inputs; bound to per-step scopes
-- **Resume** — `__palm:meta` in snapshots preserves `scope_stack` and `scope_schemas`
+### Validation layers
+
+| Layer | When | Where configured |
+|-------|------|------------------|
+| Built-in field rules | Each input | `field_type`, `required`, `choices` |
+| Declarative rules | Each input | `validation` array on step dict |
+| Per-step schema | Each input | `state_schema` on step dict |
+| Flow schema | Summary + commit | `state_schema` on `FlowDefinition` |
+
+### Scoping
+
+Each wizard input step enters a named scope (the step slug). Per-step schemas bind to that scope. Prompt bundles and CLI panels expose `scope_stack`, `current_scope`, and `scope_depth` for debugging.
+
+### CLI input coercion
+
+The REPL delivers text input. When a step or flow schema expects `integer` or `number`, Palm coerces compatible strings before validation (e.g. `27` → `27`). Invalid coercion still fails with a clear message and keeps you on the current step.
 
 ```bash
 palm wizard start schema-onboard
+# Enter: Ada → 27 → developer → yes → yes
 palm instance list
+palm status <instance_id>    # shows scope + answers when waiting
 palm process resume <instance_id>
 ```
 
-Wizard prompts expose `scope_stack`, `current_scope`, and `scope_depth` for UIs and debugging.
+### Resume
+
+Snapshots embed `__palm:meta` with `scope_stack`, `scope_schemas`, and `effective_schema`. Resuming a waiting wizard restores the exact scope context — not just flat answers.
 
 ## Quick wizard (`quick`)
 
@@ -80,6 +97,15 @@ palm wizard start quick
 palm instance list
 palm process resume <instance_id>
 ```
+
+## State schemas — best practices
+
+1. **Use flow schema for cross-field rules** — required keys, enums across the full answers object, summary/commit gates.
+2. **Use per-step schema for immediate feedback** — type constraints (integer age, email format) on the active step.
+3. **Prefer inline schemas in examples**; use `state_schema_ref` in production catalogs for reuse.
+4. **Keep step slugs aligned** — flow schema property names should match step `slug` values.
+5. **Test with string input** — CLI always sends strings; coercion handles common cases, but APIs can pass typed values directly.
+6. **Enable snapshots for resume demos** — `PALM_ENABLE_STATE_SNAPSHOT=true` adds audit history; resume still uses the latest `state_snapshot`.
 
 ## Writing your own definitions
 
@@ -117,7 +143,7 @@ uv run python examples/full_demo.py
 ## Verify loading
 
 ```bash
-palm doctor
+palm doctor                    # catalog + schema column on flows
 palm process list
 palm version --full
 ```

@@ -1,5 +1,9 @@
 """
 Wizard state coordination — answers, step scopes, and validated persistence.
+
+Each input step enters a named scope (the step slug). :func:`enter_step` binds
+per-step schemas; :func:`complete_step_input` validates, coerces, and persists
+answers. :func:`leave_step` exits the scope on success so the sequence advances.
 """
 
 from __future__ import annotations

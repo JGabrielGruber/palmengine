@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.7.4**.
+Guide for contributors working on Palm **0.8.8**.
 
 ## Setup
 
@@ -162,6 +162,53 @@ snapshots = app.list_instance_snapshots("inst-abc")
 | `max_concurrent_active` | 32 | Cap on concurrently tracked active instances |
 | `reconcile_instances_on_startup` | true | Mark stale `RUNNING` records; purge orphan index entries |
 
+## State schemas & scoping
+
+Palm 0.8 adds optional **schemas** and **named scopes** to execution state. Core stays pure — validation logic lives in `palm.core.context.state_schema`; wizard integration lives in `palm.patterns.wizard`.
+
+### Quick reference
+
+| Layer | Configure | Validates |
+|-------|-----------|-----------|
+| Flow | `FlowDefinition.state_schema` | Full answers at summary/commit |
+| Step | `state_schema` on step dict | Each input before advancing |
+| Scope | `bind_scope_schema(slug, schema)` | Values while scope is active |
+
+### Example flow
+
+```bash
+palm wizard start schema-onboard
+# name → age (integer) → role → summary → commit
+palm status <instance_id>   # scope + validation context when waiting
+```
+
+### Snapshot metadata
+
+`snapshot_state()` adds `__palm:meta` with `scope_stack`, `scope_schemas`, and `effective_schema`. Resume via `state_from_snapshot()` restores scopes — required for schema-aware wizard resume.
+
+### Observability
+
+```python
+from palm.common.state import observe_state, StateObserverConfig
+from palm.core.event import EventEngine
+
+events = EventEngine()
+observe_state(state, events, config=StateObserverConfig(emit_value_events=False))
+```
+
+Scope and schema events emit by default. Value events are off to avoid noise during wizard ticks.
+
+### Tests
+
+| File | Coverage |
+|------|----------|
+| `tests/core/test_state_scoping.py` | Scope stack, scoped values, schema binding |
+| `tests/test_state_phase3.py` | Snapshot resume, context engine, wizard integration |
+| `tests/test_state_snapshots.py` | `__palm:meta` round-trip |
+| `tests/test_state_observability.py` | EventEngine observer |
+| `tests/test_wizard_schema.py` | Flow schema on wizard steps |
+| `tests/test_wizard_schemas_layered.py` | Layered validation + CLI coercion |
+
 ## State snapshots
 
 Optional middleware (`StateSnapshotHook`) captures blackboard state at configured job status transitions. Disabled by default—no hook registered, zero overhead.
@@ -310,7 +357,8 @@ All code under `archive/` is historical. Never add new features there.
 | Area | Tests |
 |------|-------|
 | Core orchestration | `tests/test_orchestration.py` |
-| Wizard pattern | `tests/test_wizard.py` |
+| Wizard pattern | `tests/test_wizard.py`, `tests/test_wizard_schema.py` |
+| State schemas / scoping | `tests/core/test_state_scoping.py`, `tests/test_state_phase3.py` |
 | Executions / builder | `tests/test_executions.py` |
 | Instances / resume | `tests/test_instances.py` |
 | State snapshot hook | `tests/test_state_snapshot_hook.py` |
@@ -350,4 +398,4 @@ pip install -i https://test.pypi.org/simple/ palmengine[cli]
 
 ---
 
-Last updated: June 2026 (0.7.4)
+Last updated: June 2026 (0.8.8)
