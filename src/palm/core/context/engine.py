@@ -85,13 +85,11 @@ class ContextEngine(BasePalmEngine):
         return self._require_current_state().exit_scope()
 
     @contextmanager
-    def state_scope(self, name: str) -> Generator[None, None, None]:
-        """Context manager that enters and exits a state scope."""
-        self.enter_state_scope(name)
-        try:
-            yield
-        finally:
-            self.exit_state_scope()
+    def state_scope(self, name: str) -> Generator[BaseState, None, None]:
+        """Context manager that enters a state scope and yields the bound state."""
+        state = self._require_current_state()
+        with state.scope(name):
+            yield state
 
     def push(
         self,

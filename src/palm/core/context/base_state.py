@@ -8,14 +8,15 @@ Engines and nodes depend only on ``BaseState``. Concrete implementations
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Generator
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
 
-from palm.core.exceptions import ContextError, StateValidationError
+from palm.core.context.scoping import StateScopeManager
+from palm.core.exceptions import StateValidationError
 
 if TYPE_CHECKING:
     from palm.core.context.state_schema import StateSchema
-
-_SCOPE_PREFIX = "__palm:scope:"
 
 
 class BaseState(ABC):
@@ -24,6 +25,7 @@ class BaseState(ABC):
     def __init__(self, *, schema: StateSchema | None = None) -> None:
         self._schema = schema
         self._scope_stack: list[str] = []
+        self._scope_manager = StateScopeManager(self._scope_stack)
 
     @property
     def schema(self) -> StateSchema | None:
@@ -103,55 +105,77 @@ class BaseState(ABC):
     def enter_scope(self, name: str) -> str:
         """Push ``name`` onto the state scope stack and return it."""
         self._ensure_extensions()
-        if not name:
-            raise ContextError("State scope name cannot be empty")
-        self._scope_stack.append(name)
-        return name
+        return self._scope_manager.enter(name)
 
     def exit_scope(self) -> str:
         """Pop the innermost state scope. Raises if the stack is empty."""
         self._ensure_extensions()
-        if not self._scope_stack:
-            raise ContextError("Cannot exit state scope: stack is empty")
-        return self._scope_stack.pop()
+        return self._scope_manager.exit()
+
+    @contextmanager
+    def scope(self, name: str) -> Generator[BaseState, None, None]:
+        """Enter a named scope for the duration of the ``with`` block."""
+        self.enter_scope(name)
+        try:
+            yield self
+        finally:
+            self.exit_scope()
 
     def current_scope(self) -> str | None:
         """Return the active scope name, or ``None`` at the root."""
         self._ensure_extensions()
-        if not self._scope_stack:
-            return None
-        return self._scope_stack[-1]
+        return self._scope_manager.current()
 
     def scope_depth(self) -> int:
         """Return the number of nested state scopes."""
         self._ensure_extensions()
-        return len(self._scope_stack)
+        return self._scope_manager.depth()
+
+    def scoped_keys(self) -> list[str]:
+        """Return keys visible in the current scope (nested mode only)."""
+        root = self._scope_root()
+        if root is None:
+            return []
+        return list(self._scope_manager.scoped_view(root).keys())
 
     def get_scoped(self, key: str, default: Any = None) -> Any:
         """Resolve ``key`` within the current scope, then parent scopes."""
         self._ensure_extensions()
-        for scope_path in reversed(self._scope_paths()):
-            storage_key = self._scoped_storage_key(scope_path, key)
-            if self.has(storage_key):
-                return self.get(storage_key)
-        return default
+        root = self._scope_root()
+        if root is not None:
+            return self._scope_manager.get_nested(
+                root,
+                key,
+                default,
+                legacy_get=self.get,
+                legacy_has=self.has,
+            )
+        return self._scope_manager.get_legacy(key, default, get=self.get, has=self.has)
 
     def set_scoped(self, key: str, value: Any) -> None:
         """Store ``value`` under ``key`` in the current scope."""
         self._ensure_extensions()
-        scope_path = self._current_scope_path()
-        if scope_path is None:
-            raise ContextError("Cannot set scoped value without an active scope")
-        storage_key = self._scoped_storage_key(scope_path, key)
-        self.set(storage_key, value)
+        root = self._scope_root()
+        if root is not None:
+            self._scope_manager.set_nested(root, key, value)
+            return
+        self._scope_manager.set_legacy(key, value, set_value=self.set)
 
     def has_scoped(self, key: str) -> bool:
         """Return whether ``key`` exists in the current or parent scopes."""
         self._ensure_extensions()
-        for scope_path in reversed(self._scope_paths()):
-            if self.has(self._scoped_storage_key(scope_path, key)):
-                return True
-        return False
+        root = self._scope_root()
+        if root is not None:
+            return self._scope_manager.has_nested(
+                root,
+                key,
+                legacy_has=self.has,
+            )
+        return self._scope_manager.has_legacy(key, has=self.has)
+
+    def _scope_root(self) -> dict[str, Any] | None:
+        """Return mutable storage for nested scopes, or ``None`` for legacy mode."""
+        return None
 
     def _ensure_extensions(self) -> None:
         """Initialize schema/scoping attributes for legacy subclasses."""
@@ -159,20 +183,5 @@ class BaseState(ABC):
             self._scope_stack = []
         if not hasattr(self, "_schema"):
             self._schema = None
-
-    def _current_scope_path(self) -> str | None:
-        if not self._scope_stack:
-            return None
-        return ".".join(self._scope_stack)
-
-    def _scope_paths(self) -> list[str]:
-        if not self._scope_stack:
-            return []
-        paths: list[str] = []
-        for index in range(len(self._scope_stack)):
-            paths.append(".".join(self._scope_stack[: index + 1]))
-        return paths
-
-    @staticmethod
-    def _scoped_storage_key(scope_path: str, key: str) -> str:
-        return f"{_SCOPE_PREFIX}{scope_path}:{key}"
+        if not hasattr(self, "_scope_manager"):
+            self._scope_manager = StateScopeManager(self._scope_stack)

@@ -102,8 +102,9 @@ def test_state_scope_context_manager() -> None:
     engine = ContextEngine()
     engine.initialize(state=state)
 
-    with engine.state_scope("job"):
-        state.set_scoped("step", 1)
+    with engine.state_scope("job") as scoped_state:
+        assert scoped_state is state
+        scoped_state.set_scoped("step", 1)
         assert engine.current_state_scope == "job"
         assert state.get_scoped("step") == 1
 

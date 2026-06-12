@@ -55,6 +55,7 @@ def prepare_flow_submission(
     """Build a pattern executable and job metadata from a flow definition."""
     executable = build_pattern(flow, context=build_ctx)
     job_state = state if state is not None else BlackboardState()
+    _bind_flow_state_schema(flow, job_state, build_ctx)
     meta = dict(metadata or {})
     meta.setdefault("definition_type", "flow")
     meta.setdefault("flow", flow.name)
@@ -101,9 +102,22 @@ def prepare_resume_submission(
     )
 
 
+def _bind_flow_state_schema(
+    flow: FlowDefinition,
+    job_state: BaseState,
+    build_ctx: PatternBuildContext,
+) -> None:
+    if not flow.state_schema_ref or job_state.schema is not None:
+        return
+    schema = build_ctx.resolve_state_schema(flow.state_schema_ref)
+    if schema is None:
+        return
+    job_state.bind_schema(schema)
+    job_state.apply_defaults()
+
+
 def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-
     from palm.patterns._registry import get_submission_metadata
 
     enricher = get_submission_metadata(flow.pattern)

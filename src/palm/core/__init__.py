@@ -23,12 +23,16 @@ from palm.core.behavior_tree import (
     RootNode,
 )
 from palm.core.context import (
+    LEGACY_SCOPE_PREFIX,
+    NESTED_SCOPES_KEY,
+    SCOPES_ROOT_KEY,
     STATE_FRAME_KEY,
     STATE_SCOPE_FRAME_KEY,
     BaseState,
     ContextEngine,
     DictStateSchema,
     StateSchema,
+    legacy_storage_key,
 )
 from palm.core.event import Event, EventEngine
 from palm.core.exceptions import (
@@ -85,6 +89,9 @@ __all__ = [
     "ContextEngine",
     "DictStateSchema",
     "EngineError",
+    "LEGACY_SCOPE_PREFIX",
+    "NESTED_SCOPES_KEY",
+    "SCOPES_ROOT_KEY",
     "Event",
     "EventEngine",
     "ExecutionContext",
@@ -121,4 +128,5 @@ __all__ = [
     "StateNotConfiguredError",
     "StateSchema",
     "StateValidationError",
+    "legacy_storage_key",
 ]

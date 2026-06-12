@@ -59,3 +59,8 @@ class TestState(BaseState):
 
     def keys(self) -> list[str]:
         return list(self._data.keys())
+
+    def _scope_root(self) -> dict[str, Any] | None:
+        if self.schema is not None:
+            return self._data
+        return None

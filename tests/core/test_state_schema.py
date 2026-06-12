@@ -7,11 +7,15 @@ from typing import Any
 import pytest
 
 from palm.core import (
+    NESTED_SCOPES_KEY,
+    SCOPES_ROOT_KEY,
     BaseState,
     ContextError,
     DictStateSchema,
     StateValidationError,
+    legacy_storage_key,
 )
+from palm.states import BlackboardState
 from tests.core.fakes import TestState
 
 USER_SCHEMA = DictStateSchema(
@@ -114,6 +118,55 @@ def test_base_state_exit_scope_on_empty_stack() -> None:
     state = TestState()
     with pytest.raises(ContextError, match="stack is empty"):
         state.exit_scope()
+
+
+def test_base_state_scope_context_manager() -> None:
+    state = TestState()
+    with state.scope("job") as scoped:
+        assert scoped is state
+        scoped.set_scoped("step", 1)
+        assert scoped.get_scoped("step") == 1
+    assert state.current_scope() is None
+
+
+def test_nested_scoping_when_schema_bound() -> None:
+    state = TestState(schema=USER_SCHEMA)
+    with state.scope("job"):
+        state.set_scoped("step", 1)
+        with state.scope("tick"):
+            state.set_scoped("step", 2)
+
+    scopes = state.get(SCOPES_ROOT_KEY)
+    assert scopes == {
+        "job": {
+            "step": 1,
+            NESTED_SCOPES_KEY: {"tick": {"step": 2}},
+        },
+    }
+
+
+def test_blackboard_state_uses_nested_scopes_with_schema() -> None:
+    state = BlackboardState(schema=USER_SCHEMA)
+    with state.scope("wizard"):
+        state.set_scoped("answer", "yes")
+        assert state.get_scoped("answer") == "yes"
+    assert state.get_scoped("answer") is None
+    assert state.snapshot()[SCOPES_ROOT_KEY] == {"wizard": {"answer": "yes"}}
+
+
+def test_legacy_flat_scope_keys_remain_readable() -> None:
+    state = TestState(schema=USER_SCHEMA)
+    state.enter_scope("job")
+    state.set(legacy_storage_key("job", "step"), 9)
+    assert state.get_scoped("step") == 9
+
+
+def test_legacy_mode_without_schema_uses_flat_keys() -> None:
+    state = TestState()
+    state.enter_scope("job")
+    state.set_scoped("step", 3)
+    assert state.get("__palm:scope:job:step") == 3
+    assert SCOPES_ROOT_KEY not in state.snapshot()
 
 
 def test_base_state_legacy_subclass_without_super_init() -> None:

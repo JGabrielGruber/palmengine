@@ -402,6 +402,7 @@ class DefinitionExecutor:
         return PatternBuildContext(
             event_engine=self._runtime.event,
             resource_engine=getattr(self._runtime, "resource", None),
+            definition_repository=self._repository,
         )
 
     def _require_runtime(self) -> None:

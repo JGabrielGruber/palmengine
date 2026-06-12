@@ -5,8 +5,11 @@ from __future__ import annotations
 import pytest
 
 from palm.common import DefinitionNotFoundError, DefinitionRepository
+from palm.common.executions.flow_submission import prepare_flow_submission
+from palm.common.patterns import PatternBuildContext
 from palm.core import StorageEngine, StorageNotConfiguredError
-from palm.definitions import FlowDefinition, ProcessDefinition
+from palm.definitions import FlowDefinition, ProcessDefinition, StateSchemaDefinition
+from palm.states import BlackboardState
 from palm.storages import memory  # noqa: F401
 
 
@@ -101,6 +104,73 @@ def test_repository_delete_flow() -> None:
     with pytest.raises(DefinitionNotFoundError):
         empty.get_flow_by_id("flow-onboard-1")
     storage.shutdown()
+
+
+def _sample_schema() -> StateSchemaDefinition:
+    return StateSchemaDefinition(
+        id="schema-user-1",
+        name="user",
+        schema={
+            "type": "object",
+            "properties": {
+                "tenant": {"type": "string", "default": "acme"},
+            },
+        },
+        metadata={"owner": "platform"},
+    )
+
+
+def test_state_schema_definition_roundtrip_dict() -> None:
+    schema = _sample_schema()
+    restored = StateSchemaDefinition.from_dict(schema.to_dict())
+    assert restored.definition_id == schema.definition_id
+    assert restored.schema == schema.schema
+    assert restored.metadata == schema.metadata
+
+
+def test_flow_definition_state_schema_ref_roundtrip() -> None:
+    flow = FlowDefinition(
+        name="onboard",
+        pattern="wizard",
+        state_schema_ref="schema-user-1",
+        options={"steps": 1},
+    )
+    restored = FlowDefinition.from_dict(flow.to_dict())
+    assert restored.state_schema_ref == "schema-user-1"
+
+
+def test_repository_schema_persistence_roundtrip() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = DefinitionRepository(storage)
+    repo.save_schema(_sample_schema())
+
+    fresh = DefinitionRepository(storage)
+    loaded = fresh.get_schema_by_id("schema-user-1")
+    assert loaded.name == "user"
+    assert loaded.schema["properties"]["tenant"]["default"] == "acme"
+    storage.shutdown()
+
+
+def test_flow_submission_resolves_state_schema_ref() -> None:
+    repo = DefinitionRepository()
+    repo.register_schema(_sample_schema())
+    flow = FlowDefinition(
+        name="onboard",
+        pattern="wizard",
+        state_schema_ref="user",
+        options={"steps": 1},
+    )
+    repo.register_flow(flow)
+    submission = prepare_flow_submission(
+        flow,
+        state=None,
+        metadata=None,
+        instances=None,
+        build_ctx=PatternBuildContext(definition_repository=repo),
+    )
+    assert isinstance(submission.state, BlackboardState)
+    assert submission.state.get("tenant") == "acme"
 
 
 def test_repository_list_flows() -> None:
