@@ -114,6 +114,7 @@ palm status <instance_id>
 Dynamic **todo list wizard** using the new `collection` step kind.
 
 - **Collection step** — add, edit, and remove items in a loop before continuing
+- **Compact item selection** — edit/remove via menu action, then pick by number or partial title (`label_field`)
 - **Per-item scopes** — `todos > item-N > field` for isolated editing
 - **Per-field schemas** — title (required), optional due date, priority enum
 - **Flow schema** — validates the full `todos` array at summary and commit
@@ -121,7 +122,7 @@ Dynamic **todo list wizard** using the new `collection` step kind.
 
 ```bash
 palm flow start todo-builder
-# intro → Add a new item → title → due date → priority → (repeat) → Continue to summary → yes → yes
+# intro → Add (1) → fields → Edit an item (2) → milk → … → Remove an item (3) → 2 → yes → Continue → yes → yes
 palm status <instance_id>
 ```
 

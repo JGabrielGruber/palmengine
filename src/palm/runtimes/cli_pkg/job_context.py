@@ -45,6 +45,7 @@ class JobContext:
     merged_preview: dict[str, Any] = field(default_factory=dict)
     collection_items: tuple[dict[str, Any], ...] = ()
     collection_phase: str | None = None
+    collection_item_previews: tuple[str, ...] = ()
 
     @property
     def repl_scope_suffix(self) -> str:
@@ -147,7 +148,9 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
     prompt_bundle = _prompt_from_state(state)
     answers = wizard.answers(state)
 
-    collection_items, collection_phase = _collection_from_bundle(prompt_bundle)
+    collection_items, collection_phase, collection_item_previews = _collection_from_bundle(
+        prompt_bundle,
+    )
     return JobContext(
         pattern="wizard",
         step=wizard.current_step_slug(state),
@@ -162,6 +165,7 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         answers_preview=dict(answers) if answers else {},
         collection_items=collection_items,
         collection_phase=collection_phase,
+        collection_item_previews=collection_item_previews,
     )
 
 
@@ -259,16 +263,22 @@ def _field_type(bundle: dict[str, Any] | None) -> str | None:
 
 def _collection_from_bundle(
     bundle: dict[str, Any] | None,
-) -> tuple[tuple[dict[str, Any], ...], str | None]:
+) -> tuple[tuple[dict[str, Any], ...], str | None, tuple[str, ...]]:
     if not bundle:
-        return (), None
+        return (), None, ()
     phase = bundle.get("collection_phase")
     phase_str = str(phase) if phase is not None else None
+    previews_raw = bundle.get("collection_item_previews")
+    previews = (
+        tuple(str(item) for item in previews_raw)
+        if isinstance(previews_raw, list)
+        else ()
+    )
     raw = bundle.get("collection_items")
     if isinstance(raw, list):
         items = tuple(dict(item) for item in raw if isinstance(item, dict))
-        return items, phase_str
-    return (), phase_str
+        return items, phase_str, previews
+    return (), phase_str, previews
 
 
 def _choices(bundle: dict[str, Any] | None) -> tuple[str, ...]:

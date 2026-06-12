@@ -132,7 +132,9 @@ def test_collection_edit_and_remove() -> None:
     wizard.provide_input(state, "low")
     wizard.tick(state)
 
-    _menu_input(wizard, state, "Edit #1: First [low]")
+    _menu_input(wizard, state, "Edit an item")
+    wizard.provide_input(state, "First")
+    wizard.tick(state)
     wizard.provide_input(state, "Updated")
     wizard.tick(state)
     wizard.provide_input(state, "high")
@@ -235,6 +237,58 @@ def test_collection_optional_field_accepts_empty_input() -> None:
     assert wizard.answers(state)["todos"] == [
         {"title": "Walk dog", "priority": "medium"},
     ]
+
+
+def test_collection_select_item_by_number_and_remove() -> None:
+    state = BlackboardState(schema=_todo_flow().materialize_state_schema())
+    wizard = _build()
+    wizard.tick(state)
+
+    for title, priority in (
+        ("Buy milk", "high"),
+        ("Walk dog", "medium"),
+        ("Read book", "low"),
+    ):
+        _menu_input(wizard, state, "Add a new item")
+        wizard.provide_input(state, title)
+        wizard.tick(state)
+        wizard.provide_input(state, priority)
+        wizard.tick(state)
+
+    _menu_input(wizard, state, "Remove an item")
+    wizard.provide_input(state, "2")
+    wizard.tick(state)
+    wizard.provide_input(state, "yes")
+    wizard.tick(state)
+
+    items = state.get(WizardKeys.ANSWERS, {}).get("todos", [])
+    assert len(items) == 2
+    assert items[0]["title"] == "Buy milk"
+    assert items[1]["title"] == "Read book"
+
+
+def test_collection_select_item_by_partial_match_for_edit() -> None:
+    state = BlackboardState(schema=_todo_flow().materialize_state_schema())
+    wizard = _build()
+    wizard.tick(state)
+
+    _menu_input(wizard, state, "Add a new item")
+    wizard.provide_input(state, "Buy milk")
+    wizard.tick(state)
+    wizard.provide_input(state, "low")
+    wizard.tick(state)
+
+    _menu_input(wizard, state, "Edit an item")
+    wizard.provide_input(state, "milk")
+    wizard.tick(state)
+    wizard.provide_input(state, "Buy organic milk")
+    wizard.tick(state)
+    wizard.provide_input(state, "high")
+    wizard.tick(state)
+
+    items = state.get(WizardKeys.ANSWERS, {}).get("todos", [])
+    assert items[0]["title"] == "Buy organic milk"
+    assert items[0]["priority"] == "high"
 
 
 def test_collection_resume_preserves_list_and_phase() -> None:

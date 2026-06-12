@@ -9,15 +9,27 @@ from typing import Any
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.collection import CollectionFieldConfig
+from palm.patterns.wizard.collection_selection import (
+    default_label_field,
+    format_item_preview,
+    format_numbered_item_list,
+    is_cancel_input,
+    item_selection_error,
+    item_selection_prompt,
+    resolve_item_index,
+)
 from palm.patterns.wizard.collection_state import (
     ACTION_ADD,
     ACTION_DONE,
+    ACTION_EDIT_SELECT,
+    ACTION_REMOVE_SELECT,
     clear_collection_session,
     collection_draft,
     collection_edit_index,
     collection_field_index,
     collection_phase,
     collection_remove_index,
+    collection_select_action,
     enter_field_scope,
     ensure_scope,
     leave_field_scope,
@@ -33,6 +45,7 @@ from palm.patterns.wizard.collection_state import (
     set_collection_items,
     set_collection_phase,
     set_collection_remove_index,
+    set_collection_select_action,
 )
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
@@ -71,6 +84,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
         self._collection_key = step.collection_key or step.slug
         self._fields = step.item_fields
         self._min_items = step.min_items
+        self._label_field = default_label_field(step.item_fields, step.label_field)
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         key = self.input_key()
@@ -86,6 +100,8 @@ class WizardCollectionLeaf(InteractiveLeaf):
             return self._request_field_input(state)
         if phase == "remove_confirm":
             return self._request_remove_confirm(state)
+        if phase == "select_item":
+            return self._request_select_item(state)
         return self._request_menu(state)
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
@@ -94,6 +110,8 @@ class WizardCollectionLeaf(InteractiveLeaf):
             return self._handle_field_input(value, state)
         if phase == "remove_confirm":
             return self._handle_remove_confirm(value, state)
+        if phase == "select_item":
+            return self._handle_select_item(value, state)
         return self._handle_menu_input(value, state)
 
     def _request_menu(self, state: BaseState) -> PatternStatus:
@@ -102,7 +120,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
         choices, actions = self._menu_choices(items)
         bundle = self._prompt_bundle(
             state,
-            prompt=self._step.prompt,
+            prompt=self._menu_prompt(items),
             field_type="choice",
             choices=choices,
             extra={
@@ -125,7 +143,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
                 (choice_selection_error(value, choices),),
                 prompt_bundle=self._prompt_bundle(
                     state,
-                    prompt=self._step.prompt,
+                    prompt=self._menu_prompt(items),
                     field_type="choice",
                     choices=choices,
                     extra={
@@ -141,11 +159,97 @@ class WizardCollectionLeaf(InteractiveLeaf):
             return self._start_item(state, edit_index=None)
         if action == ACTION_DONE:
             return self._finish_collection(state, items)
-        if isinstance(action, tuple) and action[0] == "edit":
-            return self._start_item(state, edit_index=action[1])
-        if isinstance(action, tuple) and action[0] == "remove":
-            return self._start_remove_confirm(state, index=action[1])
+        if action == ACTION_EDIT_SELECT:
+            return self._start_select_item(state, action="edit")
+        if action == ACTION_REMOVE_SELECT:
+            return self._start_select_item(state, action="remove")
         return self._request_menu(state)
+
+    def _start_select_item(self, state: BaseState, *, action: str) -> PatternStatus:
+        items = get_collection_items(state, self._collection_key)
+        if not items:
+            return self._request_menu(state)
+        set_collection_select_action(state, action)
+        set_collection_phase(state, "select_item")
+        return self._request_select_item(state)
+
+    def _request_select_item(self, state: BaseState) -> PatternStatus:
+        items = get_collection_items(state, self._collection_key)
+        action = collection_select_action(state) or "edit"
+        previews = [
+            format_item_preview(
+                item,
+                index=index,
+                label_field=self._label_field,
+                item_fields=self._fields,
+            )
+            for index, item in enumerate(items)
+        ]
+        bundle = self._prompt_bundle(
+            state,
+            prompt=item_selection_prompt(action),  # type: ignore[arg-type]
+            field_type="text",
+            title="Edit item" if action == "edit" else "Remove item",
+            extra={
+                "step_kind": "collection",
+                "collection_phase": "select_item",
+                "collection_select_action": action,
+                "collection_item_previews": previews,
+                "collection_items": items,
+            },
+        )
+        return self._activate(state, bundle)
+
+    def _handle_select_item(self, value: Any, state: BaseState) -> PatternStatus:
+        items = get_collection_items(state, self._collection_key)
+        action = collection_select_action(state) or "edit"
+        if is_cancel_input(value):
+            set_collection_select_action(state, None)
+            set_collection_phase(state, "menu")
+            return self._request_menu(state)
+
+        index = resolve_item_index(value, items, label_field=self._label_field)
+        if index is None:
+            return self._fail(
+                state,
+                (
+                    item_selection_error(
+                        value,
+                        items,
+                        label_field=self._label_field,
+                        action=action,  # type: ignore[arg-type]
+                        item_fields=self._fields,
+                    ),
+                ),
+                prompt_bundle=self._prompt_bundle(
+                    state,
+                    prompt=item_selection_prompt(action),  # type: ignore[arg-type]
+                    field_type="text",
+                    title="Edit item" if action == "edit" else "Remove item",
+                    extra={
+                        "step_kind": "collection",
+                        "collection_phase": "select_item",
+                        "collection_select_action": action,
+                        "collection_item_previews": [
+                            format_item_preview(
+                                item,
+                                index=idx,
+                                label_field=self._label_field,
+                                item_fields=self._fields,
+                            )
+                            for idx, item in enumerate(items)
+                        ],
+                        "collection_items": items,
+                    },
+                ),
+            )
+
+        set_collection_select_action(state, None)
+        if action == "edit":
+            set_collection_phase(state, "menu")
+            return self._start_item(state, edit_index=index)
+        set_collection_phase(state, "menu")
+        return self._start_remove_confirm(state, index=index)
 
     def _start_item(self, state: BaseState, *, edit_index: int | None) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
@@ -291,7 +395,12 @@ class WizardCollectionLeaf(InteractiveLeaf):
 
     def _start_remove_confirm(self, state: BaseState, *, index: int) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
-        label = format_item_label(items[index], index=index)
+        label = format_item_label(
+            items[index],
+            index=index,
+            label_field=self._label_field,
+            item_fields=self._fields,
+        )
         set_collection_remove_index(state, index)
         set_collection_phase(state, "remove_confirm")
         bundle = self._prompt_bundle(
@@ -313,7 +422,12 @@ class WizardCollectionLeaf(InteractiveLeaf):
             set_collection_phase(state, "menu")
             return self._request_menu(state)
         items = get_collection_items(state, self._collection_key)
-        label = format_item_label(items[index], index=index)
+        label = format_item_label(
+            items[index],
+            index=index,
+            label_field=self._label_field,
+            item_fields=self._fields,
+        )
         bundle = self._prompt_bundle(
             state,
             prompt=f"Remove '{label}'? Type yes to confirm or no to cancel.",
@@ -372,7 +486,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
                 (message,),
                 prompt_bundle=self._prompt_bundle(
                     state,
-                    prompt=self._step.prompt,
+                    prompt=self._menu_prompt(items),
                     field_type="choice",
                     choices=choices,
                     extra={
@@ -395,7 +509,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
                 validation.errors,
                 prompt_bundle=self._prompt_bundle(
                     state,
-                    prompt=self._step.prompt,
+                    prompt=self._menu_prompt(items),
                     field_type="choice",
                     choices=choices,
                     extra={
@@ -423,18 +537,28 @@ class WizardCollectionLeaf(InteractiveLeaf):
     def _menu_choices(self, items: list[dict[str, Any]]) -> tuple[list[str], list[Any]]:
         choices: list[str] = ["Add a new item"]
         actions: list[Any] = [ACTION_ADD]
-        for index, item in enumerate(items):
-            label = format_item_label(item, index=index)
-            choices.append(f"Edit #{index + 1}: {label}")
-            actions.append(("edit", index))
-            choices.append(f"Remove #{index + 1}: {label}")
-            actions.append(("remove", index))
+        if items:
+            choices.append("Edit an item")
+            actions.append(ACTION_EDIT_SELECT)
+            choices.append("Remove an item")
+            actions.append(ACTION_REMOVE_SELECT)
         done_label = "Continue to summary"
         if len(items) < self._min_items:
             done_label = f"Continue to summary (need {self._min_items - len(items)} more)"
         choices.append(done_label)
         actions.append(ACTION_DONE)
         return choices, actions
+
+    def _menu_prompt(self, items: list[dict[str, Any]]) -> str:
+        base = self._step.prompt
+        if not items:
+            return base
+        listing = format_numbered_item_list(
+            items,
+            label_field=self._label_field,
+            item_fields=self._fields,
+        )
+        return f"{base}\n\nCurrent items:\n{listing}"
 
     def _prompt_bundle(
         self,

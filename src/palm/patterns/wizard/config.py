@@ -40,6 +40,7 @@ class WizardStepConfig:
     collection_key: str | None = None
     item_fields: tuple[CollectionFieldConfig, ...] = ()
     min_items: int = 1
+    label_field: str | None = None
 
     def __post_init__(self) -> None:
         if not self.slug:

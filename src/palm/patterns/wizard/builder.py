@@ -167,6 +167,7 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
     item_fields = ()
     collection_key = data.get("collection_key")
     min_items = int(data.get("min_items", 1))
+    label_field = data.get("label_field")
     if step_kind == "collection":
         from palm.patterns.wizard.collection import item_fields_from_mapping
 
@@ -190,6 +191,7 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         collection_key=str(collection_key) if collection_key else None,
         item_fields=item_fields,
         min_items=min_items,
+        label_field=str(label_field) if label_field else None,
     )
 
 
@@ -265,4 +267,5 @@ def _materialize_step(
         collection_key=step.collection_key,
         item_fields=item_fields,
         min_items=step.min_items,
+        label_field=step.label_field,
     )

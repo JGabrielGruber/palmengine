@@ -27,3 +27,4 @@ class WizardKeys:
     COLLECTION_FIELD_INDEX = f"{PREFIX}.collection_field_index"
     COLLECTION_DRAFT = f"{PREFIX}.collection_draft"
     COLLECTION_REMOVE_INDEX = f"{PREFIX}.collection_remove_index"
+    COLLECTION_SELECT_ACTION = f"{PREFIX}.collection_select_action"

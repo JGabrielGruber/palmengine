@@ -42,7 +42,11 @@ def render_job_panel(
             body += "\n[bold]Options:[/] [dim](enter number or name)[/]\n"
             for index, choice in enumerate(ctx.choices, start=1):
                 body += f"  [cyan]{index}.[/] [green]{choice}[/]\n"
-        if ctx.collection_items:
+        if ctx.collection_phase == "select_item" and ctx.collection_item_previews:
+            body += "\n[bold]Items:[/] [dim](enter number, partial label, or 'cancel')[/]\n"
+            for index, preview in enumerate(ctx.collection_item_previews, start=1):
+                body += f"  [cyan]{index}.[/] [green]{preview}[/]\n"
+        elif ctx.collection_items:
             body += "\n[bold]Current list:[/]\n"
             for index, item in enumerate(ctx.collection_items, start=1):
                 title = item.get("title", f"Item {index}")

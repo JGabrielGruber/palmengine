@@ -63,9 +63,13 @@ TODO_BUILDER_FLOW = FlowDefinition(
             {
                 "slug": "todos",
                 "title": "Todo List",
-                "prompt": "Manage your todos — add, edit, remove, then continue.",
+                "prompt": (
+                    "Manage your todos — add items, edit/remove by number or title "
+                    "search, then continue."
+                ),
                 "step_kind": "collection",
                 "collection_key": "todos",
+                "label_field": "title",
                 "min_items": 1,
                 "item_fields": [
                     {

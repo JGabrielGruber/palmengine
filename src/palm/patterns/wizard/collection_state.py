@@ -12,15 +12,17 @@ from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.state import enter_step, get_answers, leave_step, set_answers
 
-CollectionPhase = Literal["menu", "field", "remove_confirm"]
+CollectionPhase = Literal["menu", "field", "remove_confirm", "select_item"]
 
 ACTION_ADD = "__collection_add__"
 ACTION_DONE = "__collection_done__"
+ACTION_EDIT_SELECT = "__collection_edit_select__"
+ACTION_REMOVE_SELECT = "__collection_remove_select__"
 
 
 def collection_phase(state: BaseState) -> CollectionPhase:
     raw = state.get(WizardKeys.COLLECTION_PHASE)
-    if raw in ("menu", "field", "remove_confirm"):
+    if raw in ("menu", "field", "remove_confirm", "select_item"):
         return raw
     return "menu"
 
@@ -68,6 +70,21 @@ def clear_collection_session(state: BaseState) -> None:
     state.delete(WizardKeys.COLLECTION_FIELD_INDEX)
     state.delete(WizardKeys.COLLECTION_DRAFT)
     state.delete(WizardKeys.COLLECTION_REMOVE_INDEX)
+    state.delete(WizardKeys.COLLECTION_SELECT_ACTION)
+
+
+def collection_select_action(state: BaseState) -> str | None:
+    raw = state.get(WizardKeys.COLLECTION_SELECT_ACTION)
+    if raw in ("edit", "remove"):
+        return raw
+    return None
+
+
+def set_collection_select_action(state: BaseState, action: str | None) -> None:
+    if action is None:
+        state.delete(WizardKeys.COLLECTION_SELECT_ACTION)
+    else:
+        state.set(WizardKeys.COLLECTION_SELECT_ACTION, action)
 
 
 def collection_remove_index(state: BaseState) -> int | None:
@@ -190,13 +207,18 @@ def normalize_optional_field_value(field: CollectionFieldConfig, value: Any) -> 
     return value
 
 
-def format_item_label(item: dict[str, Any], *, index: int) -> str:
-    title = item.get("title") or item.get("name") or f"Item {index + 1}"
-    priority = item.get("priority")
-    due = item.get("due_date")
-    parts = [str(title)]
-    if priority:
-        parts.append(f"[{priority}]")
-    if due:
-        parts.append(f"due {due}")
-    return " ".join(parts)
+def format_item_label(
+    item: dict[str, Any],
+    *,
+    index: int,
+    label_field: str = "title",
+    item_fields: tuple[CollectionFieldConfig, ...] | None = None,
+) -> str:
+    from palm.patterns.wizard.collection_selection import format_item_preview
+
+    return format_item_preview(
+        item,
+        index=index,
+        label_field=label_field,
+        item_fields=item_fields,
+    )
