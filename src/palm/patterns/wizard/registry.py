@@ -7,11 +7,11 @@ from palm.patterns._registry import (
     register_submission_metadata,
 )
 from palm.patterns.wizard.builder import build
+from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.persistence import (
     extract_instance_fields_from_job,
     prepare_wizard_resume_state,
 )
-from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.submission import wizard_submission_metadata
 
 pattern_registry.register("wizard", WizardPattern)

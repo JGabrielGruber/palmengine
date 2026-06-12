@@ -26,15 +26,10 @@ class TestState(DictBackedState):
         *,
         schema: StateSchema | None = None,
         record: bool = False,
-        nested_scopes: bool | None = None,
     ) -> None:
         super().__init__(initial, schema=schema)
         self._record = record
         self.operations: list[StateOp] = []
-        if nested_scopes is None:
-            self._nested_scopes = schema is not None
-        else:
-            self._nested_scopes = nested_scopes
 
     def get(self, key: str, default: Any = None) -> Any:
         if self._record:
@@ -55,8 +50,3 @@ class TestState(DictBackedState):
         if self._record:
             self.operations.append(("clear", "", None))
         super().clear()
-
-    def scope_storage(self) -> dict[str, Any] | None:
-        if self._nested_scopes:
-            return self._data
-        return None

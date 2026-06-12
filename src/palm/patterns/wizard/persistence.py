@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.context import BaseState
 from palm.core.orchestration import Job
 from palm.instances import ProcessInstance
 from palm.patterns.wizard.keys import WizardKeys

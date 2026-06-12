@@ -12,7 +12,11 @@ from palm.core.context import BaseState
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import complete_step_input, enter_step, get_answers, leave_step
+from palm.patterns.wizard.state import complete_step_input, enter_step, leave_step
+from palm.patterns.wizard.validation import (
+    clear_validation_feedback,
+    publish_validation_feedback,
+)
 
 EventEmitter = Callable[[str, dict[str, Any]], None]
 
@@ -38,8 +42,8 @@ class WizardStepLeaf(InteractiveLeaf):
     def step(self) -> WizardStepConfig:
         return self._step
 
-    def _request_input(self, state: BaseState) -> PatternStatus:
-        prompt_bundle = {
+    def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
+        bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
@@ -49,6 +53,14 @@ class WizardStepLeaf(InteractiveLeaf):
             "step_index": self._step_index,
             "input_key": self.input_key(),
         }
+        errors = state.get(WizardKeys.VALIDATION_ERRORS)
+        if isinstance(errors, list) and errors:
+            bundle["validation_errors"] = errors
+            bundle["validation_error"] = state.get(WizardKeys.VALIDATION_ERROR)
+        return bundle
+
+    def _request_input(self, state: BaseState) -> PatternStatus:
+        prompt_bundle = self._prompt_bundle(state)
         state.set(self.prompt_key(), prompt_bundle)
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
@@ -65,17 +77,22 @@ class WizardStepLeaf(InteractiveLeaf):
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
         validation = complete_step_input(state, self._step, value)
         if not validation.ok:
-            state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
+            publish_validation_feedback(
+                state,
+                validation.errors,
+                prompt_bundle=self._prompt_bundle(state),
+                prompt_key=self.prompt_key(),
+            )
             self._fire(
                 WizardEventType.VALIDATION_FAILED,
                 slug=self._step.slug,
                 errors=list(validation.errors),
             )
-            return PatternStatus.FAILURE
+            return PatternStatus.WAITING_FOR_INPUT
 
         leave_step(state, self._step.slug)
         state.delete(WizardKeys.ACTIVE_PROMPT)
-        state.delete(WizardKeys.VALIDATION_ERROR)
+        clear_validation_feedback(state)
         self._fire(
             WizardEventType.INPUT_RECEIVED,
             slug=self._step.slug,
@@ -88,7 +105,3 @@ class WizardStepLeaf(InteractiveLeaf):
         if self._emit is not None:
             payload.setdefault("wizard", self._wizard_name)
             self._emit(event_type, payload)
-
-
-def _get_answers(state: BaseState) -> dict[str, Any]:
-    return get_answers(state)

@@ -12,8 +12,8 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
 
-from palm.core.context.scoping import ScopeStorageMode, StateScopeManager
-from palm.core.exceptions import StateValidationError
+from palm.core.context.scoping import StateScopeManager
+from palm.core.exceptions import ContextError, StateValidationError
 
 if TYPE_CHECKING:
     from palm.core.context.state_schema import StateSchema
@@ -31,11 +31,6 @@ class BaseState(ABC):
     def schema(self) -> StateSchema | None:
         """Return the optional schema bound to this state instance."""
         return getattr(self, "_schema", None)
-
-    @property
-    def uses_nested_scopes(self) -> bool:
-        """Return whether scoped writes use the nested ``__palm:scopes`` tree."""
-        return self.scope_storage() is not None
 
     def bind_schema(self, schema: StateSchema | None) -> None:
         """Attach or replace the schema used for validation and defaults."""
@@ -138,56 +133,33 @@ class BaseState(ABC):
 
     def scoped_keys(self) -> list[str]:
         """Return keys visible in the current nested scope."""
-        storage = self.scope_storage()
-        if storage is None:
-            return []
+        storage = self._require_scope_storage()
         return list(self._scope_manager.view(storage).keys())
 
     def get_scoped(self, key: str, default: Any = None) -> Any:
         """Resolve ``key`` within the current scope, then parent scopes."""
         self._ensure_extensions()
-        mode, storage = self._scope_mode_and_storage()
-        return self._scope_manager.get(
-            key,
-            default,
-            mode=mode,
-            storage=storage,
-            get_value=self.get,
-            has_key=self.has,
-        )
+        return self._scope_manager.get(self._require_scope_storage(), key, default)
 
     def set_scoped(self, key: str, value: Any) -> None:
         """Store ``value`` under ``key`` in the current scope."""
         self._ensure_extensions()
-        mode, storage = self._scope_mode_and_storage()
-        self._scope_manager.set(
-            key,
-            value,
-            mode=mode,
-            storage=storage,
-            set_value=self.set,
-        )
+        self._scope_manager.set(self._require_scope_storage(), key, value)
 
     def has_scoped(self, key: str) -> bool:
         """Return whether ``key`` exists in the current or parent scopes."""
         self._ensure_extensions()
-        mode, storage = self._scope_mode_and_storage()
-        return self._scope_manager.contains(
-            key,
-            mode=mode,
-            storage=storage,
-            has_key=self.has,
-        )
+        return self._scope_manager.contains(self._require_scope_storage(), key)
 
     def scope_storage(self) -> dict[str, Any] | None:
-        """Return mutable backing storage for nested scopes, or ``None`` for legacy writes."""
+        """Return mutable backing storage for nested scopes."""
         return None
 
-    def _scope_mode_and_storage(self) -> tuple[ScopeStorageMode, dict[str, Any] | None]:
+    def _require_scope_storage(self) -> dict[str, Any]:
         storage = self.scope_storage()
-        if storage is not None:
-            return ScopeStorageMode.NESTED, storage
-        return ScopeStorageMode.LEGACY, None
+        if storage is None:
+            raise ContextError("State does not support nested scope storage")
+        return storage
 
     def _ensure_extensions(self) -> None:
         """Initialize schema/scoping attributes for legacy subclasses."""

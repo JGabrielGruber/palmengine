@@ -19,5 +19,6 @@ class WizardKeys:
     COMMIT_ERROR = f"{PREFIX}.commit_error"
     COMMIT_RESULT = f"{PREFIX}.commit_result"
     VALIDATION_ERROR = f"{PREFIX}.validation_error"
+    VALIDATION_ERRORS = f"{PREFIX}.validation_errors"
     SUMMARY_ACK = f"{PREFIX}.summary_ack"
     RESOURCE_RESULT = f"{PREFIX}.resource_result"

@@ -1,5 +1,5 @@
 """
-Per-step validation for wizard input steps.
+Wizard validation — field rules, schema checks, and user-facing error feedback.
 """
 
 from __future__ import annotations
@@ -9,12 +9,9 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from palm.core.context import BaseState
-from palm.patterns.wizard.schema_validation import (
-    validate_collected_answers_errors,
-    validate_flow_schema_key_errors,
-    validate_step_schema_errors,
-)
+from palm.core.context import BaseState, StateSchema
+from palm.core.exceptions import StateValidationError
+from palm.patterns.wizard.keys import WizardKeys
 
 if TYPE_CHECKING:
     from palm.patterns.wizard.config import WizardStepConfig
@@ -67,6 +64,72 @@ class ValidationRegistry:
         return ValidationResult(ok=not errors, errors=tuple(errors))
 
 
+def format_validation_message(message: str) -> str:
+    """Turn a schema or rule message into a short, actionable user message."""
+    if message.startswith("missing required key: "):
+        field = message.removeprefix("missing required key: ")
+        return f"Missing required answer: {field.replace('_', ' ')}"
+
+    minimum_match = re.fullmatch(r"(.+): (.+) < minimum (.+)", message)
+    if minimum_match:
+        field, value, minimum = minimum_match.groups()
+        label = field.replace("_", " ")
+        return f"{label} must be at least {minimum} (you entered {value})"
+
+    maximum_match = re.fullmatch(r"(.+): (.+) > maximum (.+)", message)
+    if maximum_match:
+        field, value, maximum = maximum_match.groups()
+        label = field.replace("_", " ")
+        return f"{label} must be at most {maximum} (you entered {value})"
+
+    enum_match = re.fullmatch(r"(.+): value (.+) not in enum (.+)", message)
+    if enum_match:
+        field, value, allowed = enum_match.groups()
+        label = field.replace("_", " ")
+        return f"{label} must be one of {allowed} (you entered {value})"
+
+    type_match = re.fullmatch(r"(.+): expected (.+), got (.+)", message)
+    if type_match:
+        field, expected, got = type_match.groups()
+        label = field.replace("_", " ")
+        return f"{label} must be a {expected} (you entered a {got})"
+
+    return message
+
+
+def format_validation_messages(errors: tuple[str, ...] | list[str]) -> tuple[str, ...]:
+    """Format every validation message for display."""
+    return tuple(format_validation_message(error) for error in errors)
+
+
+def publish_validation_feedback(
+    state: BaseState,
+    errors: tuple[str, ...] | list[str],
+    *,
+    prompt_bundle: dict[str, Any] | None = None,
+    prompt_key: str | None = None,
+) -> tuple[str, ...]:
+    """Write formatted validation feedback into wizard state and optional prompt."""
+    formatted = format_validation_messages(errors)
+    primary = formatted[0] if formatted else "Please fix the highlighted answers."
+    state.set(WizardKeys.VALIDATION_ERROR, primary)
+    state.set(WizardKeys.VALIDATION_ERRORS, list(formatted))
+    if prompt_bundle is not None:
+        bundle = dict(prompt_bundle)
+        bundle["validation_error"] = primary
+        bundle["validation_errors"] = list(formatted)
+        state.set(WizardKeys.ACTIVE_PROMPT, bundle)
+        if prompt_key is not None:
+            state.set(prompt_key, bundle)
+    return formatted
+
+
+def clear_validation_feedback(state: BaseState) -> None:
+    """Remove validation feedback after a successful step transition."""
+    state.delete(WizardKeys.VALIDATION_ERROR)
+    state.delete(WizardKeys.VALIDATION_ERRORS)
+
+
 def validate_step_value(
     step: WizardStepConfig,
     value: Any,
@@ -84,18 +147,18 @@ def validate_step_value(
     return reg.validate(step, value, rules)
 
 
+def validate_step_schema(step: WizardStepConfig, value: Any) -> ValidationResult:
+    """Validate ``value`` against the step's own schema when configured."""
+    return _result_from_errors(_validate_step_schema_errors(step, value))
+
+
 def validate_step_state_schema(
     state: BaseState,
     step_slug: str,
     value: Any,
 ) -> ValidationResult:
     """Validate ``value`` against the bound flow-level schema for ``step_slug``."""
-    return _result_from_errors(validate_flow_schema_key_errors(state, step_slug, value))
-
-
-def validate_step_schema(step: WizardStepConfig, value: Any) -> ValidationResult:
-    """Validate ``value`` against the step's own schema when configured."""
-    return _result_from_errors(validate_step_schema_errors(step, value))
+    return _result_from_errors(_validate_flow_schema_key_errors(state, step_slug, value))
 
 
 def validate_collected_answers(
@@ -103,7 +166,7 @@ def validate_collected_answers(
     answers: Mapping[str, Any],
 ) -> ValidationResult:
     """Validate the full answers mapping against the bound flow-level schema."""
-    return _result_from_errors(validate_collected_answers_errors(state, answers))
+    return _result_from_errors(_validate_collected_answers_errors(state, answers))
 
 
 def validate_step_input(
@@ -116,14 +179,53 @@ def validate_step_input(
     """Run built-in, declarative, step-schema, and flow-schema validation."""
     result = validate_step_value(step, value, registry=registry)
     if not result.ok:
-        return result
+        return _result_from_errors(format_validation_messages(result.errors))
     result = validate_step_schema(step, value)
     if not result.ok:
-        return result
-    return validate_step_state_schema(state, step.slug, value)
+        return _result_from_errors(format_validation_messages(result.errors))
+    result = validate_step_state_schema(state, step.slug, value)
+    if not result.ok:
+        return _result_from_errors(format_validation_messages(result.errors))
+    return result
 
 
-def _result_from_errors(errors: list[str]) -> ValidationResult:
+def _validate_schema_value(schema: StateSchema, value: Any, *, path: str) -> list[str]:
+    return schema.validate_value(value, path=path)
+
+
+def _validate_step_schema_errors(step: WizardStepConfig, value: Any) -> list[str]:
+    schema = step.schema
+    if schema is None:
+        return []
+    return _validate_schema_value(schema, value, path=step.slug)
+
+
+def _validate_flow_schema_key_errors(
+    state: BaseState,
+    step_slug: str,
+    value: Any,
+) -> list[str]:
+    schema = state.schema
+    if schema is None:
+        return []
+    try:
+        schema.validate_key(step_slug, value)
+    except StateValidationError as exc:
+        return [str(exc)]
+    return []
+
+
+def _validate_collected_answers_errors(
+    state: BaseState,
+    answers: Mapping[str, Any],
+) -> list[str]:
+    schema = state.schema
+    if schema is None:
+        return []
+    return schema.validate_state(dict(answers))
+
+
+def _result_from_errors(errors: list[str] | tuple[str, ...]) -> ValidationResult:
     if not errors:
         return ValidationResult.success()
     return ValidationResult.failure(*errors)
@@ -131,13 +233,13 @@ def _result_from_errors(errors: list[str]) -> ValidationResult:
 
 def _builtin_field_validation(step: WizardStepConfig, value: Any) -> ValidationResult:
     if step.required and (value is None or value == ""):
-        return ValidationResult.failure("Value is required")
+        return ValidationResult.failure("This field is required")
     if step.field_type == "choice" and value not in step.choices:
-        return ValidationResult.failure(f"Value must be one of {step.choices}")
+        return ValidationResult.failure(f"Choose one of: {', '.join(step.choices)}")
     if step.field_type == "confirm":
         allowed = {True, False, "yes", "no", "Yes", "No"}
         if value not in allowed:
-            return ValidationResult.failure("Confirmation must be yes or no")
+            return ValidationResult.failure("Please answer yes or no")
     return ValidationResult.success()
 
 
@@ -159,24 +261,24 @@ def _run_rule(
     if name == "min_length":
         minimum = int(params.get("min", 1))
         if len(str(value)) < minimum:
-            return ValidationResult.failure(f"Minimum length is {minimum}")
+            return ValidationResult.failure(f"Enter at least {minimum} characters")
         return ValidationResult.success()
 
     if name == "max_length":
         maximum = int(params.get("max", 10_000))
         if len(str(value)) > maximum:
-            return ValidationResult.failure(f"Maximum length is {maximum}")
+            return ValidationResult.failure(f"Enter at most {maximum} characters")
         return ValidationResult.success()
 
     if name == "regex":
         pattern = str(params.get("pattern", ""))
         if pattern and not re.search(pattern, str(value)):
-            return ValidationResult.failure(params.get("message", "Value does not match pattern"))
+            return ValidationResult.failure(params.get("message", "Value does not match the required pattern"))
         return ValidationResult.success()
 
     if name == "not_empty":
         if value is None or str(value).strip() == "":
-            return ValidationResult.failure("Value must not be empty")
+            return ValidationResult.failure("This field cannot be empty")
         return ValidationResult.success()
 
     return ValidationResult.failure(f"Unknown validation rule: {name!r}")

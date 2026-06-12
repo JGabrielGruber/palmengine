@@ -108,7 +108,8 @@ def test_wizard_rejects_invalid_choice() -> None:
     wizard.provide_input(state, "Test")
     wizard.tick(state)
     wizard.provide_input(state, "invalid")
-    assert wizard.tick(state) == PatternStatus.FAILURE
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert wizard.current_step_slug(state) == "role"
 
 
 def test_wizard_backtrack_and_reanswer() -> None:
@@ -284,8 +285,9 @@ def test_validation_min_length_failure() -> None:
     wizard = WizardPattern(name="w", config=config)
     wizard.tick(state)
     wizard.provide_input(state, "ab")
-    assert wizard.tick(state) == PatternStatus.FAILURE
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
     assert state.get(WizardKeys.VALIDATION_ERROR)
+    assert wizard.current_step_slug(state) == "name"
 
 
 def test_commit_handler_failure() -> None:

@@ -58,9 +58,23 @@ def test_wizard_rejects_schema_invalid_input() -> None:
     assert state.current_scope() == "age"
 
     wizard.provide_input(state, 16)
-    assert wizard.tick(state) == PatternStatus.FAILURE
-    assert "minimum" in str(state.get(WizardKeys.VALIDATION_ERROR))
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert "at least" in str(state.get(WizardKeys.VALIDATION_ERROR)).lower()
     assert wizard.answers(state) == {}
+    assert wizard.current_step_slug(state) == "age"
+
+
+def test_wizard_retries_after_schema_validation_failure() -> None:
+    state = BlackboardState(schema=_age_schema())
+    wizard = WizardPattern(name="onboard", config=_age_config())
+
+    wizard.tick(state)
+    wizard.provide_input(state, 16)
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+
+    wizard.provide_input(state, 25)
+    assert wizard.tick(state) == PatternStatus.SUCCESS
+    assert wizard.answers(state) == {"age": 25}
 
 
 def test_wizard_accepts_schema_valid_input_and_scopes_answer() -> None:
@@ -144,8 +158,8 @@ def test_wizard_step_inline_schema_rejects_invalid_input() -> None:
 
     wizard.tick(state)
     wizard.provide_input(state, 16)
-    assert wizard.tick(state) == PatternStatus.FAILURE
-    assert "minimum" in str(state.get(WizardKeys.VALIDATION_ERROR))
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert "at least" in str(state.get(WizardKeys.VALIDATION_ERROR)).lower()
     assert wizard.answers(state) == {}
 
 
@@ -208,8 +222,11 @@ def test_wizard_summary_validates_full_answers_against_flow_schema() -> None:
     wizard.provide_input(state, "Ada")
     wizard.tick(state)
     wizard.provide_input(state, "dev")
-    assert wizard.tick(state) == PatternStatus.FAILURE
-    assert "missing required key: tenant" in str(state.get(WizardKeys.VALIDATION_ERROR))
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert wizard.current_step_slug(state) == "summary"
+    assert "Missing required answer: tenant" in str(state.get(WizardKeys.VALIDATION_ERROR))
+    errors = state.get(WizardKeys.VALIDATION_ERRORS)
+    assert isinstance(errors, list) and errors
 
 
 def test_validate_collected_answers_reports_missing_required() -> None:
@@ -224,6 +241,10 @@ def test_validate_collected_answers_reports_missing_required() -> None:
     result = validate_collected_answers(state, {})
     assert not result.ok
     assert "missing required key: name" in result.errors[0]
+
+    from palm.patterns.wizard.validation import format_validation_message
+
+    assert format_validation_message(result.errors[0]) == "Missing required answer: name"
 
 
 def test_transactional_wizard_commit_revalidates_before_handler() -> None:
@@ -277,9 +298,10 @@ def test_transactional_wizard_commit_revalidates_before_handler() -> None:
     state.set(WizardKeys.ANSWERS, answers)
 
     wizard.provide_input(state, "yes")
-    assert wizard.tick(state) == PatternStatus.FAILURE
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert wizard.current_step_slug(state) == "commit"
     assert not committed
-    assert "enum" in str(state.get(WizardKeys.VALIDATION_ERROR)).lower()
+    assert "must be one of" in str(state.get(WizardKeys.VALIDATION_ERROR)).lower()
 
 
 def test_snapshot_includes_schema_meta() -> None:

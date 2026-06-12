@@ -12,9 +12,13 @@ from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.state import enter_step, leave_step
-from palm.patterns.wizard.validation import validate_step_input
+from palm.patterns.wizard.step_leaf import EventEmitter
+from palm.patterns.wizard.validation import (
+    clear_validation_feedback,
+    publish_validation_feedback,
+    validate_step_input,
+)
 
 
 class WizardActionLeaf(InteractiveLeaf):
@@ -62,19 +66,40 @@ class WizardActionLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
+        prompt_bundle = {
+            "wizard": self._wizard_name,
+            "slug": self._step.slug,
+            "title": self._step.title,
+            "prompt": self._step.prompt,
+            "field_type": self._step.field_type,
+            "step_kind": "action",
+            "step_index": self._step_index,
+            "input_key": self.input_key(),
+            "resource_provider": self._step.resource_provider,
+        }
         validation = validate_step_input(state, self._step, value)
         if not validation.ok:
-            state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
+            publish_validation_feedback(
+                state,
+                validation.errors,
+                prompt_bundle=prompt_bundle,
+                prompt_key=self.prompt_key(),
+            )
             self._fire(
                 WizardEventType.VALIDATION_FAILED,
                 slug=self._step.slug,
                 errors=list(validation.errors),
             )
-            return PatternStatus.FAILURE
+            return PatternStatus.WAITING_FOR_INPUT
 
         if self._resource_engine is None or not self._step.resource_provider:
-            state.set(WizardKeys.VALIDATION_ERROR, "Resource engine not configured for action")
-            return PatternStatus.FAILURE
+            publish_validation_feedback(
+                state,
+                ("Resource engine is not configured for this action.",),
+                prompt_bundle=prompt_bundle,
+                prompt_key=self.prompt_key(),
+            )
+            return PatternStatus.WAITING_FOR_INPUT
 
         resource_id = self._step.resource_id or str(value)
         provider = self._resource_engine.use(self._step.resource_provider)
@@ -82,7 +107,7 @@ class WizardActionLeaf(InteractiveLeaf):
         state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}", result)
         leave_step(state, self._step.slug)
         state.delete(WizardKeys.ACTIVE_PROMPT)
-        state.delete(WizardKeys.VALIDATION_ERROR)
+        clear_validation_feedback(state)
         self._fire(
             WizardEventType.ACTION_EXECUTED,
             slug=self._step.slug,

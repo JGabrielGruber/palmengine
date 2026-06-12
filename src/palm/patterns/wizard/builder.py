@@ -13,7 +13,6 @@ from palm.definitions.flow import FlowDefinition
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.schema_validation import materialize_wizard_step_schemas
 from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
@@ -180,4 +179,52 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         resource_provider=data.get("resource_provider"),
         resource_id=data.get("resource_id"),
         allow_backtrack=data.get("allow_backtrack"),
+    )
+
+
+def materialize_wizard_step_schemas(
+    config: WizardConfig,
+    repository: Any | None = None,
+) -> WizardConfig:
+    """Resolve declarative step schemas and attach materialized instances."""
+    steps = tuple(_materialize_step_schema(step, repository) for step in config.steps)
+    if steps == config.steps:
+        return config
+    return WizardConfig(
+        steps=steps,
+        allow_backtrack=config.allow_backtrack,
+        introduction_slug=config.introduction_slug,
+        include_summary=config.include_summary,
+        include_commit=config.include_commit,
+        summary_slug=config.summary_slug,
+        commit_slug=config.commit_slug,
+        commit_hook=config.commit_hook,
+    )
+
+
+def _materialize_step_schema(
+    step: WizardStepConfig,
+    repository: Any | None,
+) -> WizardStepConfig:
+    if step.schema is not None or not step.has_state_schema:
+        return step
+    schema = step.materialize_state_schema(repository)
+    if schema is None:
+        return step
+    return WizardStepConfig(
+        slug=step.slug,
+        title=step.title,
+        prompt=step.prompt,
+        field_type=step.field_type,
+        choices=step.choices,
+        required=step.required,
+        step_kind=step.step_kind,
+        validation=step.validation,
+        state_schema=step.state_schema,
+        state_schema_ref=step.state_schema_ref,
+        schema=schema,
+        commit_hook=step.commit_hook,
+        resource_provider=step.resource_provider,
+        resource_id=step.resource_id,
+        allow_backtrack=step.allow_backtrack,
     )

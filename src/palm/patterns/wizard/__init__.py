@@ -10,7 +10,7 @@ Self-contained subpackage:
 """
 
 from palm.patterns.wizard import registry as registry  # — side effect
-from palm.patterns.wizard.builder import wizard_config_from_options
+from palm.patterns.wizard.builder import materialize_wizard_step_schemas, wizard_config_from_options
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import (
@@ -28,7 +28,6 @@ from palm.patterns.wizard.persistence import (
     wizard_runtime_position_for_job,
     wizard_step_slug_for_job,
 )
-from palm.patterns.wizard.schema_validation import materialize_wizard_step_schemas
 from palm.patterns.wizard.state import (
     complete_step_input,
     enter_step,
@@ -40,7 +39,10 @@ from palm.patterns.wizard.submission import wizard_submission_metadata
 from palm.patterns.wizard.validation import (
     StepValidationRule,
     ValidationRegistry,
+    clear_validation_feedback,
     default_validation_registry,
+    format_validation_message,
+    publish_validation_feedback,
     validate_collected_answers,
     validate_step_input,
     validate_step_schema,
@@ -65,9 +67,12 @@ __all__ = [
     "WizardPattern",
     "WizardStepConfig",
     "default_commit_registry",
+    "clear_validation_feedback",
     "default_validation_registry",
     "default_wizard_config",
+    "format_validation_message",
     "materialize_wizard_step_schemas",
+    "publish_validation_feedback",
     "extract_instance_fields_from_job",
     "parse_wizard_flow_options",
     "prepare_wizard_resume_state",

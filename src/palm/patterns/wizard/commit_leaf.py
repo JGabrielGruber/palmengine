@@ -15,7 +15,11 @@ from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitRe
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.state import enter_step, get_answers, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
-from palm.patterns.wizard.validation import validate_collected_answers
+from palm.patterns.wizard.validation import (
+    clear_validation_feedback,
+    publish_validation_feedback,
+    validate_collected_answers,
+)
 
 
 class WizardCommitLeaf(InteractiveLeaf):
@@ -41,8 +45,8 @@ class WizardCommitLeaf(InteractiveLeaf):
         self._resource_engine = resource_engine
         self._emit = emit
 
-    def _request_input(self, state: BaseState) -> PatternStatus:
-        prompt_bundle = {
+    def _prompt_bundle(self) -> dict[str, Any]:
+        return {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
@@ -53,6 +57,9 @@ class WizardCommitLeaf(InteractiveLeaf):
             "input_key": self.input_key(),
             "commit_hook": self._hook_name,
         }
+
+    def _request_input(self, state: BaseState) -> PatternStatus:
+        prompt_bundle = self._prompt_bundle()
         state.set(self.prompt_key(), prompt_bundle)
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
@@ -70,20 +77,31 @@ class WizardCommitLeaf(InteractiveLeaf):
         answers = get_answers(state)
         validation = validate_collected_answers(state, answers)
         if not validation.ok:
-            state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
+            publish_validation_feedback(
+                state,
+                validation.errors,
+                prompt_bundle=self._prompt_bundle(),
+                prompt_key=self.prompt_key(),
+            )
             self._fire(
                 WizardEventType.VALIDATION_FAILED,
                 slug=self._step.slug,
                 errors=list(validation.errors),
                 reason="commit_schema",
             )
-            return PatternStatus.FAILURE
+            return PatternStatus.WAITING_FOR_INPUT
 
         if not _is_affirmative(value):
-            state.set(WizardKeys.VALIDATION_ERROR, "Commit must be explicitly confirmed")
+            publish_validation_feedback(
+                state,
+                ("Please confirm commit to apply your changes.",),
+                prompt_bundle=self._prompt_bundle(),
+                prompt_key=self.prompt_key(),
+            )
             self._fire(WizardEventType.VALIDATION_FAILED, slug=self._step.slug, reason="commit")
-            return PatternStatus.FAILURE
+            return PatternStatus.WAITING_FOR_INPUT
 
+        clear_validation_feedback(state)
         self._fire(WizardEventType.COMMIT_STARTED, hook=self._hook_name)
         context = CommitContext(
             wizard_name=self._wizard_name,
