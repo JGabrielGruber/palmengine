@@ -2,7 +2,7 @@
 Parallel pattern app — scoped branches, sub-workflows, and merge strategies.
 """
 
-from palm.patterns.parallel import registry as registry  # noqa: F401 — side effect
+from palm.patterns.parallel import registry as registry  # — side effect
 from palm.patterns.parallel.branch import BranchRunner
 from palm.patterns.parallel.builder import build, parallel_config_from_options
 from palm.patterns.parallel.config import BranchConfig, MergeStrategy, ParallelConfig

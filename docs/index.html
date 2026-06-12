@@ -75,11 +75,11 @@
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
       "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for interactive wizards, data pipelines, transactional workflows, and durable process instances.",
-      "version": "0.7.4",
+      "version": "0.8.15",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.7.4",
+      "softwareVersion": "0.8.15",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -95,10 +95,12 @@
       },
       "featureList": [
         "Behavior Trees",
-        "Interactive Wizards with backtracking & resume",
+        "State schemas & scoped validation",
+        "Interactive Wizards with collection steps & backtracking",
+        "Parallel wizard branches",
         "Durable Instances (state survives restarts)",
         "Transactional commits",
-        "CLI + REPL",
+        "CLI + REPL with numbered choice UX",
         "Embedded, Daemon & Server Runtimes"
       ],
       "downloadUrl": "https://github.com/JGabrielGruber/palmengine",
@@ -160,7 +162,7 @@
       <div
         class="inline-flex items-center gap-x-2 bg-slate-950/60 border border-cyan-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.7.4 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
+        <span class="text-sm font-medium tracking-widest">v0.8.15 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
             install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
@@ -168,7 +170,7 @@
           class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
       </h1>
       <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
-        Lightweight Behavior Tree engine for wizards, pipelines, and transactional workflows.
+        State schemas, parallel branches, and dynamic list wizards — built on Behavior Trees.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="#quickstart"
@@ -207,7 +209,7 @@
   <section id="features" class="py-24 bg-slate-900">
     <div class="max-w-7xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-16">Built for real life</h2>
-      <div class="grid md:grid-cols-3 gap-8">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
@@ -221,8 +223,8 @@
             <path d="M21 16h-4" />
             <path d="M11 3H9" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">Interactive Wizards</h3>
-          <p class="text-zinc-400">Backtracking, validation, summary &amp; transactional commits. Resume anytime.</p>
+          <h3 class="text-2xl font-semibold mb-4">Wizards &amp; Lists</h3>
+          <p class="text-zinc-400">Collection steps for dynamic todo lists, schemas, summary &amp; commit. Resume anytime.</p>
         </div>
         <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -233,8 +235,18 @@
             <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
             <path d="M12 12V8" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">Behavior Trees</h3>
-          <p class="text-zinc-400">Compositional, observable, and powerful control flow.</p>
+          <h3 class="text-2xl font-semibold mb-4">Parallel Branches</h3>
+          <p class="text-zinc-400">Run wizard branches concurrently with isolated scopes and merged validation.</p>
+        </div>
+        <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
+            <path d="M12 3v18" />
+            <path d="M3 12h18" />
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+          <h3 class="text-2xl font-semibold mb-4">State Schemas</h3>
+          <p class="text-zinc-400">Layered validation with scoped blackboards — flow, step, and field levels.</p>
         </div>
         <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -255,7 +267,11 @@
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
       <div class="bg-black border border-cyan-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
-        <pre><code>$ pip install palmengine[cli]<br>$ palm doctor</br>$ palm wizard start onboard</code></pre>
+        <pre><code>$ pip install palmengine[cli]
+$ palm doctor
+$ palm flow start schema-onboard
+$ palm flow start todo-builder
+$ palm flow start parallel-demo</code></pre>
       </div>
       <p class="text-center text-zinc-400 mt-6">
         Or with uv (recommended): <code class="bg-zinc-900 px-2 py-1 rounded">uvx palmengine palm doctor</code>

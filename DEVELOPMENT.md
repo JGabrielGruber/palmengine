@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.8.8**.
+Guide for contributors working on Palm **0.8.15**.
 
 ## Setup
 
@@ -302,6 +302,33 @@ pytest tests/test_state_snapshot_hook.py -q
 2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
 3. Add tests in `tests/`.
 
+## Collection step kind (wizard)
+
+Use `step_kind: collection` for repeatable structured items (todo lists, line items, etc.).
+
+| Option | Purpose |
+|--------|---------|
+| `collection_key` | Answer key for the assembled list (defaults to step `slug`) |
+| `item_fields` | Per-item field defs — same shape as wizard step dicts |
+| `min_items` | Minimum count before "continue" succeeds |
+| `label_field` | Field slug used for item labels and partial search (auto-detected if omitted) |
+
+Implementation lives in `palm/patterns/wizard/collection*.py`:
+
+- `collection.py` — field config parsing
+- `collection_state.py` — phases, draft, scopes
+- `collection_selection.py` — compact edit/remove item lookup
+- `collection_leaf.py` — behavior tree leaf
+
+Tests: `tests/test_wizard_collection.py`, `tests/test_collection_selection.py`.
+
+**Best practices:**
+
+- Align `item_fields` schemas with flow `state_schema` `items` definition
+- Use `label_field` when the display field is not `title`/`name`
+- Omit optional empty fields from drafts (handled automatically)
+- Test choice fields with numeric input (`1`, `2`) and partial strings
+
 ## Adding example definitions
 
 1. Add `examples/definitions/<name>.py`.
@@ -358,6 +385,9 @@ All code under `archive/` is historical. Never add new features there.
 |------|-------|
 | Core orchestration | `tests/test_orchestration.py` |
 | Wizard pattern | `tests/test_wizard.py`, `tests/test_wizard_schema.py` |
+| Collection steps | `tests/test_wizard_collection.py`, `tests/test_collection_selection.py` |
+| Choice resolution | `tests/test_wizard_choice_resolution.py` |
+| Parallel pattern | `tests/test_parallel_pattern.py`, `tests/core/test_parallel_node.py` |
 | State schemas / scoping | `tests/core/test_state_scoping.py`, `tests/test_state_phase3.py` |
 | Executions / builder | `tests/test_executions.py` |
 | Instances / resume | `tests/test_instances.py` |
@@ -398,4 +428,4 @@ pip install -i https://test.pypi.org/simple/ palmengine[cli]
 
 ---
 
-Last updated: June 2026 (0.8.8)
+Last updated: June 2026 (0.8.15)

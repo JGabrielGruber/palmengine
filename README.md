@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.8.8` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.8.15` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
 
 ---
 
@@ -49,19 +49,19 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.8.8)
+## What works today (0.8.15)
 
 | Area | Capabilities |
 |------|----------------|
 | **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
 | **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`), observability events |
-| **Patterns** | Transactional **wizard** (layered validation, step scopes, summary, commit, resources); DAG and ETL stubs |
+| **Patterns** | **Wizard** (layered validation, collection steps, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
 | **Persistence** | Production **filesystem** backend, `StorageFactory`, `InstanceManager`, durable resume across restarts |
 | **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
 | **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
-| **DX** | Example definitions (`schema-onboard`), `full_demo.py`, docs, `just` quality recipes |
+| **DX** | Examples (`schema-onboard`, `todo-builder`, `parallel-demo`), numbered choice UX, `just` quality recipes |
 
 ```mermaid
 flowchart LR
@@ -84,10 +84,19 @@ pip install palmengine[cli]
 palm version --full      # version + registered plugins
 palm doctor              # health, definitions, instances
 palm repl                # interactive shell (default: `palm`)
-palm wizard start onboard
+palm flow start onboard          # recommended — works for all patterns
+# shortcut: palm start onboard
 ```
 
 **From source:** `uv sync --group dev --extra cli && uv pip install -e ".[cli]"` then the same `palm` commands. Demo script: `uv run python examples/full_demo.py`.
+
+**Try the new examples:**
+
+```bash
+palm flow start schema-onboard   # layered state schemas + scopes
+palm flow start todo-builder     # dynamic todo list (collection step)
+palm flow start parallel-demo    # parallel wizard branches
+```
 
 **CLI persistence:** the CLI is a thin client of `PalmApp`. By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
 
@@ -205,14 +214,18 @@ Definitions under [`examples/definitions/`](examples/definitions/) auto-register
 
 | Example | Command | Highlights |
 |---------|---------|------------|
-| **Onboarding** | `wizard start onboard` | Validation, summary + commit |
-| **Data ingestion** | `wizard start ingest-wizard` | Resource action step, ETL companion flow |
-| **Approval** | `wizard start approval` | Multi-field validation, commit handler |
-| **Quick demo** | `wizard start quick` | Minimal wizard for resume experiments |
+| **Onboarding** | `flow start onboard` | Validation, summary + commit |
+| **Schema wizard** | `flow start schema-onboard` | Flow + per-step schemas, scoped resume |
+| **Todo builder** | `flow start todo-builder` | Collection step, dynamic lists, schemas |
+| **Parallel demo** | `flow start parallel-demo` | Concurrent branches, merge, branch scopes |
+| **Data ingestion** | `flow start ingest-wizard` | Resource action step, ETL companion flow |
+| **Approval** | `flow start approval` | Multi-field validation, commit handler |
+| **Quick demo** | `flow start quick` | Minimal wizard for resume experiments |
 
 ```bash
 palm process list
 palm process submit data-ingestion
+palm doctor    # shows flows with state schemas
 ```
 
 Details: [examples/README.md](examples/README.md)
@@ -229,8 +242,10 @@ Details: [examples/README.md](examples/README.md)
 | `palm process list` \| `submit` \| `resume` | Definition catalog and lifecycle |
 | `palm instance list` | Persisted instances |
 | `palm instance snapshots <id>` | State snapshot history for an instance (when enabled) |
-| `palm wizard start <flow>` | Submit a wizard flow |
-| `palm input` / `palm back` | Drive or rewind an active wizard |
+| `palm flow start <flow>` | Start any flow (wizard, parallel, …) — **recommended** |
+| `palm start <flow>` | Shortcut for `flow start` |
+| `palm wizard start <flow>` | Wizard-only shortcut (legacy alias) |
+| `palm input` / `palm back` | Drive or rewind an active flow |
 
 Run `palm --help` for the full list.
 

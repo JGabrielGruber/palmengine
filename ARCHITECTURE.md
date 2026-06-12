@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.8.8 · June 2026 · PyPI: `palmengine`
+**Palm Engine** · 0.8.15 · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -197,7 +197,7 @@ Extension is explicit and import-time registered:
 
 | Registry | Location | Examples |
 |----------|----------|----------|
-| `pattern_registry` | `core/registry.py` | wizard, dag, etl |
+| `pattern_registry` | `core/registry.py` | wizard, parallel, dag, etl |
 | `provider_registry` | `core/registry.py` | rest, graphql, postgres |
 | `storage_registry` | `core/registry.py` | memory, filesystem, postgres, mongodb |
 | Pattern builder map | `patterns/_registry.py` | per-pattern `build()` functions |
@@ -311,19 +311,92 @@ Keeping the executor outside core preserves a single orchestration model while a
 
 ---
 
+## State schemas & scoping
+
+Palm validates execution state with a lightweight, dependency-free **JSON Schema subset** in `palm.core.context.state_schema` (`DictStateSchema`). Flow and step definitions attach schemas at submission time; wizards bind per-step schemas to **named scopes**.
+
+| Layer | Configured on | Validated when |
+|-------|---------------|----------------|
+| Built-in field rules | `field_type`, `required`, `choices` | Each input |
+| Declarative rules | `validation` array on step | Each input |
+| Per-step schema | `state_schema` on step dict | Each input (active scope) |
+| Flow schema | `state_schema` on `FlowDefinition` | Summary, commit, collection finish |
+
+**Scoped blackboard** (`BaseState`):
+
+- `enter_scope` / `exit_scope` — stack of named contexts
+- `set_scoped` / `get_scoped` — values isolated per scope
+- `bind_scope_schema` — schema active while scope is on stack
+- `effective_schema()` — innermost schema wins
+
+Snapshots embed `__palm:meta` with `scope_stack`, `scope_schemas`, and `effective_schema` so resume restores scope context—not only flat answers.
+
+**CLI coercion:** string REPL input is coerced to schema types (e.g. `"27"` → `27`) before validation. Choice fields resolve index, exact, and unique partial matches to canonical enum values.
+
+Reference flow: `schema-onboard` (`examples/definitions/schema_wizard.py`).
+
+---
+
+## Parallel pattern
+
+The **parallel** pattern runs multiple child flows (wizard branches) concurrently against one parent blackboard:
+
+```mermaid
+flowchart TB
+    parent[ParallelPattern]
+    b1[Branch alpha — wizard]
+    b2[Branch beta — wizard]
+    merge[Merge + parent schema]
+
+    parent --> b1
+    parent --> b2
+    b1 --> merge
+    b2 --> merge
+```
+
+| Concern | Approach |
+|---------|----------|
+| Isolation | Per-branch blackboard snapshots; input routed to active branch |
+| Scopes | Branch slug prefix in wizard step slugs and CLI (`@parallel:alpha`) |
+| Merge | `all`, `any`, or `first` strategy on branch completion |
+| Validation | Parent flow schema validates merged answers |
+
+Example: `parallel-demo` (`examples/definitions/parallel_demo.py`).
+
+---
+
 ## Transactional wizards
 
 The wizard pattern is Palm’s most complete expression of **human-first, transactional** orchestration:
 
 - Declarative **validation** on input steps (built-in, rule-based, per-step schema, flow schema)
 - **Step scopes** with schema binding and scope-aware prompt bundles
+- **Collection steps** — repeatable item lists with per-item field scopes (see below)
 - **CLI coercion** — string input converted to schema types before validation
+- **Choice resolution** — numbered/partial selection for `field_type: choice`
 - **Backtracking** with protected summary/commit steps
 - **Resource action** steps via `ResourceEngine`
 - Auto **summary** and **commit** with named handlers
 - Commit failure → job failure (no silent partial commit)
 
-Commit handlers run inside the tree; results are visible on job state. See `examples/definitions/schema_wizard.py` for the layered schema reference flow (`schema-onboard`).
+Commit handlers run inside the tree; results are visible on job state.
+
+### Collection step kind
+
+`step_kind: collection` builds repeatable structured lists inside one wizard step:
+
+| Phase | Operator action |
+|-------|-----------------|
+| `menu` | Add, edit, remove, or continue (compact menu) |
+| `select_item` | Pick item by number or partial `label_field` match |
+| `field` | Walk `item_fields` with per-field schemas and scopes |
+| `remove_confirm` | Confirm deletion |
+
+Scope path example: `todos > item-2 > title`. Session keys (`collection_phase`, `collection_draft`, …) persist in snapshots for resume.
+
+Configuration: `collection_key`, `item_fields`, `min_items`, optional `label_field` (defaults to first required text field or `title`/`name`).
+
+Reference flow: `todo-builder` (`examples/definitions/todo_builder.py`).
 
 ---
 

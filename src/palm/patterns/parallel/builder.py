@@ -25,10 +25,7 @@ def build(
         raise DefinitionBuildError("Registry entry for 'parallel' is not ParallelPattern")
 
     config = parallel_config_from_options(flow.options or {})
-    runners = [
-        _build_branch_runner(branch, context, flow.name)
-        for branch in config.branches
-    ]
+    runners = [_build_branch_runner(branch, context, flow.name) for branch in config.branches]
     return pattern_cls(
         name=flow.name,
         config=config,

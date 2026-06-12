@@ -166,6 +166,7 @@ Wizard flow options commonly used in examples:
 | `state_schema_ref` | Reference a named schema in the definition repository |
 | `step_kind: collection` | Repeatable item builder with `item_fields` and `collection_key` |
 | `item_fields` | Per-item field defs (slug, prompt, schema) for collection steps |
+| `label_field` | Field slug for item labels and partial edit/remove search |
 | `min_items` | Minimum items required before leaving a collection step |
 
 Commit handlers receive a `CommitContext` with `answers`, `state`, and optional `resource_engine` for `fetch_resource()`.

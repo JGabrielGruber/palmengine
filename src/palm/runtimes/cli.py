@@ -78,9 +78,7 @@ def main(argv: list[str] | None = None) -> int:
                 exit_code = 1
         elif inv.command == "flow":
             extra = [inv.flow] if inv.flow_cmd == "start" and inv.flow else []
-            exit_code = registry.dispatch(
-                ctx, " ".join([f"flow {inv.flow_cmd}", *extra]).strip()
-            )
+            exit_code = registry.dispatch(ctx, " ".join([f"flow {inv.flow_cmd}", *extra]).strip())
         elif inv.command == "start" and inv.flow:
             exit_code = registry.dispatch(ctx, f"start {inv.flow}")
         elif inv.command == "wizard":

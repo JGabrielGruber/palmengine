@@ -4,7 +4,7 @@ Collection step state — list storage, phases, and per-item scopes.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from palm.core.context import BaseState
 from palm.patterns.wizard.collection import CollectionFieldConfig
@@ -23,7 +23,7 @@ ACTION_REMOVE_SELECT = "__collection_remove_select__"
 def collection_phase(state: BaseState) -> CollectionPhase:
     raw = state.get(WizardKeys.COLLECTION_PHASE)
     if raw in ("menu", "field", "remove_confirm", "select_item"):
-        return raw
+        return cast(CollectionPhase, raw)
     return "menu"
 
 
@@ -76,7 +76,7 @@ def clear_collection_session(state: BaseState) -> None:
 def collection_select_action(state: BaseState) -> str | None:
     raw = state.get(WizardKeys.COLLECTION_SELECT_ACTION)
     if raw in ("edit", "remove"):
-        return raw
+        return str(raw)
     return None
 
 

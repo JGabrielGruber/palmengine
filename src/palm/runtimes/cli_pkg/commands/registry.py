@@ -336,9 +336,7 @@ def _cmd_flow_list(ctx: CliContext, _args: list[str]) -> int:
 
         table.add_row(flow.name, flow.definition_id, flow.pattern, schema, flow_detail_label(flow))
     ctx.console.print(table)
-    ctx.console.print(
-        "[dim]Start any flow:[/] [cyan]flow start <name>[/] or [cyan]start <name>[/]"
-    )
+    ctx.console.print("[dim]Start any flow:[/] [cyan]flow start <name>[/] or [cyan]start <name>[/]")
     return 0
 
 

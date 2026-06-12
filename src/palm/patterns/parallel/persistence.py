@@ -29,18 +29,19 @@ def parallel_step_slug_for_job(job: Job) -> str | None:
 def parallel_runtime_position_for_job(job: Job) -> dict[str, Any]:
     if not isinstance(job.executable, ParallelPattern):
         return {}
-    return parallel_runtime_position(job.executable, job.state)
+    from typing import cast
+
+    return parallel_runtime_position(job.executable, cast(BlackboardState, job.state))
 
 
 def parallel_runtime_position(pattern: ParallelPattern, state: BlackboardState) -> dict[str, Any]:
     child_results = [
-        result.value if result is not None else None
-        for result in pattern.parallel._child_results
+        result.value if result is not None else None for result in pattern.parallel._child_results
     ]
     branches = {
         slug: {
             "completed": runner.completed,
-            "scope_entered": runner._scope_entered,  # noqa: SLF001
+            "scope_entered": runner._scope_entered,
         }
         for slug, runner in pattern.branch_runners().items()
     }
@@ -76,7 +77,7 @@ def restore_parallel_position(pattern: ParallelPattern, position: dict[str, Any]
                     restored.append(PatternStatus(str(item)))
                 except ValueError:
                     restored.append(None)
-        pattern.parallel._child_results = restored  # noqa: SLF001
+        pattern.parallel._child_results = restored
 
     branches = position.get("branches")
     if isinstance(branches, dict):

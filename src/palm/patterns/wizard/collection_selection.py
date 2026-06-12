@@ -93,10 +93,7 @@ def format_numbered_item_list(
 
 def item_selection_prompt(action: CollectionSelectAction) -> str:
     verb = "edit" if action == "edit" else "remove"
-    return (
-        f"Which item to {verb}? "
-        f"(enter number, partial {verb} label, or 'cancel')"
-    )
+    return f"Which item to {verb}? " f"(enter number, partial {verb} label, or 'cancel')"
 
 
 def item_selection_error(
@@ -115,7 +112,7 @@ def item_selection_error(
     )
     return (
         f"Could not find an item to {verb} from {raw!r}. "
-        f"Enter a number (1–{len(items)}), a matching label, or 'cancel':\n"
+        f"Enter a number (1-{len(items)}), a matching label, or 'cancel':\n"
         f"{listing}"
     )
 
@@ -170,9 +167,7 @@ def resolve_item_index(
     if len(prefix_matches) == 1:
         return prefix_matches[0]
 
-    substring_matches = [
-        index for index, label in enumerate(labels) if lowered in label.lower()
-    ]
+    substring_matches = [index for index, label in enumerate(labels) if lowered in label.lower()]
     if len(substring_matches) == 1:
         return substring_matches[0]
 

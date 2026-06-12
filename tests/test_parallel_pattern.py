@@ -5,7 +5,6 @@ from __future__ import annotations
 from palm.common import DefinitionRepository
 from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.common.persistence.state_snapshot import snapshot_state, state_from_snapshot
-from palm.core import DictStateSchema
 from palm.core.behavior_tree import PatternStatus
 from palm.core.context import ContextEngine
 from palm.definitions import FlowDefinition
@@ -98,8 +97,8 @@ def _multi_step_branch_flow() -> FlowDefinition:
 
 
 def test_parallel_branch_advances_through_multiple_steps() -> None:
-    from palm.patterns.wizard.keys import WizardKeys
     from palm.patterns.parallel.scope import load_branch_snapshot_for
+    from palm.patterns.wizard.keys import WizardKeys
 
     flow = _multi_step_branch_flow()
     state = BlackboardState(schema=flow.materialize_state_schema())
@@ -161,7 +160,9 @@ def test_parallel_branch_scopes_isolate_wizard_state() -> None:
     parallel.tick(state)
 
     scopes = state.scope_stack()
-    assert "alpha" in scopes or state.get_scoped(ParallelKeys.BRANCH_STATE, default=None) is not None
+    assert (
+        "alpha" in scopes or state.get_scoped(ParallelKeys.BRANCH_STATE, default=None) is not None
+    )
 
 
 def test_parallel_subflow_via_flow_ref() -> None:
@@ -215,7 +216,7 @@ def test_parallel_resume_restores_child_results() -> None:
     parallel.tick(state)
     position = parallel_runtime_position(parallel, state)
     restore_parallel_position(parallel, position)
-    assert parallel.parallel._child_results  # noqa: SLF001
+    assert parallel.parallel._child_results
 
 
 def test_parallel_with_context_engine_tracks_scope() -> None:

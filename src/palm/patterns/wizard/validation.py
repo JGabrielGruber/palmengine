@@ -200,7 +200,7 @@ def choice_selection_error(raw: Any, choices: Sequence[str]) -> str:
     if not choices:
         return f"Invalid selection: {raw!r}"
     return (
-        f"Invalid selection {raw!r}. Enter a number (1–{len(choices)}) "
+        f"Invalid selection {raw!r}. Enter a number (1-{len(choices)}) "
         f"or matching option name:\n{format_numbered_choices(choices)}"
     )
 

@@ -91,7 +91,7 @@ def render_job_panel(
 
     if job.status in _TERMINAL:
         answers: dict[str, Any] = {}
-        if isinstance(job.executable, (WizardPattern, ParallelPattern)):
+        if isinstance(job.executable, WizardPattern | ParallelPattern):
             answers = job.executable.answers(job.state)
         style = "green" if job.status == JobStatus.SUCCEEDED else "red"
         label = "completed" if job.status == JobStatus.SUCCEEDED else job.status.value
@@ -228,11 +228,7 @@ def _flow_detail_label(flow: Any) -> str:
     if flow.pattern == "parallel":
         branches = flow.options.get("branches") if isinstance(flow.options, dict) else None
         if isinstance(branches, list):
-            slugs = [
-                str(item.get("slug", "?"))
-                for item in branches
-                if isinstance(item, dict)
-            ]
+            slugs = [str(item.get("slug", "?")) for item in branches if isinstance(item, dict)]
             merge = flow.options.get("merge_strategy", "all")
             return f"{len(slugs)} branches ({merge}): {', '.join(slugs)}"
         return "parallel"

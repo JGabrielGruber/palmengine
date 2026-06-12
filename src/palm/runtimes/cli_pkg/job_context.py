@@ -5,7 +5,7 @@ Job context extraction — scopes, branches, schemas, and validation for CLI dis
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from palm.common.persistence.state_snapshot import state_from_snapshot
 from palm.core.orchestration import Job
@@ -16,6 +16,11 @@ from palm.patterns.parallel.scope import load_branch_snapshot_for
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
+
+
+def _as_blackboard(state: Any) -> BlackboardState:
+    """Narrow job state to ``BlackboardState`` for CLI inspection helpers."""
+    return cast(BlackboardState, state)
 
 
 @dataclass(frozen=True)
@@ -67,7 +72,6 @@ class JobContext:
 def inspect_job(job: Job) -> JobContext:
     """Build a display context from a live orchestration job."""
     executable = job.executable
-    state = job.state
 
     if isinstance(executable, ParallelPattern):
         return _inspect_parallel(job, executable)
@@ -107,7 +111,7 @@ def inspect_job_json(job: Job) -> dict[str, Any]:
 
 
 def _inspect_parallel(job: Job, parallel: ParallelPattern) -> JobContext:
-    state = job.state
+    state = _as_blackboard(job.state)
     active = state.get(ParallelKeys.ACTIVE_BRANCH)
     active_slug = str(active) if isinstance(active, str) else None
     branches = _parallel_branch_status(parallel, state, active_slug)
@@ -144,7 +148,7 @@ def _inspect_parallel(job: Job, parallel: ParallelPattern) -> JobContext:
 
 
 def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
-    state = job.state
+    state = _as_blackboard(job.state)
     prompt_bundle = _prompt_from_state(state)
     answers = wizard.answers(state)
 
@@ -155,8 +159,7 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         pattern="wizard",
         step=wizard.current_step_slug(state),
         scope_path=_wizard_scope_path(state, prompt_bundle),
-        validation_error=_validation_from_bundle(prompt_bundle)
-        or _validation_from_state(state),
+        validation_error=_validation_from_bundle(prompt_bundle) or _validation_from_state(state),
         effective_schema_type=_effective_schema_type(state),
         prompt=_prompt_text(prompt_bundle),
         prompt_title=_prompt_title(prompt_bundle, wizard.current_step_slug(state)),
@@ -269,11 +272,7 @@ def _collection_from_bundle(
     phase = bundle.get("collection_phase")
     phase_str = str(phase) if phase is not None else None
     previews_raw = bundle.get("collection_item_previews")
-    previews = (
-        tuple(str(item) for item in previews_raw)
-        if isinstance(previews_raw, list)
-        else ()
-    )
+    previews = tuple(str(item) for item in previews_raw) if isinstance(previews_raw, list) else ()
     raw = bundle.get("collection_items")
     if isinstance(raw, list):
         items = tuple(dict(item) for item in raw if isinstance(item, dict))

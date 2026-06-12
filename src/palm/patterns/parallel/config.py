@@ -4,7 +4,7 @@ Parallel pattern configuration — branches, merge strategy, and sub-flow refs.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Literal
 
 from palm.core.behavior_tree import ParallelPolicy

@@ -17,7 +17,9 @@ from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.validation import StepValidationRule
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
-_WIZARD_STEP_KINDS = frozenset({"input", "introduction", "summary", "commit", "action", "collection"})
+_WIZARD_STEP_KINDS = frozenset(
+    {"input", "introduction", "summary", "commit", "action", "collection"}
+)
 
 
 def build(
@@ -164,7 +166,9 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
     ref = data.get("state_schema_ref")
     state_schema_ref = str(ref) if ref else None
 
-    item_fields = ()
+    from palm.patterns.wizard.collection import CollectionFieldConfig
+
+    item_fields: tuple[CollectionFieldConfig, ...] = ()
     collection_key = data.get("collection_key")
     min_items = int(data.get("min_items", 1))
     label_field = data.get("label_field")
@@ -221,7 +225,7 @@ def _materialize_step(
 ) -> WizardStepConfig:
     item_fields = step.item_fields
     if step.step_kind == "collection" and item_fields:
-        from palm.patterns.wizard.collection import CollectionFieldConfig, item_fields_from_mapping
+        from palm.patterns.wizard.collection import item_fields_from_mapping
 
         raw_fields = [
             {

@@ -2,6 +2,32 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.15] — 2026-06-12
+
+Polished release — dynamic list wizards, parallel branches, and friendlier CLI choice UX on top of the state schema foundation.
+
+### Added
+
+- **Collection step kind** (`step_kind: collection`) — repeatable structured items with add, edit, remove, and done; per-item scopes (`item-N:field`), draft state, and resume-friendly session keys
+- **Collection item selection** — compact edit/remove flow: pick by number, partial label search, or `cancel`; configurable `label_field` for any collection flow
+- **Choice input resolution** — wizard and collection choice fields accept 1-based index, exact value, case-insensitive match, and unique partial match; canonical values stored in answers
+- **Parallel pattern** (`parallel-demo`) — concurrent wizard branches with isolated scopes, per-branch snapshots, merge strategies, and CLI branch progress (`@parallel:<branch>`)
+- **Examples** — `todo-builder` (collection + schemas), `parallel-demo`; `flow start` as the recommended entry point
+- **Tests** — collection steps, item selection, choice resolution, parallel branch resume, CLI E2E for `todo-builder` and `schema-onboard`
+
+### Changed
+
+- **CLI display** — numbered option lists for choices and collection menus; compact item previews during edit/remove selection
+- **Collection menu** — main menu stays small (add / edit / remove / continue) even with many items; current list shown as a numbered summary
+- **Documentation** — README, ARCHITECTURE, DEVELOPMENT, examples guide, and website refreshed for 0.8.15
+- **Version** — release line advances to **0.8.15**
+
+### Fixed
+
+- **Union-type schemas** — `DictStateSchema` validates `type: ["string", "null"]` and similar unions without crashing
+- **Optional collection fields** — empty CLI input skips optional fields; regex rules treat `None` as empty
+- **Scope stack** — collection field editing avoids duplicate scope frames on resume
+
 ## [0.8.8] — 2026-06-12
 
 State schema and scoping release — layered validation, durable scope resume, and CLI polish.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.behavior_tree import PatternStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard import WizardKeys, WizardPattern
+from palm.patterns.wizard import WizardPattern
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.validation import (
     choice_selection_error,

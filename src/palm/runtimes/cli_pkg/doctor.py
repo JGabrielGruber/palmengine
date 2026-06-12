@@ -4,12 +4,14 @@ Engine diagnostics — health, registries, storage, definitions, and instances.
 
 from __future__ import annotations
 
+from typing import Any
+
 from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.runtimes.cli_pkg.context import CliContext
 from palm.runtimes.cli_pkg.display import render_definition_catalog, render_instance_table
-from palm.runtimes.cli_pkg.job_context import context_lines, inspect_job
 from palm.runtimes.cli_pkg.instance_ops import is_terminal_status
+from palm.runtimes.cli_pkg.job_context import context_lines, inspect_job
 from palm.runtimes.cli_pkg.settings import is_durable_storage
 from palm.runtimes.cli_pkg.startup import format_persistence_notice
 

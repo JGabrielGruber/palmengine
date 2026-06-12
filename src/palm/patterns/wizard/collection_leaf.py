@@ -8,8 +8,8 @@ from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState, ContextEngine
-from palm.patterns.wizard.collection import CollectionFieldConfig
 from palm.patterns.wizard.collection_selection import (
+    CollectionSelectAction,
     default_label_field,
     format_item_preview,
     format_numbered_item_list,
@@ -30,13 +30,13 @@ from palm.patterns.wizard.collection_state import (
     collection_phase,
     collection_remove_index,
     collection_select_action,
-    enter_field_scope,
     ensure_scope,
-    leave_field_scope,
+    enter_field_scope,
     field_as_step,
     format_item_label,
     get_collection_items,
     item_scope_name,
+    leave_field_scope,
     leave_item_scope,
     normalize_optional_field_value,
     set_collection_draft,
@@ -50,7 +50,7 @@ from palm.patterns.wizard.collection_state import (
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, leave_step
+from palm.patterns.wizard.state import enrich_prompt_bundle, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     choice_selection_error,
@@ -165,7 +165,9 @@ class WizardCollectionLeaf(InteractiveLeaf):
             return self._start_select_item(state, action="remove")
         return self._request_menu(state)
 
-    def _start_select_item(self, state: BaseState, *, action: str) -> PatternStatus:
+    def _start_select_item(
+        self, state: BaseState, *, action: CollectionSelectAction
+    ) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
         if not items:
             return self._request_menu(state)
@@ -173,9 +175,13 @@ class WizardCollectionLeaf(InteractiveLeaf):
         set_collection_phase(state, "select_item")
         return self._request_select_item(state)
 
+    def _select_action(self, state: BaseState) -> CollectionSelectAction:
+        action = collection_select_action(state)
+        return "remove" if action == "remove" else "edit"
+
     def _request_select_item(self, state: BaseState) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
-        action = collection_select_action(state) or "edit"
+        action = self._select_action(state)
         previews = [
             format_item_preview(
                 item,
@@ -187,7 +193,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
         ]
         bundle = self._prompt_bundle(
             state,
-            prompt=item_selection_prompt(action),  # type: ignore[arg-type]
+            prompt=item_selection_prompt(action),
             field_type="text",
             title="Edit item" if action == "edit" else "Remove item",
             extra={
@@ -202,7 +208,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
 
     def _handle_select_item(self, value: Any, state: BaseState) -> PatternStatus:
         items = get_collection_items(state, self._collection_key)
-        action = collection_select_action(state) or "edit"
+        action = self._select_action(state)
         if is_cancel_input(value):
             set_collection_select_action(state, None)
             set_collection_phase(state, "menu")
@@ -217,13 +223,13 @@ class WizardCollectionLeaf(InteractiveLeaf):
                         value,
                         items,
                         label_field=self._label_field,
-                        action=action,  # type: ignore[arg-type]
+                        action=action,
                         item_fields=self._fields,
                     ),
                 ),
                 prompt_bundle=self._prompt_bundle(
                     state,
-                    prompt=item_selection_prompt(action),  # type: ignore[arg-type]
+                    prompt=item_selection_prompt(action),
                     field_type="text",
                     title="Edit item" if action == "edit" else "Remove item",
                     extra={
@@ -275,8 +281,12 @@ class WizardCollectionLeaf(InteractiveLeaf):
 
         field = self._fields[field_index]
         edit_index = collection_edit_index(state)
-        item_index = edit_index if edit_index is not None else len(
-            get_collection_items(state, self._collection_key),
+        item_index = (
+            edit_index
+            if edit_index is not None
+            else len(
+                get_collection_items(state, self._collection_key),
+            )
         )
         enter_field_scope(state, self._step, field, item_index, context=self._context)
 
@@ -349,8 +359,12 @@ class WizardCollectionLeaf(InteractiveLeaf):
             )
 
         edit_index = collection_edit_index(state)
-        item_index = edit_index if edit_index is not None else len(
-            get_collection_items(state, self._collection_key),
+        item_index = (
+            edit_index
+            if edit_index is not None
+            else len(
+                get_collection_items(state, self._collection_key),
+            )
         )
         leave_field_scope(state, field, item_index, context=self._context)
         draft = collection_draft(state)

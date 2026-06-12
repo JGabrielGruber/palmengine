@@ -68,7 +68,7 @@ def _print_flow_started(ctx: CliContext, flow: FlowDefinition) -> None:
     hint = flow_start_hint(flow)
     if flow.pattern == "parallel":
         ctx.console.print(
-            f"[dim]Parallel flow started[/]"
+            "[dim]Parallel flow started[/]"
             + (f" — {hint}" if hint else "")
             + ". Branches interleave input; watch for "
             "[magenta]@parallel:<branch>[/] in the REPL prompt."

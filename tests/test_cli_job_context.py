@@ -13,7 +13,6 @@ from palm.core.behavior_tree import PatternStatus
 from palm.core.event import EventEngine
 from palm.definitions import FlowDefinition
 from palm.patterns.parallel.pattern import ParallelPattern
-from palm.patterns.wizard.pattern import WizardPattern
 from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli_pkg.commands.registry import build_registry
 from palm.runtimes.cli_pkg.job_context import (
