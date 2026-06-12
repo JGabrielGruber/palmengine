@@ -58,7 +58,7 @@ class BranchRunner:
         self._ensure_scope(parent)
         branch_state = self._ensure_branch_state(parent)
         status = self.executable.tick(branch_state)
-        save_branch_snapshot(parent, snapshot_state(branch_state))
+        save_branch_snapshot(parent, self.branch.slug, snapshot_state(branch_state))
 
         if status == PatternStatus.WAITING_FOR_INPUT:
             if parent.get(ParallelKeys.ACTIVE_BRANCH) is None:
@@ -81,7 +81,7 @@ class BranchRunner:
         self._ensure_scope(parent)
         branch_state = self._ensure_branch_state(parent)
         slug = self.executable.provide_input(branch_state, value)
-        save_branch_snapshot(parent, snapshot_state(branch_state))
+        save_branch_snapshot(parent, self.branch.slug, snapshot_state(branch_state))
         parent.set(ParallelKeys.ACTIVE_BRANCH, self.branch.slug)
         if slug:
             return f"{self.branch.slug}:{slug}"
@@ -89,7 +89,7 @@ class BranchRunner:
 
     def current_step_slug(self, parent: BaseState) -> str | None:
         if self._branch_state is None:
-            snapshot = load_branch_snapshot(parent)
+            snapshot = load_branch_snapshot(parent, self.branch.slug)
             if snapshot is None:
                 return None
             self._branch_state = state_from_snapshot(snapshot)
@@ -101,7 +101,7 @@ class BranchRunner:
 
     def branch_answers(self, parent: BaseState) -> dict[str, Any]:
         if self._branch_state is None:
-            snapshot = load_branch_snapshot(parent)
+            snapshot = load_branch_snapshot(parent, self.branch.slug)
             if snapshot is None:
                 return {}
             self._branch_state = state_from_snapshot(snapshot)
@@ -133,7 +133,7 @@ class BranchRunner:
         if self._branch_state is not None:
             return self._branch_state
 
-        snapshot = load_branch_snapshot(parent)
+        snapshot = load_branch_snapshot(parent, self.branch.slug)
         if snapshot:
             self._branch_state = state_from_snapshot(snapshot)
             return self._branch_state
@@ -141,7 +141,7 @@ class BranchRunner:
         schema = materialize_branch_schema(self.branch, self._repository)
         self._branch_state = BlackboardState(schema=schema)
         bind_schema_to_state(self._branch_state, schema)
-        save_branch_snapshot(parent, snapshot_state(self._branch_state))
+        save_branch_snapshot(parent, self.branch.slug, snapshot_state(self._branch_state))
         return self._branch_state
 
     def _finalize_success(self, parent: BaseState, branch_state: BlackboardState) -> None:

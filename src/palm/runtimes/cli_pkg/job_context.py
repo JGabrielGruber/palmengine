@@ -12,7 +12,7 @@ from palm.core.orchestration import Job
 from palm.patterns.parallel.keys import ParallelKeys
 from palm.patterns.parallel.merge import get_branch_results
 from palm.patterns.parallel.pattern import ParallelPattern
-from palm.patterns.parallel.scope import load_branch_snapshot, load_branch_snapshot_for
+from palm.patterns.parallel.scope import load_branch_snapshot_for
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
@@ -217,10 +217,7 @@ def _load_active_branch_state(
 ) -> BlackboardState | None:
     if not active_slug:
         return None
-    if parent.current_scope() == active_slug:
-        snapshot = load_branch_snapshot(parent)
-    else:
-        snapshot = load_branch_snapshot_for(parent, active_slug)
+    snapshot = load_branch_snapshot_for(parent, active_slug)
     if not snapshot:
         return None
     return state_from_snapshot(snapshot)

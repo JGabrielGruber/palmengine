@@ -65,28 +65,64 @@ def materialize_branch_schema(
     )
 
 
-def save_branch_snapshot(state: BaseState, snapshot: dict[str, Any]) -> None:
-    """Persist an isolated branch blackboard under the active branch scope."""
-    state.set_scoped(ParallelKeys.BRANCH_STATE, snapshot)
+def save_branch_snapshot(
+    state: BaseState,
+    branch_slug: str,
+    snapshot: dict[str, Any],
+) -> None:
+    """Persist an isolated branch blackboard under ``branch_slug`` (not the active scope)."""
+    node = _branch_scope_node(state, branch_slug, create=True)
+    if node is None:
+        raise RuntimeError(f"Cannot persist branch snapshot for {branch_slug!r}")
+    node[ParallelKeys.BRANCH_STATE] = snapshot
 
 
-def load_branch_snapshot(state: BaseState) -> dict[str, Any] | None:
-    raw = state.get_scoped(ParallelKeys.BRANCH_STATE)
-    return dict(raw) if isinstance(raw, dict) else None
+def load_branch_snapshot(state: BaseState, branch_slug: str) -> dict[str, Any] | None:
+    """Load a branch blackboard snapshot by slug."""
+    return load_branch_snapshot_for(state, branch_slug)
 
 
 def load_branch_snapshot_for(state: BaseState, branch_slug: str) -> dict[str, Any] | None:
     """Load a branch blackboard snapshot without entering the branch scope."""
+    node = _branch_scope_node(state, branch_slug, create=False)
+    if node is None:
+        return None
+    raw = node.get(ParallelKeys.BRANCH_STATE)
+    return dict(raw) if isinstance(raw, dict) else None
+
+
+def _branch_scope_node(
+    state: BaseState,
+    branch_slug: str,
+    *,
+    create: bool,
+) -> dict[str, Any] | None:
     storage = state.scope_storage()
     if storage is None:
         return None
     from palm.core.context.scoping import SCOPES_ROOT_KEY
 
     scopes_root = storage.get(SCOPES_ROOT_KEY)
+    if scopes_root is None:
+        if not create:
+            return None
+        scopes_root = {}
+        storage[SCOPES_ROOT_KEY] = scopes_root
     if not isinstance(scopes_root, dict):
-        return None
+        if not create:
+            return None
+        scopes_root = {}
+        storage[SCOPES_ROOT_KEY] = scopes_root
+
     node = scopes_root.get(branch_slug)
+    if node is None:
+        if not create:
+            return None
+        node = {}
+        scopes_root[branch_slug] = node
     if not isinstance(node, dict):
-        return None
-    raw = node.get(ParallelKeys.BRANCH_STATE)
-    return dict(raw) if isinstance(raw, dict) else None
+        if not create:
+            return None
+        node = {}
+        scopes_root[branch_slug] = node
+    return node
