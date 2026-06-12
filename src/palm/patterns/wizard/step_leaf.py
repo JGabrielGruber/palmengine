@@ -12,7 +12,12 @@ from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import complete_step_input, enter_step, leave_step
+from palm.patterns.wizard.state import (
+    complete_step_input,
+    enrich_prompt_bundle,
+    enter_step,
+    leave_step,
+)
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -55,19 +60,15 @@ class WizardStepLeaf(InteractiveLeaf):
             "step_index": self._step_index,
             "input_key": self.input_key(),
         }
-        errors = state.get(WizardKeys.VALIDATION_ERRORS)
-        if isinstance(errors, list) and errors:
-            bundle["validation_errors"] = errors
-            bundle["validation_error"] = state.get(WizardKeys.VALIDATION_ERROR)
-        return bundle
+        return enrich_prompt_bundle(state, bundle, context=self._context)
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        prompt_bundle = self._prompt_bundle(state)
-        state.set(self.prompt_key(), prompt_bundle)
-        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
         enter_step(state, self._step.slug, step=self._step, context=self._context)
+        prompt_bundle = self._prompt_bundle(state)
+        state.set(self.prompt_key(), prompt_bundle)
+        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,

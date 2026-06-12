@@ -80,7 +80,7 @@ def test_context_engine_exposes_scope_stack_and_effective_schema() -> None:
     assert ctx.effective_schema is schema
 
 
-def test_observe_state_emits_scope_and_value_events() -> None:
+def test_observe_state_emits_scope_events_by_default() -> None:
     events: list[tuple[str, dict]] = []
     engine = EventEngine()
     engine.initialize()
@@ -93,7 +93,7 @@ def test_observe_state_emits_scope_and_value_events() -> None:
 
     types = [item[0] for item in events]
     assert STATE_SCOPE_ENTERED in types
-    assert STATE_VALUE_SET in types
+    assert STATE_VALUE_SET not in types
     entered = next(payload for kind, payload in events if kind == STATE_SCOPE_ENTERED)
     assert entered["scope"] == "job"
     assert entered["scope_stack"] == ["job"]

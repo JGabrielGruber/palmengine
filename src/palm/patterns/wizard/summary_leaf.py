@@ -11,7 +11,7 @@ from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import enter_step, get_answers, leave_step
+from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, get_answers, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
@@ -40,7 +40,7 @@ class WizardSummaryLeaf(InteractiveLeaf):
         self._context = context_engine
 
     def _prompt_bundle(self, state: BaseState, answers: dict[str, Any]) -> dict[str, Any]:
-        return {
+        bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
@@ -51,6 +51,7 @@ class WizardSummaryLeaf(InteractiveLeaf):
             "input_key": self.input_key(),
             "summary": dict(answers),
         }
+        return enrich_prompt_bundle(state, bundle, context=self._context)
 
     def _activate_summary(
         self,

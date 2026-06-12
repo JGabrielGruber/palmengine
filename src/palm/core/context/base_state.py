@@ -42,7 +42,7 @@ class BaseState(ABC):
         self._notify_schema_bound(scope=None)
 
     def bind_scope_schema(self, scope_name: str, schema: StateSchema | None) -> None:
-        """Attach a schema that applies while ``scope_name`` is active."""
+        """Attach a schema active when ``scope_name`` is on the scope stack."""
         self._ensure_extensions()
         if not scope_name:
             raise ContextError("Scope schema name cannot be empty")

@@ -1,5 +1,16 @@
 """
 State snapshot helpers — serialize and restore execution state with schema metadata.
+
+Snapshots embed a ``__palm:meta`` document alongside blackboard data:
+
+- ``schema`` — root / flow-level schema document
+- ``scope_stack`` — active scope path (preferred for resume)
+- ``scope_schemas`` — per-scope schema documents keyed by scope name
+- ``effective_schema`` — schema active at capture time
+
+:class:`~palm.states.BlackboardState` restored via :func:`state_from_snapshot`
+re-binds schemas and re-enters the saved scope stack. Flow submission may still
+attach a flow schema when none was persisted (backward compatible).
 """
 
 from __future__ import annotations

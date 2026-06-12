@@ -6,12 +6,14 @@ from palm.common.state.observability import (
     STATE_SCOPE_EXITED,
     STATE_VALUE_SET,
     EventEngineStateObserver,
+    StateObserverConfig,
     observe_state,
 )
 from palm.common.state.schema_binding import bind_flow_state_schema, materialize_state_schema
 
 __all__ = [
     "EventEngineStateObserver",
+    "StateObserverConfig",
     "STATE_SCHEMA_BOUND",
     "STATE_SCOPE_ENTERED",
     "STATE_SCOPE_EXITED",

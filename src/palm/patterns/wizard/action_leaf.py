@@ -12,7 +12,7 @@ from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import enter_step, leave_step
+from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
@@ -42,8 +42,8 @@ class WizardActionLeaf(InteractiveLeaf):
         self._emit = emit
         self._context = context_engine
 
-    def _request_input(self, state: BaseState) -> PatternStatus:
-        prompt_bundle = {
+    def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
+        bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
@@ -54,11 +54,15 @@ class WizardActionLeaf(InteractiveLeaf):
             "input_key": self.input_key(),
             "resource_provider": self._step.resource_provider,
         }
-        state.set(self.prompt_key(), prompt_bundle)
-        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
+        return enrich_prompt_bundle(state, bundle, context=self._context)
+
+    def _request_input(self, state: BaseState) -> PatternStatus:
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
         enter_step(state, self._step.slug, step=self._step, context=self._context)
+        prompt_bundle = self._prompt_bundle(state)
+        state.set(self.prompt_key(), prompt_bundle)
+        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -68,17 +72,7 @@ class WizardActionLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        prompt_bundle = {
-            "wizard": self._wizard_name,
-            "slug": self._step.slug,
-            "title": self._step.title,
-            "prompt": self._step.prompt,
-            "field_type": self._step.field_type,
-            "step_kind": "action",
-            "step_index": self._step_index,
-            "input_key": self.input_key(),
-            "resource_provider": self._step.resource_provider,
-        }
+        prompt_bundle = self._prompt_bundle(state)
         validation = validate_step_input(state, self._step, value)
         if not validation.ok:
             publish_validation_feedback(

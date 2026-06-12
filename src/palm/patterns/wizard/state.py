@@ -19,6 +19,49 @@ if TYPE_CHECKING:
     from palm.patterns.wizard.validation import ValidationRegistry
 
 
+def scope_prompt_fields(
+    state: BaseState,
+    *,
+    context: ContextEngine | None = None,
+) -> dict[str, Any]:
+    """Return scope metadata for wizard prompt bundles."""
+    if context is not None:
+        stack = context.state_scope_stack
+        depth = context.state_scope_depth
+        current = context.current_state_scope
+    else:
+        stack = state.scope_stack()
+        depth = state.scope_depth()
+        current = state.current_scope()
+    fields: dict[str, Any] = {
+        "scope_stack": list(stack),
+        "scope_depth": depth,
+    }
+    if current is not None:
+        fields["current_scope"] = current
+    return fields
+
+
+def enrich_prompt_bundle(
+    state: BaseState,
+    bundle: dict[str, Any],
+    *,
+    context: ContextEngine | None = None,
+    include_validation: bool = True,
+) -> dict[str, Any]:
+    """Add scope and validation context to a wizard prompt bundle."""
+    enriched = dict(bundle)
+    enriched.update(scope_prompt_fields(state, context=context))
+    if include_validation:
+        errors = state.get(WizardKeys.VALIDATION_ERRORS)
+        if isinstance(errors, list) and errors:
+            enriched["validation_errors"] = errors
+            error = state.get(WizardKeys.VALIDATION_ERROR)
+            if error is not None:
+                enriched["validation_error"] = error
+    return enriched
+
+
 def get_answers(state: BaseState) -> dict[str, Any]:
     """Return a copy of collected wizard answers."""
     raw = state.get(WizardKeys.ANSWERS)

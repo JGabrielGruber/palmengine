@@ -10,7 +10,8 @@ examples/
     ├── onboard.py           # Onboarding wizard
     ├── data_ingestion.py    # Dataset registration + ETL stub
     ├── approval_workflow.py # Spend approval
-    └── quick_wizard.py      # Minimal two-step demo
+    ├── quick_wizard.py      # Minimal two-step demo
+    └── schema_wizard.py     # Flow + per-step state schemas
 ```
 
 Each module exposes `register_definitions(repository)` which:
@@ -54,6 +55,22 @@ Spend approval with structured validation and commit.
 palm wizard start approval
 ```
 
+## Schema wizard (`schema-onboard`)
+
+Demonstrates **layered state schemas** and scope-aware snapshots.
+
+- **Flow schema** (`state_schema` on `FlowDefinition`) — validates the full answers object at summary/commit
+- **Step schemas** (`state_schema` on each step dict) — validate individual inputs; bound to per-step scopes
+- **Resume** — `__palm:meta` in snapshots preserves `scope_stack` and `scope_schemas`
+
+```bash
+palm wizard start schema-onboard
+palm instance list
+palm process resume <instance_id>
+```
+
+Wizard prompts expose `scope_stack`, `current_scope`, and `scope_depth` for UIs and debugging.
+
 ## Quick wizard (`quick`)
 
 Two text steps (`alpha`, `beta`) with backtracking enabled — useful for resume demos.
@@ -80,6 +97,9 @@ Wizard flow options commonly used in examples:
 | `include_commit` | Transactional commit step |
 | `commit_hook` | Name registered on `default_commit_registry()` |
 | `allow_backtrack` | Enable `back <instance> <slug>` in the CLI |
+| `state_schema` | Flow-level JSON Schema on `FlowDefinition` |
+| `state_schema` (step) | Per-step value schema in step dicts |
+| `state_schema_ref` | Reference a named schema in the definition repository |
 
 Commit handlers receive a `CommitContext` with `answers`, `state`, and optional `resource_engine` for `fetch_resource()`.
 

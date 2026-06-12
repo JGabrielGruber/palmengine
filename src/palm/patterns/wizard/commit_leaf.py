@@ -13,7 +13,7 @@ from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitResult
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import enter_step, get_answers, leave_step
+from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, get_answers, leave_step
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
@@ -47,8 +47,8 @@ class WizardCommitLeaf(InteractiveLeaf):
         self._emit = emit
         self._context = context_engine
 
-    def _prompt_bundle(self) -> dict[str, Any]:
-        return {
+    def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
+        bundle = {
             "wizard": self._wizard_name,
             "slug": self._step.slug,
             "title": self._step.title,
@@ -59,9 +59,10 @@ class WizardCommitLeaf(InteractiveLeaf):
             "input_key": self.input_key(),
             "commit_hook": self._hook_name,
         }
+        return enrich_prompt_bundle(state, bundle, context=self._context)
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        prompt_bundle = self._prompt_bundle()
+        prompt_bundle = self._prompt_bundle(state)
         state.set(self.prompt_key(), prompt_bundle)
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
@@ -82,7 +83,7 @@ class WizardCommitLeaf(InteractiveLeaf):
             publish_validation_feedback(
                 state,
                 validation.errors,
-                prompt_bundle=self._prompt_bundle(),
+                prompt_bundle=self._prompt_bundle(state),
                 prompt_key=self.prompt_key(),
             )
             self._fire(
@@ -97,7 +98,7 @@ class WizardCommitLeaf(InteractiveLeaf):
             publish_validation_feedback(
                 state,
                 ("Please confirm commit to apply your changes.",),
-                prompt_bundle=self._prompt_bundle(),
+                prompt_bundle=self._prompt_bundle(state),
                 prompt_key=self.prompt_key(),
             )
             self._fire(WizardEventType.VALIDATION_FAILED, slug=self._step.slug, reason="commit")
