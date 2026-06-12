@@ -56,10 +56,22 @@ class ContextEngine(BasePalmEngine):
         return state.current_scope() if state is not None else None
 
     @property
+    def state_scope_stack(self) -> tuple[str, ...]:
+        """Return the bound state's scope stack."""
+        state = self.current_state
+        return state.scope_stack() if state is not None else ()
+
+    @property
     def state_scope_depth(self) -> int:
         """Return nested state scope depth for the bound state."""
         state = self.current_state
         return state.scope_depth() if state is not None else 0
+
+    @property
+    def effective_schema(self) -> StateSchema | None:
+        """Return the schema active for the current scope on the bound state."""
+        state = self.current_state
+        return state.effective_schema() if state is not None else None
 
     def get(self, key: str, default: Any = None) -> Any:
         return self.current.get(key, default)
@@ -75,6 +87,26 @@ class ContextEngine(BasePalmEngine):
         """Attach ``schema`` to the state bound to the current frame."""
         state = self._require_current_state()
         state.bind_schema(schema)
+
+    def bind_scope_schema(self, scope_name: str, schema: StateSchema | None) -> None:
+        """Attach a per-scope schema on the bound state."""
+        self._require_current_state().bind_scope_schema(scope_name, schema)
+
+    def restore_state_context(
+        self,
+        *,
+        scope_stack: list[str] | tuple[str, ...] | None = None,
+        scope_schemas: dict[str, StateSchema] | None = None,
+        schema: StateSchema | None = None,
+    ) -> None:
+        """Restore schema and scope metadata on the bound state."""
+        state = self._require_current_state()
+        if schema is not None:
+            state.bind_schema(schema)
+        if scope_schemas:
+            state.restore_scope_schemas(scope_schemas)
+        if scope_stack:
+            state.restore_scope_stack(scope_stack)
 
     def enter_state_scope(self, name: str) -> str:
         """Enter a named scope on the state bound to the current frame.

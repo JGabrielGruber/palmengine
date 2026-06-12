@@ -133,6 +133,17 @@ def test_push_state_scope_requires_bound_state() -> None:
         engine.push("session", state_scope=True)
 
 
+def test_bind_scope_schema_and_restore_state_context() -> None:
+    scoped = DictStateSchema({"type": "integer"})
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state)
+    engine.bind_scope_schema("step", scoped)
+    engine.restore_state_context(scope_stack=["step"])
+    assert engine.state_scope_stack == ("step",)
+    assert state.scope_schemas()["step"] is scoped
+
+
 def test_scope_with_state_scope_flag() -> None:
     state = TestState()
     engine = ContextEngine()

@@ -41,6 +41,7 @@ class ProcessInstance:
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     wizard_step_slug: str | None = None
     runtime_position: dict[str, Any] = field(default_factory=dict)
+    state_meta: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -64,6 +65,7 @@ class ProcessInstance:
             "updated_at": self.updated_at,
             "wizard_step_slug": self.wizard_step_slug,
             "runtime_position": dict(self.runtime_position),
+            "state_meta": dict(self.state_meta),
         }
 
     @classmethod
@@ -95,6 +97,7 @@ class ProcessInstance:
             updated_at=str(data.get("updated_at", datetime.now(UTC).isoformat())),
             wizard_step_slug=data.get("wizard_step_slug"),
             runtime_position=dict(data.get("runtime_position") or {}),
+            state_meta=dict(data.get("state_meta") or {}),
         )
 
     def append_status(self, status: str, **detail: Any) -> None:

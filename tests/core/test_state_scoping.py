@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from palm.core import (
+    DictStateSchema,
     NESTED_SCOPES_KEY,
     SCOPES_ROOT_KEY,
     BaseState,
@@ -84,6 +85,25 @@ def test_blackboard_state_nested_scopes() -> None:
         assert state.get_scoped("answer") == "yes"
     assert state.get_scoped("answer") is None
     assert state.snapshot()[SCOPES_ROOT_KEY] == {"wizard": {"answer": "yes"}}
+
+
+def test_per_scope_schema_applies_while_scope_active() -> None:
+    root = DictStateSchema({"type": "string"})
+    scoped = DictStateSchema({"type": "integer", "minimum": 1})
+    state = TestState(schema=root)
+    state.bind_scope_schema("job", scoped)
+    state.enter_scope("job")
+    assert state.effective_schema() is scoped
+    state.exit_scope()
+    assert state.effective_schema() is root
+
+
+def test_restore_scope_stack_without_observer_noise() -> None:
+    state = TestState()
+    state.enter_scope("outer")
+    state.enter_scope("inner")
+    state.restore_scope_stack(["session", "step"])
+    assert state.scope_stack() == ("session", "step")
 
 
 def test_scoped_operations_require_scope_storage() -> None:

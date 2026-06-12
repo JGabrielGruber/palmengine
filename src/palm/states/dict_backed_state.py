@@ -26,6 +26,7 @@ class DictBackedState(BaseState):
 
     def set(self, key: str, value: Any) -> None:
         self._data[key] = value
+        self._notify_value_set(key, value)
 
     def has(self, key: str) -> bool:
         return key in self._data

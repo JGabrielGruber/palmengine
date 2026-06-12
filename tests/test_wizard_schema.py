@@ -317,5 +317,8 @@ def test_snapshot_includes_schema_meta() -> None:
 
     restored = state_from_snapshot(payload)
     assert restored.schema is not None
+    assert restored.scope_stack() == ("age",)
+    assert restored.current_scope() == "age"
     assert restored.get("age") is None
+    assert restored.get_scoped("answer") == 21
     assert restored.snapshot()[SCOPES_ROOT_KEY]["age"]["answer"] == 21

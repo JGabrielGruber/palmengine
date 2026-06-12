@@ -147,9 +147,14 @@ def validate_step_value(
     return reg.validate(step, value, rules)
 
 
-def validate_step_schema(step: WizardStepConfig, value: Any) -> ValidationResult:
-    """Validate ``value`` against the step's own schema when configured."""
-    return _result_from_errors(_validate_step_schema_errors(step, value))
+def validate_step_schema(
+    step: WizardStepConfig,
+    value: Any,
+    *,
+    state: BaseState | None = None,
+) -> ValidationResult:
+    """Validate ``value`` against the step or active scope schema."""
+    return _result_from_errors(_validate_step_schema_errors(step, value, state=state))
 
 
 def validate_step_state_schema(
@@ -180,7 +185,7 @@ def validate_step_input(
     result = validate_step_value(step, value, registry=registry)
     if not result.ok:
         return _result_from_errors(format_validation_messages(result.errors))
-    result = validate_step_schema(step, value)
+    result = validate_step_schema(step, value, state=state)
     if not result.ok:
         return _result_from_errors(format_validation_messages(result.errors))
     result = validate_step_state_schema(state, step.slug, value)
@@ -193,8 +198,15 @@ def _validate_schema_value(schema: StateSchema, value: Any, *, path: str) -> lis
     return schema.validate_value(value, path=path)
 
 
-def _validate_step_schema_errors(step: WizardStepConfig, value: Any) -> list[str]:
+def _validate_step_schema_errors(
+    step: WizardStepConfig,
+    value: Any,
+    *,
+    state: BaseState | None = None,
+) -> list[str]:
     schema = step.schema
+    if schema is None and state is not None:
+        schema = state.scope_schemas().get(step.slug)
     if schema is None:
         return []
     return _validate_schema_value(schema, value, path=step.slug)

@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
-from palm.core.context import BaseState
+from palm.core.context import BaseState, ContextEngine
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
@@ -32,6 +32,7 @@ class WizardActionLeaf(InteractiveLeaf):
         step_index: int,
         resource_engine: ResourceEngine | None,
         emit: EventEmitter | None = None,
+        context_engine: ContextEngine | None = None,
     ) -> None:
         super().__init__(step.slug)
         self._step = step
@@ -39,6 +40,7 @@ class WizardActionLeaf(InteractiveLeaf):
         self._step_index = step_index
         self._resource_engine = resource_engine
         self._emit = emit
+        self._context = context_engine
 
     def _request_input(self, state: BaseState) -> PatternStatus:
         prompt_bundle = {
@@ -56,7 +58,7 @@ class WizardActionLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug)
+        enter_step(state, self._step.slug, step=self._step, context=self._context)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -105,7 +107,7 @@ class WizardActionLeaf(InteractiveLeaf):
         provider = self._resource_engine.use(self._step.resource_provider)
         result = provider.fetch(resource_id)
         state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}", result)
-        leave_step(state, self._step.slug)
+        leave_step(state, self._step.slug, context=self._context)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         clear_validation_feedback(state)
         self._fire(

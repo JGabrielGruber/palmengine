@@ -8,7 +8,7 @@ from collections.abc import Callable
 from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
-from palm.core.context import BaseState
+from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
@@ -31,12 +31,14 @@ class WizardStepLeaf(InteractiveLeaf):
         wizard_name: str,
         step_index: int,
         emit: EventEmitter | None = None,
+        context_engine: ContextEngine | None = None,
     ) -> None:
         super().__init__(step.slug)
         self._step = step
         self._wizard_name = wizard_name
         self._step_index = step_index
         self._emit = emit
+        self._context = context_engine
 
     @property
     def step(self) -> WizardStepConfig:
@@ -65,7 +67,7 @@ class WizardStepLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug)
+        enter_step(state, self._step.slug, step=self._step, context=self._context)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -90,7 +92,7 @@ class WizardStepLeaf(InteractiveLeaf):
             )
             return PatternStatus.WAITING_FOR_INPUT
 
-        leave_step(state, self._step.slug)
+        leave_step(state, self._step.slug, context=self._context)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         clear_validation_feedback(state)
         self._fire(

@@ -12,7 +12,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from palm.common.persistence.state_snapshot import snapshot_state, state_from_snapshot
+from palm.common.persistence.state_snapshot import (
+    snapshot_meta,
+    snapshot_state,
+    state_from_snapshot,
+)
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
@@ -53,6 +57,7 @@ def build_instance_from_job(
         status_history=[],
         wizard_step_slug=step_slug,
         runtime_position=position,
+        state_meta=snapshot_meta(job.state),
     )
 
 
@@ -64,6 +69,7 @@ def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInst
     instance.metadata = dict(job.metadata)
     instance.wizard_step_slug = step_slug
     instance.runtime_position = position
+    instance.state_meta = snapshot_meta(job.state)
     if instance.status != job.status.value:
         instance.append_status(
             job.status.value,

@@ -13,6 +13,8 @@ from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.validation import ValidationResult, validate_step_input
 
 if TYPE_CHECKING:
+    from palm.core.context import ContextEngine
+    from palm.core.context.state_schema import StateSchema
     from palm.patterns.wizard.config import WizardStepConfig
     from palm.patterns.wizard.validation import ValidationRegistry
 
@@ -30,26 +32,61 @@ def set_answers(state: BaseState, answers: dict[str, Any]) -> None:
     state.set(WizardKeys.ANSWERS, dict(answers))
 
 
-def enter_step(state: BaseState, slug: str) -> None:
-    """Enter a step scope when it is not already active."""
+def enter_step(
+    state: BaseState,
+    slug: str,
+    *,
+    step: WizardStepConfig | None = None,
+    context: ContextEngine | None = None,
+    scope_schema: StateSchema | None = None,
+) -> None:
+    """Enter a step scope and optionally bind a per-scope schema."""
+    schema = scope_schema
+    if schema is None and step is not None and step.schema is not None:
+        schema = step.schema
+    if schema is not None:
+        state.bind_scope_schema(slug, schema)
+
+    if context is not None:
+        if context.current_state is not state:
+            context.bind_state(state)
+        if context.current_state_scope != slug:
+            context.enter_state_scope(slug)
+        return
+
     if state.current_scope() != slug:
         state.enter_scope(slug)
 
 
-def leave_step(state: BaseState, slug: str) -> None:
+def leave_step(
+    state: BaseState,
+    slug: str,
+    *,
+    context: ContextEngine | None = None,
+) -> None:
     """Exit the step scope when it matches ``slug``."""
+    if context is not None:
+        if context.current_state_scope == slug:
+            context.exit_state_scope()
+        return
     if state.current_scope() == slug:
         state.exit_scope()
 
 
 @contextmanager
-def step_scope(state: BaseState, slug: str) -> Generator[BaseState, None, None]:
+def step_scope(
+    state: BaseState,
+    slug: str,
+    *,
+    step: WizardStepConfig | None = None,
+    context: ContextEngine | None = None,
+) -> Generator[BaseState, None, None]:
     """Context manager for synchronous (single-tick) step scopes."""
-    enter_step(state, slug)
+    enter_step(state, slug, step=step, context=context)
     try:
         yield state
     finally:
-        leave_step(state, slug)
+        leave_step(state, slug, context=context)
 
 
 def persist_step_answer(state: BaseState, slug: str, value: Any) -> None:

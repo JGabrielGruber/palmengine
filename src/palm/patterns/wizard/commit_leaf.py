@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
-from palm.core.context import BaseState
+from palm.core.context import BaseState, ContextEngine
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
@@ -35,6 +35,7 @@ class WizardCommitLeaf(InteractiveLeaf):
         commit_registry: CommitRegistry,
         resource_engine: ResourceEngine | None = None,
         emit: EventEmitter | None = None,
+        context_engine: ContextEngine | None = None,
     ) -> None:
         super().__init__(step.slug)
         self._step = step
@@ -44,6 +45,7 @@ class WizardCommitLeaf(InteractiveLeaf):
         self._commit_registry = commit_registry
         self._resource_engine = resource_engine
         self._emit = emit
+        self._context = context_engine
 
     def _prompt_bundle(self) -> dict[str, Any]:
         return {
@@ -64,7 +66,7 @@ class WizardCommitLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug)
+        enter_step(state, self._step.slug, context=self._context)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -118,7 +120,7 @@ class WizardCommitLeaf(InteractiveLeaf):
             state.set(WizardKeys.COMMITTED, True)
             state.set(WizardKeys.COMMIT_RESULT, result.data)
             state.delete(WizardKeys.COMMIT_ERROR)
-            leave_step(state, self._step.slug)
+            leave_step(state, self._step.slug, context=self._context)
             state.delete(WizardKeys.ACTIVE_PROMPT)
             self._fire(
                 WizardEventType.COMMIT_SUCCEEDED,

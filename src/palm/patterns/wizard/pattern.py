@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, SequenceNode
-from palm.core.context import BaseState
+from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventEngine
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.backtrack import apply_backtrack, can_backtrack_to
@@ -35,6 +35,7 @@ class WizardPattern(BasePattern):
         event_engine: EventEngine | None = None,
         resource_engine: ResourceEngine | None = None,
         commit_registry: CommitRegistry | None = None,
+        context_engine: ContextEngine | None = None,
     ) -> None:
         super().__init__(name=name)
         if config is None:
@@ -44,6 +45,7 @@ class WizardPattern(BasePattern):
         self._event_engine = event_engine
         self._resource_engine = resource_engine
         self._commit_registry = commit_registry or default_commit_registry()
+        self._context_engine = context_engine
         self._root: RootNode
         self._sequence: SequenceNode
         self._root, self._sequence = build_wizard_tree(
@@ -52,6 +54,7 @@ class WizardPattern(BasePattern):
             emit=self._bridge_emit,
             commit_registry=self._commit_registry,
             resource_engine=self._resource_engine,
+            context_engine=self._context_engine,
         )
 
     @property
@@ -67,6 +70,8 @@ class WizardPattern(BasePattern):
         return self._commit_registry
 
     def tick(self, state: BaseState) -> PatternStatus:
+        if self._context_engine is not None and self._context_engine.current_state is not state:
+            self._context_engine.bind_state(state)
         if state.get(WizardKeys.COMPLETED):
             return PatternStatus.SUCCESS
 
