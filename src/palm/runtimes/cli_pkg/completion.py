@@ -68,9 +68,15 @@ def _context_completions(
     lower = [word.lower() for word in words]
     include_all = "--all" in lower
 
-    if _matches_phrase(lower, ("wizard", "start")) and len(words) >= 3:
-        yield from _complete_prefix(words[-1], _wizard_flow_names(ctx), completion_cls)
-        return
+    flow_start_phrases = (
+        ("flow", "start"),
+        ("start",),
+        ("wizard", "start"),
+    )
+    for pattern in flow_start_phrases:
+        if _matches_phrase(lower, pattern) and len(words) > len(pattern):
+            yield from _complete_prefix(words[-1], _flow_names(ctx), completion_cls)
+            return
 
     if _matches_phrase(lower, ("process", "submit")) and len(words) >= 3:
         yield from _complete_prefix(words[-1], _process_names(ctx), completion_cls)
@@ -179,10 +185,6 @@ def _flow_names(ctx: CliContext) -> list[str]:
     for flow in ctx.app.list_flows():
         names.append(flow.name)
     return names
-
-
-def _wizard_flow_names(ctx: CliContext) -> list[str]:
-    return [flow.name for flow in ctx.app.list_flows() if flow.pattern == "wizard"]
 
 
 def _process_names(ctx: CliContext) -> list[str]:

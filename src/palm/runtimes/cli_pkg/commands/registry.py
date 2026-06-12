@@ -65,6 +65,10 @@ def build_registry() -> CommandRegistry:
     reg.register("process submit", _cmd_process_submit)
     reg.register("process resume", _cmd_process_resume)
 
+    reg.register("flow list", _cmd_flow_list)
+    reg.register("flow start", _cmd_flow_start)
+    reg.register("start", _cmd_start)
+
     reg.register("instance list", _cmd_instance_list)
     reg.register("instance snapshots", _cmd_instance_snapshots)
     reg.register("instance status", _cmd_status)
@@ -94,6 +98,11 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
     text = """
 [bold cyan]Palm CLI[/] — EmbeddedRuntime commands
 
+[bold]Flows[/]
+  flow list                 All registered flows (any pattern)
+  flow start <ref>          Start a flow by name or id [green](recommended)[/]
+  start <ref>               Shortcut for flow start
+
 [bold]Definitions & processes[/]
   process list              List flow/process definitions (alias: definitions)
   process submit <ref>      Start a process by name or id
@@ -107,9 +116,9 @@ def _cmd_help(ctx: CliContext, _args: list[str]) -> int:
   instance prune [--dry-run]  Remove terminal instances from storage
   status [<instance_id>]      Same as instance status
 
-[bold]Wizard[/]
+[bold]Wizard[/] [dim](shortcut — prefer flow start)[/]
   wizard list               Wizard-capable flows
-  wizard start <flow>       Submit a wizard flow by name or id
+  wizard start <flow>       Start a flow (alias; use flow start for parallel/dag/etl)
   wizard status [<id>]      Same as status
   wizard input [<id>] <val> Same as input (backward compatible)
 
@@ -181,7 +190,8 @@ def _cmd_engine_status(ctx: CliContext) -> int:
             f"{'[green]started[/]' if ctx.app.is_runtime_started() else '[red]stopped[/]'}\n"
             f"Patterns: {', '.join(pattern_registry.names())}\n"
             f"Storage:  {', '.join(storage_registry.names())}\n\n"
-            f"[dim]Tip:[/] [cyan]palm doctor[/] or [cyan]status <instance_id>[/]",
+            f"[dim]Tip:[/] [cyan]flow start <name>[/] to run a flow, "
+            f"[cyan]doctor[/] for health, [cyan]status <id>[/] for detail",
             title="Status",
             border_style="green",
         )
@@ -306,6 +316,51 @@ def _cmd_process_resume(ctx: CliContext, args: list[str]) -> int:
     return 0
 
 
+def _cmd_flow_list(ctx: CliContext, _args: list[str]) -> int:
+    from rich.table import Table
+
+    flows = ctx.app.list_flows()
+    if not flows:
+        ctx.console.print("[yellow]No flows registered.[/]")
+        return 0
+
+    table = Table(title="Registered Flows", show_lines=True)
+    table.add_column("Name", style="green")
+    table.add_column("ID", style="cyan")
+    table.add_column("Pattern")
+    table.add_column("Schema", style="dim")
+    table.add_column("Detail", style="dim")
+    for flow in flows:
+        schema = "flow" if flow.has_state_schema else "—"
+        from palm.runtimes.cli_pkg.display import flow_detail_label
+
+        table.add_row(flow.name, flow.definition_id, flow.pattern, schema, flow_detail_label(flow))
+    ctx.console.print(table)
+    ctx.console.print(
+        "[dim]Start any flow:[/] [cyan]flow start <name>[/] or [cyan]start <name>[/]"
+    )
+    return 0
+
+
+def _cmd_flow_start(ctx: CliContext, args: list[str]) -> int:
+    if not args:
+        ctx.console.print("[red]Usage:[/] flow start <flow_name_or_id>")
+        return 1
+    try:
+        actions.start_flow(ctx, args[0])
+    except Exception as exc:
+        ctx.console.print(f"[red]{exc}[/]")
+        return 1
+    return 0
+
+
+def _cmd_start(ctx: CliContext, args: list[str]) -> int:
+    if not args:
+        ctx.console.print("[red]Usage:[/] start <flow_name_or_id>  [dim](alias: flow start)[/]")
+        return 1
+    return _cmd_flow_start(ctx, args)
+
+
 def _cmd_wizard_list(ctx: CliContext, _args: list[str]) -> int:
     from rich.table import Table
 
@@ -329,9 +384,7 @@ def _cmd_wizard_start(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] wizard start <flow_name_or_id>")
         return 1
     try:
-        ctx.app.resolve_flow(args[0])
-        actions.submit_flow(ctx, args[0])
-        ctx.console.print("[dim]Wizard started.[/]")
+        actions.start_flow(ctx, args[0], via_shortcut="wizard")
     except Exception as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1

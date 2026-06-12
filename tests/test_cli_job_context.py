@@ -155,7 +155,7 @@ def cli_ctx():
 
 def test_status_json_uses_job_context(cli_ctx) -> None:
     reg = build_registry()
-    reg.dispatch(cli_ctx, "wizard start parallel-demo")
+    reg.dispatch(cli_ctx, "flow start parallel-demo")
     iid = cli_ctx.active_instance_id
     assert iid is not None
 

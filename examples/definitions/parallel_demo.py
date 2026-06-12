@@ -10,7 +10,8 @@ Demonstrates Phase 4 + Phase 5 CLI visibility:
 - **Merge strategy** — ``all`` requires every branch to succeed
 
 ```bash
-palm wizard start parallel-demo
+palm flow start parallel-demo
+# or: palm start parallel-demo
 # Branches interleave prompts — watch REPL prompt for @parallel:<branch>
 palm doctor                   # active branch + schema context
 palm status <instance_id>     # branch progress + scope path

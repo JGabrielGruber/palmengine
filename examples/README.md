@@ -28,7 +28,8 @@ Transactional wizard with validation, auto-generated **summary**, and **commit**
 - **Commit hook:** `persist_profile` — builds a profile dict from answers
 
 ```bash
-palm wizard start onboard
+palm flow start onboard
+# wizard start onboard still works as a shortcut
 ```
 
 ## Data ingestion (`data-ingestion`)
@@ -100,7 +101,8 @@ Runs **two multi-step wizard branches in parallel** with isolated scopes, per-st
 - **CLI** — REPL prompt shows `@parallel:<branch>`; `doctor` and `status` show branch progress
 
 ```bash
-palm wizard start parallel-demo
+palm flow start parallel-demo
+# or: palm start parallel-demo
 # Example answers: Ada → 27 → Platform → developer → …
 palm doctor
 palm status <instance_id>

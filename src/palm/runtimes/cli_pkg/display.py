@@ -197,6 +197,17 @@ def render_definition_catalog(ctx: Any) -> None:
         console.print("[yellow]No definitions registered.[/]")
 
 
+def flow_detail_label(flow: Any) -> str:
+    """Compact catalog/detail label for a flow definition."""
+    return _flow_detail_label(flow)
+
+
+def flow_start_hint(flow: Any) -> str | None:
+    """Short operator hint shown when a flow starts."""
+    detail = flow_detail_label(flow)
+    return detail if detail != "—" else None
+
+
 def _flow_detail_label(flow: Any) -> str:
     if flow.pattern == "parallel":
         branches = flow.options.get("branches") if isinstance(flow.options, dict) else None

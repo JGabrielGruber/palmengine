@@ -16,6 +16,8 @@ _CLI_EPILOG = """
 examples:
   palm                          interactive REPL (default)
   palm doctor                   engine health and loaded definitions
+  palm flow start onboard
+  palm start parallel-demo
   palm --storage-backend filesystem wizard start onboard
   palm instance list --all --format json
 
@@ -43,6 +45,7 @@ class CliInvocation:
     process_cmd: str | None = None
     instance_cmd: str | None = None
     wizard_cmd: str | None = None
+    flow_cmd: str | None = None
     ref: str | None = None
     instance_id: str | None = None
     flow: str | None = None
@@ -154,11 +157,20 @@ def build_parser() -> argparse.ArgumentParser:
     prune_p = inst_sub.add_parser("prune", help="Remove terminal instances from storage")
     prune_p.add_argument("--dry-run", action="store_true")
 
-    wiz = sub.add_parser("wizard", help="Wizard flow commands")
+    flow = sub.add_parser("flow", help="Flow commands (any pattern)")
+    flow_sub = flow.add_subparsers(dest="flow_cmd", required=True)
+    flow_sub.add_parser("list", help="List all registered flows")
+    flow_start_p = flow_sub.add_parser("start", help="Start a flow by name or id")
+    flow_start_p.add_argument("flow")
+
+    start_p = sub.add_parser("start", help="Start any flow by name (shortcut)")
+    start_p.add_argument("flow")
+
+    wiz = sub.add_parser("wizard", help="Wizard flow commands (shortcut)")
     wiz_sub = wiz.add_subparsers(dest="wizard_cmd", required=True)
     wiz_sub.add_parser("list")
-    start_p = wiz_sub.add_parser("start")
-    start_p.add_argument("flow")
+    wiz_start_p = wiz_sub.add_parser("start")
+    wiz_start_p.add_argument("flow")
 
     for name in ("input", "back"):
         p = sub.add_parser(name)
@@ -197,6 +209,7 @@ def invocation_from_namespace(args: argparse.Namespace) -> CliInvocation:
         process_cmd=getattr(args, "process_cmd", None),
         instance_cmd=getattr(args, "instance_cmd", None),
         wizard_cmd=getattr(args, "wizard_cmd", None),
+        flow_cmd=getattr(args, "flow_cmd", None),
         ref=getattr(args, "ref", None),
         instance_id=getattr(args, "instance_id", None),
         flow=getattr(args, "flow", None),

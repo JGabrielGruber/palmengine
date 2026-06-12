@@ -37,7 +37,8 @@ def print_version_full(console: Any | None = None) -> int:
         "Quick start:",
         "  palm doctor              # health + examples",
         "  palm repl                # interactive shell",
-        "  palm wizard start onboard",
+        "  palm flow start onboard",
+        "  palm start parallel-demo",
         "  python examples/full_demo.py",
     ]
 

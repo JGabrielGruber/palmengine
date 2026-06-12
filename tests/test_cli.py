@@ -46,6 +46,37 @@ def test_wizard_start_onboard(cli_ctx) -> None:
     assert cli_ctx.active_instance_id is not None
 
 
+def test_flow_start_onboard(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "flow start onboard") == 0
+    assert cli_ctx.active_instance_id is not None
+
+
+def test_start_alias_schema_onboard(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "start schema-onboard") == 0
+    assert cli_ctx.active_instance_id is not None
+
+
+def test_flow_start_parallel_demo(cli_ctx) -> None:
+    from palm.runtimes.cli_pkg.job_context import inspect_job
+
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "flow start parallel-demo") == 0
+    iid = cli_ctx.active_instance_id
+    assert iid is not None
+    job = cli_ctx.job_for_instance(iid)
+    assert inspect_job(job).pattern == "parallel"
+
+
+def test_flow_list_includes_parallel(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "flow list") == 0
+    names = {flow.name for flow in cli_ctx.app.list_flows()}
+    assert "parallel-demo" in names
+    assert "schema-onboard" in names
+
+
 def test_wizard_input_advances(cli_ctx) -> None:
     reg = build_registry()
     reg.dispatch(cli_ctx, "wizard start quick")

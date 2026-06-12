@@ -98,7 +98,7 @@ def run_doctor(ctx: CliContext) -> int:
         console.print("[bold]Recent instances[/] [dim](newest first, up to 10)[/]")
         render_instance_table(console, recent)
     elif not summaries:
-        console.print("[dim]No process instances yet — try[/] [cyan]wizard start onboard[/]")
+        console.print("[dim]No process instances yet — try[/] [cyan]flow start onboard[/]")
 
     if issues:
         console.print(
@@ -145,5 +145,5 @@ def _render_active_job_context(ctx: CliContext, active: list[Any]) -> None:
     if shown:
         console.print(
             "[dim]Tip:[/] [cyan]status <id>[/] for full detail, "
-            "[cyan]wizard start parallel-demo[/] to try parallel branches"
+            "[cyan]flow start parallel-demo[/] to try parallel branches"
         )
