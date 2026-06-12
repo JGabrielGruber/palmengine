@@ -54,3 +54,7 @@ class StateError(EngineError):
 
 class StateNotConfiguredError(StateError):
     """Raised when an engine requires state but none is bound."""
+
+
+class StateValidationError(StateError):
+    """Raised when state values fail schema validation."""

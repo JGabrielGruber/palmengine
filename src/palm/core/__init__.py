@@ -22,7 +22,14 @@ from palm.core.behavior_tree import (
     PatternStatus,
     RootNode,
 )
-from palm.core.context import STATE_FRAME_KEY, BaseState, ContextEngine
+from palm.core.context import (
+    STATE_FRAME_KEY,
+    STATE_SCOPE_FRAME_KEY,
+    BaseState,
+    ContextEngine,
+    DictStateSchema,
+    StateSchema,
+)
 from palm.core.event import Event, EventEngine
 from palm.core.exceptions import (
     BackendNotOpenError,
@@ -33,6 +40,7 @@ from palm.core.exceptions import (
     RegistryError,
     StateError,
     StateNotConfiguredError,
+    StateValidationError,
     StorageCorruptionError,
     StorageError,
     StorageNotConfiguredError,
@@ -75,6 +83,7 @@ __all__ = [
     "ConfigurationError",
     "ContextError",
     "ContextEngine",
+    "DictStateSchema",
     "EngineError",
     "Event",
     "EventEngine",
@@ -107,6 +116,9 @@ __all__ = [
     "provider_registry",
     "storage_registry",
     "STATE_FRAME_KEY",
+    "STATE_SCOPE_FRAME_KEY",
     "StateError",
     "StateNotConfiguredError",
+    "StateSchema",
+    "StateValidationError",
 ]

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from palm.core.context import BaseState
+from palm.core.context import BaseState, StateSchema
 
 StateOp = tuple[Literal["get", "set", "delete", "clear"], str, Any]
 
@@ -23,8 +23,10 @@ class TestState(BaseState):
         self,
         initial: dict[str, Any] | None = None,
         *,
+        schema: StateSchema | None = None,
         record: bool = False,
     ) -> None:
+        super().__init__(schema=schema)
         self._data: dict[str, Any] = dict(initial) if initial else {}
         self._record = record
         self.operations: list[StateOp] = []

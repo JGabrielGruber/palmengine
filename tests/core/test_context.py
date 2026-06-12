@@ -4,8 +4,23 @@ from __future__ import annotations
 
 import pytest
 
-from palm.core import STATE_FRAME_KEY, ContextEngine, ContextError
+from palm.core import (
+    STATE_FRAME_KEY,
+    ContextEngine,
+    ContextError,
+    DictStateSchema,
+    StateNotConfiguredError,
+)
 from tests.core.fakes import TestState
+
+SCHEMA = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "tenant": {"type": "string", "default": "default-tenant"},
+        },
+    },
+)
 
 
 def test_root_context_by_default() -> None:
@@ -63,3 +78,67 @@ def test_initialize_with_state() -> None:
     engine.initialize(state=seeded)
     assert engine.current_state is seeded
     assert engine.current_state.get("seed") is True
+
+
+def test_initialize_with_schema() -> None:
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state, schema=SCHEMA)
+    assert engine.current_state is state
+    assert state.schema is SCHEMA
+
+
+def test_bind_schema_on_current_state() -> None:
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state)
+    engine.bind_schema(SCHEMA)
+    state.apply_defaults()
+    assert state.get("tenant") == "default-tenant"
+
+
+def test_state_scope_context_manager() -> None:
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state)
+
+    with engine.state_scope("job"):
+        state.set_scoped("step", 1)
+        assert engine.current_state_scope == "job"
+        assert state.get_scoped("step") == 1
+
+    assert engine.current_state_scope is None
+    assert state.get_scoped("step") is None
+
+
+def test_push_with_state_scope() -> None:
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state)
+
+    engine.push("session", state_scope=True)
+    state.set_scoped("token", "abc")
+    assert engine.state_scope_depth == 1
+    assert engine.current_state_scope == "session"
+
+    engine.pop()
+    assert engine.state_scope_depth == 0
+    assert state.get_scoped("token") is None
+
+
+def test_push_state_scope_requires_bound_state() -> None:
+    engine = ContextEngine()
+    with pytest.raises(StateNotConfiguredError):
+        engine.push("session", state_scope=True)
+
+
+def test_scope_with_state_scope_flag() -> None:
+    state = TestState()
+    engine = ContextEngine()
+    engine.initialize(state=state)
+
+    with engine.scope("wizard", state_scope=True):
+        state.set_scoped("answers", {"ok": True})
+        assert state.get_scoped("answers") == {"ok": True}
+
+    assert state.scope_depth() == 0

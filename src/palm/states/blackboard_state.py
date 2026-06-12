@@ -6,13 +6,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.context import BaseState
+from palm.core.context import BaseState, StateSchema
 
 
 class BlackboardState(BaseState):
     """In-memory key-value state for behavior tree execution."""
 
-    def __init__(self, initial: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self,
+        initial: dict[str, Any] | None = None,
+        *,
+        schema: StateSchema | None = None,
+    ) -> None:
+        super().__init__(schema=schema)
         self._data: dict[str, Any] = dict(initial) if initial else {}
 
     def get(self, key: str, default: Any = None) -> Any:
