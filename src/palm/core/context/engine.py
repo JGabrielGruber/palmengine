@@ -77,7 +77,12 @@ class ContextEngine(BasePalmEngine):
         state.bind_schema(schema)
 
     def enter_state_scope(self, name: str) -> str:
-        """Enter a named scope on the state bound to the current frame."""
+        """Enter a named scope on the state bound to the current frame.
+
+        Prefer :meth:`~palm.core.context.BaseState.scope` on the bound state
+        when driving pattern logic directly; this method coordinates the same
+        stack for observability via :attr:`current_state_scope`.
+        """
         return self._require_current_state().enter_scope(name)
 
     def exit_state_scope(self) -> str:

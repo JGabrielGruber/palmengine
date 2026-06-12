@@ -128,6 +128,20 @@ def test_state_schema_definition_roundtrip_dict() -> None:
     assert restored.metadata == schema.metadata
 
 
+def test_flow_definition_inline_state_schema_roundtrip() -> None:
+    flow = FlowDefinition(
+        name="onboard",
+        pattern="wizard",
+        state_schema={
+            "type": "object",
+            "properties": {"tenant": {"type": "string"}},
+        },
+        options={"steps": 1},
+    )
+    restored = FlowDefinition.from_dict(flow.to_dict())
+    assert restored.state_schema == flow.state_schema
+
+
 def test_flow_definition_state_schema_ref_roundtrip() -> None:
     flow = FlowDefinition(
         name="onboard",
@@ -171,6 +185,19 @@ def test_flow_submission_resolves_state_schema_ref() -> None:
     )
     assert isinstance(submission.state, BlackboardState)
     assert submission.state.get("tenant") == "acme"
+
+
+def test_repository_list_schemas() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = DefinitionRepository(storage)
+    repo.save_schema(_sample_schema())
+    repo.save_schema(
+        StateSchemaDefinition(id="schema-2", name="other", schema={"type": "object"}),
+    )
+    names = {schema.name for schema in repo.list_schemas()}
+    assert names == {"user", "other"}
+    storage.shutdown()
 
 
 def test_repository_list_flows() -> None:

@@ -9,6 +9,9 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from palm.core.context import BaseState
+from palm.core.exceptions import StateValidationError
+
 if TYPE_CHECKING:
     from palm.patterns.wizard.config import WizardStepConfig
 
@@ -75,6 +78,36 @@ def validate_step_value(
     if not base.ok:
         return base
     return reg.validate(step, value, rules)
+
+
+def validate_step_state_schema(
+    state: BaseState,
+    step_slug: str,
+    value: Any,
+) -> ValidationResult:
+    """Validate ``value`` against the bound state schema for ``step_slug``."""
+    schema = state.schema
+    if schema is None:
+        return ValidationResult.success()
+    try:
+        schema.validate_key(step_slug, value)
+    except StateValidationError as exc:
+        return ValidationResult.failure(str(exc))
+    return ValidationResult.success()
+
+
+def validate_step_input(
+    state: BaseState,
+    step: WizardStepConfig,
+    value: Any,
+    *,
+    registry: ValidationRegistry | None = None,
+) -> ValidationResult:
+    """Run built-in, declarative, and schema validation for a step input."""
+    result = validate_step_value(step, value, registry=registry)
+    if not result.ok:
+        return result
+    return validate_step_state_schema(state, step.slug, value)
 
 
 def _builtin_field_validation(step: WizardStepConfig, value: Any) -> ValidationResult:

@@ -12,21 +12,37 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from palm.core.context import BaseState
+from palm.core.context import BaseState, DictStateSchema
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
 from palm.states import BlackboardState
 
+SNAPSHOT_META_KEY = "__palm:meta"
+
 
 def snapshot_state(state: BaseState) -> dict[str, Any]:
-    """Serialize execution state for storage."""
-    return state.snapshot()
+    """Serialize execution state for storage, including optional schema metadata."""
+    data = dict(state.snapshot())
+    meta = _snapshot_meta(state)
+    if meta:
+        data[SNAPSHOT_META_KEY] = meta
+    return data
+
+
+def snapshot_meta(state: BaseState) -> dict[str, Any]:
+    """Return schema and scope metadata for a state instance."""
+    return _snapshot_meta(state)
 
 
 def state_from_snapshot(data: dict[str, Any]) -> BlackboardState:
     """Restore ``BlackboardState`` from a persisted snapshot."""
-    return BlackboardState(dict(data))
+    raw = dict(data)
+    meta = raw.pop(SNAPSHOT_META_KEY, None)
+    schema = None
+    if isinstance(meta, dict) and isinstance(meta.get("schema"), dict):
+        schema = DictStateSchema(meta["schema"])
+    return BlackboardState(raw, schema=schema)
 
 
 def build_instance_from_job(
@@ -90,10 +106,25 @@ def prepare_resume_state(
     return state
 
 
+def _snapshot_meta(state: BaseState) -> dict[str, Any]:
+    meta: dict[str, Any] = {}
+    schema = state.schema
+    if schema is not None and hasattr(schema, "definition"):
+        definition = schema.definition
+        if isinstance(definition, dict):
+            meta["schema"] = dict(definition)
+    scope = state.current_scope()
+    if scope is not None:
+        meta["current_scope"] = scope
+    depth = state.scope_depth()
+    if depth:
+        meta["scope_depth"] = depth
+    return meta
+
+
 def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
     """Resolve optional step slug and runtime position via the pattern registry."""
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-
     from palm.patterns._registry import get_instance_fields
 
     fields_fn = get_instance_fields(pattern)
@@ -104,7 +135,6 @@ def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[s
 
 def _resume_handler(pattern: str) -> Any:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-
     from palm.patterns._registry import get_resume_handler
 
     return get_resume_handler(pattern)

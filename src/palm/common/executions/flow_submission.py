@@ -88,6 +88,7 @@ def prepare_resume_submission(
     flow = FlowDefinition.from_dict(instance.flow_definition)
     executable = build_pattern(flow, context=build_ctx)
     state = prepare_resume_state(instance, executable)
+    _bind_flow_state_schema(flow, state, build_ctx)
     meta = dict(instance.metadata)
     meta["instance_id"] = instance.instance_id
     meta["resumed"] = True
@@ -107,9 +108,9 @@ def _bind_flow_state_schema(
     job_state: BaseState,
     build_ctx: PatternBuildContext,
 ) -> None:
-    if not flow.state_schema_ref or job_state.schema is not None:
+    if job_state.schema is not None:
         return
-    schema = build_ctx.resolve_state_schema(flow.state_schema_ref)
+    schema = build_ctx.resolve_flow_state_schema(flow)
     if schema is None:
         return
     job_state.bind_schema(schema)

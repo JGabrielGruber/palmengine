@@ -13,7 +13,8 @@ from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.step_leaf import EventEmitter
-from palm.patterns.wizard.validation import validate_step_value
+from palm.patterns.wizard.step_scope import begin_step_scope, end_step_scope
+from palm.patterns.wizard.validation import validate_step_input
 
 
 class WizardActionLeaf(InteractiveLeaf):
@@ -51,6 +52,7 @@ class WizardActionLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
+        begin_step_scope(state, self._step.slug)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -60,7 +62,7 @@ class WizardActionLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        validation = validate_step_value(self._step, value)
+        validation = validate_step_input(state, self._step, value)
         if not validation.ok:
             state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
             self._fire(
@@ -78,6 +80,7 @@ class WizardActionLeaf(InteractiveLeaf):
         provider = self._resource_engine.use(self._step.resource_provider)
         result = provider.fetch(resource_id)
         state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}", result)
+        end_step_scope(state, self._step.slug)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         state.delete(WizardKeys.VALIDATION_ERROR)
         self._fire(

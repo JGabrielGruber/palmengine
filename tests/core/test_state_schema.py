@@ -145,13 +145,21 @@ def test_nested_scoping_when_schema_bound() -> None:
     }
 
 
-def test_blackboard_state_uses_nested_scopes_with_schema() -> None:
+def test_blackboard_state_uses_nested_scopes() -> None:
     state = BlackboardState(schema=USER_SCHEMA)
     with state.scope("wizard"):
         state.set_scoped("answer", "yes")
         assert state.get_scoped("answer") == "yes"
     assert state.get_scoped("answer") is None
     assert state.snapshot()[SCOPES_ROOT_KEY] == {"wizard": {"answer": "yes"}}
+
+
+def test_blackboard_state_nested_without_schema() -> None:
+    state = BlackboardState()
+    with state.scope("job"):
+        state.set_scoped("step", 1)
+    assert SCOPES_ROOT_KEY in state.snapshot()
+    assert state.snapshot()[SCOPES_ROOT_KEY] == {"job": {"step": 1}}
 
 
 def test_legacy_flat_scope_keys_remain_readable() -> None:

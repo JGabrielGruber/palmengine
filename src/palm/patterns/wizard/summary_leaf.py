@@ -12,6 +12,7 @@ from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.step_leaf import EventEmitter, _get_answers
+from palm.patterns.wizard.step_scope import begin_step_scope, end_step_scope
 
 
 class WizardSummaryLeaf(InteractiveLeaf):
@@ -48,6 +49,7 @@ class WizardSummaryLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
+        begin_step_scope(state, self._step.slug)
         self._fire(WizardEventType.SUMMARY_SHOWN, summary=answers)
         self._fire(
             WizardEventType.STEP_STARTED,
@@ -63,6 +65,7 @@ class WizardSummaryLeaf(InteractiveLeaf):
             self._fire(WizardEventType.VALIDATION_FAILED, slug=self._step.slug, reason="summary")
             return PatternStatus.FAILURE
         state.set(WizardKeys.SUMMARY_ACK, True)
+        end_step_scope(state, self._step.slug)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         state.delete(WizardKeys.VALIDATION_ERROR)
         self._fire(WizardEventType.INPUT_RECEIVED, slug=self._step.slug, value=value)

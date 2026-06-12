@@ -21,6 +21,7 @@ class FlowDefinition:
     options: dict[str, Any] = field(default_factory=dict)
     id: str | None = None
     state_schema_ref: str | None = None
+    state_schema: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not self.name:
@@ -46,6 +47,8 @@ class FlowDefinition:
             payload["id"] = self.id
         if self.state_schema_ref is not None:
             payload["state_schema_ref"] = self.state_schema_ref
+        if self.state_schema is not None:
+            payload["state_schema"] = dict(self.state_schema)
         return payload
 
     @classmethod
@@ -53,6 +56,8 @@ class FlowDefinition:
         """Restore a flow definition from ``to_dict`` output or legacy shape."""
         ref = data.get("state_schema_ref")
         state_schema_ref = str(ref) if ref else None
+        inline = data.get("state_schema")
+        state_schema = dict(inline) if isinstance(inline, dict) else None
         if data.get("kind") == "flow" and "version" in data:
             return cls(
                 name=str(data["name"]),
@@ -60,6 +65,7 @@ class FlowDefinition:
                 options=dict(data.get("options") or {}),
                 id=data.get("id"),
                 state_schema_ref=state_schema_ref,
+                state_schema=state_schema,
             )
         return cls(
             name=str(data["name"]),
@@ -67,6 +73,7 @@ class FlowDefinition:
             options=dict(data.get("options") or {}),
             id=data.get("id"),
             state_schema_ref=state_schema_ref,
+            state_schema=state_schema,
         )
 
     def to_storage_record(self) -> dict[str, Any]:

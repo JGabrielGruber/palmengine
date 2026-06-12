@@ -10,12 +10,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from palm.core.context import StateSchema
+from palm.core.context import DictStateSchema, StateSchema
 from palm.core.event import EventEngine
 from palm.core.resource import ResourceEngine
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.definitions.flow import FlowDefinition
 
 
 @dataclass
@@ -41,3 +42,11 @@ class PatternBuildContext:
             except DefinitionNotFoundError:
                 return None
         return definition.to_state_schema()
+
+    def resolve_flow_state_schema(self, flow: FlowDefinition) -> StateSchema | None:
+        """Resolve a flow's inline schema first, then a repository reference."""
+        if flow.state_schema:
+            return DictStateSchema(flow.state_schema)
+        if flow.state_schema_ref:
+            return self.resolve_state_schema(flow.state_schema_ref)
+        return None

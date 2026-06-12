@@ -14,6 +14,7 @@ from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitResult
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.step_leaf import EventEmitter, _get_answers
+from palm.patterns.wizard.step_scope import begin_step_scope, end_step_scope
 
 
 class WizardCommitLeaf(InteractiveLeaf):
@@ -55,6 +56,7 @@ class WizardCommitLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
+        begin_step_scope(state, self._step.slug)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -85,6 +87,7 @@ class WizardCommitLeaf(InteractiveLeaf):
             state.set(WizardKeys.COMMITTED, True)
             state.set(WizardKeys.COMMIT_RESULT, result.data)
             state.delete(WizardKeys.COMMIT_ERROR)
+            end_step_scope(state, self._step.slug)
             state.delete(WizardKeys.ACTIVE_PROMPT)
             self._fire(
                 WizardEventType.COMMIT_SUCCEEDED,

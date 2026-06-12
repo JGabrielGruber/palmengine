@@ -43,10 +43,8 @@ class BlackboardState(BaseState):
         return list(self._data.keys())
 
     def _scope_root(self) -> dict[str, Any] | None:
-        """Use nested scope storage when a schema is bound."""
-        if self.schema is not None:
-            return self._data
-        return None
+        """Use nested scope storage for all blackboard state."""
+        return self._data
 
     def __repr__(self) -> str:
         return f"BlackboardState(keys={len(self._data)})"
