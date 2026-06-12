@@ -27,7 +27,7 @@ class StateSnapshot:
     @classmethod
     def now(cls, job: Job, **detail: Any) -> StateSnapshot:
         """Build a snapshot from the current job state."""
-        from palm.common.persistence.instance_sync import snapshot_meta, snapshot_state
+        from palm.common.persistence.state_snapshot import snapshot_meta, snapshot_state
 
         step_slug, runtime_position = _pattern_snapshot_fields(job)
         payload = {k: v for k, v in detail.items() if v is not None}

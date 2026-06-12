@@ -12,13 +12,7 @@ from palm.core.context import BaseState
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.step_scope import (
-    begin_step_scope,
-    end_step_scope,
-    get_answers,
-    persist_step_answer,
-)
-from palm.patterns.wizard.validation import validate_step_input
+from palm.patterns.wizard.state import complete_step_input, enter_step, get_answers, leave_step
 
 EventEmitter = Callable[[str, dict[str, Any]], None]
 
@@ -59,7 +53,7 @@ class WizardStepLeaf(InteractiveLeaf):
         state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
         state.set(WizardKeys.CURRENT_STEP, self._step.slug)
         state.set(WizardKeys.STEP_INDEX, self._step_index)
-        begin_step_scope(state, self._step.slug)
+        enter_step(state, self._step.slug)
         self._fire(
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
@@ -69,7 +63,7 @@ class WizardStepLeaf(InteractiveLeaf):
         return PatternStatus.WAITING_FOR_INPUT
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        validation = validate_step_input(state, self._step, value)
+        validation = complete_step_input(state, self._step, value)
         if not validation.ok:
             state.set(WizardKeys.VALIDATION_ERROR, validation.errors[0])
             self._fire(
@@ -79,8 +73,7 @@ class WizardStepLeaf(InteractiveLeaf):
             )
             return PatternStatus.FAILURE
 
-        persist_step_answer(state, self._step.slug, value)
-        end_step_scope(state, self._step.slug)
+        leave_step(state, self._step.slug)
         state.delete(WizardKeys.ACTIVE_PROMPT)
         state.delete(WizardKeys.VALIDATION_ERROR)
         self._fire(

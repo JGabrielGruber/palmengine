@@ -22,6 +22,13 @@ from palm.patterns.wizard.handler import (
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.options import parse_wizard_flow_options, wizard_metadata_from_flow
 from palm.patterns.wizard.pattern import WizardPattern, default_wizard_config
+from palm.patterns.wizard.state import (
+    complete_step_input,
+    enter_step,
+    get_answers,
+    leave_step,
+    step_scope,
+)
 from palm.patterns.wizard.persistence import (
     extract_instance_fields_from_job,
     prepare_wizard_resume_state,
@@ -43,6 +50,11 @@ __all__ = [
     "CommitRegistry",
     "CommitResult",
     "StepValidationRule",
+    "complete_step_input",
+    "enter_step",
+    "get_answers",
+    "leave_step",
+    "step_scope",
     "ValidationRegistry",
     "WizardConfig",
     "WizardEventType",

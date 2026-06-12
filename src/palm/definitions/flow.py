@@ -7,7 +7,11 @@ Flows reference registered patterns and bind runtime configuration.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.core.context import StateSchema
 
 _DEFINITION_VERSION = 1
 
@@ -33,6 +37,24 @@ class FlowDefinition:
     def definition_id(self) -> str:
         """Stable identifier used for storage keys (defaults to ``name``)."""
         return self.id if self.id else self.name
+
+    @property
+    def has_state_schema(self) -> bool:
+        """Return whether inline or referenced state schema is configured."""
+        return self.state_schema is not None or self.state_schema_ref is not None
+
+    def materialize_state_schema(
+        self,
+        repository: DefinitionRepository | None = None,
+    ) -> StateSchema | None:
+        """Resolve inline schema first, then a repository reference."""
+        from palm.common.state.schema_binding import materialize_state_schema
+
+        return materialize_state_schema(
+            inline=self.state_schema,
+            ref=self.state_schema_ref,
+            repository=repository,
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a JSON-friendly dict for persistence."""

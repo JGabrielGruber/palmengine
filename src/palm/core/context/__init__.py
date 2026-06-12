@@ -14,6 +14,7 @@ from palm.core.context.scoping import (
     LEGACY_SCOPE_PREFIX,
     NESTED_SCOPES_KEY,
     SCOPES_ROOT_KEY,
+    ScopeStorageMode,
     legacy_storage_key,
 )
 from palm.core.context.state_schema import DictStateSchema, StateSchema
@@ -25,6 +26,7 @@ __all__ = [
     "LEGACY_SCOPE_PREFIX",
     "NESTED_SCOPES_KEY",
     "SCOPES_ROOT_KEY",
+    "ScopeStorageMode",
     "legacy_storage_key",
     "STATE_FRAME_KEY",
     "STATE_SCOPE_FRAME_KEY",

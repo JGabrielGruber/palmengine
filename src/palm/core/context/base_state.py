@@ -12,7 +12,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
 
-from palm.core.context.scoping import StateScopeManager
+from palm.core.context.scoping import ScopeStorageMode, StateScopeManager
 from palm.core.exceptions import StateValidationError
 
 if TYPE_CHECKING:
@@ -31,6 +31,11 @@ class BaseState(ABC):
     def schema(self) -> StateSchema | None:
         """Return the optional schema bound to this state instance."""
         return getattr(self, "_schema", None)
+
+    @property
+    def uses_nested_scopes(self) -> bool:
+        """Return whether scoped writes use the nested ``__palm:scopes`` tree."""
+        return self.scope_storage() is not None
 
     def bind_schema(self, schema: StateSchema | None) -> None:
         """Attach or replace the schema used for validation and defaults."""
@@ -132,50 +137,57 @@ class BaseState(ABC):
         return self._scope_manager.depth()
 
     def scoped_keys(self) -> list[str]:
-        """Return keys visible in the current scope (nested mode only)."""
-        root = self._scope_root()
-        if root is None:
+        """Return keys visible in the current nested scope."""
+        storage = self.scope_storage()
+        if storage is None:
             return []
-        return list(self._scope_manager.scoped_view(root).keys())
+        return list(self._scope_manager.view(storage).keys())
 
     def get_scoped(self, key: str, default: Any = None) -> Any:
         """Resolve ``key`` within the current scope, then parent scopes."""
         self._ensure_extensions()
-        root = self._scope_root()
-        if root is not None:
-            return self._scope_manager.get_nested(
-                root,
-                key,
-                default,
-                legacy_get=self.get,
-                legacy_has=self.has,
-            )
-        return self._scope_manager.get_legacy(key, default, get=self.get, has=self.has)
+        mode, storage = self._scope_mode_and_storage()
+        return self._scope_manager.get(
+            key,
+            default,
+            mode=mode,
+            storage=storage,
+            get_value=self.get,
+            has_key=self.has,
+        )
 
     def set_scoped(self, key: str, value: Any) -> None:
         """Store ``value`` under ``key`` in the current scope."""
         self._ensure_extensions()
-        root = self._scope_root()
-        if root is not None:
-            self._scope_manager.set_nested(root, key, value)
-            return
-        self._scope_manager.set_legacy(key, value, set_value=self.set)
+        mode, storage = self._scope_mode_and_storage()
+        self._scope_manager.set(
+            key,
+            value,
+            mode=mode,
+            storage=storage,
+            set_value=self.set,
+        )
 
     def has_scoped(self, key: str) -> bool:
         """Return whether ``key`` exists in the current or parent scopes."""
         self._ensure_extensions()
-        root = self._scope_root()
-        if root is not None:
-            return self._scope_manager.has_nested(
-                root,
-                key,
-                legacy_has=self.has,
-            )
-        return self._scope_manager.has_legacy(key, has=self.has)
+        mode, storage = self._scope_mode_and_storage()
+        return self._scope_manager.contains(
+            key,
+            mode=mode,
+            storage=storage,
+            has_key=self.has,
+        )
 
-    def _scope_root(self) -> dict[str, Any] | None:
-        """Return mutable storage for nested scopes, or ``None`` for legacy mode."""
+    def scope_storage(self) -> dict[str, Any] | None:
+        """Return mutable backing storage for nested scopes, or ``None`` for legacy writes."""
         return None
+
+    def _scope_mode_and_storage(self) -> tuple[ScopeStorageMode, dict[str, Any] | None]:
+        storage = self.scope_storage()
+        if storage is not None:
+            return ScopeStorageMode.NESTED, storage
+        return ScopeStorageMode.LEGACY, None
 
     def _ensure_extensions(self) -> None:
         """Initialize schema/scoping attributes for legacy subclasses."""

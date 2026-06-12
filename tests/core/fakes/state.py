@@ -9,12 +9,13 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from palm.core.context import BaseState, StateSchema
+from palm.core.context import StateSchema
+from palm.states.dict_backed_state import DictBackedState
 
 StateOp = tuple[Literal["get", "set", "delete", "clear"], str, Any]
 
 
-class TestState(BaseState):
+class TestState(DictBackedState):
     """In-memory state for isolated ``palm.core`` tests."""
 
     __test__ = False
@@ -25,42 +26,37 @@ class TestState(BaseState):
         *,
         schema: StateSchema | None = None,
         record: bool = False,
+        nested_scopes: bool | None = None,
     ) -> None:
-        super().__init__(schema=schema)
-        self._data: dict[str, Any] = dict(initial) if initial else {}
+        super().__init__(initial, schema=schema)
         self._record = record
         self.operations: list[StateOp] = []
+        if nested_scopes is None:
+            self._nested_scopes = schema is not None
+        else:
+            self._nested_scopes = nested_scopes
 
     def get(self, key: str, default: Any = None) -> Any:
         if self._record:
             self.operations.append(("get", key, default))
-        return self._data.get(key, default)
+        return super().get(key, default)
 
     def set(self, key: str, value: Any) -> None:
         if self._record:
             self.operations.append(("set", key, value))
-        self._data[key] = value
-
-    def has(self, key: str) -> bool:
-        return key in self._data
+        super().set(key, value)
 
     def delete(self, key: str) -> None:
         if self._record:
             self.operations.append(("delete", key, None))
-        self._data.pop(key, None)
+        super().delete(key)
 
     def clear(self) -> None:
         if self._record:
             self.operations.append(("clear", "", None))
-        self._data.clear()
+        super().clear()
 
-    def snapshot(self) -> dict[str, Any]:
-        return dict(self._data)
-
-    def keys(self) -> list[str]:
-        return list(self._data.keys())
-
-    def _scope_root(self) -> dict[str, Any] | None:
-        if self.schema is not None:
+    def scope_storage(self) -> dict[str, Any] | None:
+        if self._nested_scopes:
             return self._data
         return None

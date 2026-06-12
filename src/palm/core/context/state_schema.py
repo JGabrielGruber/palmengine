@@ -27,6 +27,11 @@ _TYPE_CHECKS: dict[str, Any] = {
 class StateSchema(ABC):
     """Abstract contract for validating and defaulting execution state."""
 
+    @property
+    def definition(self) -> dict[str, Any] | None:
+        """Return a serializable schema document when available."""
+        return None
+
     @abstractmethod
     def validate_key(self, key: str, value: Any) -> None:
         """Validate ``value`` for ``key``. Raise ``StateValidationError`` on failure."""

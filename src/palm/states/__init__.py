@@ -6,5 +6,6 @@ Register or construct these outside ``palm.core`` and pass into engines via
 """
 
 from palm.states.blackboard_state import BlackboardState
+from palm.states.dict_backed_state import DictBackedState
 
-__all__ = ["BlackboardState"]
+__all__ = ["BlackboardState", "DictBackedState"]

@@ -14,6 +14,7 @@ from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
 from palm.common.persistence.instance_sync import prepare_resume_state
 from palm.common.plans.execution_plan import ExecutionPlan
+from palm.common.state.schema_binding import bind_flow_state_schema
 from palm.core.context import BaseState
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
@@ -55,7 +56,11 @@ def prepare_flow_submission(
     """Build a pattern executable and job metadata from a flow definition."""
     executable = build_pattern(flow, context=build_ctx)
     job_state = state if state is not None else BlackboardState()
-    _bind_flow_state_schema(flow, job_state, build_ctx)
+    bind_flow_state_schema(
+        flow,
+        job_state,
+        repository=build_ctx.definition_repository,
+    )
     meta = dict(metadata or {})
     meta.setdefault("definition_type", "flow")
     meta.setdefault("flow", flow.name)
@@ -88,7 +93,11 @@ def prepare_resume_submission(
     flow = FlowDefinition.from_dict(instance.flow_definition)
     executable = build_pattern(flow, context=build_ctx)
     state = prepare_resume_state(instance, executable)
-    _bind_flow_state_schema(flow, state, build_ctx)
+    bind_flow_state_schema(
+        flow,
+        state,
+        repository=build_ctx.definition_repository,
+    )
     meta = dict(instance.metadata)
     meta["instance_id"] = instance.instance_id
     meta["resumed"] = True
@@ -101,20 +110,6 @@ def prepare_resume_submission(
         metadata=meta,
         instance_id=instance.instance_id,
     )
-
-
-def _bind_flow_state_schema(
-    flow: FlowDefinition,
-    job_state: BaseState,
-    build_ctx: PatternBuildContext,
-) -> None:
-    if job_state.schema is not None:
-        return
-    schema = build_ctx.resolve_flow_state_schema(flow)
-    if schema is None:
-        return
-    job_state.bind_schema(schema)
-    job_state.apply_defaults()
 
 
 def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
