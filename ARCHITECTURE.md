@@ -510,7 +510,12 @@ palm/runtimes/            # concrete surfaces (thin packages)
 └── cli/                  # CLI entry (cli.py) + pkg/ (REPL, doctor, commands)
 ```
 
-Legacy import paths (`palm.runtimes.base`, `palm.runtimes.cli_pkg`, …) re-export from the new modules during transition.
+**Import conventions:**
+
+- Shared runtime infrastructure → `palm.common.runtimes` (and subpackages)
+- Concrete runtimes → `palm.runtimes.embedded`, `.daemon`, `.server`
+- CLI internals → `palm.runtimes.cli.pkg`
+- CLI entry point → `palm.runtimes.cli:main` (`pyproject.toml`)
 
 | Runtime | Status | Role |
 |---------|--------|------|

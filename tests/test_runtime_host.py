@@ -10,8 +10,8 @@ from palm.core.orchestration import OrchestrationEngine
 from palm.definitions.flow import FlowDefinition
 from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.host import RuntimeHost
-from palm.runtimes.schedulers import InlineScheduler
+from palm.common.runtimes.host import RuntimeHost
+from palm.common.runtimes.schedulers import InlineScheduler
 from tests.core.fakes.runner import TestRunner
 
 

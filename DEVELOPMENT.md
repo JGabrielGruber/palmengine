@@ -57,6 +57,9 @@ archive/               # Legacy — do not import
 tests/
 ```
 
+Runtime imports: `palm.common.runtimes` for shared infrastructure;
+`palm.runtimes.<name>` for concrete surfaces; `palm.runtimes.cli.pkg` for CLI internals.
+
 ## Working with the CLI
 
 The CLI is a **thin client of `PalmApp`** — all wiring (storage, `InstanceManager`,
