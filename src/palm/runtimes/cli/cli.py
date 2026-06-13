@@ -10,11 +10,11 @@ from __future__ import annotations
 import sys
 
 from palm.app.session import create_console
-from palm.runtimes.cli.pkg.args import CliInvocation, build_parser, invocation_from_namespace
-from palm.runtimes.cli.pkg.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli.pkg.commands.registry import build_registry
-from palm.runtimes.cli.pkg.repl import run_repl
-from palm.runtimes.cli.pkg.version_info import print_version_brief, print_version_full
+from palm.runtimes.cli.commands.registry import build_registry
+from palm.runtimes.cli.shared.args import CliInvocation, build_parser, invocation_from_namespace
+from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from palm.runtimes.cli.shared.version_info import print_version_brief, print_version_full
+from palm.runtimes.cli.tui.repl import run_repl
 
 
 def main(argv: list[str] | None = None) -> int:

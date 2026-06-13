@@ -62,7 +62,7 @@ src/palm/
 │   ├── embedded/      # EmbeddedRuntime
 │   ├── daemon/        # DaemonRuntime
 │   ├── server/        # ServerRuntime + HTTP
-│   └── cli/           # Entry point (cli.py) + pkg/ (REPL, doctor, commands)
+│   └── cli/           # Entry point + commands/ (one-shot) + tui/ (REPL) + shared/
 └── utils/
 
 examples/definitions/  # Auto-loaded by CLI (see examples/README.md)
@@ -71,7 +71,7 @@ tests/
 ```
 
 Runtime imports: `palm.common.runtimes` for shared infrastructure;
-`palm.runtimes.<name>` for concrete surfaces; `palm.runtimes.cli.pkg` for CLI internals.
+`palm.runtimes.<name>` for concrete surfaces; `palm.runtimes.cli.commands` / `.tui` / `.shared` for CLI layers.
 
 ## Working with the CLI
 
@@ -105,7 +105,7 @@ palm status                              # active instance when one is set
 palm status <id>                         # prefix ids from list work
 ```
 
-Global flags live in `palm/runtimes/cli/pkg/args.py` (`-b`, `-d`, `--config`, `-S`,
+Global flags live in `palm/runtimes/cli/shared/args.py` (`-b`, `-d`, `--config`, `-S`,
 `--max-loaded-instances`, `--scheduler`, `--format`, …). Parsed into
 `CliInvocation` and merged via `settings_from_invocation()`.
 

@@ -13,9 +13,9 @@ from palm.core.behavior_tree import PatternStatus
 from palm.core.event import EventEngine
 from palm.definitions import FlowDefinition
 from palm.patterns.parallel.pattern import ParallelPattern
-from palm.runtimes.cli.pkg.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli.pkg.commands.registry import build_registry
-from palm.runtimes.cli.pkg.job_context import (
+from palm.runtimes.cli.commands.registry import build_registry
+from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from palm.runtimes.cli.shared.job_inspect import (
     format_step_context,
     inspect_job,
     inspect_job_json,

@@ -1,0 +1,1 @@
+"""Interactive TUI layer — REPL, Rich panels, and flow actions."""

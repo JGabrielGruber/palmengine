@@ -507,14 +507,16 @@ palm/runtimes/            # concrete surfaces (thin packages)
 ├── embedded/runtime.py   # EmbeddedRuntime — inline default
 ├── daemon/runtime.py     # DaemonRuntime — queued background
 ├── server/               # ServerRuntime + HTTP API
-└── cli/                  # CLI entry (cli.py) + pkg/ (REPL, doctor, commands)
+└── cli/                  # CLI entry + commands/ (one-shot) + tui/ (REPL) + shared/
 ```
 
 **Import conventions:**
 
 - Shared runtime infrastructure → `palm.common.runtimes` (and subpackages)
 - Concrete runtimes → `palm.runtimes.embedded`, `.daemon`, `.server`
-- CLI internals → `palm.runtimes.cli.pkg`
+- CLI command mode → `palm.runtimes.cli.commands`
+- CLI TUI/REPL → `palm.runtimes.cli.tui`
+- CLI shared → `palm.runtimes.cli.shared`
 - CLI entry point → `palm.runtimes.cli:main` (`pyproject.toml`)
 
 | Runtime | Status | Role |
