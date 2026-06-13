@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common.runtimes.hooks import AuthMiddleware
 from palm.core.auth import AuthEngine, Principal
 from palm.core.orchestration import JobStatus, OrchestrationEngine
 from palm.core.orchestration.exceptions import JobAuthorizationError
 from palm.definitions.flow import FlowDefinition
 from palm.runtimes.embedded import EmbeddedRuntime
-from palm.common.runtimes.hooks import AuthMiddleware
 from tests.core.fakes.mode import TestMode
 from tests.core.fakes.runner import TestRunner
 

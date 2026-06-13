@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 
 from palm.app.session import create_console
-from palm.runtimes.cli.pkg.args import build_parser, invocation_from_namespace
+from palm.runtimes.cli.pkg.args import CliInvocation, build_parser, invocation_from_namespace
 from palm.runtimes.cli.pkg.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli.pkg.commands.registry import build_registry
 from palm.runtimes.cli.pkg.repl import run_repl
@@ -103,17 +103,17 @@ def main(argv: list[str] | None = None) -> int:
     return exit_code
 
 
-def _instance_list_argv(inv: object) -> list[str]:
+def _instance_list_argv(inv: CliInvocation) -> list[str]:
     argv: list[str] = []
-    if getattr(inv, "instance_list_all", False):
+    if inv.instance_list_all:
         argv.append("--all")
-    if getattr(inv, "instance_status", None):
-        argv.extend(["--status", str(inv.instance_status)])
-    if getattr(inv, "instance_flow", None):
-        argv.extend(["--flow", str(inv.instance_flow)])
-    if getattr(inv, "instance_limit", None):
+    if inv.instance_status is not None:
+        argv.extend(["--status", inv.instance_status])
+    if inv.instance_flow is not None:
+        argv.extend(["--flow", inv.instance_flow])
+    if inv.instance_limit is not None:
         argv.extend(["--limit", str(inv.instance_limit)])
-    if getattr(inv, "output_format", "table") == "json":
+    if inv.output_format == "json":
         argv.append("--format")
         argv.append("json")
     return argv

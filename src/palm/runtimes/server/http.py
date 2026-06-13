@@ -36,7 +36,7 @@ class PalmHttpServer(ThreadingHTTPServer):
 class PalmHttpHandler(BaseHTTPRequestHandler):
     """REST-style handler delegating to the hosting runtime."""
 
-    server: PalmHttpServer  # type: ignore[assignment]
+    server: PalmHttpServer
 
     def log_message(self, format: str, *args: Any) -> None:
         return None
@@ -82,7 +82,7 @@ class PalmHttpHandler(BaseHTTPRequestHandler):
 
     def _require_auth(self) -> bool:
         runtime = self.server.runtime
-        if authenticate_request(runtime, self.headers):
+        if authenticate_request(runtime, dict(self.headers)):
             return True
         self._json(
             401,

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.core.orchestration import JobStatus, OrchestrationEngine
 from palm.common.runtimes.hooks import DriveObservabilityHook
+from palm.core.orchestration import JobStatus, OrchestrationEngine
 from tests.core.fakes.mode import TestMode
 
 

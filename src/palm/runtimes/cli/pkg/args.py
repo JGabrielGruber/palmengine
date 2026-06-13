@@ -181,8 +181,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def settings_from_invocation(inv: CliInvocation) -> PalmSettings:
     """Merge env, optional config file, and explicit CLI flags into PalmSettings."""
-    env_file = str(inv.config) if inv.config is not None else None
-    base = PalmSettings(_env_file=env_file) if env_file else PalmSettings()
+    base = PalmSettings.from_env_file(inv.config) if inv.config is not None else PalmSettings()
 
     return resolve_cli_settings(
         storage_backend=inv.storage_backend,

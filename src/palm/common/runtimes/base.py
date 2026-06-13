@@ -185,6 +185,13 @@ class BaseRuntime:
         metadata: dict[str, Any] | None = None,
     ) -> Job:
         """Submit a flow definition or repository name/id as an orchestration job."""
+        if isinstance(flow, FlowDefinition):
+            return self.executor.submit_flow(
+                flow,
+                job_id=job_id,
+                state=state,
+                metadata=metadata,
+            )
         return self.executor.submit_flow(
             flow,
             by_id=by_id,
@@ -203,13 +210,21 @@ class BaseRuntime:
         metadata: dict[str, Any] | None = None,
     ) -> Job | list[Job]:
         """Submit a process definition or repository reference."""
-        jobs = self.executor.submit_process(
-            process,
-            by_id=by_id,
-            job_id=job_id,
-            state=state,
-            metadata=metadata,
-        )
+        if isinstance(process, ProcessDefinition):
+            jobs = self.executor.submit_process(
+                process,
+                job_id=job_id,
+                state=state,
+                metadata=metadata,
+            )
+        else:
+            jobs = self.executor.submit_process(
+                process,
+                by_id=by_id,
+                job_id=job_id,
+                state=state,
+                metadata=metadata,
+            )
         return jobs[0] if len(jobs) == 1 else jobs
 
     def submit_wizard(

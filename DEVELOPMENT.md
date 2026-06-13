@@ -32,6 +32,19 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 | Fast gate | `just check` |
 | Full gate | `just full-check` |
 
+## Type checking
+
+Mypy runs in **strict** mode on all of `src/palm/` (`pyproject.toml` → `[tool.mypy]`).
+`just full-check` includes `mypy`; the tree should stay at **zero errors**.
+
+**Guidelines during beta:**
+
+- Prefer precise types over `Any` in `palm/common/`, `palm/runtimes/`, and `palm/app/`.
+- Use `@overload` + `isinstance` branches when a public API accepts both definitions and repository string refs.
+- Lazy exports in `palm.common.__getattr__` are allowed; new coordination code should use normal imports.
+- Reserve `# type: ignore` for third-party stubs or genuinely dynamic boundaries (e.g. pattern registry hooks) — add a one-line comment when used.
+- `palm/core/` stays typed but must never import outer layers (enforced by `just guard-core`).
+
 ## Project layout
 
 ```

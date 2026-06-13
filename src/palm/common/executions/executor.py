@@ -30,8 +30,8 @@ from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
 
 if TYPE_CHECKING:
-    from palm.core.context import BaseState
     from palm.common.runtimes.host import RuntimeHost
+    from palm.core.context import BaseState
 
 
 class DefinitionExecutor:
@@ -95,8 +95,16 @@ class DefinitionExecutor:
         metadata: dict[str, Any] | None = None,
     ) -> Job:
         """Build a pattern from a flow (or repository ref) and submit a job."""
-        return self.submit_plan(
-            self.prepare_flow_plan(
+        if isinstance(flow, FlowDefinition):
+            plan = self.prepare_flow_plan(
+                flow,
+                job_id=job_id,
+                instance_id=instance_id,
+                state=state,
+                metadata=metadata,
+            )
+        else:
+            plan = self.prepare_flow_plan(
                 flow,
                 by_id=by_id,
                 job_id=job_id,
@@ -104,7 +112,7 @@ class DefinitionExecutor:
                 state=state,
                 metadata=metadata,
             )
-        )
+        return self.submit_plan(plan)
 
     @overload
     def prepare_flow_plan(
@@ -146,7 +154,7 @@ class DefinitionExecutor:
             resolved,
             state=state,
             metadata=metadata,
-            instances=self._instances,
+            instances=self._instance_repository(),
             build_ctx=self._build_context(),
             instance_id=instance_id,
         )
@@ -230,16 +238,24 @@ class DefinitionExecutor:
         metadata: dict[str, Any] | None = None,
     ) -> list[Job]:
         """Submit one job per flow on a process (or repository ref)."""
-        return self.submit_plans(
-            self.prepare_process_plan(
+        if isinstance(process, ProcessDefinition):
+            bundle = self.prepare_process_plan(
+                process,
+                job_id=job_id,
+                instance_id=instance_id,
+                state=state,
+                metadata=metadata,
+            )
+        else:
+            bundle = self.prepare_process_plan(
                 process,
                 by_id=by_id,
                 job_id=job_id,
                 instance_id=instance_id,
                 state=state,
                 metadata=metadata,
-            ).plans
-        )
+            )
+        return self.submit_plans(bundle.plans)
 
     @overload
     def prepare_process_plan(
@@ -283,11 +299,18 @@ class DefinitionExecutor:
             resolved,
             state=state,
             metadata=metadata,
-            instances=self._instances,
+            instances=self._instance_repository(),
             build_ctx=self._build_context(),
             job_id=job_id,
             instance_id=instance_id,
         )
+
+    def _instance_repository(self) -> InstanceRepository | None:
+        if self._instances is None:
+            return None
+        if isinstance(self._instances, InstanceManager):
+            return self._instances.repository
+        return self._instances
 
     def submit_flow_by_name(
         self,

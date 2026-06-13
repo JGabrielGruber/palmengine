@@ -8,7 +8,7 @@ Loaded from environment variables (``PALM_*``) and optional ``.env`` files via
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -46,6 +46,23 @@ class PalmSettings(BaseSettings):
     max_loaded_instances: int = 128
     max_concurrent_active: int = 32
     reconcile_instances_on_startup: bool = True
+
+    @classmethod
+    def from_env_file(cls, env_file: str | Path) -> PalmSettings:
+        """Load settings with an explicit env file (used by CLI ``--config``)."""
+        configured = type(
+            "_PalmSettingsFromFile",
+            (cls,),
+            {
+                "model_config": SettingsConfigDict(
+                    env_prefix="PALM_",
+                    env_file=str(env_file),
+                    env_file_encoding="utf-8",
+                    extra="ignore",
+                )
+            },
+        )
+        return cast(PalmSettings, configured())
 
     def definition_roots(self) -> list[Path]:
         """Directories scanned for ``register_definitions`` modules."""

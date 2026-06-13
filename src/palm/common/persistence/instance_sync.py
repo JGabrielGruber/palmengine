@@ -9,6 +9,7 @@ extraction and resume restoration register via
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -90,7 +91,10 @@ def prepare_resume_state(
     state = state_from_snapshot(instance.state_snapshot)
     handler = _resume_handler(instance.pattern)
     if handler is not None:
-        return handler(instance, executable, state)
+        restored = handler(instance, executable, state)
+        if not isinstance(restored, BlackboardState):
+            raise TypeError(f"Resume handler for {instance.pattern!r} must return BlackboardState")
+        return restored
     return state
 
 
@@ -105,7 +109,10 @@ def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[s
     return fields_fn(job)
 
 
-def _resume_handler(pattern: str) -> Any:
+ResumeHandler = Callable[[ProcessInstance, Any, BlackboardState], BlackboardState]
+
+
+def _resume_handler(pattern: str) -> ResumeHandler | None:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
     from palm.patterns._registry import get_resume_handler
 

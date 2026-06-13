@@ -5,13 +5,13 @@ from __future__ import annotations
 import pytest
 
 from palm.common import DefinitionExecutor
+from palm.common.runtimes.host import RuntimeHost
+from palm.common.runtimes.schedulers import InlineScheduler
 from palm.core.event import EventEngine
 from palm.core.orchestration import OrchestrationEngine
 from palm.definitions.flow import FlowDefinition
 from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
-from palm.common.runtimes.host import RuntimeHost
-from palm.common.runtimes.schedulers import InlineScheduler
 from tests.core.fakes.runner import TestRunner
 
 

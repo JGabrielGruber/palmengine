@@ -37,7 +37,7 @@ def resolve_scheduler(
     ``"queued"``), or falls back to ``default_policy`` for the hosting runtime.
     """
     scheduler = options.get("scheduler")
-    if scheduler is not None and not isinstance(scheduler, str):
+    if isinstance(scheduler, OrchestrationMode):
         return scheduler
 
     policy: SchedulerPolicy = default_policy

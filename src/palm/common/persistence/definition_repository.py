@@ -86,7 +86,7 @@ class DefinitionRepository:
             if flow.name == name:
                 return flow
         loaded = self._scan_storage_for_name("flow", name)
-        if loaded is not None:
+        if isinstance(loaded, FlowDefinition):
             self._index_flow(loaded)
             return loaded
         raise DefinitionNotFoundError("flow", name)
@@ -163,7 +163,7 @@ class DefinitionRepository:
             if process.name == name:
                 return process
         loaded = self._scan_storage_for_name("process", name)
-        if loaded is not None:
+        if isinstance(loaded, ProcessDefinition):
             self._index_process(loaded)
             return loaded
         raise DefinitionNotFoundError("process", name)
@@ -239,7 +239,7 @@ class DefinitionRepository:
             if schema.name == name:
                 return schema
         loaded = self._scan_storage_for_name("state_schema", name)
-        if loaded is not None:
+        if isinstance(loaded, StateSchemaDefinition):
             self._index_schema(loaded)
             return loaded
         raise DefinitionNotFoundError("state_schema", name)
@@ -362,15 +362,17 @@ class DefinitionRepository:
                 pass
         return sorted(ids)
 
+    def _definition_memory(self, kind: str) -> dict[str, Any]:
+        if kind == "process":
+            return self._processes_by_id
+        if kind == "state_schema":
+            return self._schemas_by_id
+        return self._flows_by_id
+
     def _scan_storage_for_name(
         self, kind: str, name: str
     ) -> FlowDefinition | ProcessDefinition | StateSchemaDefinition | None:
-        memory = {
-            "flow": self._flows_by_id,
-            "process": self._processes_by_id,
-            "state_schema": self._schemas_by_id,
-        }.get(kind, self._flows_by_id)
-        ids = self._collect_ids(kind, memory)
+        ids = self._collect_ids(kind, self._definition_memory(kind))
         for definition_id in ids:
             record = self._load_record(kind, definition_id)
             if not isinstance(record, dict):

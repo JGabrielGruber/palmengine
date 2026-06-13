@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
+from palm.common.runtimes.host import RuntimeHost
+from palm.common.runtimes.schedulers import InlineScheduler, QueuedScheduler
+from palm.common.runtimes.wiring import resolve_scheduler
 from palm.core.orchestration import JobStatus
 from palm.patterns.wizard import WizardConfig, WizardStepConfig
 from palm.runtimes.daemon import DaemonRuntime
 from palm.runtimes.embedded import EmbeddedRuntime
-from palm.common.runtimes.host import RuntimeHost
-from palm.common.runtimes.schedulers import InlineScheduler, QueuedScheduler
-from palm.common.runtimes.wiring import resolve_scheduler
 from tests.core.fakes.runner import TestRunner
 
 

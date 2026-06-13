@@ -125,6 +125,10 @@ class QueuedScheduler(OrchestrationMode):
                 self._queue.task_done()
                 break
 
+            if not isinstance(item, _WorkItem):
+                self._queue.task_done()
+                continue
+
             work = item
             try:
                 if not work.job.is_terminal:

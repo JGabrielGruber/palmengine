@@ -13,17 +13,17 @@ from palm.app.bootstrap import (
 )
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from palm.app.settings import PalmSettings
-from palm.common.managers import InstanceManager
+from palm.common.managers import InstanceManager, InstanceSummary
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.core.storage import StorageEngine
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.common.runtimes.base import BaseRuntime
     from palm.core.orchestration import Job
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
     from palm.instances import ProcessInstance, StateSnapshot
-    from palm.common.runtimes.base import BaseRuntime
 
 CLI_RUNTIME_NAME = "cli"
 
@@ -214,7 +214,7 @@ class PalmApp:
         _ = runtime_name
         return self._instance_manager.list_instances()
 
-    def list_instance_summaries(self, *, runtime_name: str | None = None) -> list:
+    def list_instance_summaries(self, *, runtime_name: str | None = None) -> list[InstanceSummary]:
         """List lightweight instance summaries without loading full payloads."""
         _ = runtime_name
         return self._instance_manager.list_summaries()
