@@ -35,6 +35,7 @@ flowchart TB
         hooks[Job hooks — persistence, snapshots]
         persist[Definition + Instance repos]
         builder[Pattern materialization]
+        rtbase[common/runtimes — BaseRuntime, wiring, schedulers]
     end
 
     subgraph Plugins["Extensible plugins"]
@@ -89,8 +90,11 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
+| `common/runtimes/` | `BaseRuntime`, `RuntimeHost`, scheduler resolution, runtime middleware hooks |
 
 Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
+
+Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks) lives in **`palm.common.runtimes`**. Concrete surfaces (CLI, embedded, daemon, server) live in **`palm.runtimes.<name>`** subpackages.
 
 ### `palm.app` — application entrypoint
 
@@ -475,7 +479,7 @@ sequenceDiagram
 | `snapshot_on_status` | `WAITING_FOR_INPUT`, `SUCCEEDED`, `FAILED` | Statuses that trigger a capture |
 | `max_snapshots_per_instance` | `10` | Ring buffer size per instance |
 
-Wiring path: `PalmSettings` → `runtime_start_options()` → `BaseRuntime.start()` → hook list on `OrchestrationEngine`.
+Wiring path: `PalmSettings` → `runtime_start_options()` → `palm.common.runtimes.BaseRuntime.start()` → hook list on `OrchestrationEngine`.
 
 **Trade-offs:**
 
@@ -489,16 +493,35 @@ Wiring path: `PalmSettings` → `runtime_start_options()` → `BaseRuntime.start
 
 ## Runtimes
 
+### Layout
+
+```
+palm/common/runtimes/     # shared infrastructure (single source of truth)
+├── base.py               # BaseRuntime — engine wiring, submission surface
+├── host.py               # RuntimeHost protocol (executions layer contract)
+├── wiring.py             # Scheduler policy resolution
+├── hooks/                # AuthMiddleware, DriveObservabilityHook
+└── schedulers/           # InlineScheduler, QueuedScheduler
+
+palm/runtimes/            # concrete surfaces (thin packages)
+├── embedded/runtime.py   # EmbeddedRuntime — inline default
+├── daemon/runtime.py     # DaemonRuntime — queued background
+├── server/               # ServerRuntime + HTTP API
+└── cli/                  # CLI entry (cli.py) + pkg/ (REPL, doctor, commands)
+```
+
+Legacy import paths (`palm.runtimes.base`, `palm.runtimes.cli_pkg`, …) re-export from the new modules during transition.
+
 | Runtime | Status | Role |
 |---------|--------|------|
-| **BaseRuntime** | Shipped | Shared engine wiring, hooks, auth, plan registry |
+| **BaseRuntime** (`common/runtimes`) | Shipped | Shared engine wiring, hooks, auth, plan registry |
 | **EmbeddedRuntime** | Shipped | Inline scheduler; libraries, tests, CLI |
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
 | **ServerRuntime** | Shipped | Queued scheduler + HTTP (`/v1/jobs`, `/v1/plans/*`) |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
 | **WebSocket** | Planned | Streaming wizard context and job events |
 
-All runtimes share `BaseRuntime` and the `palm.common` API — no duplicated orchestration logic.
+All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.
 
 ---
 

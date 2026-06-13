@@ -10,20 +10,20 @@ from typing import Any, ClassVar
 
 from palm.common.exceptions import PlanNotFoundError
 from palm.common.plans import ExecutionPlan, PlanRegistry, ProcessPlan, StoredPlan
+from palm.common.runtimes.base import BaseRuntime
+from palm.common.runtimes.wiring import SchedulerPolicy
 from palm.core.orchestration import Job
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.runtimes.base import BaseRuntime
 from palm.runtimes.server.auth import current_principal_id
 from palm.runtimes.server.http import PalmHttpServer, serve_runtime
-from palm.runtimes.wiring import SchedulerPolicy
 
 
 class ServerRuntime(BaseRuntime):
     """
     Long-lived runtime exposing jobs over HTTP.
 
-    Defaults to :class:`~palm.runtimes.schedulers.queued.QueuedScheduler` so
+    Defaults to :class:`~palm.common.runtimes.schedulers.queued.QueuedScheduler` so
     request handlers return promptly while a worker thread drives jobs.
     """
 

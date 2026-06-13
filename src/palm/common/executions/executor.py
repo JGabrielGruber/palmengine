@@ -31,7 +31,7 @@ from palm.definitions.process import ProcessDefinition
 
 if TYPE_CHECKING:
     from palm.core.context import BaseState
-    from palm.runtimes.host import RuntimeHost
+    from palm.common.runtimes.host import RuntimeHost
 
 
 class DefinitionExecutor:

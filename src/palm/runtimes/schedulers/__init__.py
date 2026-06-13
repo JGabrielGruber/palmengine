@@ -1,6 +1,5 @@
-"""Concrete job schedulers for Palm runtimes."""
+"""Backward-compatible re-export — prefer ``palm.common.runtimes.schedulers``."""
 
-from palm.runtimes.schedulers.inline import InlineScheduler
-from palm.runtimes.schedulers.queued import QueuedScheduler
+from palm.common.runtimes.schedulers import InlineScheduler, QueuedScheduler
 
 __all__ = ["InlineScheduler", "QueuedScheduler"]

@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from palm.runtimes.base import BaseRuntime
-from palm.runtimes.wiring import SchedulerPolicy
+from palm.common.runtimes.base import BaseRuntime
+from palm.common.runtimes.wiring import SchedulerPolicy
 
 
 class EmbeddedRuntime(BaseRuntime):
@@ -15,7 +15,7 @@ class EmbeddedRuntime(BaseRuntime):
     In-process runtime coordinating context, events, behavior trees, and jobs.
 
     Default scheduling is synchronous via
-    :class:`~palm.runtimes.schedulers.inline.InlineScheduler`. Pass
+    :class:`~palm.common.runtimes.schedulers.inline.InlineScheduler`. Pass
     ``scheduler="queued"`` or an explicit scheduler instance to :meth:`start`
     for alternative policies.
 

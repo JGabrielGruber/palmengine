@@ -38,7 +38,7 @@ class QueuedScheduler(OrchestrationMode):
 
     Suitable for daemon and long-lived runtimes where callers should not block
     on pattern execution. For synchronous in-process use, prefer
-    :class:`~palm.runtimes.schedulers.inline.InlineScheduler`.
+    :class:`~palm.common.runtimes.schedulers.inline.InlineScheduler`.
     """
 
     def __init__(

@@ -7,11 +7,11 @@ import json
 import pytest
 
 from palm.app.cli_settings import resolve_cli_settings
-from palm.runtimes.cli_pkg.args import CliInvocation, settings_from_invocation
-from palm.runtimes.cli_pkg.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli_pkg.commands.registry import build_registry
-from palm.runtimes.cli_pkg.completion import build_repl_completer
-from palm.runtimes.cli_pkg.instance_ops import (
+from palm.runtimes.cli.pkg.args import CliInvocation, settings_from_invocation
+from palm.runtimes.cli.pkg.bootstrap import bootstrap_runtime, shutdown_context
+from palm.runtimes.cli.pkg.commands.registry import build_registry
+from palm.runtimes.cli.pkg.completion import build_repl_completer
+from palm.runtimes.cli.pkg.instance_ops import (
     filter_summaries,
     is_terminal_status,
     parse_instance_list_flags,
@@ -61,7 +61,7 @@ def test_start_alias_schema_onboard(cli_ctx) -> None:
 def test_flow_start_todo_builder(cli_ctx) -> None:
     import shlex
 
-    from palm.runtimes.cli_pkg.job_context import inspect_job
+    from palm.runtimes.cli.pkg.job_context import inspect_job
 
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "flow start todo-builder") == 0
@@ -97,7 +97,7 @@ def test_flow_start_todo_builder(cli_ctx) -> None:
 
 
 def test_flow_start_parallel_demo(cli_ctx) -> None:
-    from palm.runtimes.cli_pkg.job_context import inspect_job
+    from palm.runtimes.cli.pkg.job_context import inspect_job
 
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "flow start parallel-demo") == 0

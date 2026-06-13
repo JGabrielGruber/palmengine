@@ -20,7 +20,7 @@ class InlineScheduler(OrchestrationMode):
     """
     Runs jobs synchronously in the caller thread using a :class:`~palm.core.orchestration.execution.base_runner.JobRunner`.
 
-    This is the default scheduler for :class:`~palm.runtimes.embedded.EmbeddedRuntime`.
+    This is the default scheduler for :class:`~palm.runtimes.embedded.runtime.EmbeddedRuntime`.
     """
 
     def __init__(

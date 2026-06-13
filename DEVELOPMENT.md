@@ -42,12 +42,14 @@ src/palm/
 ├── providers/         # REST, GraphQL, Postgres
 ├── storages/          # Memory, Postgres, MongoDB, filesystem
 ├── definitions/       # FlowDefinition, ProcessDefinition
-├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/, managers/, storage/)
+├── common/            # Shared coordination (executions/, plans/, hooks/, persistence/, managers/, storage/, runtimes/)
+│   └── runtimes/      # BaseRuntime, RuntimeHost, wiring, schedulers, runtime hooks
 ├── instances/         # ProcessInstance, StateSnapshot, status history
-├── runtimes/
-│   ├── embedded.py    # EmbeddedRuntime
-│   ├── cli.py         # Entry point
-│   └── cli_pkg/       # REPL, doctor, commands
+├── runtimes/          # Concrete surfaces (thin packages on common.runtimes)
+│   ├── embedded/      # EmbeddedRuntime
+│   ├── daemon/        # DaemonRuntime
+│   ├── server/        # ServerRuntime + HTTP
+│   └── cli/           # Entry point (cli.py) + pkg/ (REPL, doctor, commands)
 └── utils/
 
 examples/definitions/  # Auto-loaded by CLI (see examples/README.md)
@@ -87,7 +89,7 @@ palm status                              # active instance when one is set
 palm status <id>                         # prefix ids from list work
 ```
 
-Global flags live in `palm/runtimes/cli_pkg/args.py` (`-b`, `-d`, `--config`, `-S`,
+Global flags live in `palm/runtimes/cli/pkg/args.py` (`-b`, `-d`, `--config`, `-S`,
 `--max-loaded-instances`, `--scheduler`, `--format`, …). Parsed into
 `CliInvocation` and merged via `settings_from_invocation()`.
 
@@ -136,7 +138,7 @@ export PALM_DATA_DIR=./data
 
 :class:`~palm.common.storage.StorageFactory` resolves backends lazily and builds
 constructor options from :class:`~palm.app.settings.PalmSettings` (notably
-``data_dir`` for the filesystem backend). ``BaseRuntime.start()`` and
+``data_dir`` for the filesystem backend). ``palm.common.runtimes.BaseRuntime.start()`` and
 ``runtime_start_options()`` wire this automatically.
 
 Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming

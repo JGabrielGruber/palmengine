@@ -91,7 +91,7 @@ def load_definitions_for_repository(
 
 
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:
-    """Build keyword arguments for :meth:`~palm.runtimes.base.BaseRuntime.start`."""
+    """Build keyword arguments for :meth:`~palm.common.runtimes.base.BaseRuntime.start`."""
     options: dict[str, Any] = {
         "storage_backend": settings.storage_backend,
         "backend_options": StorageFactory.backend_options(settings=settings),

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
     from palm.instances import ProcessInstance, StateSnapshot
-    from palm.runtimes.base import BaseRuntime
+    from palm.common.runtimes.base import BaseRuntime
 
 CLI_RUNTIME_NAME = "cli"
 
