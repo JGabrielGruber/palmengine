@@ -10,6 +10,7 @@ Extensible plugins live elsewhere:
 - ``palm.patterns`` — register via ``pattern_registry``
 - ``palm.providers`` — register via ``provider_registry``
 - ``palm.storages`` — register via ``storage_registry``
+- ``palm.common.transforms`` — built-in rules + ``transform_registry`` helpers
 """
 
 from __future__ import annotations
@@ -26,6 +27,8 @@ if TYPE_CHECKING:
     from palm.common.plans.execution_plan import ExecutionPlan
     from palm.common.plans.process_plan import ProcessPlan
     from palm.common.plans.registry import PlanRegistry, StoredPlan
+    from palm.common.transforms.execution import TransformExecutor
+    from palm.common.transforms.registration import register_transform, transform_rule
     from palm.instances import ProcessInstance, StatusHistoryEntry
 
 __all__ = [
@@ -48,7 +51,10 @@ __all__ = [
     "ProcessPlan",
     "StatusHistoryEntry",
     "StoredPlan",
+    "TransformExecutor",
     "build_pattern",
+    "register_transform",
+    "transform_rule",
     "prepare_flow_submission",
     "prepare_process_plans",
 ]
@@ -83,6 +89,9 @@ _LAZY_EXPORTS: dict[str, tuple[str, str]] = {
     "ProcessPlan": ("palm.common.plans.process_plan", "ProcessPlan"),
     "PlanRegistry": ("palm.common.plans.registry", "PlanRegistry"),
     "StoredPlan": ("palm.common.plans.registry", "StoredPlan"),
+    "TransformExecutor": ("palm.common.transforms.execution", "TransformExecutor"),
+    "register_transform": ("palm.common.transforms.registration", "register_transform"),
+    "transform_rule": ("palm.common.transforms.registration", "transform_rule"),
     "ProcessInstance": ("palm.instances", "ProcessInstance"),
     "StatusHistoryEntry": ("palm.instances", "StatusHistoryEntry"),
 }

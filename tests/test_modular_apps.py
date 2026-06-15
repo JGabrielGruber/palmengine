@@ -7,7 +7,10 @@ import importlib
 import pytest
 
 from palm.common.storage import StorageFactory
+from palm.common.transforms._apps import INSTALLED_TRANSFORMS
+from palm.common.transforms._apps import autoload as autoload_transforms
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
+from palm.core.transform.registry import transform_registry
 from palm.patterns._apps import INSTALLED_PATTERNS
 from palm.patterns._registry import get_builder, registered_builders
 from palm.providers._apps import INSTALLED_PROVIDERS
@@ -20,6 +23,7 @@ def _reload_apps() -> None:
     importlib.import_module("palm.patterns")
     importlib.import_module("palm.providers")
     importlib.import_module("palm.storages")
+    autoload_transforms()
 
 
 def test_installed_pattern_apps_register() -> None:
@@ -46,6 +50,17 @@ def test_installed_storage_apps_register() -> None:
     for name in OPTIONAL_STORAGES:
         StorageFactory.ensure_registered(name)
         storage_registry.get(name)
+
+
+def test_installed_transform_apps_register() -> None:
+    assert set(INSTALLED_TRANSFORMS) == {
+        "rename_field",
+        "map_fields",
+        "filter_items",
+        "callable",
+    }
+    for name in INSTALLED_TRANSFORMS:
+        transform_registry.get(name)
 
 
 def test_wizard_handler_exports() -> None:

@@ -132,6 +132,7 @@ def test_instance_list_after_submit(cli_ctx) -> None:
 
 
 def test_resolve_cli_settings_respects_env_over_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PALM_DATA_DIR", raising=False)
     monkeypatch.setenv("PALM_STORAGE_BACKEND", "filesystem")
     monkeypatch.setenv("PALM_DATA_DIR", "/tmp/palm-cli-data")
     monkeypatch.setenv("PALM_ENABLE_STATE_SNAPSHOT", "true")
@@ -182,6 +183,7 @@ def test_cli_filesystem_persistence_across_sessions(tmp_path) -> None:
 def test_cli_env_settings_used_when_flags_omitted(
     tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.delenv("PALM_DATA_DIR", raising=False)
     monkeypatch.setenv("PALM_STORAGE_BACKEND", "filesystem")
     monkeypatch.setenv("PALM_DATA_DIR", str(tmp_path))
 

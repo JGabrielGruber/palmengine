@@ -57,6 +57,7 @@ flowchart TB
         res[ResourceEngine]
         evt[EventEngine]
         auth[AuthEngine — primitives]
+        xform[TransformEngine]
         reg[Registries]
     end
 
@@ -90,9 +91,26 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
+| `common/transforms/` | Built-in transform rules, `TransformExecutor`, and `register_transform()` helpers |
 | `common/runtimes/` | `BaseRuntime`, `RuntimeHost`, scheduler resolution, runtime middleware hooks |
 
 Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
+
+### `common/transforms/` — shared transformation rules
+
+Core defines the engine contract (`TransformEngine`, `BaseTransformRule`, `transform_registry` in `palm/core/transform/`). **`palm.common.transforms`** holds reusable rule implementations and registration helpers — the same split as pattern builders vs `pattern_registry`:
+
+| Piece | Location | Role |
+|-------|----------|------|
+| Engine + contract | `palm/core/transform/` | Pure coordination; resolves rules by name |
+| Built-in rules | `common/transforms/rules/` | `rename_field`, `map_fields`, `filter_items`, `callable` |
+| Registration | `common/transforms/rules/registry.py` | Wires builtins at import (like `patterns/<app>/registry.py`) |
+| Helpers | `common/transforms/registration.py` | `register_transform(name, cls)`, `@transform_rule`, `registered_transforms()` |
+| Execution | `common/transforms/execution.py` | `TransformExecutor`, `apply_transform_to_state()` |
+
+Patterns register custom rules at bootstrap with `register_transform("my_rule", MyRule)` or `@transform_rule` on a `BaseTransformRule` subclass. Rules run through `TransformEngine.apply_to_state()` with scoped reads/writes and optional schema validation via `BaseState.effective_schema()`.
+
+`bootstrap()` imports `palm.common.transforms` so builtins are available before flows run; `palm doctor` lists the `transforms` registry alongside patterns, providers, and storages.
 
 Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks) lives in **`palm.common.runtimes`**. Concrete surfaces (CLI, embedded, daemon, server) live in **`palm.runtimes.<name>`** subpackages.
 
@@ -103,7 +121,7 @@ Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks)
 | Component | Role |
 |-----------|------|
 | `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
-| `bootstrap()` | Load plugin apps (patterns, providers, storages) |
+| `bootstrap()` | Load common transforms, patterns, providers, storages |
 | `create_runtime()` | Register embedded, daemon, or server runtimes |
 | Shared `StorageEngine` | Durable definitions/instances across runtimes |
 | `load_definitions()` | Hydrate catalogs for all registered runtimes |

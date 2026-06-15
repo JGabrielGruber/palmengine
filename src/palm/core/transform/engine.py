@@ -41,9 +41,7 @@ class TransformEngine(BasePalmEngine):
     def resolve(self, name: str, **options: Any) -> BaseTransformRule:
         """Instantiate a registered transform rule."""
         cls = transform_registry.get(name)
-        build_options = {
-            key: value for key, value in options.items() if not key.startswith("_")
-        }
+        build_options = {key: value for key, value in options.items() if not key.startswith("_")}
         return cls.from_options(**build_options)
 
     def apply(
@@ -339,8 +337,7 @@ class TransformEngine(BasePalmEngine):
     ) -> TransformContext:
         if not rule.supports(context.value):
             raise TransformApplicationError(
-                f"Transform {rule.rule_name!r} does not support "
-                f"{type(context.value).__name__}",
+                f"Transform {rule.rule_name!r} does not support " f"{type(context.value).__name__}",
             )
         runtime_options = {**options, "_engine": self}
         return rule.apply(context, **runtime_options)

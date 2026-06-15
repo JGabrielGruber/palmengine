@@ -8,6 +8,7 @@ from typing import Any
 
 from palm import __version__
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
+from palm.core.transform.registry import transform_registry
 from palm.runtimes.cli.commands.views import render_definition_catalog, render_instance_table
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.instance_ops import is_terminal_status
@@ -59,12 +60,17 @@ def run_doctor(ctx: CliContext) -> int:
         )
     )
 
+    from palm.common.transforms import autoload as autoload_transforms
+
+    autoload_transforms()
+
     reg_table = Table(title="Registered Plugins", show_lines=True)
     reg_table.add_column("Registry", style="cyan")
     reg_table.add_column("Names")
     reg_table.add_row("patterns", ", ".join(sorted(pattern_registry.names())) or "—")
     reg_table.add_row("providers", ", ".join(sorted(provider_registry.names())) or "—")
     reg_table.add_row("storages", ", ".join(sorted(storage_registry.names())) or "—")
+    reg_table.add_row("transforms", ", ".join(sorted(transform_registry.names())) or "—")
     console.print(reg_table)
 
     flows = app.list_flows()

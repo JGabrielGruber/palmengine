@@ -249,7 +249,9 @@ def test_apply_to_state_root_keys(transform_engine: TransformEngine, test_state:
     assert result.state_writes == (("payload", {"name": "Ada"}),)
 
 
-def test_apply_to_state_with_trace(transform_engine: TransformEngine, test_state: TestState) -> None:
+def test_apply_to_state_with_trace(
+    transform_engine: TransformEngine, test_state: TestState
+) -> None:
     test_state.set("value", 3)
     result = transform_engine.apply_to_state(
         "double",

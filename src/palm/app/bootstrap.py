@@ -8,6 +8,7 @@ import importlib.util
 from pathlib import Path
 from typing import Any
 
+import palm.common.transforms  # autoload common transform rules
 import palm.patterns  # — autoload pattern apps
 import palm.providers  # — autoload provider apps
 import palm.storages  # noqa: F401 — autoload core storage apps
@@ -18,7 +19,7 @@ from palm.common.storage import StorageFactory
 
 def ensure_plugins() -> None:
     """Import extensible plugin packages so registries are populated."""
-    # Side-effect imports above register patterns, providers, and storages.
+    # Side-effect imports above register transforms, patterns, providers, and storages.
     return None
 
 
