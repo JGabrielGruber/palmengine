@@ -98,6 +98,7 @@ palm flow start todo-builder     # dynamic todo list (collection step)
 palm flow start parallel-demo    # parallel wizard branches
 palm flow start transform-example  # wizard transform steps
 palm flow start transform-shaping  # pipeline calculate / lookup / conditional
+palm flow start transform-formats  # json_load → csv_dump ETL-style pipeline
 ```
 
 ### Transforms (0.9)

@@ -113,7 +113,7 @@ Patterns register custom rules at bootstrap with `register_transform("my_rule", 
 
 `bootstrap()` imports `palm.common.transforms` so builtins are available before flows run; `palm doctor` lists the `transforms` registry with per-rule descriptions.
 
-**Built-in rules (0.9):** `rename_field`, `map_fields`, `filter_items`, `callable`, `string_format`, `jsonpath_extract`, `jsonpath_set`, `calculate`, `enrich_resource`, `date_format`, `date_parse`, `lookup`, `conditional`.
+**Built-in rules (0.9):** field rules (`rename_field`, `map_fields`, `filter_items`, `lookup`, `conditional`, `jsonpath_*`, `calculate`, `string_format`, `date_*`), integration (`enrich_resource`, `callable`), and serialization (`json_load`/`json_dump`, `csv_load`/`csv_dump`, `yaml_load`/`yaml_dump`, `toml_load`, `xml_load`, `parquet_load` stub). See `catalog.py` or `palm doctor`.
 
 Use in **pipelines** (`pattern: pipeline`), **wizard** steps (`step_kind: transform`), or programmatically via `TransformExecutor` / `TransformLeaf`. `enrich_resource` receives `ResourceEngine` from the hosting runtime automatically.
 

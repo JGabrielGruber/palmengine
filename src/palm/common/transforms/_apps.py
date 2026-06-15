@@ -23,6 +23,15 @@ INSTALLED_TRANSFORMS: tuple[str, ...] = (
     "date_parse",
     "lookup",
     "conditional",
+    "json_load",
+    "json_dump",
+    "csv_load",
+    "csv_dump",
+    "yaml_load",
+    "yaml_dump",
+    "toml_load",
+    "xml_load",
+    "parquet_load",
 )
 
 

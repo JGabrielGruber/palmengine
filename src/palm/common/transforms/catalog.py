@@ -18,6 +18,15 @@ TRANSFORM_CATALOG: dict[str, str] = {
     "date_parse": "Parse date strings into ISO date or datetime strings",
     "lookup": "Map a key through a static lookup table with optional default",
     "conditional": "Return then/else values based on equals, numeric, or truthy predicates",
+    "json_load": "Parse JSON text or bytes into dict/list",
+    "json_dump": "Serialize dict/list to a JSON string",
+    "csv_load": "Parse CSV text into a list of row dicts (header-aware)",
+    "csv_dump": "Serialize a list of row dicts to CSV text",
+    "yaml_load": "Parse YAML text into structured data (requires PyYAML)",
+    "yaml_dump": "Serialize data to YAML text (requires PyYAML)",
+    "toml_load": "Parse TOML text or bytes into a mapping (stdlib tomllib)",
+    "xml_load": "Parse XML text into nested mappings (stdlib ElementTree)",
+    "parquet_load": "Placeholder for Parquet — register a custom rule with pyarrow",
 }
 
 

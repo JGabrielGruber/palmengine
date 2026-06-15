@@ -174,6 +174,7 @@ Wizard flow options commonly used in examples:
 | `transform-demo` | pipeline | `rename_field`, `filter_items` |
 | `transform-shaping` | pipeline | `calculate`, `lookup`, `conditional` |
 | `transform-example` | wizard | `string_format` between input steps |
+| `transform-formats` | pipeline | `json_load` → reshape → `csv_dump` |
 
 Run `palm doctor` to see all built-in transform rules with short descriptions.
 | `item_fields` | Per-item field defs (slug, prompt, schema) for collection steps |

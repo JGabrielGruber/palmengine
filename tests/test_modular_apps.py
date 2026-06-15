@@ -55,9 +55,9 @@ def test_installed_storage_apps_register() -> None:
 
 
 def test_installed_transform_apps_register() -> None:
-    assert len(INSTALLED_TRANSFORMS) == 13
-    assert "string_format" in INSTALLED_TRANSFORMS
-    assert "conditional" in INSTALLED_TRANSFORMS
+    assert len(INSTALLED_TRANSFORMS) == 22
+    assert "json_load" in INSTALLED_TRANSFORMS
+    assert "csv_dump" in INSTALLED_TRANSFORMS
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
 
