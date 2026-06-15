@@ -2,7 +2,29 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.9.7] — 2026-06-15
+
+**Transform release** — declarative data shaping from core engine to wizard steps, plus security and reliability polish to close the 0.9 line.
+
+### Added
+
+- **TransformEngine** (`palm.core.transform`) — pure core engine with `TransformContext`, batch/chained pipelines, and scoped `BaseState` reads/writes with optional schema validation
+- **Built-in transform rules** (`palm.common.transforms`) — **22 registered rules** with catalog descriptions for docs and `palm doctor`:
+  - Field shaping: `rename_field`, `map_fields`, `filter_items`, `lookup`, `conditional`, `jsonpath_extract`, `jsonpath_set`, `calculate`, `string_format`
+  - Dates: `date_format`, `date_parse`
+  - Integration: `enrich_resource`, `callable`
+  - Serialization: `json_load`/`json_dump`, `csv_load`/`csv_dump`, `yaml_load`/`yaml_dump`, `toml_load`, `xml_load`, `parquet_load` (stub for custom pyarrow rules)
+- **Registration helpers** — `register_transform()`, `@transform_rule`, `TransformExecutor`, `apply_transform_to_state()`, autoload at bootstrap
+- **Wizard `step_kind: transform`** — declarative transform steps between interactive prompts; promotes output to answers for summary and flow-schema validation; CLI shows `Applied transform: …`
+- **TransformLeaf** — behavior-tree leaf for programmatic transform chains inside wizard trees
+- **Examples** — `transform-example` (wizard transform steps), `transform-shaping` (calculate / lookup / conditional pipeline), `transform-formats` (json → csv ETL-style demo)
+- **`palm doctor`** — transform registry table with per-rule catalog descriptions
+
+### Changed
+
+- **Documentation** — README, ARCHITECTURE, examples, and website refreshed for transforms and 0.9.7 capabilities
+- **Dev dependencies** — pytest bumped to 9.x (addresses CVE-2025-71176) with compatible pytest-asyncio
+- **Version** — release line advances to **0.9.7**
 
 ### Fixed
 

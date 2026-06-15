@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.8.15"
+version = "0.9.7"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -42,8 +42,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8.2,<9.0",
-    "pytest-asyncio>=0.23,<0.24",
+    "pytest>=9.0.3,<10.0",
+    "pytest-asyncio>=0.26,<2.0",
     "ruff>=0.4,<0.5",
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
@@ -55,20 +55,20 @@ cli = [
     "prompt-toolkit>=3.0.43,<4.0",
 ]
 dev = [
-    "pytest>=8.2,<9.0",
-    "pytest-asyncio>=0.23,<0.24",
+    "pytest>=9.0.3,<10.0",
+    "pytest-asyncio>=0.26,<2.0",
     "ruff>=0.4,<0.5",
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
 ]
 test = [
-    "pytest>=8.2,<9.0",
+    "pytest>=9.0.3,<10.0",
     "pytest-cov>=5.0,<6.0",
 ]
 all = [
     "rich>=13.7,<14.0",
     "prompt-toolkit>=3.0.43,<4.0",
-    "pytest>=8.2,<9.0",
+    "pytest>=9.0.3,<10.0",
     "pytest-cov>=5.0,<6.0",
 ]
 postgres = []

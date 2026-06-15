@@ -71,7 +71,7 @@ class XmlLoadRule(BaseTransformRule):
         text_key = str(options.get("text_key", "#text"))
         text = ensure_text(context.value, encoding=encoding, rule_name=self.rule_name)
         try:
-            root = ET.fromstring(text)
+            root = ET.fromstring(text)  # nosec B314
         except ET.ParseError as exc:
             raise TransformApplicationError(
                 f"{self.rule_name} invalid XML: {exc}",

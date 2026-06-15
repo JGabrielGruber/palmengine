@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.8.15**.
+Guide for contributors working on Palm **0.9.7**.
 
 ## Setup
 
@@ -446,4 +446,4 @@ pip install -i https://test.pypi.org/simple/ palmengine[cli]
 
 ---
 
-Last updated: June 2026 (0.8.15)
+Last updated: June 2026 (0.9.7)

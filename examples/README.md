@@ -165,9 +165,12 @@ Wizard flow options commonly used in examples:
 | `state_schema` (step) | Per-step value schema in step dicts |
 | `state_schema_ref` | Reference a named schema in the definition repository |
 | `step_kind: collection` | Repeatable item builder with `item_fields` and `collection_key` |
+| `item_fields` | Per-item field defs (slug, prompt, schema) for collection steps |
+| `label_field` | Field slug for item labels and partial edit/remove search |
+| `min_items` | Minimum items required before leaving a collection step |
 | `step_kind: transform` | Apply a transform rule/chain (`source_key`, `target_key`, `rule`, `options`) |
 
-### Transform examples
+### Transform examples (0.9.7)
 
 | Flow | Pattern | Demonstrates |
 |------|---------|--------------|
@@ -176,10 +179,7 @@ Wizard flow options commonly used in examples:
 | `transform-example` | wizard | `string_format` between input steps |
 | `transform-formats` | pipeline | `json_load` → reshape → `csv_dump` |
 
-Run `palm doctor` to see all built-in transform rules with short descriptions.
-| `item_fields` | Per-item field defs (slug, prompt, schema) for collection steps |
-| `label_field` | Field slug for item labels and partial edit/remove search |
-| `min_items` | Minimum items required before leaving a collection step |
+Run `palm doctor` to see all **22** built-in transform rules with short descriptions.
 
 Commit handlers receive a `CommitContext` with `answers`, `state`, and optional `resource_engine` for `fetch_resource()`.
 

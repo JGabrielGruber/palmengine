@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.8.15` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.9.7` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
 
 ---
 
@@ -49,19 +49,20 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.8.15)
+## What works today (0.9.7)
 
 | Area | Capabilities |
 |------|----------------|
-| **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth |
-| **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`), observability events |
-| **Patterns** | **Wizard** (layered validation, collection steps, summary/commit); **parallel** branches; DAG and ETL stubs |
+| **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth, **TransformEngine** |
+| **State** | `DictStateSchema` (incl. length/item constraints), scoped state, schema-aware snapshots (`__palm:meta`), observability events |
+| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, and serialization (JSON/CSV/YAML/TOML/XML) |
+| **Patterns** | **Wizard** (layered validation, collection steps, **`step_kind: transform`**, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
-| **Persistence** | Production **filesystem** backend, `StorageFactory`, `InstanceManager`, durable resume across restarts |
+| **Persistence** | Production **filesystem** backend (path-safe), `StorageFactory`, `InstanceManager`, durable resume across restarts |
 | **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
 | **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
-| **DX** | Examples (`schema-onboard`, `todo-builder`, `parallel-demo`), numbered choice UX, `just` quality recipes |
+| **DX** | Examples (`transform-example`, `transform-formats`, `todo-builder`, `parallel-demo`), `palm doctor` transform catalog, `just` quality recipes |
 
 ```mermaid
 flowchart LR
@@ -101,7 +102,7 @@ palm flow start transform-shaping  # pipeline calculate / lookup / conditional
 palm flow start transform-formats  # json_load → csv_dump ETL-style pipeline
 ```
 
-### Transforms (0.9)
+### Transforms (0.9.7)
 
 Declarative data shaping via registered rules — usable in **pipelines**, **wizard** steps (`step_kind: transform`), or `TransformLeaf` nodes.
 

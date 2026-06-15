@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.8.15 · June 2026 · PyPI: `palmengine`
+**Palm Engine** · 0.9.7 · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -103,7 +103,7 @@ Core defines the engine contract (`TransformEngine`, `BaseTransformRule`, `trans
 | Piece | Location | Role |
 |-------|----------|------|
 | Engine + contract | `palm/core/transform/` | Pure coordination; resolves rules by name |
-| Built-in rules | `common/transforms/rules/` | 13 rules — see `common/transforms/catalog.py` and `palm doctor` |
+| Built-in rules | `common/transforms/rules/` | 22 rules — see `common/transforms/catalog.py` and `palm doctor` |
 | Catalog | `common/transforms/catalog.py` | Short descriptions for docs and CLI diagnostics |
 | Registration | `common/transforms/rules/registry.py` | Wires builtins at import (like `patterns/<app>/registry.py`) |
 | Helpers | `common/transforms/registration.py` | `register_transform(name, cls)`, `@transform_rule`, `registered_transforms()` |
