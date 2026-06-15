@@ -76,7 +76,9 @@ def test_yaml_roundtrip(executor: TransformExecutor) -> None:
     assert loaded.value == data
 
 
-def test_yaml_load_without_pyyaml(executor: TransformExecutor, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_yaml_load_without_pyyaml(
+    executor: TransformExecutor, monkeypatch: pytest.MonkeyPatch
+) -> None:
     import builtins
 
     real_import = builtins.__import__

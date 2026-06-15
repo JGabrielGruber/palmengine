@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import ast
 import operator
+from collections.abc import Callable
 from typing import Any
 
 from palm.core.exceptions import TransformApplicationError
 
-_BINOPS = {
+_BinFn = Callable[[Any, Any], Any]
+_UnaryFn = Callable[[Any], Any]
+
+_BINOPS: dict[type[ast.operator], _BinFn] = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
     ast.Mult: operator.mul,
@@ -17,7 +21,7 @@ _BINOPS = {
     ast.Mod: operator.mod,
     ast.Pow: operator.pow,
 }
-_UNARYOPS = {
+_UNARYOPS: dict[type[ast.unaryop], _UnaryFn] = {
     ast.UAdd: operator.pos,
     ast.USub: operator.neg,
 }
@@ -42,17 +46,17 @@ def _eval_node(node: ast.AST, variables: dict[str, Any]) -> Any:
             raise TransformApplicationError(f"calculate unknown variable {node.id!r}")
         return variables[node.id]
     if isinstance(node, ast.UnaryOp):
-        op = _UNARYOPS.get(type(node.op))
-        if op is None:
+        unary_op = _UNARYOPS.get(type(node.op))
+        if unary_op is None:
             raise TransformApplicationError("calculate unsupported unary operator")
-        return op(_eval_node(node.operand, variables))
+        return unary_op(_eval_node(node.operand, variables))
     if isinstance(node, ast.BinOp):
-        op = _BINOPS.get(type(node.op))
-        if op is None:
+        bin_op = _BINOPS.get(type(node.op))
+        if bin_op is None:
             raise TransformApplicationError("calculate unsupported binary operator")
         left = _eval_node(node.left, variables)
         right = _eval_node(node.right, variables)
-        return op(left, right)
+        return bin_op(left, right)
     raise TransformApplicationError(
         f"calculate unsupported expression node: {type(node).__name__}",
     )

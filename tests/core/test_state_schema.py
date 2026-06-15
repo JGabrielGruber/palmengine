@@ -89,6 +89,52 @@ def test_base_state_validate_key_without_schema() -> None:
     assert state.validate_key("x") == []
 
 
+def test_dict_schema_validate_string_length_constraints() -> None:
+    schema = DictStateSchema({"type": "string", "minLength": 2, "maxLength": 5})
+    assert schema.validate_value("ab", path="name") == []
+    assert schema.validate_value("abcde", path="name") == []
+    assert schema.validate_value("a", path="name") == ["name: length 1 < minLength 2"]
+    assert schema.validate_value("abcdef", path="name") == [
+        "name: length 6 > maxLength 5",
+    ]
+
+
+def test_dict_schema_validate_array_item_count_constraints() -> None:
+    schema = DictStateSchema(
+        {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {"type": "string"},
+        },
+    )
+    assert schema.validate_value(["a"], path="tags") == []
+    assert schema.validate_value([], path="tags") == ["tags: length 0 < minItems 1"]
+    assert schema.validate_value(["a", "b", "c"], path="tags") == [
+        "tags: length 3 > maxItems 2",
+    ]
+
+
+def test_dict_schema_validate_state_with_length_constraints() -> None:
+    schema = DictStateSchema(
+        {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "minLength": 3},
+                "tags": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"type": "string"},
+                },
+            },
+            "required": ["title"],
+        },
+    )
+    errors = schema.validate_state({"title": "ab", "tags": []})
+    assert "title: length 2 < minLength 3" in errors
+    assert "tags: length 0 < minItems 1" in errors
+
+
 def test_dict_schema_validate_union_type_accepts_null() -> None:
     schema = DictStateSchema({"type": ["string", "null"]})
     assert schema.validate_value(None, path="due_date") == []

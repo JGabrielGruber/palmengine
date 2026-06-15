@@ -87,8 +87,7 @@ class StringFormatRule(BaseTransformRule):
         fn = _CASE_FNS.get(str(case).lower())
         if fn is None:
             raise TransformApplicationError(
-                f"{self.rule_name} unknown case {case!r} "
-                f"(use upper, lower, title, capitalize)",
+                f"{self.rule_name} unknown case {case!r} " f"(use upper, lower, title, capitalize)",
             )
         return fn(value)
 

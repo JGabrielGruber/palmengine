@@ -30,7 +30,7 @@ class JsonDumpRule(BaseTransformRule):
 
     def apply(self, context: TransformContext, **options: Any) -> TransformContext:
         value = context.value
-        if not isinstance(value, (dict, list)):
+        if not isinstance(value, dict | list):
             raise TransformApplicationError(
                 f"{self.rule_name} requires a mapping or list, got {type(value).__name__}",
             )
@@ -45,7 +45,7 @@ class JsonDumpRule(BaseTransformRule):
         }
         if indent is not None:
             dump_kwargs["indent"] = indent
-        if isinstance(separators, (list, tuple)) and len(separators) == 2:
+        if isinstance(separators, list | tuple) and len(separators) == 2:
             dump_kwargs["separators"] = tuple(separators)
         if default is not None:
             dump_kwargs["default"] = default

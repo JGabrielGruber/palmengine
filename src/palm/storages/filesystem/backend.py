@@ -30,12 +30,35 @@ def _resolve_data_dir(data_dir: Path | str | None, *, root: Path | str | None) -
     return resolved
 
 
+def _validate_key_segment(segment: str) -> None:
+    """Reject path traversal and separator characters in a key segment."""
+    if segment in (".", ".."):
+        raise ConfigurationError(f"Storage key segment must not be {segment!r}")
+    if "/" in segment or "\\" in segment:
+        raise ConfigurationError(
+            f"Storage key segment must not contain path separators: {segment!r}",
+        )
+
+
 def _key_to_relpath(key: str) -> Path:
     """Map colon-separated storage keys to nested JSON file paths."""
     parts = [segment for segment in key.split(":") if segment]
     if not parts:
         raise ConfigurationError("Storage key must not be empty")
+    for segment in parts:
+        _validate_key_segment(segment)
     return Path(*parts).with_suffix(_JSON_SUFFIX)
+
+
+def _resolve_under_root(root: Path, relative: Path) -> Path:
+    """Resolve ``relative`` under ``root``; reject escapes outside the root."""
+    root_resolved = root.resolve()
+    candidate = (root_resolved / relative).resolve()
+    if not candidate.is_relative_to(root_resolved):
+        raise StoragePermissionError(
+            f"Storage path {relative!s} escapes data directory {root_resolved}",
+        )
+    return candidate
 
 
 class FilesystemStorageBackend(BaseBackend):
@@ -94,7 +117,7 @@ class FilesystemStorageBackend(BaseBackend):
     def set(self, key: str, value: Any) -> None:
         self.ensure_open()
         with self._lock:
-            path = self._data_dir / _key_to_relpath(key)
+            path = self._resolve_data_path(key)
             payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
             self._atomic_write(path, payload)
 
@@ -125,9 +148,19 @@ class FilesystemStorageBackend(BaseBackend):
         return None
 
     def _candidate_paths(self, key: str) -> tuple[Path, ...]:
-        modern = self._data_dir / _key_to_relpath(key)
-        legacy = self._data_dir / key
+        modern = self._resolve_data_path(key)
+        legacy = self._resolve_legacy_path(key)
         return (modern, legacy)
+
+    def _resolve_data_path(self, key: str) -> Path:
+        return _resolve_under_root(self._data_dir, _key_to_relpath(key))
+
+    def _resolve_legacy_path(self, key: str) -> Path:
+        if ".." in key or "/" in key or "\\" in key:
+            raise ConfigurationError(
+                f"Storage key must not contain path traversal or separators: {key!r}",
+            )
+        return _resolve_under_root(self._data_dir, Path(key))
 
     def _decode_payload(self, key: str, raw: str, *, path: Path) -> Any | None:
         stripped = raw.strip()

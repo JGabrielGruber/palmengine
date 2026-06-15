@@ -214,8 +214,9 @@ class InstanceManager(BaseManager):
 
     def acquire(self, instance_id: str) -> ProcessInstance:
         """Load an instance and mark it active."""
+        instance = self.get(instance_id)
         self.mark_active(instance_id)
-        return self.get(instance_id)
+        return instance
 
     def get(self, instance_id: str) -> ProcessInstance:
         with self._lock:

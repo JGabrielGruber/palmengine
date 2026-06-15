@@ -11,7 +11,7 @@ def preview_value(value: Any, *, max_len: int = 72) -> str:
         return "∅"
     if isinstance(value, str):
         text = value
-    elif isinstance(value, (int, float, bool)):
+    elif isinstance(value, int | float | bool):
         text = repr(value)
     else:
         text = repr(value)

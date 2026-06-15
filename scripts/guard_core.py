@@ -43,7 +43,7 @@ def main() -> int:
         print("\n".join(violations))
         return 1
 
-    print("✅ Core architecture rules respected")
+    print("[OK] Core architecture rules respected")
     return 0
 
 

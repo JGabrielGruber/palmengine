@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING
 from palm.core.orchestration import Job, JobStatus
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.states import BlackboardState
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.flow_labels import flow_start_hint
 from palm.runtimes.cli.shared.job_inspect import inspect_job, instance_id_for_job
 from palm.runtimes.cli.tui.display import render_job_panel
+from palm.states import BlackboardState
 
 if TYPE_CHECKING:
     from palm.definitions.flow import FlowDefinition

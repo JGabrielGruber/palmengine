@@ -25,7 +25,7 @@ def ensure_text(value: Any, *, encoding: str, rule_name: str) -> str:
 
 def optional_text_or_bytes(value: Any, *, encoding: str, rule_name: str) -> str | bytes:
     """Accept str or bytes payloads for format loaders."""
-    if isinstance(value, (str, bytes)):
+    if isinstance(value, str | bytes):
         return value
     raise TransformApplicationError(
         f"{rule_name} requires str or bytes, got {type(value).__name__}",

@@ -7,19 +7,20 @@ pattern packages.
 """
 
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, autoload
-from palm.common.transforms.catalog import TRANSFORM_CATALOG, transform_description
 from palm.common.transforms.builder import (
     TransformStepSpec,
     build_transform_leaf,
     build_transform_leaves,
     transform_step_from_mapping,
 )
+from palm.common.transforms.catalog import TRANSFORM_CATALOG, transform_description
 from palm.common.transforms.execution import (
     TransformExecutor,
     apply_transform,
     apply_transform_to_state,
     default_executor,
 )
+from palm.common.transforms.preview import preview_value
 from palm.common.transforms.registration import (
     has_transform,
     register_transform,
@@ -28,7 +29,6 @@ from palm.common.transforms.registration import (
     registered_transforms,
     transform_rule,
 )
-from palm.common.transforms.preview import preview_value
 from palm.common.transforms.rules import (
     BUILTIN_RULES,
     CalculateRule,

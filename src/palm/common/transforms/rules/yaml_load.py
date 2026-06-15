@@ -11,7 +11,7 @@ from palm.core.transform.base import BaseTransformRule, TransformContext, Transf
 
 def _yaml_loader(*, safe: bool) -> Any:
     try:
-        import yaml
+        import yaml  # type: ignore[import-untyped]
     except ImportError as exc:
         raise TransformApplicationError(
             "yaml_load requires PyYAML — install with: pip install pyyaml",

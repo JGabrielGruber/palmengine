@@ -58,17 +58,17 @@ class ConditionalRule(BaseTransformRule):
 
 def _matches(subject: Any, container: dict[str, Any] | None, options: dict[str, Any]) -> bool:
     if "equals" in options:
-        return subject == options["equals"]
+        return bool(subject == options["equals"])
     if "not_equals" in options:
-        return subject != options["not_equals"]
+        return bool(subject != options["not_equals"])
     if "gt" in options:
-        return subject > options["gt"]
+        return bool(subject > options["gt"])
     if "gte" in options:
-        return subject >= options["gte"]
+        return bool(subject >= options["gte"])
     if "lt" in options:
-        return subject < options["lt"]
+        return bool(subject < options["lt"])
     if "lte" in options:
-        return subject <= options["lte"]
+        return bool(subject <= options["lte"])
     if options.get("is_truthy"):
         return bool(subject)
     if options.get("exists"):

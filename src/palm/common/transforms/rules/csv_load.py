@@ -41,9 +41,7 @@ class CsvLoadRule(BaseTransformRule):
         has_header = bool(options.get("header", True))
         fieldnames_raw = options.get("fieldnames")
         fieldnames = (
-            [str(item) for item in fieldnames_raw]
-            if isinstance(fieldnames_raw, list)
-            else None
+            [str(item) for item in fieldnames_raw] if isinstance(fieldnames_raw, list) else None
         )
         skip_initial_space = bool(options.get("skip_initial_space", False))
 

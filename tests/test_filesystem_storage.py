@@ -14,6 +14,7 @@ from palm.common.storage import StorageFactory
 from palm.core import (
     ConfigurationError,
     StorageEngine,
+    StoragePermissionError,
     storage_registry,
 )
 from palm.instances import ProcessInstance
@@ -80,6 +81,28 @@ def test_filesystem_reads_legacy_v06_flat_files(tmp_path: Path) -> None:
         "instance_id": "legacy-1",
         "status": "SUCCEEDED",
     }
+    backend.close()
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "palm:..:outside",
+        "palm:instances:..:escape",
+        "../outside",
+        "palm/instances/escape",
+    ],
+)
+def test_filesystem_rejects_path_traversal_keys(tmp_path: Path, key: str) -> None:
+    backend = FilesystemStorageBackend(data_dir=tmp_path)
+    backend.open()
+    outside = tmp_path.parent / "outside.json"
+
+    with pytest.raises((ConfigurationError, StoragePermissionError)):
+        backend.set(key, {"escaped": True})
+
+    assert not outside.exists()
+    assert not any(tmp_path.rglob("outside.json"))
     backend.close()
 
 

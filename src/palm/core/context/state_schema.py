@@ -66,8 +66,9 @@ class DictStateSchema(StateSchema):
     """JSON Schema-style dict schema with a built-in subset validator.
 
     Supports root ``type: object`` documents with ``properties``, ``required``,
-    per-property ``type``, ``default``, ``enum``, ``minimum``/``maximum``, and
-    nested ``object``/``array`` ``items`` definitions.
+    per-property ``type``, ``default``, ``enum``, ``minimum``/``maximum``,
+    ``minLength``/``maxLength``, ``minItems``/``maxItems``, and nested
+    ``object``/``array`` ``items`` definitions.
     """
 
     def __init__(self, definition: Mapping[str, Any]) -> None:
@@ -152,6 +153,16 @@ def _validate_value(value: Any, spec: Mapping[str, Any], *, path: str) -> list[s
         if "maximum" in spec and value > spec["maximum"]:
             errors.append(f"{path}: {value} > maximum {spec['maximum']}")
 
+    if expected_type == "string":
+        if "minLength" in spec and len(value) < spec["minLength"]:
+            errors.append(
+                f"{path}: length {len(value)} < minLength {spec['minLength']}",
+            )
+        if "maxLength" in spec and len(value) > spec["maxLength"]:
+            errors.append(
+                f"{path}: length {len(value)} > maxLength {spec['maxLength']}",
+            )
+
     if expected_type == "object":
         properties = spec.get("properties", {})
         required = spec.get("required", [])
@@ -168,6 +179,15 @@ def _validate_value(value: Any, spec: Mapping[str, Any], *, path: str) -> list[s
                     )
 
     if expected_type == "array":
+        if isinstance(value, list):
+            if "minItems" in spec and len(value) < spec["minItems"]:
+                errors.append(
+                    f"{path}: length {len(value)} < minItems {spec['minItems']}",
+                )
+            if "maxItems" in spec and len(value) > spec["maxItems"]:
+                errors.append(
+                    f"{path}: length {len(value)} > maxItems {spec['maxItems']}",
+                )
         items = spec.get("items")
         if isinstance(items, dict) and isinstance(value, list):
             for index, item in enumerate(value):

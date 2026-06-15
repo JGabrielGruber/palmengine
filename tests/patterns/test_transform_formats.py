@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from examples.definitions.transform_formats import TRANSFORM_FORMATS_FLOW
 from palm.common.patterns import build_pattern
 from palm.common.transforms import autoload
 from palm.core import PatternStatus
 from palm.core.transform.registry import transform_registry
-from examples.definitions.transform_formats import TRANSFORM_FORMATS_FLOW
 from tests.core.fakes import TestState
 
 

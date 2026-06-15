@@ -8,7 +8,6 @@ from palm.common.patterns import build_pattern
 from palm.common.transforms import TransformExecutor, autoload
 from palm.core import PatternStatus
 from palm.core.transform.registry import transform_registry
-from palm.definitions import FlowDefinition
 from palm.patterns.wizard import WizardKeys, WizardPattern
 from palm.patterns.wizard.builder import wizard_config_from_options
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig

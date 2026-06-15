@@ -79,6 +79,41 @@ def test_active_instances_are_not_evicted() -> None:
     storage.shutdown()
 
 
+def test_acquire_does_not_leak_active_slot_on_missing_instance() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = InstanceRepository(storage)
+    manager = InstanceManager(
+        repo,
+        settings=PalmSettings(max_concurrent_active=1),
+    )
+    manager.initialize(reconcile_on_startup=False)
+
+    with pytest.raises(InstanceNotFoundError):
+        manager.acquire("inst-missing")
+
+    assert manager.active_instance_ids == set()
+    manager.mark_active("inst-other")
+    manager.shutdown()
+    storage.shutdown()
+
+
+def test_acquire_marks_active_after_successful_load() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = InstanceRepository(storage)
+    manager = InstanceManager(repo)
+    manager.initialize(reconcile_on_startup=False)
+    manager.save(_sample_instance("inst-acquire"))
+
+    loaded = manager.acquire("inst-acquire")
+    assert loaded.instance_id == "inst-acquire"
+    assert "inst-acquire" in manager.active_instance_ids
+
+    manager.shutdown()
+    storage.shutdown()
+
+
 def test_active_limit_enforced() -> None:
     storage = StorageEngine()
     storage.initialize(backend="memory")

@@ -47,10 +47,7 @@ def default_transform_prompt(step: WizardStepConfig) -> str:
     if spec is None:
         return "Applying transform"
     target = spec.target_key or spec.source_key
-    return (
-        f"Applying transform: {format_transform_label(step)} "
-        f"({spec.source_key} → {target})"
-    )
+    return f"Applying transform: {format_transform_label(step)} " f"({spec.source_key} → {target})"
 
 
 def format_transform_feedback(
@@ -120,7 +117,9 @@ class WizardTransformLeaf(LeafNode):
             default=None,
         )
 
-    def _prompt_bundle(self, state: BaseState, *, source_preview: str | None = None) -> dict[str, Any]:
+    def _prompt_bundle(
+        self, state: BaseState, *, source_preview: str | None = None
+    ) -> dict[str, Any]:
         spec = self._step.transform
         assert spec is not None
         bundle = {

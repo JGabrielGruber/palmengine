@@ -10,7 +10,7 @@ from palm.core.transform.base import BaseTransformRule, TransformContext, Transf
 
 def _yaml_dumper() -> Any:
     try:
-        import yaml
+        import yaml  # type: ignore[import-untyped]
     except ImportError as exc:
         raise TransformApplicationError(
             "yaml_dump requires PyYAML — install with: pip install pyyaml",

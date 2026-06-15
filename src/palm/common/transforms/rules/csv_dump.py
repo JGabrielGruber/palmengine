@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import csv
 import io
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 from palm.common.transforms.rules._helpers import require_list
 from palm.core.exceptions import TransformApplicationError
@@ -45,7 +45,10 @@ class CsvDumpRule(BaseTransformRule):
         delimiter = str(options.get("delimiter", ","))
         write_header = bool(options.get("header", True))
         lineterminator = str(options.get("lineterminator", "\n"))
-        extrasaction = str(options.get("extrasaction", "raise"))
+        extrasaction_raw = str(options.get("extrasaction", "raise"))
+        extrasaction: Literal["raise", "ignore"] = (
+            "ignore" if extrasaction_raw == "ignore" else "raise"
+        )
 
         fieldnames_raw = options.get("fieldnames")
         fieldnames: list[str] | None = None

@@ -2,6 +2,15 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- **Filesystem storage path traversal** — `FilesystemStorageBackend` rejects `..` segments, path separators, and any resolved path outside `data_dir`; prevents writes outside the storage root (e.g. keys like `palm:..:outside`)
+- **InstanceManager active slot leak** — `acquire()` marks an instance active only after a successful load; failed lookups no longer consume active slots
+- **DictStateSchema length constraints** — validates `minLength`/`maxLength` on strings and `minItems`/`maxItems` on arrays
+- **`guard_core.py` Windows console** — success message uses plain `[OK]` instead of a Unicode checkmark
+
 ## [0.8.15] — 2026-06-12
 
 Polished release — dynamic list wizards, parallel branches, and friendlier CLI choice UX on top of the state schema foundation.
