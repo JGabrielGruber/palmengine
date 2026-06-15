@@ -11,6 +11,7 @@ Engines:
 - ``orchestration`` — job lifecycle
 - ``event`` — observability bus
 - ``auth`` — authentication primitives
+- ``transform`` — data transformation rules and pipelines
 """
 
 from palm.core.auth import AuthEngine, Principal
@@ -47,6 +48,8 @@ from palm.core.exceptions import (
     StorageError,
     StorageNotConfiguredError,
     StoragePermissionError,
+    TransformApplicationError,
+    TransformError,
 )
 from palm.core.orchestration import (
     ExecutionContext,
@@ -71,6 +74,15 @@ from palm.core.registry import (
 )
 from palm.core.resource import BaseProvider, ResourceEngine
 from palm.core.storage import BaseBackend, StorageEngine
+from palm.core.transform import (
+    BaseTransformRule,
+    TransformContext,
+    TransformEngine,
+    TransformFrame,
+    TransformMode,
+    TransformResult,
+    transform_registry,
+)
 
 __all__ = [
     "AuthEngine",
@@ -119,6 +131,15 @@ __all__ = [
     "pattern_registry",
     "provider_registry",
     "storage_registry",
+    "transform_registry",
+    "BaseTransformRule",
+    "TransformApplicationError",
+    "TransformContext",
+    "TransformEngine",
+    "TransformError",
+    "TransformFrame",
+    "TransformMode",
+    "TransformResult",
     "STATE_FRAME_KEY",
     "STATE_SCOPE_FRAME_KEY",
     "StateError",

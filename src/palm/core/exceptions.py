@@ -58,3 +58,11 @@ class StateNotConfiguredError(StateError):
 
 class StateValidationError(StateError):
     """Raised when state values fail schema validation."""
+
+
+class TransformError(EngineError):
+    """Raised when transform coordination fails."""
+
+
+class TransformApplicationError(TransformError):
+    """Raised when a transform rule cannot be applied to a value."""
