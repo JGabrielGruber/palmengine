@@ -15,6 +15,14 @@ INSTALLED_TRANSFORMS: tuple[str, ...] = (
     "filter_items",
     "callable",
     "string_format",
+    "jsonpath_extract",
+    "jsonpath_set",
+    "calculate",
+    "enrich_resource",
+    "date_format",
+    "date_parse",
+    "lookup",
+    "conditional",
 )
 
 

@@ -51,6 +51,10 @@ class JobContext:
     collection_items: tuple[dict[str, Any], ...] = ()
     collection_phase: str | None = None
     collection_item_previews: tuple[str, ...] = ()
+    transform_rule: str | None = None
+    transform_source_key: str | None = None
+    transform_target_key: str | None = None
+    transform_source_preview: str | None = None
 
     @property
     def repl_scope_suffix(self) -> str:
@@ -172,6 +176,9 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
     collection_items, collection_phase, collection_item_previews = _collection_from_bundle(
         prompt_bundle,
     )
+    transform_rule, transform_source_key, transform_target_key, transform_source_preview = (
+        _transform_from_bundle(prompt_bundle)
+    )
     return JobContext(
         pattern="wizard",
         step=wizard.current_step_slug(state),
@@ -186,6 +193,10 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         collection_items=collection_items,
         collection_phase=collection_phase,
         collection_item_previews=collection_item_previews,
+        transform_rule=transform_rule,
+        transform_source_key=transform_source_key,
+        transform_target_key=transform_target_key,
+        transform_source_preview=transform_source_preview,
     )
 
 
@@ -279,6 +290,29 @@ def _field_type(bundle: dict[str, Any] | None) -> str | None:
         return None
     value = bundle.get("field_type", "text")
     return str(value)
+
+
+def _transform_from_bundle(
+    bundle: dict[str, Any] | None,
+) -> tuple[str | None, str | None, str | None, str | None]:
+    if not bundle:
+        return None, None, None, None
+    rule = bundle.get("transform_rule")
+    chain = bundle.get("transform_chain")
+    rule_label: str | None = None
+    if isinstance(chain, list) and chain:
+        rule_label = " → ".join(str(item) for item in chain)
+    elif rule is not None:
+        rule_label = str(rule)
+    source = bundle.get("transform_source_key")
+    target = bundle.get("transform_target_key")
+    preview = bundle.get("transform_source_preview")
+    return (
+        rule_label,
+        str(source) if source is not None else None,
+        str(target) if target is not None else None,
+        str(preview) if preview is not None else None,
+    )
 
 
 def _collection_from_bundle(

@@ -92,6 +92,7 @@ def build_wizard_tree(
                     step_index=idx,
                     emit=emit,
                     context_engine=context_engine,
+                    resource_engine=resource_engine,
                 )
             )
         else:

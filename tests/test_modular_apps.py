@@ -55,13 +55,9 @@ def test_installed_storage_apps_register() -> None:
 
 
 def test_installed_transform_apps_register() -> None:
-    assert set(INSTALLED_TRANSFORMS) == {
-        "rename_field",
-        "map_fields",
-        "filter_items",
-        "callable",
-        "string_format",
-    }
+    assert len(INSTALLED_TRANSFORMS) == 13
+    assert "string_format" in INSTALLED_TRANSFORMS
+    assert "conditional" in INSTALLED_TRANSFORMS
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
 

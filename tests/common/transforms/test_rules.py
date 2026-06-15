@@ -26,13 +26,22 @@ def executor() -> TransformExecutor:
 
 
 def test_installed_transforms_register(executor: TransformExecutor) -> None:
-    assert set(INSTALLED_TRANSFORMS) == {
+    expected = {
         "rename_field",
         "map_fields",
         "filter_items",
         "callable",
         "string_format",
+        "jsonpath_extract",
+        "jsonpath_set",
+        "calculate",
+        "enrich_resource",
+        "date_format",
+        "date_parse",
+        "lookup",
+        "conditional",
     }
+    assert set(INSTALLED_TRANSFORMS) == expected
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
     engine = executor.engine

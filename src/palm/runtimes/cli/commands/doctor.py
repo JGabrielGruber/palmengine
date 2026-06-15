@@ -73,6 +73,17 @@ def run_doctor(ctx: CliContext) -> int:
     reg_table.add_row("transforms", ", ".join(sorted(transform_registry.names())) or "—")
     console.print(reg_table)
 
+    from palm.common.transforms.catalog import TRANSFORM_CATALOG
+
+    transform_names = sorted(transform_registry.names())
+    if transform_names:
+        tx_table = Table(title="Transform Rules", show_lines=True)
+        tx_table.add_column("Rule", style="cyan", no_wrap=True)
+        tx_table.add_column("Description")
+        for name in transform_names:
+            tx_table.add_row(name, TRANSFORM_CATALOG.get(name, "Registered transform rule"))
+        console.print(tx_table)
+
     flows = app.list_flows()
     processes = app.list_processes()
     schema_flows = sum(1 for flow in flows if flow.has_state_schema)

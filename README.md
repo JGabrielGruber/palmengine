@@ -96,7 +96,40 @@ palm flow start onboard          # recommended — works for all patterns
 palm flow start schema-onboard   # layered state schemas + scopes
 palm flow start todo-builder     # dynamic todo list (collection step)
 palm flow start parallel-demo    # parallel wizard branches
+palm flow start transform-example  # wizard transform steps
+palm flow start transform-shaping  # pipeline calculate / lookup / conditional
 ```
+
+### Transforms (0.9)
+
+Declarative data shaping via registered rules — usable in **pipelines**, **wizard** steps (`step_kind: transform`), or `TransformLeaf` nodes.
+
+```python
+from palm.common.transforms import TransformExecutor, autoload
+
+autoload()
+executor = TransformExecutor()
+result = executor.apply(
+    "string_format",
+    "ada",
+    template="Hello, {value}!",
+    case="title",
+)
+# → "Hello, Ada!"
+```
+
+```yaml
+# Wizard step (in flow options.steps)
+step_kind: transform
+source_key: name
+target_key: greeting
+rule: string_format
+options:
+  template: "Hello, {value}!"
+  case: title
+```
+
+Run `palm doctor` for the full rule catalog with descriptions. Extend with `register_transform("my_rule", MyRule)` at bootstrap.
 
 **CLI persistence:** the CLI is a thin client of `PalmApp`. By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
 

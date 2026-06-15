@@ -61,6 +61,15 @@ def render_job_panel(
             )
         if ctx.field_type == "transform":
             body += "\n[yellow]→[/] Transform step — runs automatically when reached.\n"
+            if ctx.transform_rule:
+                body += f"[dim]Rule:[/] [cyan]{ctx.transform_rule}[/]\n"
+            if ctx.transform_source_key and ctx.transform_target_key:
+                body += (
+                    f"[dim]Keys:[/] {ctx.transform_source_key} "
+                    f"[dim]→[/] {ctx.transform_target_key}\n"
+                )
+            if ctx.transform_source_preview:
+                body += f"[dim]Input preview:[/] {ctx.transform_source_preview}\n"
         if ctx.active_branch:
             body += f"\n[dim]Input goes to branch[/] [magenta]{ctx.active_branch}[/]"
             if ctx.branch_progress:

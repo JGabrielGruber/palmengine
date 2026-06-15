@@ -11,6 +11,7 @@ from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.behavior_tree.leaf import LeafNode
 from palm.core.context import BaseState
 from palm.core.exceptions import StateValidationError, TransformApplicationError, TransformError
+from palm.core.resource.engine import ResourceEngine
 from palm.core.transform.base import TransformContext, TransformMode, TransformResult
 from palm.core.transform.engine import _MISSING, TransformEngine
 
@@ -50,6 +51,7 @@ class TransformLeaf(LeafNode):
         skip_if_missing: bool = False,
         trace_key: str | None = None,
         error_key: str | None = None,
+        resource_engine: ResourceEngine | None = None,
     ) -> None:
         super().__init__(name)
         if not source_key:
@@ -77,6 +79,14 @@ class TransformLeaf(LeafNode):
         self._skip_if_missing = skip_if_missing
         self._trace_key = trace_key if trace_key is not None else self.default_trace_key(name)
         self._error_key = error_key
+        self._resource_engine = resource_engine
+
+    def _runtime_options(self) -> dict[str, Any]:
+        """Merge leaf options with runtime services (e.g. ResourceEngine)."""
+        opts = dict(self._options)
+        if self._resource_engine is not None:
+            opts["resource_engine"] = self._resource_engine
+        return opts
 
     @staticmethod
     def default_trace_key(name: str) -> str:
@@ -129,7 +139,7 @@ class TransformLeaf(LeafNode):
             return True
         if self._rule is None:
             return False
-        resolved = self._engine.resolve(self._rule, **self._options)
+        resolved = self._engine.resolve(self._rule, **self._runtime_options())
         if self._per_item is not None:
             return self._per_item
         return resolved.mode is TransformMode.SINGLE
@@ -146,7 +156,7 @@ class TransformLeaf(LeafNode):
                 skip_if_missing=self._skip_if_missing,
                 trace_key=self._trace_key,
                 options_by_rule=self._options_by_rule,
-                **self._options,
+                **self._runtime_options(),
             )
         return self._engine.apply_to_state(
             self._rule or "",
@@ -157,7 +167,7 @@ class TransformLeaf(LeafNode):
             validate_output=self._validate_output,
             skip_if_missing=self._skip_if_missing,
             trace_key=self._trace_key,
-            **self._options,
+            **self._runtime_options(),
         )
 
     def _run_batch(self, state: BaseState) -> TransformResult | None:
@@ -173,7 +183,7 @@ class TransformLeaf(LeafNode):
             skip_if_missing=self._skip_if_missing,
             per_item=self._per_item if self._per_item is not None else True,
             trace_key=self._trace_key,
-            **self._options,
+            **self._runtime_options(),
         )
 
     def _run_chain_per_item(self, state: BaseState) -> TransformResult | None:
@@ -203,7 +213,7 @@ class TransformLeaf(LeafNode):
                 item,
                 state=state,
                 options_by_rule=self._options_by_rule,
-                **self._options,
+                **self._runtime_options(),
             )
             output.append(result.value)
             traces.append(result.context.to_trace())

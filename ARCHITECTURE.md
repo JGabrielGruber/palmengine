@@ -103,14 +103,19 @@ Core defines the engine contract (`TransformEngine`, `BaseTransformRule`, `trans
 | Piece | Location | Role |
 |-------|----------|------|
 | Engine + contract | `palm/core/transform/` | Pure coordination; resolves rules by name |
-| Built-in rules | `common/transforms/rules/` | `rename_field`, `map_fields`, `filter_items`, `callable`, `string_format` |
+| Built-in rules | `common/transforms/rules/` | 13 rules — see `common/transforms/catalog.py` and `palm doctor` |
+| Catalog | `common/transforms/catalog.py` | Short descriptions for docs and CLI diagnostics |
 | Registration | `common/transforms/rules/registry.py` | Wires builtins at import (like `patterns/<app>/registry.py`) |
 | Helpers | `common/transforms/registration.py` | `register_transform(name, cls)`, `@transform_rule`, `registered_transforms()` |
 | Execution | `common/transforms/execution.py` | `TransformExecutor`, `apply_transform_to_state()` |
 
 Patterns register custom rules at bootstrap with `register_transform("my_rule", MyRule)` or `@transform_rule` on a `BaseTransformRule` subclass. Rules run through `TransformEngine.apply_to_state()` with scoped reads/writes and optional schema validation via `BaseState.effective_schema()`.
 
-`bootstrap()` imports `palm.common.transforms` so builtins are available before flows run; `palm doctor` lists the `transforms` registry alongside patterns, providers, and storages.
+`bootstrap()` imports `palm.common.transforms` so builtins are available before flows run; `palm doctor` lists the `transforms` registry with per-rule descriptions.
+
+**Built-in rules (0.9):** `rename_field`, `map_fields`, `filter_items`, `callable`, `string_format`, `jsonpath_extract`, `jsonpath_set`, `calculate`, `enrich_resource`, `date_format`, `date_parse`, `lookup`, `conditional`.
+
+Use in **pipelines** (`pattern: pipeline`), **wizard** steps (`step_kind: transform`), or programmatically via `TransformExecutor` / `TransformLeaf`. `enrich_resource` receives `ResourceEngine` from the hosting runtime automatically.
 
 Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks) lives in **`palm.common.runtimes`**. Concrete surfaces (CLI, embedded, daemon, server) live in **`palm.runtimes.<name>`** subpackages.
 
