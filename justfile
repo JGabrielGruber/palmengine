@@ -9,6 +9,7 @@ set export
 
 package := "palmengine"
 dist_dir := "dist"
+palm_data_dir := env_var_or_default('PALM_DATA_DIR', 'data')
 
 # Default: show help
 default:
@@ -182,8 +183,12 @@ prepr: full-check
     @echo "🎉 Palm quality gates passed — ready for release review!"
 
 clean: clean-dist
-    rm -rf .pytest_cache .ruff_cache .mypy_cache __pycache__ *.db
-    @echo "🧼 Cleaned temporary and build files"
+    @mkdir -p {{palm_data_dir}}
+    @test -d {{palm_data_dir}} && find {{palm_data_dir}} -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+    @touch {{palm_data_dir}}/.gitkeep
+    find src -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+    rm -rf .pytest_cache .ruff_cache .mypy_cache .cache *.db
+    @echo "🧼 Cleaned temporary files"
 
 # -----------------------------------------------------------------------------
 # Help & Discovery
@@ -201,5 +206,6 @@ help:
     @echo "   just publish          → Build + PyPI (5s warning)"
     @echo "   just release-prep     → Full checks + build + checklist"
     @echo "   just demo-full        → examples/full_demo.py"
+    @echo "   just clean            → Remove data/ + tool caches"
     @echo "   just palm --help      → CLI command list"
     @echo "Run 'just --list' for full list"

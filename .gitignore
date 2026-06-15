@@ -228,5 +228,7 @@ repomix-output.xml
 # Archive
 archive/
 
-# Data
-data/
+# Data (keep directory placeholder in version control)
+data/*
+!data/
+!data/.gitkeep
