@@ -11,6 +11,7 @@ from palm.core.behavior_tree.nodes.leaf import (
     ActionNode,
     ConditionNode,
     InteractiveLeaf,
+    TransformLeaf,
 )
 
 __all__ = [
@@ -21,6 +22,7 @@ __all__ = [
     "ActionNode",
     "ConditionNode",
     "InteractiveLeaf",
+    "TransformLeaf",
     "InverterNode",
     "RepeatNode",
     "RetryNode",

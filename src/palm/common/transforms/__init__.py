@@ -7,6 +7,12 @@ pattern packages.
 """
 
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, autoload
+from palm.common.transforms.builder import (
+    TransformStepSpec,
+    build_transform_leaf,
+    build_transform_leaves,
+    transform_step_from_mapping,
+)
 from palm.common.transforms.execution import (
     TransformExecutor,
     apply_transform,
@@ -39,9 +45,13 @@ __all__ = [
     "MapFieldsRule",
     "RenameFieldRule",
     "TransformExecutor",
+    "TransformStepSpec",
     "apply_transform",
     "apply_transform_to_state",
     "autoload",
+    "build_transform_leaf",
+    "build_transform_leaves",
+    "transform_step_from_mapping",
     "default_executor",
     "has_transform",
     "register_transform",
