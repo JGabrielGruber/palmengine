@@ -9,6 +9,7 @@ from palm.common.transforms.rules.callable_rule import CallableRule
 from palm.common.transforms.rules.filter_items import FilterItemsRule
 from palm.common.transforms.rules.map_fields import MapFieldsRule
 from palm.common.transforms.rules.rename_field import RenameFieldRule
+from palm.common.transforms.rules.string_format import StringFormatRule
 from palm.core.transform.base import BaseTransformRule
 
 BUILTIN_RULES: tuple[type[BaseTransformRule], ...] = (
@@ -16,6 +17,7 @@ BUILTIN_RULES: tuple[type[BaseTransformRule], ...] = (
     MapFieldsRule,
     FilterItemsRule,
     CallableRule,
+    StringFormatRule,
 )
 
 __all__ = [
@@ -24,4 +26,5 @@ __all__ = [
     "FilterItemsRule",
     "MapFieldsRule",
     "RenameFieldRule",
+    "StringFormatRule",
 ]

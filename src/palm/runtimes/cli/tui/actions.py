@@ -7,7 +7,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration import Job, JobStatus
+from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
+from palm.states import BlackboardState
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.flow_labels import flow_start_hint
 from palm.runtimes.cli.shared.job_inspect import inspect_job, instance_id_for_job
@@ -61,6 +63,16 @@ def start_flow(
     return job
 
 
+def _print_transform_feedback(ctx: CliContext, state: object) -> None:
+    if not isinstance(state, BlackboardState):
+        return
+    feedback = state.get(WizardKeys.TRANSFORM_FEEDBACK)
+    if feedback is None:
+        return
+    state.delete(WizardKeys.TRANSFORM_FEEDBACK)
+    ctx.console.print(f"[dim]→[/] {feedback}")
+
+
 def _print_flow_started(ctx: CliContext, flow: FlowDefinition) -> None:
     hint = flow_start_hint(flow)
     if flow.pattern == "parallel":
@@ -92,6 +104,7 @@ def provide_input(ctx: CliContext, instance_id: str, value: str) -> str | None:
     job = ctx.app.get_job(job_id)
     iid = instance_id_for_job(job)
     ctx.set_active(iid, job_id)
+    _print_transform_feedback(ctx, job.state)
     if before.active_branch:
         ctx.console.print(
             f"[dim]→[/] input for branch [magenta]{before.active_branch}[/]"

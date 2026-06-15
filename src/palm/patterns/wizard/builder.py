@@ -14,11 +14,13 @@ from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.step_kinds import WizardStepKind
+from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.transform_leaf import default_transform_prompt
 from palm.patterns.wizard.validation import StepValidationRule
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
 _WIZARD_STEP_KINDS = frozenset(
-    {"input", "introduction", "summary", "commit", "action", "collection"}
+    {"input", "introduction", "summary", "commit", "action", "collection", "transform"}
 )
 
 
@@ -177,6 +179,25 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
 
         item_fields = item_fields_from_mapping(data.get("item_fields"), repository=None)
 
+    transform = None
+    if step_kind == "transform":
+        from palm.common.transforms.builder import transform_step_from_mapping
+
+        transform_data = dict(data)
+        transform_data.setdefault("name", slug)
+        transform_data.setdefault("error_key", f"{WizardKeys.PREFIX}.transform_error:{slug}")
+        transform = transform_step_from_mapping(transform_data)
+        if prompt == f"Enter value for {slug}":
+            prompt = default_transform_prompt(
+                WizardStepConfig(
+                    slug=str(slug),
+                    title=str(title),
+                    prompt=str(prompt),
+                    step_kind="transform",
+                    transform=transform,
+                ),
+            )
+
     return WizardStepConfig(
         slug=str(slug),
         title=str(title),
@@ -196,6 +217,7 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         item_fields=item_fields,
         min_items=min_items,
         label_field=str(label_field) if label_field else None,
+        transform=transform,
     )
 
 
@@ -272,4 +294,5 @@ def _materialize_step(
         item_fields=item_fields,
         min_items=step.min_items,
         label_field=step.label_field,
+        transform=step.transform,
     )

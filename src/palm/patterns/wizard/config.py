@@ -13,6 +13,7 @@ from palm.patterns.wizard.validation import StepValidationRule
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
+    from palm.common.transforms.builder import TransformStepSpec
     from palm.core.context import StateSchema
 
 WizardFieldType = Literal["text", "choice", "confirm"]
@@ -41,6 +42,7 @@ class WizardStepConfig:
     item_fields: tuple[CollectionFieldConfig, ...] = ()
     min_items: int = 1
     label_field: str | None = None
+    transform: TransformStepSpec | None = None
 
     def __post_init__(self) -> None:
         if not self.slug:
@@ -54,6 +56,8 @@ class WizardStepConfig:
                 raise ValueError(f"Collection step {self.slug!r} requires item_fields")
             if not self.collection_key:
                 object.__setattr__(self, "collection_key", self.slug)
+        if self.step_kind == "transform" and self.transform is None:
+            raise ValueError(f"Transform step {self.slug!r} requires transform configuration")
 
     @property
     def has_state_schema(self) -> bool:

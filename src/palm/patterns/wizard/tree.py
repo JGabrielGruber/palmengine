@@ -18,6 +18,7 @@ from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.handler import CommitRegistry
 from palm.patterns.wizard.step_leaf import EventEmitter, WizardStepLeaf
 from palm.patterns.wizard.summary_leaf import WizardSummaryLeaf
+from palm.patterns.wizard.transform_leaf import WizardTransformLeaf
 
 
 def build_wizard_tree(
@@ -79,6 +80,16 @@ def build_wizard_tree(
                     wizard_name=wizard_name,
                     step_index=idx,
                     resource_engine=resource_engine,
+                    emit=emit,
+                    context_engine=context_engine,
+                )
+            )
+        elif step.step_kind == "transform":
+            leaves.append(
+                WizardTransformLeaf(
+                    step,
+                    wizard_name=wizard_name,
+                    step_index=idx,
                     emit=emit,
                     context_engine=context_engine,
                 )

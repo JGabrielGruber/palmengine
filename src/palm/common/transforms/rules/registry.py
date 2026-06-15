@@ -7,6 +7,7 @@ from palm.common.transforms.rules.callable_rule import CallableRule
 from palm.common.transforms.rules.filter_items import FilterItemsRule
 from palm.common.transforms.rules.map_fields import MapFieldsRule
 from palm.common.transforms.rules.rename_field import RenameFieldRule
+from palm.common.transforms.rules.string_format import StringFormatRule
 
 
 def register_builtin_rules() -> None:
@@ -15,6 +16,7 @@ def register_builtin_rules() -> None:
     register_transform("map_fields", MapFieldsRule)
     register_transform("filter_items", FilterItemsRule)
     register_transform("callable", CallableRule)
+    register_transform("string_format", StringFormatRule)
 
 
 register_builtin_rules()

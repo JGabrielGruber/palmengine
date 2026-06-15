@@ -31,6 +31,7 @@ def test_installed_transforms_register(executor: TransformExecutor) -> None:
         "map_fields",
         "filter_items",
         "callable",
+        "string_format",
     }
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
@@ -96,6 +97,21 @@ def test_callable_single(executor: TransformExecutor) -> None:
 def test_callable_per_item_list(executor: TransformExecutor) -> None:
     result = executor.apply("callable", [1, 2, 3], fn=lambda value: value * 2)
     assert result.value == [2, 4, 6]
+
+
+def test_string_format_template_and_case(executor: TransformExecutor) -> None:
+    result = executor.apply(
+        "string_format",
+        "ada",
+        template="Hello, {value}!",
+        case="upper",
+    )
+    assert result.value == "HELLO, ADA!"
+
+
+def test_string_format_date(executor: TransformExecutor) -> None:
+    result = executor.apply("string_format", "2026-01-05", date_format="%Y-%m-%d")
+    assert result.value == "2026-01-05"
 
 
 def test_callable_requires_fn(executor: TransformExecutor) -> None:

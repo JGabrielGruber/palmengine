@@ -6,7 +6,15 @@ from __future__ import annotations
 
 from typing import Literal
 
-WizardStepKind = Literal["input", "introduction", "summary", "commit", "action", "collection"]
+WizardStepKind = Literal[
+    "input",
+    "introduction",
+    "summary",
+    "commit",
+    "action",
+    "collection",
+    "transform",
+]
 
 PROTECTED_KINDS: frozenset[WizardStepKind] = frozenset(
     {"introduction", "summary", "commit"},

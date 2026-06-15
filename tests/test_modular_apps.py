@@ -60,6 +60,7 @@ def test_installed_transform_apps_register() -> None:
         "map_fields",
         "filter_items",
         "callable",
+        "string_format",
     }
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)

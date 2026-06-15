@@ -14,6 +14,7 @@ INSTALLED_TRANSFORMS: tuple[str, ...] = (
     "map_fields",
     "filter_items",
     "callable",
+    "string_format",
 )
 
 

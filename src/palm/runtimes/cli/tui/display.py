@@ -59,6 +59,8 @@ def render_job_panel(
             body += (
                 "\n[yellow]→[/] Type [bold green]yes[/] or [bold green]confirm[/] to continue.\n"
             )
+        if ctx.field_type == "transform":
+            body += "\n[yellow]→[/] Transform step — runs automatically when reached.\n"
         if ctx.active_branch:
             body += f"\n[dim]Input goes to branch[/] [magenta]{ctx.active_branch}[/]"
             if ctx.branch_progress:

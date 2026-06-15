@@ -103,7 +103,7 @@ Core defines the engine contract (`TransformEngine`, `BaseTransformRule`, `trans
 | Piece | Location | Role |
 |-------|----------|------|
 | Engine + contract | `palm/core/transform/` | Pure coordination; resolves rules by name |
-| Built-in rules | `common/transforms/rules/` | `rename_field`, `map_fields`, `filter_items`, `callable` |
+| Built-in rules | `common/transforms/rules/` | `rename_field`, `map_fields`, `filter_items`, `callable`, `string_format` |
 | Registration | `common/transforms/rules/registry.py` | Wires builtins at import (like `patterns/<app>/registry.py`) |
 | Helpers | `common/transforms/registration.py` | `register_transform(name, cls)`, `@transform_rule`, `registered_transforms()` |
 | Execution | `common/transforms/execution.py` | `TransformExecutor`, `apply_transform_to_state()` |
@@ -398,6 +398,7 @@ The wizard pattern is Palm’s most complete expression of **human-first, transa
 - **Choice resolution** — numbered/partial selection for `field_type: choice`
 - **Backtracking** with protected summary/commit steps
 - **Resource action** steps via `ResourceEngine`
+- **Transform steps** (`step_kind: transform`) — declarative rules/chains via `TransformExecutor`, with CLI feedback
 - Auto **summary** and **commit** with named handlers
 - Commit failure → job failure (no silent partial commit)
 
@@ -419,6 +420,22 @@ Scope path example: `todos > item-2 > title`. Session keys (`collection_phase`, 
 Configuration: `collection_key`, `item_fields`, `min_items`, optional `label_field` (defaults to first required text field or `title`/`name`).
 
 Reference flow: `todo-builder` (`examples/definitions/todo_builder.py`).
+
+### Transform step kind
+
+`step_kind: transform` runs a registered rule or chain between interactive steps:
+
+| Field | Purpose |
+|-------|---------|
+| `source_key` | Blackboard key to read (supports `scoped`) |
+| `target_key` | Write destination (defaults to `source_key`) |
+| `rule` / `chain` | Single rule name or ordered chain |
+| `options` / `options_by_rule` | Rule parameters |
+| `scoped`, `validate_output`, `batch`, `per_item`, `trace_key`, `skip_if_missing` | Same semantics as pipeline `TransformLeaf` |
+
+Transform output is promoted into wizard answers under `target_key` for summary and flow-schema validation. The CLI prints `Applied transform: …` after each successful step.
+
+Reference flow: `transform-example` (`examples/definitions/transform_example.py`).
 
 ---
 

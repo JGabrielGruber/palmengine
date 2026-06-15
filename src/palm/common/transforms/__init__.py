@@ -33,6 +33,7 @@ from palm.common.transforms.rules import (
     FilterItemsRule,
     MapFieldsRule,
     RenameFieldRule,
+    StringFormatRule,
 )
 
 autoload()
@@ -44,6 +45,7 @@ __all__ = [
     "INSTALLED_TRANSFORMS",
     "MapFieldsRule",
     "RenameFieldRule",
+    "StringFormatRule",
     "TransformExecutor",
     "TransformStepSpec",
     "apply_transform",
