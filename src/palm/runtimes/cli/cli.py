@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import sys
 
+from palm.app import HostProfile, run_host
 from palm.app.session import create_console
 from palm.runtimes.cli.commands.registry import build_registry
 from palm.runtimes.cli.shared.args import CliInvocation, build_parser, invocation_from_namespace
@@ -24,7 +25,6 @@ def main(argv: list[str] | None = None) -> int:
     inv = invocation_from_namespace(args)
 
     if inv.command == "host":
-        from palm.app import HostProfile, run_host
         from palm.runtimes.cli.shared.args import settings_from_invocation
 
         settings = settings_from_invocation(inv)
