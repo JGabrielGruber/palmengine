@@ -2,7 +2,7 @@
 
 **Current Version:** `0.10.9`  
 **Last Updated:** June 16, 2026  
-**Maturity:** Architecture stabilized. Documentation and website refresh in progress.
+**Maturity:** Architecture stabilized. Documentation and website aligned with 0.10.9.
 
 ## Quick Overview
 
@@ -10,7 +10,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 
 **Distribution name:** `palmengine` (PyPI)  
 **Import name:** `palm`  
-**Recommended entrypoint:** `ApplicationHost` (with `HostProfile`)
+**Recommended entrypoint:** `ApplicationHost` via `create_cli_host()` for CLI, or `ApplicationHost(profile=HostProfile.all_in_one())` for library use
 
 ## Architecture Snapshot
 
@@ -18,7 +18,7 @@ Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS, compensation, transforms, runtime infrastructure).
-- `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator.
+- `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps.
 - `palm/runtimes/` — Thin surfaces over the common runtime layer.
 
@@ -37,41 +37,60 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Rich CLI + REPL with live dashboard (`palm status`)
 - Multiple runtimes (Embedded, Daemon, Server, CLI)
 
+## Recent Freshness Work (June 2026)
+
+Documentation refinement pass completed:
+
+- **Website (`docs/index.html`)** — JSON-LD, meta tags, hero badge, and feature highlights updated to 0.10.9; ApplicationHost and CQRS surfaced prominently
+- **`docs/llms.txt`** — Expanded into a high-quality AI agent context guide (architecture, entry points, invariants, extension patterns)
+- **`README.md`** — Removed stale version stamp from Transforms section heading
+- **`ARCHITECTURE.md`** — Transform rule count clarified (22 built-in rules)
+- **`PalmApp` module docstring** — Aligned with infrastructure-layer role
+
 ## Areas Under Active Improvement
 
-- Documentation refresh and website update (current priority)
-- Living project summary and knowledge management (`STATUS.md`, `llms.txt`, ADRs)
-- Further tightening of public API surface and `__all__` declarations
+- Lightweight automation for version + documentation consistency at release time
+- Further tightening of public API surface (`__all__` declarations are consistent but `palm/__init__.py` remains intentionally minimal)
 - Potential deeper integration between TransformEngine and ResourceEngine
 - Ongoing evolution of compensation and saga-style patterns
 
 ## Known Limitations & Technical Debt
 
-- Website structured data and some meta information still reference older versions (being updated)
-- Some `__init__.py` files have inconsistent `__all__` exports
+- Documentation consistency enforced via `just docs-check` (wired into `just release-prep`)
+- Some `__init__.py` files use lazy `__getattr__` exports — intentional for import performance; document in DEVELOPMENT.md when touched
 - Legacy v0.6 flat-file storage support still exists (intentional for migration compatibility)
-- No automated enforcement yet for documentation consistency during releases
 - Projection rebuild strategy for very large instance counts is basic (batch + skip-if-fresh)
+- `just palm-demo-onboard` still uses `wizard start` alias (valid; `flow start` is the recommended phrase)
 
 ## Documentation Health
 
 | Document              | Status          | Notes |
 |-----------------------|------------------|-------|
-| `README.md`           | Good            | Up to date with 0.10 |
-| `ARCHITECTURE.md`     | Good            | Reflects current layers |
-| `DEVELOPMENT.md`      | Good            | Contributor guide solid |
-| `AGENTS.md`           | Recently updated| Now aligned with 0.10+ |
-| `MIGRATION-0.10.md`   | Excellent       | Very clear upgrade path |
-| `docs/index.html`     | Needs update    | Structured data still on 0.9.7 |
-| `docs/llms.txt`       | Basic           | Functional but can be richer |
-| Examples              | Good            | Well documented |
+| `README.md`           | Good            | ApplicationHost recommended; 0.10.9 accurate |
+| `ARCHITECTURE.md`     | Good            | Reflects current layers and reliability primitives |
+| `DEVELOPMENT.md`      | Good            | Contributor guide solid; ApplicationHost bootstrap documented |
+| `AGENTS.md`           | Good            | Constitution aligned with 0.10+ |
+| `MIGRATION-0.10.md`   | Excellent       | Clear upgrade path from 0.9.x |
+| `docs/index.html`     | Good            | Updated to 0.10.9 with ApplicationHost highlights |
+| `docs/llms.txt`       | Good            | Rich AI context guide |
+| `examples/README.md`  | Good            | Host-backed CLI paths documented |
+
+## Public API Surface Notes
+
+| Module | `__all__` pattern | Notes |
+|--------|-------------------|-------|
+| `palm` | `["__version__"]` only | Intentionally minimal top-level surface |
+| `palm.app` | Explicit + lazy `ApplicationHost`, `run_host` | Recommended import path |
+| `palm.common` | Explicit + lazy coordination exports | Well-structured |
+| `palm.app.host` | Explicit + lazy `ApplicationHost`, `run_host` | Mirrors `palm.app` lazy pattern |
+| Plugin apps | Per-subpackage `registry` + `__all__` | Consistent Django-style layout |
 
 ## Priorities & Next Steps
 
-1. Complete documentation & website refresh (including `STATUS.md`)
-2. Establish lightweight automation for version + documentation consistency
-3. Continue maturing reliability features (compensation patterns, webhook consumers)
-4. Explore deeper Knowledge Graph integration (Knowkey) for the project’s own architecture
+1. Extend `just docs-check` with optional link validation when needed
+2. Continue maturing reliability features (compensation patterns, webhook consumers)
+3. Explore deeper Knowledge Graph integration (Knowkey) for architecture documentation
+4. Consider ADR for documentation freshness automation when implemented
 
 ## Useful Links
 

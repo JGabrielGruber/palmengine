@@ -8,7 +8,7 @@
   <!-- Primary Meta -->
   <title>Palm Engine 🌴 | Orchestration That Feels Human</title>
   <meta name="description"
-    content="Palm Engine — Lightweight Behavior Tree orchestration with interactive wizards, durable instances, and transactional workflows.">
+    content="Palm Engine 0.10 — Behavior Tree orchestration with ApplicationHost, interactive wizards, CQRS projections, durable instances, and transactional reliability.">
   <meta name="keywords"
     content="palmengine, palm, orchestration, behavior tree, python workflow, wizard, transactional workflow, durable execution">
   <meta name="author" content="José Gabriel Gruber">
@@ -17,7 +17,7 @@
   <!-- Open Graph -->
   <meta property="og:title" content="Palm Engine - Orchestration with Behavior Trees">
   <meta property="og:description"
-    content="Interactive wizards, durable process instances, and extensible Behavior Trees.">
+    content="ApplicationHost orchestration with wizards, CQRS projections, durable instances, and transactional workflows.">
   <meta property="og:url" content="https://palmengine.org">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Palm Engine">
@@ -37,7 +37,7 @@
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Palm Engine - Orchestration with Behavior Trees">
-  <meta name="twitter:description" content="Interactive wizards, durable instances, Behavior Trees.">
+  <meta name="twitter:description" content="ApplicationHost, wizards, CQRS projections, durable instances, Behavior Trees.">
   <meta name="twitter:image" content="https://palmengine.org/images/palmengine-opengraph-wide.webp">
   <meta name="twitter:site" content="@PalmEngine">
 
@@ -74,12 +74,12 @@
       "name": "Palm Engine",
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
-      "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for interactive wizards, data pipelines, transactional workflows, and durable process instances.",
-      "version": "0.9.7",
+      "description": "Lightweight Python-first orchestration engine built on Behavior Trees. ApplicationHost coordinates CQRS, projections, outbox, and compensation for interactive wizards, data pipelines, and durable process instances.",
+      "version": "0.10.9",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.9.7",
+      "softwareVersion": "0.10.9",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -94,16 +94,17 @@
         "priceCurrency": "USD"
       },
       "featureList": [
-        "Behavior Trees",
-        "State schemas & scoped validation",
-        "Interactive Wizards with collection steps & backtracking",
-        "Parallel wizard branches",
+        "ApplicationHost with composable HostProfile roles",
+        "CQRS command and query buses with projections",
+        "Transactional outbox and compensation handlers",
+        "Behavior Trees as universal control-flow model",
+        "State schemas and scoped validation",
+        "Interactive wizards with collection and transform steps",
+        "Parallel wizard branches with merge strategies",
         "TransformEngine with 22 built-in rules",
-        "Wizard transform steps and format serialization",
-        "Durable Instances (state survives restarts)",
-        "Transactional commits",
-        "CLI + REPL with numbered choice UX",
-        "Embedded, Daemon & Server Runtimes"
+        "Durable process instances with resume across restarts",
+        "Live status dashboard via palm status",
+        "CLI, REPL, Embedded, Daemon, and Server runtimes"
       ],
       "downloadUrl": "https://github.com/JGabrielGruber/palmengine",
       "softwareRequirements": "Python"
@@ -164,7 +165,7 @@
       <div
         class="inline-flex items-center gap-x-2 bg-slate-950/60 border border-cyan-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.9.7 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
+        <span class="text-sm font-medium tracking-widest">v0.10.9 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
             install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
@@ -172,7 +173,7 @@
           class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
       </h1>
       <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
-        State schemas, parallel branches, and dynamic list wizards — built on Behavior Trees.
+        ApplicationHost, live projections, and human-first wizards — built on Behavior Trees.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="#quickstart"
@@ -257,8 +258,8 @@
             <path d="M3 5V19A9 3 0 0 0 21 19V5" />
             <path d="M3 12A9 3 0 0 0 21 12" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">Durable Instances</h3>
-          <p class="text-zinc-400">Process state survives restarts. Shared across runtimes.</p>
+          <h3 class="text-2xl font-semibold mb-4">ApplicationHost</h3>
+          <p class="text-zinc-400">CQRS, projections, outbox, and compensation — the recommended path for services and CLI.</p>
         </div>
       </div>
     </div>
@@ -271,9 +272,9 @@
       <div class="bg-black border border-cyan-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
         <pre><code>$ pip install palmengine[cli]
 $ palm doctor
-$ palm flow start schema-onboard
-$ palm flow start todo-builder
-$ palm flow start parallel-demo</code></pre>
+$ palm status
+$ palm flow start onboard
+$ palm flow start schema-onboard</code></pre>
       </div>
       <p class="text-center text-zinc-400 mt-6">
         Or with uv (recommended): <code class="bg-zinc-900 px-2 py-1 rounded">uvx palmengine palm doctor</code>

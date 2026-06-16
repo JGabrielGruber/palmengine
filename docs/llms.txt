@@ -2,16 +2,123 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-## Key Resources
-- **Repository**: https://github.com/JGabrielGruber/palmengine
-- **Live Demo / REPL**: Run `uv run palm repl`
-- **Architecture**: https://palmengine.org#architecture or ARCHITECTURE.md
-- **Core Concepts**: Behavior Trees, Execution Plans, Wizard Pattern, Instance Persistence
-- **Install**: `pip install palmengine[cli]` (PyPI name; import `palm`, CLI `palm`)
-- **Quickstart**: `pip install palmengine[cli] && palm doctor && palm wizard start onboard`
-- **From source**: `uv sync --extra cli && uv pip install -e ".[cli]"`
+**Version:** 0.10.9 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
-Filius philosophorum — orchestration that feels human, transactional, resumable.
 
-For full code structure, see the repomix-output or explore src/palm/core/ (pure layer).
+Palm grows where the sun meets the sea. Orchestration should feel alive, truthful, and humane. The core stays pure; capability grows at the edges through registries.
+
+## Recommended Entry Points
+
+For most applications, use **ApplicationHost** — it wires CQRS, projections, outbox, compensation, and recovery:
+
+```python
+from palm.app import ApplicationHost, HostProfile
+
+with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
+    views = host.list_instance_views(include_terminal=False)
+```
+
+CLI bootstrap uses the same path via `create_cli_host()` (collapsed `all_in_one` profile).
+
+**PalmApp** remains valid for low-level embedding when you need direct runtime registry control without host overhead.
+
+## Architecture (0.10+)
+
+Layered, registry-driven model with a strictly pure core:
+
+```
+User / CLI / Services
+        ↓
+palm/app/          ApplicationHost (recommended), PalmApp (infra), PalmSettings
+        ↓
+palm/common/       Executions, plans, hooks, CQRS, outbox, compensation, transforms
+        ↓
+palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform
+```
+
+**Core purity rule:** `palm/core/` must never import from any other Palm package.
+
+**Extension:** patterns, providers, storages register at bootstrap via registries — never by editing core.
+
+## Key Capabilities
+
+| Area | Highlights |
+|------|------------|
+| **Wizard** | Validation, collection steps, transform steps, backtracking, summary + commit |
+| **Parallel** | Concurrent wizard branches with isolated scopes and merge strategies |
+| **Transforms** | 22 built-in rules; pipelines, wizard steps, or `TransformExecutor` |
+| **State** | `DictStateSchema`, scoped blackboards, schema-aware snapshots (`__palm:meta`) |
+| **Persistence** | Durable `ProcessInstance` records; resume across restarts |
+| **CQRS** | Command/query buses; projections (`instance_index`, `wizard_progress`, `job_status_board`) |
+| **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
+| **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
+| **Dashboard** | `palm status` — projection-backed Rich overview |
+
+## Quick Commands
+
+```bash
+pip install palmengine[cli]
+palm doctor
+palm status
+palm flow start onboard
+palm flow start schema-onboard
+palm flow start todo-builder
+palm flow start parallel-demo
+```
+
+From source: `uv sync --group dev --extra cli && uv pip install -e ".[cli]"`
+
+Durable local storage:
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data
+```
+
+## Package Layout
+
+```
+src/palm/
+├── app/            # ApplicationHost, PalmApp, HostProfile, create_cli_host()
+├── core/           # Pure engines (no external palm imports)
+├── common/         # CQRS, hooks, persistence, transforms, runtimes base
+├── patterns/       # wizard, parallel, dag, etl, pipeline (extensible)
+├── providers/      # rest, graphql, postgres (extensible)
+├── storages/       # memory, filesystem, postgres, mongodb (extensible)
+├── definitions/    # FlowDefinition, ProcessDefinition
+├── instances/      # ProcessInstance, StateSnapshot
+└── runtimes/       # Thin CLI, embedded, daemon, server surfaces
+```
+
+## Key Documents
+
+| Document | Purpose |
+|----------|---------|
+| AGENTS.md | Constitution for AI agents and contributors |
+| STATUS.md | Living current state |
+| ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
+| DEVELOPMENT.md | Contributor setup and patterns |
+| MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
+| examples/README.md | Runnable flow definitions |
+
+## Extension Patterns
+
+| Add | Where | How |
+|-----|-------|-----|
+| Pattern | `palm/patterns/<name>/` | `pattern.py` + `builder.py` + `registry.py`; add to `INSTALLED_PATTERNS` |
+| Provider | `palm/providers/<name>/` | Same structure; add to `INSTALLED_PROVIDERS` |
+| Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
+| Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
+| CQRS handler | `palm/common/cqrs/` | Wire in `palm/app/host/cqrs_wiring.py` |
+
+## Invariants (Never Break)
+
+- Job state transitions only through `RunResult` + `OrchestrationEngine.apply_result()`
+- Registries use `threading.RLock`; populate at bootstrap, not in hot paths
+- Resume authority: `ProcessInstance.state_snapshot` (not historical `state_snapshots[]`)
+- Never import from `archive/` in new code
+
+## Repository
+
+https://github.com/JGabrielGruber/palmengine

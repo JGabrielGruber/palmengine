@@ -119,7 +119,7 @@ palm flow start transform-shaping  # pipeline calculate / lookup / conditional
 palm flow start transform-formats  # json_load → csv_dump ETL-style pipeline
 ```
 
-### Transforms (0.9.7)
+### Transforms
 
 Declarative data shaping via registered rules — usable in **pipelines**, **wizard** steps (`step_kind: transform`), or `TransformLeaf` nodes.
 

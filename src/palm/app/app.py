@@ -1,5 +1,7 @@
 """
-PalmApp — central application orchestrator for Palm Engine.
+PalmApp — infrastructure layer for Palm Engine (storage, runtimes, definitions).
+
+Prefer :class:`~palm.app.host.ApplicationHost` for orchestration with CQRS and recovery.
 """
 
 from __future__ import annotations

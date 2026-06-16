@@ -82,6 +82,10 @@ guard-core:
     @echo "🔒 Checking Core Purity Rules (0.6+ direction)..."
     uv run python scripts/guard_core.py
 
+docs-check:
+    @echo "📄 Checking documentation version consistency..."
+    uv run python scripts/docs_check.py
+
 guard-legacy:
     @echo "📌 Legacy package is reference-only — no new features here"
 
@@ -168,6 +172,7 @@ publish: build
 release-prep:
     @echo "📋 Release prep for {{package}} — see RELEASE-0.10.9.md"
     @echo "   Version: $(uv run python -c 'import palm; print(palm.__version__)')"
+    just docs-check
     just full-check
     just build
     @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.10.9.md"
@@ -200,7 +205,8 @@ help:
     @echo "   just install-local    → Editable palmengine install"
     @echo "   just publish-test     → Build + TestPyPI"
     @echo "   just publish          → Build + PyPI (5s warning)"
-    @echo "   just release-prep     → Full checks + build + checklist"
+    @echo "   just docs-check       → Version + documentation surface consistency"
+    @echo "   just release-prep     → docs-check + full-check + build"
     @echo "   just demo-full        → examples/full_demo.py"
     @echo "   just clean            → Remove data/ + tool caches"
     @echo "   just palm --help      → CLI command list"
