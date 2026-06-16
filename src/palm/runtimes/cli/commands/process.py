@@ -27,13 +27,7 @@ def cmd_process_submit(ctx: CliContext, args: list[str]) -> int:
 
 
 def cmd_process_resume(ctx: CliContext, args: list[str]) -> int:
-    if not args:
-        ctx.console.print("[red]Usage:[/] process resume <instance_id>")
-        return 1
-    try:
-        instance_id = ctx.resolve_instance_id(args[0])
-        tui_actions.resume_instance(ctx, instance_id)
-    except Exception as exc:
-        ctx.console.print(f"[red]{exc}[/]")
-        return 1
-    return 0
+    """Backward-compatible alias for ``instance resume``."""
+    from palm.runtimes.cli.commands.resume import cmd_resume
+
+    return cmd_resume(ctx, args)

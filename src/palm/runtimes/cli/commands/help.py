@@ -1,4 +1,4 @@
-"""Help command — compact reference for command and REPL use."""
+"""Help command — compact reference aligned with ApplicationHost command tiers."""
 
 from __future__ import annotations
 
@@ -9,51 +9,49 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
     from rich.panel import Panel
 
     text = """
-[bold cyan]Palm CLI[/] — EmbeddedRuntime commands
+[bold cyan]Palm CLI[/] — ApplicationHost + CQRS
 
-[bold]Flows[/]
-  flow list                 All registered flows (any pattern)
-  flow start <ref>          Start a flow by name or id [green](recommended)[/]
-  start <ref>               Shortcut for flow start
-
-[bold]Definitions & processes[/]
-  process list              List flow/process definitions (alias: definitions)
-  process submit <ref>      Start a process by name or id
-  process resume <id>       Resume a persisted instance
-
-[bold]Instances[/]
-  instance list [--all] [--status S] [--flow F] [--limit N] [--format json]
-  instance status [<id>]    Job + wizard status (alias: status)
-  instance snapshots <id>   State snapshot history for an instance
-  instance resume <id>        Resume a persisted instance
-  instance prune [--dry-run]  Remove terminal instances from storage
-  status                      Live projection dashboard (default)
-  status --brief              Compact engine summary
-  status --full               Full doctor report
-  status [<instance_id>]      Instance job + wizard detail
-
-[bold]Wizard[/] [dim](shortcut — prefer flow start)[/]
-  wizard list               Wizard-capable flows
-  wizard start <flow>       Start a flow (alias; use flow start for parallel/dag/etl)
-  wizard status [<id>]      Same as status
-  wizard input [<id>] <val> Same as input (backward compatible)
-
-[bold]Interactive[/]
-  input [<instance_id>] <value>
-  back [<instance_id>] <step_slug>
-
-[bold]Diagnostics[/]
-  status                    Live dashboard (instances, wizards, jobs, host)
+[bold]Host & diagnostics[/]
+  status                    Live projection dashboard [green](default)[/]
+  status <id>               Instance detail (job + wizard read models)
   status --brief            Compact engine summary
   status --full             Full doctor report
-  doctor                    Full engine health report
-  doctor --dashboard        Same as status (projection overview)
-  version --full            Build info and registered plugins
+  doctor                    Same as [cyan]status --full[/]
+  doctor --dashboard        Same as [cyan]status[/]
+
+[bold]Flows[/] [dim](writes via host.submit_flow)[/]
+  flow list                 All registered flows
+  flow start <ref>          Start a flow [green](recommended)[/]
+  start <ref>               Alias for flow start
+
+[bold]Processes[/] [dim](multi-flow definitions)[/]
+  process list              Catalog of process + flow definitions
+  process submit <ref>        Start a process by name or id
+
+[bold]Instances[/] [dim](reads via host queries)[/]
+  instance list [--all] [--status S] [--flow F] [--limit N] [--format json]
+  instance resume <id>      Resume a persisted instance
+  instance snapshots <id>   State snapshot history
+  instance prune [--dry-run]  Remove terminal instances
+
+[bold]Interactive[/] [dim](writes via host commands)[/]
+  input [<id>] <value>      Provide wizard / branch input
+  back [<id>] <step_slug>   Wizard backtrack
+
+[bold]Deployment[/]
+  host all-in-one           Collapsed master+worker (default profile)
+  host master / worker / server
+
+[bold]Legacy aliases[/] [dim](backward compatible)[/]
+  definitions               → process list
+  sessions                  → instance list
+  instance status           → status
+  process resume            → instance resume
+  wizard list/start/status/input → wizard shortcuts (prefer flow/status/input)
 
 [bold]System[/]
-  clear                     Clear screen
-  help                      This message
-  exit / quit               Leave REPL
+  version [--full]          Build info and registered plugins
+  clear · help · exit
 """
     ctx.console.print(Panel(text.strip(), title="Help", border_style="cyan"))
     return 0

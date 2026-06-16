@@ -1,5 +1,8 @@
 """
 Command registry — maps CLI/REPL phrases to command-mode handlers.
+
+Primary commands use ApplicationHost + CQRS. Legacy aliases remain registered
+for backward compatibility (see :mod:`palm.runtimes.cli.commands.catalog`).
 """
 
 from __future__ import annotations
@@ -8,10 +11,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from palm.runtimes.cli.commands import (
+    diagnostics,
     flow,
     instance,
     process,
-    status,
     system,
     wizard,
 )
@@ -21,7 +24,6 @@ from palm.runtimes.cli.commands import (
 from palm.runtimes.cli.commands import (
     input as input_cmd,
 )
-from palm.runtimes.cli.commands.doctor import run_doctor
 from palm.runtimes.cli.shared.context import CliContext
 
 Handler = Callable[[CliContext, list[str]], int]
@@ -53,44 +55,47 @@ class CommandRegistry:
         return 1
 
 
-def _cmd_doctor(ctx: CliContext, _args: list[str]) -> int:
-    return run_doctor(ctx)
-
-
 def build_registry() -> CommandRegistry:
     reg = CommandRegistry()
 
+    # System
     reg.register("help", help_cmd.cmd_help)
-    reg.register("doctor", _cmd_doctor)
-    reg.register("status", status.cmd_status)
     reg.register("version", system.cmd_version)
+    reg.register("clear", system.cmd_clear)
+    reg.register("exit", system.cmd_exit)
+    reg.register("quit", system.cmd_exit)
 
-    reg.register("process list", process.cmd_process_list)
-    reg.register("process submit", process.cmd_process_submit)
-    reg.register("process resume", process.cmd_process_resume)
+    # Host diagnostics (CQRS read models + dashboard)
+    reg.register("status", diagnostics.cmd_status)
+    reg.register("doctor", diagnostics.cmd_doctor)
 
+    # Flows (host.submit_flow)
     reg.register("flow list", flow.cmd_flow_list)
     reg.register("flow start", flow.cmd_flow_start)
     reg.register("start", flow.cmd_start)
 
+    # Definitions & multi-flow processes
+    reg.register("process list", process.cmd_process_list)
+    reg.register("process submit", process.cmd_process_submit)
+
+    # Instances (host queries + resume command)
     reg.register("instance list", instance.cmd_instance_list)
+    reg.register("instance resume", instance.cmd_instance_resume)
     reg.register("instance snapshots", instance.cmd_instance_snapshots)
-    reg.register("instance status", status.cmd_status)
-    reg.register("instance resume", process.cmd_process_resume)
     reg.register("instance prune", instance.cmd_instance_prune)
 
-    reg.register("wizard list", wizard.cmd_wizard_list)
-    reg.register("wizard start", wizard.cmd_wizard_start)
-    reg.register("wizard status", wizard.cmd_wizard_status)
-    reg.register("wizard input", wizard.cmd_wizard_input)
-
+    # Interactive writes (host.provide_input / resume)
     reg.register("input", input_cmd.cmd_input)
     reg.register("back", input_cmd.cmd_back)
 
-    reg.register("sessions", instance.cmd_instance_list)
+    # Legacy aliases — same handlers, shorter phrases
     reg.register("definitions", process.cmd_process_list)
-    reg.register("clear", system.cmd_clear)
-    reg.register("exit", system.cmd_exit)
-    reg.register("quit", system.cmd_exit)
+    reg.register("sessions", instance.cmd_instance_list)
+    reg.register("instance status", diagnostics.cmd_status)
+    reg.register("process resume", instance.cmd_instance_resume)
+    reg.register("wizard list", wizard.cmd_wizard_list)
+    reg.register("wizard start", wizard.cmd_wizard_start)
+    reg.register("wizard status", diagnostics.cmd_status)
+    reg.register("wizard input", input_cmd.cmd_input)
 
     return reg

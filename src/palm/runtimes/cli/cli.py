@@ -14,6 +14,7 @@ from palm.app.session import create_console
 from palm.runtimes.cli.commands.registry import build_registry
 from palm.runtimes.cli.shared.args import CliInvocation, build_parser, invocation_from_namespace
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from palm.runtimes.cli.shared.dispatch import dispatch_invocation
 from palm.runtimes.cli.shared.version_info import print_version_brief, print_version_full
 from palm.runtimes.cli.tui.repl import run_repl
 
@@ -52,63 +53,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if inv.command == "repl":
             exit_code = run_repl(ctx)
-        elif inv.command == "doctor":
-            if inv.dashboard:
-                exit_code = registry.dispatch(ctx, "status --dashboard")
-            else:
-                exit_code = registry.dispatch(ctx, "doctor")
-        elif inv.command == "status":
-            if inv.full:
-                exit_code = registry.dispatch(ctx, "doctor")
-            elif inv.brief:
-                exit_code = registry.dispatch(ctx, "status --brief")
-            elif inv.dashboard or not inv.instance_id:
-                exit_code = registry.dispatch(ctx, "status --dashboard")
-            else:
-                exit_code = registry.dispatch(ctx, f"status {inv.instance_id}")
-        elif inv.command == "process":
-            phrase = f"process {inv.process_cmd}"
-            extra: list[str] = []
-            if inv.process_cmd == "submit" and inv.ref:
-                extra = [inv.ref]
-            elif inv.process_cmd == "resume" and inv.instance_id:
-                extra = [inv.instance_id]
-            exit_code = registry.dispatch(ctx, " ".join([phrase, *extra]).strip())
-        elif inv.command == "instance":
-            if inv.instance_cmd == "list":
-                extra = _instance_list_argv(inv)
-                exit_code = registry.dispatch(ctx, " ".join(["instance list", *extra]).strip())
-            elif inv.instance_cmd == "status":
-                ref = inv.instance_id or ""
-                exit_code = registry.dispatch(ctx, f"instance status {ref}".strip())
-            elif inv.instance_cmd == "snapshots" and inv.instance_id:
-                exit_code = registry.dispatch(ctx, f"instance snapshots {inv.instance_id}")
-            elif inv.instance_cmd == "resume" and inv.instance_id:
-                exit_code = registry.dispatch(ctx, f"instance resume {inv.instance_id}")
-            elif inv.instance_cmd == "prune":
-                extra = ["--dry-run"] if inv.prune_dry_run else []
-                exit_code = registry.dispatch(ctx, " ".join(["instance prune", *extra]).strip())
-            else:
-                exit_code = 1
-        elif inv.command == "flow":
-            extra = [inv.flow] if inv.flow_cmd == "start" and inv.flow else []
-            exit_code = registry.dispatch(ctx, " ".join([f"flow {inv.flow_cmd}", *extra]).strip())
-        elif inv.command == "start" and inv.flow:
-            exit_code = registry.dispatch(ctx, f"start {inv.flow}")
-        elif inv.command == "wizard":
-            extra = [inv.flow] if inv.wizard_cmd == "start" and inv.flow else []
-            exit_code = registry.dispatch(
-                ctx, " ".join([f"wizard {inv.wizard_cmd}", *extra]).strip()
-            )
-        elif inv.command == "input":
-            line = "input " + " ".join(inv.input_args or [])
-            exit_code = registry.dispatch(ctx, line.strip())
-        elif inv.command == "back":
-            line = "back " + " ".join(inv.input_args or [])
-            exit_code = registry.dispatch(ctx, line.strip())
         else:
-            parser.print_help()
-            exit_code = 1
+            exit_code = dispatch_invocation(ctx, registry, inv)
     except EOFError:
         pass
     finally:
@@ -132,22 +78,6 @@ def _host_profile_from_invocation(inv: CliInvocation) -> HostProfile:
             port=inv.host_port or 8080,
         )
     raise ValueError(f"Unknown host subcommand: {inv.host_cmd!r}")
-
-
-def _instance_list_argv(inv: CliInvocation) -> list[str]:
-    argv: list[str] = []
-    if inv.instance_list_all:
-        argv.append("--all")
-    if inv.instance_status is not None:
-        argv.extend(["--status", inv.instance_status])
-    if inv.instance_flow is not None:
-        argv.extend(["--flow", inv.instance_flow])
-    if inv.instance_limit is not None:
-        argv.extend(["--limit", str(inv.instance_limit)])
-    if inv.output_format == "json":
-        argv.append("--format")
-        argv.append("json")
-    return argv
 
 
 if __name__ == "__main__":

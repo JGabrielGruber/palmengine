@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from palm.runtimes.cli.commands.diagnostics import cmd_status
 from palm.runtimes.cli.commands.input import cmd_input
-from palm.runtimes.cli.commands.status import cmd_status
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.tui import actions as tui_actions
 

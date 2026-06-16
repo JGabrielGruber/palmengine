@@ -1,4 +1,4 @@
-"""Instance commands — list, snapshots, prune."""
+"""Instance commands — list, resume, snapshots, prune."""
 
 from __future__ import annotations
 
@@ -34,6 +34,12 @@ def cmd_instance_list(ctx: CliContext, args: list[str]) -> int:
         )
     render_instance_table(ctx.console, summaries, hint=hint)
     return 0
+
+
+def cmd_instance_resume(ctx: CliContext, args: list[str]) -> int:
+    from palm.runtimes.cli.commands.resume import cmd_resume
+
+    return cmd_resume(ctx, args)
 
 
 def cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:

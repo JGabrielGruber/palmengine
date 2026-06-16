@@ -158,7 +158,10 @@ def build_parser() -> argparse.ArgumentParser:
     proc_sub.add_parser("list")
     submit_p = proc_sub.add_parser("submit")
     submit_p.add_argument("ref")
-    resume_p = proc_sub.add_parser("resume")
+    resume_p = proc_sub.add_parser(
+        "resume",
+        help="Resume instance (alias: palm instance resume)",
+    )
     resume_p.add_argument("instance_id")
 
     inst = sub.add_parser("instance", help="Process instance commands")
@@ -168,7 +171,10 @@ def build_parser() -> argparse.ArgumentParser:
     list_p.add_argument("--status", help="Filter by status")
     list_p.add_argument("--flow", help="Filter by flow name")
     list_p.add_argument("--limit", type=int, help="Max rows")
-    inst_status = inst_sub.add_parser("status")
+    inst_status = inst_sub.add_parser(
+        "status",
+        help="Instance detail, or dashboard when no id (alias: palm status)",
+    )
     inst_status.add_argument("instance_id", nargs="?", default=None)
     snapshots_p = inst_sub.add_parser("snapshots")
     snapshots_p.add_argument("instance_id")

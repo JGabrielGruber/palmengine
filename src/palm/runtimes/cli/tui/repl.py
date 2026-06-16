@@ -46,8 +46,8 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
             "Type [bold]help[/] for commands. "
-            "Try [cyan]flow start onboard[/], [cyan]start parallel-demo[/], "
-            "or [cyan]flow list[/].\n\n"
+            "Try [cyan]status[/] (dashboard), [cyan]flow start onboard[/], "
+            "or [cyan]instance list[/].\n\n"
             f"{format_persistence_notice(ctx.app)}",
             title="🌴 Palm REPL",
             border_style="green",

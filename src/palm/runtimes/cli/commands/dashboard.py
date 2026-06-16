@@ -154,7 +154,7 @@ def render_status_dashboard(ctx: CliContext) -> int:
     events_panel = Panel(events_table, border_style="dim")
 
     footer = Text(
-        "Tip: status <id> for instance detail · doctor for full health · doctor --dashboard for this view",
+        "Tip: status <id> instance detail · doctor full health · flow start <name> to run",
         style="dim",
     )
 

@@ -35,10 +35,10 @@ def print_version_full(console: Any | None = None) -> int:
         f"Storage:   {', '.join(sorted(storage_registry.names()))}",
         "",
         "Quick start:",
-        "  palm doctor              # health + examples",
+        "  palm status              # live dashboard",
+        "  palm doctor              # full health report",
         "  palm repl                # interactive shell",
         "  palm flow start onboard",
-        "  palm flow start transform-example",
         "  palm start parallel-demo",
         "  python examples/full_demo.py",
     ]
