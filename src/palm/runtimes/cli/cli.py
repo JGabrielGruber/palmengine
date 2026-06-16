@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     if inv.command is None:
         inv.command = "repl"
 
-    show_banner = inv.command not in ("repl", "doctor")
+    show_banner = inv.command not in ("repl", "doctor", "status")
     ctx = bootstrap_runtime(invocation=inv, show_banner=show_banner)
     registry = build_registry()
     exit_code = 0
@@ -53,14 +53,19 @@ def main(argv: list[str] | None = None) -> int:
         if inv.command == "repl":
             exit_code = run_repl(ctx)
         elif inv.command == "doctor":
-            exit_code = registry.dispatch(ctx, "doctor")
+            if inv.dashboard:
+                exit_code = registry.dispatch(ctx, "status --dashboard")
+            else:
+                exit_code = registry.dispatch(ctx, "doctor")
         elif inv.command == "status":
             if inv.full:
                 exit_code = registry.dispatch(ctx, "doctor")
-            elif inv.instance_id:
-                exit_code = registry.dispatch(ctx, f"status {inv.instance_id}")
+            elif inv.brief:
+                exit_code = registry.dispatch(ctx, "status --brief")
+            elif inv.dashboard or not inv.instance_id:
+                exit_code = registry.dispatch(ctx, "status --dashboard")
             else:
-                exit_code = registry.dispatch(ctx, "status")
+                exit_code = registry.dispatch(ctx, f"status {inv.instance_id}")
         elif inv.command == "process":
             phrase = f"process {inv.process_cmd}"
             extra: list[str] = []

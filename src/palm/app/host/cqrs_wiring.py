@@ -32,6 +32,7 @@ from palm.common.cqrs.query import (
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
+    ListWizardProgressQuery,
 )
 
 if TYPE_CHECKING:
@@ -110,6 +111,17 @@ class HostQueryHandlers:
             return self._wizard_progress.get_progress(query)
         if isinstance(query, ListJobStatusQuery):
             return self._job_board.list_jobs(query)
+        if isinstance(query, ListWizardProgressQuery):
+            rows = self._wizard_progress.list_progress(query)
+            if not query.active_only:
+                return rows
+            active_ids = {
+                row.instance_id
+                for row in self._instances.list_instances(
+                    ListInstancesQuery(include_terminal=False)
+                )
+            }
+            return [row for row in rows if row.instance_id in active_ids]
         raise TypeError(f"Unsupported query: {type(query).__name__}")
 
 
@@ -144,5 +156,6 @@ def wire_query_bus(
         ListInstanceSnapshotsQuery,
         GetWizardProgressQuery,
         ListJobStatusQuery,
+        ListWizardProgressQuery,
     ):
         bus.register(query_type, handler)

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Self
 from palm.app.app import PalmApp
 from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
 from palm.app.host.cqrs_wiring import wire_command_bus, wire_query_bus
+from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
@@ -49,6 +50,7 @@ from palm.common.cqrs.query import (
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
+    ListWizardProgressQuery,
     Query,
 )
 from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
@@ -99,6 +101,8 @@ class ApplicationHost:
         self._compensation: CompensationCoordinator | None = None
         self._worker_coordinator: WorkerCoordinator | None = None
         self._webhook_dispatcher: WebhookDispatcher | None = None
+        self._event_recorder = HostEventRecorder()
+        self._last_recovery: dict[str, Any] | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -157,6 +161,14 @@ class ApplicationHost:
         return self._webhook_dispatcher
 
     @property
+    def event_recorder(self) -> HostEventRecorder:
+        return self._event_recorder
+
+    @property
+    def last_recovery(self) -> dict[str, Any] | None:
+        return self._last_recovery
+
+    @property
     def is_started(self) -> bool:
         return self._started
 
@@ -178,6 +190,7 @@ class ApplicationHost:
 
         self._app.bootstrap()
         self._event.initialize()
+        self._event_recorder.attach(self._event)
         self._worker_coordinator = WorkerCoordinator(self.profile, self._event)
         merged = runtime_start_options(self.settings, **options)
         self._spawn_runtimes(merged)
@@ -207,6 +220,7 @@ class ApplicationHost:
             self._compensation.shutdown()
             self._compensation = None
 
+        self._event_recorder.shutdown()
         self._projection_manager.shutdown()
         self._event.emit(HostEventType.SHUTDOWN, primary=self._app.primary_name)
         self._app.shutdown()
@@ -286,6 +300,19 @@ class ApplicationHost:
         limit: int | None = None,
     ) -> list[JobStatusReadModel]:
         return self.ask(ListJobStatusQuery(status=status, limit=limit))
+
+    def list_wizard_progress_views(
+        self,
+        *,
+        limit: int | None = 10,
+        active_only: bool = False,
+    ) -> list[WizardProgressReadModel]:
+        return self.ask(
+            ListWizardProgressQuery(limit=limit, active_only=active_only)
+        )
+
+    def recent_host_events(self, *, limit: int = 10) -> list[RecordedEvent]:
+        return self._event_recorder.recent(limit=limit)
 
     def submit_flow(
         self,
@@ -416,6 +443,7 @@ class ApplicationHost:
             recovery["projections"] = report.to_dict()
 
         if recovery:
+            self._last_recovery = dict(recovery)
             self._event.emit(HostEventType.RECOVERED, **recovery)
 
     def _spawn_runtimes(self, merged: dict[str, Any]) -> None:

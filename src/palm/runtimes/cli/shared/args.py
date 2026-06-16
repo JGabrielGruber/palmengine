@@ -15,7 +15,10 @@ from palm.app.settings import PalmSettings, SchedulerPolicy
 _CLI_EPILOG = """
 examples:
   palm                          interactive REPL (default)
-  palm doctor                   engine health and loaded definitions
+  palm status                 live projection dashboard (default)
+  palm status --brief         compact engine summary
+  palm doctor                 full engine health report
+  palm doctor --dashboard     same as palm status
   palm flow start onboard
   palm start parallel-demo
   palm --storage-backend filesystem wizard start onboard
@@ -50,6 +53,8 @@ class CliInvocation:
     instance_id: str | None = None
     flow: str | None = None
     full: bool = False
+    dashboard: bool = False
+    brief: bool = False
     input_args: list[str] | None = None
     instance_list_all: bool = False
     instance_status: str | None = None
@@ -131,11 +136,22 @@ def build_parser() -> argparse.ArgumentParser:
     version_p = sub.add_parser("version", help="Show version information")
     version_p.add_argument("--full", action="store_true")
 
-    status_p = sub.add_parser("status", help="Engine or instance status")
-    status_p.add_argument("--full", action="store_true")
+    status_p = sub.add_parser("status", help="Live dashboard or instance status")
+    status_p.add_argument(
+        "--dashboard",
+        action="store_true",
+        help="Show projection dashboard (default when no instance id)",
+    )
+    status_p.add_argument("--brief", action="store_true", help="Compact engine summary")
+    status_p.add_argument("--full", action="store_true", help="Full doctor report")
     status_p.add_argument("instance_id", nargs="?", default=None)
 
-    sub.add_parser("doctor", help="Engine health, persistence, and instances")
+    doctor_p = sub.add_parser("doctor", help="Engine health, persistence, and instances")
+    doctor_p.add_argument(
+        "--dashboard",
+        action="store_true",
+        help="Show projection dashboard instead of full doctor report",
+    )
 
     proc = sub.add_parser("process", help="Process definition commands")
     proc_sub = proc.add_subparsers(dest="process_cmd", required=True)
@@ -236,6 +252,8 @@ def invocation_from_namespace(args: argparse.Namespace) -> CliInvocation:
         instance_id=getattr(args, "instance_id", None),
         flow=getattr(args, "flow", None),
         full=getattr(args, "full", False),
+        dashboard=getattr(args, "dashboard", False),
+        brief=getattr(args, "brief", False),
         input_args=getattr(args, "args", None),
         instance_list_all=getattr(args, "all", False),
         instance_status=getattr(args, "status", None),

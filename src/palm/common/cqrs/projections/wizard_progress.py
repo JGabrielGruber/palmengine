@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
-from palm.common.cqrs.query import GetWizardProgressQuery
+from palm.common.cqrs.query import GetWizardProgressQuery, ListWizardProgressQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 
 if TYPE_CHECKING:
@@ -244,6 +244,13 @@ class WizardProgressProjection(Projection):
         if query.job_id is not None:
             return self._entries.get(query.job_id)
         return None
+
+    def list_progress(self, query: ListWizardProgressQuery) -> list[WizardProgressReadModel]:
+        rows = list(self._entries.values())
+        rows.sort(key=lambda entry: entry.updated_at, reverse=True)
+        if query.limit is not None:
+            rows = rows[: query.limit]
+        return rows
 
     def _resolve_key(self, payload: dict[str, Any], event: Event) -> str | None:
         if event.context is not None:

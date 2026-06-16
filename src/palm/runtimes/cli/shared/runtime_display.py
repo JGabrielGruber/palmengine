@@ -10,10 +10,19 @@ if TYPE_CHECKING:
 
 def format_runtime_line(host: ApplicationHost) -> str:
     """Single-line runtime summary for panels."""
-    if not host.is_started:
+    plain = runtime_names_plain(host)
+    if plain == "stopped":
         return "[red]stopped[/]"
+    if plain == "no runtimes":
+        return "[red]no runtimes[/]"
+    return f"[green]{plain}[/] — started"
+
+
+def runtime_names_plain(host: ApplicationHost) -> str:
+    """Plain runtime names for tables (no Rich markup)."""
+    if not host.is_started:
+        return "stopped"
     names = host.running_runtimes()
     if not names:
-        return "[red]no runtimes[/]"
-    joined = ", ".join(names)
-    return f"[green]{joined}[/] — started"
+        return "no runtimes"
+    return ", ".join(names)

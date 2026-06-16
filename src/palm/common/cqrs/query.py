@@ -49,6 +49,14 @@ class ListJobStatusQuery(Query):
     limit: int | None = None
 
 
+@dataclass(frozen=True)
+class ListWizardProgressQuery(Query):
+    """List wizard progress read models (newest first)."""
+
+    limit: int | None = 10
+    active_only: bool = False
+
+
 @runtime_checkable
 class QueryHandler(Protocol):
     """Answer a single query type."""

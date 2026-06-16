@@ -27,7 +27,10 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
   instance snapshots <id>   State snapshot history for an instance
   instance resume <id>        Resume a persisted instance
   instance prune [--dry-run]  Remove terminal instances from storage
-  status [<instance_id>]      Same as instance status
+  status                      Live projection dashboard (default)
+  status --brief              Compact engine summary
+  status --full               Full doctor report
+  status [<instance_id>]      Instance job + wizard detail
 
 [bold]Wizard[/] [dim](shortcut — prefer flow start)[/]
   wizard list               Wizard-capable flows
@@ -40,9 +43,12 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
   back [<instance_id>] <step_slug>
 
 [bold]Diagnostics[/]
+  status                    Live dashboard (instances, wizards, jobs, host)
+  status --brief            Compact engine summary
+  status --full             Full doctor report
   doctor                    Full engine health report
+  doctor --dashboard        Same as status (projection overview)
   version --full            Build info and registered plugins
-  status --full             Same as doctor (one-shot: palm status --full)
 
 [bold]System[/]
   clear                     Clear screen

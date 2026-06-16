@@ -1,9 +1,10 @@
-"""Status commands — engine summary and per-instance job detail."""
+"""Status commands — dashboard, engine summary, and per-instance job detail."""
 
 from __future__ import annotations
 
 from palm import __version__
 from palm.core.registry import pattern_registry, storage_registry
+from palm.runtimes.cli.commands.dashboard import render_status_dashboard
 from palm.runtimes.cli.commands.doctor import run_doctor
 from palm.runtimes.cli.commands.views import render_job_status
 from palm.runtimes.cli.shared.context import CliContext
@@ -15,8 +16,12 @@ from palm.runtimes.cli.tui import actions as tui_actions
 def cmd_status(ctx: CliContext, args: list[str]) -> int:
     if args and args[0] == "--full":
         return run_doctor(ctx)
-    if not args and not ctx.active_instance_id:
+    if args and args[0] == "--brief":
         return cmd_engine_status(ctx)
+    if args and args[0] == "--dashboard":
+        return render_status_dashboard(ctx)
+    if not args and not ctx.active_instance_id:
+        return render_status_dashboard(ctx)
     try:
         ref = args[0] if args else None
         iid = tui_actions.resolve_instance_ref(ctx, ref)
@@ -36,9 +41,7 @@ def cmd_status(ctx: CliContext, args: list[str]) -> int:
         }
         if view is not None:
             payload["read_model"] = view.to_dict()
-            progress = None
-            if ctx.host.is_started:
-                progress = ctx.host.get_wizard_progress(instance_id=iid)
+            progress = ctx.host.get_wizard_progress(instance_id=iid)
             if progress is not None:
                 payload["wizard_progress"] = progress.to_dict()
         emit_json(ctx.console, payload)
@@ -56,8 +59,9 @@ def cmd_engine_status(ctx: CliContext) -> int:
             f"Runtime: {format_runtime_line(ctx.host)}\n"
             f"Patterns: {', '.join(pattern_registry.names())}\n"
             f"Storage:  {', '.join(storage_registry.names())}\n\n"
-            f"[dim]Tip:[/] [cyan]flow start <name>[/] to run a flow, "
-            f"[cyan]doctor[/] for health, [cyan]status <id>[/] for detail",
+            f"[dim]Tip:[/] [cyan]status[/] shows the live dashboard, "
+            f"[cyan]status <id>[/] for instance detail, "
+            f"[cyan]status --full[/] for doctor",
             title="Status",
             border_style="green",
         )
