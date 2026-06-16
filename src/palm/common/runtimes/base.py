@@ -15,7 +15,8 @@ import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register core backends
 from palm import __version__
 from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
-from palm.common.hooks import InstancePersistenceHook, StateSnapshotHook
+from palm.common.events import OutboxProcessor, OutboxStore, wire_reliable_events
+from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSnapshotHook
 from palm.common.managers import InstanceManager
 from palm.common.runtimes.hooks import AuthMiddleware, DriveObservabilityHook, authenticate_runtime
 from palm.common.runtimes.schedulers import QueuedScheduler
@@ -74,6 +75,8 @@ class BaseRuntime:
         self.executor = DefinitionExecutor(self, self.repository, self.instance_manager)
         self._started = False
         self._auth_enforce = False
+        self._outbox_store: OutboxStore | None = None
+        self._outbox_processor: OutboxProcessor | None = None
 
     @property
     def is_started(self) -> bool:
@@ -99,6 +102,19 @@ class BaseRuntime:
         self.auth.initialize()
         authenticate_runtime(self.auth, options.get("credentials"))
 
+        if not self.storage.is_initialized:
+            StorageFactory.initialize_engine(
+                self.storage,
+                storage_backend=str(options.get("storage_backend", "memory")),
+                **dict(options.get("backend_options") or {}),
+            )
+
+        enable_outbox = bool(options.get("enable_event_outbox", True))
+        if enable_outbox:
+            self._outbox_store = OutboxStore(self.storage)
+            wire_reliable_events(self.event, self._outbox_store)
+            self._outbox_processor = OutboxProcessor(self._outbox_store, self.event)
+
         scheduler = resolve_scheduler(
             options,
             default_policy=self.default_scheduler_policy,
@@ -114,7 +130,14 @@ class BaseRuntime:
                     required_roles=tuple(options.get("auth_roles") or ("user",)),
                 )
             )
-        hooks.append(InstancePersistenceHook(self.instance_manager))
+        hooks.append(
+            InstancePersistenceHook(
+                self.instance_manager,
+                outbox_store=self._outbox_store,
+            )
+        )
+        if self._outbox_processor is not None:
+            hooks.append(OutboxDrainHook(self._outbox_processor))
         if options.get("enable_state_snapshot"):
             hooks.append(
                 StateSnapshotHook(
@@ -138,13 +161,6 @@ class BaseRuntime:
         state = options.get("state")
         bt_state: BaseState = state if isinstance(state, BaseState) else BlackboardState()
         self.behavior_tree.initialize(state=bt_state)
-
-        if not self.storage.is_initialized:
-            StorageFactory.initialize_engine(
-                self.storage,
-                storage_backend=str(options.get("storage_backend", "memory")),
-                **dict(options.get("backend_options") or {}),
-            )
 
         if not self.instance_manager.is_initialized:
             self.instance_manager.initialize(

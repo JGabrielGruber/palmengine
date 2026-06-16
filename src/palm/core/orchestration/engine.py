@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from palm.core.base import BasePalmEngine
 from palm.core.context import BaseState, ContextEngine
-from palm.core.event import EventEngine
+from palm.core.event import EventContext, EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.orchestration.exceptions import (
     JobExecutionError,
@@ -91,7 +91,11 @@ class OrchestrationEngine(BasePalmEngine):
             if job.status == JobStatus.RUNNING:
                 try:
                     self._mode.cancel_job(self, job)
-                    self._emit(OrchestrationEventType.JOB_CANCELLED, {"job_id": job.id})
+                    self._emit(
+                        OrchestrationEventType.JOB_CANCELLED,
+                        {"job_id": job.id},
+                        job=job,
+                    )
                 except Exception:
                     pass
 
@@ -136,6 +140,7 @@ class OrchestrationEngine(BasePalmEngine):
         self._emit(
             OrchestrationEventType.JOB_SUBMITTED,
             {"job_id": jid, "metadata": job.metadata},
+            job=job,
         )
 
         self._mode.submit_job(self, job)
@@ -159,7 +164,11 @@ class OrchestrationEngine(BasePalmEngine):
         if job.is_terminal:
             return False
         self._mode.cancel_job(self, job)
-        self._emit(OrchestrationEventType.JOB_CANCELLED, {"job_id": job_id})
+        self._emit(
+            OrchestrationEventType.JOB_CANCELLED,
+            {"job_id": job_id},
+            job=job,
+        )
         return True
 
     def provide_input(self, job_id: str, key: str, value: Any) -> None:
@@ -169,6 +178,7 @@ class OrchestrationEngine(BasePalmEngine):
         self._emit(
             OrchestrationEventType.JOB_INPUT_RECEIVED,
             {"job_id": job_id, "key": key},
+            job=job,
         )
 
         if job.status == JobStatus.WAITING_FOR_INPUT:
@@ -188,6 +198,7 @@ class OrchestrationEngine(BasePalmEngine):
         self._emit(
             OrchestrationEventType.JOB_INPUT_RECEIVED,
             {"job_id": job_id, "key": slug or "input", "value": value},
+            job=job,
         )
 
         if job.status == JobStatus.WAITING_FOR_INPUT:
@@ -277,18 +288,54 @@ class OrchestrationEngine(BasePalmEngine):
         self._emit(
             OrchestrationEventType.JOB_STATUS_CHANGED,
             {"job_id": job.id, "status": job.status.value},
+            job=job,
         )
+        instance_id = job.metadata.get("instance_id")
+        if instance_id is not None:
+            self._emit(
+                OrchestrationEventType.INSTANCE_STATUS_CHANGED,
+                {
+                    "instance_id": str(instance_id),
+                    "job_id": job.id,
+                    "status": job.status.value,
+                },
+                job=job,
+            )
         if job.is_terminal:
             self._emit(
                 OrchestrationEventType.JOB_COMPLETED,
                 {"job_id": job.id, "status": job.status.value},
+                job=job,
             )
 
-    def _emit(self, event_type: str, payload: dict[str, Any]) -> None:
+    def _emit(
+        self,
+        event_type: str,
+        payload: dict[str, Any],
+        *,
+        job: Job | None = None,
+    ) -> None:
         bus = self._event_engine
         if bus is None or not bus.is_initialized:
             return
-        bus.emit(event_type, **payload)
+        context = self._event_context_from_job(job) if job is not None else None
+        with bus.bind_context(context):
+            bus.emit(event_type, context=context, **payload)
+
+    @staticmethod
+    def _event_context_from_job(job: Job) -> EventContext:
+        return EventContext(
+            job_id=job.id,
+            instance_id=str(job.metadata["instance_id"])
+            if job.metadata.get("instance_id") is not None
+            else None,
+            trace_id=str(job.metadata["trace_id"])
+            if job.metadata.get("trace_id") is not None
+            else None,
+            principal_id=str(job.metadata["principal_id"])
+            if job.metadata.get("principal_id") is not None
+            else None,
+        )
 
     def _do_initialize(self, **options: Any) -> None:
         scheduler = options.get("scheduler")

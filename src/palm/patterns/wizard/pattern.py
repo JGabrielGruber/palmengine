@@ -8,7 +8,7 @@ from typing import Any
 
 from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, SequenceNode
 from palm.core.context import BaseState, ContextEngine
-from palm.core.event import EventEngine
+from palm.core.event import EventContext, EventEngine
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.backtrack import apply_backtrack, can_backtrack_to
 from palm.patterns.wizard.config import WizardConfig
@@ -77,10 +77,17 @@ class WizardPattern(BasePattern):
 
         applied = apply_backtrack(state, self._root, self._sequence, self._config)
         if applied is not None:
+            slug = self._config.iter_tree_steps()[applied].slug
             self._emit_event(
                 WizardEventType.BACKTRACK,
                 step_index=applied,
-                slug=self._config.iter_tree_steps()[applied].slug,
+                slug=slug,
+            )
+            self._emit_event(
+                WizardEventType.BACKTRACK_EXECUTED,
+                step_index=applied,
+                slug=slug,
+                from_step=state.get(WizardKeys.CURRENT_STEP),
             )
 
         status = self._root.tick(state)
@@ -137,7 +144,13 @@ class WizardPattern(BasePattern):
 
     def _bridge_emit(self, event_type: str, payload: dict[str, Any]) -> None:
         if self._event_engine is not None:
-            self._event_engine.emit(event_type, **payload)
+            context = self._event_context()
+            self._event_engine.emit(event_type, context=context, **payload)
+
+    def _event_context(self) -> EventContext | None:
+        if self._context_engine is None:
+            return None
+        return EventContext.from_mapping(self._context_engine.current)
 
     def _emit_event(self, event_type: str, **payload: Any) -> None:
         self._bridge_emit(event_type, payload)

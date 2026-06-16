@@ -102,6 +102,12 @@ class WizardStepLeaf(InteractiveLeaf):
             value=value,
             step_index=self._step_index,
         )
+        self._fire(
+            WizardEventType.STEP_COMPLETED,
+            slug=self._step.slug,
+            value=value,
+            step_index=self._step_index,
+        )
         return PatternStatus.SUCCESS
 
     def _fire(self, event_type: str, **payload: Any) -> None:

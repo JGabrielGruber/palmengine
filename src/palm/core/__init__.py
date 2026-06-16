@@ -33,7 +33,7 @@ from palm.core.context import (
     DictStateSchema,
     StateSchema,
 )
-from palm.core.event import Event, EventEngine
+from palm.core.event import Event, EventContext, EventEngine, PublishResult, Subscription
 from palm.core.exceptions import (
     BackendNotOpenError,
     ConfigurationError,
@@ -102,7 +102,10 @@ __all__ = [
     "NESTED_SCOPES_KEY",
     "SCOPES_ROOT_KEY",
     "Event",
+    "EventContext",
     "EventEngine",
+    "PublishResult",
+    "Subscription",
     "ExecutionContext",
     "InputCapable",
     "Job",

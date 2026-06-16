@@ -15,3 +15,5 @@ class OrchestrationEventType:
     JOB_COMPLETED = "job.completed"
     JOB_INPUT_RECEIVED = "job.input_received"
     JOB_CANCELLED = "job.cancelled"
+    INSTANCE_CREATED = "instance.created"
+    INSTANCE_STATUS_CHANGED = "instance.status_changed"

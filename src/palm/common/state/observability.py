@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from palm.core.context import BaseState, StateSchema
+from palm.core.event import EventContext
 
 if TYPE_CHECKING:
     from palm.core.event import EventEngine
@@ -100,11 +101,11 @@ class EventEngineStateObserver:
 
     def _emit(self, event_type: str, **payload: Any) -> None:
         payload.setdefault("source", self._source)
-        if self._job_id is not None:
-            payload.setdefault("job_id", self._job_id)
-        if self._instance_id is not None:
-            payload.setdefault("instance_id", self._instance_id)
-        self._event_engine.emit(event_type, **payload)
+        context = EventContext(
+            job_id=self._job_id,
+            instance_id=self._instance_id,
+        )
+        self._event_engine.emit(event_type, context=context, **payload)
 
 
 def observe_state(
