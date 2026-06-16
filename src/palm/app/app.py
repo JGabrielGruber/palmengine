@@ -25,9 +25,6 @@ if TYPE_CHECKING:
     from palm.definitions.process import ProcessDefinition
     from palm.instances import ProcessInstance, StateSnapshot
 
-CLI_RUNTIME_NAME = "cli"
-
-
 class PalmApp:
     """
     Infrastructure layer — shared storage, instance manager, and runtime registry.
@@ -84,19 +81,6 @@ class PalmApp:
         ensure_plugins()
         self._bootstrapped = True
         return self
-
-    def bootstrap_cli(self, **start_options: Any) -> BaseRuntime:
-        """Register the CLI embedded runtime, start it, and load definitions."""
-        self._require_bootstrapped()
-        runtime = self.create_runtime(
-            "embedded",
-            name=CLI_RUNTIME_NAME,
-            autostart=True,
-            set_primary=True,
-            **start_options,
-        )
-        self.load_definitions(name=CLI_RUNTIME_NAME)
-        return runtime
 
     def create_runtime(
         self,

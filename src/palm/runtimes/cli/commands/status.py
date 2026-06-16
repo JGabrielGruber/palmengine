@@ -8,6 +8,7 @@ from palm.runtimes.cli.commands.doctor import run_doctor
 from palm.runtimes.cli.commands.views import render_job_status
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.output import emit_json
+from palm.runtimes.cli.shared.runtime_display import format_runtime_line
 from palm.runtimes.cli.tui import actions as tui_actions
 
 
@@ -36,7 +37,7 @@ def cmd_status(ctx: CliContext, args: list[str]) -> int:
         if view is not None:
             payload["read_model"] = view.to_dict()
             progress = None
-            if ctx.host is not None and ctx.host.is_started:
+            if ctx.host.is_started:
                 progress = ctx.host.get_wizard_progress(instance_id=iid)
             if progress is not None:
                 payload["wizard_progress"] = progress.to_dict()
@@ -52,8 +53,7 @@ def cmd_engine_status(ctx: CliContext) -> int:
     ctx.console.print(
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
-            f"Runtime: embedded — "
-            f"{'[green]started[/]' if ctx.app.is_runtime_started() else '[red]stopped[/]'}\n"
+            f"Runtime: {format_runtime_line(ctx.host)}\n"
             f"Patterns: {', '.join(pattern_registry.names())}\n"
             f"Storage:  {', '.join(storage_registry.names())}\n\n"
             f"[dim]Tip:[/] [cyan]flow start <name>[/] to run a flow, "

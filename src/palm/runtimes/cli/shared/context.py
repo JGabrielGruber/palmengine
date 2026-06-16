@@ -1,5 +1,5 @@
 """
-CLI session context — ApplicationHost-backed queries with PalmApp commands.
+CLI session context — ApplicationHost-backed commands and queries.
 """
 
 from __future__ import annotations
@@ -7,31 +7,41 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from palm.app.app import PalmApp
 from palm.app.settings import PalmSettings
 from palm.common.cqrs.adapters import read_model_to_summary
-from palm.common.cqrs.query import ListInstanceSnapshotsQuery, ListInstancesQuery
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.managers import InstanceManager, InstanceSummary
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.definitions.flow import FlowDefinition
+from palm.definitions.process import ProcessDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from palm.runtimes.cli.shared.instances import resolve_instance_id as _resolve_instance_id
 
 if TYPE_CHECKING:
+    from palm.app.app import PalmApp
     from palm.app.host.application_host import ApplicationHost
 
 
 @dataclass
 class CliContext:
-    """Shared state for one-shot commands and the REPL."""
+    """
+    Shared state for one-shot commands and the REPL.
 
-    app: PalmApp
+    All CLI operations route through :class:`~palm.app.host.ApplicationHost`
+    for CQRS command dispatch, query serving, and coordinated recovery.
+    """
+
+    host: ApplicationHost
     console: Any
-    host: ApplicationHost | None = None
     active_instance_id: str | None = None
     output_format: str = "table"
     _instance_to_job: dict[str, str] = field(default_factory=dict)
+
+    @property
+    def app(self) -> PalmApp:
+        """Infrastructure layer — definitions, storage, runtime registry."""
+        return self.host.app
 
     @property
     def settings(self) -> PalmSettings:
@@ -41,20 +51,22 @@ class CliContext:
     def instance_manager(self) -> InstanceManager:
         return self.app.instance_manager
 
+    def is_runtime_started(self) -> bool:
+        return self.host.is_started and bool(self.host.running_runtimes())
+
+    def running_runtime_names(self) -> list[str]:
+        return self.host.running_runtimes()
+
     def set_active(self, instance_id: str, job_id: str) -> None:
         self.active_instance_id = instance_id
         self._instance_to_job[instance_id] = job_id
         self.instance_manager.mark_active(instance_id)
 
     def list_instance_summaries(self) -> list[InstanceSummary]:
-        """List instances via the host query bus when available."""
-        if self._query_ready():
-            views = self.host.list_instance_views(include_terminal=True)
-            return [read_model_to_summary(view) for view in views]
-        return self.instance_manager.list_summaries()
+        views = self.host.list_instance_views(include_terminal=True)
+        return [read_model_to_summary(view) for view in views]
 
     def resolve_instance_id(self, ref: str) -> str:
-        """Resolve exact id, unique prefix, or flow/process name to ``instance_id``."""
         return _resolve_instance_id(self, ref)
 
     def get_instance(self, ref: str) -> ProcessInstance:
@@ -62,20 +74,53 @@ class CliContext:
         return self.instance_manager.get(instance_id)
 
     def get_instance_status_view(self, ref: str):
-        """Return the CQRS read model for an instance when the host is active."""
-        if not self._query_ready():
-            return None
         instance_id = self.resolve_instance_id(ref)
         return self.host.get_instance_view(instance_id)
 
     def list_instance_snapshots(self, instance_id: str) -> list[StateSnapshot]:
         resolved = self.resolve_instance_id(instance_id)
-        if self._query_ready():
-            return self.host.list_instance_snapshots(resolved)
-        return self.instance_manager.list_state_snapshots(resolved)
+        return self.host.list_instance_snapshots(resolved)
+
+    def resolve_flow(self, ref: str) -> FlowDefinition:
+        return self.app.resolve_flow(ref)
+
+    def resolve_process(self, ref: str) -> ProcessDefinition:
+        return self.app.resolve_process(ref)
+
+    def submit_flow(
+        self,
+        ref: FlowDefinition | str,
+        *,
+        job_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job:
+        return self.host.submit_flow(ref, job_id=job_id, metadata=metadata)
+
+    def submit_process(
+        self,
+        ref: ProcessDefinition | str,
+        *,
+        job_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Job | list[Job]:
+        return self.host.submit_process(ref, job_id=job_id, metadata=metadata)
+
+    def provide_input(self, job_id: str, value: Any) -> str | None:
+        return self.host.provide_input(job_id, value)
+
+    def resume_process(self, instance_id: str) -> Job:
+        return self.host.resume_process(instance_id)
+
+    def get_job(self, job_id: str) -> Job:
+        return self.app.get_job(job_id)
+
+    def resume_job(self, job_id: str) -> None:
+        self.app.resume_job(job_id)
+
+    def persist_job(self, job: Job) -> None:
+        self.app.persist_job(job)
 
     def resolve_job_id(self, instance_or_job_id: str) -> str:
-        """Map instance id to live job id, resuming from storage if needed."""
         if instance_or_job_id in self._instance_to_job:
             return self._instance_to_job[instance_or_job_id]
 
@@ -87,19 +132,13 @@ class CliContext:
         inst = self.instance_manager.get(instance_id)
         job_id = inst.job_id
         try:
-            self.app.get_job(job_id)
+            self.get_job(job_id)
         except JobNotFoundError:
-            if self.host is not None and self.host.is_started:
-                job = self.host.resume_process(inst.instance_id)
-            else:
-                job = self.app.resume_process(inst.instance_id)
+            job = self.host.resume_process(inst.instance_id)
             job_id = job.id
         self.set_active(inst.instance_id, job_id)
         return job_id
 
     def job_for_instance(self, instance_id: str) -> Job:
         job_id = self.resolve_job_id(instance_id)
-        return self.app.get_job(job_id)
-
-    def _query_ready(self) -> bool:
-        return self.host is not None and self.host.is_started
+        return self.get_job(job_id)

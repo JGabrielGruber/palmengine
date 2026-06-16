@@ -45,10 +45,7 @@ def format_persistence_notice(app: PalmApp) -> str:
     manager = app.instance_manager
     if manager.is_initialized:
         active = len(manager.active_instance_ids)
-        lines.append(
-            f"[dim]InstanceManager[/] — "
-            f"{len(app.list_instance_summaries())} known, {active} active"
-        )
+        lines.append(f"[dim]InstanceManager[/] — {active} active in cache")
 
     return "\n".join(lines)
 

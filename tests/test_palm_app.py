@@ -101,11 +101,16 @@ def test_requires_bootstrap() -> None:
         application.create_runtime("embedded")
 
 
-def test_bootstrap_cli_registers_primary_runtime(app: PalmApp) -> None:
-    from palm.app.app import CLI_RUNTIME_NAME
+def test_create_cli_host_registers_collapsed_runtime() -> None:
+    from palm.app.session import create_cli_host
+    from palm.runtimes.embedded import EmbeddedRuntime
 
-    runtime = app.bootstrap_cli()
-    assert isinstance(runtime, EmbeddedRuntime)
-    assert app.primary_name == CLI_RUNTIME_NAME
-    assert app.is_runtime_started(CLI_RUNTIME_NAME)
-    assert app.list_processes()
+    host = create_cli_host(settings=PalmSettings(load_example_definitions=False))
+    try:
+        assert host.is_started
+        assert host.running_runtimes() == ["main"]
+        runtime = host.runtime()
+        assert isinstance(runtime, EmbeddedRuntime)
+        assert host.app.list_processes() is not None
+    finally:
+        host.shutdown()

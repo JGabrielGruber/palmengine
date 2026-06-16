@@ -122,7 +122,6 @@ def test_cli_context_uses_query_bus_for_instance_list() -> None:
     invocation = CliInvocation(command="doctor", output_format="json")
     ctx = bootstrap_runtime(invocation=invocation, show_banner=False)
     try:
-        assert ctx.host is not None
         summaries = ctx.list_instance_summaries()
         assert isinstance(summaries, list)
         queried = ctx.host.ask(ListInstancesQuery(include_terminal=True))

@@ -628,6 +628,26 @@ Observability: `host.webhook.delivered`, `host.webhook.failed`.
 
 Multi-role hosts use `WorkerCoordinator` to track daemon/server worker registration and emit `host.workers.ready` during recovery (`worker_ready_timeout`, default 5s).
 
+### CLI and runtime integration
+
+Terminal surfaces bootstrap through **ApplicationHost**, not direct `PalmApp` wiring:
+
+```
+palm CLI → bootstrap_runtime() → create_cli_host() → ApplicationHost(all_in_one).start()
+                                                          ↓
+                                                     runtime "main" (embedded)
+```
+
+| Surface | Bootstrap | Writes | Reads |
+|---------|-----------|--------|-------|
+| CLI / REPL | `create_cli_host` | `CliContext.submit_*` → host command bus | `CliContext.list_instance_summaries()` → query bus |
+| `palm host` | `run_host(profile)` | Same CQRS path per role | Projections + recovery |
+| Library embed | `ApplicationHost` or `PalmApp` | Prefer host `execute()` | Prefer host `ask()` |
+
+`PalmApp.bootstrap_cli()` and the `cli/pkg/` shim are removed. `create_cli_app()` remains deprecated — returns `host.app` for legacy callers only.
+
+Low-level job helpers (`resume_job`, `persist_job`) stay on `CliContext` for wizard backtrack until a dedicated command exists.
+
 ---
 
 ## Runtimes

@@ -25,10 +25,10 @@ def bootstrap_runtime(
     output_format: str = "table",
 ) -> CliContext:
     """
-    Open a CLI session backed by a bootstrapped :class:`~palm.app.app.PalmApp`.
+    Open a CLI session backed by a started :class:`~palm.app.host.ApplicationHost`.
 
-    All runtime wiring (storage, ``InstanceManager``, hooks, definitions) is
-    handled by :func:`~palm.app.session.create_cli_app`.
+    Uses the collapsed ``all_in_one`` profile with CQRS buses, projections,
+    outbox recovery, and compensation wired via :func:`~palm.app.session.create_cli_host`.
     """
     console = create_console()
     resolved = settings_from_invocation(invocation) if invocation is not None else settings
@@ -39,14 +39,12 @@ def bootstrap_runtime(
         settings=resolved,
     )
     fmt = invocation.output_format if invocation is not None else output_format
-    ctx = CliContext(host=host, app=host.app, console=console, output_format=fmt)
+    ctx = CliContext(host=host, console=console, output_format=fmt)
     if show_banner:
         print_startup_banner(console, host.app)
     return ctx
 
 
 def shutdown_context(ctx: CliContext) -> None:
-    if ctx.host is not None and ctx.host.is_started:
+    if ctx.host.is_started:
         ctx.host.shutdown()
-    else:
-        ctx.app.shutdown()

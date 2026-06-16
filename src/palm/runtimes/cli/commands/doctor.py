@@ -14,6 +14,7 @@ from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.instance_ops import is_terminal_status
 from palm.runtimes.cli.shared.job_inspect import inspect_job
 from palm.runtimes.cli.shared.settings import is_durable_storage
+from palm.runtimes.cli.shared.runtime_display import format_runtime_line
 from palm.runtimes.cli.shared.startup import format_persistence_notice
 from palm.runtimes.cli.tui.context import context_lines
 
@@ -25,10 +26,11 @@ def run_doctor(ctx: CliContext) -> int:
 
     console = ctx.console
     app = ctx.app
+    host = ctx.host
     issues: list[str] = []
 
-    if not app.is_runtime_started():
-        issues.append("CLI runtime is not started")
+    if not ctx.is_runtime_started():
+        issues.append("ApplicationHost runtimes are not started")
 
     storage = app.storage
     backend_name = storage.backend_name or "(none)"
@@ -44,8 +46,8 @@ def run_doctor(ctx: CliContext) -> int:
     console.print(
         Panel(
             f"[bold]Palm Engine v{__version__}[/]\n"
-            f"Runtime: embedded — "
-            f"{'[green]started[/]' if app.is_runtime_started() else '[red]stopped[/]'}\n"
+            f"Runtime: {format_runtime_line(host)}\n"
+            f"Host roles: {', '.join(sorted(host.profile.roles))}\n"
             f"Storage: {backend_name} — "
             f"{'[green]ready[/]' if backend_open else '[red]unavailable[/]'}",
             title="Engine Health",
@@ -94,7 +96,7 @@ def run_doctor(ctx: CliContext) -> int:
     schema_note = f"{schema_flows} with state_schema" if schema_flows else "none with state_schema"
     inst_table.add_row("flow definitions", str(len(flows)), f"in-memory + storage ({schema_note})")
     inst_table.add_row("process definitions", str(len(processes)), "")
-    summaries = app.list_instance_summaries()
+    summaries = ctx.list_instance_summaries()
     active = [item for item in summaries if not is_terminal_status(item.status)]
     inst_table.add_row("process instances", str(len(summaries)), "durable snapshots")
     inst_table.add_row(

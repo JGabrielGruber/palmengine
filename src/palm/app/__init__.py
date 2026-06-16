@@ -1,19 +1,18 @@
 """
 Palm application layer — configuration, bootstrap, and multi-runtime orchestration.
 
-Use :class:`~palm.app.app.PalmApp` as the top-level entrypoint when embedding
-Palm in services, tests, or multi-process deployments.
+Prefer :class:`~palm.app.host.ApplicationHost` for CLI, services, and deployments.
+Use :class:`~palm.app.app.PalmApp` directly only for low-level embedding tests.
 """
 
-from palm.app.app import CLI_RUNTIME_NAME, PalmApp
+from palm.app.app import PalmApp
 from palm.app.host.roles import HostProfile
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
-from palm.app.session import create_cli_app, create_console
+from palm.app.session import create_cli_app, create_cli_host, create_console
 from palm.app.settings import PalmSettings
 
 __all__ = [
     "ApplicationHost",
-    "CLI_RUNTIME_NAME",
     "HostProfile",
     "PalmApp",
     "PalmSettings",
@@ -21,6 +20,7 @@ __all__ = [
     "RuntimeKind",
     "RuntimeRegistry",
     "create_cli_app",
+    "create_cli_host",
     "create_console",
     "run_host",
 ]

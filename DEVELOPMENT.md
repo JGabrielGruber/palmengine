@@ -75,8 +75,9 @@ Runtime imports: `palm.common.runtimes` for shared infrastructure;
 
 ## Working with the CLI
 
-The CLI is a **thin client of `PalmApp`** — all wiring (storage, `InstanceManager`,
-persistence hooks, definitions) happens in :func:`~palm.app.session.create_cli_app`.
+The CLI is a **thin client of `ApplicationHost`** — bootstrap via
+:func:`~palm.app.session.create_cli_host` (collapsed ``all_in_one`` profile).
+Commands route through the host command bus; queries use projections.
 No manual runtime assembly in command handlers.
 
 | Mode | How | Persists? |

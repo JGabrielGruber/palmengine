@@ -17,7 +17,7 @@ def cmd_process_submit(ctx: CliContext, args: list[str]) -> int:
         ctx.console.print("[red]Usage:[/] process submit <process-name-or-id>")
         return 1
     try:
-        ctx.app.resolve_process(args[0])
+        ctx.resolve_process(args[0])
         tui_actions.submit_process(ctx, args[0])
         ctx.console.print("[dim]Process submitted.[/]")
     except Exception as exc:

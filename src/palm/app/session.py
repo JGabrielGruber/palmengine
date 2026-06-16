@@ -1,9 +1,10 @@
 """
-CLI session bootstrap — thin PalmApp client for terminal entrypoints.
+CLI session bootstrap — ApplicationHost entry for terminal surfaces.
 """
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -73,36 +74,20 @@ def create_cli_app(
     settings: PalmSettings | None = None,
 ) -> PalmApp:
     """
-    Construct a fully bootstrapped :class:`~palm.app.app.PalmApp` for the CLI.
+    Return the infrastructure :class:`~palm.app.app.PalmApp` from a CLI host.
 
-    Settings resolve from ``PALM_*`` environment variables, with optional CLI flag
-    overrides. ``bootstrap_cli`` wires the embedded runtime, ``InstanceManager``,
-    persistence hooks, and definition catalog — no manual runtime assembly.
-
-    Shared ``storage`` enables resume across separate CLI invocations (daemon +
-    terminal) when both use the same engine instance or durable backend + data dir.
+    .. deprecated::
+        Use :func:`create_cli_host` and interact through
+        :class:`~palm.app.host.ApplicationHost` for CQRS and recovery.
     """
-    if settings is not None:
-        cfg = settings
-        if storage_backend is not None:
-            cfg = resolve_cli_settings(storage_backend=storage_backend, settings=cfg)
-        if data_dir is not None:
-            cfg = resolve_cli_settings(data_dir=data_dir, settings=cfg)
-    else:
-        shared_backend = (
-            storage.backend_name
-            if storage is not None and storage.is_initialized and storage.backend_name
-            else None
-        )
-        cfg = resolve_cli_settings(
-            storage_backend=storage_backend,
-            data_dir=data_dir,
-            align_shared_storage=shared_backend if storage_backend is None else None,
-        )
-
+    warnings.warn(
+        "create_cli_app() is deprecated; use create_cli_host() and ApplicationHost",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     return create_cli_host(
         storage_backend=storage_backend,
         data_dir=data_dir,
         storage=storage,
-        settings=cfg,
+        settings=settings,
     ).app
