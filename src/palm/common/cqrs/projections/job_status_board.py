@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
 from palm.common.cqrs.query import ListJobStatusQuery
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.core.orchestration.events import OrchestrationEventType
 
 if TYPE_CHECKING:
@@ -52,6 +53,7 @@ class JobStatusBoardProjection(Projection):
     def __init__(self, storage: StorageEngine) -> None:
         self._storage = storage
         self._entries: dict[str, JobStatusReadModel] = {}
+        self._rebuild_skipped = False
         self._load()
 
     @property
@@ -81,7 +83,18 @@ class JobStatusBoardProjection(Projection):
         )
         self._persist()
 
-    def rebuild(self) -> int:
+    def entry_count(self) -> int:
+        return len(self._entries)
+
+    def was_rebuild_skipped(self) -> bool:
+        return self._rebuild_skipped
+
+    def rebuild(self, *, policy: ProjectionRebuildPolicy | None = None) -> int:
+        resolved = policy or ProjectionRebuildPolicy()
+        self._rebuild_skipped = False
+        if resolved.skip_if_fresh and not resolved.force and self._entries:
+            self._rebuild_skipped = True
+            return len(self._entries)
         return len(self._entries)
 
     def clear(self) -> None:

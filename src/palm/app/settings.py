@@ -55,6 +55,14 @@ class PalmSettings(BaseSettings):
     outbox_poll_interval: float = 0.5
     enable_event_outbox: bool = True
     rebuild_projections_on_startup: bool = True
+    projection_rebuild_batch_size: int = 100
+    projection_rebuild_max_instances: int = 5000
+    projection_rebuild_skip_if_fresh: bool = True
+    enable_compensation: bool = True
+    enable_webhook_dispatcher: bool = False
+    webhook_urls: list[str] = Field(default_factory=list)
+    webhook_event_types: list[str] = Field(default_factory=list)
+    worker_ready_timeout: float = 5.0
 
     @classmethod
     def from_env_file(cls, env_file: str | Path) -> PalmSettings:

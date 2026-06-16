@@ -8,7 +8,8 @@ import threading
 from typing import TYPE_CHECKING
 
 from palm.common.events import OutboxProcessor, OutboxStore, wire_reliable_events
-from palm.core.event import EventEngine
+from palm.common.events.external import WebhookDispatcher
+from palm.core.event import Event, EventEngine
 
 if TYPE_CHECKING:
     from palm.core.storage import StorageEngine
@@ -29,11 +30,13 @@ class OutboxBackgroundService:
         *,
         poll_interval: float = 0.5,
         batch_size: int = 50,
+        external_dispatcher: WebhookDispatcher | None = None,
     ) -> None:
         self._storage = storage
         self._event_engine = event_engine
         self._poll_interval = poll_interval
         self._batch_size = batch_size
+        self._external_dispatcher = external_dispatcher
         self._store = OutboxStore(storage)
         self._processor = OutboxProcessor(self._store, event_engine)
         self._stop = threading.Event()
@@ -80,12 +83,39 @@ class OutboxBackgroundService:
 
     def process_once(self) -> int:
         """Process a single batch — useful in tests."""
-        return self._processor.process_batch(limit=self._batch_size)
+        return self._processor.process_batch(
+            limit=self._batch_size,
+            on_before_publish=self._dispatch_external,
+        )
+
+    def _dispatch_external(self, event: Event) -> None:
+        if self._external_dispatcher is None:
+            return
+        try:
+            deliveries = self._external_dispatcher.dispatch(event)
+            for record in deliveries:
+                self._event_engine.emit(
+                    "host.webhook.delivered",
+                    target=record.target,
+                    event_type=record.event_type,
+                    event_id=record.event_id,
+                )
+        except Exception as exc:
+            self._event_engine.emit(
+                "host.webhook.failed",
+                event_type=event.type,
+                event_id=event.id,
+                error=str(exc),
+            )
+            raise
 
     def _poll_loop(self) -> None:
         while not self._stop.wait(self._poll_interval):
             try:
-                count = self._processor.process_batch(limit=self._batch_size)
+                count = self._processor.process_batch(
+                    limit=self._batch_size,
+                    on_before_publish=self._dispatch_external,
+                )
                 if count:
                     self._event_engine.emit(
                         "host.outbox.processed",

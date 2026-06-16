@@ -7,6 +7,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from collections.abc import Callable
 from typing import Any
 
 from palm.core.event import Event, EventContext, EventEngine
@@ -154,12 +155,21 @@ class OutboxProcessor:
         self._store = store
         self._event_engine = event_engine
 
-    def process_batch(self, *, limit: int = 50, replay_handlers: bool = False) -> int:
+    def process_batch(
+        self,
+        *,
+        limit: int = 50,
+        replay_handlers: bool = False,
+        on_before_publish: Callable[[Event], None] | None = None,
+    ) -> int:
         processed = 0
         for entry in self._store.list_pending(limit=limit):
             try:
+                event = entry.to_event()
+                if on_before_publish is not None:
+                    on_before_publish(event)
                 if replay_handlers:
-                    self._event_engine.publish(entry.to_event(), source="outbox")
+                    self._event_engine.publish(event, source="outbox")
                 self._store.mark_published(entry.id)
                 processed += 1
             except Exception as exc:

@@ -531,6 +531,105 @@ Wiring path: `PalmSettings` → `runtime_start_options()` → `palm.common.runti
 
 ---
 
+## ApplicationHost, CQRS, and reliability (0.10)
+
+`:class:`~palm.app.host.ApplicationHost`` is the top-level orchestrator: role-based runtime spawning, command/query buses, projections, outbox drain, compensation, and startup recovery.
+
+```mermaid
+flowchart TB
+    host[ApplicationHost]
+    cmd[CommandBus]
+    qry[QueryBus]
+    proj[ProjectionManager]
+    outbox[OutboxBackgroundService]
+    comp[CompensationCoordinator]
+    webhook[WebhookDispatcher]
+
+    host --> cmd
+    host --> qry
+    host --> proj
+    host --> outbox
+    host --> comp
+    outbox --> webhook
+```
+
+| Piece | Location | Role |
+|-------|----------|------|
+| Commands / queries | `palm/common/cqrs/` | Write/read routing (`SubmitFlowCommand`, `ListInstancesQuery`, …) |
+| Projections | `palm/common/cqrs/projections/` | Event-driven read models (instance index, wizard progress, job board) |
+| Rebuild policy | `palm/common/cqrs/rebuild.py` | Batch rebuild + skip-if-fresh safeguards for large instance counts |
+| Outbox | `palm/common/events/outbox.py` | Durable critical events; master drains via `OutboxBackgroundService` |
+| Compensation | `palm/common/compensation/` | Optional saga-style undo on `wizard.commit.failed` |
+| Webhooks | `palm/common/events/external.py` | POST outbox events to external URLs before mark-published |
+
+### Projection rebuild safeguards
+
+On startup (`rebuild_projections_on_startup=True`), `ProjectionManager.rebuild_all()` applies `ProjectionRebuildPolicy`:
+
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| `projection_rebuild_batch_size` | `100` | Persist instance index in chunks when instance count exceeds max |
+| `projection_rebuild_max_instances` | `5000` | Threshold for batched rebuild |
+| `projection_rebuild_skip_if_fresh` | `True` | Skip rebuild when cached projection matches authoritative count |
+
+Recovery emits `host.recovered` with a `projections` report (`counts`, `skipped`, `batched`, `warnings`).
+
+### Compensation handlers
+
+Compensation is **optional** and registry-based (like wizard commit handlers). Register during definition bootstrap — never from job hot paths.
+
+```python
+from palm.common.compensation import (
+    CompensationContext,
+    CompensationResult,
+    default_compensation_registry,
+)
+
+def undo_save(ctx: CompensationContext) -> CompensationResult:
+    # reverse partial writes using ctx.payload / ctx.hook_name / ctx.error
+    return CompensationResult.success({"undone": True})
+
+default_compensation_registry().register_for_commit_hook("save_profile", undo_save)
+```
+
+| Trigger | Handler lookup |
+|---------|----------------|
+| `wizard.commit.failed` | By `hook` payload field → `register_for_commit_hook` |
+| `wizard.backtrack.executed` | `register_for_event` (saga-style extensions) |
+
+`CompensationCoordinator` subscribes on the host bus and every runtime `EventEngine` when `enable_compensation=True` (default). Observability: `compensation.executed`, `compensation.failed`, `compensation.skipped`.
+
+Wizard commit events (`wizard.commit.*`) are in `CRITICAL_EVENT_TYPES` and tracked on `WizardProgressProjection` (`commit_status`, `commit_hook`, `commit_error`).
+
+### External webhook consumers
+
+Webhooks dispatch **from the outbox** before an entry is marked published — durable delivery aligned with internal handlers.
+
+```python
+from palm.common.events import WebhookDispatcher, WebhookTarget, RecordingWebhookDeliverer
+
+dispatcher = WebhookDispatcher(
+    [WebhookTarget(url="https://hooks.example/palm", event_types=frozenset({"job.completed"}))],
+    deliverer=RecordingWebhookDeliverer(),  # tests
+)
+```
+
+Host settings:
+
+| Setting | Default | Meaning |
+|---------|---------|---------|
+| `enable_webhook_dispatcher` | `False` | Master outbox service calls webhook targets |
+| `webhook_urls` | `[]` | Destination URLs (`PALM_WEBHOOK_URLS`) |
+| `webhook_event_types` | `[]` | Optional filter; empty = all outbox events |
+
+Observability: `host.webhook.delivered`, `host.webhook.failed`.
+
+### Worker coordination
+
+Multi-role hosts use `WorkerCoordinator` to track daemon/server worker registration and emit `host.workers.ready` during recovery (`worker_ready_timeout`, default 5s).
+
+---
+
 ## Runtimes
 
 ### Layout

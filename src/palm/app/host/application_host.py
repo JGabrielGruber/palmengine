@@ -15,7 +15,13 @@ from palm.app.host.events import HostEventType
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
+from palm.app.host.workers import WorkerCoordinator
 from palm.app.settings import PalmSettings
+from palm.common.compensation import (
+    CompensationCoordinator,
+    default_compensation_registry,
+)
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     Command,
@@ -45,6 +51,7 @@ from palm.common.cqrs.query import (
     ListJobStatusQuery,
     Query,
 )
+from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 
@@ -89,6 +96,9 @@ class ApplicationHost:
         self._wizard_projection: WizardProgressProjection | None = None
         self._job_board_projection: JobStatusBoardProjection | None = None
         self._outbox_service: OutboxBackgroundService | None = None
+        self._compensation: CompensationCoordinator | None = None
+        self._worker_coordinator: WorkerCoordinator | None = None
+        self._webhook_dispatcher: WebhookDispatcher | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -135,6 +145,18 @@ class ApplicationHost:
         return self._outbox_service
 
     @property
+    def compensation(self) -> CompensationCoordinator | None:
+        return self._compensation
+
+    @property
+    def compensation_registry(self):
+        return default_compensation_registry()
+
+    @property
+    def webhook_dispatcher(self) -> WebhookDispatcher | None:
+        return self._webhook_dispatcher
+
+    @property
     def is_started(self) -> bool:
         return self._started
 
@@ -156,6 +178,7 @@ class ApplicationHost:
 
         self._app.bootstrap()
         self._event.initialize()
+        self._worker_coordinator = WorkerCoordinator(self.profile, self._event)
         merged = runtime_start_options(self.settings, **options)
         self._spawn_runtimes(merged)
         self._app.load_definitions()
@@ -179,6 +202,10 @@ class ApplicationHost:
         if self._outbox_service is not None:
             self._outbox_service.stop()
             self._outbox_service = None
+
+        if self._compensation is not None:
+            self._compensation.shutdown()
+            self._compensation = None
 
         self._projection_manager.shutdown()
         self._event.emit(HostEventType.SHUTDOWN, primary=self._app.primary_name)
@@ -356,13 +383,37 @@ class ApplicationHost:
     def _recover(self) -> None:
         recovery: dict[str, Any] = {}
 
+        coordinator = self._worker_coordinator or WorkerCoordinator(self.profile, self._event)
+        self._worker_coordinator = coordinator
+        workers_ready = coordinator.wait_until_ready(
+            self._app,
+            timeout=self.settings.worker_ready_timeout,
+        )
+        recovery["workers_ready"] = workers_ready
+        recovery["workers"] = list(coordinator.registered_workers)
+
+        if self.settings.enable_compensation:
+            self._compensation = CompensationCoordinator(
+                default_compensation_registry(),
+                self._event,
+            )
+            self._compensation.attach(self._event)
+            self._compensation.attach_runtimes(self._app)
+
         if self.profile.master and self.profile.enable_outbox_service:
             self._start_outbox_service()
             if self._outbox_service is not None:
                 recovery["outbox_pending"] = self._outbox_service.store.pending_count()
 
         if self.settings.rebuild_projections_on_startup:
-            recovery["projections"] = self._projection_manager.rebuild_all()
+            report = self._projection_manager.rebuild_all(
+                policy=ProjectionRebuildPolicy(
+                    batch_size=self.settings.projection_rebuild_batch_size,
+                    max_instances=self.settings.projection_rebuild_max_instances,
+                    skip_if_fresh=self.settings.projection_rebuild_skip_if_fresh,
+                )
+            )
+            recovery["projections"] = report.to_dict()
 
         if recovery:
             self._event.emit(HostEventType.RECOVERED, **recovery)
@@ -431,14 +482,31 @@ class ApplicationHost:
     def _start_outbox_service(self) -> None:
         if not self._app.storage.is_initialized:
             return
+        dispatcher = self._build_webhook_dispatcher()
         self._outbox_service = OutboxBackgroundService(
             self._app.storage,
             self._event,
             poll_interval=self.profile.outbox_poll_interval,
+            external_dispatcher=dispatcher,
         )
         self._outbox_service.start(recover=self.profile.outbox_recover_on_startup)
 
+    def _build_webhook_dispatcher(self) -> WebhookDispatcher | None:
+        if not self.settings.enable_webhook_dispatcher:
+            return None
+        if not self.settings.webhook_urls:
+            return None
+        self._webhook_dispatcher = WebhookDispatcher(
+            webhook_targets_from_urls(
+                self.settings.webhook_urls,
+                event_types=self.settings.webhook_event_types or None,
+            )
+        )
+        return self._webhook_dispatcher
+
     def _emit_runtime_registered(self, name: str, kind: str, runtime: BaseRuntime) -> None:
+        if self._worker_coordinator is not None:
+            self._worker_coordinator.note_runtime(name, kind)
         self._event.emit(
             HostEventType.RUNTIME_REGISTERED,
             name=name,

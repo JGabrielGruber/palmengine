@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
 from palm.common.cqrs.query import GetWizardProgressQuery
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 
 if TYPE_CHECKING:
     from palm.core.event import Event
@@ -21,6 +22,9 @@ _STEP_COMPLETED = "wizard.step.completed"
 _BACKTRACK_REQUESTED = "wizard.backtrack.requested"
 _BACKTRACK_EXECUTED = "wizard.backtrack.executed"
 _BACKTRACK_BLOCKED = "wizard.backtrack.blocked"
+_COMMIT_STARTED = "wizard.commit.started"
+_COMMIT_SUCCEEDED = "wizard.commit.succeeded"
+_COMMIT_FAILED = "wizard.commit.failed"
 _HANDLED = frozenset(
     {
         _STEP_STARTED,
@@ -28,6 +32,9 @@ _HANDLED = frozenset(
         _BACKTRACK_REQUESTED,
         _BACKTRACK_EXECUTED,
         _BACKTRACK_BLOCKED,
+        _COMMIT_STARTED,
+        _COMMIT_SUCCEEDED,
+        _COMMIT_FAILED,
     }
 )
 _MAX_TRACE = 50
@@ -70,6 +77,9 @@ class WizardProgressReadModel:
     current_step: str | None = None
     completed_steps: list[str] = field(default_factory=list)
     backtrack_trace: list[BacktrackTraceEntry] = field(default_factory=list)
+    commit_status: str | None = None
+    commit_hook: str | None = None
+    commit_error: str | None = None
     updated_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -81,6 +91,9 @@ class WizardProgressReadModel:
             "current_step": self.current_step,
             "completed_steps": list(self.completed_steps),
             "backtrack_trace": [entry.to_dict() for entry in self.backtrack_trace],
+            "commit_status": self.commit_status,
+            "commit_hook": self.commit_hook,
+            "commit_error": self.commit_error,
             "updated_at": self.updated_at,
         }
 
@@ -103,6 +116,9 @@ class WizardProgressReadModel:
             current_step=data.get("current_step"),
             completed_steps=list(completed) if isinstance(completed, list) else [],
             backtrack_trace=trace,
+            commit_status=data.get("commit_status"),
+            commit_hook=data.get("commit_hook"),
+            commit_error=data.get("commit_error"),
             updated_at=str(data.get("updated_at", "")),
         )
 
@@ -113,6 +129,7 @@ class WizardProgressProjection(Projection):
     def __init__(self, storage: StorageEngine) -> None:
         self._storage = storage
         self._entries: dict[str, WizardProgressReadModel] = {}
+        self._rebuild_skipped = False
         self._load()
 
     @property
@@ -182,13 +199,36 @@ class WizardProgressProjection(Projection):
                     reason="protected_step",
                 )
             )
+        elif event.type == _COMMIT_STARTED:
+            entry.commit_status = "started"
+            entry.commit_hook = _str_or_none(payload.get("hook"))
+            entry.commit_error = None
+        elif event.type == _COMMIT_SUCCEEDED:
+            entry.commit_status = "succeeded"
+            entry.commit_hook = _str_or_none(payload.get("hook"))
+            entry.commit_error = None
+        elif event.type == _COMMIT_FAILED:
+            entry.commit_status = "failed"
+            entry.commit_hook = _str_or_none(payload.get("hook"))
+            entry.commit_error = _str_or_none(payload.get("error"))
 
         entry.backtrack_trace = entry.backtrack_trace[-_MAX_TRACE:]
         entry.updated_at = _now_iso()
         self._entries[key] = entry
         self._persist()
 
-    def rebuild(self) -> int:
+    def entry_count(self) -> int:
+        return len(self._entries)
+
+    def was_rebuild_skipped(self) -> bool:
+        return self._rebuild_skipped
+
+    def rebuild(self, *, policy: ProjectionRebuildPolicy | None = None) -> int:
+        resolved = policy or ProjectionRebuildPolicy()
+        self._rebuild_skipped = False
+        if resolved.skip_if_fresh and not resolved.force and self._entries:
+            self._rebuild_skipped = True
+            return len(self._entries)
         return len(self._entries)
 
     def clear(self) -> None:

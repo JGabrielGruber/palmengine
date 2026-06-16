@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
 from palm.common.cqrs.query import GetInstanceStatusQuery, ListInstancesQuery
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.core.orchestration.events import OrchestrationEventType
 
 if TYPE_CHECKING:
@@ -79,6 +80,9 @@ class InstanceIndexProjection(Projection):
         self._storage = storage
         self._instances = instance_manager
         self._entries: dict[str, InstanceReadModel] = {}
+        self._rebuild_skipped = False
+        self._used_batched_rebuild = False
+        self._rebuild_warnings: list[str] = []
         self._load()
 
     @property
@@ -147,20 +151,67 @@ class InstanceIndexProjection(Projection):
             )
         )
 
-    def rebuild(self) -> int:
-        self._entries.clear()
-        for summary in self._instances.list_summaries():
-            self._entries[summary.instance_id] = InstanceReadModel(
-                instance_id=summary.instance_id,
-                job_id=summary.job_id,
-                status=summary.status,
-                flow_name=summary.flow_name,
-                process_name=summary.process_name,
-                wizard_step_slug=summary.wizard_step_slug,
-                updated_at=summary.updated_at,
-                snapshot_count=summary.snapshot_count,
+    def entry_count(self) -> int:
+        return len(self._entries)
+
+    def was_rebuild_skipped(self) -> bool:
+        return self._rebuild_skipped
+
+    @property
+    def used_batched_rebuild(self) -> bool:
+        return self._used_batched_rebuild
+
+    @property
+    def rebuild_warnings(self) -> list[str]:
+        return list(self._rebuild_warnings)
+
+    def rebuild(self, *, policy: ProjectionRebuildPolicy | None = None) -> int:
+        resolved = policy or ProjectionRebuildPolicy()
+        self._rebuild_skipped = False
+        self._used_batched_rebuild = False
+        self._rebuild_warnings = []
+
+        summaries = self._instances.list_summaries()
+        total = len(summaries)
+
+        if (
+            resolved.skip_if_fresh
+            and not resolved.force
+            and self._is_fresh(total)
+        ):
+            self._rebuild_skipped = True
+            return len(self._entries)
+
+        if total > resolved.max_instances:
+            self._rebuild_warnings.append(
+                f"instance_index: {total} instances exceeds max_instances="
+                f"{resolved.max_instances}; rebuilding in batches of {resolved.batch_size}"
             )
-        self._persist()
+
+        if total == 0:
+            self._entries.clear()
+            self._persist()
+            return 0
+
+        use_batches = total > resolved.max_instances
+        batch_size = resolved.batch_size if use_batches else total
+        if use_batches:
+            self._used_batched_rebuild = True
+
+        self._entries.clear()
+        for offset in range(0, total, batch_size):
+            for summary in summaries[offset : offset + batch_size]:
+                self._entries[summary.instance_id] = InstanceReadModel(
+                    instance_id=summary.instance_id,
+                    job_id=summary.job_id,
+                    status=summary.status,
+                    flow_name=summary.flow_name,
+                    process_name=summary.process_name,
+                    wizard_step_slug=summary.wizard_step_slug,
+                    updated_at=summary.updated_at,
+                    snapshot_count=summary.snapshot_count,
+                )
+            self._persist()
         return len(self._entries)
 
     def clear(self) -> None:
@@ -231,9 +282,25 @@ class InstanceIndexProjection(Projection):
                 instance_id: model.to_dict()
                 for instance_id, model in self._entries.items()
             },
+            "entry_count": len(self._entries),
             "updated_at": _now_iso(),
         }
         self._storage.set(_PROJECTION_KEY, payload)
+
+    def _is_fresh(self, authoritative_count: int) -> bool:
+        if not self._entries:
+            return False
+        if len(self._entries) != authoritative_count:
+            return False
+        if not self._storage.is_initialized:
+            return False
+        raw = self._storage.get(_PROJECTION_KEY)
+        if not isinstance(raw, dict):
+            return False
+        stored_count = raw.get("entry_count")
+        if stored_count is not None and int(stored_count) != authoritative_count:
+            return False
+        return bool(raw.get("updated_at"))
 
     def _load_instance_details(self, instance_id: str) -> dict[str, Any]:
         try:

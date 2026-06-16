@@ -16,6 +16,7 @@ import threading
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy, ProjectionRebuildReport
 from palm.core.event import Subscription
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ class Projection(ABC):
         """Update the read model from ``event``."""
 
     @abstractmethod
-    def rebuild(self) -> int:
+    def rebuild(self, *, policy: ProjectionRebuildPolicy | None = None) -> int:
         """Rebuild the read model from authoritative storage. Returns item count."""
 
     @abstractmethod
@@ -99,12 +100,25 @@ class ProjectionManager:
             if handle.is_started:
                 self.attach(handle.runtime.event)
 
-    def rebuild_all(self) -> dict[str, int]:
-        """Rebuild every registered projection."""
-        counts: dict[str, int] = {}
+    def rebuild_all(
+        self,
+        *,
+        policy: ProjectionRebuildPolicy | None = None,
+    ) -> ProjectionRebuildReport:
+        """Rebuild every registered projection with optional safeguards."""
+        resolved = policy or ProjectionRebuildPolicy()
+        report = ProjectionRebuildReport()
         for projection in self.projections:
-            counts[projection.name] = projection.rebuild()
-        return counts
+            count = projection.rebuild(policy=resolved)
+            report.counts[projection.name] = count
+            if hasattr(projection, "was_rebuild_skipped") and projection.was_rebuild_skipped():
+                report.skipped.append(projection.name)
+            if getattr(projection, "used_batched_rebuild", False):
+                report.batched.append(projection.name)
+            warnings = getattr(projection, "rebuild_warnings", None)
+            if warnings:
+                report.warnings.extend(warnings)
+        return report
 
     def shutdown(self) -> None:
         with self._lock:
