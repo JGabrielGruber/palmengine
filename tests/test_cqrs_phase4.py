@@ -99,11 +99,6 @@ def test_wizard_live_events_update_progress_projection() -> None:
     storage.shutdown()
 
 
-@pytest.fixture
-def settings() -> PalmSettings:
-    return PalmSettings(load_example_definitions=False)
-
-
 def test_host_job_board_updates_on_submit(settings: PalmSettings) -> None:
     from palm.definitions.flow import FlowDefinition
 
@@ -118,9 +113,13 @@ def test_host_job_board_updates_on_submit(settings: PalmSettings) -> None:
     host.shutdown()
 
 
-def test_cli_context_uses_query_bus_for_instance_list() -> None:
+def test_cli_context_uses_query_bus_for_instance_list(fast_cli_settings: PalmSettings) -> None:
     invocation = CliInvocation(command="doctor", output_format="json")
-    ctx = bootstrap_runtime(invocation=invocation, show_banner=False)
+    ctx = bootstrap_runtime(
+        invocation=invocation,
+        settings=fast_cli_settings,
+        show_banner=False,
+    )
     try:
         summaries = ctx.list_instance_summaries()
         assert isinstance(summaries, list)

@@ -10,18 +10,12 @@ from palm.app.cli_settings import resolve_cli_settings
 from palm.runtimes.cli.commands.registry import build_registry
 from palm.runtimes.cli.shared.args import CliInvocation, settings_from_invocation
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from tests.fast_settings import make_test_settings
 from palm.runtimes.cli.shared.instance_ops import (
     filter_summaries,
     is_terminal_status,
     parse_instance_list_flags,
 )
-
-
-@pytest.fixture
-def cli_ctx():
-    ctx = bootstrap_runtime(show_banner=False)
-    yield ctx
-    shutdown_context(ctx)
 
 
 def test_process_list_registers_examples(cli_ctx) -> None:
@@ -146,14 +140,16 @@ def test_resolve_cli_settings_respects_env_over_default(monkeypatch: pytest.Monk
     assert overridden.storage_backend == "memory"
 
 
+@pytest.mark.slow
 def test_cli_filesystem_persistence_across_sessions(tmp_path) -> None:
     reg = build_registry()
 
-    ctx1 = bootstrap_runtime(
+    fs_settings = make_test_settings(
+        load_examples=True,
         storage_backend="filesystem",
         data_dir=tmp_path,
-        show_banner=False,
     )
+    ctx1 = bootstrap_runtime(settings=fs_settings, show_banner=False)
     try:
         assert ctx1.app.settings.storage_backend == "filesystem"
         assert ctx1.instance_manager.is_initialized
@@ -164,11 +160,7 @@ def test_cli_filesystem_persistence_across_sessions(tmp_path) -> None:
     finally:
         shutdown_context(ctx1)
 
-    ctx2 = bootstrap_runtime(
-        storage_backend="filesystem",
-        data_dir=tmp_path,
-        show_banner=False,
-    )
+    ctx2 = bootstrap_runtime(settings=fs_settings, show_banner=False)
     try:
         summaries = ctx2.list_instance_summaries()
         assert any(item.instance_id == iid for item in summaries)
@@ -180,6 +172,7 @@ def test_cli_filesystem_persistence_across_sessions(tmp_path) -> None:
         shutdown_context(ctx2)
 
 
+@pytest.mark.slow
 def test_cli_env_settings_used_when_flags_omitted(
     tmp_path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -210,14 +203,16 @@ def test_instance_list_status_snapshots_consistent(cli_ctx) -> None:
     assert reg.dispatch(cli_ctx, f"instance snapshots {prefix}") == 0
 
 
+@pytest.mark.slow
 def test_instance_list_to_status_filesystem(tmp_path) -> None:
     reg = build_registry()
 
-    ctx1 = bootstrap_runtime(
+    fs_settings = make_test_settings(
+        load_examples=True,
         storage_backend="filesystem",
         data_dir=tmp_path,
-        show_banner=False,
     )
+    ctx1 = bootstrap_runtime(settings=fs_settings, show_banner=False)
     try:
         reg.dispatch(ctx1, "wizard start quick")
         iid = ctx1.active_instance_id
@@ -226,11 +221,7 @@ def test_instance_list_to_status_filesystem(tmp_path) -> None:
     finally:
         shutdown_context(ctx1)
 
-    ctx2 = bootstrap_runtime(
-        storage_backend="filesystem",
-        data_dir=tmp_path,
-        show_banner=False,
-    )
+    ctx2 = bootstrap_runtime(settings=fs_settings, show_banner=False)
     try:
         summaries = ctx2.list_instance_summaries()
         assert len(summaries) == 1
@@ -243,11 +234,7 @@ def test_instance_list_to_status_filesystem(tmp_path) -> None:
     finally:
         shutdown_context(ctx2)
 
-    ctx3 = bootstrap_runtime(
-        storage_backend="filesystem",
-        data_dir=tmp_path,
-        show_banner=False,
-    )
+    ctx3 = bootstrap_runtime(settings=fs_settings, show_banner=False)
     try:
         assert reg.dispatch(ctx3, f"process resume {listed_id[:14]}") == 0
     finally:
@@ -260,7 +247,11 @@ def test_shared_storage_aligns_settings() -> None:
 
     storage = StorageEngine()
     storage.initialize(backend="memory")
-    ctx = bootstrap_runtime(storage=storage, show_banner=False)
+    ctx = bootstrap_runtime(
+        storage=storage,
+        settings=make_test_settings(load_examples=True),
+        show_banner=False,
+    )
     try:
         assert ctx.app.settings.storage_backend == "memory"
         assert ctx.app.storage.backend_name == "memory"
@@ -346,6 +337,7 @@ def test_repl_completer_builds(cli_ctx) -> None:
     assert completer is not None
 
 
+@pytest.mark.slow
 def test_process_resume() -> None:
     import palm.storages.memory  # noqa: F401
     from palm.core import StorageEngine
@@ -354,7 +346,8 @@ def test_process_resume() -> None:
     storage.initialize(backend="memory")
     reg = build_registry()
 
-    ctx1 = bootstrap_runtime(storage=storage, show_banner=False)
+    resume_settings = make_test_settings(load_examples=True)
+    ctx1 = bootstrap_runtime(storage=storage, settings=resume_settings, show_banner=False)
     try:
         reg.dispatch(ctx1, "wizard start quick")
         iid = ctx1.active_instance_id
@@ -363,7 +356,7 @@ def test_process_resume() -> None:
     finally:
         shutdown_context(ctx1)
 
-    ctx2 = bootstrap_runtime(storage=storage, show_banner=False)
+    ctx2 = bootstrap_runtime(storage=storage, settings=resume_settings, show_banner=False)
     try:
         assert reg.dispatch(ctx2, f"process resume {iid}") == 0
         assert ctx2.active_instance_id == iid

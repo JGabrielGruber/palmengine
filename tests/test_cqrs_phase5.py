@@ -23,11 +23,6 @@ from palm.core.event import Event, EventContext, EventEngine
 from palm.core.storage import StorageEngine
 
 
-@pytest.fixture
-def settings() -> PalmSettings:
-    return PalmSettings(load_example_definitions=False)
-
-
 def _storage() -> StorageEngine:
     engine = StorageEngine()
     engine.initialize()
@@ -207,9 +202,10 @@ def test_outbox_processor_dispatches_webhooks_before_publish() -> None:
     storage.shutdown()
 
 
-def test_host_recovery_includes_projection_report(settings: PalmSettings) -> None:
+@pytest.mark.integration
+def test_host_recovery_includes_projection_report(full_recovery_settings: PalmSettings) -> None:
     recovered: list[dict] = []
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.all_in_one())
     host.event.subscribe(
         HostEventType.RECOVERED,
         lambda e: recovered.append(dict(e.payload)),

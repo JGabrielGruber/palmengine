@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
-
 from palm.app import ApplicationHost, HostProfile, PalmSettings
 from palm.app.host.events import HostEventType
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.query import ListInstancesQuery
 from palm.definitions.flow import FlowDefinition
-
-
-@pytest.fixture
-def settings() -> PalmSettings:
-    return PalmSettings(load_example_definitions=False)
 
 
 def test_execute_dispatches_submit_flow_command(settings: PalmSettings) -> None:

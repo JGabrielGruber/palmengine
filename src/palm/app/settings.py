@@ -65,6 +65,34 @@ class PalmSettings(BaseSettings):
     worker_ready_timeout: float = 5.0
 
     @classmethod
+    def for_tests(
+        cls,
+        *,
+        load_examples: bool = False,
+        full_recovery: bool = False,
+    ) -> PalmSettings:
+        """
+        Lightweight settings for unit and integration tests.
+
+        ``full_recovery`` enables compensation, outbox, and projection rebuild
+        paths that dedicated recovery tests assert on.
+        """
+        return cls(
+            load_example_definitions=load_examples,
+            storage_backend="memory",
+            rebuild_projections_on_startup=full_recovery,
+            projection_rebuild_skip_if_fresh=True,
+            projection_rebuild_batch_size=50,
+            projection_rebuild_max_instances=200,
+            enable_compensation=full_recovery,
+            enable_outbox_service=full_recovery,
+            enable_event_outbox=full_recovery,
+            worker_ready_timeout=0.5,
+            outbox_poll_interval=5.0,
+            reconcile_instances_on_startup=full_recovery,
+        )
+
+    @classmethod
     def from_env_file(cls, env_file: str | Path) -> PalmSettings:
         """Load settings with an explicit env file (used by CLI ``--config``)."""
         configured = type(

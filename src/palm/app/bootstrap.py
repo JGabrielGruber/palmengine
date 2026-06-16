@@ -5,6 +5,7 @@ Application bootstrap — plugin loading and definition catalog hydration.
 from __future__ import annotations
 
 import importlib.util
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -107,7 +108,11 @@ def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
         )
     else:
         profile = HostProfile.all_in_one()
-    return profile
+    return replace(
+        profile,
+        enable_outbox_service=settings.enable_outbox_service,
+        outbox_poll_interval=settings.outbox_poll_interval,
+    )
 
 
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:

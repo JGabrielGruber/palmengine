@@ -37,6 +37,8 @@ class WorkerCoordinator:
 
     @property
     def expected_workers(self) -> int:
+        if self._profile.uses_collapsed_runtime:
+            return 1
         if not self._profile.worker and not self._profile.server:
             return 0
         if self._profile.server and not self._profile.worker:
@@ -50,7 +52,10 @@ class WorkerCoordinator:
 
     def note_runtime(self, name: str, kind: str) -> None:
         """Record a worker-capable runtime registration."""
-        if kind not in {"daemon", "server"}:
+        worker_kinds = {"daemon", "server"}
+        if self._profile.uses_collapsed_runtime:
+            worker_kinds.add("embedded")
+        if kind not in worker_kinds:
             return
         with self._lock:
             self._registered.add(name)
@@ -86,7 +91,10 @@ class WorkerCoordinator:
             if handle is None or not handle.is_started:
                 continue
             kind = handle.runtime.__class__.__name__.replace("Runtime", "").lower()
-            if kind in {"daemon", "server"}:
+            worker_kinds = {"daemon", "server"}
+            if self._profile.uses_collapsed_runtime:
+                worker_kinds.add("embedded")
+            if kind in worker_kinds:
                 with self._lock:
                     self._registered.add(name)
 

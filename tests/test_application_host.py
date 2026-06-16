@@ -16,13 +16,8 @@ from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.server import ServerRuntime
 
 
-@pytest.fixture
-def settings() -> PalmSettings:
-    return PalmSettings(load_example_definitions=False)
-
-
-def test_all_in_one_collapses_to_single_embedded(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+def test_all_in_one_collapses_to_single_embedded(full_recovery_settings: PalmSettings) -> None:
+    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.all_in_one())
     host.start()
 
     assert host.is_started
@@ -34,8 +29,22 @@ def test_all_in_one_collapses_to_single_embedded(settings: PalmSettings) -> None
     host.shutdown()
 
 
-def test_master_only_spawns_command_runtime(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.master_only())
+def test_collapsed_runtime_worker_ready_without_timeout(settings: PalmSettings) -> None:
+    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    started = time.monotonic()
+    host.start()
+    elapsed = time.monotonic() - started
+
+    assert host.last_recovery is not None
+    assert host.last_recovery.get("workers_ready") is True
+    assert host.last_recovery.get("workers") == ["main"]
+    assert elapsed < 1.0
+
+    host.shutdown()
+
+
+def test_master_only_spawns_command_runtime(full_recovery_settings: PalmSettings) -> None:
+    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.master_only())
     host.start()
 
     assert host.running_runtimes() == ["command"]
@@ -99,8 +108,8 @@ def test_host_emits_lifecycle_events(settings: PalmSettings) -> None:
     assert HostEventType.RUNTIME_REGISTERED in events
 
 
-def test_outbox_service_drains_pending_entries(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.master_only())
+def test_outbox_service_drains_pending_entries(full_recovery_settings: PalmSettings) -> None:
+    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.master_only())
     host.start()
 
     store = host.outbox_service.store
@@ -152,9 +161,10 @@ def test_context_manager(settings: PalmSettings) -> None:
     assert not host.is_started
 
 
-def test_outbox_background_poll_marks_entries(settings: PalmSettings) -> None:
+@pytest.mark.slow
+def test_outbox_background_poll_marks_entries(full_recovery_settings: PalmSettings) -> None:
     host = ApplicationHost(
-        settings=settings,
+        settings=full_recovery_settings,
         profile=HostProfile(
             master=True,
             worker=False,

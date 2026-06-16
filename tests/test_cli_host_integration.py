@@ -11,10 +11,14 @@ from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_conte
 from palm.runtimes.cli.tui import actions as tui_actions
 
 
-def test_cli_submit_flow_uses_host_command_bus() -> None:
+def test_cli_submit_flow_uses_host_command_bus(fast_cli_settings: PalmSettings) -> None:
     dispatched: list[str] = []
     invocation = CliInvocation(command="flow", output_format="table")
-    ctx = bootstrap_runtime(invocation=invocation, show_banner=False)
+    ctx = bootstrap_runtime(
+        invocation=invocation,
+        settings=fast_cli_settings,
+        show_banner=False,
+    )
     ctx.host.event.subscribe(
         HostEventType.COMMAND_DISPATCHED,
         lambda e: dispatched.append(str(e.payload.get("command"))),
@@ -29,8 +33,8 @@ def test_cli_submit_flow_uses_host_command_bus() -> None:
         shutdown_context(ctx)
 
 
-def test_cli_context_requires_host() -> None:
-    ctx = bootstrap_runtime(show_banner=False)
+def test_cli_context_requires_host(fast_cli_settings: PalmSettings) -> None:
+    ctx = bootstrap_runtime(settings=fast_cli_settings, show_banner=False)
     try:
         assert ctx.host.is_started
         assert ctx.running_runtime_names() == ["main"]
@@ -40,10 +44,10 @@ def test_cli_context_requires_host() -> None:
         shutdown_context(ctx)
 
 
-def test_cli_doctor_uses_projection_instance_list() -> None:
+def test_cli_doctor_uses_projection_instance_list(fast_cli_settings: PalmSettings) -> None:
     from palm.runtimes.cli.commands.doctor import run_doctor
 
-    ctx = bootstrap_runtime(show_banner=False)
+    ctx = bootstrap_runtime(settings=fast_cli_settings, show_banner=False)
     try:
         assert run_doctor(ctx) == 0
         queried = ctx.host.ask(ListInstancesQuery(include_terminal=True))

@@ -145,13 +145,6 @@ def test_format_step_context_parallel_slug() -> None:
     assert format_step_context(None) == "—"
 
 
-@pytest.fixture
-def cli_ctx():
-    ctx = bootstrap_runtime(show_banner=False)
-    yield ctx
-    shutdown_context(ctx)
-
-
 def test_status_json_uses_job_context(cli_ctx) -> None:
     reg = build_registry()
     reg.dispatch(cli_ctx, "flow start parallel-demo")
