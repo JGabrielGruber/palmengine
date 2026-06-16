@@ -46,6 +46,14 @@ class PalmSettings(BaseSettings):
     max_loaded_instances: int = 128
     max_concurrent_active: int = 32
     reconcile_instances_on_startup: bool = True
+    host_profile: str | None = None
+    host_roles: list[str] = Field(default_factory=list)
+    worker_count: int = 1
+    server_host: str = "127.0.0.1"
+    server_port: int = 8080
+    enable_outbox_service: bool = True
+    outbox_poll_interval: float = 0.5
+    enable_event_outbox: bool = True
 
     @classmethod
     def from_env_file(cls, env_file: str | Path) -> PalmSettings:

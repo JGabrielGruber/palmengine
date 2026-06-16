@@ -91,6 +91,16 @@ class BaseRuntime:
         """Whether drive authorization is required for job execution."""
         return self._auth_enforce
 
+    @property
+    def outbox_store(self) -> OutboxStore | None:
+        """Durable outbox store when ``enable_event_outbox`` is active."""
+        return self._outbox_store
+
+    @property
+    def outbox_processor(self) -> OutboxProcessor | None:
+        """Outbox drain helper wired at runtime start."""
+        return self._outbox_processor
+
     def start(self, **options: Any) -> None:
         """Initialize engines, wire orchestration, and begin accepting jobs."""
         if self._started:

@@ -12,6 +12,7 @@ import palm.common.transforms  # autoload common transform rules
 import palm.patterns  # — autoload pattern apps
 import palm.providers  # — autoload provider apps
 import palm.storages  # noqa: F401 — autoload core storage apps
+from palm.app.host.roles import HostProfile
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.storage import StorageFactory
@@ -91,6 +92,24 @@ def load_definitions_for_repository(
     return count
 
 
+def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
+    """Resolve a :class:`~palm.app.host.roles.HostProfile` from application settings."""
+    if settings.host_profile:
+        profile = HostProfile.from_preset(settings.host_profile)
+    elif settings.host_roles:
+        profile = HostProfile.from_roles(
+            settings.host_roles,
+            worker_count=settings.worker_count,
+            server_host=settings.server_host,
+            server_port=settings.server_port,
+            enable_outbox_service=settings.enable_outbox_service,
+            outbox_poll_interval=settings.outbox_poll_interval,
+        )
+    else:
+        profile = HostProfile.all_in_one()
+    return profile
+
+
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:
     """Build keyword arguments for :meth:`~palm.common.runtimes.base.BaseRuntime.start`."""
     options: dict[str, Any] = {
@@ -99,6 +118,8 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
         "observability": settings.observability,
         "auth_enforce": settings.auth_enforce,
         "auth_roles": list(settings.auth_roles),
+        "scheduler": settings.default_scheduler,
+        "enable_event_outbox": settings.enable_event_outbox,
     }
     if settings.max_concurrent_jobs is not None:
         options["max_concurrent_jobs"] = settings.max_concurrent_jobs
