@@ -12,7 +12,12 @@ from palm.app.host.event_recorder import HostEventRecorder
 from palm.app.host.events import HostEventType
 from palm.common.cqrs.query import ListWizardProgressQuery
 from palm.runtimes.cli.cli import main
-from palm.runtimes.cli.commands.dashboard import render_status_dashboard
+from palm.runtimes.cli.commands.dashboard import (
+    DashboardOptions,
+    parse_dashboard_args,
+    render_status_dashboard,
+    run_status_dashboard,
+)
 from palm.runtimes.cli.commands.registry import build_registry
 
 
@@ -24,9 +29,10 @@ def test_render_status_dashboard_smoke(cli_ctx) -> None:
     assert "Status Dashboard" in output
     assert "Host" in output
     assert "Instances" in output
-    assert "Active Wizards" in output
-    assert "Recent Jobs" in output
-    assert "Recent Host Events" in output
+    assert "Wizard sessions" in output
+    assert "At a glance" in output
+    assert "Job board" in output
+    assert "Host events" in output
 
 
 def test_status_dashboard_via_registry(cli_ctx) -> None:
@@ -35,6 +41,34 @@ def test_status_dashboard_via_registry(cli_ctx) -> None:
     cli_ctx.console = Console(file=buf, force_terminal=False, width=120)
     assert reg.dispatch(cli_ctx, "status --dashboard") == 0
     assert "Status Dashboard" in buf.getvalue()
+
+
+def test_status_full_dashboard_shows_kpi(cli_ctx) -> None:
+    reg = build_registry()
+    buf = StringIO()
+    cli_ctx.console = Console(file=buf, force_terminal=False, width=120)
+    assert reg.dispatch(cli_ctx, "status --full") == 0
+    output = buf.getvalue()
+    assert "At a glance" in output
+    assert "full detail" in output
+
+
+def test_parse_dashboard_refresh_flags() -> None:
+    options, rest = parse_dashboard_args(["--full", "--refresh", "3"])
+    assert options.full is True
+    assert options.refresh_interval == 3.0
+    assert rest == []
+
+    options, rest = parse_dashboard_args(["-r"])
+    assert options.refresh_interval == 2.0
+    assert rest == []
+
+
+def test_refresh_renders_once_when_not_tty(cli_ctx) -> None:
+    buf = StringIO()
+    cli_ctx.console = Console(file=buf, force_terminal=False, width=120)
+    assert run_status_dashboard(cli_ctx, DashboardOptions(refresh_interval=1.0)) == 0
+    assert buf.getvalue().count("Status Dashboard") == 1
 
 
 def test_status_brief_via_registry(cli_ctx) -> None:

@@ -92,14 +92,15 @@ def _context_completions(
         return
 
     if _matches_phrase(lower, ("status",)) and len(words) == 1:
-        for flag in ("--dashboard", "--brief", "--full"):
+        for flag in ("--dashboard", "--brief", "--full", "--refresh", "-r"):
             if flag.startswith(words[-1]):
                 yield completion_cls(flag, start_position=-len(words[-1]))
         return
 
     if _matches_phrase(lower, ("doctor",)) and len(words) == 1:
-        if "--dashboard".startswith(words[-1]):
-            yield completion_cls("--dashboard", start_position=-len(words[-1]))
+        for flag in ("--dashboard", "--full", "--refresh", "-r"):
+            if flag.startswith(words[-1]):
+                yield completion_cls(flag, start_position=-len(words[-1]))
         return
 
     instance_phrases = (

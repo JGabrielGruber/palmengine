@@ -30,13 +30,19 @@ def _invocation_to_line(inv: CliInvocation) -> str | None:
         return "doctor --dashboard" if inv.dashboard else "doctor"
 
     if inv.command == "status":
-        if inv.full:
-            return "status --full"
         if inv.brief:
             return "status --brief"
-        if inv.dashboard or not inv.instance_id:
-            return "status --dashboard"
-        return f"status {inv.instance_id}"
+        if inv.instance_id and not (inv.full or inv.dashboard or inv.refresh_interval is not None):
+            return f"status {inv.instance_id}"
+        parts = ["status", "--dashboard"]
+        if inv.full:
+            parts.append("--full")
+        if inv.refresh_interval is not None:
+            if inv.refresh_interval == 2.0:
+                parts.append("--refresh")
+            else:
+                parts.extend(["--refresh", str(inv.refresh_interval)])
+        return " ".join(parts)
 
     if inv.command == "process":
         phrase = f"process {inv.process_cmd}"

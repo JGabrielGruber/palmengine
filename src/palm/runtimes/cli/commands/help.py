@@ -13,11 +13,12 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
 
 [bold]Host & diagnostics[/]
   status                    Live projection dashboard [green](default)[/]
-  status <id>               Instance detail (job + wizard read models)
+  status --full             Detailed dashboard (active rows, traces)
+  status -r [SEC]           Live refresh every SEC seconds (default 2)
   status --brief            Compact engine summary
-  status --full             Full doctor report
-  doctor                    Same as [cyan]status --full[/]
-  doctor --dashboard        Same as [cyan]status[/]
+  status <id>               Instance detail (job + wizard read models)
+  doctor                    Full engine health report
+  doctor --dashboard        Dashboard (supports --full / -r)
 
 [bold]Flows[/] [dim](writes via host.submit_flow)[/]
   flow list                 All registered flows
@@ -43,11 +44,9 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
   host master / worker / server
 
 [bold]Legacy aliases[/] [dim](backward compatible)[/]
-  definitions               → process list
-  sessions                  → instance list
-  instance status           → status
-  process resume            → instance resume
-  wizard list/start/status/input → wizard shortcuts (prefer flow/status/input)
+  definitions → process list · sessions → instance list
+  instance status → status · process resume → instance resume
+  wizard list/start/status/input → shortcuts (prefer flow/status/input)
 
 [bold]System[/]
   version [--full]          Build info and registered plugins

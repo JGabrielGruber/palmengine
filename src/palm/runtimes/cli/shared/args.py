@@ -16,9 +16,9 @@ _CLI_EPILOG = """
 examples:
   palm                          interactive REPL (default)
   palm status                 live projection dashboard (default)
-  palm status --brief         compact engine summary
+  palm status --full          detailed dashboard view
+  palm status -r              live refresh (2s, Ctrl+C to stop)
   palm doctor                 full engine health report
-  palm doctor --dashboard     same as palm status
   palm flow start onboard
   palm start parallel-demo
   palm --storage-backend filesystem wizard start onboard
@@ -55,6 +55,7 @@ class CliInvocation:
     full: bool = False
     dashboard: bool = False
     brief: bool = False
+    refresh_interval: float | None = None
     input_args: list[str] | None = None
     instance_list_all: bool = False
     instance_status: str | None = None
@@ -143,7 +144,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show projection dashboard (default when no instance id)",
     )
     status_p.add_argument("--brief", action="store_true", help="Compact engine summary")
-    status_p.add_argument("--full", action="store_true", help="Full doctor report")
+    status_p.add_argument(
+        "--full",
+        action="store_true",
+        help="Detailed dashboard (more rows, active instances, traces)",
+    )
+    status_p.add_argument(
+        "-r",
+        "--refresh",
+        nargs="?",
+        const=2.0,
+        type=float,
+        metavar="SEC",
+        help="Live-refresh dashboard every SEC seconds (default 2)",
+    )
     status_p.add_argument("instance_id", nargs="?", default=None)
 
     doctor_p = sub.add_parser("doctor", help="Engine health, persistence, and instances")
@@ -260,6 +274,7 @@ def invocation_from_namespace(args: argparse.Namespace) -> CliInvocation:
         full=getattr(args, "full", False),
         dashboard=getattr(args, "dashboard", False),
         brief=getattr(args, "brief", False),
+        refresh_interval=getattr(args, "refresh", None),
         input_args=getattr(args, "args", None),
         instance_list_all=getattr(args, "all", False),
         instance_status=getattr(args, "status", None),

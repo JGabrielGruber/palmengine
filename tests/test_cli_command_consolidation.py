@@ -61,7 +61,9 @@ def test_registry_aliases_match_catalog() -> None:
     [
         (CliInvocation(command="status"), "status --dashboard"),
         (CliInvocation(command="status", brief=True), "status --brief"),
-        (CliInvocation(command="status", full=True), "status --full"),
+        (CliInvocation(command="status", full=True), "status --dashboard --full"),
+        (CliInvocation(command="status", refresh_interval=2.0), "status --dashboard --refresh"),
+        (CliInvocation(command="status", refresh_interval=5.0), "status --dashboard --refresh 5.0"),
         (CliInvocation(command="status", instance_id="abc"), "status abc"),
         (CliInvocation(command="doctor", dashboard=True), "doctor --dashboard"),
         (CliInvocation(command="instance", instance_cmd="status"), "status --dashboard"),
