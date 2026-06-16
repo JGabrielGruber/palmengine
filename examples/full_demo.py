@@ -134,6 +134,7 @@ def main() -> int:
 
     storage.shutdown()
     print("\n✅ Full demo completed successfully.")
+    print("   Next: palm status  (projection dashboard)  ·  palm doctor  (full health)")
     return 0
 
 

@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.10 architecture** (release line 0.9.7).
+Guide for contributors working on Palm **0.10.9** (ApplicationHost + CQRS release).
 
 ## Setup
 
@@ -23,9 +23,11 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 | Diagnostics | `palm doctor` or `just palm-doctor` |
 | Version (full) | `palm version --full` or `just palm-version` |
 | E2E demo script | `just demo-full` |
-| Short status | `palm status` |
-| Full status | `palm status --full` |
-| Tests | `pytest` or `just test-quick` |
+| Dashboard | `palm status` or `just palm-status` |
+| Detailed dashboard | `palm status --full` or `just palm-status-full` |
+| Live refresh | `palm status -r` (REPL/TTY) |
+| Tests (full) | `pytest` or `just test-quick` (~8s) |
+| Tests (fast) | `pytest --fast` (skips slow integration) |
 | Lint | `ruff check src/palm/ tests/` |
 | Format | `ruff format src/palm/ tests/` |
 | Type check | `mypy src/palm/` |
@@ -484,4 +486,4 @@ Host tests: `tests/test_application_host_cqrs.py`, `tests/test_cqrs_phase4.py`, 
 
 ---
 
-Last updated: June 2026 (0.10 architecture)
+Last updated: June 2026 (0.10.9)

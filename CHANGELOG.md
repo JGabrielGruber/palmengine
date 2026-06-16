@@ -2,21 +2,40 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased] — 0.10 architecture
+## [Unreleased]
+
+_No changes yet._
+
+## [0.10.9] — 2026-06-16
+
+**Architecture evolution release** — ApplicationHost becomes the primary orchestrator, CQRS read models power the CLI, and reliability primitives (outbox, compensation) ship for production-style deployments.
 
 ### Added
 
-- **ApplicationHost** — top-level orchestrator with role profiles (`all_in_one`, `master`, `worker`, `server`), CQRS buses, projections, outbox drain, compensation, and startup recovery
-- **CQRS layer** (`palm.common.cqrs`) — command/query buses, `InstanceIndexProjection`, `WizardProgressProjection`, `JobStatusBoardProjection`
-- **Reliability** — transactional outbox, `CompensationCoordinator`, optional webhook dispatch from outbox
-- **CLI host integration** — `create_cli_host()`, host-backed reads (query bus) and writes (command bus)
-- **`palm host`** subcommand — blocking deployment roles via `run_host()`
+- **ApplicationHost** — top-level orchestrator with composable role profiles (`all_in_one`, `master`, `worker`, `server`), startup recovery, and coordinated shutdown
+- **CQRS layer** (`palm.common.cqrs`) — `CommandBus` / `QueryBus`, handlers for submit/resume/input, and three projections:
+  - `InstanceIndexProjection` — instance catalog read model
+  - `WizardProgressProjection` — wizard step, backtrack trace, commit status
+  - `JobStatusBoardProjection` — live job board for dashboards
+- **Reliability** — transactional event outbox (`OutboxStore`, background drain), `CompensationCoordinator` for commit-failure undo, optional `WebhookDispatcher`
+- **Projection rebuild safeguards** — configurable batch size, max instances, `skip_if_fresh` policy on startup
+- **Status dashboard** — projection-backed Rich overview (`palm status` default):
+  - Host health (roles, runtimes, outbox, recovery)
+  - Instance counts, active wizards, job board, recent host events
+  - `--full` detailed view, `-r` / `--refresh` live refresh in REPL/TTY
+- **`palm host`** subcommand — blocking deployment roles via `run_host()` (`all-in-one`, `master`, `worker`, `server`)
+- **`HostEventRecorder`** — ring buffer of recent host bus events for dashboards
+- **CLI consolidation** — unified diagnostics routing (`status` / `doctor`), shared `instance resume`, backward-compatible aliases documented in help
+- **Test performance** — `PalmSettings.for_tests()`, shared fixtures, `--fast` pytest mode, collapsed-runtime worker-ready fix (~33× faster suite)
 - **Migration guide** — [MIGRATION-0.10.md](MIGRATION-0.10.md)
 
 ### Changed
 
-- **CLI bootstrap** — `ApplicationHost` replaces direct `PalmApp` wiring; runtime name `main` (collapsed profile)
-- **`examples/full_demo.py`** — rewritten to use `ApplicationHost` + resume across restart
+- **CLI bootstrap** — `create_cli_host()` + `ApplicationHost` replace direct `PalmApp` wiring; collapsed profile runtime name `main`
+- **`palm status`** — live dashboard by default; `status --full` is detailed dashboard; use `palm doctor` for full health report
+- **`palm doctor`** — supports `--dashboard` (and `--full` / `-r` when combined with dashboard flags in REPL)
+- **Worker coordination** — collapsed `all_in_one` hosts register embedded runtime as worker (no 5s startup timeout)
+- **`examples/full_demo.py`** — rewritten for `ApplicationHost` + CQRS + resume across restart
 - **Documentation** — README, ARCHITECTURE, DEVELOPMENT, examples README refreshed for 0.10 primary paths
 
 ### Removed
@@ -28,6 +47,23 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Deprecated
 
 - **`create_cli_app()`** — use `create_cli_host()`; returns `host.app` for legacy callers
+- **Wizard-only CLI shortcuts** — `wizard start` / `wizard status` remain but `flow start` / `status` are preferred
+
+### Fixed
+
+- **Collapsed host startup** — `WorkerCoordinator` counts embedded runtime in `all_in_one` profile (eliminates spurious worker-ready timeout)
+- **`palm host all-in-one`** — `HostProfile` import available at module level (fixes `NameError` on one-shot host command)
+
+### Upgrade notes (0.9.x → 0.10.9)
+
+| Before (0.9) | After (0.10.9) |
+|--------------|----------------|
+| `PalmApp.bootstrap_cli()` | `create_cli_host()` or `ApplicationHost(...).start()` |
+| `app.submit_flow(...)` in services | `host.submit_flow(...)` or `host.execute(SubmitFlowCommand(...))` |
+| `app.list_instances()` in CLI | `host.list_instance_views()` / query bus |
+| `status --full` = doctor | `status --full` = detailed dashboard; `doctor` = health report |
+
+See [MIGRATION-0.10.md](MIGRATION-0.10.md) for full migration steps.
 
 ## [0.9.7] — 2026-06-15
 

@@ -30,9 +30,12 @@ All commands use the host-backed CLI (command bus for writes, query bus for read
 
 ```bash
 palm flow start onboard          # recommended entry
+palm status                      # live projection dashboard
+palm status --full               # detailed dashboard view
+palm status -r                   # live refresh in REPL (2s)
 palm instance list               # CQRS projection
 palm status <instance_id>        # read model + live job
-palm doctor                      # host roles, plugins, instances
+palm doctor                      # full health report
 ```
 
 ## Onboarding (`onboard`)

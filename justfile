@@ -166,15 +166,11 @@ publish: build
     @echo '✅ Published to PyPI. Users can: pip install palmengine[cli]'
 
 release-prep:
-    @echo "📋 Release prep for {{package}}"
-    @echo "   1. Bump version in pyproject.toml and src/palm/__init__.py"
-    @echo "   2. Update CHANGELOG.md under [Unreleased] or new version heading"
-    @echo "   3. Run: just full-check && just build"
-    @echo "   4. Tag: git tag v$(uv run python -c 'import palm; print(palm.__version__)')"
-    @echo "   5. Publish: just publish-test (optional) then just publish"
+    @echo "📋 Release prep for {{package}} — see RELEASE-0.10.9.md"
+    @echo "   Version: $(uv run python -c 'import palm; print(palm.__version__)')"
     just full-check
     just build
-    @echo "🎉 Release prep complete — review dist/ and CHANGELOG before publishing"
+    @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.10.9.md"
 
 # -----------------------------------------------------------------------------
 # 8. Convenience & CI-friendly

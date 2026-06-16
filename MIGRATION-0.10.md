@@ -1,6 +1,6 @@
-# Migration guide — 0.9.x → 0.10 architecture
+# Migration guide — 0.9.x → 0.10.9
 
-Palm **0.10** introduces `ApplicationHost` as the recommended top-level orchestrator. The underlying engines, patterns, and definitions are unchanged — this is primarily a **bootstrap and API layering** shift.
+Palm **0.10.9** introduces `ApplicationHost` as the recommended top-level orchestrator. The underlying engines, patterns, and definitions are unchanged — this is primarily a **bootstrap and API layering** shift.
 
 ---
 

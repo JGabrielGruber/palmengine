@@ -192,15 +192,15 @@ def render_status_dashboard(ctx: CliContext, options: DashboardOptions | None = 
         active_table.add_column("Status")
         active_table.add_column("Step", style="dim")
         active_table.add_column("Updated", style="dim", no_wrap=True)
-        for row in active_sorted:
-            flow = row.flow_name or row.process_name or "—"
-            step = row.wizard_step_slug or "—"
+        for inst in active_sorted:
+            flow = inst.flow_name or inst.process_name or "—"
+            step = inst.wizard_step_slug or "—"
             active_table.add_row(
-                short_instance_id(row.instance_id, length=12),
+                short_instance_id(inst.instance_id, length=12),
                 flow,
-                f"{status_emoji(row.status)} {row.status}",
+                f"{status_emoji(inst.status)} {inst.status}",
                 step,
-                _ago(row.updated_at, snapshot.collected_at),
+                _ago(inst.updated_at, snapshot.collected_at),
             )
         active_panel = Panel(active_table, border_style="bright_green")
 
@@ -257,15 +257,15 @@ def render_status_dashboard(ctx: CliContext, options: DashboardOptions | None = 
     if opts.full:
         job_table.add_column("Updated", style="dim", no_wrap=True)
     if jobs:
-        for row in jobs[:job_limit]:
+        for job_row in jobs[:job_limit]:
             cells = [
-                short_instance_id(row.job_id, length=10),
-                f"{status_emoji(row.status)} {row.status}",
-                short_instance_id(row.instance_id, length=10) if row.instance_id else "—",
-                _ago(row.updated_at, snapshot.collected_at),
+                short_instance_id(job_row.job_id, length=10),
+                f"{status_emoji(job_row.status)} {job_row.status}",
+                short_instance_id(job_row.instance_id, length=10) if job_row.instance_id else "—",
+                _ago(job_row.updated_at, snapshot.collected_at),
             ]
             if opts.full:
-                cells.append(_short_time(row.updated_at))
+                cells.append(_short_time(job_row.updated_at))
             job_table.add_row(*cells)
     else:
         empty = ["[dim]No jobs tracked yet[/]", "", "", ""]

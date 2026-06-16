@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.9.7` · **0.10 architecture** (ApplicationHost, CQRS, outbox) · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
+**Current release:** `0.10.9` — ApplicationHost, CQRS projections, outbox, compensation, live status dashboard · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -62,6 +62,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Patterns** | **Wizard** (collection, transform steps, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
+| **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm host` deployment roles, `just` quality recipes |
 
 ```mermaid
@@ -84,8 +85,9 @@ flowchart LR
 ```bash
 pip install palmengine[cli]
 
+palm status              # live projection dashboard (default)
+palm doctor              # full health report
 palm version --full      # version + registered plugins
-palm doctor              # health, definitions, instances
 palm repl                # interactive shell (default: `palm`)
 palm flow start onboard          # recommended — works for all patterns
 # shortcut: palm start onboard
@@ -286,7 +288,10 @@ Details: [examples/README.md](examples/README.md)
 | Command | Description |
 |---------|-------------|
 | `palm` / `palm repl` | Interactive REPL (host-backed) |
-| `palm doctor` | Diagnostics: host roles, plugins, projections, instances |
+| `palm status` | Live dashboard — instances, wizards, jobs, host events |
+| `palm status --full` | Detailed dashboard (active rows, traces) |
+| `palm status -r` | Live refresh every 2s (Ctrl+C to stop) |
+| `palm doctor` | Full health report: plugins, persistence, definitions |
 | `palm version --full` | Version, Python, registered patterns/providers/storages |
 | `palm process list` \| `submit` \| `resume` | Definition catalog and lifecycle |
 | `palm instance list` | Instances via CQRS projection |
