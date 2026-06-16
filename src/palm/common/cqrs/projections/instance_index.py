@@ -18,12 +18,14 @@ if TYPE_CHECKING:
     from palm.core.storage import StorageEngine
 
 _PROJECTION_KEY = "palm:projections:instance_index"
+_WIZARD_STEP_STARTED = "wizard.step.started"
 _WIZARD_STEP_COMPLETED = "wizard.step.completed"
 _BACKTRACK_EXECUTED = "wizard.backtrack.executed"
 _HANDLED_EVENTS = frozenset(
     {
         OrchestrationEventType.INSTANCE_CREATED,
         OrchestrationEventType.INSTANCE_STATUS_CHANGED,
+        _WIZARD_STEP_STARTED,
         _WIZARD_STEP_COMPLETED,
         _BACKTRACK_EXECUTED,
     }
@@ -42,6 +44,7 @@ class InstanceReadModel:
     process_name: str | None = None
     wizard_step_slug: str | None = None
     updated_at: str = ""
+    snapshot_count: int = 0
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> InstanceReadModel:
@@ -53,6 +56,7 @@ class InstanceReadModel:
             process_name=data.get("process_name"),
             wizard_step_slug=data.get("wizard_step_slug"),
             updated_at=str(data.get("updated_at", "")),
+            snapshot_count=int(data.get("snapshot_count") or 0),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -111,6 +115,7 @@ class InstanceIndexProjection(Projection):
                     process_name=process_name,
                     wizard_step_slug=wizard_step,
                     updated_at=_now_iso(),
+                    snapshot_count=current.snapshot_count if current else 0,
                 )
             )
             return
@@ -125,7 +130,7 @@ class InstanceIndexProjection(Projection):
         if current is None:
             return
 
-        slug = payload.get("slug")
+        slug = payload.get("slug") or payload.get("to_slug")
         if not isinstance(slug, str):
             return
 
@@ -138,6 +143,7 @@ class InstanceIndexProjection(Projection):
                 process_name=current.process_name,
                 wizard_step_slug=slug,
                 updated_at=_now_iso(),
+                snapshot_count=current.snapshot_count,
             )
         )
 
@@ -152,6 +158,7 @@ class InstanceIndexProjection(Projection):
                 process_name=summary.process_name,
                 wizard_step_slug=summary.wizard_step_slug,
                 updated_at=summary.updated_at,
+                snapshot_count=summary.snapshot_count,
             )
         self._persist()
         return len(self._entries)
@@ -194,6 +201,7 @@ class InstanceIndexProjection(Projection):
             process_name=summary.process_name,
             wizard_step_slug=summary.wizard_step_slug,
             updated_at=summary.updated_at,
+            snapshot_count=summary.snapshot_count,
         )
         self._upsert(model)
         return model

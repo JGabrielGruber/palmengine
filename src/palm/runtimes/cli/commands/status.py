@@ -22,6 +22,7 @@ def cmd_status(ctx: CliContext, args: list[str]) -> int:
     except (ValueError, Exception) as exc:
         ctx.console.print(f"[red]{exc}[/]")
         return 1
+    view = ctx.get_instance_status_view(iid)
     job = ctx.job_for_instance(iid)
     if ctx.output_format == "json":
         from palm.runtimes.cli.shared.job_inspect import inspect_job_json
@@ -32,6 +33,13 @@ def cmd_status(ctx: CliContext, args: list[str]) -> int:
             "status": job.status.value,
             **inspect_job_json(job),
         }
+        if view is not None:
+            payload["read_model"] = view.to_dict()
+            progress = None
+            if ctx.host is not None and ctx.host.is_started:
+                progress = ctx.host.get_wizard_progress(instance_id=iid)
+            if progress is not None:
+                payload["wizard_progress"] = progress.to_dict()
         emit_json(ctx.console, payload)
         return 0
     render_job_status(ctx.console, job, iid)

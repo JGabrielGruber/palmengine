@@ -29,7 +29,22 @@ from palm.common.cqrs.projections.instance_index import (
     InstanceIndexProjection,
     InstanceReadModel,
 )
-from palm.common.cqrs.query import GetInstanceStatusQuery, ListInstancesQuery, Query
+from palm.common.cqrs.projections.job_status_board import (
+    JobStatusBoardProjection,
+    JobStatusReadModel,
+)
+from palm.common.cqrs.projections.wizard_progress import (
+    WizardProgressProjection,
+    WizardProgressReadModel,
+)
+from palm.common.cqrs.query import (
+    GetInstanceStatusQuery,
+    GetWizardProgressQuery,
+    ListInstanceSnapshotsQuery,
+    ListInstancesQuery,
+    ListJobStatusQuery,
+    Query,
+)
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 
@@ -71,6 +86,8 @@ class ApplicationHost:
         self._router = RuntimeRouter(self._app)
         self._projection_manager = ProjectionManager()
         self._instance_projection: InstanceIndexProjection | None = None
+        self._wizard_projection: WizardProgressProjection | None = None
+        self._job_board_projection: JobStatusBoardProjection | None = None
         self._outbox_service: OutboxBackgroundService | None = None
         self._started = False
         self._signal_stop = threading.Event()
@@ -104,6 +121,14 @@ class ApplicationHost:
     @property
     def instance_projection(self) -> InstanceIndexProjection | None:
         return self._instance_projection
+
+    @property
+    def wizard_projection(self) -> WizardProgressProjection | None:
+        return self._wizard_projection
+
+    @property
+    def job_board_projection(self) -> JobStatusBoardProjection | None:
+        return self._job_board_projection
 
     @property
     def outbox_service(self) -> OutboxBackgroundService | None:
@@ -216,6 +241,25 @@ class ApplicationHost:
     def get_instance_view(self, instance_id: str) -> InstanceReadModel | None:
         return self.ask(GetInstanceStatusQuery(instance_id=instance_id))
 
+    def list_instance_snapshots(self, instance_id: str) -> list:
+        return self.ask(ListInstanceSnapshotsQuery(instance_id=instance_id))
+
+    def get_wizard_progress(
+        self,
+        *,
+        instance_id: str | None = None,
+        job_id: str | None = None,
+    ) -> WizardProgressReadModel | None:
+        return self.ask(GetWizardProgressQuery(instance_id=instance_id, job_id=job_id))
+
+    def list_job_views(
+        self,
+        *,
+        status: str | None = None,
+        limit: int | None = None,
+    ) -> list[JobStatusReadModel]:
+        return self.ask(ListJobStatusQuery(status=status, limit=limit))
+
     def submit_flow(
         self,
         ref: FlowDefinition | str,
@@ -291,15 +335,23 @@ class ApplicationHost:
             self._app.storage,
             self._app.instance_manager,
         )
+        self._wizard_projection = WizardProgressProjection(self._app.storage)
+        self._job_board_projection = JobStatusBoardProjection(self._app.storage)
         self._projection_manager.register(self._instance_projection)
+        self._projection_manager.register(self._wizard_projection)
+        self._projection_manager.register(self._job_board_projection)
         wire_command_bus(self._command_bus, self._app, self._router)
-        wire_query_bus(self._query_bus, self._instance_projection)
+        wire_query_bus(
+            self._query_bus,
+            instances=self._instance_projection,
+            wizard_progress=self._wizard_projection,
+            job_board=self._job_board_projection,
+            instance_manager=self._app.instance_manager,
+        )
 
     def _attach_projections(self) -> None:
         self._projection_manager.attach(self._event)
-        for handle in self._app._runtimes.items():
-            if handle.is_started:
-                self._projection_manager.attach(handle.runtime.event)
+        self._projection_manager.attach_runtimes(self._app)
 
     def _recover(self) -> None:
         recovery: dict[str, Any] = {}

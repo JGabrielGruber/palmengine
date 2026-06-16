@@ -10,6 +10,7 @@ class WizardEventType:
     STEP_COMPLETED = "wizard.step.completed"
     INPUT_RECEIVED = "wizard.input.received"
     BACKTRACK = "wizard.backtrack"
+    BACKTRACK_REQUESTED = "wizard.backtrack.requested"
     BACKTRACK_EXECUTED = "wizard.backtrack.executed"
     BACKTRACK_BLOCKED = "wizard.backtrack.blocked"
     VALIDATION_FAILED = "wizard.validation.failed"

@@ -1,5 +1,13 @@
 """
 CQRS wiring — register ApplicationHost command and query handlers.
+
+**Adding a command:** define a dataclass in :mod:`palm.common.cqrs.command`,
+handle it in :class:`PalmCommandHandlers`, and call
+:func:`wire_command_bus` (or ``bus.register``) at host startup.
+
+**Adding a query:** define a dataclass in :mod:`palm.common.cqrs.query`, read
+from a projection (or authoritative store) in :class:`HostQueryHandlers`, and
+register the handler in :func:`wire_query_bus`.
 """
 
 from __future__ import annotations
@@ -16,10 +24,19 @@ from palm.common.cqrs.command import (
     SubmitProcessCommand,
 )
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
-from palm.common.cqrs.query import GetInstanceStatusQuery, ListInstancesQuery
+from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
+from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
+from palm.common.cqrs.query import (
+    GetInstanceStatusQuery,
+    GetWizardProgressQuery,
+    ListInstanceSnapshotsQuery,
+    ListInstancesQuery,
+    ListJobStatusQuery,
+)
 
 if TYPE_CHECKING:
     from palm.app.app import PalmApp
+    from palm.common.managers.instance_manager import InstanceManager
 
 
 class PalmCommandHandlers:
@@ -66,17 +83,33 @@ class PalmCommandHandlers:
         raise TypeError(f"Unsupported command: {type(command).__name__}")
 
 
-class InstanceQueryHandlers:
-    """Serve instance queries from the projection read model."""
+class HostQueryHandlers:
+    """Serve read models from projections and authoritative stores."""
 
-    def __init__(self, projection: InstanceIndexProjection) -> None:
-        self._projection = projection
+    def __init__(
+        self,
+        *,
+        instances: InstanceIndexProjection,
+        wizard_progress: WizardProgressProjection,
+        job_board: JobStatusBoardProjection,
+        instance_manager: InstanceManager,
+    ) -> None:
+        self._instances = instances
+        self._wizard_progress = wizard_progress
+        self._job_board = job_board
+        self._instance_manager = instance_manager
 
     def ask(self, query: Any) -> Any:
         if isinstance(query, ListInstancesQuery):
-            return self._projection.list_instances(query)
+            return self._instances.list_instances(query)
         if isinstance(query, GetInstanceStatusQuery):
-            return self._projection.get_instance(query)
+            return self._instances.get_instance(query)
+        if isinstance(query, ListInstanceSnapshotsQuery):
+            return self._instance_manager.list_state_snapshots(query.instance_id)
+        if isinstance(query, GetWizardProgressQuery):
+            return self._wizard_progress.get_progress(query)
+        if isinstance(query, ListJobStatusQuery):
+            return self._job_board.list_jobs(query)
         raise TypeError(f"Unsupported query: {type(query).__name__}")
 
 
@@ -91,7 +124,25 @@ def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> No
         bus.register(command_type, handler)
 
 
-def wire_query_bus(bus: QueryBus, projection: InstanceIndexProjection) -> None:
-    handler = InstanceQueryHandlers(projection)
-    bus.register(ListInstancesQuery, handler)
-    bus.register(GetInstanceStatusQuery, handler)
+def wire_query_bus(
+    bus: QueryBus,
+    *,
+    instances: InstanceIndexProjection,
+    wizard_progress: WizardProgressProjection,
+    job_board: JobStatusBoardProjection,
+    instance_manager: InstanceManager,
+) -> None:
+    handler = HostQueryHandlers(
+        instances=instances,
+        wizard_progress=wizard_progress,
+        job_board=job_board,
+        instance_manager=instance_manager,
+    )
+    for query_type in (
+        ListInstancesQuery,
+        GetInstanceStatusQuery,
+        ListInstanceSnapshotsQuery,
+        GetWizardProgressQuery,
+        ListJobStatusQuery,
+    ):
+        bus.register(query_type, handler)

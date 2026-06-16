@@ -1,5 +1,13 @@
 """
 Projection framework — event-driven read model maintenance.
+
+To add a projection:
+
+1. Subclass :class:`Projection` in ``palm/common/cqrs/projections/``.
+2. Register it on the host :class:`~palm.common.cqrs.projection.ProjectionManager`.
+3. Expose read methods through a query handler in :mod:`palm.app.host.cqrs_wiring`.
+4. Subscribe to domain events via :meth:`ProjectionManager.attach` (done for each
+   runtime and the host bus during :meth:`~palm.app.host.ApplicationHost.start`).
 """
 
 from __future__ import annotations
@@ -7,6 +15,8 @@ from __future__ import annotations
 import threading
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
+from palm.core.event import Subscription
 
 if TYPE_CHECKING:
     from palm.core.event import Event, EventEngine
@@ -42,17 +52,26 @@ class ProjectionManager:
 
     def __init__(self) -> None:
         self._lock = threading.RLock()
-        self._projections: list[Projection] = []
-        self._subscriptions: list[tuple[EventEngine, object]] = []
+        self._projections: dict[str, Projection] = {}
+        self._subscriptions: list[tuple[EventEngine, Subscription]] = []
 
     def register(self, projection: Projection) -> None:
         with self._lock:
-            self._projections.append(projection)
+            self._projections[projection.name] = projection
+
+    def get(self, name: str) -> Projection | None:
+        with self._lock:
+            return self._projections.get(name)
+
+    @property
+    def names(self) -> list[str]:
+        with self._lock:
+            return sorted(self._projections)
 
     @property
     def projections(self) -> tuple[Projection, ...]:
         with self._lock:
-            return tuple(self._projections)
+            return tuple(self._projections[name] for name in sorted(self._projections))
 
     def attach(self, event_engine: EventEngine) -> None:
         """Subscribe all projections to ``event_engine``."""
@@ -60,7 +79,7 @@ class ProjectionManager:
             event_engine.initialize()
 
         def fan_out(event: Event) -> None:
-            for projection in self._projections:
+            for projection in self.projections:
                 if projection.handles(event.type):
                     try:
                         projection.apply(event)
@@ -71,10 +90,19 @@ class ProjectionManager:
         with self._lock:
             self._subscriptions.append((event_engine, subscription))
 
+    def attach_runtimes(self, app: object) -> None:
+        """Attach to every started runtime event bus on a PalmApp."""
+        runtimes = getattr(app, "_runtimes", None)
+        if runtimes is None:
+            return
+        for handle in runtimes.items():
+            if handle.is_started:
+                self.attach(handle.runtime.event)
+
     def rebuild_all(self) -> dict[str, int]:
         """Rebuild every registered projection."""
         counts: dict[str, int] = {}
-        for projection in self._projections:
+        for projection in self.projections:
             counts[projection.name] = projection.rebuild()
         return counts
 

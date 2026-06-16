@@ -75,6 +75,7 @@ class WizardPattern(BasePattern):
         if state.get(WizardKeys.COMPLETED):
             return PatternStatus.SUCCESS
 
+        from_step = state.get(WizardKeys.CURRENT_STEP)
         applied = apply_backtrack(state, self._root, self._sequence, self._config)
         if applied is not None:
             slug = self._config.iter_tree_steps()[applied].slug
@@ -82,12 +83,15 @@ class WizardPattern(BasePattern):
                 WizardEventType.BACKTRACK,
                 step_index=applied,
                 slug=slug,
+                from_step=from_step,
+                to_slug=slug,
             )
             self._emit_event(
                 WizardEventType.BACKTRACK_EXECUTED,
                 step_index=applied,
                 slug=slug,
-                from_step=state.get(WizardKeys.CURRENT_STEP),
+                from_step=from_step,
+                to_slug=slug,
             )
 
         status = self._root.tick(state)
@@ -129,6 +133,11 @@ class WizardPattern(BasePattern):
             )
             raise ValueError(f"Cannot backtrack to protected step: {to_slug!r}")
         self._config.index_of(to_slug)
+        self._emit_event(
+            WizardEventType.BACKTRACK_REQUESTED,
+            from_step=state.get(WizardKeys.CURRENT_STEP),
+            to_slug=to_slug,
+        )
         state.set(WizardKeys.BACKTRACK_TO, to_slug)
 
     def current_step_slug(self, state: BaseState) -> str | None:

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from palm.app.session import create_cli_app, create_console
+from palm.app.session import create_cli_host, create_console
 from palm.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
 from palm.runtimes.cli.shared.args import CliInvocation, settings_from_invocation
@@ -32,18 +32,21 @@ def bootstrap_runtime(
     """
     console = create_console()
     resolved = settings_from_invocation(invocation) if invocation is not None else settings
-    app = create_cli_app(
+    host = create_cli_host(
         storage_backend=storage_backend,
         data_dir=data_dir,
         storage=storage,
         settings=resolved,
     )
     fmt = invocation.output_format if invocation is not None else output_format
-    ctx = CliContext(app=app, console=console, output_format=fmt)
+    ctx = CliContext(host=host, app=host.app, console=console, output_format=fmt)
     if show_banner:
-        print_startup_banner(console, app)
+        print_startup_banner(console, host.app)
     return ctx
 
 
 def shutdown_context(ctx: CliContext) -> None:
-    ctx.app.shutdown()
+    if ctx.host is not None and ctx.host.is_started:
+        ctx.host.shutdown()
+    else:
+        ctx.app.shutdown()
