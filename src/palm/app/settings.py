@@ -54,6 +54,7 @@ class PalmSettings(BaseSettings):
     enable_outbox_service: bool = True
     outbox_poll_interval: float = 0.5
     enable_event_outbox: bool = True
+    rebuild_projections_on_startup: bool = True
 
     @classmethod
     def from_env_file(cls, env_file: str | Path) -> PalmSettings:

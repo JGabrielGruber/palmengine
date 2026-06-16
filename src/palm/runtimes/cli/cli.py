@@ -23,6 +23,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     inv = invocation_from_namespace(args)
 
+    if inv.command == "host":
+        from palm.app import HostProfile, run_host
+        from palm.runtimes.cli.shared.args import settings_from_invocation
+
+        settings = settings_from_invocation(inv)
+        profile = _host_profile_from_invocation(inv)
+        run_host(profile, settings=settings)
+        return 0
+
     if inv.command == "version":
         if inv.full:
             try:
@@ -101,6 +110,23 @@ def main(argv: list[str] | None = None) -> int:
         shutdown_context(ctx)
 
     return exit_code
+
+
+def _host_profile_from_invocation(inv: CliInvocation) -> HostProfile:
+    cmd = (inv.host_cmd or "all-in-one").replace("-", "_")
+    if cmd in {"all_in_one", "allinone"}:
+        return HostProfile.all_in_one()
+    if cmd == "master":
+        return HostProfile.master_only()
+    if cmd == "worker":
+        count = inv.host_workers if inv.host_workers is not None else 1
+        return HostProfile.worker_only(count=count)
+    if cmd == "server":
+        return HostProfile.server_only(
+            host=inv.host_bind or "127.0.0.1",
+            port=inv.host_port or 8080,
+        )
+    raise ValueError(f"Unknown host subcommand: {inv.host_cmd!r}")
 
 
 def _instance_list_argv(inv: CliInvocation) -> list[str]:

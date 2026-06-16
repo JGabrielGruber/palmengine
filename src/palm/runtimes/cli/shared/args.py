@@ -56,6 +56,10 @@ class CliInvocation:
     instance_flow: str | None = None
     instance_limit: int | None = None
     prune_dry_run: bool = False
+    host_cmd: str | None = None
+    host_workers: int | None = None
+    host_bind: str | None = None
+    host_port: int | None = None
 
 
 def add_global_arguments(parser: argparse.ArgumentParser) -> None:
@@ -176,6 +180,25 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name)
         p.add_argument("args", nargs=argparse.REMAINDER)
 
+    host = sub.add_parser("host", help="Run ApplicationHost deployment roles")
+    host_sub = host.add_subparsers(dest="host_cmd", required=True)
+    host_sub.add_parser(
+        "all-in-one",
+        aliases=["all_in_one"],
+        help="Collapsed master+worker process (default host profile)",
+    )
+    host_sub.add_parser("master", help="Command acceptance and outbox processor")
+    worker_p = host_sub.add_parser("worker", help="Background job-driving workers")
+    worker_p.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of daemon worker runtimes (default: 1)",
+    )
+    server_p = host_sub.add_parser("server", help="HTTP API with queued job driving")
+    server_p.add_argument("--host", default=None, help="Bind host (default: 127.0.0.1)")
+    server_p.add_argument("--port", type=int, default=None, help="Bind port (default: 8080)")
+
     return parser
 
 
@@ -219,4 +242,8 @@ def invocation_from_namespace(args: argparse.Namespace) -> CliInvocation:
         instance_flow=getattr(args, "flow", None),
         instance_limit=getattr(args, "limit", None),
         prune_dry_run=getattr(args, "dry_run", False),
+        host_cmd=getattr(args, "host_cmd", None),
+        host_workers=getattr(args, "workers", None),
+        host_bind=getattr(args, "host", None),
+        host_port=getattr(args, "port", None),
     )

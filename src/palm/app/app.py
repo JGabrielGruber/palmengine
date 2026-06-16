@@ -30,7 +30,11 @@ CLI_RUNTIME_NAME = "cli"
 
 class PalmApp:
     """
-    Top-level Palm application — configuration, shared storage, and runtimes.
+    Infrastructure layer — shared storage, instance manager, and runtime registry.
+
+    For role-based orchestration, CQRS, and recovery, prefer
+    :class:`~palm.app.host.ApplicationHost`, which wraps ``PalmApp`` as its
+    infrastructure delegate.
 
     A single ``PalmApp`` can host multiple runtimes (embedded, daemon, server)
     that share one :class:`~palm.core.storage.StorageEngine` for durable

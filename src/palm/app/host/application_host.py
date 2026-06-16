@@ -1,5 +1,5 @@
 """
-ApplicationHost — top-level coordinator for Palm deployment roles.
+ApplicationHost — top-level Palm orchestrator with CQRS command/query routing.
 """
 
 from __future__ import annotations
@@ -10,10 +10,26 @@ from typing import TYPE_CHECKING, Any, Self
 
 from palm.app.app import PalmApp
 from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
+from palm.app.host.cqrs_wiring import wire_command_bus, wire_query_bus
 from palm.app.host.events import HostEventType
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
+from palm.app.host.router import RuntimeRouter
 from palm.app.settings import PalmSettings
+from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.common.cqrs.command import (
+    Command,
+    ProvideInputCommand,
+    ResumeProcessCommand,
+    SubmitFlowCommand,
+    SubmitProcessCommand,
+)
+from palm.common.cqrs.projection import ProjectionManager
+from palm.common.cqrs.projections.instance_index import (
+    InstanceIndexProjection,
+    InstanceReadModel,
+)
+from palm.common.cqrs.query import GetInstanceStatusQuery, ListInstancesQuery, Query
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 
@@ -26,18 +42,17 @@ if TYPE_CHECKING:
 
 class ApplicationHost:
     """
-    Coordinates Palm deployment roles on top of :class:`~palm.app.app.PalmApp`.
+    Top-level Palm orchestrator — roles, CQRS, projections, and recovery.
 
-    Profiles select which runtimes to spawn and whether a background outbox
-    processor runs on the master role::
+    :class:`~palm.app.app.PalmApp` remains the infrastructure layer (shared
+    storage, runtime registry). The host owns command dispatch, query serving,
+    worker routing, and background services::
 
         host = ApplicationHost(profile=HostProfile.all_in_one())
         host.start()
-        job = host.submit_flow("my_flow")
+        job = host.execute(SubmitFlowCommand(flow="my_flow"))
+        rows = host.ask(ListInstancesQuery(include_terminal=False))
         host.shutdown()
-
-    Presets: ``all_in_one``, ``master``, ``worker``, ``server`` — or compose
-    roles via :class:`~palm.app.host.roles.HostProfile`.
     """
 
     def __init__(
@@ -51,19 +66,44 @@ class ApplicationHost:
         self.profile = profile or host_profile_from_settings(self.settings)
         self._app = PalmApp(self.settings, storage=storage)
         self._event = EventEngine()
+        self._command_bus = CommandBus()
+        self._query_bus = QueryBus()
+        self._router = RuntimeRouter(self._app)
+        self._projection_manager = ProjectionManager()
+        self._instance_projection: InstanceIndexProjection | None = None
         self._outbox_service: OutboxBackgroundService | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
     @property
     def app(self) -> PalmApp:
-        """Underlying multi-runtime application."""
+        """Infrastructure layer — storage and runtime registry."""
         return self._app
 
     @property
     def event(self) -> EventEngine:
-        """Host-level event bus for cross-runtime coordination."""
+        """Host-level coordination bus."""
         return self._event
+
+    @property
+    def commands(self) -> CommandBus:
+        return self._command_bus
+
+    @property
+    def queries(self) -> QueryBus:
+        return self._query_bus
+
+    @property
+    def router(self) -> RuntimeRouter:
+        return self._router
+
+    @property
+    def projections(self) -> ProjectionManager:
+        return self._projection_manager
+
+    @property
+    def instance_projection(self) -> InstanceIndexProjection | None:
+        return self._instance_projection
 
     @property
     def outbox_service(self) -> OutboxBackgroundService | None:
@@ -85,7 +125,7 @@ class ApplicationHost:
         return self._app.runtime(name)
 
     def start(self, **options: Any) -> Self:
-        """Bootstrap plugins, spawn role runtimes, and start background services."""
+        """Bootstrap, spawn role runtimes, wire CQRS, and recover state."""
         if self._started:
             return self
 
@@ -94,9 +134,9 @@ class ApplicationHost:
         merged = runtime_start_options(self.settings, **options)
         self._spawn_runtimes(merged)
         self._app.load_definitions()
-
-        if self.profile.master and self.profile.enable_outbox_service:
-            self._start_outbox_service()
+        self._wire_cqrs()
+        self._attach_projections()
+        self._recover()
 
         self._event.emit(
             HostEventType.STARTED,
@@ -107,7 +147,7 @@ class ApplicationHost:
         return self
 
     def shutdown(self) -> None:
-        """Stop background services and shut down all runtimes."""
+        """Stop services, projections, and all runtimes."""
         if not self._started:
             return
 
@@ -115,14 +155,31 @@ class ApplicationHost:
             self._outbox_service.stop()
             self._outbox_service = None
 
+        self._projection_manager.shutdown()
         self._event.emit(HostEventType.SHUTDOWN, primary=self._app.primary_name)
         self._app.shutdown()
         self._event.shutdown()
         self._started = False
         self._signal_stop.set()
 
+    def execute(self, command: Command) -> Any:
+        """Dispatch a write-side command through the host command bus."""
+        self._require_started()
+        result = self._command_bus.dispatch(command)
+        self._event.emit(
+            HostEventType.COMMAND_DISPATCHED,
+            command=type(command).__name__,
+            runtime=self._router.route_job_runtime(getattr(command, "runtime_name", None)),
+        )
+        return result
+
+    def ask(self, query: Query) -> Any:
+        """Execute a read-side query through the host query bus."""
+        self._require_started()
+        return self._query_bus.ask(query)
+
     def run_until_signal(self) -> None:
-        """Block until SIGINT or SIGTERM (no-op if already stopped)."""
+        """Block until SIGINT or SIGTERM."""
         if not self._started:
             raise RuntimeError("ApplicationHost is not started; call start() first")
 
@@ -139,6 +196,26 @@ class ApplicationHost:
             signal.signal(signal.SIGINT, previous_int)
             signal.signal(signal.SIGTERM, previous_term)
 
+    def list_instance_views(
+        self,
+        *,
+        status: str | None = None,
+        flow_name: str | None = None,
+        include_terminal: bool = True,
+        limit: int | None = None,
+    ) -> list[InstanceReadModel]:
+        return self.ask(
+            ListInstancesQuery(
+                status=status,
+                flow_name=flow_name,
+                include_terminal=include_terminal,
+                limit=limit,
+            )
+        )
+
+    def get_instance_view(self, instance_id: str) -> InstanceReadModel | None:
+        return self.ask(GetInstanceStatusQuery(instance_id=instance_id))
+
     def submit_flow(
         self,
         ref: FlowDefinition | str,
@@ -149,13 +226,15 @@ class ApplicationHost:
         state: Any = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job:
-        return self._app.submit_flow(
-            ref,
-            runtime_name=runtime_name,
-            by_id=by_id,
-            job_id=job_id,
-            state=state,
-            metadata=metadata,
+        return self.execute(
+            SubmitFlowCommand(
+                flow=ref,
+                runtime_name=runtime_name,
+                by_id=by_id,
+                job_id=job_id,
+                state=state,
+                metadata=dict(metadata or {}),
+            )
         )
 
     def submit_process(
@@ -168,22 +247,35 @@ class ApplicationHost:
         state: Any = None,
         metadata: dict[str, Any] | None = None,
     ) -> Job | list[Job]:
-        return self._app.submit_process(
-            ref,
-            runtime_name=runtime_name,
-            by_id=by_id,
-            job_id=job_id,
-            state=state,
-            metadata=metadata,
+        return self.execute(
+            SubmitProcessCommand(
+                process=ref,
+                runtime_name=runtime_name,
+                by_id=by_id,
+                job_id=job_id,
+                state=state,
+                metadata=dict(metadata or {}),
+            )
         )
 
     def provide_input(
         self, job_id: str, value: Any, *, runtime_name: str | None = None
     ) -> str | None:
-        return self._app.provide_input(job_id, value, runtime_name=runtime_name)
+        return self.execute(
+            ProvideInputCommand(
+                job_id=job_id,
+                value=value,
+                runtime_name=runtime_name,
+            )
+        )
 
     def resume_process(self, instance_id: str, *, runtime_name: str | None = None) -> Job:
-        return self._app.resume_process(instance_id, runtime_name=runtime_name)
+        return self.execute(
+            ResumeProcessCommand(
+                instance_id=instance_id,
+                runtime_name=runtime_name,
+            )
+        )
 
     def running_runtimes(self) -> list[str]:
         return self._app.running()
@@ -193,6 +285,35 @@ class ApplicationHost:
 
     def __exit__(self, *exc: object) -> None:
         self.shutdown()
+
+    def _wire_cqrs(self) -> None:
+        self._instance_projection = InstanceIndexProjection(
+            self._app.storage,
+            self._app.instance_manager,
+        )
+        self._projection_manager.register(self._instance_projection)
+        wire_command_bus(self._command_bus, self._app, self._router)
+        wire_query_bus(self._query_bus, self._instance_projection)
+
+    def _attach_projections(self) -> None:
+        self._projection_manager.attach(self._event)
+        for handle in self._app._runtimes.items():
+            if handle.is_started:
+                self._projection_manager.attach(handle.runtime.event)
+
+    def _recover(self) -> None:
+        recovery: dict[str, Any] = {}
+
+        if self.profile.master and self.profile.enable_outbox_service:
+            self._start_outbox_service()
+            if self._outbox_service is not None:
+                recovery["outbox_pending"] = self._outbox_service.store.pending_count()
+
+        if self.settings.rebuild_projections_on_startup:
+            recovery["projections"] = self._projection_manager.rebuild_all()
+
+        if recovery:
+            self._event.emit(HostEventType.RECOVERED, **recovery)
 
     def _spawn_runtimes(self, merged: dict[str, Any]) -> None:
         profile = self.profile
@@ -206,7 +327,6 @@ class ApplicationHost:
                 set_primary=True,
                 **self._command_options(merged),
             )
-            has_primary = True
             self._emit_runtime_registered("main", "embedded", runtime)
             return
 
@@ -244,7 +364,6 @@ class ApplicationHost:
                 port=profile.server_port,
                 **self._worker_options(merged),
             )
-            has_primary = True
             self._emit_runtime_registered("server", "server", runtime)
 
     def _command_options(self, merged: dict[str, Any]) -> dict[str, Any]:
@@ -274,6 +393,10 @@ class ApplicationHost:
             kind=kind,
             scheduler=runtime.orchestration.scheduler.__class__.__name__,
         )
+
+    def _require_started(self) -> None:
+        if not self._started:
+            raise RuntimeError("ApplicationHost is not started; call start() first")
 
 
 def run_host(
