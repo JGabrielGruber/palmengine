@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.9.7**.
+Guide for contributors working on Palm **0.10 architecture** (release line 0.9.7).
 
 ## Setup
 
@@ -49,7 +49,7 @@ Mypy runs in **strict** mode on all of `src/palm/` (`pyproject.toml` → `[tool.
 
 ```
 src/palm/
-├── app/               # PalmApp, PalmSettings, bootstrap, multi-runtime registry
+├── app/               # ApplicationHost, PalmApp (infra), settings, host roles
 ├── core/              # Pure engines — no external palm imports
 ├── patterns/          # Wizard, DAG, ETL (+ commit registry, validation)
 ├── providers/         # REST, GraphQL, Postgres
@@ -110,9 +110,10 @@ Global flags live in `palm/runtimes/cli/shared/args.py` (`-b`, `-d`, `--config`,
 `--max-loaded-instances`, `--scheduler`, `--format`, …). Parsed into
 `CliInvocation` and merged via `settings_from_invocation()`.
 
-All instance commands resolve through `CliContext.instance_manager` (backed by
-`PalmApp`). REPL tab-completion (`completion.py`) suggests commands, definitions,
-and instance ids from the same manager layer.
+Instance **reads** (`list`, `status`, `snapshots`) resolve through the host query
+bus and projections. **Writes** (`flow start`, `input`, `resume`) use the command
+bus via `CliContext.submit_*` helpers. REPL tab-completion suggests commands,
+definitions, and instance ids from the projection-backed list.
 
 Example definitions register on every CLI start:
 
@@ -130,21 +131,53 @@ palm back <instance_id> <step_slug>
 palm process resume <instance_id>
 ```
 
-### Shared storage and multi-runtime
+### Preferred bootstrap (ApplicationHost)
 
-Use :class:`~palm.app.PalmApp` to share storage across runtimes and sessions:
+Use :class:`~palm.app.host.ApplicationHost` for services, scripts, and tests that
+mirror production wiring (CQRS, projections, outbox, compensation):
 
 ```python
 from pathlib import Path
 
+from palm.app import ApplicationHost, HostProfile, PalmSettings
+
+settings = PalmSettings(storage_backend="filesystem", data_dir=Path("data"))
+with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
+    rows = host.list_instance_views(include_terminal=False)
+```
+
+CLI equivalent: :func:`~palm.app.session.create_cli_host` (same profile).
+
+Multi-role deployment:
+
+```python
+from palm.app import ApplicationHost, HostProfile
+
+# Master + workers in one process (tests)
+profile = HostProfile(master=True, worker=True, worker_count=2)
+with ApplicationHost(profile=profile) as host:
+    job = host.submit_flow("quick")  # routed to a worker runtime
+```
+
+Blocking standalone process: ``run_host("master")`` or ``palm host master``.
+
+### Low-level embedding (PalmApp)
+
+Use :class:`~palm.app.PalmApp` directly when testing runtime registry behaviour
+without host overhead:
+
+```python
 from palm.app import PalmApp, PalmSettings
 
-with PalmApp(PalmSettings(storage_backend="filesystem", data_dir=Path("data"))) as app:
-    cli = app.create_runtime("embedded", name="cli", autostart=True)
-    worker = app.create_runtime("daemon", name="worker", autostart=True)
+with PalmApp(PalmSettings(load_example_definitions=False)).bootstrap() as app:
+    app.create_runtime("embedded", autostart=True)
     app.load_definitions()
-    # … submit via cli, worker drives queued jobs …
+    job = app.submit_flow("onboard")
 ```
+
+Pass an existing ``StorageEngine`` to ``ApplicationHost(..., storage=storage)``
+or ``PalmApp(storage=storage)`` when resuming across separate lifetimes.
 
 Environment variables (prefix `PALM_`):
 
@@ -153,13 +186,8 @@ export PALM_STORAGE_BACKEND=filesystem
 export PALM_DATA_DIR=./data
 ```
 
-:class:`~palm.common.storage.StorageFactory` resolves backends lazily and builds
-constructor options from :class:`~palm.app.settings.PalmSettings` (notably
-``data_dir`` for the filesystem backend). ``palm.common.runtimes.BaseRuntime.start()`` and
-``runtime_start_options()`` wire this automatically.
-
-Pass an existing ``StorageEngine`` to ``PalmApp(storage=storage)`` when resuming
-across separate app lifetimes (the CLI uses this pattern internally).
+:class:`~palm.common.storage.StorageFactory` and ``runtime_start_options()`` wire
+storage automatically on host/runtime start.
 
 ### InstanceManager
 
@@ -168,9 +196,13 @@ runtimes — LRU cache, active tracking, lightweight summaries, and startup
 reconciliation. Access via ``app.instance_manager`` or ``runtime.instance_manager``.
 
 ```python
-summaries = app.list_instance_summaries()  # fast CLI-style listing
-instance = app.instance_manager.acquire("inst-abc")  # load + mark active
-snapshots = app.list_instance_snapshots("inst-abc")
+# Via host (preferred — uses projections)
+rows = host.list_instance_views(include_terminal=True)
+snapshots = host.list_instance_snapshots("inst-abc")
+
+# Via PalmApp infra (authoritative store)
+summaries = app.list_instance_summaries()
+instance = app.instance_manager.acquire("inst-abc")
 ```
 
 **Settings** (``PALM_*`` env vars):
@@ -246,23 +278,18 @@ export PALM_MAX_SNAPSHOTS_PER_INSTANCE=10
 **In tests or scripts:**
 
 ```python
-from palm.app import PalmApp, PalmSettings
-from palm.runtimes.embedded import EmbeddedRuntime
+from palm.app import ApplicationHost, HostProfile, PalmSettings
 
-rt = EmbeddedRuntime()
-rt.start(
+settings = PalmSettings(
     enable_state_snapshot=True,
     snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
     max_snapshots_per_instance=5,
 )
+with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
 ```
 
-Or via `PalmApp` (settings flow through `runtime_start_options()` automatically):
-
-```python
-app = PalmApp(PalmSettings(enable_state_snapshot=True)).bootstrap()
-app.create_runtime("embedded", autostart=True)
-```
+Settings flow through ``runtime_start_options()`` into ``BaseRuntime.start()`` automatically.
 
 ### Inspect snapshots
 
@@ -275,7 +302,7 @@ palm instance snapshots <instance_id>
 **Python API:**
 
 ```python
-snapshots = app.list_instance_snapshots(instance_id)
+snapshots = host.list_instance_snapshots(instance_id)
 for snap in snapshots:
     print(snap.status, snap.recorded_at, snap.wizard_step_slug)
     print(snap.state_snapshot)  # blackboard dict
@@ -371,7 +398,7 @@ Plugin registries (`pattern_registry`, `provider_registry`, `storage_registry`, 
 
 - Register patterns/providers/storages in each app's `registry.py`, imported via `INSTALLED_*` autoload lists.
 - Register commit handlers in `register_definitions()` or module import side effects before serving traffic.
-- Use `PalmApp.bootstrap()` (or `ensure_plugins()`) before creating runtimes in multi-threaded deployments.
+- Use `ApplicationHost.start()` or `PalmApp.bootstrap()` before serving traffic in multi-threaded deployments.
 
 **Avoid:**
 
@@ -413,7 +440,8 @@ All code under `archive/` is historical. Never add new features there.
 | State snapshot hook | `tests/test_state_snapshot_hook.py` |
 | Registry thread safety | `tests/test_core_registry.py` |
 | Embedded API | `tests/test_embedded.py` |
-| CLI dispatch | `tests/test_cli.py` |
+| CLI dispatch | `tests/test_cli.py`, `tests/test_cli_host_integration.py` |
+| ApplicationHost / CQRS | `tests/test_application_host.py`, `tests/test_application_host_cqrs.py`, `tests/test_cqrs*.py` |
 
 ## Release & publishing
 
@@ -438,13 +466,22 @@ Test install from TestPyPI:
 pip install -i https://test.pypi.org/simple/ palmengine[cli]
 ```
 
+## Extending CQRS
+
+1. Add command/query dataclasses in `palm/common/cqrs/command.py` or `query.py`.
+2. Handle in `PalmCommandHandlers` / `HostQueryHandlers` (`palm/app/host/cqrs_wiring.py`).
+3. For new read models: subclass `Projection` in `palm/common/cqrs/projections/`, register in `ApplicationHost._wire_cqrs()`.
+
+Host tests: `tests/test_application_host_cqrs.py`, `tests/test_cqrs_phase4.py`, `tests/test_cqrs_phase5.py`.
+
 ## Related documents
 
 - [SCOPE.md](SCOPE.md) — vision, scope, and roadmap
-- [ARCHITECTURE.md](ARCHITECTURE.md) — layers, BT model, middleware
+- [ARCHITECTURE.md](ARCHITECTURE.md) — ApplicationHost, CQRS, reliability
+- [MIGRATION-0.10.md](MIGRATION-0.10.md) — upgrade from 0.9.x bootstrap paths
 - [README.md](README.md) — quick start and CLI
 - [CHANGELOG.md](CHANGELOG.md) — release history
 
 ---
 
-Last updated: June 2026 (0.9.7)
+Last updated: June 2026 (0.10 architecture)

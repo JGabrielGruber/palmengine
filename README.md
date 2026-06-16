@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release line:** `0.9.7` · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.6.md](MIGRATION-0.6.md) · [SCOPE.md](SCOPE.md) for roadmap
+**Current release line:** `0.9.7` · **0.10 architecture** (ApplicationHost, CQRS, outbox) · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -49,31 +49,33 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.9.7)
+## What works today (0.10 architecture)
 
 | Area | Capabilities |
 |------|----------------|
-| **Core** | Behavior tree, orchestration (`apply_result` authority), context, storage, resource, event, auth, **TransformEngine** |
-| **State** | `DictStateSchema` (incl. length/item constraints), scoped state, schema-aware snapshots (`__palm:meta`), observability events |
-| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, and serialization (JSON/CSV/YAML/TOML/XML) |
-| **Patterns** | **Wizard** (layered validation, collection steps, **`step_kind: transform`**, summary/commit); **parallel** branches; DAG and ETL stubs |
-| **Executions** | `ExecutionPlan` / `ProcessPlan`, `DefinitionExecutor`, prepare/submit batch API |
-| **Persistence** | Production **filesystem** backend (path-safe), `StorageFactory`, `InstanceManager`, durable resume across restarts |
-| **State snapshots** | Optional `StateSnapshotHook` — bounded blackboard history for audit/debug (off by default) |
-| **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** |
-| **Middleware** | `JobHook`, `AuthMiddleware`, drive observability, instance persistence, state snapshots |
-| **DX** | Examples (`transform-example`, `transform-formats`, `todo-builder`, `parallel-demo`), `palm doctor` transform catalog, `just` quality recipes |
+| **ApplicationHost** | Top-level orchestrator — role profiles (`all_in_one`, `master`, `worker`, `server`), startup recovery |
+| **CQRS** | Command/query buses, projections (`instance_index`, `wizard_progress`, `job_status_board`) |
+| **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
+| **Core** | Behavior tree, orchestration, context, storage, resource, event, auth, **TransformEngine** |
+| **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`) |
+| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization |
+| **Patterns** | **Wizard** (collection, transform steps, summary/commit); **parallel** branches; DAG and ETL stubs |
+| **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
+| **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
+| **DX** | Rich examples, `palm doctor`, `palm host` deployment roles, `just` quality recipes |
 
 ```mermaid
 flowchart LR
     User[Developer / operator] --> CLI[CLI / REPL]
-    CLI --> ER[EmbeddedRuntime]
-    ER --> CM[common]
-    CM --> PAT[patterns]
-    CM --> INST[instances]
-    PAT --> BT[Behavior Tree]
-    INST --> STO[storage]
+    CLI --> Host[ApplicationHost]
+    Host --> CQRS[Command + Query buses]
+    Host --> RT[Runtime main]
+    CQRS --> Proj[Projections]
+    RT --> CM[common + patterns]
+    CM --> BT[Behavior Tree]
 ```
+
+**Recommended entrypoint:** `ApplicationHost` wraps `PalmApp` (infrastructure) and wires CQRS, projections, outbox, and compensation. The CLI uses it automatically via `create_cli_host()`.
 
 ---
 
@@ -89,7 +91,20 @@ palm flow start onboard          # recommended — works for all patterns
 # shortcut: palm start onboard
 ```
 
-**From source:** `uv sync --group dev --extra cli && uv pip install -e ".[cli]"` then the same `palm` commands. Demo script: `uv run python examples/full_demo.py`.
+**From source:** `uv sync --group dev --extra cli && uv pip install -e ".[cli]"` then the same `palm` commands.
+
+**Library quick start (ApplicationHost):**
+
+```python
+from palm.app import ApplicationHost, HostProfile
+
+with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
+    rows = host.list_instance_views(include_terminal=False)
+    print(job.status.value, len(rows))
+```
+
+Demo script: `uv run python examples/full_demo.py` (host + resume across restart).
 
 **Try the new examples:**
 
@@ -133,7 +148,7 @@ options:
 
 Run `palm doctor` for the full rule catalog with descriptions. Extend with `register_transform("my_rule", MyRule)` at bootstrap.
 
-**CLI persistence:** the CLI is a thin client of `PalmApp`. By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
+**CLI persistence:** the CLI bootstraps `ApplicationHost` (`all_in_one` profile). By default it uses **in-memory** storage (fast, non-durable). Set durable storage via flags or environment:
 
 ```bash
 # Recommended for local work — persists instances under ./data/
@@ -144,9 +159,9 @@ export PALM_DATA_DIR=./data
 palm --storage-backend filesystem --data-dir ./data wizard start onboard
 ```
 
-`palm doctor` and REPL startup show whether state will survive restarts. Instance
-commands (`list`, `status`, `snapshots`, `resume`, `prune`) all resolve through the same
-`PalmApp.instance_manager` — short ids from `instance list` work with prefix matching.
+`palm doctor` and REPL startup show whether state will survive restarts.
+
+**Instance commands** (`list`, `status`, `snapshots`) read through the host **query bus** and projections. Writes (`flow start`, `input`, `resume`) go through the **command bus**. Short ids from `instance list` work with prefix matching.
 
 **Global CLI flags** (override env only when explicitly passed):
 
@@ -226,17 +241,16 @@ palm instance snapshots <instance_id>   # inspect captured history
 **Enable in code:**
 
 ```python
-from palm.app import PalmApp, PalmSettings
+from palm.app import ApplicationHost, HostProfile, PalmSettings
 
 settings = PalmSettings(
     enable_state_snapshot=True,
     snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
     max_snapshots_per_instance=5,
 )
-with PalmApp(settings) as app:
-    app.create_runtime("embedded", autostart=True)
-    job = app.submit_flow("onboard")
-    snapshots = app.list_instance_snapshots(job.metadata["instance_id"])
+with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
+    snapshots = host.list_instance_snapshots(job.metadata["instance_id"])
 ```
 
 Resume still uses the latest `state_snapshot` field (maintained by `InstancePersistenceHook`). Historical entries are for inspection—not replay yet. See [ARCHITECTURE.md](ARCHITECTURE.md) for middleware design and trade-offs.
@@ -271,16 +285,18 @@ Details: [examples/README.md](examples/README.md)
 
 | Command | Description |
 |---------|-------------|
-| `palm` / `palm repl` | Interactive REPL |
-| `palm doctor` | Diagnostics: health, plugins, definitions, instances |
+| `palm` / `palm repl` | Interactive REPL (host-backed) |
+| `palm doctor` | Diagnostics: host roles, plugins, projections, instances |
 | `palm version --full` | Version, Python, registered patterns/providers/storages |
 | `palm process list` \| `submit` \| `resume` | Definition catalog and lifecycle |
-| `palm instance list` | Persisted instances |
-| `palm instance snapshots <id>` | State snapshot history for an instance (when enabled) |
-| `palm flow start <flow>` | Start any flow (wizard, parallel, …) — **recommended** |
+| `palm instance list` | Instances via CQRS projection |
+| `palm instance snapshots <id>` | State snapshot history (when enabled) |
+| `palm flow start <flow>` | Start any flow — **recommended** |
 | `palm start <flow>` | Shortcut for `flow start` |
 | `palm wizard start <flow>` | Wizard-only shortcut (legacy alias) |
 | `palm input` / `palm back` | Drive or rewind an active flow |
+| `palm host all-in-one` | Run ApplicationHost (blocking, signals) |
+| `palm host master` \| `worker` \| `server` | Role-based deployment |
 
 Run `palm --help` for the full list.
 
@@ -290,19 +306,20 @@ Run `palm --help` for the full list.
 
 ```
 src/palm/
-├── app/            # PalmApp orchestrator, settings, multi-runtime bootstrap
+├── app/            # ApplicationHost, PalmApp (infra), settings, host roles
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
-├── common/         # Shared coordination (plans, hooks, persistence, managers, StorageFactory)
+├── common/         # CQRS, outbox, compensation, hooks, persistence, managers
 ├── instances/      # ProcessInstance + StateSnapshot models
 ├── definitions/    # FlowDefinition, ProcessDefinition
 ├── patterns/       # wizard, dag, etl (extensible)
 ├── providers/      # rest, graphql, postgres (extensible)
 ├── storages/       # memory, filesystem, postgres, mongodb (extensible)
-└── runtimes/       # BaseRuntime, Embedded/Daemon/Server, CLI
+└── runtimes/       # Embedded/Daemon/Server, CLI (host-backed)
 
-examples/           # definitions/ + full_demo.py
+examples/           # definitions/ + full_demo.py (ApplicationHost)
 SCOPE.md            # vision, scope, roadmap
-ARCHITECTURE.md     # layers, middleware, BT model
+ARCHITECTURE.md     # layers, ApplicationHost, CQRS, reliability
+MIGRATION-0.10.md   # upgrade guide from 0.9.x bootstrap paths
 archive/            # legacy + experimental (not imported)
 ```
 
@@ -364,6 +381,7 @@ Orchestration should balance structure with flexibility—automation with mindfu
 
 ## Migration
 
+- **0.9.x → 0.10 architecture** — see [MIGRATION-0.10.md](MIGRATION-0.10.md) for `ApplicationHost`, CQRS, and removed `bootstrap_cli` / `cli/pkg` paths
 - **0.5.x → 0.6.0** — see [MIGRATION-0.6.md](MIGRATION-0.6.md) for removed aliases (`ExecutionBackend`, `EmbeddedMode`, etc.)
 - **0.3.x legacy** — code under **`archive/`** is reference-only; never import from `archive/` in new work
 

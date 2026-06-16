@@ -3,6 +3,14 @@ Onboarding wizard — validation, summary, and transactional commit.
 
 Demonstrates a realistic user onboarding flow with persisted definitions
 and a named commit handler registered at import time.
+
+Run via the host-backed CLI::
+
+    palm flow start onboard
+
+For optional undo on commit failure, register a compensation handler on
+``default_compensation_registry()`` for hook ``persist_profile`` — see
+``MIGRATION-0.10.md``.
 """
 
 from __future__ import annotations

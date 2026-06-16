@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · 0.9.7 · June 2026 · PyPI: `palmengine`
+**Palm Engine** · 0.10 architecture · 0.9.7 release line · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -90,6 +90,9 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/persistence/` | Definition and instance repositories, resume/sync |
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
+| `common/cqrs/` | Command/query buses, projections, rebuild policy |
+| `common/events/` | Outbox, reliable publishing, webhook dispatch |
+| `common/compensation/` | Optional saga-style undo on commit failure |
 | `common/patterns/` | Materialize definitions via `pattern_registry` (not new patterns) |
 | `common/transforms/` | Built-in transform rules, `TransformExecutor`, and `register_transform()` helpers |
 | `common/runtimes/` | `BaseRuntime`, `RuntimeHost`, scheduler resolution, runtime middleware hooks |
@@ -119,20 +122,31 @@ Use in **pipelines** (`pattern: pipeline`), **wizard** steps (`step_kind: transf
 
 Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks) lives in **`palm.common.runtimes`**. Concrete surfaces (CLI, embedded, daemon, server) live in **`palm.runtimes.<name>`** subpackages.
 
-### `palm.app` — application entrypoint
+### `palm.app` — application layer
 
-:class:`~palm.app.PalmApp` is the top-level orchestrator:
+**Recommended entrypoint:** :class:`~palm.app.host.ApplicationHost` — orchestrates roles, CQRS, projections, outbox, compensation, and recovery.
 
 | Component | Role |
 |-----------|------|
+| `ApplicationHost` | Top-level orchestrator — `start()`, `execute()`, `ask()`, `submit_flow()`, … |
+| `HostProfile` | Composable roles: `all_in_one`, `master`, `worker`, `server` |
+| `PalmApp` | Infrastructure — shared storage, runtime registry, definition loading |
 | `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
-| `bootstrap()` | Load common transforms, patterns, providers, storages |
-| `create_runtime()` | Register embedded, daemon, or server runtimes |
-| Shared `StorageEngine` | Durable definitions/instances across runtimes |
-| `load_definitions()` | Hydrate catalogs for all registered runtimes |
-| `shutdown()` | Stop runtimes and release owned storage |
+| `create_cli_host()` | CLI bootstrap — collapsed `all_in_one` host |
+
+`PalmApp` is intentionally **not** the primary public API for services or the CLI. Use it directly only for low-level embedding tests or when you need fine-grained runtime registry control without CQRS.
+
+```python
+from palm.app import ApplicationHost, HostProfile
+
+with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+    job = host.submit_flow("onboard")
+    view = host.get_instance_view(job.metadata["instance_id"])
+```
 
 **Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — each is a Django-style app subpackage with its own `registry.py`. Add the app name to `INSTALLED_PATTERNS` / `INSTALLED_PROVIDERS` / `INSTALLED_STORAGES`; never modify core to add a plugin.
+
+See [ApplicationHost, CQRS, and reliability](#applicationhost-cqrs-and-reliability-010) and [MIGRATION-0.10.md](MIGRATION-0.10.md).
 
 ---
 
@@ -527,13 +541,13 @@ Wiring path: `PalmSettings` → `runtime_start_options()` → `palm.common.runti
 - **Performance:** one serialize + repository read/write per matching transition when enabled; zero cost when disabled (hook not registered).
 - **Operational:** narrow `snapshot_on_status` in high-throughput deployments; use durable storage backends when snapshots must survive restarts.
 
-**Inspection:** `PalmApp.list_instance_snapshots(instance_id)` and CLI `palm instance snapshots <id>`.
+**Inspection:** `host.list_instance_snapshots(instance_id)` (or `PalmApp.list_instance_snapshots` when embedding infra directly) and CLI `palm instance snapshots <id>`.
 
 ---
 
 ## ApplicationHost, CQRS, and reliability (0.10)
 
-`:class:`~palm.app.host.ApplicationHost`` is the top-level orchestrator: role-based runtime spawning, command/query buses, projections, outbox drain, compensation, and startup recovery.
+:class:`~palm.app.host.ApplicationHost` is the top-level orchestrator: role-based runtime spawning, command/query buses, projections, outbox drain, compensation, and startup recovery.
 
 ```mermaid
 flowchart TB
@@ -733,5 +747,6 @@ New production code must not import from `archive/`.
 
 - [SCOPE.md](SCOPE.md) — vision, in/out of scope, roadmap
 - [README.md](README.md) — quick start and CLI
+- [MIGRATION-0.10.md](MIGRATION-0.10.md) — upgrade from 0.9.x bootstrap paths
 - [DEVELOPMENT.md](DEVELOPMENT.md) — contributor guide
 - [AGENTS.md](AGENTS.md) — contribution rules

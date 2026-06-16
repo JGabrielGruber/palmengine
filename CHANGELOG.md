@@ -2,6 +2,33 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased] — 0.10 architecture
+
+### Added
+
+- **ApplicationHost** — top-level orchestrator with role profiles (`all_in_one`, `master`, `worker`, `server`), CQRS buses, projections, outbox drain, compensation, and startup recovery
+- **CQRS layer** (`palm.common.cqrs`) — command/query buses, `InstanceIndexProjection`, `WizardProgressProjection`, `JobStatusBoardProjection`
+- **Reliability** — transactional outbox, `CompensationCoordinator`, optional webhook dispatch from outbox
+- **CLI host integration** — `create_cli_host()`, host-backed reads (query bus) and writes (command bus)
+- **`palm host`** subcommand — blocking deployment roles via `run_host()`
+- **Migration guide** — [MIGRATION-0.10.md](MIGRATION-0.10.md)
+
+### Changed
+
+- **CLI bootstrap** — `ApplicationHost` replaces direct `PalmApp` wiring; runtime name `main` (collapsed profile)
+- **`examples/full_demo.py`** — rewritten to use `ApplicationHost` + resume across restart
+- **Documentation** — README, ARCHITECTURE, DEVELOPMENT, examples README refreshed for 0.10 primary paths
+
+### Removed
+
+- **`PalmApp.bootstrap_cli()`** — use `ApplicationHost` / `create_cli_host()`
+- **`CLI_RUNTIME_NAME`** constant
+- **`palm/runtimes/cli/pkg/`** re-export shim
+
+### Deprecated
+
+- **`create_cli_app()`** — use `create_cli_host()`; returns `host.app` for legacy callers
+
 ## [0.9.7] — 2026-06-15
 
 **Transform release** — declarative data shaping from core engine to wizard steps, plus security and reliability polish to close the 0.9 line.
