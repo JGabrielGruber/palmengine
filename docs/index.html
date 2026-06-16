@@ -8,16 +8,16 @@
   <!-- Primary Meta -->
   <title>Palm Engine 🌴 | Orchestration That Feels Human</title>
   <meta name="description"
-    content="Palm Engine 0.10 — Behavior Tree orchestration with ApplicationHost, interactive wizards, CQRS projections, durable instances, and transactional reliability.">
+    content="Palm Engine — Lightweight Behavior Tree orchestration for rich interactive wizards, durable workflows, and transactional processes that feel alive.">
   <meta name="keywords"
-    content="palmengine, palm, orchestration, behavior tree, python workflow, wizard, transactional workflow, durable execution">
+    content="palmengine, palm, orchestration, behavior tree, python workflow, interactive wizard, transactional workflow, durable execution">
   <meta name="author" content="José Gabriel Gruber">
   <link rel="canonical" href="https://palmengine.org">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="Palm Engine - Orchestration with Behavior Trees">
+  <meta property="og:title" content="Palm Engine 🌴 | Orchestration That Feels Human">
   <meta property="og:description"
-    content="ApplicationHost orchestration with wizards, CQRS projections, durable instances, and transactional workflows.">
+    content="Rich interactive wizards, durable instances, and transactional reliability built on clean Behavior Trees.">
   <meta property="og:url" content="https://palmengine.org">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Palm Engine">
@@ -26,25 +26,25 @@
   <meta property="og:image" content="https://palmengine.org/images/palmengine-opengraph-wide.webp">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Palm Engine - Orchestration with Behavior Trees">
+  <meta property="og:image:alt" content="Palm Engine — Orchestration That Feels Human">
 
   <!-- Square -->
   <meta property="og:image" content="https://palmengine.org/images/palmengine-opengraph-square.webp">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="1200">
-  <meta property="og:image:alt" content="Palm Engine - Orchestration with Behavior Trees">
+  <meta property="og:image:alt" content="Palm Engine — Orchestration That Feels Human">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Palm Engine - Orchestration with Behavior Trees">
-  <meta name="twitter:description" content="ApplicationHost, wizards, CQRS projections, durable instances, Behavior Trees.">
+  <meta name="twitter:title" content="Palm Engine 🌴 | Orchestration That Feels Human">
+  <meta name="twitter:description" content="Interactive wizards, durable workflows, and transactional reliability on Behavior Trees.">
   <meta name="twitter:image" content="https://palmengine.org/images/palmengine-opengraph-wide.webp">
   <meta name="twitter:site" content="@PalmEngine">
 
   <!-- Favicon -->
   <link rel="icon" href="images/logo.webp" type="image/png">
   <link rel="apple-touch-icon" href="images/logo.webp">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#09090b">
 
   <link rel="stylesheet" href="styles/output.css">
 
@@ -62,6 +62,20 @@
         0 0 20px #22d3ee,
         0 0 40px #c026d3;
     }
+
+    .neon-container {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+          to bottom,
+          #09090b 0%,
+          #09090b 95%,
+          rgba(255, 255, 255, 0) 100%
+        ), linear-gradient(to right, #22ffed, #22ffed, #d26ffe, #ff889d, #feaf6b, #feaf6b);
+      position: relative;
+      overflow: hidden;
+    }
+
   </style>
 
   <script type="application/ld+json">
@@ -74,7 +88,7 @@
       "name": "Palm Engine",
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
-      "description": "Lightweight Python-first orchestration engine built on Behavior Trees. ApplicationHost coordinates CQRS, projections, outbox, and compensation for interactive wizards, data pipelines, and durable process instances.",
+      "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for rich interactive wizards, durable process instances, and transactional workflows that feel human.",
       "version": "0.10.9",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
@@ -94,17 +108,15 @@
         "priceCurrency": "USD"
       },
       "featureList": [
-        "ApplicationHost with composable HostProfile roles",
-        "CQRS command and query buses with projections",
-        "Transactional outbox and compensation handlers",
-        "Behavior Trees as universal control-flow model",
-        "State schemas and scoped validation",
-        "Interactive wizards with collection and transform steps",
-        "Parallel wizard branches with merge strategies",
-        "TransformEngine with 22 built-in rules",
+        "Rich interactive wizards with collection steps and backtracking",
         "Durable process instances with resume across restarts",
-        "Live status dashboard via palm status",
-        "CLI, REPL, Embedded, Daemon, and Server runtimes"
+        "Transactional reliability with outbox and compensation",
+        "Behavior Trees as clean universal control flow",
+        "State schemas and scoped validation",
+        "Powerful TransformEngine with 22 built-in rules",
+        "Parallel wizard branches with isolated scopes",
+        "Modern CLI, live status dashboard, and REPL",
+        "Extensible via registry-based patterns, providers, and storages"
       ],
       "downloadUrl": "https://github.com/JGabrielGruber/palmengine",
       "softwareRequirements": "Python"
@@ -117,14 +129,6 @@
       "description": "Orchestration That Feels Human — Lightweight Behavior Tree engine for wizards, pipelines, and durable workflows.",
       "publisher": {
         "@id": "https://palmengine.org/#software"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://palmengine.org/?s={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
       }
     }
   ]
@@ -132,22 +136,22 @@
 </script>
 </head>
 
-<body class="bg-slate-950 text-zinc-100">
+<body class="bg-zinc-950 text-zinc-100">
   <!-- Navbar -->
-  <nav class="border-b border-zinc-800 bg-slate-950/90 backdrop-blur-md sticky top-0 z-50">
+  <nav class="border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
         <img src="images/logo.webp" alt="Palm Logo" class="h-10 w-auto">
         <span class="text-3xl font-bold tracking-tighter">Palm</span>
       </div>
       <div class="items-center gap-x-8 text-sm font-medium hidden sm:flex">
-        <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
-        <a href="#quickstart" class="hover:text-cyan-400 transition-colors">Quick Start</a>
+        <a href="#features" class="hover:text-teal-400 transition-colors">Features</a>
+        <a href="#quickstart" class="hover:text-teal-400 transition-colors">Quick Start</a>
         <a href="https://github.com/JGabrielGruber/palmengine" target="_blank"
-          class="hover:text-cyan-400 transition-colors">GitHub</a>
-        <a href="#docs" class="hover:text-cyan-400 transition-colors">Docs</a>
+          class="hover:text-teal-400 transition-colors">GitHub</a>
+        <a href="#docs" class="hover:text-teal-400 transition-colors">Docs</a>
         <a href="https://github.com/JGabrielGruber/palmengine/releases" target="_blank"
-          class="bg-gradient-to-r from-cyan-500 to-indigo-400 hover:from-cyan-400 hover:to-indigo-300 px-6 py-2.5 rounded-2xl font-semibold transition-all">
+          class="bg-teal-500 hover:bg-teal-400 px-6 py-2.5 rounded-2xl font-semibold transition-all">
           Get Started
         </a>
       </div>
@@ -159,25 +163,21 @@
     <img src="images/philosophy-sunset.webp" alt="Philosophy sunset background"
       class="absolute inset-0 w-full h-full object-cover" fetchpriority="high" loading="eager">
 
-    <!-- Dark overlay -->
     <div class="absolute inset-0 bg-black/60"></div>
     <div class="max-w-5xl mx-auto px-6 z-10">
-      <div
-        class="inline-flex items-center gap-x-2 bg-slate-950/60 border border-cyan-500/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
+      <div class="inline-flex items-center gap-x-2 bg-zinc-950/60 border border-zinc-300/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.10.9 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip
-            install palmengine[cli]</code></span>
+        <span class="text-sm font-medium tracking-widest">v0.10.9 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
-        Orchestration that<br>feels <span
-          class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
+        Orchestration that<br>feels <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
       </h1>
       <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
-        ApplicationHost, live projections, and human-first wizards — built on Behavior Trees.
+        Rich interactive wizards, durable workflows, and transactional reliability — built on clean Behavior Trees.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="#quickstart"
-          class="bg-white text-zinc-900 hover:bg-slate-100 px-10 py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-x-3">
+          class="bg-white text-zinc-900 hover:bg-zinc-100 px-10 py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-x-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="lucide lucide-rocket-icon lucide-rocket">
@@ -186,7 +186,7 @@
             <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
             <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" />
           </svg>
-          Start Now
+          Start Building
         </a>
         <a href="https://github.com/JGabrielGruber/palmengine" target="_blank"
           class="border border-white/50 hover:border-white px-10 py-4 rounded-2xl font-medium flex items-center justify-center gap-x-3">
@@ -209,13 +209,17 @@
   </section>
 
   <!-- Features -->
-  <section id="features" class="py-24 bg-slate-900">
+  <section id="features" class="py-24 bg-zinc-900 bg-[radial-gradient(ellipse_at_center,rgba(114,114,114,0)_40%,rgba(0,0,0,0.6)_100%)]">
     <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-5xl font-bold text-center mb-16">Built for real life</h2>
+      <h2 class="text-5xl font-bold text-center mb-6">Built for real life</h2>
+      <p class="text-xl text-zinc-400 text-center max-w-3xl mx-auto mb-16">
+        Palm gives you the power to build complex workflows that still feel human — with interactive wizards, durable state, and production-grade reliability.
+      </p>
+      
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+        <div class="bg-zinc-950 border-2 border-zinc-800 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
+            stroke-linecap="round" stroke-linejoin="round" class="text-teal-400 mb-6 size-16">
             <path
               d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72" />
             <path d="m14 7 3 3" />
@@ -226,55 +230,61 @@
             <path d="M21 16h-4" />
             <path d="M11 3H9" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">Wizards &amp; Lists</h3>
-          <p class="text-zinc-400">Collection steps for dynamic todo lists, schemas, summary &amp; commit. Resume anytime.</p>
+          <h3 class="text-2xl font-semibold mb-4">Interactive Wizards</h3>
+          <p class="text-zinc-400">Collection steps, schemas, backtracking, summary &amp; transactional commits. Resume anytime.</p>
         </div>
-        <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+        
+        <div class="bg-zinc-950 border-2 border-zinc-800 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
+            stroke-linecap="round" stroke-linejoin="round" class="text-teal-400 mb-6 size-16">
             <rect x="16" y="16" width="6" height="6" rx="1" />
             <rect x="2" y="16" width="6" height="6" rx="1" />
             <rect x="9" y="2" width="6" height="6" rx="1" />
             <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
             <path d="M12 12V8" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">Parallel Branches</h3>
-          <p class="text-zinc-400">Run wizard branches concurrently with isolated scopes and merged validation.</p>
+          <h3 class="text-2xl font-semibold mb-4">Parallel Workflows</h3>
+          <p class="text-zinc-400">Run wizard branches concurrently with isolated scopes and smart merging.</p>
         </div>
-        <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
+        
+        <div class="bg-zinc-950 border-2 border-zinc-800 rounded-3xl p-10 card-hover">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
-            <path d="M12 3v18" />
-            <path d="M3 12h18" />
-            <circle cx="12" cy="12" r="9" />
-          </svg>
-          <h3 class="text-2xl font-semibold mb-4">State Schemas</h3>
-          <p class="text-zinc-400">Layered validation with scoped blackboards — flow, step, and field levels.</p>
-        </div>
-        <div class="bg-slate-950 border border-cyan-900/50 rounded-3xl p-10 card-hover">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400 mb-6 size-16">
+            stroke-linecap="round" stroke-linejoin="round" class="text-teal-400 mb-6 size-16">
             <ellipse cx="12" cy="5" rx="9" ry="3" />
             <path d="M3 5V19A9 3 0 0 0 21 19V5" />
             <path d="M3 12A9 3 0 0 0 21 12" />
           </svg>
-          <h3 class="text-2xl font-semibold mb-4">ApplicationHost</h3>
-          <p class="text-zinc-400">CQRS, projections, outbox, and compensation — the recommended path for services and CLI.</p>
+          <h3 class="text-2xl font-semibold mb-4">Durable &amp; Reliable</h3>
+          <p class="text-zinc-400">Process instances survive restarts. Outbox, compensation, and live projections keep everything consistent.</p>
+        </div>
+        
+        <div class="bg-zinc-950 border-2 border-zinc-800 rounded-3xl p-10 card-hover">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="text-teal-400 mb-6 size-16">
+            <path d="M3 2v1c0 1 2 1 2 2S3 6 3 7s2 1 2 2-2 1-2 2 2 1 2 2"/>
+            <path d="M18 6h.01"/>
+            <path d="M6 18h.01"/>
+            <path d="M20.83 8.83a4 4 0 0 0-5.66-5.66l-12 12a4 4 0 1 0 5.66 5.66Z"/>
+            <path d="M18 11.66V22a4 4 0 0 0 4-4V6"/>
+          </svg>
+          <h3 class="text-2xl font-semibold mb-4">Powerful Transforms</h3>
+          <p class="text-zinc-400">22 built-in rules for data shaping, serialization, and enrichment — usable everywhere.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Quick Start -->
-  <section id="quickstart" class="py-24">
+  <section id="quickstart" class="py-24 neon-container">
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
-      <div class="bg-black border border-cyan-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
+      <div class="bg-black border-4 border-teal-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
         <pre><code>$ pip install palmengine[cli]
 $ palm doctor
 $ palm status
-$ palm flow start onboard
-$ palm flow start schema-onboard</code></pre>
+$ palm flow start onboard          # rich wizard example
+$ palm flow start schema-onboard   # schemas + scopes
+$ palm flow start todo-builder     # dynamic lists</code></pre>
       </div>
       <p class="text-center text-zinc-400 mt-6">
         Or with uv (recommended): <code class="bg-zinc-900 px-2 py-1 rounded">uvx palmengine palm doctor</code>
@@ -294,29 +304,25 @@ $ palm flow start schema-onboard</code></pre>
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-cyan-400">Product</h4>
+        <h4 class="font-semibold mb-4 text-teal-400">Product</h4>
         <ul class="space-y-3 text-zinc-400">
           <li><a href="#features" class="hover:text-white">Features</a></li>
-          <li><a href="https://github.com/JGabrielGruber/palmengine" target="_blank" class="hover:text-white">GitHub</a>
-          </li>
+          <li><a href="https://github.com/JGabrielGruber/palmengine" target="_blank" class="hover:text-white">GitHub</a></li>
         </ul>
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-cyan-400">Resources</h4>
+        <h4 class="font-semibold mb-4 text-teal-400">Resources</h4>
         <ul class="space-y-3 text-zinc-400">
-          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md"
-              class="hover:text-white">Documentation</a></li>
-          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md"
-              class="hover:text-white">Architecture</a></li>
+          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" class="hover:text-white">Documentation</a></li>
+          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md" class="hover:text-white">Architecture</a></li>
         </ul>
       </div>
 
       <div>
-        <h4 class="font-semibold mb-4 text-cyan-400">Connect</h4>
+        <h4 class="font-semibold mb-4 text-teal-400">Connect</h4>
         <div class="flex flex-col gap-y-3 text-zinc-400">
-          <a href="https://github.com/JGabrielGruber/palmengine" target="_blank"
-            class="hover:text-white flex items-center gap-x-3">
+          <a href="https://github.com/JGabrielGruber/palmengine" target="_blank" class="hover:text-white flex items-center gap-x-3">
             <svg aria-hidden="true" focusable="false" class="octicon octicon-mark-github" viewBox="0 0 24 24" width="24"
               height="24" fill="currentColor" display="inline-block" overflow="visible" class="size-6">
               <path
@@ -352,5 +358,4 @@ $ palm flow start schema-onboard</code></pre>
     </div>
   </footer>
 </body>
-
 </html>
