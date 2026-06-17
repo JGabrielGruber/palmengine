@@ -1,22 +1,12 @@
-"""SSR page layout — Palm Explorer shell."""
+"""SSR layout helpers — shared page shell for surface-specific UIs."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from palm.common.runtimes.server.ssr.render import escape
 
-_EXPLORER_NAV = (
-    ("Home", "/explorer"),
-    ("Flows", "/explorer/flows"),
-    ("Processes", "/explorer/processes"),
-    ("Patterns", "/explorer/patterns"),
-    ("Schemas", "/explorer/schemas"),
-    ("Jobs", "/explorer/jobs"),
-    ("Instances", "/explorer/instances"),
-    ("API Reference", "/v1/docs"),
-    ("Examples", "/explorer/examples"),
-)
-
-_PALM_CSS = """
+PALM_SSR_CSS = """
 :root {
   --bg: #09090b;
   --surface: #18181b;
@@ -135,6 +125,17 @@ main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
 .alert { padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
 .alert-success { background: #042f2e; border: 1px solid var(--accent); color: var(--text); }
 .alert-error { background: #450a0a; border: 1px solid var(--rose); color: var(--text); }
+.btn {
+  display: inline-block; font-size: 0.85rem; font-weight: 600;
+  padding: 0.4rem 0.75rem; border-radius: 0.4rem; text-decoration: none;
+}
+.btn-primary { background: var(--accent-soft); color: var(--text); border: 1px solid var(--accent); }
+.btn-primary:hover { background: var(--accent); text-decoration: none; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.form-section { margin: 1.25rem 0; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+.form-section h4 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+.flow-context-panel { margin-top: 0.75rem; padding: 0.85rem 1rem; }
+.muted-section { opacity: 0.92; }
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
@@ -143,38 +144,47 @@ main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
 """
 
 
-def explorer_page(
+def page_shell(
     *,
     title: str,
+    brand: str,
     version: str,
     content: str,
-    active_nav: str = "/explorer",
+    nav: Sequence[tuple[str, str]],
+    active_nav: str,
     subtitle: str = "",
+    footer_pills: Sequence[tuple[str, str]] = (),
+    extra_css: str = "",
 ) -> str:
-    """Wrap page content in the Palm Explorer layout."""
-    nav = []
-    for label, href in _EXPLORER_NAV:
+    """Wrap content in a sidebar layout shell for SSR surfaces."""
+    nav_html = []
+    for label, href in nav:
         active = " active" if href == active_nav else ""
-        nav.append(f'<a class="nav-link{active}" href="{escape(href)}">{escape(label)}</a>')
+        nav_html.append(f'<a class="nav-link{active}" href="{escape(href)}">{escape(label)}</a>')
+
+    pills = []
+    for label, href in footer_pills:
+        pills.append(f'<span class="pill"><a href="{escape(href)}">{escape(label)}</a></span>')
+
     subtitle_html = f"<p>{escape(subtitle)}</p>" if subtitle else ""
+    css = PALM_SSR_CSS + extra_css
+    pills_html = f'<div class="pill-row" style="margin-top:1.5rem">{"".join(pills)}</div>' if pills else ""
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{escape(title)} · Palm Explorer</title>
-  <style>{_PALM_CSS}</style>
+  <title>{escape(title)} · {escape(brand)}</title>
+  <style>{css}</style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">Palm Explorer</div>
+      <div class="brand">{escape(brand)}</div>
       <div class="version">v{escape(version)}</div>
-      <nav>{"".join(nav)}</nav>
-      <div class="pill-row" style="margin-top:1.5rem">
-        <span class="pill"><a href="/health">Health</a></span>
-        <span class="pill"><a href="/v1/openapi.json">OpenAPI</a></span>
-      </div>
+      <nav>{"".join(nav_html)}</nav>
+      {pills_html}
     </aside>
     <main>
       <div class="hero">
@@ -186,21 +196,3 @@ def explorer_page(
   </div>
 </body>
 </html>"""
-
-
-def wiki_page(
-    *,
-    title: str,
-    version: str,
-    content: str,
-    active_nav: str = "/explorer",
-    subtitle: str = "",
-) -> str:
-    """Backward-compatible alias for :func:`explorer_page`."""
-    return explorer_page(
-        title=title,
-        version=version,
-        content=content,
-        active_nav=active_nav,
-        subtitle=subtitle,
-    )

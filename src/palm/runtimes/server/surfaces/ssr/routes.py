@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.ssr.render import redirect
 from palm.runtimes.server.surfaces.ssr.example_pages import ExamplePages
+from palm.runtimes.server.surfaces.ssr.explorer import ExplorerPages
 from palm.runtimes.server.surfaces.ssr.explorer.actions import ExplorerActions
-from palm.runtimes.server.surfaces.ssr.explorer.pages import ExplorerPages
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

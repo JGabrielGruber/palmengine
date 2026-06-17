@@ -5,7 +5,7 @@ Add a new page by:
 1. Implementing a handler on :class:`~palm.runtimes.server.surfaces.ssr.explorer.pages.ExplorerPages`
    or a dedicated class in this module.
 2. Registering the route in :mod:`palm.runtimes.server.surfaces.ssr.routes`.
-3. Adding a nav link in :mod:`palm.common.runtimes.server.ssr.layout` when the page is stable.
+3. Adding a nav link in :mod:`palm.runtimes.server.surfaces.ssr.explorer.layout` when stable.
 """
 
 from __future__ import annotations
@@ -13,10 +13,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.ssr.components import code_block, link_card
-from palm.common.runtimes.server.ssr.fetch import ExplorerFetcher
-from palm.common.runtimes.server.ssr.layout import explorer_page
 from palm.common.runtimes.server.ssr.render import html_response
+from palm.runtimes.server.surfaces.ssr.explorer.components import code_block, link_card
+from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

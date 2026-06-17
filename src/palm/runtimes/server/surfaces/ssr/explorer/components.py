@@ -83,10 +83,17 @@ def badge(text: str, *, tone: str = "default") -> str:
     return f'<span class="badge badge-{escape(tone)}">{escape(text)}</span>'
 
 
-def alert(message: str, *, tone: str = "success") -> str:
-    from palm.common.runtimes.server.ssr.forms import alert as _alert
+def action_button(href: str, label: str, *, tone: str = "primary") -> str:
+    """Compact call-to-action link styled as a button."""
+    return (
+        f'<a class="btn btn-{escape(tone)}" href="{escape(href)}">{escape(label)}</a>'
+    )
 
-    return _alert(message, tone=tone)
+
+def alert(message: str, *, tone: str = "success") -> str:
+    from palm.runtimes.server.surfaces.ssr.explorer import forms
+
+    return forms.alert(message, tone=tone)
 
 
 def schema_form(
@@ -99,9 +106,9 @@ def schema_form(
     submit_label: str = "Submit",
     hidden_fields: dict[str, str] | None = None,
 ) -> str:
-    from palm.common.runtimes.server.ssr.forms import schema_form as _schema_form
+    from palm.runtimes.server.surfaces.ssr.explorer import forms
 
-    return _schema_form(
+    return forms.schema_form(
         schema,  # type: ignore[arg-type]
         action=action,
         method=method,

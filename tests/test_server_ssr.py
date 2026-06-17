@@ -10,10 +10,15 @@ from typing import Any
 
 import pytest
 
-from palm.common.runtimes.server.ssr.fetch import ExplorerFetcher
-from palm.common.runtimes.server.ssr.forms import schema_form
-from palm.common.runtimes.server.ssr.layout import explorer_page
-from palm.common.runtimes.server.ssr.schemas import FLOW_SUBMIT_FORM
+from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form, schema_form
+from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import (
+    flow_description,
+    flow_option_label,
+    start_flow_href,
+)
+from palm.runtimes.server.surfaces.ssr.explorer.schemas import FLOW_SUBMIT_FORM, build_flow_submit_schema
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.runtimes.server import ServerRuntime
 
@@ -53,21 +58,17 @@ def _post_json(base_url: str, path: str, body: dict[str, Any]) -> tuple[int, dic
         return resp.status, json.loads(resp.read().decode("utf-8"))
 
 
-def _post_form(base_url: str, path: str, fields: dict[str, str]) -> tuple[int, str, dict[str, str]]:
-    data = urllib.parse.urlencode(fields).encode("utf-8")
-    req = urllib.request.Request(
-        f"{base_url}{path}",
-        data=data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        method="POST",
+@pytest.fixture
+def sample_flow() -> FlowDefinition:
+    return FlowDefinition(
+        id="explorer-flow-1",
+        name="explorer-flow",
+        pattern="wizard",
+        options={
+            "description": "Demo onboarding wizard",
+            "steps": [{"slug": "one", "title": "One", "prompt": "One?"}],
+        },
     )
-    try:
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            headers = {key.lower(): value for key, value in resp.headers.items()}
-            return resp.status, resp.read().decode("utf-8"), headers
-    except urllib.error.HTTPError as exc:
-        headers = {key.lower(): value for key, value in exc.headers.items()}
-        return exc.code, exc.read().decode("utf-8"), headers
 
 
 def test_explorer_overview_renders(server: ServerRuntime) -> None:
@@ -118,29 +119,62 @@ def test_explorer_surface_info_is_active(server: ServerRuntime) -> None:
     assert payload["explorer"] == "/explorer"
 
 
-def test_flow_catalog_page(server: ServerRuntime) -> None:
-    server.repository.register_flow(
-        FlowDefinition(
-            id="explorer-flow-1",
-            name="explorer-flow",
-            pattern="wizard",
-            options={"steps": [{"slug": "one", "title": "One", "prompt": "One?"}]},
-        )
-    )
+def test_flow_catalog_page(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+    server.repository.register_flow(sample_flow)
     status, html, _ = _get_html(server.base_url, "/explorer/flows")
     assert status == 200
     assert "explorer-flow" in html
+    assert "Start" in html
+    assert start_flow_href("explorer-flow-1") in html
 
     status, html, _ = _get_html(server.base_url, "/explorer/flows/explorer-flow-1")
     assert status == 200
     assert "wizard" in html
+    assert "Start this flow" in html
 
 
-def test_flow_submit_form_renders(server: ServerRuntime) -> None:
+def test_flow_submit_form_renders(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+    server.repository.register_flow(sample_flow)
     status, html, _ = _get_html(server.base_url, "/explorer/flows/submit")
     assert status == 200
-    assert 'name="flow_name"' in html
+    assert 'name="flow_id"' in html
+    assert 'name="submit_mode"' in html
+    assert "explorer-flow · wizard" in html
     assert 'action="/explorer/flows/submit"' in html
+
+
+def test_flow_submit_prefills_from_query(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+    server.repository.register_flow(sample_flow)
+    status, html, _ = _get_html(server.base_url, "/explorer/flows/submit?flow=explorer-flow-1")
+    assert status == 200
+    assert 'value="explorer-flow-1" selected' in html
+    assert "Demo onboarding wizard" in html
+
+
+def test_flow_submit_post_registered_flow(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+    import http.client
+    from urllib.parse import urlparse
+
+    server.repository.register_flow(sample_flow)
+    parsed = urlparse(server.base_url)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    body = urllib.parse.urlencode(
+        {
+            "submit_mode": "registered",
+            "flow_id": "explorer-flow-1",
+        }
+    ).encode("utf-8")
+    conn.request(
+        "POST",
+        "/explorer/flows/submit",
+        body=body,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    response = conn.getresponse()
+    assert response.status == 302
+    location = response.getheader("Location", "")
+    assert location.startswith("/explorer/jobs/")
+    conn.close()
 
 
 def test_process_and_pattern_pages(server: ServerRuntime) -> None:
@@ -242,6 +276,24 @@ def test_explorer_layout_renders_title() -> None:
 
 def test_schema_form_renders_fields() -> None:
     html = schema_form(FLOW_SUBMIT_FORM, action="/explorer/flows/submit")
-    assert 'name="flow_name"' in html
-    assert 'name="wizard_name"' in html
+    assert 'name="submit_mode"' in html
     assert 'type="submit"' in html
+
+
+def test_flow_submit_form_builder(sample_flow: FlowDefinition) -> None:
+    html = flow_submit_form([sample_flow], selected_flow_id="explorer-flow-1")
+    assert "explorer-flow · wizard · Demo onboarding wizard" in html
+    assert 'value="explorer-flow-1" selected' in html
+    assert "flow-context-panel" in html
+
+
+def test_flow_utils(sample_flow: FlowDefinition) -> None:
+    assert flow_description(sample_flow) == "Demo onboarding wizard"
+    assert "explorer-flow" in flow_option_label(sample_flow)
+    assert start_flow_href("my-flow") == "/explorer/flows/submit?flow=my-flow"
+
+
+def test_build_flow_submit_schema(sample_flow: FlowDefinition) -> None:
+    schema = build_flow_submit_schema([sample_flow])
+    flow_spec = schema.definition["properties"]["flow_id"]
+    assert "explorer-flow-1" in flow_spec["enum"]

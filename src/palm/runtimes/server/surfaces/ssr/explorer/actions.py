@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.ssr.fetch import ExplorerFetcher
-from palm.common.runtimes.server.ssr.forms import coerce_job_input, parse_form_values
+from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values
 from palm.common.runtimes.server.ssr.render import redirect
-from palm.common.runtimes.server.ssr.schemas import FLOW_SUBMIT_FORM
+from palm.runtimes.server.surfaces.ssr.explorer.schemas import build_flow_submit_schema
 from palm.core.orchestration.exceptions import JobNotFoundError
 
 if TYPE_CHECKING:
@@ -44,36 +44,76 @@ class ExplorerActions:
         return redirect(f"/explorer/jobs/{job_id}?notice=Input+accepted")
 
     def submit_flow(self, request: ServerRequest) -> ServerResponse:
+        flows = self._fetch.list_flows()
+        schema = build_flow_submit_schema(flows)
         form_data = request.body or {}
-        values, errors = parse_form_values(FLOW_SUBMIT_FORM, form_data)
+        values, errors = parse_form_values(schema, form_data)
+        errors.extend(_validate_submit_values(values))
+
         if errors:
-            joined = _quote("; ".join(errors))
-            return redirect(f"/explorer/flows/submit?error={joined}")
+            return redirect(_submit_redirect_url(values, error="; ".join(errors)))
 
         try:
             command = _flow_command_from_form(values)
             job = self._ctx.execute(command)
         except (TypeError, ValueError, KeyError) as exc:
-            return redirect(f"/explorer/flows/submit?error={_quote(str(exc))}")
+            return redirect(_submit_redirect_url(values, error=str(exc)))
         except Exception as exc:
-            return redirect(f"/explorer/flows/submit?error={_quote(str(exc))}")
+            return redirect(_submit_redirect_url(values, error=str(exc)))
 
         self._ctx.wait_until_idle()
         job_id = getattr(job, "id", None) or str(job)
         return redirect(f"/explorer/jobs/{job_id}?notice=Flow+submitted")
 
 
-def _flow_command_from_form(values: dict[str, Any]) -> SubmitFlowCommand:
-    flow_name = str(values.get("flow_name") or "").strip()
-    wizard_name = str(values.get("wizard_name") or "").strip()
-    wizard_steps = values.get("wizard_steps")
+def _validate_submit_values(values: dict[str, Any]) -> list[str]:
+    mode = str(values.get("submit_mode") or "registered")
+    errors: list[str] = []
+    if mode == "inline_wizard":
+        if not str(values.get("wizard_name") or "").strip():
+            errors.append("wizard_name: required for inline wizard mode")
+    else:
+        flow_id = str(values.get("flow_id") or values.get("flow_name") or "").strip()
+        if not flow_id:
+            errors.append("flow_id: choose a registered flow")
+    return errors
 
-    if wizard_name:
-        steps = int(wizard_steps) if wizard_steps else 2
-        return SubmitFlowCommand(flow={"wizard": {"name": wizard_name, "steps": steps}})
-    if flow_name:
-        return SubmitFlowCommand(flow=flow_name)
-    raise ValueError("Provide a flow name or wizard name")
+
+def _flow_command_from_form(values: dict[str, Any]) -> SubmitFlowCommand:
+    mode = str(values.get("submit_mode") or "registered")
+    job_id = _optional_str(values.get("job_id"))
+
+    if mode == "inline_wizard":
+        wizard_name = str(values.get("wizard_name") or "").strip()
+        if not wizard_name:
+            raise ValueError("wizard_name is required for inline wizard mode")
+        steps = int(values.get("wizard_steps") or 2)
+        return SubmitFlowCommand(
+            flow={"wizard": {"name": wizard_name, "steps": steps}},
+            job_id=job_id,
+        )
+
+    flow_id = str(values.get("flow_id") or values.get("flow_name") or "").strip()
+    if flow_id:
+        return SubmitFlowCommand(flow=flow_id, by_id=True, job_id=job_id)
+    raise ValueError("Choose a registered flow or switch to inline wizard mode")
+
+
+def _submit_redirect_url(values: dict[str, Any], *, error: str) -> str:
+    from urllib.parse import quote
+
+    flow_id = str(values.get("flow_id") or "").strip()
+    base = f"/explorer/flows/submit?error={quote(error, safe='')}"
+    if flow_id:
+        base += f"&flow={quote(flow_id, safe='')}"
+    return base
+
+
+def _optional_str(value: object | None) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
 
 
 def _quote(message: str) -> str:

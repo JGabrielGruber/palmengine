@@ -1,0 +1,125 @@
+"""Instance browser and snapshot pages."""
+
+from __future__ import annotations
+
+from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.runtimes.server.surfaces.ssr.explorer.components import code_block, data_table, stat_card
+from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+from .base import PageContext
+from .utils import not_found_page
+from palm.common.runtimes.server.ssr.render import escape, html_response
+
+
+class InstancePages:
+    def __init__(self, ctx: PageContext) -> None:
+        self._ctx = ctx
+
+    def catalog(self, request: ServerRequest) -> ServerResponse:
+        instances = self._ctx.fetch.list_instances(limit=50)
+        rows = [
+            [
+                f'<a href="/explorer/instances/{escape(row.get("instance_id", ""))}">{escape(row.get("instance_id", ""))}</a>',
+                escape(str(row.get("status") or "—")),
+                escape(str(row.get("flow_name") or "—")),
+                escape(str(row.get("wizard_step_slug") or "—")),
+            ]
+            for row in instances
+        ]
+        content = (
+            '<section class="section">'
+            f"{data_table(['Instance', 'Status', 'Flow', 'Step'], rows) if rows else '<p class=\"muted\">No instances yet.</p>'}"
+            "</section>"
+        )
+        return html_response(
+            explorer_page(
+                title="Instance Browser",
+                version=self._ctx.version,
+                content=content,
+                active_nav="/explorer/instances",
+                subtitle="Durable process instances with links to snapshots and jobs.",
+            )
+        )
+
+    def detail(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
+        instance = self._ctx.fetch.get_instance(instance_id)
+        if instance is None:
+            return not_found_page(self._ctx.version, f"Instance not found: {instance_id}")
+
+        job_id = instance.get("job_id", "")
+        content = (
+            '<section class="section"><div class="grid-2">'
+            f"{stat_card('Status', instance.get('status', '—'))}"
+            f"{stat_card('Flow', instance.get('flow_name') or '—')}"
+            "</div></section>"
+            '<section class="section"><div class="panel">'
+            f'<p><a href="/explorer/instances/{escape(instance_id)}/snapshots">View snapshots</a>'
+            f'{f" · <a href=\"/explorer/jobs/{escape(job_id)}\">View job</a>" if job_id else ""}'
+            f' · <a href="/v1/instances/{escape(instance_id)}">REST</a></p>'
+            f"{code_block(instance)}"
+            "</div></section>"
+        )
+        return html_response(
+            explorer_page(
+                title=f"Instance {instance_id}",
+                version=self._ctx.version,
+                content=content,
+                active_nav="/explorer/instances",
+            )
+        )
+
+    def snapshots(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
+        try:
+            snapshots = self._ctx.fetch.list_snapshots(instance_id)
+        except Exception:
+            return not_found_page(self._ctx.version, f"Instance not found: {instance_id}")
+
+        rows = [
+            [
+                f'<a href="/explorer/instances/{escape(instance_id)}/snapshots/{index}">{index}</a>',
+                escape(snap.status),
+                escape(snap.recorded_at),
+                escape(snap.wizard_step_slug or "—"),
+            ]
+            for index, snap in enumerate(snapshots)
+        ]
+        content = (
+            f'<section class="section"><p>'
+            f'<a href="/explorer/instances/{escape(instance_id)}">← instance</a> · '
+            f'<a href="/explorer/jobs">Jobs</a> · '
+            f'<a href="/v1/instances/{escape(instance_id)}/snapshots">REST</a></p>'
+            f"{data_table(['#', 'Status', 'Recorded', 'Step'], rows) if rows else '<p class=\"muted\">No snapshots captured.</p>'}"
+            "</section>"
+        )
+        return html_response(
+            explorer_page(
+                title=f"Snapshots · {instance_id}",
+                version=self._ctx.version,
+                content=content,
+                active_nav="/explorer/instances",
+            )
+        )
+
+    def snapshot_detail(
+        self,
+        request: ServerRequest,
+        *,
+        instance_id: str,
+        snapshot_id: str,
+    ) -> ServerResponse:
+        resolved = self._ctx.fetch.get_snapshot(instance_id, snapshot_id)
+        if resolved is None:
+            return not_found_page(self._ctx.version, f"Snapshot not found: {snapshot_id}")
+        index, snapshot = resolved
+        content = (
+            f'<section class="section"><p><a href="/explorer/instances/{escape(instance_id)}/snapshots">← snapshots</a></p>'
+            f'<div class="panel">{code_block({"snapshot_id": str(index), **snapshot.to_dict()})}</div>'
+            "</section>"
+        )
+        return html_response(
+            explorer_page(
+                title=f"Snapshot {snapshot_id}",
+                version=self._ctx.version,
+                content=content,
+                active_nav="/explorer/instances",
+            )
+        )

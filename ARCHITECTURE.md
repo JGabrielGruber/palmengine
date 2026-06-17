@@ -701,7 +701,7 @@ palm/runtimes/            # concrete surfaces (thin packages)
 │   │   │   └── docs.py         # rich HTML hub at GET /v1/docs
 │   │   ├── websocket/    # extension point (planned)
 │   │   ├── mcp/          # extension point (planned)
-│   │   └── ssr/          # Palm Explorer + SSR pages (common/runtimes/server/ssr)
+│   │   └── ssr/          # SSR surface (explorer/ module; common/ssr = thin helpers)
 │   └── transport/
 │       ├── stdlib.py     # default zero-dep HTTP (registered as "stdlib")
 │       └── (future)      # e.g. starlette — async REST + WebSocket
@@ -724,7 +724,7 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
 | **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **Palm Explorer** | Shipped | `/explorer` introspection hub; `/wiki` and `/docs` redirect; schema-driven forms |
+| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; common `ssr/` = render + layout shell |
 | **WebSocket / MCP** | Planned | Surfaces registered under `runtimes/server/surfaces/`; async transport TBD |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.
