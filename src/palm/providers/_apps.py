@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import importlib
 
-INSTALLED_PROVIDERS: tuple[str, ...] = ("rest", "graphql", "postgres")
+INSTALLED_PROVIDERS: tuple[str, ...] = ("rest", "graphql", "postgres", "palm")
 
 
 def autoload() -> None:

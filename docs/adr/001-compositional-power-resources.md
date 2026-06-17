@@ -2,7 +2,7 @@
 
 ## Status
 
-**Accepted** — June 2026 (Phases 1–2 implemented)
+**Accepted** — June 2026 (Phases 1–4 implemented)
 
 ## Context
 
@@ -37,11 +37,18 @@ Wizard `action` steps remain supported via compatibility mapping to resource inv
 | 1 — `ResourceDefinition` + repository | **Shipped** |
 | 2 — `ResourceEngine.invoke` + `BaseProvider` contract | **Shipped** |
 | 3 — `ResourceLeaf` + wizard `step_kind: resource` | **Shipped** |
-| 4 — `palm` provider | Planned |
+| 4 — `palm` provider | **Shipped** |
 | 5 — Cross-cutting integration | Planned (partial: `enrich_resource` + `resource_ref`) |
 | 6 — Release polish | Planned |
 
 Phase 2 wires definition resolution via `palm/common/resource/resolver.py` injected at `BaseRuntime.start()` — core stays pure.
+
+Phase 4 ships `PalmProvider` at `palm/providers/palm/` with:
+
+- **Local mode** — `bind_palm_runtime()` at `BaseRuntime.start()`; invocations delegate to `submit_flow`, `submit_process`, `resource.invoke`, or `get_job`
+- **Remote mode** — `remote_url` + optional `remote_token`; flow submit via `POST /v1/jobs`; process submit via `POST /v1/plans/prepare` + `submit`
+- **Recursion** — `palm_invoke_frame()` in `recursion.py` enforces depth (default 8) and cycle detection; correlation metadata on child job `metadata`
+- **Wait policy** — `wait` + `wait_timeout` params for inline completion vs fire-and-forget child job handles
 
 ## Consequences
 

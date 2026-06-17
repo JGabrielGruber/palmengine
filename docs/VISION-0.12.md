@@ -229,12 +229,15 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - Example: `resource-customer-wizard` flow (`examples/definitions/resource_customer_wizard.py`)
 - **Exit criteria met:** `tests/test_resource_leaf.py`; pipeline/DAG builders deferred
 
-### Phase 4 — `palm` provider
+### Phase 4 — `palm` provider ✅ Shipped
 
-- New `palm/providers/palm/` app — `PalmProvider` with local `ApplicationHost` delegation
-- Remote mode via Server HTTP client + auth header propagation
-- Recursion guardrails (depth, cycle detection, child job linkage)
-- **Exit criteria:** `examples/compositional_demo.py` — parent flow submits child flow, resumes on completion
+- `palm/providers/palm/` — `PalmProvider` with actions `submit_flow`, `submit_process`, `invoke_resource`, `fetch`
+- **Local mode** — `bind_palm_runtime()` at `BaseRuntime.start()`; delegates to bound runtime
+- **Remote mode** — `remote_url` / `remote_token`; flow via `POST /v1/jobs`, process via plans API
+- **Recursion** — `palm_invoke_frame()` depth limit (default 8) + cycle detection; `__palm:*` correlation metadata on child jobs
+- **Wait policy** — `wait` + `wait_timeout` for inline completion vs fire-and-forget handles
+- Example: `compositional-parent` wizard (`examples/definitions/compositional_demo.py`)
+- **Exit criteria met:** `tests/test_palm_provider.py` (local, remote, depth, cycle, invoke_resource)
 
 ### Phase 5 — Cross-cutting integration
 

@@ -14,7 +14,7 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **`ResourceEngine` evolution** — resolve, bind params, invoke actions, structured events
 - **`BaseProvider` richness** — `invoke()`, `describe()`, structured `ProviderResult`, action catalog
 - **`ResourceLeaf`** — core Behavior Tree leaf for resource invocation in any pattern
-- **`palm` provider** — flagship recursion: Palm flows/processes invoked locally or via remote Server HTTP
+
 - **Pattern integration** — `step_kind: resource` in wizards; resource stages in pipeline/DAG builders
 - **Cross-cutting** — `enrich_resource` + `resource_ref`, compensation for mutating invokes, CQRS projection, Explorer timelines
 - **Examples** — compositional demo (parent flow → child flow → resume)
@@ -46,7 +46,17 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **Example flow** — `resource-customer-wizard` (input + `fetch-customer` resource step)
 - **Events** — `wizard.resource.invoked`
 
-_Phases 4–6 remain planned._
+### Added (Phase 4)
+
+- **`palm` provider** — built-in compositional orchestration at `palm/providers/palm/`
+- **Local mode** — `submit_flow`, `submit_process`, `invoke_resource`, `fetch` via bound runtime
+- **Remote mode** — HTTP delegation to `ServerRuntime` (`POST /v1/jobs`, plans API for processes)
+- **Recursion guardrails** — configurable depth limit and cycle detection via `contextvars`
+- **Correlation metadata** — child jobs carry `__palm:parent_job_id`, `__palm:invoke_depth`, `__palm:invoke_chain`
+- **Runtime wiring** — `BaseRuntime.start()` binds local runtime for in-process `palm` calls
+- **Example** — `compositional-parent` wizard calling `ingest-etl` via `submit-ingest-etl` resource
+
+_Phases 5–6 remain planned._
 
 ## [0.11.8] — 2026-06-17
 

@@ -38,7 +38,7 @@ def test_installed_pattern_apps_register() -> None:
 
 
 def test_installed_provider_apps_register() -> None:
-    assert set(INSTALLED_PROVIDERS) == {"rest", "graphql", "postgres"}
+    assert set(INSTALLED_PROVIDERS) == {"rest", "graphql", "postgres", "palm"}
     for name in INSTALLED_PROVIDERS:
         provider_registry.get(name)
 

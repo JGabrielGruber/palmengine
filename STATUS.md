@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.11.8` (shipping)  
-**Next Major:** `0.12` — Compositional Power (vision defined, implementation not started)  
+**Next Major:** `0.12` — Compositional Power (Phases 1–4 shipped; Phases 5–6 in progress)  
 **Last Updated:** June 17, 2026  
 **Maturity:** Architecture stabilized. Palm Explorer shipped; 0.12 Resource System vision documented.
 
@@ -67,7 +67,7 @@ Documentation refinement pass (ApplicationHost release):
 | `ResourceDefinition` + repository | **Shipped** (Phase 1) |
 | `ResourceEngine` / `BaseProvider` evolution | **Shipped** (Phase 2) |
 | `ResourceLeaf` (core BT node) | **Shipped** (Phase 3) |
-| `palm` provider (local + remote recursion) | **Planned** (Phase 4) |
+| `palm` provider (local + remote recursion) | **Shipped** (Phase 4) |
 | Transform / compensation / observability integration | **Planned** (Phase 5) |
 
 **Current resource baseline (0.11):** `ResourceEngine` resolves providers; wizard `action` steps and `enrich_resource` transforms call `fetch()`; REST/GraphQL/Postgres providers are stubs or minimal.
