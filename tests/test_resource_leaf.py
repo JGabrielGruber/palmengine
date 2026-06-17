@@ -123,26 +123,36 @@ def test_wizard_resource_step_invokes_definition() -> None:
     engine.shutdown()
 
 
-def test_wizard_legacy_action_step_still_works() -> None:
+def test_resource_leaf_trace_includes_ref_and_action() -> None:
+    engine = _resource_engine_with_repo()
+    leaf = build_resource_leaf(
+        "get-customer",
+        resource_engine=engine,
+        resource_ref="fetch-customer",
+        output_key="customer_data",
+    )
+    state = BlackboardState({"customer_id": "cust-1"})
+    leaf.tick(state)
+    trace = state.get(leaf.trace_key)
+    assert trace["resource_ref"] == "fetch-customer"
+    assert trace["action"] == "fetch"
+    assert trace["success"] is True
+    engine.shutdown()
+
+
+def test_resource_leaf_failure_message_includes_ref_and_action() -> None:
     engine = ResourceEngine()
     engine.initialize()
-    config = WizardConfig(
-        steps=(
-            WizardStepConfig(
-                slug="lookup",
-                title="Lookup",
-                prompt="Fetch?",
-                step_kind="action",
-                field_type="confirm",
-                resource_provider="rest",
-                resource_id="users/1",
-            ),
-        ),
+    leaf = ResourceLeaf(
+        "bad-action",
+        resource_engine=engine,
+        resource_ref="fetch-customer",
+        action="unknown",
+        error_key="resource_error",
     )
-    wizard = WizardPattern(name="legacy", config=config, resource_engine=engine)
     state = BlackboardState()
-    wizard.tick(state)
-    wizard.provide_input(state, "yes")
-    assert wizard.tick(state) == PatternStatus.SUCCESS
-    assert state.get(f"{WizardKeys.RESOURCE_RESULT}:lookup")["source"] == "rest"
+    leaf.tick(state)
+    error = state.get("resource_error")
+    assert "fetch-customer" in error
+    assert "action=unknown" in error
     engine.shutdown()

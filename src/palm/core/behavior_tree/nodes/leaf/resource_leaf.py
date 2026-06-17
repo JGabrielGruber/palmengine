@@ -65,16 +65,23 @@ class ResourceLeaf(LeafNode):
     def trace_key(self) -> str:
         return self._trace_key
 
+    def _resolved_action(self) -> str:
+        return self._action or "fetch"
+
+    def _resolved_target(self) -> str:
+        return self._resource_ref or self._provider or self.name
+
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         if self._resource_engine is None:
             return self._fail(state, "ResourceEngine is not configured")
         if not self._resource_engine.is_initialized:
             self._resource_engine.initialize()
 
+        action = self._resolved_action()
         result = self._resource_engine.invoke(
             self._resource_ref,
             provider=self._provider,
-            action=self._action,
+            action=action,
             resource_id=self._resource_id,
             params=self._params,
             state=state,
@@ -83,13 +90,17 @@ class ResourceLeaf(LeafNode):
         trace: dict[str, Any] = {
             "success": result.success,
             "resource_ref": self._resource_ref,
-            "provider": result.metadata.get("provider"),
-            "action": result.metadata.get("action"),
+            "provider": self._provider or result.metadata.get("provider"),
+            "action": action,
             "definition_id": result.metadata.get("definition_id"),
             "definition_name": result.metadata.get("definition_name"),
             "resource_id": result.metadata.get("resource_id"),
             "output_key": self._output_key,
             "error": result.error,
+            "invoke_depth": result.metadata.get("invoke_depth"),
+            "invoke_chain": _invoke_chain(result),
+            "parent_job_id": result.metadata.get("parent_job_id"),
+            "mode": result.metadata.get("mode"),
         }
         state.set(self._trace_key, trace)
 
@@ -102,7 +113,18 @@ class ResourceLeaf(LeafNode):
         return PatternStatus.SUCCESS
 
     def _fail(self, state: BaseState, message: str) -> PatternStatus:
-        detail = f"Resource {self.name!r} failed: {message}"
+        detail = (
+            f"Resource {self._resolved_target()!r} "
+            f"(action={self._resolved_action()}) failed: {message}"
+        )
         if self._error_key:
             state.set(self._error_key, detail)
         return PatternStatus.FAILURE
+
+
+def _invoke_chain(result: Any) -> list[str] | None:
+    if isinstance(result.data, dict):
+        chain = result.data.get("invoke_chain")
+        if isinstance(chain, list):
+            return chain
+    return None

@@ -782,7 +782,7 @@ Recursion guardrails (depth limits, cycle detection, child job linkage on parent
 
 | Layer | 0.12 touchpoint |
 |-------|-----------------|
-| Wizard | `step_kind: resource` (successor to `action` steps) |
+| Wizard | `step_kind: resource` with `resource_ref` |
 | Transforms | `enrich_resource` accepts `resource_ref` |
 | Compensation | Mutating invokes register undo metadata for `CompensationCoordinator` |
 | CQRS | Optional `ResourceInvocationProjection` for dashboards |

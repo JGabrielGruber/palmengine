@@ -28,7 +28,7 @@ Adopt **0.12 — Compositional Power** with the following architectural choices:
 5. **`palm` provider** is a new plugin at `palm/providers/palm/`, delegating to local `ApplicationHost` or remote `ServerRuntime` HTTP. Recursion guardrails are provider responsibility with engine-level correlation metadata.
 6. **Integration** with transforms (`enrich_resource` + `resource_ref`), compensation (mutating invoke metadata), and CQRS projections (resource invocation timeline) ships in Phase 5 of the implementation plan.
 
-Wizard `action` steps remain supported via compatibility mapping to resource invocation specs during a deprecation window.
+Wizard `step_kind: action` + `resource_provider` was removed in 0.12 Phase B; use `step_kind: resource` with `resource_ref` (see `MIGRATION-0.12.md`).
 
 ### Implementation progress (June 2026)
 

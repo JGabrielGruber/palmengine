@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.resource.binding import promote_binding_keys
 from palm.common.resource.builder import build_resource_leaf
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
@@ -29,18 +30,14 @@ from palm.patterns.wizard.validation import (
 
 def default_resource_prompt(step: WizardStepConfig) -> str:
     """Build the default operator-facing prompt for a resource step."""
-    if step.resource_ref:
-        target = step.output_key or step.slug
-        return f"Invoking resource {step.resource_ref!r} → {target}"
-    provider = step.resource_provider or "provider"
-    return f"Invoking {provider} resource → {step.output_key or step.slug}"
+    target = step.output_key or step.slug
+    return f"Invoking resource {step.resource_ref!r} → {target}"
 
 
 def format_resource_feedback(step: WizardStepConfig, *, resource_id: str | None = None) -> str:
     """Build CLI feedback after a resource step runs."""
-    label = step.resource_ref or step.resource_provider or "resource"
     target = step.output_key or step.slug
-    base = f"Invoked {label} → {target}"
+    base = f"Invoked {step.resource_ref} → {target}"
     if resource_id:
         return f"{base} ({resource_id})"
     return base
@@ -64,10 +61,8 @@ class WizardResourceLeaf(LeafNode):
         super().__init__(step.slug)
         if step.step_kind != "resource":
             raise ValueError(f"WizardResourceLeaf requires step_kind=resource, got {step.step_kind!r}")
-        if not step.resource_ref and not step.resource_provider:
-            raise ValueError(
-                f"Resource step {step.slug!r} requires resource_ref or resource_provider",
-            )
+        if not step.resource_ref:
+            raise ValueError(f"Resource step {step.slug!r} requires resource_ref")
         self._step = step
         self._wizard_name = wizard_name
         self._step_index = step_index
@@ -77,9 +72,7 @@ class WizardResourceLeaf(LeafNode):
             step.slug,
             resource_engine=resource_engine,
             resource_ref=step.resource_ref,
-            provider=step.resource_provider,
             action=step.resource_action,
-            resource_id=step.resource_id,
             params=dict(step.params),
             output_key=step.output_key or step.slug,
             error_key=f"{WizardKeys.PREFIX}.resource_error:{step.slug}",
@@ -102,7 +95,6 @@ class WizardResourceLeaf(LeafNode):
             "step_kind": "resource",
             "step_index": self._step_index,
             "resource_ref": self._step.resource_ref,
-            "resource_provider": self._step.resource_provider,
             "output_key": self._step.output_key or self._step.slug,
         }
         return enrich_prompt_bundle(
@@ -126,6 +118,7 @@ class WizardResourceLeaf(LeafNode):
             title=self._step.title,
             step_index=self._step_index,
             step_kind="resource",
+            resource_ref=self._step.resource_ref,
         )
 
         self._promote_answers_for_binding(state)
@@ -149,11 +142,11 @@ class WizardResourceLeaf(LeafNode):
                 result_value,
             )
             self._fire(
-                WizardEventType.RESOURCE_INVOKED,
+                WizardEventType.STEP_COMPLETED,
                 slug=self._step.slug,
                 step_index=self._step_index,
+                step_kind="resource",
                 resource_ref=self._step.resource_ref,
-                provider=self._step.resource_provider,
                 output_key=self._inner.output_key,
                 resource_id=resource_id,
             )
@@ -173,15 +166,14 @@ class WizardResourceLeaf(LeafNode):
             slug=self._step.slug,
             errors=[message],
             step_kind="resource",
+            resource_ref=self._step.resource_ref,
         )
         leave_step(state, self._step.slug, context=self._context)
         return PatternStatus.FAILURE
 
     def _promote_answers_for_binding(self, state: BaseState) -> None:
         """Expose prior wizard answers on the blackboard for ``{{ state.* }}`` binding."""
-        for key, value in get_answers(state).items():
-            if state.get(key) is None:
-                state.set(key, value)
+        promote_binding_keys(state, get_answers(state))
 
     def _persist_resource_result(self, state: BaseState, value: Any) -> None:
         if value is None:
@@ -201,8 +193,9 @@ class WizardResourceLeaf(LeafNode):
         trace = state.get(self._inner.trace_key)
         if isinstance(trace, dict) and trace.get("error"):
             return str(trace["error"])
-        label = self._step.resource_ref or self._step.resource_provider or self._step.slug
-        return f"Resource {label!r} invocation failed"
+        action = self._step.resource_action or trace.get("action") if isinstance(trace, dict) else None
+        action_label = action or "invoke"
+        return f"Resource {self._step.resource_ref!r} (action={action_label}) failed"
 
     def _fire(self, event_type: str, **payload: Any) -> None:
         if self._emit is not None:

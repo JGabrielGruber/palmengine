@@ -56,6 +56,17 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **Runtime wiring** — `BaseRuntime.start()` binds local runtime for in-process `palm` calls
 - **Example** — `compositional-parent` wizard calling `ingest-etl` via `submit-ingest-etl` resource
 
+### Changed (Phase B — resource cleanup)
+
+- **Breaking:** removed wizard `step_kind: action` and `WizardActionLeaf`
+- **Breaking:** resource steps require `resource_ref` (`resource_provider` / `resource_id` removed)
+- Removed `resource_leaf_from_legacy_action()` compatibility helper
+- **`ResourceLeaf`** — richer failure messages and trace (`resource_ref`, `action`, correlation fields)
+- **`promote_binding_keys()`** — shared wizard answer promotion for param binding
+- **Events** — `resource.completed` / `resource.failed` include correlation payload; dropped `wizard.resource.invoked`
+
+See [MIGRATION-0.12.md](MIGRATION-0.12.md).
+
 _Phases 5–6 remain planned._
 
 ## [0.11.8] — 2026-06-17

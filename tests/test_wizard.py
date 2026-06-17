@@ -340,32 +340,24 @@ def test_backtrack_blocked_for_commit_step() -> None:
         wizard.request_backtrack(state, "summary")
 
 
-def test_action_step_uses_resource_engine() -> None:
-    from palm.core.resource import ResourceEngine
+def test_legacy_action_step_kind_rejected_by_builder() -> None:
+    from palm.common.exceptions import DefinitionBuildError
+    from palm.patterns.wizard.builder import wizard_config_from_options
 
-    resource = ResourceEngine()
-    resource.initialize()
-    config = WizardConfig(
-        steps=(
-            WizardStepConfig(
-                slug="lookup",
-                title="Lookup",
-                prompt="Fetch?",
-                step_kind="action",
-                field_type="confirm",
-                resource_provider="rest",
-                resource_id="users/1",
-            ),
-        ),
-    )
-    state = BlackboardState()
-    wizard = WizardPattern(name="w", config=config, resource_engine=resource)
-    wizard.tick(state)
-    wizard.provide_input(state, "yes")
-    assert wizard.tick(state) == PatternStatus.SUCCESS
-    result = state.get(f"{WizardKeys.RESOURCE_RESULT}:lookup")
-    assert result["source"] == "rest"
-    resource.shutdown()
+    with pytest.raises(DefinitionBuildError, match="step_kind 'action' was removed"):
+        wizard_config_from_options(
+            {
+                "steps": [
+                    {
+                        "slug": "lookup",
+                        "title": "Lookup",
+                        "step_kind": "action",
+                        "resource_provider": "rest",
+                        "resource_id": "users/1",
+                    },
+                ],
+            },
+        )
 
 
 def test_answers_persist_across_ticks() -> None:

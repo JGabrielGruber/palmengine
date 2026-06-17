@@ -43,8 +43,6 @@ def wizard_metadata_from_flow(options: dict[str, Any]) -> dict[str, Any]:
         meta["include_summary"] = True
     if options.get("include_commit"):
         meta["include_commit"] = True
-    if options.get("resource_provider"):
-        meta["resource_provider"] = str(options["resource_provider"])
     return meta
 
 

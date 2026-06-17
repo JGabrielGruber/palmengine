@@ -105,6 +105,25 @@ def test_resource_engine_invoke_via_definition_ref() -> None:
     assert result.metadata["provider"] == "rest"
 
 
+def test_correlation_payload_from_provider_result() -> None:
+    from palm.core.resource.engine import _correlation_payload
+
+    payload = _correlation_payload(
+        ProviderResult.ok(
+            {"invoke_chain": ["flow:a", "flow:b"]},
+            invoke_depth=2,
+            parent_job_id="parent-1",
+            mode="local",
+        ),
+    )
+    assert payload == {
+        "invoke_depth": 2,
+        "parent_job_id": "parent-1",
+        "mode": "local",
+        "invoke_chain": ["flow:a", "flow:b"],
+    }
+
+
 def test_resource_engine_emits_events() -> None:
     events: list[str] = []
     event_engine = EventEngine()

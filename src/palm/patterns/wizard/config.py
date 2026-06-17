@@ -35,8 +35,6 @@ class WizardStepConfig:
     state_schema_ref: str | None = None
     schema: StateSchema | None = None
     commit_hook: str | None = None
-    resource_provider: str | None = None
-    resource_id: str | None = None
     resource_ref: str | None = None
     resource_action: str | None = None
     params: dict[str, Any] = field(default_factory=dict)
@@ -62,10 +60,8 @@ class WizardStepConfig:
                 object.__setattr__(self, "collection_key", self.slug)
         if self.step_kind == "transform" and self.transform is None:
             raise ValueError(f"Transform step {self.slug!r} requires transform configuration")
-        if self.step_kind == "resource" and not self.resource_ref and not self.resource_provider:
-            raise ValueError(
-                f"Resource step {self.slug!r} requires resource_ref or resource_provider",
-            )
+        if self.step_kind == "resource" and not self.resource_ref:
+            raise ValueError(f"Resource step {self.slug!r} requires resource_ref")
 
     @property
     def has_state_schema(self) -> bool:

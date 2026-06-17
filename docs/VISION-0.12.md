@@ -26,7 +26,7 @@ The result is **compositional power**: hierarchical workflows, distributed hando
 | Resource calls are wizard action steps or transform side-effects | Resources are **declared**, **stored**, and **invoked** like flows |
 | Providers are thin `fetch(id)` stubs | Providers expose a **rich contract** — actions, schemas, metadata, lifecycle |
 | External integration only (REST, GraphQL, Postgres) | **`palm` provider** — Palm invokes Palm (embedded or remote) |
-| BT integration is pattern-specific (`WizardActionLeaf`) | **`ResourceLeaf`** — universal BT node for any pattern |
+| BT integration is pattern-specific (legacy action steps) | **`ResourceLeaf`** — universal BT node for any pattern |
 | Observability sees jobs and instances | Resource invocations are **first-class events** with correlation |
 
 ---
@@ -142,7 +142,7 @@ Sequence
 - Surface failures as `PatternStatus.FAILURE` with structured error payload
 - Support optional confirmation gate (human approves before mutating invoke)
 
-Pattern builders (wizard, DAG, pipeline) gain a declarative `step_kind: resource` that materializes `ResourceLeaf` — replacing the wizard-only `action` path over time.
+Pattern builders (wizard, DAG, pipeline) use declarative `step_kind: resource` that materializes `ResourceLeaf`. Legacy `step_kind: action` + `resource_provider` was removed in 0.12.
 
 ### 6. Deep integration
 
@@ -217,7 +217,7 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - `BaseProvider.invoke()` / `describe()` / `health()` + `ProviderResult`
 - `ResourceEngine.invoke()` — definition ref or direct provider, param binding (`{{ state.* }}`, `{param}`)
 - Injected `definition_resolver` (`palm/common/resource/`) + `EventEngine` events (`resource.invoked`, `resource.completed`, `resource.failed`)
-- `WizardActionLeaf` and `enrich_resource` use engine invoke path
+- `WizardResourceLeaf` and `enrich_resource` use engine invoke path
 - `PalmApp` / `ApplicationHost.invoke_resource()`; CLI: `resource invoke`
 - **Exit criteria met:** wizard action tests pass; `tests/test_resource_engine.py`
 
@@ -225,7 +225,7 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 
 - `ResourceLeaf` in `palm/core/behavior_tree/nodes/leaf/resource_leaf.py`
 - `WizardResourceLeaf` + wizard `step_kind: resource` (`resource_ref`, `params`, `output_key`)
-- Legacy `step_kind: action` (confirm + `resource_provider`) unchanged
+- Legacy `step_kind: action` removed — `resource_ref` only (see `MIGRATION-0.12.md`)
 - Example: `resource-customer-wizard` flow (`examples/definitions/resource_customer_wizard.py`)
 - **Exit criteria met:** `tests/test_resource_leaf.py`; pipeline/DAG builders deferred
 

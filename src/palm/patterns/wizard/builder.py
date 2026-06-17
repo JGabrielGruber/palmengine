@@ -26,7 +26,6 @@ _WIZARD_STEP_KINDS = frozenset(
         "introduction",
         "summary",
         "commit",
-        "action",
         "resource",
         "collection",
         "transform",
@@ -170,6 +169,10 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         )
 
     step_kind: WizardStepKind = data.get("step_kind", "input")
+    if step_kind == "action":
+        raise DefinitionBuildError(
+            "step_kind 'action' was removed in 0.12; use step_kind 'resource' with resource_ref",
+        )
     if step_kind not in _WIZARD_STEP_KINDS:
         raise DefinitionBuildError(f"Invalid wizard step_kind: {step_kind!r}")
 
@@ -193,13 +196,16 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
     step_params = dict(raw_params) if isinstance(raw_params, dict) else {}
 
     if step_kind == "resource" and prompt == f"Enter value for {slug}":
+        if not data.get("resource_ref"):
+            raise DefinitionBuildError(
+                f"Resource step {slug!r} requires 'resource_ref'",
+            )
         preview = WizardStepConfig(
             slug=str(slug),
             title=str(title),
             prompt=str(prompt),
             step_kind="resource",
-            resource_ref=str(data["resource_ref"]) if data.get("resource_ref") else None,
-            resource_provider=data.get("resource_provider"),
+            resource_ref=str(data["resource_ref"]),
             output_key=data.get("output_key"),
         )
         prompt = default_resource_prompt(preview)
@@ -235,8 +241,6 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         state_schema=state_schema,
         state_schema_ref=state_schema_ref,
         commit_hook=data.get("commit_hook"),
-        resource_provider=data.get("resource_provider"),
-        resource_id=data.get("resource_id"),
         resource_ref=str(data["resource_ref"]) if data.get("resource_ref") else None,
         resource_action=str(data["action"]) if data.get("action") else None,
         params=step_params,
@@ -316,8 +320,6 @@ def _materialize_step(
         state_schema_ref=step.state_schema_ref,
         schema=schema,
         commit_hook=step.commit_hook,
-        resource_provider=step.resource_provider,
-        resource_id=step.resource_id,
         resource_ref=step.resource_ref,
         resource_action=step.resource_action,
         params=dict(step.params),

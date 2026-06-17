@@ -10,8 +10,16 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.definitions import FlowDefinition, ProcessDefinition
+from palm.definitions import FlowDefinition, ProcessDefinition, ResourceDefinition
 from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+
+REST_HEALTH_RESOURCE = ResourceDefinition(
+    id="resource-rest-health",
+    name="rest-health",
+    provider="rest",
+    action="fetch",
+    resource_id="health/check",
+)
 
 INGEST_WIZARD_FLOW = FlowDefinition(
     id="flow-ingest-wizard",
@@ -47,11 +55,10 @@ INGEST_WIZARD_FLOW = FlowDefinition(
             {
                 "slug": "verify_source",
                 "title": "Verify Source",
-                "prompt": "Fetch a sample from the REST provider to verify connectivity?",
-                "step_kind": "action",
-                "field_type": "confirm",
-                "resource_provider": "rest",
-                "resource_id": "health/check",
+                "prompt": "Verify REST connectivity by fetching a health check sample",
+                "step_kind": "resource",
+                "resource_ref": "rest-health",
+                "output_key": "verify_source",
             },
         ],
     },
@@ -88,8 +95,11 @@ def _register_dataset(ctx: Any) -> CommitResult:
 
 def register_definitions(repository: object) -> None:
     default_commit_registry().register("register_dataset", _register_dataset)
+    save_resource = getattr(repository, "save_resource", None)
     save_flow = getattr(repository, "save_flow", None)
     save_process = getattr(repository, "save_process", None)
+    if callable(save_resource):
+        save_resource(REST_HEALTH_RESOURCE)
     if callable(save_flow):
         save_flow(INGEST_WIZARD_FLOW)
         save_flow(INGEST_ETL_FLOW)

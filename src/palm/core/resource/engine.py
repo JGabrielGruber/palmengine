@@ -152,13 +152,15 @@ class ResourceEngine(BasePalmEngine):
             "definition_name": definition_name,
             "resource_id": bound_resource_id,
         }
+        correlation = _correlation_payload(result)
         if result.success:
-            self._emit("resource.completed", **event_base)
+            self._emit("resource.completed", **event_base, **correlation)
             return ProviderResult.ok(result.data, **metadata)
         self._emit(
             "resource.failed",
             error=result.error,
             **event_base,
+            **correlation,
         )
         return ProviderResult.fail(
             result.error or "invoke failed",
@@ -192,3 +194,16 @@ class ResourceEngine(BasePalmEngine):
         if self._publish_event is None:
             return
         self._publish_event(event_type, payload)
+
+
+def _correlation_payload(result: ProviderResult) -> dict[str, Any]:
+    """Extract compositional correlation fields for observability events."""
+    payload: dict[str, Any] = {}
+    for key in ("invoke_depth", "parent_job_id", "mode"):
+        if key in result.metadata:
+            payload[key] = result.metadata[key]
+    if isinstance(result.data, dict):
+        chain = result.data.get("invoke_chain")
+        if chain is not None:
+            payload["invoke_chain"] = chain
+    return payload

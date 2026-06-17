@@ -11,7 +11,6 @@ WizardStepKind = Literal[
     "introduction",
     "summary",
     "commit",
-    "action",
     "resource",
     "collection",
     "transform",

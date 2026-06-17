@@ -34,22 +34,3 @@ def build_resource_leaf(
         error_key=error_key,
         trace_key=trace_key,
     )
-
-
-def resource_leaf_from_legacy_action(
-    slug: str,
-    *,
-    resource_engine: ResourceEngine | None,
-    resource_provider: str,
-    resource_id: str | None = None,
-    output_key: str | None = None,
-) -> ResourceLeaf:
-    """Map legacy wizard ``action`` steps (provider + id) to a resource leaf."""
-    return build_resource_leaf(
-        slug,
-        resource_engine=resource_engine,
-        provider=resource_provider,
-        action="fetch",
-        resource_id=resource_id,
-        output_key=output_key,
-    )
