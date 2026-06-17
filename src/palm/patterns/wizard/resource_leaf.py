@@ -8,6 +8,7 @@ from typing import Any
 
 from palm.common.resource.binding import promote_binding_keys
 from palm.common.resource.builder import build_resource_leaf
+from palm.common.resource.compensation import is_mutating_action, track_resource_invocation
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
 from palm.core.resource import ResourceEngine
@@ -34,12 +35,25 @@ def default_resource_prompt(step: WizardStepConfig) -> str:
     return f"Invoking resource {step.resource_ref!r} → {target}"
 
 
-def format_resource_feedback(step: WizardStepConfig, *, resource_id: str | None = None) -> str:
+def format_resource_feedback(
+    step: WizardStepConfig,
+    *,
+    resource_id: str | None = None,
+    provider: str | None = None,
+    action: str | None = None,
+    success: bool = True,
+    error: str | None = None,
+) -> str:
     """Build CLI feedback after a resource step runs."""
     target = step.output_key or step.slug
-    base = f"Invoked {step.resource_ref} → {target}"
+    action_label = action or step.resource_action or "invoke"
+    provider_label = f" via {provider}" if provider else ""
+    status = "OK" if success else "FAILED"
+    base = f"[{status}] {step.resource_ref} ({action_label}{provider_label}) → {target}"
     if resource_id:
-        return f"{base} ({resource_id})"
+        base = f"{base} · id={resource_id}"
+    if error and not success:
+        base = f"{base} · {error}"
     return base
 
 
@@ -76,6 +90,8 @@ class WizardResourceLeaf(LeafNode):
             params=dict(step.params),
             output_key=step.output_key or step.slug,
             error_key=f"{WizardKeys.PREFIX}.resource_error:{step.slug}",
+            step_slug=step.slug,
+            wizard_name=wizard_name,
         )
 
     @property
@@ -132,10 +148,33 @@ class WizardResourceLeaf(LeafNode):
             state.delete(WizardKeys.ACTIVE_PROMPT)
             clear_validation_feedback(state)
             trace = state.get(self._inner.trace_key)
-            resource_id = trace.get("resource_id") if isinstance(trace, dict) else None
+            trace_dict = trace if isinstance(trace, dict) else {}
+            resource_id = trace_dict.get("resource_id")
+            action = trace_dict.get("action") or self._step.resource_action
+            provider = trace_dict.get("provider")
+            if is_mutating_action(str(action) if action else None):
+                invocations = state.get(WizardKeys.RESOURCE_INVOCATIONS)
+                tracked = list(invocations) if isinstance(invocations, list) else []
+                state.set(
+                    WizardKeys.RESOURCE_INVOCATIONS,
+                    track_resource_invocation(
+                        tracked,
+                        resource_ref=self._step.resource_ref or "",
+                        action=str(action or "invoke"),
+                        provider=str(provider) if provider else None,
+                        resource_id=str(resource_id) if resource_id else None,
+                        step_slug=self._step.slug,
+                    ),
+                )
             state.set(
                 WizardKeys.RESOURCE_FEEDBACK,
-                format_resource_feedback(self._step, resource_id=str(resource_id) if resource_id else None),
+                format_resource_feedback(
+                    self._step,
+                    resource_id=str(resource_id) if resource_id else None,
+                    provider=str(provider) if provider else None,
+                    action=str(action) if action else None,
+                    success=True,
+                ),
             )
             state.set(
                 f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}",
@@ -153,6 +192,19 @@ class WizardResourceLeaf(LeafNode):
             return PatternStatus.SUCCESS
 
         message = self._failure_message(state)
+        trace = state.get(self._inner.trace_key)
+        trace_dict = trace if isinstance(trace, dict) else {}
+        state.set(
+            WizardKeys.RESOURCE_FEEDBACK,
+            format_resource_feedback(
+                self._step,
+                resource_id=str(trace_dict.get("resource_id")) if trace_dict.get("resource_id") else None,
+                provider=str(trace_dict.get("provider")) if trace_dict.get("provider") else None,
+                action=str(trace_dict.get("action") or self._step.resource_action or "invoke"),
+                success=False,
+                error=message,
+            ),
+        )
         prompt_bundle = self._prompt_bundle(state)
         prompt_bundle["resource_error"] = message
         publish_validation_feedback(

@@ -19,7 +19,12 @@ from palm.common.resource import resource_definition_resolver
 from palm.common.events import OutboxProcessor, OutboxStore, wire_reliable_events
 from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSnapshotHook
 from palm.common.managers import InstanceManager
-from palm.common.runtimes.hooks import AuthMiddleware, DriveObservabilityHook, authenticate_runtime
+from palm.common.runtimes.hooks import (
+    AuthMiddleware,
+    DriveObservabilityHook,
+    JobExecutionContextHook,
+    authenticate_runtime,
+)
 from palm.common.runtimes.schedulers import QueuedScheduler
 from palm.common.runtimes.wiring import SchedulerPolicy, resolve_scheduler
 from palm.common.storage import StorageFactory
@@ -148,6 +153,7 @@ class BaseRuntime:
                     required_roles=tuple(options.get("auth_roles") or ("user",)),
                 )
             )
+        hooks.append(JobExecutionContextHook())
         hooks.append(
             InstancePersistenceHook(
                 self.instance_manager,

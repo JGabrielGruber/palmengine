@@ -239,13 +239,14 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - Example: `compositional-parent` wizard (`examples/definitions/compositional_demo.py`)
 - **Exit criteria met:** `tests/test_palm_provider.py` (local, remote, depth, cycle, invoke_resource)
 
-### Phase 5 — Cross-cutting integration
+### Phase 5 — Cross-cutting integration ✅ Shipped
 
-- Transform `enrich_resource` + `resource_ref`
-- Compensation hooks for mutating invokes
-- CQRS projection for resource invocations (optional but recommended)
-- Explorer timeline for resource steps
-- **Exit criteria:** commit failure triggers compensation on a mutating resource step in demo
+- Transform `enrich_resource` + `resource_ref`, custom `action`/`params`
+- `register_for_resource()` compensation handlers; commit failure runs tracked mutating invokes
+- `ResourceInvocationProjection` + `GetResourceInvocationsQuery`
+- Explorer instance resource timeline; enriched wizard `RESOURCE_FEEDBACK`
+- `resource.*` events carry job/instance/wizard/step correlation via `JobExecutionContextHook`
+- **Exit criteria met:** `tests/test_resource_phase5.py`; demo registers undo on `submit-ingest-etl`
 
 ### Phase 6 — Polish & promotion
 

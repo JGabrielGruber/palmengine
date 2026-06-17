@@ -11,6 +11,7 @@ from palm.common.cqrs.query import (
     GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
+    GetResourceInvocationsQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -70,6 +71,14 @@ class ExplorerFetcher:
 
     def get_snapshot(self, instance_id: str, snapshot_id: str) -> Any:
         return self._ctx.ask(GetInstanceSnapshotQuery(instance_id=instance_id, snapshot_id=snapshot_id))
+
+    def get_resource_invocations(
+        self,
+        *,
+        instance_id: str | None = None,
+        job_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        return self._ctx.ask(GetResourceInvocationsQuery(instance_id=instance_id, job_id=job_id))
 
     def get_instance(self, instance_id: str) -> dict[str, Any] | None:
         result = self._ctx.ask(GetInstanceStatusQuery(instance_id=instance_id))

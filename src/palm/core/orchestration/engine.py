@@ -322,8 +322,21 @@ class OrchestrationEngine(BasePalmEngine):
         with bus.bind_context(context):
             bus.emit(event_type, context=context, **payload)
 
+    def event_context_for_job(self, job: Job) -> EventContext:
+        """Build correlation context for events emitted during a job drive slice."""
+        return self._event_context_from_job(job)
+
     @staticmethod
     def _event_context_from_job(job: Job) -> EventContext:
+        extra: dict[str, Any] = {}
+        flow = job.metadata.get("flow")
+        if flow is not None:
+            extra["flow"] = str(flow)
+        wizard_meta = job.metadata.get("wizard")
+        if isinstance(wizard_meta, dict):
+            name = wizard_meta.get("name")
+            if name is not None:
+                extra["wizard"] = str(name)
         return EventContext(
             job_id=job.id,
             instance_id=str(job.metadata["instance_id"])
@@ -335,6 +348,7 @@ class OrchestrationEngine(BasePalmEngine):
             principal_id=str(job.metadata["principal_id"])
             if job.metadata.get("principal_id") is not None
             else None,
+            extra=extra,
         )
 
     def _do_initialize(self, **options: Any) -> None:

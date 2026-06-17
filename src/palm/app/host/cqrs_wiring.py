@@ -30,6 +30,7 @@ from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
+from palm.common.cqrs.projections.resource_invocation import ResourceInvocationProjection
 from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.cqrs.query import (
@@ -39,7 +40,9 @@ from palm.common.cqrs.query import (
     GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
+    GetResourceInvocationsQuery,
     GetWizardProgressQuery,
+    ListResourceInvocationsQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -172,12 +175,14 @@ class HostQueryHandlers:
         app: PalmApp,
         instances: InstanceIndexProjection,
         wizard_progress: WizardProgressProjection,
+        resource_invocations: ResourceInvocationProjection,
         job_board: JobStatusBoardProjection,
         instance_manager: InstanceManager,
     ) -> None:
         self._app = app
         self._instances = instances
         self._wizard_progress = wizard_progress
+        self._resource_invocations = resource_invocations
         self._job_board = job_board
         self._instance_manager = instance_manager
 
@@ -217,6 +222,11 @@ class HostQueryHandlers:
                 )
             }
             return [row for row in rows if row.instance_id in active_ids]
+        if isinstance(query, GetResourceInvocationsQuery):
+            row = self._resource_invocations.get_invocations(query)
+            return row.to_dict() if row is not None else None
+        if isinstance(query, ListResourceInvocationsQuery):
+            return [row.to_dict() for row in self._resource_invocations.list_invocations(query)]
         raise TypeError(f"Unsupported query: {type(query).__name__}")
 
     def _get_job(self, query: GetJobStatusQuery) -> dict[str, Any]:
@@ -258,6 +268,10 @@ class HostQueryHandlers:
             GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
         )
         wizard_progress = progress.to_dict() if progress is not None else None
+        resource_row = self._resource_invocations.get_invocations(
+            GetResourceInvocationsQuery(job_id=query.job_id, instance_id=instance_id)
+        )
+        resource_invocations = resource_row.to_dict() if resource_row is not None else None
         from palm.runtimes.cli.shared.job_inspect import inspect_job_json
 
         return build_job_context(
@@ -265,6 +279,7 @@ class HostQueryHandlers:
             pattern=inspect_job_json(job),
             instance=instance,
             wizard_progress=wizard_progress,
+            resource_invocations=resource_invocations,
         )
 
     def _get_snapshot(self, query: GetInstanceSnapshotQuery) -> tuple[int, StateSnapshot] | None:
@@ -315,6 +330,7 @@ def wire_query_bus(
     app: PalmApp,
     instances: InstanceIndexProjection,
     wizard_progress: WizardProgressProjection,
+    resource_invocations: ResourceInvocationProjection,
     job_board: JobStatusBoardProjection,
     instance_manager: InstanceManager,
 ) -> None:
@@ -322,6 +338,7 @@ def wire_query_bus(
         app=app,
         instances=instances,
         wizard_progress=wizard_progress,
+        resource_invocations=resource_invocations,
         job_board=job_board,
         instance_manager=instance_manager,
     )
@@ -339,5 +356,7 @@ def wire_query_bus(
         GetJobContextQuery,
         ListJobStatusQuery,
         ListWizardProgressQuery,
+        GetResourceInvocationsQuery,
+        ListResourceInvocationsQuery,
     ):
         bus.register(query_type, handler)

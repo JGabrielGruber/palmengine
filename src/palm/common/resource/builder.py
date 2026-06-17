@@ -20,6 +20,8 @@ def build_resource_leaf(
     output_key: str | None = None,
     error_key: str | None = None,
     trace_key: str | None = None,
+    step_slug: str | None = None,
+    wizard_name: str | None = None,
 ) -> ResourceLeaf:
     """Construct a resource leaf from declarative step or stage configuration."""
     return ResourceLeaf(
@@ -33,4 +35,6 @@ def build_resource_leaf(
         output_key=output_key,
         error_key=error_key,
         trace_key=trace_key,
+        step_slug=step_slug,
+        wizard_name=wizard_name,
     )

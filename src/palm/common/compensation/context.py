@@ -15,6 +15,7 @@ class CompensationContext:
     trigger_event: str
     payload: dict[str, Any]
     hook_name: str | None = None
+    resource_ref: str | None = None
     wizard_name: str | None = None
     error: str | None = None
     instance_id: str | None = None

@@ -11,6 +11,7 @@ class CompensationTrigger:
     COMMIT_FAILED = "wizard.commit.failed"
     COMMIT_STARTED = "wizard.commit.started"
     BACKTRACK_EXECUTED = "wizard.backtrack.executed"
+    RESOURCE_FAILED = "resource.failed"
 
 
 class CompensationEventType:

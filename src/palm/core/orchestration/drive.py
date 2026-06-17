@@ -33,6 +33,13 @@ def drive_job(
         )
         return
 
-    result = runner.run(engine.execution_context(job), budget=budget)
+    exec_ctx = engine.execution_context(job)
+    bus = engine.event_engine
+    event_context = engine.event_context_for_job(job)
+    if bus is not None and bus.is_initialized and event_context is not None:
+        with bus.bind_context(event_context):
+            result = runner.run(exec_ctx, budget=budget)
+    else:
+        result = runner.run(exec_ctx, budget=budget)
     engine.apply_result(job, result)
     engine.notify_after_drive(job, result)

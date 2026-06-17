@@ -122,3 +122,18 @@ def register_definitions(repository: object) -> None:
     if callable(save_flow):
         save_flow(NESTED_COMPOSITION_FLOW)
         save_flow(COMPOSITIONAL_PARENT_FLOW)
+    register_compensation_handlers()
+
+
+def register_compensation_handlers() -> None:
+    """Optional undo handlers for mutating compositional resource invokes."""
+    from palm.common.compensation import CompensationContext, CompensationResult
+    from palm.common.compensation import default_compensation_registry
+
+    def undo_child_etl(ctx: CompensationContext) -> CompensationResult:
+        job_id = ctx.payload.get("resource_id") or ctx.job_id
+        return CompensationResult.success({"cancelled_child": job_id})
+
+    registry = default_compensation_registry()
+    registry.register_for_resource("submit-ingest-etl", undo_child_etl)
+    registry.register_for_resource("submit-nested-composition", undo_child_etl)

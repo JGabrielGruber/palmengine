@@ -27,6 +27,7 @@ def build_job_context(
     pattern: dict[str, Any],
     instance: ProcessInstance | None = None,
     wizard_progress: dict[str, Any] | None = None,
+    resource_invocations: dict[str, Any] | None = None,
     max_events: int = _DEFAULT_MAX_EVENTS,
 ) -> dict[str, Any]:
     """Assemble a context-full job view for REST and operator tooling."""
@@ -39,8 +40,14 @@ def build_job_context(
         "pattern": pattern,
         "instance": _instance_block(instance_id, instance),
         "wizard_progress": wizard_progress,
+        "resource_invocations": resource_invocations,
         "blackboard_snapshot": _latest_blackboard_snapshot(instance),
-        "recent_events": _recent_events(instance, wizard_progress, max_events=max_events),
+        "recent_events": _recent_events(
+            instance,
+            wizard_progress,
+            resource_invocations,
+            max_events=max_events,
+        ),
         "next_actions": derive_next_actions(job.id, job.status, instance_id, instance),
     }
     if job.result is not None:
@@ -142,6 +149,7 @@ def _snapshot_summary(index: int, snapshot: StateSnapshot) -> dict[str, Any]:
 def _recent_events(
     instance: ProcessInstance | None,
     wizard_progress: dict[str, Any] | None,
+    resource_invocations: dict[str, Any] | None,
     *,
     max_events: int,
 ) -> list[dict[str, Any]]:
@@ -185,6 +193,23 @@ def _recent_events(
                     "completed_steps": list(completed) if isinstance(completed, list) else [],
                 }
             )
+
+    if resource_invocations:
+        entries = resource_invocations.get("entries")
+        if isinstance(entries, list):
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                events.append(
+                    {
+                        "type": str(entry.get("event_type", "resource.invoked")),
+                        "recorded_at": entry.get("recorded_at"),
+                        "resource_ref": entry.get("resource_ref"),
+                        "action": entry.get("action"),
+                        "step_slug": entry.get("step_slug"),
+                        "success": entry.get("success"),
+                    }
+                )
 
     events = [event for event in events if event.get("recorded_at")]
     events.sort(key=lambda item: str(item.get("recorded_at", "")), reverse=True)

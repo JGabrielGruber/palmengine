@@ -70,6 +70,21 @@ class ListWizardProgressQuery(Query):
 
 
 @dataclass(frozen=True)
+class GetResourceInvocationsQuery(Query):
+    """Load resource invocation timeline for an instance or job."""
+
+    instance_id: str | None = None
+    job_id: str | None = None
+
+
+@dataclass(frozen=True)
+class ListResourceInvocationsQuery(Query):
+    """List resource invocation read models (newest first)."""
+
+    limit: int | None = 10
+
+
+@dataclass(frozen=True)
 class GetInstanceSnapshotQuery(Query):
     """Load a single state snapshot by index or ``recorded_at`` timestamp."""
 

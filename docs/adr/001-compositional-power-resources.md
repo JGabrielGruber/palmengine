@@ -38,7 +38,7 @@ Wizard `step_kind: action` + `resource_provider` was removed in 0.12 Phase B; us
 | 2 — `ResourceEngine.invoke` + `BaseProvider` contract | **Shipped** |
 | 3 — `ResourceLeaf` + wizard `step_kind: resource` | **Shipped** |
 | 4 — `palm` provider | **Shipped** |
-| 5 — Cross-cutting integration | Planned (partial: `enrich_resource` + `resource_ref`) |
+| 5 — Cross-cutting integration | **Shipped** |
 | 6 — Release polish | Planned |
 
 Phase 2 wires definition resolution via `palm/common/resource/resolver.py` injected at `BaseRuntime.start()` — core stays pure.

@@ -87,6 +87,37 @@ def test_date_format_and_parse(executor: TransformExecutor) -> None:
     assert parsed.value == "2026-06-15"
 
 
+def test_enrich_resource_via_resource_ref(executor: TransformExecutor) -> None:
+    import palm.providers  # noqa: F401
+
+    from palm.common import DefinitionRepository
+    from palm.common.resource import resource_definition_resolver
+    from palm.definitions import ResourceDefinition
+
+    repo = DefinitionRepository()
+    repo.register_resource(
+        ResourceDefinition(
+            name="check-health",
+            provider="rest",
+            action="fetch",
+            resource_id="health/check",
+        )
+    )
+    resource = ResourceEngine()
+    resource.initialize(definition_resolver=resource_definition_resolver(repo))
+    try:
+        result = executor.apply(
+            "enrich_resource",
+            {"tenant": "acme"},
+            resource_ref="check-health",
+            resource_engine=resource,
+        )
+        assert result.value["tenant"] == "acme"
+        assert result.value["resource"]["source"] == "rest"
+    finally:
+        resource.shutdown()
+
+
 def test_enrich_resource_merges_fetch(executor: TransformExecutor) -> None:
     import palm.providers  # noqa: F401
 

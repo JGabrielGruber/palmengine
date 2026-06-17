@@ -236,3 +236,26 @@ def test_commit_failure_event_is_critical() -> None:
     from palm.common.events import CRITICAL_EVENT_TYPES
 
     assert CompensationTrigger.COMMIT_FAILED in CRITICAL_EVENT_TYPES
+
+
+def test_compensation_runs_on_resource_failure() -> None:
+    registry = CompensationRegistry()
+    registry.register_for_resource(
+        "submit-ingest-etl",
+        lambda ctx: CompensationResult.success({"undone": ctx.resource_ref}),
+    )
+    engine = EventEngine()
+    engine.initialize()
+    coordinator = CompensationCoordinator(registry, engine)
+    executed: list[str] = []
+    engine.subscribe(CompensationEventType.EXECUTED, lambda e: executed.append(e.type))
+
+    coordinator.handle(
+        Event(
+            type=CompensationTrigger.RESOURCE_FAILED,
+            payload={"resource_ref": "submit-ingest-etl", "error": "timeout"},
+            context=EventContext(job_id="job-r1"),
+        )
+    )
+
+    assert CompensationEventType.EXECUTED in executed

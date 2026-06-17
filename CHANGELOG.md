@@ -76,7 +76,18 @@ See [MIGRATION-0.12.md](MIGRATION-0.12.md).
 - **`DefinitionRepository.find_resources()`** / `list_resources_by_provider()`
 - **Examples** — expanded compositional demo (nesting + remote URL pattern)
 
-_Phases 5–6 remain planned._
+### Added (Phase 5 — cross-cutting integration)
+
+- **Compensation** — `register_for_resource()` undo handlers; `CompensationCoordinator` triggers on `resource.failed` and commit failure with tracked mutating invokes
+- **`resource.compensated`** observability event when resource undo succeeds
+- **`ResourceInvocationProjection`** — per-instance/job resource call timeline (`GetResourceInvocationsQuery`)
+- **Explorer** — resource step timeline on instance detail pages
+- **Wizard** — mutating invoke tracking (`RESOURCE_INVOCATIONS`); enriched `RESOURCE_FEEDBACK`
+- **`enrich_resource`** — full `resource_ref` support with custom `action`, `params`, and state binding
+- **Observability** — `JobExecutionContextHook` stamps execution correlation; `resource.*` events include job/instance/wizard/step metadata
+- **`palm/core/resource/observability.py`** — core-safe correlation helpers
+
+_Phase 6 (release polish) remains planned._
 
 ## [0.11.8] — 2026-06-17
 

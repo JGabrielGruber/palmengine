@@ -68,7 +68,7 @@ Documentation refinement pass (ApplicationHost release):
 | `ResourceEngine` / `BaseProvider` evolution | **Shipped** (Phase 2) |
 | `ResourceLeaf` (core BT node) | **Shipped** (Phase 3) |
 | `palm` provider (local + remote recursion) | **Shipped** (Phase 4) |
-| Transform / compensation / observability integration | **Planned** (Phase 5) |
+| Transform / compensation / observability integration | **Shipped** (Phase 5) |
 
 **Current resource baseline (0.11):** `ResourceEngine` resolves providers; wizard `action` steps and `enrich_resource` transforms call `fetch()`; REST/GraphQL/Postgres providers are stubs or minimal.
 
@@ -77,7 +77,7 @@ Documentation refinement pass (ApplicationHost release):
 - **0.12 Resource System** — vision and ADR complete; implementation begins with Phase 1 (`ResourceDefinition`)
 - Lightweight automation for version + documentation consistency at release time
 - Further tightening of public API surface (`__all__` declarations are consistent but `palm/__init__.py` remains intentionally minimal)
-- Ongoing evolution of compensation and saga-style patterns (will deepen in 0.12 Phase 5)
+- Ongoing evolution of compensation and saga-style patterns (resource undo handlers shipped in 0.12 Phase 5)
 
 ## Known Limitations & Technical Debt
 
@@ -114,9 +114,9 @@ Documentation refinement pass (ApplicationHost release):
 
 ## Priorities & Next Steps
 
-1. **0.12 Phase 4** — `palm` provider (local + remote recursion)
-2. **0.12 Phase 5** — compensation, CQRS projection, Explorer timelines
-3. Continue maturing reliability features (compensation patterns, webhook consumers)
+1. **0.12 Phase 6** — release polish, docs pass, performance policies
+2. Continue maturing reliability features (webhook consumers, saga patterns)
+3. KernelLeaf / GPU execution research (non-goal for 0.12)
 4. Extend `just docs-check` with optional link validation when needed
 5. Draft `MIGRATION-0.12.md` when provider contract changes land
 

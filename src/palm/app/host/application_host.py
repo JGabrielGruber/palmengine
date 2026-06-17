@@ -40,6 +40,10 @@ from palm.common.cqrs.projections.job_status_board import (
     JobStatusBoardProjection,
     JobStatusReadModel,
 )
+from palm.common.cqrs.projections.resource_invocation import (
+    ResourceInvocationProjection,
+    ResourceInvocationReadModel,
+)
 from palm.common.cqrs.projections.wizard_progress import (
     WizardProgressProjection,
     WizardProgressReadModel,
@@ -97,6 +101,7 @@ class ApplicationHost:
         self._projection_manager = ProjectionManager()
         self._instance_projection: InstanceIndexProjection | None = None
         self._wizard_projection: WizardProgressProjection | None = None
+        self._resource_projection: ResourceInvocationProjection | None = None
         self._job_board_projection: JobStatusBoardProjection | None = None
         self._outbox_service: OutboxBackgroundService | None = None
         self._compensation: CompensationCoordinator | None = None
@@ -140,6 +145,10 @@ class ApplicationHost:
     @property
     def wizard_projection(self) -> WizardProgressProjection | None:
         return self._wizard_projection
+
+    @property
+    def resource_projection(self) -> ResourceInvocationProjection | None:
+        return self._resource_projection
 
     @property
     def job_board_projection(self) -> JobStatusBoardProjection | None:
@@ -427,9 +436,11 @@ class ApplicationHost:
             self._app.instance_manager,
         )
         self._wizard_projection = WizardProgressProjection(self._app.storage)
+        self._resource_projection = ResourceInvocationProjection(self._app.storage)
         self._job_board_projection = JobStatusBoardProjection(self._app.storage)
         self._projection_manager.register(self._instance_projection)
         self._projection_manager.register(self._wizard_projection)
+        self._projection_manager.register(self._resource_projection)
         self._projection_manager.register(self._job_board_projection)
         wire_command_bus(self._command_bus, self._app, self._router)
         wire_query_bus(
@@ -437,6 +448,7 @@ class ApplicationHost:
             app=self._app,
             instances=self._instance_projection,
             wizard_progress=self._wizard_projection,
+            resource_invocations=self._resource_projection,
             job_board=self._job_board_projection,
             instance_manager=self._app.instance_manager,
         )

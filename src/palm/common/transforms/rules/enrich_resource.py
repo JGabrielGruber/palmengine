@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 from palm.core.exceptions import TransformApplicationError
+from palm.core.resource.observability import resource_correlation
 from palm.core.transform.base import BaseTransformRule, TransformContext
 
 
@@ -14,7 +15,10 @@ class EnrichResourceRule(BaseTransformRule):
 
     Options:
 
-    - ``provider`` — registered provider name (required)
+    - ``resource_ref`` — resolved :class:`~palm.definitions.ResourceDefinition` name or id
+    - ``provider`` — registered provider name (direct invoke when ``resource_ref`` omitted)
+    - ``action`` — provider action (default ``fetch`` for direct provider; definition default for ref)
+    - ``params`` — invoke params with optional ``{{ state.key }}`` binding
     - ``resource_id`` — explicit id, or read from mapping via ``id_field`` (default ``id``)
     - ``merge`` — when true (default), merge fetch result under ``target_field``
     - ``target_field`` — key for merged resource data (default ``resource``)
@@ -48,6 +52,10 @@ class EnrichResourceRule(BaseTransformRule):
         state = value if isinstance(value, dict) else {}
         id_field = str(options.get("id_field", "id"))
         resource_id = options.get("resource_id")
+        action = options.get("action")
+        params = dict(options.get("params") or {})
+        correlation = resource_correlation(state if isinstance(state, dict) else None)
+
         if resource_ref is None:
             if resource_id is None:
                 if isinstance(value, dict) and id_field in value:
@@ -60,15 +68,25 @@ class EnrichResourceRule(BaseTransformRule):
                     )
             invoke_result = engine.invoke(
                 provider=str(provider_name),
-                action="fetch",
+                action=str(action or "fetch"),
                 resource_id=str(resource_id),
+                params=params,
                 state=state,
+                correlation=correlation,
             )
         else:
-            invoke_result = engine.invoke(
-                resource_ref=str(resource_ref),
-                state=state,
-            )
+            invoke_kwargs: dict[str, Any] = {
+                "resource_ref": str(resource_ref),
+                "state": state,
+                "correlation": correlation,
+            }
+            if action is not None:
+                invoke_kwargs["action"] = str(action)
+            if params:
+                invoke_kwargs["params"] = params
+            if resource_id is not None:
+                invoke_kwargs["resource_id"] = str(resource_id)
+            invoke_result = engine.invoke(**invoke_kwargs)
             resource_id = invoke_result.metadata.get("resource_id", resource_id)
             provider_name = invoke_result.metadata.get("provider", provider_name)
 
@@ -92,7 +110,9 @@ class EnrichResourceRule(BaseTransformRule):
             result,
             meta={
                 "provider": provider_name,
-                "resource_id": str(resource_id),
+                "resource_ref": resource_ref,
+                "resource_id": str(resource_id) if resource_id is not None else None,
+                "action": invoke_result.metadata.get("action", action),
                 "target_field": target_field if merge else None,
             },
         )

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.resource.compensation import resource_refs_for_compensation
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState, ContextEngine
 from palm.core.resource import ResourceEngine
@@ -133,10 +134,14 @@ class WizardCommitLeaf(InteractiveLeaf):
 
         state.set(WizardKeys.COMMIT_ERROR, result.error)
         state.delete(WizardKeys.COMMITTED)
+        invocations = state.get(WizardKeys.RESOURCE_INVOCATIONS)
+        tracked = list(invocations) if isinstance(invocations, list) else []
         self._fire(
             WizardEventType.COMMIT_FAILED,
             hook=self._hook_name,
             error=result.error,
+            resource_refs=resource_refs_for_compensation(tracked),
+            resource_invocations=tracked,
         )
         return PatternStatus.FAILURE
 

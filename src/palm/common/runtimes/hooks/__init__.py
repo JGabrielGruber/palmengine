@@ -1,5 +1,6 @@
 """Runtime middleware hooks for orchestration jobs."""
 
+from palm.common.runtimes.hooks.execution_context import JobExecutionContextHook
 from palm.common.runtimes.hooks.middleware import (
     AuthMiddleware,
     DriveObservabilityHook,
@@ -11,5 +12,6 @@ __all__ = [
     "AuthMiddleware",
     "DriveObservabilityHook",
     "DriveSlice",
+    "JobExecutionContextHook",
     "authenticate_runtime",
 ]

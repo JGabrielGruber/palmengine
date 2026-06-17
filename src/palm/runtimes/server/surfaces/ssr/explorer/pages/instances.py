@@ -14,6 +14,48 @@ class InstancePages:
     def __init__(self, ctx: PageContext) -> None:
         self._ctx = ctx
 
+    def _resource_timeline(
+        self,
+        *,
+        instance_id: str,
+        job_id: str | None,
+    ) -> str:
+        payload = self._ctx.fetch.get_resource_invocations(
+            instance_id=instance_id,
+            job_id=job_id,
+        )
+        if not payload:
+            return (
+                '<section class="section"><h2>Resource timeline</h2>'
+                '<p class="muted">No resource invocations recorded yet.</p></section>'
+            )
+        entries = payload.get("entries")
+        if not isinstance(entries, list) or not entries:
+            return (
+                '<section class="section"><h2>Resource timeline</h2>'
+                '<p class="muted">No resource invocations recorded yet.</p></section>'
+            )
+        rows = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            status = "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+            rows.append(
+                [
+                    escape(str(entry.get("recorded_at") or "—")),
+                    escape(str(entry.get("event_type") or "—")),
+                    escape(str(entry.get("resource_ref") or entry.get("definition_name") or "—")),
+                    escape(str(entry.get("action") or "—")),
+                    escape(str(entry.get("step_slug") or "—")),
+                    escape(status),
+                ]
+            )
+        table = data_table(
+            ["Recorded", "Event", "Resource", "Action", "Step", "Status"],
+            rows,
+        )
+        return f'<section class="section"><h2>Resource timeline</h2>{table}</section>'
+
     def catalog(self, request: ServerRequest) -> ServerResponse:
         instances = self._ctx.fetch.list_instances(limit=50)
         rows = [
@@ -46,11 +88,13 @@ class InstancePages:
             return not_found_page(self._ctx.version, f"Instance not found: {instance_id}")
 
         job_id = instance.get("job_id", "")
+        timeline = self._resource_timeline(instance_id=instance_id, job_id=job_id or None)
         content = (
             '<section class="section"><div class="grid-2">'
             f"{stat_card('Status', instance.get('status', '—'))}"
             f"{stat_card('Flow', instance.get('flow_name') or '—')}"
             "</div></section>"
+            f"{timeline}"
             '<section class="section"><div class="panel">'
             f'<p><a href="/explorer/instances/{escape(instance_id)}/snapshots">View snapshots</a>'
             f'{f" · <a href=\"/explorer/jobs/{escape(job_id)}\">View job</a>" if job_id else ""}'

@@ -18,6 +18,11 @@ Compensation — optional saga-style undo hooks for failed commits and backtrack
 
        default_compensation_registry().register_for_commit_hook("save_profile", undo_save)
 
+   For mutating resource steps, register by ``resource_ref`` (or ``compensation_key`` in
+   definition metadata)::
+
+       default_compensation_registry().register_for_resource("submit-ingest-etl", undo_etl)
+
 3. Optionally register per-event handlers for backtrack or custom saga steps::
 
        registry.register_for_event("wizard.backtrack.executed", my_handler)

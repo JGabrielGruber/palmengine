@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.core.resource.observability import resource_correlation
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.behavior_tree.leaf import LeafNode
 from palm.core.context import BaseState
@@ -36,6 +37,8 @@ class ResourceLeaf(LeafNode):
         output_key: str | None = None,
         error_key: str | None = None,
         trace_key: str | None = None,
+        step_slug: str | None = None,
+        wizard_name: str | None = None,
     ) -> None:
         super().__init__(name)
         if not resource_ref and not provider:
@@ -51,6 +54,8 @@ class ResourceLeaf(LeafNode):
         self._output_key = output_key or name
         self._error_key = error_key
         self._trace_key = trace_key if trace_key is not None else self.default_trace_key(name)
+        self._step_slug = step_slug
+        self._wizard_name = wizard_name
 
     @staticmethod
     def default_trace_key(name: str) -> str:
@@ -85,6 +90,11 @@ class ResourceLeaf(LeafNode):
             resource_id=self._resource_id,
             params=self._params,
             state=state,
+            correlation=resource_correlation(
+                state,
+                wizard=self._wizard_name,
+                step_slug=self._step_slug or self.name,
+            ),
         )
 
         trace: dict[str, Any] = {

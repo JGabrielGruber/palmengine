@@ -18,6 +18,7 @@ _TRIGGER_EVENTS = frozenset(
     {
         CompensationTrigger.COMMIT_FAILED,
         CompensationTrigger.BACKTRACK_EXECUTED,
+        CompensationTrigger.RESOURCE_FAILED,
     }
 )
 
@@ -27,6 +28,7 @@ class CompensationCoordinator:
     Subscribes to domain events and runs optional compensation handlers.
 
     Commit-failure compensation resolves handlers by ``hook`` payload field.
+    Resource failures resolve handlers by ``resource_ref`` or ``compensation_key``.
     Additional handlers may register per event type for saga-style flows.
     """
 
@@ -84,6 +86,33 @@ class CompensationCoordinator:
                     hook=hook,
                     reason="no_handler",
                 )
+            for resource_ref in _resource_refs_from_payload(context.payload):
+                if not self._registry.has_resource(resource_ref):
+                    self._event_engine.emit(
+                        CompensationEventType.SKIPPED,
+                        trigger=event.type,
+                        key=resource_ref,
+                        reason="no_handler",
+                    )
+                    continue
+                result = self._registry.run_resource_handler(resource_ref, context)
+                results.append(result)
+                self._emit_resource_outcome(event, resource_ref, result)
+            return results
+
+        if event.type == CompensationTrigger.RESOURCE_FAILED:
+            resource_ref = context.resource_ref
+            if resource_ref and self._registry.has_resource(resource_ref):
+                result = self._registry.run_resource_handler(resource_ref, context)
+                results.append(result)
+                self._emit_resource_outcome(event, resource_ref, result)
+            elif resource_ref:
+                self._event_engine.emit(
+                    CompensationEventType.SKIPPED,
+                    trigger=event.type,
+                    key=resource_ref,
+                    reason="no_handler",
+                )
             return results
 
         for result in self._registry.run_event_handlers(event.type, context):
@@ -112,6 +141,35 @@ class CompensationCoordinator:
                 error=result.error,
             )
 
+    def _emit_resource_outcome(
+        self,
+        trigger: Event,
+        resource_ref: str,
+        result: CompensationResult,
+    ) -> None:
+        if result.ok:
+            self._event_engine.emit(
+                CompensationEventType.EXECUTED,
+                trigger=trigger.type,
+                key=resource_ref,
+                resource_ref=resource_ref,
+                data=result.data,
+            )
+            self._event_engine.emit(
+                "resource.compensated",
+                resource_ref=resource_ref,
+                trigger=trigger.type,
+                data=result.data,
+            )
+        else:
+            self._event_engine.emit(
+                CompensationEventType.FAILED,
+                trigger=trigger.type,
+                key=resource_ref,
+                resource_ref=resource_ref,
+                error=result.error,
+            )
+
 
 def _context_from_event(event: Event) -> CompensationContext:
     payload = event.enriched_payload()
@@ -120,15 +178,39 @@ def _context_from_event(event: Event) -> CompensationContext:
     if event.context is not None:
         instance_id = instance_id or event.context.instance_id
         job_id = job_id or event.context.job_id
+    resource_ref = _str_or_none(
+        payload.get("compensation_key") or payload.get("resource_ref"),
+    )
     return CompensationContext(
         trigger_event=event.type,
         payload=dict(payload),
         hook_name=_str_or_none(payload.get("hook")),
+        resource_ref=resource_ref,
         wizard_name=_str_or_none(payload.get("wizard")),
         error=_str_or_none(payload.get("error")),
         instance_id=_str_or_none(instance_id),
         job_id=_str_or_none(job_id),
     )
+
+
+def _resource_refs_from_payload(payload: dict[str, Any]) -> list[str]:
+    refs = payload.get("resource_refs")
+    if isinstance(refs, list):
+        return [str(item) for item in refs if item]
+    invocations = payload.get("resource_invocations")
+    if isinstance(invocations, list):
+        keys: list[str] = []
+        seen: set[str] = set()
+        for entry in invocations:
+            if not isinstance(entry, dict):
+                continue
+            key = entry.get("compensation_key") or entry.get("resource_ref")
+            if not key or key in seen:
+                continue
+            seen.add(str(key))
+            keys.append(str(key))
+        return keys
+    return []
 
 
 def _str_or_none(value: Any) -> str | None:

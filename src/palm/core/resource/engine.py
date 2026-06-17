@@ -62,6 +62,7 @@ class ResourceEngine(BasePalmEngine):
         params: dict[str, Any] | None = None,
         state: Any = None,
         resource_id: str | None = None,
+        correlation: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> ProviderResult:
         """
@@ -142,7 +143,10 @@ class ResourceEngine(BasePalmEngine):
             "definition_name": definition_name,
             "resource_id": bound_resource_id,
             "params": bound_params,
+            "mutating": spec_action not in {"fetch", "health", "describe"},
         }
+        if correlation:
+            event_base.update({key: value for key, value in correlation.items() if value is not None})
         self._emit("resource.invoked", **event_base)
 
         try:
@@ -264,10 +268,10 @@ class ResourceEngine(BasePalmEngine):
             self._publish_event = publisher
         else:
             event_engine = options.get("event_engine")
-            if event_engine is not None and hasattr(event_engine, "publish"):
+            if event_engine is not None and hasattr(event_engine, "emit"):
 
                 def _publish(event_type: str, payload: dict[str, Any]) -> None:
-                    event_engine.publish(Event(type=event_type, payload=payload))
+                    event_engine.emit(event_type, **payload)
 
                 self._publish_event = _publish
 

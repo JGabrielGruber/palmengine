@@ -30,3 +30,4 @@ class WizardKeys:
     COLLECTION_SELECT_ACTION = f"{PREFIX}.collection_select_action"
     TRANSFORM_FEEDBACK = f"{PREFIX}.transform_feedback"
     RESOURCE_FEEDBACK = f"{PREFIX}.resource_feedback"
+    RESOURCE_INVOCATIONS = f"{PREFIX}.resource_invocations"
