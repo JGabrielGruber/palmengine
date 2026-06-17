@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.12.0` (shipping)  
+**Current Version:** `0.12.9` (shipping)  
 **Last Updated:** June 17, 2026  
 **Maturity:** Compositional Power shipped — Resources are first-class; Palm Explorer includes full resource hub.
 
@@ -44,7 +44,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 **Vision document:** [docs/VISION-0.12.md](docs/VISION-0.12.md)  
 **Migration:** [MIGRATION-0.12.md](MIGRATION-0.12.md)  
 **ADR:** [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)  
-**Release checklist:** [RELEASE-0.12.0.md](RELEASE-0.12.0.md)
+**Release checklist:** [RELEASE-0.12.9.md](RELEASE-0.12.9.md)
 
 | Component | Status |
 |-----------|--------|
@@ -82,13 +82,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 | `DEVELOPMENT.md`      | Good            | Contributor guide |
 | `AGENTS.md`           | Good            | Constitution aligned with 0.12 |
 | `MIGRATION-0.10.md`   | Excellent       | Upgrade path from 0.9.x |
-| `docs/index.html`     | Good            | 0.12.0 with Compositional Power highlights |
+| `docs/index.html`     | Good            | 0.12.9 with Compositional Power highlights |
 | `docs/llms.txt`       | Good            | AI context guide updated for 0.12 |
-| `CHANGELOG.md`        | Good            | `[0.12.0]` section complete |
+| `CHANGELOG.md`        | Good            | `[0.12.9]` section complete |
 
 ## Priorities & Next Steps
 
-1. Publish `0.12.0` to PyPI (`just release-prep` → tag → publish)
+1. Publish `0.12.9` to PyPI (`just release-prep` → tag → publish)
 2. WebSocket surface and richer server auth
 3. KernelLeaf / GPU execution research
 4. Pipeline/DAG resource stage builders (deferred from Phase 3)

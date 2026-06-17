@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.12.0** · Compositional Power + ApplicationHost + Palm Explorer · June 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.12.9** · Compositional Power + ApplicationHost + Palm Explorer · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -737,7 +737,7 @@ Static typing is enforced project-wide via **mypy strict** (`just typecheck` / `
 
 ## Resource layer (0.12 — Compositional Power)
 
-**Status:** Shipped in 0.12.0 (Phases 1–6 complete).
+**Status:** Shipped in 0.12.9 (Phases 1–6 complete).
 **Documents:** [docs/VISION-0.12.md](docs/VISION-0.12.md) · [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
 
 0.12 elevates Resources to the same declarative tier as flows and processes.

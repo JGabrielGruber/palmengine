@@ -6,7 +6,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 _No changes yet._
 
-## [0.12.0] — 2026-06-17
+## [0.12.9] — 2026-06-17
 
 **Compositional Power release** — Resources as first-class, declarative citizens; Palm calling Palm via the `palm` provider; Explorer resource hub.
 
@@ -84,8 +84,8 @@ See [MIGRATION-0.12.md](MIGRATION-0.12.md).
 
 - **Explorer resources hub** — `/explorer/resources` catalog (filters, usage counts, invoke shortcuts); detail pages with action catalog, flow cross-refs, invocation timeline; **Try Invoke** form at `/explorer/resources/{id}/invoke`
 - **Explorer integration** — resource steps on flow detail; resource invocations on job detail; overview stat + link card
-- **Documentation** — `MIGRATION-0.12.md`, Resource Best Practices in README and ARCHITECTURE; `RELEASE-0.12.0.md` checklist
-- **Quality** — `just docs-check` version surfaces; full test suite green at 0.12.0
+- **Documentation** — `MIGRATION-0.12.md`, Resource Best Practices in README and ARCHITECTURE; `RELEASE-0.12.9.md` checklist
+- **Quality** — `just docs-check` version surfaces; full test suite green at 0.12.9
 
 ## [0.11.8] — 2026-06-17
 

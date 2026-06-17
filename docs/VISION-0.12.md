@@ -250,11 +250,11 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 
 ### Phase 6 — Polish & promotion ✅ Shipped
 
-- Documentation pass (README, ARCHITECTURE, `MIGRATION-0.12.md`, `CHANGELOG`, `RELEASE-0.12.0.md`)
+- Documentation pass (README, ARCHITECTURE, `MIGRATION-0.12.md`, `CHANGELOG`, `RELEASE-0.12.9.md`)
 - Explorer resources hub — catalog, detail, Try Invoke, flow/job cross-refs
 - Agent-oriented docs (`docs/llms.txt`, website `docs/index.html`)
 - Performance defaults — definition cache on, result cache off (`PalmSettings`)
-- **Exit criteria met:** version `0.12.0`; `just full-check` green
+- **Exit criteria met:** version `0.12.9`; `just full-check` green
 
 ### Phase C — Future-proofing ✅ Shipped
 

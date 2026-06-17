@@ -1,11 +1,11 @@
-# Release checklist — 0.12.0
+# Release checklist — 0.12.9
 
 Compositional Power release: `ResourceDefinition`, `ResourceLeaf`, `palm` provider, compensation, Explorer resources hub.
 
 ## Pre-release verification
 
-- [ ] Version bumped: `pyproject.toml` and `src/palm/__init__.py` → **0.12.0**
-- [ ] `CHANGELOG.md` — `[0.12.0]` section complete; `[Unreleased]` empty
+- [ ] Version bumped: `pyproject.toml` and `src/palm/__init__.py` → **0.12.9**
+- [ ] `CHANGELOG.md` — `[0.12.9]` section complete; `[Unreleased]` empty
 - [ ] Docs updated: `README.md`, `ARCHITECTURE.md`, `STATUS.md`, `SCOPE.md`, `MIGRATION-0.12.md`, `docs/VISION-0.12.md`, `docs/llms.txt`, `docs/index.html`
 - [ ] `MIGRATION-0.12.md` covers wizard `step_kind: resource` breaking change
 
@@ -36,7 +36,7 @@ palm host server                        # open http://localhost:8080/explorer/re
 
 ```bash
 just build                     # wheel + sdist in dist/
-ls -lh dist/                   # palmengine-0.12.0-*
+ls -lh dist/                   # palmengine-0.12.9-*
 ```
 
 ### TestPyPI (recommended first)
@@ -44,7 +44,7 @@ ls -lh dist/                   # palmengine-0.12.0-*
 ```bash
 export TEST_PYPI_TOKEN=pypi-...   # TestPyPI API token
 just publish-test
-pip install -i https://test.pypi.org/simple/ 'palmengine[cli]==0.12.0'
+pip install -i https://test.pypi.org/simple/ 'palmengine[cli]==0.12.9'
 palm version
 palm resource list
 ```
@@ -60,14 +60,14 @@ just publish                   # 5s abort window
 
 ```bash
 git add -A
-git commit -m "Release 0.12.0 — Compositional Power"
-git tag -a v0.12.0 -m "Palm Engine 0.12.0 — Compositional Power"
+git commit -m "Release 0.12.9 — Compositional Power"
+git tag -a v0.12.9 -m "Palm Engine 0.12.9 — Compositional Power"
 git push origin master --tags
 ```
 
-Create GitHub release from tag `v0.12.0`:
-- Title: **Palm Engine 0.12.0 — Compositional Power**
-- Body: copy `CHANGELOG.md` `[0.12.0]` section
+Create GitHub release from tag `v0.12.9`:
+- Title: **Palm Engine 0.12.9 — Compositional Power**
+- Body: copy `CHANGELOG.md` `[0.12.9]` section
 - Attach `dist/*` artifacts if not using CI publish
 
 ## Post-release
@@ -78,7 +78,7 @@ Create GitHub release from tag `v0.12.0`:
 
 ## Breaking-change reminders (communicate in release notes)
 
-| 0.11.x habit | 0.12.0 |
+| 0.11.x habit | 0.12.9 |
 |--------------|--------|
 | Wizard `step_kind: action` + `resource_provider` | `step_kind: resource` + `resource_ref` |
 | `WizardActionLeaf` | `WizardResourceLeaf` / `ResourceLeaf` |
