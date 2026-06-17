@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.runtimes.server.surfaces.rest.doc_examples import GROUP_DESCRIPTIONS, OPENAPI_REQUEST_EXAMPLES
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
 from palm.runtimes.server.surfaces.rest.schemas import openapi_components
 
@@ -126,57 +127,11 @@ def _path_parameters(path: str) -> list[dict[str, Any]]:
 
 
 def _request_examples(schema_name: str) -> dict[str, Any]:
-    examples: dict[str, dict[str, Any]] = {
-        "SubmitJobBody": {
-            "wizard": {
-                "summary": "Submit a wizard flow",
-                "value": {"wizard": {"name": "onboard", "steps": 3}},
-            },
-            "flow_name": {
-                "summary": "Submit by repository name",
-                "value": {"flow_name": "my_flow"},
-            },
-        },
-        "PreparePlansBody": {
-            "process": {
-                "summary": "Stage a multi-flow process",
-                "value": {
-                    "process": {
-                        "name": "pipeline",
-                        "flows": [
-                            {"name": "extract", "pattern": "etl"},
-                            {"name": "graph", "pattern": "dag"},
-                        ],
-                    }
-                },
-            },
-        },
-        "SubmitPlansBody": {
-            "default": {
-                "summary": "Submit staged plan ids",
-                "value": {"plan_ids": ["plan-abc123", "plan-def456"]},
-            },
-        },
-        "ProvideInputBody": {
-            "default": {
-                "summary": "Answer a wizard prompt",
-                "value": {"value": "Ada Lovelace"},
-            },
-        },
-    }
-    return examples.get(schema_name, {})
+    return OPENAPI_REQUEST_EXAMPLES.get(schema_name, {})
 
 
 def _ensure_tag(tags: dict[str, dict[str, str]], group: str) -> None:
-    descriptions = {
-        "Meta": "Health, discovery, and API documentation.",
-        "Jobs": "Orchestration job submission and interactive input.",
-        "Plans": "Deferred plan staging and batch submission.",
-        "Instances": "Durable process instance queries and resume.",
-        "Snapshots": "Point-in-time blackboard captures for audit and replay.",
-        "Catalog": "Registered flow and process definitions from the repository.",
-    }
-    tags.setdefault(group, {"description": descriptions.get(group, group)})
+    tags.setdefault(group, {"description": GROUP_DESCRIPTIONS.get(group, group)})
 
 
 def _error_schema() -> dict[str, Any]:

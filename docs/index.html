@@ -147,6 +147,7 @@
       <div class="items-center gap-x-8 text-sm font-medium hidden sm:flex">
         <a href="#features" class="hover:text-teal-400 transition-colors">Features</a>
         <a href="#quickstart" class="hover:text-teal-400 transition-colors">Quick Start</a>
+        <a href="#api" class="hover:text-teal-400 transition-colors">REST API</a>
         <a href="https://github.com/JGabrielGruber/palmengine" target="_blank"
           class="hover:text-teal-400 transition-colors">GitHub</a>
         <a href="#docs" class="hover:text-teal-400 transition-colors">Docs</a>
@@ -274,6 +275,196 @@
     </div>
   </section>
 
+  <!-- REST API -->
+  <section id="api" class="py-24 bg-zinc-950 border-t border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-4">REST API</h2>
+      <p class="text-xl text-zinc-400 text-center max-w-3xl mx-auto mb-6">
+        Palm ships a registry-driven HTTP surface on <code class="bg-zinc-900 px-2 py-1 rounded">ServerRuntime</code>.
+        Start a server, open the live docs hub, or explore the OpenAPI spec.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4 mb-14 text-sm">
+        <a href="#api-try" class="text-teal-400 hover:text-teal-300">Try it →</a>
+        <span class="text-zinc-600">·</span>
+        <span class="text-zinc-400"><code class="text-teal-300">GET /v1/docs</code> — interactive reference</span>
+        <span class="text-zinc-600">·</span>
+        <span class="text-zinc-400"><code class="text-teal-300">GET /v1/openapi.json</code> — OpenAPI 3.0</span>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 mb-16">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+          <h3 class="text-xl font-semibold mb-4 text-teal-400">Start the server</h3>
+          <pre class="bg-black border border-zinc-800 rounded-2xl p-5 font-mono text-sm overflow-x-auto"><code># Python
+from palm.runtimes.server import ServerRuntime, run_server
+
+rt = ServerRuntime(host="127.0.0.1", port=8080)
+run_server(rt)  # blocks; serves /health, /v1/docs, /v1/openapi.json</code></pre>
+          <p class="text-zinc-500 text-sm mt-4">
+            Default port is <code class="bg-zinc-950 px-1 rounded">8080</code>. Health at
+            <code class="bg-zinc-950 px-1 rounded">/health</code> links to docs and OpenAPI.
+          </p>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+          <h3 class="text-xl font-semibold mb-4 text-teal-400">Endpoint groups</h3>
+          <ul class="space-y-2 text-zinc-300 text-sm">
+            <li><strong class="text-white">Meta</strong> — health, OpenAPI, HTML docs</li>
+            <li><strong class="text-white">Jobs</strong> — submit flows, list status, wizard input</li>
+            <li><strong class="text-white">Plans</strong> — stage and batch-submit execution plans</li>
+            <li><strong class="text-white">Instances</strong> — durable process index and resume</li>
+            <li><strong class="text-white">Snapshots</strong> — point-in-time blackboard captures</li>
+            <li><strong class="text-white">Catalog</strong> — registered flows and processes</li>
+          </ul>
+          <p class="text-zinc-500 text-sm mt-4">
+            List endpoints return a resource array plus a <code class="bg-zinc-950 px-1 rounded">pagination</code> block.
+            When <code class="bg-zinc-950 px-1 rounded">auth_enforce</code> is on, send
+            <code class="bg-zinc-950 px-1 rounded">X-Palm-Subject</code> on write operations.
+          </p>
+        </div>
+      </div>
+
+      <h3 id="api-try" class="text-3xl font-bold text-center mb-10">Try it</h3>
+      <p class="text-zinc-400 text-center mb-10 max-w-2xl mx-auto">
+        Copy these curls against a running server (<code class="bg-zinc-900 px-1 rounded">localhost:8080</code>).
+        Pipe through <code class="bg-zinc-900 px-1 rounded">jq</code> for pretty output.
+      </p>
+
+      <div class="space-y-6">
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm">/health</span>
+              <p class="text-zinc-500 text-sm mt-1">Runtime status and documentation links</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s http://localhost:8080/health">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s http://localhost:8080/health</code></pre>
+        </div>
+
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm">/v1/jobs</span>
+              <p class="text-zinc-500 text-sm mt-1">Paginated orchestration job board</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/jobs?limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/jobs?limit=10&amp;offset=0' \
+  -H 'Accept: application/json'</code></pre>
+        </div>
+
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-blue-400 bg-blue-950 px-2 py-0.5 rounded">POST</span>
+              <span class="ml-2 font-mono text-sm">/v1/jobs</span>
+              <p class="text-zinc-500 text-sm mt-1">Submit a named flow from the repository</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s -X POST 'http://localhost:8080/v1/jobs' -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{&quot;flow_name&quot;:&quot;onboard&quot;}'">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s -X POST 'http://localhost:8080/v1/jobs' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"flow_name":"onboard"}'</code></pre>
+        </div>
+
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm">/v1/instances</span>
+              <p class="text-zinc-500 text-sm mt-1">Durable process instance index</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/instances?limit=10&amp;offset=0&amp;include_terminal=true' -H 'Accept: application/json'">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/instances?limit=10&amp;offset=0&amp;include_terminal=true' \
+  -H 'Accept: application/json'</code></pre>
+        </div>
+
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm">/v1/instances/{instance_id}/snapshots</span>
+              <p class="text-zinc-500 text-sm mt-1">State snapshots for audit and replay</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/instances/inst-abc123/snapshots?limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/instances/inst-abc123/snapshots?limit=10&amp;offset=0' \
+  -H 'Accept: application/json'</code></pre>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div class="flex justify-between items-start gap-4 mb-3">
+              <div>
+                <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+                <span class="ml-2 font-mono text-sm">/v1/flows</span>
+                <p class="text-zinc-500 text-sm mt-1">Registered flow catalog</p>
+              </div>
+              <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
+            </div>
+            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10' \
+  -H 'Accept: application/json'</code></pre>
+          </div>
+          <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+            <div class="flex justify-between items-start gap-4 mb-3">
+              <div>
+                <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+                <span class="ml-2 font-mono text-sm">/v1/flows/{flow_id}</span>
+                <p class="text-zinc-500 text-sm mt-1">Full flow definition</p>
+              </div>
+              <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows/onboard' -H 'Accept: application/json'">Copy</button>
+            </div>
+            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows/onboard' \
+  -H 'Accept: application/json'</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-center text-zinc-500 mt-12">
+        Full reference with every endpoint, schema highlights, and sample responses:
+        <code class="bg-zinc-900 px-2 py-1 rounded text-teal-300">GET /v1/docs</code> on your running server.
+      </p>
+    </div>
+  </section>
+
+  <!-- Documentation -->
+  <section id="docs" class="py-24 bg-zinc-900">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-6">Documentation</h2>
+      <p class="text-xl text-zinc-400 text-center mb-12">
+        Architecture, development guides, and the living API reference.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">README</h3>
+          <p class="text-zinc-400 text-sm">Install, quick start, CLI commands, and feature overview.</p>
+        </a>
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">Architecture</h3>
+          <p class="text-zinc-400 text-sm">Layers, engines, CQRS, server surfaces, and extension model.</p>
+        </a>
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/DEVELOPMENT.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">Development</h3>
+          <p class="text-zinc-400 text-sm">Contributing, testing, type checking, and project conventions.</p>
+        </a>
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+          <h3 class="font-semibold text-teal-400 mb-2">Live API docs</h3>
+          <p class="text-zinc-400 text-sm">
+            When <code class="bg-zinc-900 px-1 rounded">ServerRuntime</code> is running:
+            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/docs</code> (HTML hub) and
+            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/openapi.json</code> (machine-readable).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Quick Start -->
   <section id="quickstart" class="py-24 neon-container">
     <div class="max-w-4xl mx-auto px-6">
@@ -307,6 +498,7 @@ $ palm flow start todo-builder     # dynamic lists</code></pre>
         <h4 class="font-semibold mb-4 text-teal-400">Product</h4>
         <ul class="space-y-3 text-zinc-400">
           <li><a href="#features" class="hover:text-white">Features</a></li>
+          <li><a href="#api" class="hover:text-white">REST API</a></li>
           <li><a href="https://github.com/JGabrielGruber/palmengine" target="_blank" class="hover:text-white">GitHub</a></li>
         </ul>
       </div>
@@ -314,7 +506,8 @@ $ palm flow start todo-builder     # dynamic lists</code></pre>
       <div>
         <h4 class="font-semibold mb-4 text-teal-400">Resources</h4>
         <ul class="space-y-3 text-zinc-400">
-          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" class="hover:text-white">Documentation</a></li>
+          <li><a href="#docs" class="hover:text-white">Documentation</a></li>
+          <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" class="hover:text-white">README</a></li>
           <li><a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md" class="hover:text-white">Architecture</a></li>
         </ul>
       </div>
@@ -357,5 +550,17 @@ $ palm flow start todo-builder     # dynamic lists</code></pre>
       © 2026 Palm Engine • MIT License
     </div>
   </footer>
+  <script>
+    document.querySelectorAll('.copy-curl').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const text = btn.dataset.curl || btn.closest('.api-example')?.querySelector('code')?.textContent || '';
+        navigator.clipboard.writeText(text.replace(/&amp;/g, '&')).then(() => {
+          const original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = original; }, 1500);
+        });
+      });
+    });
+  </script>
 </body>
 </html>

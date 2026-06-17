@@ -89,6 +89,8 @@ def test_docs_endpoint_returns_html(server: ServerRuntime) -> None:
     assert isinstance(payload, str)
     assert "Palm Engine API" in payload
     assert "/v1/openapi.json" in payload
+    assert "endpoint-card" in payload
+    assert "Try it" in payload
 
 
 def test_health_includes_doc_links(server: ServerRuntime) -> None:

@@ -696,8 +696,9 @@ palm/runtimes/            # concrete surfaces (thin packages)
 │   │   │   ├── routes.py       # central route table (Meta, Jobs, Plans, Instances, Snapshots, Catalog)
 │   │   │   ├── schemas.py      # DictStateSchema request/query definitions
 │   │   │   ├── handlers/       # meta, jobs, plans, instances, snapshots, catalog
+│   │   │   ├── doc_examples.py # curl + sample payloads (docs + OpenAPI)
 │   │   │   ├── openapi.py      # spec generated from routes + schemas
-│   │   │   └── docs.py         # self-contained HTML at GET /v1/docs
+│   │   │   └── docs.py         # rich HTML hub at GET /v1/docs
 │   │   ├── websocket/    # extension point (planned)
 │   │   ├── mcp/          # extension point (planned)
 │   │   └── ssr/          # extension point (planned)
