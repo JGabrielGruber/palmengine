@@ -16,6 +16,7 @@ from palm.runtimes.server.auth import authenticate_request
 from palm.runtimes.server.factory import build_server_context, create_app
 from palm.runtimes.server.runtime import ServerRuntime, run_server
 from palm.runtimes.server.surfaces import (
+    ExplorerSurface,
     McpSurface,
     RestSurface,
     SsrSurface,
@@ -28,6 +29,7 @@ __all__ = [
     "DEFAULT_TRANSPORT",
     "BaseSurface",
     "BaseTransport",
+    "ExplorerSurface",
     "McpSurface",
     "PALM_SUBJECT_HEADER",
     "RestSurface",

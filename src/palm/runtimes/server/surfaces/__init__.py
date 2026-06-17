@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from palm.runtimes.server.surfaces.mcp.surface import McpSurface
 from palm.runtimes.server.surfaces.rest import RestSurface
-from palm.runtimes.server.surfaces.ssr.surface import SsrSurface
+from palm.runtimes.server.surfaces.ssr.surface import ExplorerSurface, SsrSurface
 from palm.runtimes.server.surfaces.websocket.surface import WebSocketSurface
 
 if TYPE_CHECKING:
@@ -18,13 +18,14 @@ def default_surfaces(ctx: ServerContext) -> list[object]:
     planned = [
         WebSocketSurface(ctx),
         McpSurface(ctx),
-        SsrSurface(ctx),
+        ExplorerSurface(ctx),
     ]
     names = ["rest", *(surface.name for surface in planned)]
     return [RestSurface(ctx, surface_names=names), *planned]
 
 
 __all__ = [
+    "ExplorerSurface",
     "McpSurface",
     "RestSurface",
     "SsrSurface",

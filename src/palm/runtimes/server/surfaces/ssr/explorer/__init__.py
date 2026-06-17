@@ -1,0 +1,1 @@
+"""Palm Explorer — living introspection and control hub."""

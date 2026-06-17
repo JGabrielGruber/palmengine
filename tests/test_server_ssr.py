@@ -1,16 +1,19 @@
-"""Tests for SSR wiki surface and dynamic documentation hub."""
+"""Tests for Palm Explorer surface and dynamic introspection hub."""
 
 from __future__ import annotations
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any
 
 import pytest
 
-from palm.common.runtimes.server.ssr.fetch import SsrFetcher
-from palm.common.runtimes.server.ssr.layout import wiki_page
+from palm.common.runtimes.server.ssr.fetch import ExplorerFetcher
+from palm.common.runtimes.server.ssr.forms import schema_form
+from palm.common.runtimes.server.ssr.layout import explorer_page
+from palm.common.runtimes.server.ssr.schemas import FLOW_SUBMIT_FORM
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.runtimes.server import ServerRuntime
 
@@ -50,16 +53,34 @@ def _post_json(base_url: str, path: str, body: dict[str, Any]) -> tuple[int, dic
         return resp.status, json.loads(resp.read().decode("utf-8"))
 
 
-def test_wiki_overview_renders(server: ServerRuntime) -> None:
-    status, html, _ = _get_html(server.base_url, "/wiki")
+def _post_form(base_url: str, path: str, fields: dict[str, str]) -> tuple[int, str, dict[str, str]]:
+    data = urllib.parse.urlencode(fields).encode("utf-8")
+    req = urllib.request.Request(
+        f"{base_url}{path}",
+        data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            headers = {key.lower(): value for key, value in resp.headers.items()}
+            return resp.status, resp.read().decode("utf-8"), headers
+    except urllib.error.HTTPError as exc:
+        headers = {key.lower(): value for key, value in exc.headers.items()}
+        return exc.code, exc.read().decode("utf-8"), headers
+
+
+def test_explorer_overview_renders(server: ServerRuntime) -> None:
+    status, html, _ = _get_html(server.base_url, "/explorer")
     assert status == 200
-    assert "Palm Wiki" in html
-    assert "Documentation Hub" in html
-    assert "/wiki/flows" in html
-    assert "/wiki/jobs" in html
+    assert "Palm Explorer" in html
+    assert "Introspection Hub" in html
+    assert "/explorer/flows" in html
+    assert "/explorer/jobs" in html
+    assert "/explorer/instances" in html
 
 
-def test_docs_redirects_to_wiki(server: ServerRuntime) -> None:
+def test_docs_redirects_to_explorer(server: ServerRuntime) -> None:
     import http.client
     from urllib.parse import urlparse
 
@@ -68,51 +89,71 @@ def test_docs_redirects_to_wiki(server: ServerRuntime) -> None:
     conn.request("GET", "/docs", headers={"Accept": "text/html"})
     response = conn.getresponse()
     assert response.status == 302
-    assert response.getheader("Location") == "/wiki"
+    assert response.getheader("Location") == "/explorer"
     conn.close()
 
 
-def test_ssr_surface_info_is_active(server: ServerRuntime) -> None:
+def test_wiki_redirects_to_explorer(server: ServerRuntime) -> None:
+    import http.client
+    from urllib.parse import urlparse
+
+    parsed = urlparse(server.base_url)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    conn.request("GET", "/wiki", headers={"Accept": "text/html"})
+    response = conn.getresponse()
+    assert response.status == 302
+    assert response.getheader("Location") == "/explorer"
+    conn.close()
+
+
+def test_explorer_surface_info_is_active(server: ServerRuntime) -> None:
     req = urllib.request.Request(
-        f"{server.base_url}/v1/surfaces/ssr",
+        f"{server.base_url}/v1/surfaces/explorer",
         headers={"Accept": "application/json"},
         method="GET",
     )
     with urllib.request.urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
     assert payload["status"] == "active"
-    assert payload["wiki"] == "/wiki"
+    assert payload["explorer"] == "/explorer"
 
 
 def test_flow_catalog_page(server: ServerRuntime) -> None:
     server.repository.register_flow(
         FlowDefinition(
-            id="wiki-flow-1",
-            name="wiki-flow",
+            id="explorer-flow-1",
+            name="explorer-flow",
             pattern="wizard",
             options={"steps": [{"slug": "one", "title": "One", "prompt": "One?"}]},
         )
     )
-    status, html, _ = _get_html(server.base_url, "/wiki/flows")
+    status, html, _ = _get_html(server.base_url, "/explorer/flows")
     assert status == 200
-    assert "wiki-flow" in html
+    assert "explorer-flow" in html
 
-    status, html, _ = _get_html(server.base_url, "/wiki/flows/wiki-flow-1")
+    status, html, _ = _get_html(server.base_url, "/explorer/flows/explorer-flow-1")
     assert status == 200
     assert "wizard" in html
+
+
+def test_flow_submit_form_renders(server: ServerRuntime) -> None:
+    status, html, _ = _get_html(server.base_url, "/explorer/flows/submit")
+    assert status == 200
+    assert 'name="flow_name"' in html
+    assert 'action="/explorer/flows/submit"' in html
 
 
 def test_process_and_pattern_pages(server: ServerRuntime) -> None:
     flow = FlowDefinition(name="p-flow", pattern="wizard", options={})
     server.repository.register_process(
-        ProcessDefinition(id="wiki-proc", name="wiki-proc", flows=[flow])
+        ProcessDefinition(id="explorer-proc", name="explorer-proc", flows=[flow])
     )
 
-    status, html, _ = _get_html(server.base_url, "/wiki/processes")
+    status, html, _ = _get_html(server.base_url, "/explorer/processes")
     assert status == 200
-    assert "wiki-proc" in html
+    assert "explorer-proc" in html
 
-    status, html, _ = _get_html(server.base_url, "/wiki/patterns")
+    status, html, _ = _get_html(server.base_url, "/explorer/patterns")
     assert status == 200
     assert "wizard" in html
 
@@ -125,30 +166,82 @@ def test_job_context_viewer(server: ServerRuntime) -> None:
     )
     job_id = payload["job_id"]
 
-    status, html, _ = _get_html(server.base_url, f"/wiki/jobs/{job_id}")
+    status, html, _ = _get_html(server.base_url, f"/explorer/jobs/{job_id}")
     assert status == 200
     assert job_id in html
     assert "Next actions" in html
     assert "provide_input" in html
+    assert "Provide input" in html
     assert "/v1/jobs/" in html
 
 
-def test_health_includes_wiki_link(server: ServerRuntime) -> None:
+def test_job_input_form_post(server: ServerRuntime) -> None:
+    import http.client
+    from urllib.parse import urlparse
+
+    _, payload = _post_json(
+        server.base_url,
+        "/v1/jobs",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    job_id = payload["job_id"]
+
+    parsed = urlparse(server.base_url)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    body = urllib.parse.urlencode({"value": "Alice"}).encode("utf-8")
+    conn.request(
+        "POST",
+        f"/explorer/jobs/{job_id}/input",
+        body=body,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    response = conn.getresponse()
+    assert response.status == 302
+    location = response.getheader("Location", "")
+    assert location.startswith(f"/explorer/jobs/{job_id}")
+    assert "notice=" in location or "error=" in location
+    conn.close()
+
+
+def test_instance_browser_page(server: ServerRuntime) -> None:
+    _, payload = _post_json(
+        server.base_url,
+        "/v1/jobs",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    job_id = payload["job_id"]
+
+    status, html, _ = _get_html(server.base_url, "/explorer/instances")
+    assert status == 200
+    assert "Instance Browser" in html
+    assert job_id in html or "instance" in html.lower()
+
+
+def test_health_includes_explorer_link(server: ServerRuntime) -> None:
     req = urllib.request.Request(f"{server.base_url}/health", method="GET")
     with urllib.request.urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
-    assert payload["wiki"] == "/wiki"
+    assert payload["explorer"] == "/explorer"
+    assert payload["wiki"] == "/explorer"
 
 
-def test_ssr_fetcher_lists_patterns(server: ServerRuntime) -> None:
+def test_explorer_fetcher_lists_patterns(server: ServerRuntime) -> None:
     app = server.server_app
     assert app is not None
-    fetcher = SsrFetcher(app.context)
+    fetcher = ExplorerFetcher(app.context)
     patterns = fetcher.list_patterns()
     assert any(item["name"] == "wizard" for item in patterns)
 
 
-def test_wiki_layout_renders_title() -> None:
-    html = wiki_page(title="Test", version="0.10.9", content="<p>Body</p>")
+def test_explorer_layout_renders_title() -> None:
+    html = explorer_page(title="Test", version="0.10.9", content="<p>Body</p>")
     assert "Test" in html
     assert "Body" in html
+    assert "Palm Explorer" in html
+
+
+def test_schema_form_renders_fields() -> None:
+    html = schema_form(FLOW_SUBMIT_FORM, action="/explorer/flows/submit")
+    assert 'name="flow_name"' in html
+    assert 'name="wizard_name"' in html
+    assert 'type="submit"' in html

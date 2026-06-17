@@ -22,7 +22,8 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
         "auth_enforce": runtime.auth_enforce,
         "surfaces": surface_names,
         "docs": "/v1/docs",
-        "wiki": "/wiki",
+        "explorer": "/explorer",
+        "wiki": "/explorer",
         "openapi": "/v1/openapi.json",
     }
     bridge = getattr(ctx, "webhook_bridge", None)

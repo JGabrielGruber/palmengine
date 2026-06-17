@@ -1,18 +1,19 @@
-"""SSR page layout — Palm-themed wiki shell."""
+"""SSR page layout — Palm Explorer shell."""
 
 from __future__ import annotations
 
 from palm.common.runtimes.server.ssr.render import escape
 
-_WIKI_NAV = (
-    ("Overview", "/wiki"),
-    ("Flows", "/wiki/flows"),
-    ("Processes", "/wiki/processes"),
-    ("Patterns", "/wiki/patterns"),
-    ("Schemas", "/wiki/schemas"),
-    ("Jobs", "/wiki/jobs"),
+_EXPLORER_NAV = (
+    ("Home", "/explorer"),
+    ("Flows", "/explorer/flows"),
+    ("Processes", "/explorer/processes"),
+    ("Patterns", "/explorer/patterns"),
+    ("Schemas", "/explorer/schemas"),
+    ("Jobs", "/explorer/jobs"),
+    ("Instances", "/explorer/instances"),
     ("API Reference", "/v1/docs"),
-    ("Examples", "/wiki/examples"),
+    ("Examples", "/explorer/examples"),
 )
 
 _PALM_CSS = """
@@ -112,6 +113,28 @@ main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
   font-size: 0.8rem; padding: 0.25rem 0.65rem; border-radius: 999px;
   border: 1px solid var(--border); color: var(--muted);
 }
+.schema-form { max-width: 36rem; }
+.form-field { margin-bottom: 1rem; }
+.form-field label {
+  display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.35rem;
+}
+.form-field input, .form-field select, .form-field textarea {
+  width: 100%; padding: 0.55rem 0.65rem; border-radius: 0.45rem;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  font: inherit;
+}
+.form-field textarea { font-family: ui-monospace, monospace; font-size: 0.85rem; }
+.field-hint { display: block; font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+.form-errors { margin: 0; padding-left: 1.1rem; }
+.form-actions { margin-top: 1.25rem; }
+.btn-primary {
+  background: var(--accent-soft); color: var(--text); border: none;
+  padding: 0.55rem 1.1rem; border-radius: 0.45rem; font-weight: 600; cursor: pointer;
+}
+.btn-primary:hover { background: var(--accent); }
+.alert { padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+.alert-success { background: #042f2e; border: 1px solid var(--accent); color: var(--text); }
+.alert-error { background: #450a0a; border: 1px solid var(--rose); color: var(--text); }
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
@@ -120,17 +143,17 @@ main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
 """
 
 
-def wiki_page(
+def explorer_page(
     *,
     title: str,
     version: str,
     content: str,
-    active_nav: str = "/wiki",
+    active_nav: str = "/explorer",
     subtitle: str = "",
 ) -> str:
-    """Wrap page content in the wiki layout."""
+    """Wrap page content in the Palm Explorer layout."""
     nav = []
-    for label, href in _WIKI_NAV:
+    for label, href in _EXPLORER_NAV:
         active = " active" if href == active_nav else ""
         nav.append(f'<a class="nav-link{active}" href="{escape(href)}">{escape(label)}</a>')
     subtitle_html = f"<p>{escape(subtitle)}</p>" if subtitle else ""
@@ -139,13 +162,13 @@ def wiki_page(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{escape(title)} · Palm Wiki</title>
+  <title>{escape(title)} · Palm Explorer</title>
   <style>{_PALM_CSS}</style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">Palm Wiki</div>
+      <div class="brand">Palm Explorer</div>
       <div class="version">v{escape(version)}</div>
       <nav>{"".join(nav)}</nav>
       <div class="pill-row" style="margin-top:1.5rem">
@@ -163,3 +186,21 @@ def wiki_page(
   </div>
 </body>
 </html>"""
+
+
+def wiki_page(
+    *,
+    title: str,
+    version: str,
+    content: str,
+    active_nav: str = "/explorer",
+    subtitle: str = "",
+) -> str:
+    """Backward-compatible alias for :func:`explorer_page`."""
+    return explorer_page(
+        title=title,
+        version=version,
+        content=content,
+        active_nav=active_nav,
+        subtitle=subtitle,
+    )

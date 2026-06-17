@@ -1,5 +1,5 @@
-"""SSR surface extension point."""
+"""Explorer surface extension point."""
 
-from palm.runtimes.server.surfaces.ssr.surface import SsrSurface
+from palm.runtimes.server.surfaces.ssr.surface import ExplorerSurface, SsrSurface
 
-__all__ = ["SsrSurface"]
+__all__ = ["ExplorerSurface", "SsrSurface"]

@@ -110,7 +110,7 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
         def _dispatch(self, method: str) -> None:
             parsed = urlparse(self.path)
             query = {key: values[-1] for key, values in parse_qs(parsed.query).items() if values}
-            body, body_error = _read_json_body(self)
+            body, body_error = _read_request_body(self)
             request = ServerRequest(
                 method=method,
                 path=parsed.path,
@@ -143,15 +143,25 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
     return StdlibHttpHandler
 
 
-def _read_json_body(handler: BaseHTTPRequestHandler) -> tuple[dict[str, Any] | None, Any]:
+def _read_request_body(handler: BaseHTTPRequestHandler) -> tuple[dict[str, Any] | None, Any]:
     length = int(handler.headers.get("Content-Length", "0"))
     if length <= 0:
         return None, None
+    raw = handler.rfile.read(length)
+    content_type = handler.headers.get("Content-Type", "").lower()
+    if "application/x-www-form-urlencoded" in content_type:
+        return _read_form_body(raw), None
     try:
-        raw = handler.rfile.read(length)
         data = json.loads(raw.decode("utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         return None, error_response(400, "invalid_json", str(exc))
     if not isinstance(data, dict):
         return None, error_response(400, "invalid_request", "JSON object required")
     return data, None
+
+
+def _read_form_body(raw: bytes) -> dict[str, Any]:
+    from urllib.parse import parse_qs
+
+    parsed = parse_qs(raw.decode("utf-8"), keep_blank_values=True)
+    return {key: values[-1] if values else "" for key, values in parsed.items()}

@@ -2,7 +2,7 @@
 SSR example pages — templates for future dashboards and wizard previews.
 
 Add a new page by:
-1. Implementing a handler on :class:`~palm.runtimes.server.surfaces.ssr.wiki.pages.WikiPages`
+1. Implementing a handler on :class:`~palm.runtimes.server.surfaces.ssr.explorer.pages.ExplorerPages`
    or a dedicated class in this module.
 2. Registering the route in :mod:`palm.runtimes.server.surfaces.ssr.routes`.
 3. Adding a nav link in :mod:`palm.common.runtimes.server.ssr.layout` when the page is stable.
@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.components import code_block, link_card
-from palm.common.runtimes.server.ssr.fetch import SsrFetcher
-from palm.common.runtimes.server.ssr.layout import wiki_page
+from palm.common.runtimes.server.ssr.fetch import ExplorerFetcher
+from palm.common.runtimes.server.ssr.layout import explorer_page
 from palm.common.runtimes.server.ssr.render import html_response
 
 if TYPE_CHECKING:
@@ -23,30 +23,31 @@ if TYPE_CHECKING:
 
 
 class ExamplePages:
-    """Illustrative SSR routes showing how to extend the wiki surface."""
+    """Illustrative SSR routes showing how to extend Palm Explorer."""
 
     def __init__(self, ctx: ServerContext) -> None:
-        self._fetch = SsrFetcher(ctx)
+        self._fetch = ExplorerFetcher(ctx)
 
     def index(self, request: ServerRequest) -> ServerResponse:
         content = (
-            '<section class="section"><h2>Adding SSR pages</h2>'
-            "<p class=\"muted\">SSR pages compose HTML from "
-            "<code>SsrFetcher</code> (CQRS), <code>components</code>, and "
-            "<code>wiki_page</code> layout. No external template engine required.</p>"
+            '<section class="section"><h2>Adding Explorer pages</h2>'
+            "<p class=\"muted\">Explorer pages compose HTML from "
+            "<code>ExplorerFetcher</code> (CQRS), <code>components</code>, "
+            "<code>forms</code>, and <code>explorer_page</code> layout. "
+            "No external template engine required.</p>"
             f"{code_block(_EXTENSION_STEPS)}"
             "</section>"
             '<section class="section"><h2>Future surfaces</h2><div class="grid-2">'
-            f'{link_card("/wiki/examples/wizard-preview", "Wizard preview stub", "Placeholder for step-by-step wizard UI.")}'
-            f'{link_card("/wiki/examples/dashboard", "Dashboard stub", "Placeholder for live job board HTML.")}'
+            f'{link_card("/explorer/examples/wizard-preview", "Wizard preview stub", "Placeholder for step-by-step wizard UI.")}'
+            f'{link_card("/explorer/examples/dashboard", "Dashboard stub", "Placeholder for live job board HTML.")}'
             "</div></section>"
         )
         return html_response(
-            wiki_page(
+            explorer_page(
                 title="SSR Examples",
                 version=self._fetch.version,
                 content=content,
-                active_nav="/wiki/examples",
+                active_nav="/explorer/examples",
                 subtitle="Patterns for dashboards, wizard previews, and operator tooling.",
             )
         )
@@ -58,16 +59,16 @@ class ExamplePages:
             "<h3>Wizard preview (stub)</h3>"
             "<p class=\"muted\">A future implementation would render the active prompt, "
             "choices, and validation from <code>GetJobContextQuery</code>, posting input "
-            "to <code>POST /v1/jobs/{id}/input</code>.</p>"
-            f"{code_block({'next': 'wiki/jobs/{{job_id}}', 'data_source': '/v1/jobs/{{job_id}}/context'})}"
+            "via the Explorer job input form or <code>POST /v1/jobs/{id}/input</code>.</p>"
+            f"{code_block({'next': 'explorer/jobs/{{job_id}}', 'data_source': '/v1/jobs/{{job_id}}/context'})}"
             "</div></section>"
         )
         return html_response(
-            wiki_page(
+            explorer_page(
                 title="Wizard Preview",
                 version=self._fetch.version,
                 content=content,
-                active_nav="/wiki/examples",
+                active_nav="/explorer/examples",
             )
         )
 
@@ -83,18 +84,19 @@ class ExamplePages:
             "</div></section>"
         )
         return html_response(
-            wiki_page(
+            explorer_page(
                 title="Dashboard",
                 version=self._fetch.version,
                 content=content,
-                active_nav="/wiki/examples",
+                active_nav="/explorer/examples",
             )
         )
 
 
 _EXTENSION_STEPS = {
-    "1": "Create a handler returning html_response(wiki_page(...))",
-    "2": "Use SsrFetcher to call existing CQRS queries",
-    "3": "Register GET route in surfaces/ssr/routes.py",
-    "4": "Add tests in tests/test_server_ssr.py",
+    "1": "Create a handler returning html_response(explorer_page(...))",
+    "2": "Use ExplorerFetcher to call existing CQRS queries",
+    "3": "Add schema_form or job_input_form for interactive actions",
+    "4": "Register GET/POST routes in surfaces/ssr/routes.py",
+    "5": "Add tests in tests/test_server_ssr.py",
 }

@@ -60,7 +60,7 @@ def test_surface_registry_lists_default_surfaces(server: ServerRuntime) -> None:
     assert "rest" in names
     assert "websocket" in names
     assert "mcp" in names
-    assert "ssr" in names
+    assert "explorer" in names
 
 
 def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
@@ -68,7 +68,7 @@ def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
     assert status == 200
     assert payload["runtime"] == "ServerRuntime"
     assert payload["status"] == "ok"
-    assert set(payload["surfaces"]) == {"rest", "websocket", "mcp", "ssr"}
+    assert set(payload["surfaces"]) == {"rest", "websocket", "mcp", "explorer"}
 
 
 def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
@@ -78,10 +78,10 @@ def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
         assert payload["status"] == "planned"
         assert "message" in payload
 
-    status, payload = _request(server.base_url, "GET", "/v1/surfaces/ssr")
+    status, payload = _request(server.base_url, "GET", "/v1/surfaces/explorer")
     assert status == 200
     assert payload["status"] == "active"
-    assert payload["wiki"] == "/wiki"
+    assert payload["explorer"] == "/explorer"
 
 
 def test_openapi_document(server: ServerRuntime) -> None:
@@ -140,5 +140,5 @@ def test_create_server_app_with_explicit_rest_surface(server: ServerRuntime) -> 
 
 def test_create_app_mounts_default_surfaces(server: ServerRuntime) -> None:
     app = create_app(server)
-    assert set(app.surfaces.names()) == {"rest", "websocket", "mcp", "ssr"}
+    assert set(app.surfaces.names()) == {"rest", "websocket", "mcp", "explorer"}
     assert len(default_surfaces(ServerContext(server))) == 4

@@ -81,3 +81,32 @@ def event_timeline(events: list[dict[str, Any]]) -> str:
 
 def badge(text: str, *, tone: str = "default") -> str:
     return f'<span class="badge badge-{escape(tone)}">{escape(text)}</span>'
+
+
+def alert(message: str, *, tone: str = "success") -> str:
+    from palm.common.runtimes.server.ssr.forms import alert as _alert
+
+    return _alert(message, tone=tone)
+
+
+def schema_form(
+    schema: object,
+    *,
+    action: str,
+    method: str = "POST",
+    values: dict[str, Any] | None = None,
+    errors: list[str] | None = None,
+    submit_label: str = "Submit",
+    hidden_fields: dict[str, str] | None = None,
+) -> str:
+    from palm.common.runtimes.server.ssr.forms import schema_form as _schema_form
+
+    return _schema_form(
+        schema,  # type: ignore[arg-type]
+        action=action,
+        method=method,
+        values=values,
+        errors=errors,
+        submit_label=submit_label,
+        hidden_fields=hidden_fields,
+    )

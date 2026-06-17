@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
+    GetInstanceStatusQuery,
     GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
@@ -24,8 +25,8 @@ if TYPE_CHECKING:
     from palm.definitions.process import ProcessDefinition
 
 
-class SsrFetcher:
-    """Thin CQRS facade for server-rendered pages."""
+class ExplorerFetcher:
+    """Thin CQRS facade for Palm Explorer pages."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
@@ -70,6 +71,18 @@ class SsrFetcher:
     def get_snapshot(self, instance_id: str, snapshot_id: str) -> Any:
         return self._ctx.ask(GetInstanceSnapshotQuery(instance_id=instance_id, snapshot_id=snapshot_id))
 
+    def get_instance(self, instance_id: str) -> dict[str, Any] | None:
+        result = self._ctx.ask(GetInstanceStatusQuery(instance_id=instance_id))
+        if isinstance(result, dict):
+            if not result.get("found", True):
+                return None
+            return result
+        if result is None:
+            return None
+        if hasattr(result, "to_dict"):
+            return result.to_dict()
+        return dict(result)
+
     def list_patterns(self) -> list[dict[str, str]]:
         import palm.patterns  # noqa: F401 — register installed patterns
 
@@ -102,3 +115,6 @@ class SsrFetcher:
                     }
                 )
         return schemas
+
+
+SsrFetcher = ExplorerFetcher
