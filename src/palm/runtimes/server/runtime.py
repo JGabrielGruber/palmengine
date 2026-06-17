@@ -1,27 +1,32 @@
 """
-ServerRuntime — network-hosted Palm runtime with a minimal HTTP API.
+ServerRuntime — network-hosted Palm runtime with extensible server surfaces.
 """
 
 from __future__ import annotations
 
 import signal
 import threading
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from palm.common.exceptions import PlanNotFoundError
-from palm.common.plans import ExecutionPlan, PlanRegistry, ProcessPlan, StoredPlan
+from palm.common.plans import ExecutionPlan, ProcessPlan, StoredPlan
 from palm.common.runtimes.base import BaseRuntime
+from palm.common.runtimes.server.middleware import current_principal_id
+from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
+from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 from palm.common.runtimes.wiring import SchedulerPolicy
 from palm.core.orchestration import Job
-from palm.definitions.flow import FlowDefinition
-from palm.definitions.process import ProcessDefinition
-from palm.runtimes.server.auth import current_principal_id
-from palm.runtimes.server.http import PalmHttpServer, serve_runtime
+from palm.runtimes.server.factory import create_app
+from palm.runtimes.server.transport import StdlibHttpServer, serve_app
+
+if TYPE_CHECKING:
+    from palm.app.host.application_host import ApplicationHost
+    from palm.common.runtimes.server.app import ServerApp
 
 
 class ServerRuntime(BaseRuntime):
     """
-    Long-lived runtime exposing jobs over HTTP.
+    Long-lived runtime exposing Palm over registered server surfaces.
 
     Defaults to :class:`~palm.common.runtimes.schedulers.queued.QueuedScheduler` so
     request handlers return promptly while a worker thread drives jobs.
@@ -37,13 +42,17 @@ class ServerRuntime(BaseRuntime):
         instance_manager: Any | None = None,
         host: str = "127.0.0.1",
         port: int = 8080,
+        host_bridge: ApplicationHost | None = None,
     ) -> None:
         super().__init__(storage=storage, instance_manager=instance_manager)
         self._host = host
         self._port = port
-        self._http_server: PalmHttpServer | None = None
+        self._host_bridge = host_bridge
+        self._http_server: StdlibHttpServer | None = None
         self._http_thread: threading.Thread | None = None
-        self.plan_registry = PlanRegistry()
+        self.plan_registry = self._new_plan_registry()
+        self._server_app: ServerApp | None = None
+        self.webhook_bridge = ServerWebhookBridge()
 
     @property
     def host(self) -> str:
@@ -58,6 +67,24 @@ class ServerRuntime(BaseRuntime):
     @property
     def base_url(self) -> str:
         return f"http://{self.host}:{self.port}"
+
+    @property
+    def server_app(self) -> ServerApp | None:
+        return self._server_app
+
+    def attach_host(self, host: ApplicationHost) -> None:
+        """Bind an ApplicationHost for CQRS, projections, and webhook dispatch."""
+        self._host_bridge = host
+        if self._server_app is not None:
+            self._server_app.context.attach_host(host)
+            self._server_app.webhook_bridge = ServerWebhookBridge.from_context(self._server_app.context)
+
+    def start_http(self, *, host: str | None = None, port: int | None = None) -> None:
+        """Start the HTTP transport after ApplicationHost CQRS wiring."""
+        self._start_http(
+            host=str(host or self._host),
+            port=int(port if port is not None else self._port),
+        )
 
     def start(self, **options: Any) -> None:
         super().start(**options)
@@ -95,55 +122,21 @@ class ServerRuntime(BaseRuntime):
 
     def prepare_flow_from_body(self, body: dict[str, object]) -> ExecutionPlan:
         """Build a flow plan from an HTTP-style request body."""
-        if "flow" in body and isinstance(body["flow"], dict):
-            flow = FlowDefinition.from_dict(body["flow"])
-            return self.executor.prepare_flow_plan(flow, job_id=_optional_str(body.get("job_id")))
-
-        if "wizard" in body:
-            wizard = body["wizard"]
-            if not isinstance(wizard, dict):
-                raise TypeError("wizard must be an object")
-            steps = wizard.get("steps")
-            flow = FlowDefinition(
-                name=str(wizard.get("name", "wizard")),
-                pattern="wizard",
-                options={"steps": int(steps)} if steps is not None else {},
-            )
-            return self.executor.prepare_flow_plan(flow, job_id=_optional_str(body.get("job_id")))
-
-        if "flow_name" in body:
-            return self.executor.prepare_flow_plan(
-                str(body["flow_name"]),
-                by_id=bool(body.get("by_id", False)),
-                job_id=_optional_str(body.get("job_id")),
-            )
-
-        raise ValueError("expected 'flow', 'wizard', or 'flow_name' in request body")
+        self._require_started()
+        return prepare_flow_from_body(self, body)
 
     def prepare_process_from_body(self, body: dict[str, object]) -> ProcessPlan:
         """Build a process plan bundle from an HTTP-style request body."""
-        if "process" in body and isinstance(body["process"], dict):
-            process = ProcessDefinition.from_dict(body["process"])
-            return self.executor.prepare_process_plan(
-                process,
-                job_id=_optional_str(body.get("job_id")),
-            )
-
-        if "process_name" in body:
-            return self.executor.prepare_process_plan(
-                str(body["process_name"]),
-                by_id=bool(body.get("by_id", False)),
-                job_id=_optional_str(body.get("job_id")),
-            )
-
-        raise ValueError("expected 'process' or 'process_name' in request body")
+        self._require_started()
+        return prepare_process_from_body(self, body)
 
     def _start_http(self, *, host: str, port: int) -> None:
         if self._http_server is not None:
             return
         self._host = host
         self._port = port
-        server = serve_runtime(self, host=host, port=port)
+        self._server_app = create_app(self, host=self._host_bridge)
+        server = serve_app(self._server_app, host=host, port=port)
         thread = threading.Thread(
             target=server.serve_forever,
             name="ServerRuntime-HTTP",
@@ -163,6 +156,13 @@ class ServerRuntime(BaseRuntime):
             thread.join(timeout=5.0)
         self._http_server = None
         self._http_thread = None
+        self._server_app = None
+
+    @staticmethod
+    def _new_plan_registry() -> Any:
+        from palm.common.plans import PlanRegistry
+
+        return PlanRegistry()
 
 
 def run_server(
@@ -189,7 +189,3 @@ def run_server(
     signal.signal(signal.SIGTERM, _stop)
     stopped.wait()
     runtime.stop()
-
-
-def _optional_str(value: object | None) -> str | None:
-    return str(value) if value is not None else None

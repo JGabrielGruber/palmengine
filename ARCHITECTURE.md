@@ -674,12 +674,25 @@ palm/common/runtimes/     # shared infrastructure (single source of truth)
 ├── host.py               # RuntimeHost protocol (executions layer contract)
 ├── wiring.py             # Scheduler policy resolution
 ├── hooks/                # AuthMiddleware, DriveObservabilityHook
-└── schedulers/           # InlineScheduler, QueuedScheduler
+├── schedulers/           # InlineScheduler, QueuedScheduler
+└── server/               # ServerApp, surfaces, CQRS bridge, webhooks
+    ├── app.py            # create_server_app — mounts registered surfaces
+    ├── context.py        # ServerContext — runtime + optional ApplicationHost
+    ├── registry.py       # RouteRegistry, SurfaceRegistry
+    ├── surfaces/
+    │   ├── rest/         # CQRS-backed JSON API (plans, jobs, instances)
+    │   ├── websocket/    # extension point (planned transport)
+    │   ├── mcp/          # extension point (planned MCP)
+    │   └── ssr/          # extension point (planned SSR)
+    └── webhooks.py       # ServerWebhookBridge — outbox integration
 
 palm/runtimes/            # concrete surfaces (thin packages)
 ├── embedded/runtime.py   # EmbeddedRuntime — inline default
 ├── daemon/runtime.py     # DaemonRuntime — queued background
-├── server/               # ServerRuntime + HTTP API
+├── server/               # ServerRuntime — thin transport binding
+│   ├── runtime.py        # lifecycle + plan staging
+│   ├── factory.py        # create_app / build_server_context
+│   └── transport/        # stdlib HTTP (async-ready ServerApp dispatch)
 └── cli/                  # CLI entry + commands/ (one-shot) + tui/ (REPL) + shared/
 ```
 
@@ -697,9 +710,9 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **BaseRuntime** (`common/runtimes`) | Shipped | Shared engine wiring, hooks, auth, plan registry |
 | **EmbeddedRuntime** | Shipped | Inline scheduler; libraries, tests, CLI |
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
-| **ServerRuntime** | Shipped | Queued scheduler + HTTP (`/v1/jobs`, `/v1/plans/*`) |
+| **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces (REST, webhook bridge) |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **WebSocket** | Planned | Streaming wizard context and job events |
+| **WebSocket / MCP / SSR** | Planned | Extension surfaces registered; transport binding in later steps |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.
 

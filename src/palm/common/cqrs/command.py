@@ -46,6 +46,22 @@ class ResumeProcessCommand(Command):
     runtime_name: str | None = None
 
 
+@dataclass(frozen=True)
+class PreparePlansCommand(Command):
+    """Stage prepared execution plans for deferred submission."""
+
+    body: dict[str, Any]
+    runtime_name: str | None = None
+
+
+@dataclass(frozen=True)
+class SubmitPlansCommand(Command):
+    """Consume staged plans and submit them to orchestration."""
+
+    plan_ids: list[str]
+    runtime_name: str | None = None
+
+
 @runtime_checkable
 class CommandHandler(Protocol):
     """Handle a single command type."""

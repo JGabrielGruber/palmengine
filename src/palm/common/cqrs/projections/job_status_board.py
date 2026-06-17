@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
-from palm.common.cqrs.query import ListJobStatusQuery
+from palm.common.cqrs.query import GetJobStatusQuery, ListJobStatusQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.core.orchestration.events import OrchestrationEventType
 
@@ -101,6 +101,9 @@ class JobStatusBoardProjection(Projection):
         self._entries.clear()
         if self._storage.is_initialized:
             self._storage.delete(_PROJECTION_KEY)
+
+    def get_job(self, query: GetJobStatusQuery) -> JobStatusReadModel | None:
+        return self._entries.get(query.job_id)
 
     def list_jobs(self, query: ListJobStatusQuery) -> list[JobStatusReadModel]:
         rows = list(self._entries.values())

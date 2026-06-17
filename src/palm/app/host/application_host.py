@@ -196,6 +196,7 @@ class ApplicationHost:
         self._spawn_runtimes(merged)
         self._app.load_definitions()
         self._wire_cqrs()
+        self._start_server_surface()
         self._attach_projections()
         self._recover()
 
@@ -384,6 +385,17 @@ class ApplicationHost:
     def __exit__(self, *exc: object) -> None:
         self.shutdown()
 
+    def _start_server_surface(self) -> None:
+        if not self.profile.server:
+            return
+        runtime = self._app.runtime("server")
+        attach = getattr(runtime, "attach_host", None)
+        if callable(attach):
+            attach(self)
+        start_http = getattr(runtime, "start_http", None)
+        if callable(start_http):
+            start_http(host=self.profile.server_host, port=self.profile.server_port)
+
     def _wire_cqrs(self) -> None:
         self._instance_projection = InstanceIndexProjection(
             self._app.storage,
@@ -397,6 +409,7 @@ class ApplicationHost:
         wire_command_bus(self._command_bus, self._app, self._router)
         wire_query_bus(
             self._query_bus,
+            app=self._app,
             instances=self._instance_projection,
             wizard_progress=self._wizard_projection,
             job_board=self._job_board_projection,
@@ -486,6 +499,8 @@ class ApplicationHost:
                 self._emit_runtime_registered(name, "daemon", runtime)
 
         if profile.server:
+            options = self._worker_options(merged)
+            options["http"] = False
             runtime = self._app.create_runtime(
                 "server",
                 name="server",
@@ -493,7 +508,7 @@ class ApplicationHost:
                 set_primary=not has_primary,
                 host=profile.server_host,
                 port=profile.server_port,
-                **self._worker_options(merged),
+                **options,
             )
             self._emit_runtime_registered("server", "server", runtime)
 

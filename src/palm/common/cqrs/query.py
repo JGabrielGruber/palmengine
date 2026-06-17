@@ -50,6 +50,11 @@ class ListJobStatusQuery(Query):
 
 
 @dataclass(frozen=True)
+class GetJobStatusQuery(Query):
+    job_id: str
+
+
+@dataclass(frozen=True)
 class ListWizardProgressQuery(Query):
     """List wizard progress read models (newest first)."""
 

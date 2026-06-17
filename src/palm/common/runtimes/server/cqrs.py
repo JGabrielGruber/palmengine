@@ -1,0 +1,270 @@
+"""
+Standalone server CQRS wiring — command/query buses without ApplicationHost.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.common.cqrs.command import (
+    Command,
+    PreparePlansCommand,
+    ProvideInputCommand,
+    ResumeProcessCommand,
+    SubmitFlowCommand,
+    SubmitPlansCommand,
+    SubmitProcessCommand,
+)
+from palm.common.cqrs.query import (
+    GetInstanceStatusQuery,
+    GetJobStatusQuery,
+    GetWizardProgressQuery,
+    ListInstanceSnapshotsQuery,
+    ListInstancesQuery,
+    ListJobStatusQuery,
+    ListWizardProgressQuery,
+    Query,
+)
+from palm.common.exceptions import PlanNotFoundError
+from palm.common.plans import PlanRegistry
+from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
+from palm.core.orchestration.exceptions import JobNotFoundError
+
+if TYPE_CHECKING:
+    from palm.common.runtimes.base import BaseRuntime
+
+
+class StandaloneCommandHandlers:
+    """Dispatch write operations directly through a hosting runtime."""
+
+    def __init__(self, runtime: BaseRuntime, *, plan_registry: PlanRegistry) -> None:
+        self._runtime = runtime
+        self._plan_registry = plan_registry
+
+    def handle(self, command: Command) -> Any:
+        if isinstance(command, SubmitFlowCommand):
+            return self._submit_flow(command)
+        if isinstance(command, SubmitProcessCommand):
+            return self._submit_process(command)
+        if isinstance(command, ProvideInputCommand):
+            return self._runtime.provide_input(command.job_id, command.value)
+        if isinstance(command, ResumeProcessCommand):
+            return self._runtime.resume_process(command.instance_id)
+        if isinstance(command, PreparePlansCommand):
+            return self._prepare_plans(command)
+        if isinstance(command, SubmitPlansCommand):
+            return self._submit_plans(command)
+        raise TypeError(f"Unsupported command: {type(command).__name__}")
+
+    def _submit_flow(self, command: SubmitFlowCommand) -> Any:
+        if isinstance(command.flow, dict):
+            body = dict(command.flow)
+            if command.job_id is not None:
+                body.setdefault("job_id", command.job_id)
+            plan = prepare_flow_from_body(self._runtime, body)
+            return self._runtime.executor.submit_plan(plan)
+        return self._runtime.submit_flow(
+            command.flow,
+            by_id=command.by_id,
+            job_id=command.job_id,
+            state=command.state,
+            metadata=command.metadata,
+        )
+
+    def _submit_process(self, command: SubmitProcessCommand) -> Any:
+        if isinstance(command.process, dict):
+            body = dict(command.process)
+            if command.job_id is not None:
+                body.setdefault("job_id", command.job_id)
+            bundle = prepare_process_from_body(self._runtime, body)
+            jobs = self._runtime.executor.submit_plans(bundle.plans)
+            return jobs[0] if len(jobs) == 1 else jobs
+        return self._runtime.submit_process(
+            command.process,
+            by_id=command.by_id,
+            job_id=command.job_id,
+            state=command.state,
+            metadata=command.metadata,
+        )
+
+    def _prepare_plans(self, command: PreparePlansCommand) -> dict[str, Any]:
+        body = command.body
+        if "process" in body or "process_name" in body:
+            bundle = prepare_process_from_body(self._runtime, body)
+            stored = [self._store_plan(plan) for plan in bundle.plans]
+        else:
+            plan = prepare_flow_from_body(self._runtime, body)
+            stored = [self._store_plan(plan)]
+        return {"plans": [self._plan_registry.summary(item) for item in stored]}
+
+    def _submit_plans(self, command: SubmitPlansCommand) -> dict[str, Any]:
+        jobs = []
+        for plan_id in command.plan_ids:
+            try:
+                plan = self._plan_registry.consume(plan_id)
+            except PlanNotFoundError as exc:
+                raise exc
+            jobs.append(self._runtime.executor.submit_plan(plan))
+        return {
+            "jobs": [
+                {
+                    "job_id": job.id,
+                    "status": job.status.value,
+                    "metadata": job.metadata,
+                }
+                for job in jobs
+            ]
+        }
+
+    def _store_plan(self, plan: Any) -> Any:
+        from palm.common.runtimes.server.middleware import current_principal_id
+
+        return self._plan_registry.store(plan, principal_id=current_principal_id(self._runtime))
+
+
+class StandaloneQueryHandlers:
+    """Serve reads from the authoritative runtime when no host projections exist."""
+
+    def __init__(self, runtime: BaseRuntime) -> None:
+        self._runtime = runtime
+
+    def ask(self, query: Query) -> Any:
+        if isinstance(query, GetJobStatusQuery):
+            return self._get_job(query)
+        if isinstance(query, ListJobStatusQuery):
+            return self._list_jobs(query)
+        if isinstance(query, ListInstancesQuery):
+            return self._list_instances(query)
+        if isinstance(query, GetInstanceStatusQuery):
+            return self._get_instance(query)
+        if isinstance(query, ListInstanceSnapshotsQuery):
+            return self._runtime.instance_manager.list_state_snapshots(query.instance_id)
+        if isinstance(query, GetWizardProgressQuery):
+            return self._wizard_progress(query)
+        if isinstance(query, ListWizardProgressQuery):
+            return []
+        raise TypeError(f"Unsupported query: {type(query).__name__}")
+
+    def _get_job(self, query: GetJobStatusQuery) -> dict[str, Any]:
+        try:
+            job = self._runtime.get_job(query.job_id)
+        except JobNotFoundError:
+            return {"found": False, "job_id": query.job_id}
+        payload: dict[str, Any] = {
+            "found": True,
+            "job_id": job.id,
+            "status": job.status.value,
+            "metadata": job.metadata,
+        }
+        if job.result is not None:
+            payload["result"] = job.result
+        if job.error is not None:
+            payload["error"] = str(job.error)
+        step = _safe_wizard_step(self._runtime, query.job_id)
+        if step is not None:
+            payload["step"] = step
+        return payload
+
+    def _list_jobs(self, query: ListJobStatusQuery) -> list[dict[str, Any]]:
+        jobs = self._runtime.orchestration.list_jobs()
+        rows = [
+            {
+                "job_id": job.id,
+                "status": job.status.value,
+                "metadata": job.metadata,
+            }
+            for job in jobs
+        ]
+        if query.status is not None:
+            rows = [row for row in rows if row["status"] == query.status]
+        if query.limit is not None:
+            rows = rows[: query.limit]
+        return rows
+
+    def _list_instances(self, query: ListInstancesQuery) -> list[dict[str, Any]]:
+        summaries = self._runtime.instance_manager.list_summaries()
+        rows = [
+            {
+                "instance_id": summary.instance_id,
+                "job_id": summary.job_id,
+                "status": summary.status,
+                "flow_name": summary.flow_name,
+                "process_name": summary.process_name,
+            }
+            for summary in summaries
+        ]
+        if query.status is not None:
+            rows = [row for row in rows if row["status"] == query.status]
+        if query.flow_name is not None:
+            rows = [row for row in rows if row.get("flow_name") == query.flow_name]
+        if not query.include_terminal:
+            rows = [row for row in rows if row["status"] not in {"SUCCEEDED", "FAILED", "CANCELLED"}]
+        if query.limit is not None:
+            rows = rows[: query.limit]
+        return rows
+
+    def _get_instance(self, query: GetInstanceStatusQuery) -> dict[str, Any] | None:
+        try:
+            instance = self._runtime.get_instance(query.instance_id)
+        except Exception:
+            return None
+        return {
+            "instance_id": instance.id,
+            "job_id": instance.job_id,
+            "status": instance.status,
+            "flow_name": instance.flow_name,
+            "process_name": instance.process_name,
+        }
+
+    def _wizard_progress(self, query: GetWizardProgressQuery) -> dict[str, Any] | None:
+        job_id = query.job_id
+        if job_id is None:
+            return None
+        try:
+            job = self._runtime.get_job(job_id)
+        except JobNotFoundError:
+            return None
+        return {
+            "job_id": job_id,
+            "status": job.status.value,
+            "step": _safe_wizard_step(self._runtime, job_id),
+            "answers": self._runtime.wizard_answers(job_id),
+        }
+
+
+def wire_standalone_buses(
+    command_bus: CommandBus,
+    query_bus: QueryBus,
+    runtime: BaseRuntime,
+    *,
+    plan_registry: PlanRegistry,
+) -> None:
+    commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
+    queries = StandaloneQueryHandlers(runtime)
+    for command_type in (
+        SubmitFlowCommand,
+        SubmitProcessCommand,
+        ProvideInputCommand,
+        ResumeProcessCommand,
+        PreparePlansCommand,
+        SubmitPlansCommand,
+    ):
+        command_bus.register(command_type, commands)
+    for query_type in (
+        GetJobStatusQuery,
+        ListJobStatusQuery,
+        ListInstancesQuery,
+        GetInstanceStatusQuery,
+        ListInstanceSnapshotsQuery,
+        GetWizardProgressQuery,
+        ListWizardProgressQuery,
+    ):
+        query_bus.register(query_type, queries)
+
+
+def _safe_wizard_step(runtime: BaseRuntime, job_id: str) -> str | None:
+    try:
+        return runtime.current_wizard_step(job_id)
+    except TypeError:
+        return None
