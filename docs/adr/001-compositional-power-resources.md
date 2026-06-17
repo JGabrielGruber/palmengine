@@ -36,7 +36,7 @@ Wizard `action` steps remain supported via compatibility mapping to resource inv
 |-------|--------|
 | 1 — `ResourceDefinition` + repository | **Shipped** |
 | 2 — `ResourceEngine.invoke` + `BaseProvider` contract | **Shipped** |
-| 3 — `ResourceLeaf` | Planned |
+| 3 — `ResourceLeaf` + wizard `step_kind: resource` | **Shipped** |
 | 4 — `palm` provider | Planned |
 | 5 — Cross-cutting integration | Planned (partial: `enrich_resource` + `resource_ref`) |
 | 6 — Release polish | Planned |

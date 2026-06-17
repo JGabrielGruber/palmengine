@@ -27,6 +27,7 @@ from palm.core.behavior_tree.nodes import (
     RetryNode,
     SelectorNode,
     SequenceNode,
+    ResourceLeaf,
     TransformLeaf,
 )
 from palm.core.behavior_tree.root import RootNode
@@ -56,5 +57,6 @@ __all__ = [
     "RootNode",
     "SelectorNode",
     "SequenceNode",
+    "ResourceLeaf",
     "TransformLeaf",
 ]

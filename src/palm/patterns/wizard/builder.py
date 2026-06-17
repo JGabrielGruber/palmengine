@@ -15,12 +15,22 @@ from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.step_kinds import WizardStepKind
+from palm.patterns.wizard.resource_leaf import default_resource_prompt
 from palm.patterns.wizard.transform_leaf import default_transform_prompt
 from palm.patterns.wizard.validation import StepValidationRule
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
 _WIZARD_STEP_KINDS = frozenset(
-    {"input", "introduction", "summary", "commit", "action", "collection", "transform"}
+    {
+        "input",
+        "introduction",
+        "summary",
+        "commit",
+        "action",
+        "resource",
+        "collection",
+        "transform",
+    }
 )
 
 
@@ -179,6 +189,21 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
 
         item_fields = item_fields_from_mapping(data.get("item_fields"), repository=None)
 
+    raw_params = data.get("params")
+    step_params = dict(raw_params) if isinstance(raw_params, dict) else {}
+
+    if step_kind == "resource" and prompt == f"Enter value for {slug}":
+        preview = WizardStepConfig(
+            slug=str(slug),
+            title=str(title),
+            prompt=str(prompt),
+            step_kind="resource",
+            resource_ref=str(data["resource_ref"]) if data.get("resource_ref") else None,
+            resource_provider=data.get("resource_provider"),
+            output_key=data.get("output_key"),
+        )
+        prompt = default_resource_prompt(preview)
+
     transform = None
     if step_kind == "transform":
         from palm.common.transforms.builder import transform_step_from_mapping
@@ -212,6 +237,10 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         commit_hook=data.get("commit_hook"),
         resource_provider=data.get("resource_provider"),
         resource_id=data.get("resource_id"),
+        resource_ref=str(data["resource_ref"]) if data.get("resource_ref") else None,
+        resource_action=str(data["action"]) if data.get("action") else None,
+        params=step_params,
+        output_key=str(data["output_key"]) if data.get("output_key") else None,
         allow_backtrack=data.get("allow_backtrack"),
         collection_key=str(collection_key) if collection_key else None,
         item_fields=item_fields,
@@ -289,6 +318,10 @@ def _materialize_step(
         commit_hook=step.commit_hook,
         resource_provider=step.resource_provider,
         resource_id=step.resource_id,
+        resource_ref=step.resource_ref,
+        resource_action=step.resource_action,
+        params=dict(step.params),
+        output_key=step.output_key,
         allow_backtrack=step.allow_backtrack,
         collection_key=step.collection_key,
         item_fields=item_fields,

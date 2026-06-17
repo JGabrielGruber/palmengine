@@ -38,7 +38,15 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **CLI** — `resource invoke <ref> key=value ...` and direct `--provider` mode
 - **Integration** — `WizardActionLeaf`, `enrich_resource` transform use engine invoke path
 
-_Phases 3–6 remain planned._
+### Added (Phase 3)
+
+- **`ResourceLeaf`** — core BT leaf invoking `ResourceEngine` with trace + output keys
+- **`WizardResourceLeaf`** — wizard `step_kind: resource` with answer promotion for state binding
+- **Wizard config** — `resource_ref`, `params`, `output_key`, `action` on resource steps
+- **Example flow** — `resource-customer-wizard` (input + `fetch-customer` resource step)
+- **Events** — `wizard.resource.invoked`
+
+_Phases 4–6 remain planned._
 
 ## [0.11.8] — 2026-06-17
 

@@ -221,12 +221,13 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - `PalmApp` / `ApplicationHost.invoke_resource()`; CLI: `resource invoke`
 - **Exit criteria met:** wizard action tests pass; `tests/test_resource_engine.py`
 
-### Phase 3 — `ResourceLeaf` & pattern builders
+### Phase 3 — `ResourceLeaf` & pattern builders ✅ Shipped
 
-- Add `ResourceLeaf` to `palm/core/behavior_tree/nodes/leaf/`
-- Wizard `step_kind: resource` (alias/deprecate `action` step shape)
-- Pipeline and DAG builders accept resource stage definitions
-- **Exit criteria:** example flow with standalone `ResourceLeaf` outside wizard-only paths
+- `ResourceLeaf` in `palm/core/behavior_tree/nodes/leaf/resource_leaf.py`
+- `WizardResourceLeaf` + wizard `step_kind: resource` (`resource_ref`, `params`, `output_key`)
+- Legacy `step_kind: action` (confirm + `resource_provider`) unchanged
+- Example: `resource-customer-wizard` flow (`examples/definitions/resource_customer_wizard.py`)
+- **Exit criteria met:** `tests/test_resource_leaf.py`; pipeline/DAG builders deferred
 
 ### Phase 4 — `palm` provider
 

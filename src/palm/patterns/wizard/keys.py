@@ -29,3 +29,4 @@ class WizardKeys:
     COLLECTION_REMOVE_INDEX = f"{PREFIX}.collection_remove_index"
     COLLECTION_SELECT_ACTION = f"{PREFIX}.collection_select_action"
     TRANSFORM_FEEDBACK = f"{PREFIX}.transform_feedback"
+    RESOURCE_FEEDBACK = f"{PREFIX}.resource_feedback"

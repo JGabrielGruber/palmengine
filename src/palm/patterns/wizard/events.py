@@ -24,3 +24,4 @@ class WizardEventType:
     COLLECTION_ITEM_REMOVED = "wizard.collection.item_removed"
     COLLECTION_COMPLETED = "wizard.collection.completed"
     TRANSFORM_APPLIED = "wizard.transform.applied"
+    RESOURCE_INVOKED = "wizard.resource.invoked"

@@ -4,7 +4,7 @@ Wizard configuration — step definitions and pattern-level options.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 from palm.patterns.wizard.collection import CollectionFieldConfig
@@ -37,6 +37,10 @@ class WizardStepConfig:
     commit_hook: str | None = None
     resource_provider: str | None = None
     resource_id: str | None = None
+    resource_ref: str | None = None
+    resource_action: str | None = None
+    params: dict[str, Any] = field(default_factory=dict)
+    output_key: str | None = None
     allow_backtrack: bool | None = None
     collection_key: str | None = None
     item_fields: tuple[CollectionFieldConfig, ...] = ()
@@ -58,6 +62,10 @@ class WizardStepConfig:
                 object.__setattr__(self, "collection_key", self.slug)
         if self.step_kind == "transform" and self.transform is None:
             raise ValueError(f"Transform step {self.slug!r} requires transform configuration")
+        if self.step_kind == "resource" and not self.resource_ref and not self.resource_provider:
+            raise ValueError(
+                f"Resource step {self.slug!r} requires resource_ref or resource_provider",
+            )
 
     @property
     def has_state_schema(self) -> bool:
