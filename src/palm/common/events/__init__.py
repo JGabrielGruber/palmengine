@@ -1,7 +1,6 @@
 """Reliable event publishing and outbox coordination."""
 
 from palm.common.events.domain import CRITICAL_EVENT_TYPES, INSTANCE_EVENT_TYPES, DomainEventType
-from palm.common.events.outbox import OutboxEntry, OutboxProcessor, OutboxStore
 from palm.common.events.external import (
     HttpWebhookDeliverer,
     RecordingWebhookDeliverer,
@@ -10,6 +9,7 @@ from palm.common.events.external import (
     WebhookTarget,
     webhook_targets_from_urls,
 )
+from palm.common.events.outbox import OutboxEntry, OutboxProcessor, OutboxStore
 from palm.common.events.reliable import (
     ReliableEventPublisher,
     event_context_from_job,

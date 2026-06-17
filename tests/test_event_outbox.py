@@ -10,19 +10,18 @@ from palm.common.events import (
 )
 from palm.common.hooks import InstancePersistenceHook
 from palm.core.event import Event, EventContext, EventEngine
+from palm.core.orchestration import Job, OrchestrationEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
+from palm.patterns.wizard.events import WizardEventType
 from palm.states import BlackboardState
 from tests.core.fakes import TestState
 from tests.core.fakes.mode import TestMode
-from palm.core.orchestration import Job, JobStatus, OrchestrationEngine
 
 
 def _memory_storage() -> StorageEngine:
-    from palm.storages.memory.backend import MemoryBackend
 
     storage = StorageEngine()
     storage.initialize()
@@ -143,7 +142,9 @@ def test_orchestration_emits_instance_status_with_context() -> None:
 
     types = [item[0] for item in events]
     assert OrchestrationEventType.INSTANCE_STATUS_CHANGED in types
-    instance_events = [payload for t, payload in events if t == OrchestrationEventType.INSTANCE_STATUS_CHANGED]
+    instance_events = [
+        payload for t, payload in events if t == OrchestrationEventType.INSTANCE_STATUS_CHANGED
+    ]
     assert instance_events[-1]["instance_id"] == "inst-99"
     assert instance_events[-1]["job_id"] == job.id
     assert instance_events[-1]["trace_id"] == "trace-1"

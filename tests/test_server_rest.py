@@ -9,7 +9,6 @@ from typing import Any
 
 import pytest
 
-from palm.core.context.state_schema import DictStateSchema
 from palm.runtimes.server import ServerRuntime
 from palm.runtimes.server.surfaces.rest.route_table import rest_routes
 from palm.runtimes.server.surfaces.rest.schema_validation import schema_errors_to_details

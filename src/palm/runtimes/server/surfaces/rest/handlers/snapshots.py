@@ -11,7 +11,10 @@ from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import ok
 from palm.runtimes.server.surfaces.rest.serializers import snapshot_detail, snapshot_summary
-from palm.runtimes.server.surfaces.rest.validation import PaginationParams, parse_list_snapshots_query
+from palm.runtimes.server.surfaces.rest.validation import (
+    PaginationParams,
+    parse_list_snapshots_query,
+)
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

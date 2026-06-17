@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import escape, html_response
 from palm.runtimes.server.surfaces.ssr.explorer.components import (
     action_button,
     badge,
@@ -10,12 +11,13 @@ from palm.runtimes.server.surfaces.ssr.explorer.components import (
     data_table,
     invoke_chain,
 )
+from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form
+from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import (
     resource_href,
     wizard_resource_steps,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form
-from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+
 from .base import PageContext
 from .utils import (
     flash_banners,
@@ -24,7 +26,6 @@ from .utils import (
     query_flow_id,
     start_flow_href,
 )
-from palm.common.runtimes.server.ssr.render import escape, html_response
 
 
 class FlowPages:
@@ -64,8 +65,8 @@ class FlowPages:
         content = (
             '<section class="section"><div class="panel">'
             "<h3>Start a registered flow</h3>"
-            "<p class=\"muted\">Select a flow from your repository and click <strong>Start this flow</strong>. "
-            "Use <strong>Start</strong> on the <a href=\"/explorer/flows\">flow catalog</a> to pre-fill your selection.</p>"
+            '<p class="muted">Select a flow from your repository and click <strong>Start this flow</strong>. '
+            'Use <strong>Start</strong> on the <a href="/explorer/flows">flow catalog</a> to pre-fill your selection.</p>'
             f"{flash_banners(request)}"
             f"{flow_submit_form(flows, selected_flow_id=selected or None)}"
             "</div></section>"
@@ -99,11 +100,11 @@ class FlowPages:
                             provider_label = str(described.get("provider") or "resource")
                     action = str(step.get("resource_action") or step.get("action") or "default")
                     params = step.get("params") or {}
-                    param_summary = ", ".join(f"{k}={v}" for k, v in params.items()) if params else "—"
+                    param_summary = (
+                        ", ".join(f"{k}={v}" for k, v in params.items()) if params else "—"
+                    )
                     ref_link = (
-                        f'<a href="{resource_href(ref)}">{escape(ref)}</a>'
-                        if ref != "—"
-                        else "—"
+                        f'<a href="{resource_href(ref)}">{escape(ref)}</a>' if ref != "—" else "—"
                     )
                     badge_html = badge(provider_label, tone="default")
                     rows.append(

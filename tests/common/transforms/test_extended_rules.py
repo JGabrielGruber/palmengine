@@ -89,7 +89,6 @@ def test_date_format_and_parse(executor: TransformExecutor) -> None:
 
 def test_enrich_resource_via_resource_ref(executor: TransformExecutor) -> None:
     import palm.providers  # noqa: F401
-
     from palm.common import DefinitionRepository
     from palm.common.resource import resource_definition_resolver
     from palm.definitions import ResourceDefinition

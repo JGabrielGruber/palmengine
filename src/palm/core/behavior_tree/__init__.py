@@ -24,10 +24,10 @@ from palm.core.behavior_tree.nodes import (
     ParallelNode,
     ParallelPolicy,
     RepeatNode,
+    ResourceLeaf,
     RetryNode,
     SelectorNode,
     SequenceNode,
-    ResourceLeaf,
     TransformLeaf,
 )
 from palm.core.behavior_tree.root import RootNode

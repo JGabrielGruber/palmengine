@@ -34,22 +34,30 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
 
     registry.register(method="GET", path="/explorer", handler=pages.overview, surface=_SURFACE)
     registry.register(method="GET", path="/explorer/flows", handler=pages.flows, surface=_SURFACE)
-    registry.register(method="GET", path="/explorer/flows/submit", handler=pages.flow_submit, surface=_SURFACE)
-    registry.register(method="POST", path="/explorer/flows/submit", handler=actions.submit_flow, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/flows/submit", handler=pages.flow_submit, surface=_SURFACE
+    )
+    registry.register(
+        method="POST", path="/explorer/flows/submit", handler=actions.submit_flow, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/explorer/flows/{flow_id}",
         handler=pages.flow_detail,
         surface=_SURFACE,
     )
-    registry.register(method="GET", path="/explorer/processes", handler=pages.processes, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/processes", handler=pages.processes, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/explorer/processes/{process_id}",
         handler=pages.process_detail,
         surface=_SURFACE,
     )
-    registry.register(method="GET", path="/explorer/resources", handler=pages.resources, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/resources", handler=pages.resources, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/explorer/resources/{resource_id}",
@@ -68,17 +76,25 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         handler=pages.resource_invoke_post,
         surface=_SURFACE,
     )
-    registry.register(method="GET", path="/explorer/patterns", handler=pages.patterns, surface=_SURFACE)
-    registry.register(method="GET", path="/explorer/schemas", handler=pages.schemas, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/patterns", handler=pages.patterns, surface=_SURFACE
+    )
+    registry.register(
+        method="GET", path="/explorer/schemas", handler=pages.schemas, surface=_SURFACE
+    )
     registry.register(method="GET", path="/explorer/jobs", handler=pages.jobs, surface=_SURFACE)
-    registry.register(method="GET", path="/explorer/jobs/{job_id}", handler=pages.job_detail, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/jobs/{job_id}", handler=pages.job_detail, surface=_SURFACE
+    )
     registry.register(
         method="POST",
         path="/explorer/jobs/{job_id}/input",
         handler=actions.provide_job_input,
         surface=_SURFACE,
     )
-    registry.register(method="GET", path="/explorer/instances", handler=pages.instances, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/instances", handler=pages.instances, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/explorer/instances/{instance_id}",
@@ -98,7 +114,9 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         surface=_SURFACE,
     )
 
-    registry.register(method="GET", path="/explorer/examples", handler=examples.index, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/examples", handler=examples.index, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/explorer/examples/wizard-preview",
@@ -135,8 +153,12 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         surface=_SURFACE,
     )
 
-    registry.register(method="GET", path="/v1/surfaces/explorer", handler=_surface_info, surface=_SURFACE)
-    registry.register(method="GET", path="/v1/surfaces/ssr", handler=_surface_info, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/v1/surfaces/explorer", handler=_surface_info, surface=_SURFACE
+    )
+    registry.register(
+        method="GET", path="/v1/surfaces/ssr", handler=_surface_info, surface=_SURFACE
+    )
 
 
 def register_ssr_routes(registry: RouteRegistry, ctx: ServerContext) -> None:

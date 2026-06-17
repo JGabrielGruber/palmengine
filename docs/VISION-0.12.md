@@ -248,12 +248,13 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - `resource.*` events carry job/instance/wizard/step correlation via `JobExecutionContextHook`
 - **Exit criteria met:** `tests/test_resource_phase5.py`; demo registers undo on `submit-ingest-etl`
 
-### Phase 6 — Polish & promotion
+### Phase 6 — Polish & promotion ✅ Shipped
 
-- Documentation pass (README, ARCHITECTURE, migration notes)
-- Performance and timeout policies
-- Agent-oriented docs (`docs/llms.txt`, OpenAPI examples for remote `palm` invoke)
-- **Exit criteria:** 0.12 release tag; `just full-check` green
+- Documentation pass (README, ARCHITECTURE, `MIGRATION-0.12.md`, `CHANGELOG`, `RELEASE-0.12.0.md`)
+- Explorer resources hub — catalog, detail, Try Invoke, flow/job cross-refs
+- Agent-oriented docs (`docs/llms.txt`, website `docs/index.html`)
+- Performance defaults — definition cache on, result cache off (`PalmSettings`)
+- **Exit criteria met:** version `0.12.0`; `just full-check` green
 
 ### Phase C — Future-proofing ✅ Shipped
 

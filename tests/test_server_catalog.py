@@ -126,9 +126,7 @@ def test_list_and_get_flows(server: ServerRuntime) -> None:
 
 def test_list_flows_filters_by_pattern(server: ServerRuntime) -> None:
     server.repository.register_flow(_sample_flow())
-    server.repository.register_flow(
-        FlowDefinition(name="dag-flow", pattern="dag", options={})
-    )
+    server.repository.register_flow(FlowDefinition(name="dag-flow", pattern="dag", options={}))
 
     status, payload = _request(server.base_url, "GET", "/v1/flows?pattern=wizard")
     assert status == 200

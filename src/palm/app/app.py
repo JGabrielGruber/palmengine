@@ -23,11 +23,12 @@ if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
     from palm.common.runtimes.base import BaseRuntime
     from palm.core.orchestration import Job
+    from palm.core.resource import ProviderResult
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
-    from palm.core.resource import ProviderResult
     from palm.definitions.resource import ResourceDefinition
     from palm.instances import ProcessInstance, StateSnapshot
+
 
 class PalmApp:
     """

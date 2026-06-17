@@ -6,9 +6,7 @@ from typing import Any
 from urllib.parse import quote
 
 from palm.common.runtimes.server.protocol import ServerRequest
-from palm.common.runtimes.server.ssr.render import escape
 from palm.definitions.flow import FlowDefinition
-from palm.definitions.resource import ResourceDefinition
 
 
 def catalog_filters(request: ServerRequest) -> tuple[str, str]:

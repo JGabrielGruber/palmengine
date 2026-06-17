@@ -6,15 +6,16 @@ import json
 from typing import Any
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import escape, html_response
 from palm.runtimes.server.surfaces.ssr.explorer.components import (
     action_button,
     action_catalog,
     badge,
+    catalog_filter_form,
     code_block,
     data_table,
     definition_dl,
     empty_state,
-    catalog_filter_form,
     link_pills,
     resource_timeline_table,
     stat_card,
@@ -37,7 +38,7 @@ from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import (
     schema_label,
     usage_counts,
 )
-from palm.common.runtimes.server.ssr.render import escape, html_response
+
 from .base import PageContext
 from .utils import flash_banners, not_found_page
 

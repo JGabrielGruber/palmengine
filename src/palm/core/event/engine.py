@@ -75,6 +75,7 @@ class EventEngine(BasePalmEngine):
         self._interceptors: list[tuple[int, PublishInterceptor]] = []
         self._next_subscription_id = 1
         self._pending_async: list[tuple[EventHandler, Event]] = []
+        self._drain_tasks: list[asyncio.Task[int]] = []
         self._isolate_handler_errors = True
         self._last_handler_errors: list[HandlerError] = []
 
@@ -105,9 +106,7 @@ class EventEngine(BasePalmEngine):
         with self._lock:
             if subscription.event_type == "__interceptor__":
                 self._interceptors = [
-                    item
-                    for item in self._interceptors
-                    if item[0] != subscription.subscription_id
+                    item for item in self._interceptors if item[0] != subscription.subscription_id
                 ]
                 return
             bucket = self._handlers.get(subscription.event_type, [])
@@ -263,7 +262,7 @@ class EventEngine(BasePalmEngine):
                 loop = asyncio.get_running_loop()
             except RuntimeError:
                 return None
-            loop.create_task(self.drain_async_handlers())
+            self._drain_tasks.append(loop.create_task(self.drain_async_handlers()))
             return None
         return handler(event)
 

@@ -78,7 +78,7 @@ class ExamplePages:
         content = (
             '<section class="section"><div class="panel">'
             "<h3>Live dashboard (stub)</h3>"
-            "<p class=\"muted\">Projections like <code>JobStatusBoard</code> and "
+            '<p class="muted">Projections like <code>JobStatusBoard</code> and '
             "<code>WizardProgress</code> can feed real-time HTML tables here.</p>"
             f"{code_block(jobs)}"
             "</div></section>"

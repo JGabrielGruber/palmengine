@@ -5,8 +5,8 @@ from __future__ import annotations
 import palm.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
-from palm.core.resource.cache import ResourceCacheConfig
 from palm.core.resource import ResourceEngine
+from palm.core.resource.cache import ResourceCacheConfig
 from palm.definitions import ResourceDefinition
 
 

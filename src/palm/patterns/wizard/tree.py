@@ -15,9 +15,9 @@ from palm.patterns.wizard.collection_leaf import WizardCollectionLeaf
 from palm.patterns.wizard.commit_leaf import WizardCommitLeaf
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.handler import CommitRegistry
+from palm.patterns.wizard.resource_leaf import WizardResourceLeaf
 from palm.patterns.wizard.step_leaf import EventEmitter, WizardStepLeaf
 from palm.patterns.wizard.summary_leaf import WizardSummaryLeaf
-from palm.patterns.wizard.resource_leaf import WizardResourceLeaf
 from palm.patterns.wizard.transform_leaf import WizardTransformLeaf
 
 

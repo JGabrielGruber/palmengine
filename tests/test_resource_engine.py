@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import pytest
-
 import palm.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.event import EventEngine
 from palm.core.resource import (
     ProviderResult,
-    ResourceEngine,
     ResolvedResourceSpec,
+    ResourceEngine,
     bind_resource_id,
     bind_resource_params,
     bind_resource_value,

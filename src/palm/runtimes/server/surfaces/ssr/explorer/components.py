@@ -85,9 +85,7 @@ def badge(text: str, *, tone: str = "default") -> str:
 
 def action_button(href: str, label: str, *, tone: str = "primary") -> str:
     """Compact call-to-action link styled as a button."""
-    return (
-        f'<a class="btn btn-{escape(tone)}" href="{escape(href)}">{escape(label)}</a>'
-    )
+    return f'<a class="btn btn-{escape(tone)}" href="{escape(href)}">{escape(label)}</a>'
 
 
 def alert(message: str, *, tone: str = "success") -> str:
@@ -163,7 +161,9 @@ def resource_timeline_table(entries: list[dict[str, Any]]) -> str:
         )
     rows = []
     for entry in entries:
-        status = "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+        status = (
+            "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+        )
         job_cell = "—"
         job_id = entry.get("job_id")
         if job_id:

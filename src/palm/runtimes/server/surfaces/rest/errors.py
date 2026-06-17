@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.common.runtimes.server.protocol import ServerResponse
-from palm.common.runtimes.server.responses import error_response, unauthorized as _unauthorized
+from palm.common.runtimes.server.responses import error_response
+from palm.common.runtimes.server.responses import unauthorized as _unauthorized
 
 
 def bad_request(
@@ -40,11 +41,15 @@ def unauthorized() -> ServerResponse:
 
 
 def job_not_found(job_id: str) -> ServerResponse:
-    return error_response(404, "job_not_found", f"Job not found: {job_id}", extra={"job_id": job_id})
+    return error_response(
+        404, "job_not_found", f"Job not found: {job_id}", extra={"job_id": job_id}
+    )
 
 
 def plan_not_found(plan_id: str) -> ServerResponse:
-    return error_response(404, "plan_not_found", f"Plan not found: {plan_id}", extra={"plan_id": plan_id})
+    return error_response(
+        404, "plan_not_found", f"Plan not found: {plan_id}", extra={"plan_id": plan_id}
+    )
 
 
 def instance_not_found(instance_id: str) -> ServerResponse:

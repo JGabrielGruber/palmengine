@@ -12,13 +12,17 @@ from palm.common.compensation import (
     CompensationResult,
     CompensationTrigger,
 )
-from palm.common.cqrs.projections.instance_index import InstanceIndexProjection, InstanceReadModel
 from palm.common.compensation.registry import CompensationRegistry
+from palm.common.cqrs.projections.instance_index import InstanceIndexProjection, InstanceReadModel
 from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
 from palm.common.cqrs.query import GetWizardProgressQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
-from palm.common.events import OutboxStore, RecordingWebhookDeliverer, WebhookDispatcher, WebhookTarget
-
+from palm.common.events import (
+    OutboxStore,
+    RecordingWebhookDeliverer,
+    WebhookDispatcher,
+    WebhookTarget,
+)
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.storage import StorageEngine
 

@@ -54,7 +54,7 @@ def recursion_frame(
             f"Recursion depth {depth} exceeds limit {resolved.max_depth} for {key!r}",
         )
 
-    chain = parent_chain + (key,)
+    chain = (*parent_chain, key)
     depth_token = _depth.set(depth)
     chain_token = _chain.set(chain)
     try:

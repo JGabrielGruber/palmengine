@@ -103,9 +103,7 @@ class WizardProgressReadModel:
         trace: list[BacktrackTraceEntry] = []
         if isinstance(trace_raw, list):
             trace = [
-                BacktrackTraceEntry.from_dict(item)
-                for item in trace_raw
-                if isinstance(item, dict)
+                BacktrackTraceEntry.from_dict(item) for item in trace_raw if isinstance(item, dict)
             ]
         completed = data.get("completed_steps")
         return cls(

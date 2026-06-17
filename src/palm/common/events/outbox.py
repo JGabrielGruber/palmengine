@@ -4,10 +4,9 @@ Transactional outbox — durable event queue backed by StorageEngine.
 
 from __future__ import annotations
 
-import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from collections.abc import Callable
 from typing import Any
 
 from palm.core.event import Event, EventContext, EventEngine

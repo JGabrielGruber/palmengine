@@ -1,6 +1,6 @@
 # Palm Engine — Project Scope & Roadmap
 
-**Version:** 0.11.8 (shipping) · **0.12 in planning** · **Last updated:** June 2026
+**Version:** 0.12.0 (shipping) · **Last updated:** June 2026
 
 This document describes what Palm is for, what it does today, and where it is headed. For layer-by-layer technical detail, see [ARCHITECTURE.md](ARCHITECTURE.md). For day-to-day usage, see [README.md](README.md).
 
@@ -116,44 +116,28 @@ Step definitions stay focused on **user-facing intent** (prompt, validation, res
 
 ## Roadmap
 
-### Current release — 0.11.x
+### Current release — 0.12 “Compositional Power”
 
-- **ApplicationHost** + CQRS + reliability primitives (outbox, compensation)
-- **Palm Explorer** — SSR hub for flows, jobs, instances
-- Rich wizard (collections, transforms, parallel branches, backtracking)
-- Multiple runtimes (Embedded, Daemon, Server, CLI)
+**Theme:** Resources as first-class, declarative citizens — compositional orchestration at scale.
 
-### Next major — 0.12 “Compositional Power”
+Full vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · Migration: [MIGRATION-0.12.md](MIGRATION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
 
-**Theme:** Make Resources first-class, declarative citizens — on the same level as Flows and Processes.
+| Pillar | Shipped |
+|--------|---------|
+| **`ResourceDefinition`** | Declarative, repository-backed resource contracts |
+| **`ResourceEngine` + `BaseProvider`** | Invoke lifecycle — actions, schemas, structured results, events |
+| **`palm` provider** | Palm calling Palm — local or remote HTTP with recursion guardrails |
+| **`ResourceLeaf`** | Core BT node; wizard `step_kind: resource` |
+| **Cross-cutting** | `enrich_resource`, compensation, CQRS projection, Explorer hub |
 
-Full vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+Also includes **ApplicationHost**, CQRS, reliability primitives, **Palm Explorer** (flows, jobs, instances, resources), rich wizards, and multiple runtimes.
 
-| Pillar | What ships |
-|--------|------------|
-| **`ResourceDefinition`** | Declarative, reusable, repository-backed resource contracts |
-| **`ResourceEngine` + `BaseProvider`** | Richer invoke lifecycle — actions, schemas, structured results, events |
-| **`palm` provider** | Flagship recursion — Palm calling Palm flows/processes locally or remotely |
-| **`ResourceLeaf`** | Native Behavior Tree integration across wizards, pipelines, and DAGs |
-| **Cross-cutting** | Transforms, compensation, observability, Explorer timelines |
+### Near term (post-0.12)
 
-**Why it matters:** Enables hierarchical, distributed, and agent-friendly orchestration — sub-workflows, federated Palm instances, and tool-like flow delegation without leaving the BT model.
-
-**Implementation phases (summary):**
-
-1. Definitions & repository
-2. Engine & provider contract
-3. `ResourceLeaf` & pattern builders
-4. `palm` provider (local + remote)
-5. Transforms, compensation, CQRS, Explorer
-6. Polish, examples, release
-
-### Near term (0.11.x → 0.12 prep)
-
-- Harden transactional wizard and instance resume across storage backends
 - WebSocket runtime for live wizard and job streaming
 - Expand runtime middleware (auth policies, observability exporters) without core pollution
-- Begin Phase 1 (ResourceDefinition + repository) behind feature flags if needed
+- Pipeline/DAG resource stage builders (deferred from 0.12 Phase 3)
+- Harden transactional wizard and instance resume across storage backends
 
 ### Medium term (post-0.12)
 

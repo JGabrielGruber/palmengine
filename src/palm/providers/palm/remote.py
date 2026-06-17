@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import socket
 import time
 import urllib.error
 import urllib.request
@@ -53,7 +52,7 @@ def _request(
         except json.JSONDecodeError:
             pass
         return exc.code, {"error": raw}
-    except (urllib.error.URLError, TimeoutError, socket.timeout) as exc:
+    except (urllib.error.URLError, TimeoutError) as exc:
         raise _transport_error(method, path, exc) from exc
 
 

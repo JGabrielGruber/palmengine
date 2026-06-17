@@ -13,7 +13,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from palm import __version__
-from palm.runtimes.cli.shared.instance_ops import is_terminal_status, short_instance_id, status_emoji
+from palm.runtimes.cli.shared.instance_ops import (
+    is_terminal_status,
+    short_instance_id,
+    status_emoji,
+)
 from palm.runtimes.cli.shared.runtime_display import runtime_names_plain
 
 if TYPE_CHECKING:
@@ -331,9 +335,7 @@ def _refresh_loop(ctx: CliContext, options: DashboardOptions) -> int:
             if _is_interactive(ctx):
                 ctx.console.clear()
             render_status_dashboard(ctx, options)
-            ctx.console.print(
-                f"[dim]Live refresh every {interval:.0f}s — Ctrl+C to stop[/]"
-            )
+            ctx.console.print(f"[dim]Live refresh every {interval:.0f}s — Ctrl+C to stop[/]")
             time.sleep(interval)
     except KeyboardInterrupt:
         ctx.console.print("[dim]Dashboard stopped.[/]")

@@ -13,8 +13,8 @@ from palm.runtimes.cli.commands.views import render_definition_catalog, render_i
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.instance_ops import is_terminal_status
 from palm.runtimes.cli.shared.job_inspect import inspect_job
-from palm.runtimes.cli.shared.settings import is_durable_storage
 from palm.runtimes.cli.shared.runtime_display import format_runtime_line
+from palm.runtimes.cli.shared.settings import is_durable_storage
 from palm.runtimes.cli.shared.startup import format_persistence_notice
 from palm.runtimes.cli.tui.context import context_lines
 

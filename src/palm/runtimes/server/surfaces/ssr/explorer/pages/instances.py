@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import escape, html_response
 from palm.runtimes.server.surfaces.ssr.explorer.components import code_block, data_table, stat_card
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+
 from .base import PageContext
 from .utils import not_found_page
-from palm.common.runtimes.server.ssr.render import escape, html_response
 
 
 class InstancePages:
@@ -39,7 +40,9 @@ class InstancePages:
         for entry in entries:
             if not isinstance(entry, dict):
                 continue
-            status = "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+            status = (
+                "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+            )
             rows.append(
                 [
                     escape(str(entry.get("recorded_at") or "—")),

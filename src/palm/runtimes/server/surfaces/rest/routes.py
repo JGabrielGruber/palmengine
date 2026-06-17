@@ -7,7 +7,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import RouteHandler
-from palm.runtimes.server.surfaces.rest.handlers import catalog, instances, jobs, meta, plans, snapshots
+from palm.runtimes.server.surfaces.rest.handlers import (
+    catalog,
+    instances,
+    jobs,
+    meta,
+    plans,
+    snapshots,
+)
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, RouteId, rest_routes
 
 if TYPE_CHECKING:
@@ -50,9 +57,15 @@ def _resolve_handler(
         "prepare_plans": lambda req: plans.prepare_plans(ctx, req),
         "submit_plans": lambda req: plans.submit_plans(ctx, req),
         "list_instances": lambda req: instances.list_instances(ctx, req),
-        "get_instance": lambda req, instance_id: instances.get_instance(ctx, req, instance_id=instance_id),
-        "resume_instance": lambda req, instance_id: instances.resume_instance(ctx, req, instance_id=instance_id),
-        "list_snapshots": lambda req, instance_id: snapshots.list_snapshots(ctx, req, instance_id=instance_id),
+        "get_instance": lambda req, instance_id: instances.get_instance(
+            ctx, req, instance_id=instance_id
+        ),
+        "resume_instance": lambda req, instance_id: instances.resume_instance(
+            ctx, req, instance_id=instance_id
+        ),
+        "list_snapshots": lambda req, instance_id: snapshots.list_snapshots(
+            ctx, req, instance_id=instance_id
+        ),
         "get_snapshot": lambda req, instance_id, snapshot_id: snapshots.get_snapshot(
             ctx, req, instance_id=instance_id, snapshot_id=snapshot_id
         ),

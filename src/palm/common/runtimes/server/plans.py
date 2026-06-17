@@ -4,7 +4,7 @@ Plan preparation helpers — shared between server surfaces and CQRS handlers.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from palm.common.plans import ExecutionPlan, ProcessPlan
 from palm.definitions.flow import FlowDefinition

@@ -22,7 +22,6 @@ from palm.common.compensation import (
     CompensationCoordinator,
     default_compensation_registry,
 )
-from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     Command,
@@ -42,7 +41,6 @@ from palm.common.cqrs.projections.job_status_board import (
 )
 from palm.common.cqrs.projections.resource_invocation import (
     ResourceInvocationProjection,
-    ResourceInvocationReadModel,
 )
 from palm.common.cqrs.projections.wizard_progress import (
     WizardProgressProjection,
@@ -57,6 +55,7 @@ from palm.common.cqrs.query import (
     ListWizardProgressQuery,
     Query,
 )
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
@@ -64,8 +63,8 @@ from palm.core.storage import StorageEngine
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
     from palm.core.orchestration import Job
-    from palm.definitions.flow import FlowDefinition
     from palm.core.resource import ProviderResult
+    from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
 
 
@@ -318,9 +317,7 @@ class ApplicationHost:
         limit: int | None = 10,
         active_only: bool = False,
     ) -> list[WizardProgressReadModel]:
-        return self.ask(
-            ListWizardProgressQuery(limit=limit, active_only=active_only)
-        )
+        return self.ask(ListWizardProgressQuery(limit=limit, active_only=active_only))
 
     def recent_host_events(self, *, limit: int = 10) -> list[RecordedEvent]:
         return self._event_recorder.recent(limit=limit)
@@ -610,11 +607,7 @@ def run_host(
 
     Library helper for standalone master/worker/server processes.
     """
-    resolved = (
-        profile
-        if isinstance(profile, HostProfile)
-        else HostProfile.from_preset(profile)
-    )
+    resolved = profile if isinstance(profile, HostProfile) else HostProfile.from_preset(profile)
     host = ApplicationHost(settings=settings, profile=resolved)
     host.start(**start_options)
     try:

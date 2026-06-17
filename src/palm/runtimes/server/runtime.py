@@ -83,7 +83,9 @@ class ServerRuntime(BaseRuntime):
         self._host_bridge = host
         if self._server_app is not None:
             self._server_app.context.attach_host(host)
-            self._server_app.webhook_bridge = ServerWebhookBridge.from_context(self._server_app.context)
+            self._server_app.webhook_bridge = ServerWebhookBridge.from_context(
+                self._server_app.context
+            )
 
     def start_http(
         self,

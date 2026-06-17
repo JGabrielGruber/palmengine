@@ -11,11 +11,10 @@ import pytest
 
 from palm.common.job_context import build_job_context, derive_next_actions
 from palm.common.patterns import PatternBuildContext, build_pattern
-from palm.runtimes.cli.shared.job_inspect import inspect_job_json
-from palm.core.behavior_tree import PatternStatus
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
+from palm.runtimes.cli.shared.job_inspect import inspect_job_json
 from palm.runtimes.server import ServerRuntime
 from palm.runtimes.server.surfaces.rest.doc_examples import build_curl, response_example
 from palm.runtimes.server.surfaces.rest.route_table import rest_routes

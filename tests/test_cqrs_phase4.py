@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from palm.app import ApplicationHost, HostProfile, PalmSettings
 from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
 from palm.common.cqrs.query import GetWizardProgressQuery, ListInstancesQuery
@@ -12,13 +10,12 @@ from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
 from palm.patterns.wizard import WizardConfig, WizardEventType, WizardPattern, WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType as WizardEvents
-from palm.states import BlackboardState
-from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime
 from palm.runtimes.cli.shared.args import CliInvocation
+from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime
+from palm.states import BlackboardState
 
 
 def _storage() -> StorageEngine:
-    from palm.storages.memory.backend import MemoryBackend
 
     engine = StorageEngine()
     engine.initialize()
@@ -62,12 +59,16 @@ def test_wizard_live_events_update_progress_projection() -> None:
     engine = EventEngine()
     engine.initialize()
     projection = WizardProgressProjection(storage)
-    engine.subscribe("*", lambda event: projection.apply(event) if projection.handles(event.type) else None)
+    engine.subscribe(
+        "*", lambda event: projection.apply(event) if projection.handles(event.type) else None
+    )
 
     config = WizardConfig(
         steps=(
             WizardStepConfig(slug="name", title="Name", prompt="Name?"),
-            WizardStepConfig(slug="role", title="Role", prompt="Role?", field_type="choice", choices=("dev",)),
+            WizardStepConfig(
+                slug="role", title="Role", prompt="Role?", field_type="choice", choices=("dev",)
+            ),
             WizardStepConfig(slug="confirm", title="Confirm", prompt="Ok?", field_type="confirm"),
         ),
         allow_backtrack=True,
@@ -93,7 +94,9 @@ def test_wizard_live_events_update_progress_projection() -> None:
 
     progress = projection.get_progress(GetWizardProgressQuery(instance_id="inst-1"))
     assert progress is not None
-    assert any(entry.event_type == WizardEvents.BACKTRACK_REQUESTED for entry in progress.backtrack_trace)
+    assert any(
+        entry.event_type == WizardEvents.BACKTRACK_REQUESTED for entry in progress.backtrack_trace
+    )
     ctx.shutdown()
     engine.shutdown()
     storage.shutdown()
@@ -140,7 +143,9 @@ def test_backtrack_executed_carries_from_and_to_slug() -> None:
     config = WizardConfig(
         steps=(
             WizardStepConfig(slug="name", title="Name", prompt="Name?"),
-            WizardStepConfig(slug="role", title="Role", prompt="Role?", field_type="choice", choices=("dev",)),
+            WizardStepConfig(
+                slug="role", title="Role", prompt="Role?", field_type="choice", choices=("dev",)
+            ),
             WizardStepConfig(slug="confirm", title="Confirm", prompt="Ok?", field_type="confirm"),
         ),
         allow_backtrack=True,

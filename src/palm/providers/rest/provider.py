@@ -24,7 +24,5 @@ class RestProvider(BaseProvider):
         return ProviderDescriptor(
             name=self.name,
             description="HTTP REST resource access",
-            actions=(
-                ProviderActionDescriptor("fetch", "GET a resource by path or id"),
-            ),
+            actions=(ProviderActionDescriptor("fetch", "GET a resource by path or id"),),
         )

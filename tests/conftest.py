@@ -15,6 +15,8 @@ from palm.app.settings import PalmSettings
 from palm.core.event import EventEngine
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli.shared.context import CliContext
+
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--fast",

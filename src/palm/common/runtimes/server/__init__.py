@@ -7,11 +7,20 @@ from palm.common.runtimes.server.middleware import (
     authenticate_request,
     current_principal_id,
 )
-from palm.common.runtimes.server.protocol import HttpMethod, ServerRequest, ServerResponse, ServerSurface
+from palm.common.runtimes.server.protocol import (
+    HttpMethod,
+    ServerRequest,
+    ServerResponse,
+    ServerSurface,
+)
 from palm.common.runtimes.server.registry import RouteRegistry, RouteSpec, SurfaceRegistry
 from palm.common.runtimes.server.responses import error_response
 from palm.common.runtimes.server.surface import BaseSurface
-from palm.common.runtimes.server.transport import BaseTransport, TransportRegistry, transport_registry
+from palm.common.runtimes.server.transport import (
+    BaseTransport,
+    TransportRegistry,
+    transport_registry,
+)
 from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 
 __all__ = [

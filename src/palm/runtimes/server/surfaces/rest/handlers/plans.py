@@ -11,7 +11,11 @@ from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, created
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
-from palm.runtimes.server.surfaces.rest.schemas import PREPARE_PLANS_BODY, SUBMIT_PLANS_BODY, prepare_plans_variant_errors
+from palm.runtimes.server.surfaces.rest.schemas import (
+    PREPARE_PLANS_BODY,
+    SUBMIT_PLANS_BODY,
+    prepare_plans_variant_errors,
+)
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

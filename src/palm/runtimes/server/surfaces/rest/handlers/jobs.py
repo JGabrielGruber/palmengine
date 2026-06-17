@@ -95,7 +95,9 @@ def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) ->
 
     ctx.wait_until_idle()
     job_view = ctx.ask(GetJobStatusQuery(job_id=job_id))
-    status = job_view.get("status") if isinstance(job_view, dict) else getattr(job_view, "status", "")
+    status = (
+        job_view.get("status") if isinstance(job_view, dict) else getattr(job_view, "status", "")
+    )
     step = job_view.get("step") if isinstance(job_view, dict) else None
     return ok(
         {

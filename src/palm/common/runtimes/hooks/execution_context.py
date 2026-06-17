@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.resource.observability import stamp_execution_context  # noqa: PLC0415 — hook layer
+from palm.common.resource.observability import stamp_execution_context  # — hook layer
 from palm.core.orchestration.hooks import JobHookAdapter
 
 if TYPE_CHECKING:

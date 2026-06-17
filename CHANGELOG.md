@@ -2,22 +2,15 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased] — 0.12 “Compositional Power”
+## [Unreleased]
 
-**Theme:** Resources as first-class, declarative citizens — compositional orchestration at scale.
+_No changes yet._
 
-Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+## [0.12.0] — 2026-06-17
 
-### Planned
+**Compositional Power release** — Resources as first-class, declarative citizens; Palm calling Palm via the `palm` provider; Explorer resource hub.
 
-- **`ResourceDefinition`** — declarative, reusable resource contracts in `DefinitionRepository`
-- **`ResourceEngine` evolution** — resolve, bind params, invoke actions, structured events
-- **`BaseProvider` richness** — `invoke()`, `describe()`, structured `ProviderResult`, action catalog
-- **`ResourceLeaf`** — core Behavior Tree leaf for resource invocation in any pattern
-
-- **Pattern integration** — `step_kind: resource` in wizards; resource stages in pipeline/DAG builders
-- **Cross-cutting** — `enrich_resource` + `resource_ref`, compensation for mutating invokes, CQRS projection, Explorer timelines
-- **Examples** — compositional demo (parent flow → child flow → resume)
+Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · Migration: [MIGRATION-0.12.md](MIGRATION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
 
 ### Added (Phase 1)
 
@@ -87,7 +80,12 @@ See [MIGRATION-0.12.md](MIGRATION-0.12.md).
 - **Observability** — `JobExecutionContextHook` stamps execution correlation; `resource.*` events include job/instance/wizard/step metadata
 - **`palm/core/resource/observability.py`** — core-safe correlation helpers
 
-_Phase 6 (release polish) remains planned._
+### Added (Phase 6 — release polish)
+
+- **Explorer resources hub** — `/explorer/resources` catalog (filters, usage counts, invoke shortcuts); detail pages with action catalog, flow cross-refs, invocation timeline; **Try Invoke** form at `/explorer/resources/{id}/invoke`
+- **Explorer integration** — resource steps on flow detail; resource invocations on job detail; overview stat + link card
+- **Documentation** — `MIGRATION-0.12.md`, Resource Best Practices in README and ARCHITECTURE; `RELEASE-0.12.0.md` checklist
+- **Quality** — `just docs-check` version surfaces; full test suite green at 0.12.0
 
 ## [0.11.8] — 2026-06-17
 

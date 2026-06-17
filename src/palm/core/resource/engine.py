@@ -12,7 +12,6 @@ from collections.abc import Callable
 from typing import Any
 
 from palm.core.base import BasePalmEngine
-from palm.core.event.engine import Event
 from palm.core.registry import provider_registry
 from palm.core.resource.base_provider import BaseProvider
 from palm.core.resource.cache import (
@@ -146,7 +145,9 @@ class ResourceEngine(BasePalmEngine):
             "mutating": spec_action not in {"fetch", "health", "describe"},
         }
         if correlation:
-            event_base.update({key: value for key, value in correlation.items() if value is not None})
+            event_base.update(
+                {key: value for key, value in correlation.items() if value is not None}
+            )
         self._emit("resource.invoked", **event_base)
 
         try:

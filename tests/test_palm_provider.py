@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 import palm.providers  # noqa: F401 — register providers
+from examples.definitions.data_ingestion import INGEST_ETL_FLOW
 from palm.core.orchestration import JobStatus
 from palm.definitions import ResourceDefinition
 from palm.providers.palm.provider import PalmProvider
@@ -12,8 +13,6 @@ from palm.providers.palm.recursion import PalmRecursionError, RecursionLimits, p
 from palm.providers.palm.wiring import clear_palm_runtime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.server import ServerRuntime
-
-from examples.definitions.data_ingestion import INGEST_ETL_FLOW
 
 
 @pytest.fixture

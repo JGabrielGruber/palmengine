@@ -170,12 +170,12 @@ publish: build
     @echo '✅ Published to PyPI. Users can: pip install palmengine[cli]'
 
 release-prep:
-    @echo "📋 Release prep for {{package}} — see RELEASE-0.10.9.md"
+    @echo "📋 Release prep for {{package}} — see RELEASE-0.12.0.md"
     @echo "   Version: $(uv run python -c 'import palm; print(palm.__version__)')"
     just docs-check
     just full-check
     just build
-    @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.10.9.md"
+    @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.12.0.md"
 
 # -----------------------------------------------------------------------------
 # 8. Convenience & CI-friendly

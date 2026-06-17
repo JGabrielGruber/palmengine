@@ -50,12 +50,7 @@ class HostProfile:
     @property
     def uses_collapsed_runtime(self) -> bool:
         """Single embedded runtime when master+worker without HTTP."""
-        return (
-            self.master
-            and self.worker
-            and not self.server
-            and self.worker_count == 1
-        )
+        return self.master and self.worker and not self.server and self.worker_count == 1
 
     @classmethod
     def all_in_one(cls) -> Self:
@@ -89,8 +84,7 @@ class HostProfile:
         key = str(preset).lower()
         if key not in mapping:
             raise ValueError(
-                f"Unknown host profile preset {preset!r}; "
-                f"expected one of {sorted(mapping)}"
+                f"Unknown host profile preset {preset!r}; " f"expected one of {sorted(mapping)}"
             )
         return mapping[key]
 

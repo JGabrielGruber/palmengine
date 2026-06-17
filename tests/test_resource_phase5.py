@@ -20,10 +20,10 @@ from palm.common.resource.compensation import (
     resource_refs_for_compensation,
     track_resource_invocation,
 )
+from palm.common.resource.observability import stamp_execution_context
 from palm.common.transforms import TransformExecutor, autoload
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.resource import ResourceEngine
-from palm.common.resource.observability import stamp_execution_context
 from palm.core.resource.observability import resource_correlation
 from palm.core.storage import StorageEngine
 from palm.core.transform.registry import transform_registry

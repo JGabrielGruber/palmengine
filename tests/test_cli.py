@@ -10,12 +10,12 @@ from palm.app.cli_settings import resolve_cli_settings
 from palm.runtimes.cli.commands.registry import build_registry
 from palm.runtimes.cli.shared.args import CliInvocation, settings_from_invocation
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
-from tests.fast_settings import make_test_settings
 from palm.runtimes.cli.shared.instance_ops import (
     filter_summaries,
     is_terminal_status,
     parse_instance_list_flags,
 )
+from tests.fast_settings import make_test_settings
 
 
 def test_process_list_registers_examples(cli_ctx) -> None:

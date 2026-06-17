@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.common.cqrs import CommandBus, QueryBus
+from palm.common.cqrs import CommandBus
 from palm.common.cqrs.command import Command, SubmitFlowCommand
 from palm.common.cqrs.projections.instance_index import (
     InstanceIndexProjection,
@@ -15,7 +15,6 @@ from palm.core.storage import StorageEngine
 
 
 def _storage() -> StorageEngine:
-    from palm.storages.memory.backend import MemoryBackend
 
     engine = StorageEngine()
     engine.initialize()

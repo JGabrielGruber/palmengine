@@ -34,9 +34,7 @@ def build_docs_html(*, version: str) -> str:
     sections = []
     for group, routes in groups.items():
         anchor = _group_anchor(group)
-        nav_items.append(
-            f'<a class="nav-link" href="#{anchor}">{html.escape(group)}</a>'
-        )
+        nav_items.append(f'<a class="nav-link" href="#{anchor}">{html.escape(group)}</a>')
         cards = "\n".join(_endpoint_card(route) for route in routes)
         description = GROUP_DESCRIPTIONS.get(group, "")
         sections.append(
@@ -248,9 +246,7 @@ def _group_anchor(group: str) -> str:
 
 def _endpoint_card(route: RouteDefinition) -> str:
     method_color = _METHOD_COLORS.get(route.method, "#71717a")
-    auth_badge = (
-        '<span class="badge auth">auth required</span>' if route.auth_required else ""
-    )
+    auth_badge = '<span class="badge auth">auth required</span>' if route.auth_required else ""
     status_badge = (
         f'<span class="badge">{route.response_status}</span>'
         if route.response_status != 200
@@ -271,9 +267,7 @@ def _endpoint_card(route: RouteDefinition) -> str:
 
     request_block = ""
     if route.request_schema:
-        body = html.escape(
-            json.dumps(REQUEST_BODIES.get(route.request_schema, {}), indent=2)
-        )
+        body = html.escape(json.dumps(REQUEST_BODIES.get(route.request_schema, {}), indent=2))
         request_block = (
             '<div class="example">'
             '<div class="example-label"><span>Request body</span></div>'

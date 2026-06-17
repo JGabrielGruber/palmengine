@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.runtimes.server.surfaces.rest.doc_examples import GROUP_DESCRIPTIONS, OPENAPI_REQUEST_EXAMPLES
+from palm.runtimes.server.surfaces.rest.doc_examples import (
+    GROUP_DESCRIPTIONS,
+    OPENAPI_REQUEST_EXAMPLES,
+)
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
 from palm.runtimes.server.surfaces.rest.schemas import openapi_components
 
@@ -35,7 +38,10 @@ def build_openapi_spec(*, version: str) -> dict[str, Any]:
                 "and provide interactive wizard input."
             ),
         },
-        "tags": [{"name": name, "description": meta["description"]} for name, meta in sorted(tags.items())],
+        "tags": [
+            {"name": name, "description": meta["description"]}
+            for name, meta in sorted(tags.items())
+        ],
         "paths": paths,
         "components": {
             "schemas": {

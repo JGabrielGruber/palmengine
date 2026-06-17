@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import escape, html_response
 from palm.runtimes.server.surfaces.ssr.explorer.components import badge, code_block
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+
 from .base import PageContext
-from palm.common.runtimes.server.ssr.render import escape, html_response
 
 
 class SchemaPages:

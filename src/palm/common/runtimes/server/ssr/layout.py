@@ -212,7 +212,9 @@ def page_shell(
 
     subtitle_html = f"<p>{escape(subtitle)}</p>" if subtitle else ""
     css = PALM_SSR_CSS + extra_css
-    pills_html = f'<div class="pill-row" style="margin-top:1.5rem">{"".join(pills)}</div>' if pills else ""
+    pills_html = (
+        f'<div class="pill-row" style="margin-top:1.5rem">{"".join(pills)}</div>' if pills else ""
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="en">

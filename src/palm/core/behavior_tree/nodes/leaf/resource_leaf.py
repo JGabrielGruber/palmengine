@@ -6,11 +6,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.resource.observability import resource_correlation
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.behavior_tree.leaf import LeafNode
 from palm.core.context import BaseState
 from palm.core.resource.engine import ResourceEngine
+from palm.core.resource.observability import resource_correlation
 
 
 class ResourceLeaf(LeafNode):

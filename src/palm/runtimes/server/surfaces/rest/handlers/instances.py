@@ -11,7 +11,10 @@ from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
-from palm.runtimes.server.surfaces.rest.validation import PaginationParams, parse_list_instances_query
+from palm.runtimes.server.surfaces.rest.validation import (
+    PaginationParams,
+    parse_list_instances_query,
+)
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -44,7 +47,9 @@ def get_instance(ctx: ServerContext, request: ServerRequest, *, instance_id: str
     return ok(read_model_body(row))
 
 
-def resume_instance(ctx: ServerContext, request: ServerRequest, *, instance_id: str) -> ServerResponse:
+def resume_instance(
+    ctx: ServerContext, request: ServerRequest, *, instance_id: str
+) -> ServerResponse:
     auth_error = require_auth(ctx, request)
     if auth_error is not None:
         return auth_error

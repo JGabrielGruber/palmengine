@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.11.8** · ApplicationHost + CQRS + Palm Explorer · June 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.12.0** · Compositional Power + ApplicationHost + Palm Explorer · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -735,9 +735,9 @@ Static typing is enforced project-wide via **mypy strict** (`just typecheck` / `
 
 ---
 
-## Future: Resource layer (0.12 — Compositional Power)
+## Resource layer (0.12 — Compositional Power)
 
-**Status:** Phases 1–4 and A–C shipped; Phase 5–6 in progress.
+**Status:** Shipped in 0.12.0 (Phases 1–6 complete).
 **Documents:** [docs/VISION-0.12.md](docs/VISION-0.12.md) · [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
 
 0.12 elevates Resources to the same declarative tier as flows and processes.
@@ -786,7 +786,7 @@ Recursion guardrails (depth limits, cycle detection, child job linkage on parent
 | Transforms | `enrich_resource` accepts `resource_ref` |
 | Compensation | Mutating invokes register undo metadata for `CompensationCoordinator` |
 | CQRS | Optional `ResourceInvocationProjection` for dashboards |
-| Explorer | Resource catalog at `/explorer/resources`; step timeline (Phase 5) |
+| Explorer | Resource catalog at `/explorer/resources`; Try Invoke; flow/job cross-refs; instance timelines |
 | Runtimes | `ResourceEngine` wired through `BaseRuntime`; optional TTL caches via `PalmSettings` |
 | Discovery | `ResourceCatalog` + `palm doctor` provider action tables |
 | Recursion | `palm/core/utils/recursion.py` — shared guard for compositional providers |
@@ -800,14 +800,14 @@ Recursion guardrails (depth limits, cycle detection, child job linkage on parent
 - Compose with the `palm` provider; guard recursion via `recursion_frame()`; observe `resource.*` events.
 - Enable `resource_cache_results` only for idempotent read actions (`fetch`); keep definition caching on for resolver hot paths.
 
-### Implementation phases
+### Implementation phases (complete)
 
-1. `ResourceDefinition` + repository  
-2. Engine & provider contract  
-3. `ResourceLeaf` + pattern builders  
-4. `palm` provider  
-5. Transforms, compensation, observability  
-6. Release polish  
+1. `ResourceDefinition` + repository ✅  
+2. Engine & provider contract ✅  
+3. `ResourceLeaf` + pattern builders ✅  
+4. `palm` provider ✅  
+5. Transforms, compensation, observability ✅  
+6. Release polish ✅  
 
 ---
 

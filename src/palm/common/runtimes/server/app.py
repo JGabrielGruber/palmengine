@@ -8,7 +8,7 @@ import asyncio
 from typing import Any
 
 from palm.common.runtimes.server.context import ServerContext
-from palm.common.runtimes.server.middleware import authenticate_request, PALM_SUBJECT_HEADER
+from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER, authenticate_request
 from palm.common.runtimes.server.protocol import (
     RouteHandler,
     ServerRequest,

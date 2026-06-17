@@ -6,7 +6,12 @@ import uuid
 from typing import Any
 
 from palm.core.resource import BaseProvider
-from palm.core.resource.result import ProviderActionDescriptor, ProviderDescriptor, ProviderHealth, ProviderResult
+from palm.core.resource.result import (
+    ProviderActionDescriptor,
+    ProviderDescriptor,
+    ProviderHealth,
+    ProviderResult,
+)
 from palm.providers.palm.coordinator import PalmInvokeCoordinator
 from palm.providers.palm.exceptions import PalmProviderError, PalmTimeoutError
 from palm.providers.palm.params import PalmInvokeParams
@@ -127,7 +132,9 @@ class PalmProvider(BaseProvider):
     ) -> ProviderResult:
         job_id = params.resolve_job_id(resource_id=resource_id)
         if not job_id:
-            return self._fail(action, "fetch requires job_id or resource_id", resource_id=resource_id)
+            return self._fail(
+                action, "fetch requires job_id or resource_id", resource_id=resource_id
+            )
         try:
             payload = self._coordinator.fetch(params, resource_id=resource_id)
         except PalmProviderError as exc:

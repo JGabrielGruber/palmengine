@@ -10,17 +10,24 @@ from typing import Any
 
 import pytest
 
+from palm.definitions import FlowDefinition, ProcessDefinition
+from palm.runtimes.server import ServerRuntime
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
-from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form, job_input_form, schema_form
+from palm.runtimes.server.surfaces.ssr.explorer.forms import (
+    flow_submit_form,
+    job_input_form,
+    schema_form,
+)
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import (
     flow_description,
     flow_option_label,
     start_flow_href,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.schemas import FLOW_SUBMIT_FORM, build_flow_submit_schema
-from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.runtimes.server import ServerRuntime
+from palm.runtimes.server.surfaces.ssr.explorer.schemas import (
+    FLOW_SUBMIT_FORM,
+    build_flow_submit_schema,
+)
 
 
 @pytest.fixture
@@ -77,6 +84,7 @@ def test_explorer_overview_renders(server: ServerRuntime) -> None:
     assert "Palm Explorer" in html
     assert "Introspection Hub" in html
     assert "/explorer/flows" in html
+    assert "/explorer/resources" in html
     assert "/explorer/jobs" in html
     assert "/explorer/instances" in html
 
@@ -160,7 +168,9 @@ def test_flow_submit_form_renders(server: ServerRuntime, sample_flow: FlowDefini
     assert "Submission mode" not in html
 
 
-def test_flow_submit_prefills_from_query(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+def test_flow_submit_prefills_from_query(
+    server: ServerRuntime, sample_flow: FlowDefinition
+) -> None:
     server.repository.register_flow(sample_flow)
     status, html, _ = _get_html(server.base_url, "/explorer/flows/submit?flow=explorer-flow-1")
     assert status == 200
@@ -169,7 +179,9 @@ def test_flow_submit_prefills_from_query(server: ServerRuntime, sample_flow: Flo
     assert "Pre-selected" in html
 
 
-def test_flow_submit_post_registered_flow(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+def test_flow_submit_post_registered_flow(
+    server: ServerRuntime, sample_flow: FlowDefinition
+) -> None:
     import http.client
     from urllib.parse import urlparse
 
@@ -287,7 +299,7 @@ def test_explorer_fetcher_lists_patterns(server: ServerRuntime) -> None:
 
 
 def test_explorer_layout_renders_title() -> None:
-    html = explorer_page(title="Test", version="0.11.8", content="<p>Body</p>")
+    html = explorer_page(title="Test", version="0.12.0", content="<p>Body</p>")
     assert "Test" in html
     assert "Body" in html
     assert "Palm Explorer" in html

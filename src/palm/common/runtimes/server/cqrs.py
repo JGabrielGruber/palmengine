@@ -16,7 +16,6 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
     SubmitProcessCommand,
 )
-from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
@@ -34,8 +33,8 @@ from palm.common.cqrs.query import (
     Query,
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
-from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError
-from palm.common.exceptions import PlanNotFoundError
+from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
+from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -245,7 +244,9 @@ class StandaloneQueryHandlers:
         if query.flow_name is not None:
             rows = [row for row in rows if row.get("flow_name") == query.flow_name]
         if not query.include_terminal:
-            rows = [row for row in rows if row["status"] not in {"SUCCEEDED", "FAILED", "CANCELLED"}]
+            rows = [
+                row for row in rows if row["status"] not in {"SUCCEEDED", "FAILED", "CANCELLED"}
+            ]
         if query.limit is not None:
             rows = rows[: query.limit]
         return rows

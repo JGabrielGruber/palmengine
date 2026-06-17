@@ -78,7 +78,9 @@ class JobStatusBoardProjection(Projection):
         self._entries[str(job_id)] = JobStatusReadModel(
             job_id=str(job_id),
             status=status,
-            instance_id=str(instance_id) if instance_id is not None else (current.instance_id if current else None),
+            instance_id=str(instance_id)
+            if instance_id is not None
+            else (current.instance_id if current else None),
             updated_at=_now_iso(),
         )
         self._persist()

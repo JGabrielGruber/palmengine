@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.11.8` — Palm Explorer hub, ApplicationHost, CQRS projections, outbox, compensation · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
+**Current release:** `0.12.0` — Compositional Power: `ResourceDefinition`, `ResourceLeaf`, `palm` provider, Explorer resources hub · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.12.md](MIGRATION-0.12.md) · [VISION-0.12](docs/VISION-0.12.md) · [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -49,22 +49,24 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.10 architecture)
+## What works today (0.12 architecture)
 
 | Area | Capabilities |
 |------|----------------|
+| **Resources** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`; wizard `step_kind: resource` |
+| **`palm` provider** | Palm calling Palm — local `submit_flow` / `invoke_resource` or remote HTTP; recursion guardrails |
 | **ApplicationHost** | Top-level orchestrator — role profiles (`all_in_one`, `master`, `worker`, `server`), startup recovery |
-| **CQRS** | Command/query buses, projections (`instance_index`, `wizard_progress`, `job_status_board`) |
-| **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
+| **CQRS** | Command/query buses, projections (`instance_index`, `wizard_progress`, `job_status_board`, `resource_invocations`) |
+| **Reliability** | Transactional outbox, compensation handlers (including resource undo), optional webhook dispatch |
 | **Core** | Behavior tree, orchestration, context, storage, resource, event, auth, **TransformEngine** |
 | **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`) |
-| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization |
-| **Patterns** | **Wizard** (collection, transform steps, summary/commit); **parallel** branches; DAG and ETL stubs |
+| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization, `enrich_resource` |
+| **Patterns** | **Wizard** (collection, transform, resource steps, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
-| **Palm Explorer** | Server SSR hub at `/explorer` — flows, jobs, instances, schemas; `/` redirects here |
+| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **resources** (catalog, invoke, timelines); `/` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
-| **DX** | Rich examples, `palm doctor`, `palm host` deployment roles, `just` quality recipes |
+| **DX** | Rich examples, `palm doctor`, `palm resource *`, `just` quality recipes |
 
 ```mermaid
 flowchart LR
@@ -360,6 +362,25 @@ archive/            # legacy + experimental (not imported)
 
 ---
 
+## Resource best practices (0.12)
+
+1. **Define once, reference everywhere** — register `ResourceDefinition` in the repository; use `resource_ref` in wizards, `ResourceLeaf` in behavior trees, and `enrich_resource` in transforms.
+2. **Prefer declarative params** — bind with `{{ state.key }}`; promote wizard answers before resource steps (`promote_binding_keys()`).
+3. **Compose with the `palm` provider** — delegate sub-flows locally or via `remote_url`; rely on built-in depth/cycle guardrails.
+4. **Observe `resource.*` events** — completed/failed payloads include correlation (`invoke_depth`, `invoke_chain`, `parent_job_id`).
+5. **Cache reads, not writes** — keep `resource_cache_definitions` on; enable `resource_cache_results` only for idempotent `fetch` actions.
+6. **Discover before invoke** — `palm doctor`, `palm resource list/describe`, and Explorer `/explorer/resources` show actions and schemas.
+
+```bash
+palm resource list
+palm resource describe fetch-customer
+palm resource invoke fetch-customer customer_id=42
+```
+
+Full guide: [docs/VISION-0.12.md](docs/VISION-0.12.md) · [MIGRATION-0.12.md](MIGRATION-0.12.md)
+
+---
+
 ## Where Palm is headed
 
 High-level direction (not all shipped yet). Full detail in [SCOPE.md](SCOPE.md).
@@ -368,7 +389,6 @@ High-level direction (not all shipped yet). Full detail in [SCOPE.md](SCOPE.md).
 |-------|-----------|
 | **Runtimes** | WebSocket surface, persistent plan registry, richer server auth |
 | **Middleware** | Runtime-level auth/observability; optional BT guard nodes for step policy |
-| **Resources (0.12)** | `ResourceDefinition`, `ResourceLeaf`, richer providers, **`palm` provider** (Palm calling Palm) — [VISION-0.12](docs/VISION-0.12.md) |
 | **Compute** | `KernelLeaf` GPU nodes, resident kernels, dataset staging (Parquet → context → kernel → artifact) |
 | **Observability** | Structured events, long-running job management |
 
@@ -416,6 +436,7 @@ Orchestration should balance structure with flexibility—automation with mindfu
 
 ## Migration
 
+- **0.11.x → 0.12 Compositional Power** — see [MIGRATION-0.12.md](MIGRATION-0.12.md) for wizard `step_kind: resource` and removed `action` steps
 - **0.9.x → 0.10 architecture** — see [MIGRATION-0.10.md](MIGRATION-0.10.md) for `ApplicationHost`, CQRS, and removed `bootstrap_cli` / `cli/pkg` paths
 - **0.5.x → 0.6.0** — see [MIGRATION-0.6.md](MIGRATION-0.6.md) for removed aliases (`ExecutionBackend`, `EmbeddedMode`, etc.)
 - **0.3.x legacy** — code under **`archive/`** is reference-only; never import from `archive/` in new work

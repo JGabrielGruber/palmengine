@@ -14,8 +14,8 @@ from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.resource_leaf import default_resource_prompt
+from palm.patterns.wizard.step_kinds import WizardStepKind
 from palm.patterns.wizard.transform_leaf import default_transform_prompt
 from palm.patterns.wizard.validation import StepValidationRule
 

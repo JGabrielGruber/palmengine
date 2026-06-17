@@ -33,8 +33,7 @@ class InvokeContext:
 class PalmInvoker(Protocol):
     """Strategy for executing a compositional invoke in a given runtime mode."""
 
-    def fetch_job(self, job_id: str, params: PalmInvokeParams) -> dict[str, Any]:
-        ...
+    def fetch_job(self, job_id: str, params: PalmInvokeParams) -> dict[str, Any]: ...
 
     def invoke(
         self,
@@ -42,8 +41,7 @@ class PalmInvoker(Protocol):
         target: PalmInvokeTarget,
         params: PalmInvokeParams,
         context: InvokeContext,
-    ) -> dict[str, Any]:
-        ...
+    ) -> dict[str, Any]: ...
 
 
 class LocalPalmInvoker:
@@ -67,7 +65,9 @@ class LocalPalmInvoker:
         if action == "invoke_resource" or target.kind == "resource":
             child_params = params.child_resource_params()
             child_provider = child_params.pop("provider", None)
-            child_action = child_params.pop("resource_action", None) or child_params.pop("action", None)
+            child_action = child_params.pop("resource_action", None) or child_params.pop(
+                "action", None
+            )
             child_resource_id = child_params.pop("resource_id", None)
             result = runtime.resource.invoke(
                 target.ref,

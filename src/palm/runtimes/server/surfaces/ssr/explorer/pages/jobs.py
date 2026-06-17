@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import escape, html_response
 from palm.runtimes.server.surfaces.ssr.explorer.components import (
     action_button,
     action_list,
@@ -13,12 +14,12 @@ from palm.runtimes.server.surfaces.ssr.explorer.components import (
     resource_timeline_table,
     stat_card,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import palm_invoke_chain
 from palm.runtimes.server.surfaces.ssr.explorer.forms import job_input_form
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import palm_invoke_chain
+
 from .base import PageContext
 from .utils import flash_banners, not_found_page, status_badge
-from palm.common.runtimes.server.ssr.render import escape, html_response
 
 
 class JobPages:

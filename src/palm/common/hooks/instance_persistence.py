@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from palm.common.events.reliable import ReliableEventPublisher
     from palm.common.managers.instance_manager import InstanceManager
     from palm.common.persistence.instance_repository import InstanceRepository
-    from palm.core.event import Event
     from palm.core.orchestration.engine import OrchestrationEngine
     from palm.core.orchestration.job import Job
     from palm.core.orchestration.run_result import RunResult

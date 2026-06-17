@@ -74,7 +74,9 @@ class WizardResourceLeaf(LeafNode):
     ) -> None:
         super().__init__(step.slug)
         if step.step_kind != "resource":
-            raise ValueError(f"WizardResourceLeaf requires step_kind=resource, got {step.step_kind!r}")
+            raise ValueError(
+                f"WizardResourceLeaf requires step_kind=resource, got {step.step_kind!r}"
+            )
         if not step.resource_ref:
             raise ValueError(f"Resource step {step.slug!r} requires resource_ref")
         self._step = step
@@ -198,7 +200,9 @@ class WizardResourceLeaf(LeafNode):
             WizardKeys.RESOURCE_FEEDBACK,
             format_resource_feedback(
                 self._step,
-                resource_id=str(trace_dict.get("resource_id")) if trace_dict.get("resource_id") else None,
+                resource_id=str(trace_dict.get("resource_id"))
+                if trace_dict.get("resource_id")
+                else None,
                 provider=str(trace_dict.get("provider")) if trace_dict.get("provider") else None,
                 action=str(trace_dict.get("action") or self._step.resource_action or "invoke"),
                 success=False,
@@ -245,7 +249,9 @@ class WizardResourceLeaf(LeafNode):
         trace = state.get(self._inner.trace_key)
         if isinstance(trace, dict) and trace.get("error"):
             return str(trace["error"])
-        action = self._step.resource_action or trace.get("action") if isinstance(trace, dict) else None
+        action = (
+            self._step.resource_action or trace.get("action") if isinstance(trace, dict) else None
+        )
         action_label = action or "invoke"
         return f"Resource {self._step.resource_ref!r} (action={action_label}) failed"
 

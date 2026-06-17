@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.11.8 (shipping) · **Next:** 0.12 Compositional Power (planned) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.12.0 (shipping) · **Theme:** Compositional Power · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -54,9 +54,10 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **CQRS** | Command/query buses; projections (`instance_index`, `wizard_progress`, `job_status_board`) |
 | **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
-| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances; `GET /` redirects here |
+| **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
+| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **resources**; `GET /` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
-| **Resources (0.11)** | `ResourceEngine` + providers; wizard `action` steps; `enrich_resource` transform |
+| **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
 
 ## Quick Commands
 
@@ -68,6 +69,9 @@ palm flow start onboard
 palm flow start schema-onboard
 palm flow start todo-builder
 palm flow start parallel-demo
+palm resource list
+palm resource describe fetch-customer
+palm resource invoke fetch-customer customer_id=42
 ```
 
 From source: `uv sync --group dev --extra cli && uv pip install -e ".[cli]"`
@@ -94,7 +98,7 @@ src/palm/
 ├── patterns/       # wizard, parallel, dag, etl, pipeline (extensible)
 ├── providers/      # rest, graphql, postgres (extensible)
 ├── storages/       # memory, filesystem, postgres, mongodb (extensible)
-├── definitions/    # FlowDefinition, ProcessDefinition
+├── definitions/    # FlowDefinition, ProcessDefinition, ResourceDefinition
 ├── instances/      # ProcessInstance, StateSnapshot
 └── runtimes/       # Thin CLI, embedded, daemon, server surfaces
 ```
@@ -107,7 +111,9 @@ src/palm/
 | STATUS.md | Living current state |
 | ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
 | DEVELOPMENT.md | Contributor setup and patterns |
+| MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
+| docs/VISION-0.12.md | Compositional Power vision and best practices |
 | examples/README.md | Runnable flow definitions |
 
 ## Extension Patterns
@@ -120,17 +126,20 @@ src/palm/
 | Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
 | CQRS handler | `palm/common/cqrs/` | Wire in `palm/app/host/cqrs_wiring.py` |
 
-## 0.12 Planned — Compositional Power
+## Resources (0.12 — Compositional Power)
 
-Resources become first-class definitions (like flows/processes):
+Resources are first-class definitions (symmetric with flows/processes):
 
-- `ResourceDefinition` in `DefinitionRepository`
-- `ResourceLeaf` — core BT node for invocation
-- `ResourceEngine.invoke()` — bind params, emit events
-- `palm` provider — Palm calling Palm (local `ApplicationHost` or remote Server HTTP)
-- Integration: wizards (`step_kind: resource`), transforms, compensation, Explorer
+- `ResourceDefinition` in `DefinitionRepository` — register via bootstrap or CLI
+- `ResourceLeaf` — core BT node; wizard `step_kind: resource` with `resource_ref`
+- `ResourceEngine.invoke()` — bind `{{ state.* }}` params, emit `resource.*` events
+- `palm` provider — `submit_flow`, `submit_process`, `invoke_resource`, `fetch` (local or remote HTTP)
+- `enrich_resource` transform accepts `resource_ref`; compensation via `register_for_resource()`
+- Explorer: `/explorer/resources` catalog, detail, Try Invoke; timelines on instances/jobs
 
-Vision: `docs/VISION-0.12.md` · ADR: `docs/adr/001-compositional-power-resources.md`
+**Best practices:** define once, reference by `resource_ref`; cache definitions not mutating results; use `palm doctor` / Explorer before invoke.
+
+Vision: `docs/VISION-0.12.md` · Migration: `MIGRATION-0.12.md` · ADR: `docs/adr/001-compositional-power-resources.md`
 
 ## Invariants (Never Break)
 

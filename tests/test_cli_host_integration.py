@@ -39,7 +39,9 @@ def test_cli_context_requires_host(fast_cli_settings: PalmSettings) -> None:
         assert ctx.host.is_started
         assert ctx.running_runtime_names() == ["main"]
         rows = ctx.host.ask(ListInstancesQuery(include_terminal=True))
-        assert ctx.list_instance_summaries() == [] or len(rows) == len(ctx.list_instance_summaries())
+        assert ctx.list_instance_summaries() == [] or len(rows) == len(
+            ctx.list_instance_summaries()
+        )
     finally:
         shutdown_context(ctx)
 

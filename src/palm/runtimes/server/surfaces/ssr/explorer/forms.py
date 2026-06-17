@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, Mapping
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any
 
 from palm.common.runtimes.server.ssr.render import escape
-from palm.runtimes.server.surfaces.ssr.explorer.schemas import build_flow_submit_schema
 from palm.core.context.state_schema import DictStateSchema
+from palm.runtimes.server.surfaces.ssr.explorer.schemas import build_flow_submit_schema
 
 if TYPE_CHECKING:
     from palm.definitions.flow import FlowDefinition
@@ -174,11 +175,15 @@ def _flow_context_panel(flow: FlowDefinition) -> str:
     from palm.runtimes.server.surfaces.ssr.explorer.components import badge
     from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import flow_description
 
-    schema_badge = badge("schema", tone="default") if flow.has_state_schema else badge("no schema", tone="default")
+    schema_badge = (
+        badge("schema", tone="default")
+        if flow.has_state_schema
+        else badge("no schema", tone="default")
+    )
     return (
         '<div class="flow-context-panel panel">'
         f"<p>{badge(flow.pattern)} {schema_badge}</p>"
-        f"<p class=\"muted\">{escape(flow_description(flow))}</p>"
+        f'<p class="muted">{escape(flow_description(flow))}</p>'
         f'<p class="muted">Definition id: <code>{escape(flow.definition_id)}</code></p>'
         "</div>"
     )
@@ -389,7 +394,7 @@ def _normalize_choices(choices: object | None) -> list[Any]:
         return []
     if isinstance(choices, list):
         return choices
-    if isinstance(choices, (tuple, set)):
+    if isinstance(choices, tuple | set):
         return list(choices)
     return []
 
@@ -425,7 +430,9 @@ def _render_field(
         for item in enum_values:
             selected = " selected" if str(item) == str(value) else ""
             options.append(f'<option value="{escape(item)}"{selected}>{escape(item)}</option>')
-        control = f'<select id="{element_id}" name="{escape(key)}"{req_attr}>{"".join(options)}</select>'
+        control = (
+            f'<select id="{element_id}" name="{escape(key)}"{req_attr}>{"".join(options)}</select>'
+        )
     elif field_type == "boolean":
         checked = " checked" if str(value).lower() in {"true", "1", "yes", "on"} else ""
         control = f'<input type="checkbox" id="{element_id}" name="{escape(key)}" value="true"{checked}{req_attr} />'
@@ -477,8 +484,12 @@ def _render_job_value_field(pattern: Mapping[str, Any], value: Any) -> str:
         return f'<input type="checkbox" id="value" name="value" value="true"{checked} />'
 
     if schema_type == "integer":
-        return f'<input type="number" id="value" name="value" value="{display}" step="1" required />'
+        return (
+            f'<input type="number" id="value" name="value" value="{display}" step="1" required />'
+        )
     if schema_type == "number":
-        return f'<input type="number" id="value" name="value" value="{display}" step="any" required />'
+        return (
+            f'<input type="number" id="value" name="value" value="{display}" step="any" required />'
+        )
 
     return f'<input type="text" id="value" name="value" value="{display}" required />'

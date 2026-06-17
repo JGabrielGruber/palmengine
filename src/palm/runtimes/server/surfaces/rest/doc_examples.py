@@ -89,7 +89,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
     "health": {
         "status": "ok",
         "runtime": "ServerRuntime",
-        "version": "0.11.8",
+        "version": "0.12.0",
         "auth_enforce": False,
         "surfaces": ["rest"],
         "docs": "/v1/docs",
@@ -99,7 +99,11 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
     "docs": "(HTML documentation page)",
     "list_jobs": {
         "jobs": [
-            {"job_id": "job-abc123", "status": "WAITING_FOR_INPUT", "metadata": {"pattern": "wizard"}}
+            {
+                "job_id": "job-abc123",
+                "status": "WAITING_FOR_INPUT",
+                "metadata": {"pattern": "wizard"},
+            }
         ],
         "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
     },

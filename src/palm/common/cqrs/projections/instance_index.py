@@ -174,11 +174,7 @@ class InstanceIndexProjection(Projection):
         summaries = self._instances.list_summaries()
         total = len(summaries)
 
-        if (
-            resolved.skip_if_fresh
-            and not resolved.force
-            and self._is_fresh(total)
-        ):
+        if resolved.skip_if_fresh and not resolved.force and self._is_fresh(total):
             self._rebuild_skipped = True
             return len(self._entries)
 
@@ -279,8 +275,7 @@ class InstanceIndexProjection(Projection):
             return
         payload = {
             "entries": {
-                instance_id: model.to_dict()
-                for instance_id, model in self._entries.items()
+                instance_id: model.to_dict() for instance_id, model in self._entries.items()
             },
             "entry_count": len(self._entries),
             "updated_at": _now_iso(),

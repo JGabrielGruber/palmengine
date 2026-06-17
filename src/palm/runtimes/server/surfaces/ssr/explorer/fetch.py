@@ -71,7 +71,9 @@ class ExplorerFetcher:
         return self._ctx.ask(ListInstanceSnapshotsQuery(instance_id=instance_id))
 
     def get_snapshot(self, instance_id: str, snapshot_id: str) -> Any:
-        return self._ctx.ask(GetInstanceSnapshotQuery(instance_id=instance_id, snapshot_id=snapshot_id))
+        return self._ctx.ask(
+            GetInstanceSnapshotQuery(instance_id=instance_id, snapshot_id=snapshot_id)
+        )
 
     def get_resource_invocations(
         self,
@@ -146,8 +148,8 @@ class ExplorerFetcher:
         )
 
     def describe_resource(self, resource_id: str) -> dict[str, Any] | None:
-        from palm.common.resource.catalog import ResourceCatalog
         from palm.common.exceptions import DefinitionNotFoundError
+        from palm.common.resource.catalog import ResourceCatalog
 
         catalog = ResourceCatalog(self._ctx.runtime.repository)
         try:

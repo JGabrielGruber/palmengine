@@ -6,10 +6,14 @@ from unittest.mock import patch
 
 import pytest
 
-from palm.providers.palm.coordinator import LocalPalmInvoker, PalmInvokeCoordinator, RemotePalmInvoker
+from palm.providers.palm import remote as remote_module
+from palm.providers.palm.coordinator import (
+    LocalPalmInvoker,
+    PalmInvokeCoordinator,
+    RemotePalmInvoker,
+)
 from palm.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
 from palm.providers.palm.params import PalmInvokeParams
-from palm.providers.palm import remote as remote_module
 
 
 def test_palm_invoke_params_from_mapping_typed_fields() -> None:
@@ -36,7 +40,9 @@ def test_palm_invoke_params_from_mapping_typed_fields() -> None:
 
 
 def test_palm_invoke_params_target_dict() -> None:
-    params = PalmInvokeParams(flow_name="ingest-etl", by_id=True, target_kind="flow", target="ingest-etl")
+    params = PalmInvokeParams(
+        flow_name="ingest-etl", by_id=True, target_kind="flow", target="ingest-etl"
+    )
     assert params.as_target_dict() == {
         "by_id": True,
         "target_kind": "flow",
