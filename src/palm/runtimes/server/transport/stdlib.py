@@ -122,21 +122,21 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
                 response = body_error
             else:
                 response = app.dispatch(request)
-            self._write_json(response.status, response.body, extra_headers=response.headers)
+            self._write_response(response)
 
-        def _write_json(
-            self,
-            status: int,
-            payload: dict[str, Any],
-            *,
-            extra_headers: dict[str, str] | None = None,
-        ) -> None:
-            body = json.dumps(payload).encode("utf-8")
-            self.send_response(status)
-            self.send_header("Content-Type", "application/json")
+        def _write_response(self, response: Any) -> None:
+            if response.raw_body is not None:
+                body = response.raw_body
+                content_type = response.content_type
+            else:
+                body = json.dumps(response.body).encode("utf-8")
+                content_type = response.content_type
+            self.send_response(response.status)
+            self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
-            for key, value in (extra_headers or {}).items():
-                self.send_header(key, value)
+            for key, value in response.headers.items():
+                if key.lower() != "content-type":
+                    self.send_header(key, value)
             self.end_headers()
             self.wfile.write(body)
 

@@ -17,6 +17,14 @@ def bad_request(
     return error_response(400, "invalid_request", message, details=details, extra=extra)
 
 
+def validation_failed(details: list[dict[str, Any]]) -> ServerResponse:
+    """Schema validation failure with per-field detail entries."""
+    message = "request validation failed"
+    if details:
+        message = details[0]["message"]
+    return error_response(400, "validation_failed", message, details=details)
+
+
 def invalid_json(message: str = "request body must be valid JSON object") -> ServerResponse:
     return error_response(400, "invalid_json", message)
 

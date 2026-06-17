@@ -692,7 +692,12 @@ palm/runtimes/            # concrete surfaces (thin packages)
 │   ├── runtime.py        # lifecycle + plan staging
 │   ├── factory.py        # create_app — mounts default surfaces
 │   ├── surfaces/
-│   │   ├── rest/         # CQRS JSON API (validation, pagination, OpenAPI)
+│   │   ├── rest/         # CQRS JSON API
+│   │   │   ├── routes.py       # central route table (groups: Meta, Jobs, Plans, Instances)
+│   │   │   ├── schemas.py      # DictStateSchema request/query definitions
+│   │   │   ├── handlers/       # meta, jobs, plans, instances
+│   │   │   ├── openapi.py      # spec generated from routes + schemas
+│   │   │   └── docs.py         # self-contained HTML at GET /v1/docs
 │   │   ├── websocket/    # extension point (planned)
 │   │   ├── mcp/          # extension point (planned)
 │   │   └── ssr/          # extension point (planned)

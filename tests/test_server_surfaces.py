@@ -84,6 +84,7 @@ def test_openapi_document(server: ServerRuntime) -> None:
     assert status == 200
     assert payload["openapi"] == "3.0.3"
     assert "/v1/jobs" in payload["paths"]
+    assert any(tag["name"] == "Jobs" for tag in payload["tags"])
 
 
 def test_list_jobs_pagination_envelope(server: ServerRuntime) -> None:

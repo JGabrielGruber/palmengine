@@ -1,4 +1,4 @@
-"""REST request validation."""
+"""REST request validation — query coercion and pagination."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from typing import Any
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.rest import errors
+from palm.runtimes.server.surfaces.rest.schema_validation import validate_query_dict
+from palm.runtimes.server.surfaces.rest.schemas import LIST_INSTANCES_QUERY, LIST_JOBS_QUERY
 
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
@@ -18,26 +20,45 @@ class PaginationParams:
     offset: int
 
 
-def require_body(request: ServerRequest) -> dict[str, Any] | ServerResponse:
-    if request.body is None:
-        return errors.empty_body()
-    return request.body
+def parse_list_jobs_query(request: ServerRequest) -> dict[str, Any] | ServerResponse:
+    """Coerce and validate job list query parameters."""
+    coerced = _coerce_pagination_query(request.query)
+    if isinstance(coerced, ServerResponse):
+        return coerced
+    status = request.query.get("status")
+    if status is not None:
+        coerced["status"] = status
+    return validate_query_dict(coerced, LIST_JOBS_QUERY)
 
 
-def require_fields(
-    body: dict[str, Any],
-    *fields: str,
-) -> list[dict[str, str]] | None:
-    """Return field error details when required keys are missing."""
-    missing = [field for field in fields if field not in body]
-    if not missing:
-        return None
-    return [{"field": field, "message": f"'{field}' is required"} for field in missing]
+def parse_list_instances_query(request: ServerRequest) -> dict[str, Any] | ServerResponse:
+    """Coerce and validate instance list query parameters."""
+    coerced = _coerce_pagination_query(request.query)
+    if isinstance(coerced, ServerResponse):
+        return coerced
+
+    status = request.query.get("status")
+    if status is not None:
+        coerced["status"] = status
+    flow_name = request.query.get("flow_name")
+    if flow_name is not None:
+        coerced["flow_name"] = flow_name
+
+    include_raw = request.query.get("include_terminal")
+    if include_raw is not None:
+        coerced["include_terminal"] = include_raw.lower() not in {"false", "0", "no"}
+
+    validated = validate_query_dict(coerced, LIST_INSTANCES_QUERY)
+    if isinstance(validated, ServerResponse):
+        return validated
+    if "include_terminal" not in validated:
+        validated["include_terminal"] = True
+    return validated
 
 
-def parse_pagination(request: ServerRequest) -> PaginationParams | ServerResponse:
-    limit_raw = request.query.get("limit")
-    offset_raw = request.query.get("offset", "0")
+def _coerce_pagination_query(query: dict[str, str]) -> dict[str, Any] | ServerResponse:
+    limit_raw = query.get("limit")
+    offset_raw = query.get("offset", "0")
 
     try:
         offset = int(offset_raw)
@@ -54,7 +75,7 @@ def parse_pagination(request: ServerRequest) -> PaginationParams | ServerRespons
         )
 
     if limit_raw is None:
-        return PaginationParams(limit=DEFAULT_LIMIT, offset=offset)
+        return {"limit": DEFAULT_LIMIT, "offset": offset}
 
     try:
         limit = int(limit_raw)
@@ -75,30 +96,4 @@ def parse_pagination(request: ServerRequest) -> PaginationParams | ServerRespons
             details=[{"field": "limit", "message": f"maximum is {MAX_LIMIT}"}],
         )
 
-    return PaginationParams(limit=limit, offset=offset)
-
-
-def parse_optional_int(
-    value: str | None,
-    *,
-    field: str,
-) -> int | None | ServerResponse:
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        return errors.bad_request(
-            f"{field} must be an integer",
-            details=[{"field": field, "message": "must be an integer"}],
-        )
-
-
-def validate_plan_ids(body: dict[str, Any]) -> list[str] | ServerResponse:
-    plan_ids = body.get("plan_ids")
-    if not isinstance(plan_ids, list) or not plan_ids:
-        return errors.bad_request(
-            "plan_ids must be a non-empty list",
-            details=[{"field": "plan_ids", "message": "must be a non-empty list"}],
-        )
-    return [str(plan_id) for plan_id in plan_ids]
+    return {"limit": limit, "offset": offset}

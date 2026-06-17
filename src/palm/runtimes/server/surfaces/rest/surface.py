@@ -1,5 +1,8 @@
 """
 REST surface — HTTP JSON API for plans, jobs, and instances.
+
+Routes are declared in :mod:`routes` and handlers are split by resource under
+:mod:`handlers`.
 """
 
 from __future__ import annotations
@@ -7,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.surface import BaseSurface
-from palm.runtimes.server.surfaces.rest import handlers
+from palm.runtimes.server.surfaces.rest.routes import register_routes
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -15,7 +18,12 @@ if TYPE_CHECKING:
 
 
 class RestSurface(BaseSurface):
-    """Default REST interaction model mounted at ``/v1`` and ``/health``."""
+    """
+    Default REST interaction model.
+
+    Mounts grouped routes under ``/v1`` plus ``/health``. OpenAPI and HTML docs
+    are served from :func:`~palm.runtimes.server.surfaces.rest.routes.rest_routes`.
+    """
 
     def __init__(self, ctx: ServerContext, *, surface_names: list[str] | None = None) -> None:
         self._ctx = ctx
@@ -26,77 +34,9 @@ class RestSurface(BaseSurface):
         return "rest"
 
     def register(self, registry: RouteRegistry) -> None:
-        ctx = self._ctx
-        names = self._surface_names
-
-        registry.register(
-            method="GET",
-            path="/health",
-            handler=lambda req: handlers.health_with_surfaces(ctx, names),
+        register_routes(
+            registry,
+            self._ctx,
             surface=self.name,
-        )
-        registry.register(
-            method="GET",
-            path="/v1/openapi.json",
-            handler=lambda req: handlers.openapi(ctx, req),
-            surface=self.name,
-        )
-        registry.register(
-            method="GET",
-            path="/v1/jobs",
-            handler=lambda req: handlers.list_jobs(ctx, req),
-            surface=self.name,
-        )
-        registry.register(
-            method="GET",
-            path="/v1/jobs/{job_id}",
-            handler=lambda req, job_id: handlers.get_job(ctx, req, job_id=job_id),
-            surface=self.name,
-        )
-        registry.register(
-            method="POST",
-            path="/v1/jobs",
-            handler=lambda req: handlers.submit_job(ctx, req),
-            surface=self.name,
-            auth_required=True,
-        )
-        registry.register(
-            method="POST",
-            path="/v1/jobs/{job_id}/input",
-            handler=lambda req, job_id: handlers.provide_input(ctx, req, job_id=job_id),
-            surface=self.name,
-            auth_required=True,
-        )
-        registry.register(
-            method="POST",
-            path="/v1/plans/prepare",
-            handler=lambda req: handlers.prepare_plans(ctx, req),
-            surface=self.name,
-            auth_required=True,
-        )
-        registry.register(
-            method="POST",
-            path="/v1/plans/submit",
-            handler=lambda req: handlers.submit_plans(ctx, req),
-            surface=self.name,
-            auth_required=True,
-        )
-        registry.register(
-            method="GET",
-            path="/v1/instances",
-            handler=lambda req: handlers.list_instances(ctx, req),
-            surface=self.name,
-        )
-        registry.register(
-            method="GET",
-            path="/v1/instances/{instance_id}",
-            handler=lambda req, instance_id: handlers.get_instance(ctx, req, instance_id=instance_id),
-            surface=self.name,
-        )
-        registry.register(
-            method="POST",
-            path="/v1/instances/{instance_id}/resume",
-            handler=lambda req, instance_id: handlers.resume_instance(ctx, req, instance_id=instance_id),
-            surface=self.name,
-            auth_required=True,
+            surface_names=self._surface_names,
         )

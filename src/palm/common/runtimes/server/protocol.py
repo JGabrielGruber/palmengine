@@ -46,6 +46,8 @@ class ServerResponse:
     status: int
     body: dict[str, Any] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
+    content_type: str = "application/json"
+    raw_body: bytes | None = None
 
 
 @runtime_checkable
