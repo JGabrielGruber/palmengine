@@ -470,7 +470,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-              <span class="ml-2 font-mono text-sm">/health</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/health</span>
               <p class="text-zinc-500 text-sm mt-1">Runtime status and documentation links</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s http://localhost:8080/health">Copy</button>
@@ -482,7 +482,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-              <span class="ml-2 font-mono text-sm">/v1/jobs/{job_id}/context</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/jobs/{job_id}/context</span>
               <p class="text-zinc-500 text-sm mt-1">Rich job view — wizard step, snapshots, next actions</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/jobs/job-abc123/context' -H 'Accept: application/json'">Copy</button>
@@ -495,7 +495,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-              <span class="ml-2 font-mono text-sm">/v1/jobs</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/jobs</span>
               <p class="text-zinc-500 text-sm mt-1">Paginated orchestration job board</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/jobs?limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
@@ -508,7 +508,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-blue-400 bg-blue-950 px-2 py-0.5 rounded">POST</span>
-              <span class="ml-2 font-mono text-sm">/v1/jobs</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/jobs</span>
               <p class="text-zinc-500 text-sm mt-1">Submit a named flow from the repository</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s -X POST 'http://localhost:8080/v1/jobs' -H 'Accept: application/json' -H 'Content-Type: application/json' -d '{&quot;flow_name&quot;:&quot;onboard&quot;}'">Copy</button>
@@ -523,7 +523,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-              <span class="ml-2 font-mono text-sm">/v1/instances</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/instances</span>
               <p class="text-zinc-500 text-sm mt-1">Durable process instance index</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/instances?limit=10&amp;offset=0&amp;include_terminal=true' -H 'Accept: application/json'">Copy</button>
@@ -536,7 +536,7 @@
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-              <span class="ml-2 font-mono text-sm">/v1/instances/{instance_id}/snapshots</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/instances/{instance_id}/snapshots</span>
               <p class="text-zinc-500 text-sm mt-1">State snapshots for audit and replay</p>
             </div>
             <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/instances/inst-abc123/snapshots?limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
@@ -545,31 +545,29 @@
   -H 'Accept: application/json'</code></pre>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <div class="flex justify-between items-start gap-4 mb-3">
-              <div>
-                <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-                <span class="ml-2 font-mono text-sm">/v1/flows</span>
-                <p class="text-zinc-500 text-sm mt-1">Registered flow catalog</p>
-              </div>
-              <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/flows</span>
+              <p class="text-zinc-500 text-sm mt-1">Registered flow catalog</p>
             </div>
-            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows?pattern=wizard' \
-  -H 'Accept: application/json'</code></pre>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
           </div>
-          <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-            <div class="flex justify-between items-start gap-4 mb-3">
-              <div>
-                <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
-                <span class="ml-2 font-mono text-sm">/v1/flows/{flow_id}</span>
-                <p class="text-zinc-500 text-sm mt-1">Full flow definition</p>
-              </div>
-              <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows/onboard' -H 'Accept: application/json'">Copy</button>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows?pattern=wizard' \
+-H 'Accept: application/json'</code></pre>
+        </div>
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm overflow-auto break-all">/v1/flows/{flow_id}</span>
+              <p class="text-zinc-500 text-sm mt-1">Full flow definition</p>
             </div>
-            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows/onboard' \
-  -H 'Accept: application/json'</code></pre>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows/onboard' -H 'Accept: application/json'">Copy</button>
           </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows/onboard' \
+-H 'Accept: application/json'</code></pre>
         </div>
       </div>
 

@@ -512,6 +512,9 @@
   .gap-y-3 {
     row-gap: calc(var(--spacing) * 3);
   }
+  .overflow-auto {
+    overflow: auto;
+  }
   .overflow-hidden {
     overflow: hidden;
   }
@@ -951,6 +954,9 @@
   }
   .wrap-anywhere {
     overflow-wrap: anywhere;
+  }
+  .break-all {
+    word-break: break-all;
   }
   .text-blue-400 {
     color: var(--color-blue-400);
