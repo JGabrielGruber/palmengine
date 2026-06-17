@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.runtimes.server.app import ServerApp, create_server_app
 from palm.common.runtimes.server.context import ServerContext
+from palm.runtimes.server.surfaces import default_surfaces
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
@@ -35,6 +36,7 @@ def create_app(
     surfaces: list[Any] | None = None,
     webhook_bridge: ServerWebhookBridge | None = None,
 ) -> ServerApp:
-    """Factory for a composable Palm server application."""
+    """Factory for a composable Palm server application with default surfaces."""
     ctx = build_server_context(runtime, host=host)
-    return create_server_app(ctx, surfaces=surfaces, webhook_bridge=webhook_bridge)
+    resolved = surfaces if surfaces is not None else default_surfaces(ctx)
+    return create_server_app(ctx, surfaces=resolved, webhook_bridge=webhook_bridge)

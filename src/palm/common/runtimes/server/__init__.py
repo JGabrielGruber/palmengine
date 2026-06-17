@@ -1,6 +1,6 @@
-"""Shared server infrastructure — surfaces, routing, and CQRS bridging."""
+"""Shared server infrastructure — protocol, routing, transport, and CQRS bridging."""
 
-from palm.common.runtimes.server.app import ServerApp, create_server_app, default_surfaces
+from palm.common.runtimes.server.app import ServerApp, create_server_app
 from palm.common.runtimes.server.context import ServerContext
 from palm.common.runtimes.server.middleware import (
     PALM_SUBJECT_HEADER,
@@ -9,13 +9,16 @@ from palm.common.runtimes.server.middleware import (
 )
 from palm.common.runtimes.server.protocol import HttpMethod, ServerRequest, ServerResponse, ServerSurface
 from palm.common.runtimes.server.registry import RouteRegistry, RouteSpec, SurfaceRegistry
-from palm.common.runtimes.server.surfaces.rest import RestSurface
+from palm.common.runtimes.server.responses import error_response
+from palm.common.runtimes.server.surface import BaseSurface
+from palm.common.runtimes.server.transport import BaseTransport, TransportRegistry, transport_registry
 from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 
 __all__ = [
+    "BaseSurface",
+    "BaseTransport",
     "HttpMethod",
     "PALM_SUBJECT_HEADER",
-    "RestSurface",
     "RouteRegistry",
     "RouteSpec",
     "ServerApp",
@@ -25,8 +28,10 @@ __all__ = [
     "ServerSurface",
     "ServerWebhookBridge",
     "SurfaceRegistry",
+    "TransportRegistry",
     "authenticate_request",
     "create_server_app",
     "current_principal_id",
-    "default_surfaces",
+    "error_response",
+    "transport_registry",
 ]

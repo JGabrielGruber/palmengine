@@ -13,11 +13,12 @@ from palm.common.plans import ExecutionPlan, ProcessPlan, StoredPlan
 from palm.common.runtimes.base import BaseRuntime
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
+from palm.common.runtimes.server.transport import BaseTransport
 from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 from palm.common.runtimes.wiring import SchedulerPolicy
 from palm.core.orchestration import Job
 from palm.runtimes.server.factory import create_app
-from palm.runtimes.server.transport import StdlibHttpServer, serve_app
+from palm.runtimes.server.transport import DEFAULT_TRANSPORT, create_transport
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
@@ -48,20 +49,21 @@ class ServerRuntime(BaseRuntime):
         self._host = host
         self._port = port
         self._host_bridge = host_bridge
-        self._http_server: StdlibHttpServer | None = None
-        self._http_thread: threading.Thread | None = None
+        self._transport: BaseTransport | None = None
         self.plan_registry = self._new_plan_registry()
         self._server_app: ServerApp | None = None
         self.webhook_bridge = ServerWebhookBridge()
 
     @property
     def host(self) -> str:
+        if self._transport is not None:
+            return self._transport.host
         return self._host
 
     @property
     def port(self) -> int:
-        if self._http_server is not None:
-            return int(self._http_server.server_address[1])
+        if self._transport is not None:
+            return self._transport.port
         return self._port
 
     @property
@@ -72,6 +74,10 @@ class ServerRuntime(BaseRuntime):
     def server_app(self) -> ServerApp | None:
         return self._server_app
 
+    @property
+    def transport(self) -> BaseTransport | None:
+        return self._transport
+
     def attach_host(self, host: ApplicationHost) -> None:
         """Bind an ApplicationHost for CQRS, projections, and webhook dispatch."""
         self._host_bridge = host
@@ -79,23 +85,31 @@ class ServerRuntime(BaseRuntime):
             self._server_app.context.attach_host(host)
             self._server_app.webhook_bridge = ServerWebhookBridge.from_context(self._server_app.context)
 
-    def start_http(self, *, host: str | None = None, port: int | None = None) -> None:
-        """Start the HTTP transport after ApplicationHost CQRS wiring."""
-        self._start_http(
+    def start_http(
+        self,
+        *,
+        host: str | None = None,
+        port: int | None = None,
+        transport: str | BaseTransport | None = None,
+    ) -> None:
+        """Start the network transport after ApplicationHost CQRS wiring."""
+        self._start_transport(
             host=str(host or self._host),
             port=int(port if port is not None else self._port),
+            transport=transport,
         )
 
     def start(self, **options: Any) -> None:
         super().start(**options)
         if options.get("http", True):
-            self._start_http(
+            self._start_transport(
                 host=str(options.get("host", self._host)),
                 port=int(options.get("port", self._port)),
+                transport=options.get("transport"),
             )
 
     def stop(self) -> None:
-        self._stop_http()
+        self._stop_transport()
         super().stop()
 
     def store_plan(self, plan: ExecutionPlan) -> StoredPlan:
@@ -130,32 +144,34 @@ class ServerRuntime(BaseRuntime):
         self._require_started()
         return prepare_process_from_body(self, body)
 
-    def _start_http(self, *, host: str, port: int) -> None:
-        if self._http_server is not None:
+    def _start_transport(
+        self,
+        *,
+        host: str,
+        port: int,
+        transport: str | BaseTransport | None,
+    ) -> None:
+        if self._transport is not None:
             return
         self._host = host
         self._port = port
         self._server_app = create_app(self, host=self._host_bridge)
-        server = serve_app(self._server_app, host=host, port=port)
-        thread = threading.Thread(
-            target=server.serve_forever,
-            name="ServerRuntime-HTTP",
-            daemon=True,
-        )
-        thread.start()
-        self._http_server = server
-        self._http_thread = thread
 
-    def _stop_http(self) -> None:
-        server = self._http_server
-        if server is None:
+        if isinstance(transport, BaseTransport):
+            bound = transport
+        else:
+            name = str(transport or DEFAULT_TRANSPORT)
+            bound = create_transport(name, self._server_app, host=host, port=port)
+
+        bound.start()
+        self._transport = bound
+
+    def _stop_transport(self) -> None:
+        transport = self._transport
+        if transport is None:
             return
-        server.shutdown()
-        thread = self._http_thread
-        if thread is not None and thread.is_alive():
-            thread.join(timeout=5.0)
-        self._http_server = None
-        self._http_thread = None
+        transport.stop()
+        self._transport = None
         self._server_app = None
 
     @staticmethod

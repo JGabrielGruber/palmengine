@@ -23,19 +23,28 @@ from palm.common.exceptions import PlanNotFoundError
 from palm.common.runtimes.server.middleware import authenticate_request
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.runtimes.server.surfaces.rest import errors
+from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
+from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+from palm.runtimes.server.surfaces.rest.validation import (
+    parse_pagination,
+    require_body,
+    require_fields,
+    validate_plan_ids,
+)
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
 
 
-def health(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+def health_with_surfaces(ctx: ServerContext, surface_names: list[str]) -> ServerResponse:
     runtime = ctx.runtime
     payload: dict[str, Any] = {
         "status": "ok",
         "runtime": runtime.runtime_name,
         "version": runtime.version,
         "auth_enforce": runtime.auth_enforce,
-        "surfaces": ["rest"],
+        "surfaces": surface_names,
     }
     bridge = getattr(ctx, "webhook_bridge", None)
     if bridge is not None:
@@ -43,37 +52,50 @@ def health(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ServerResponse(status=200, body=payload)
 
 
+def openapi(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    return ServerResponse(
+        status=200,
+        body=build_openapi_spec(version=ctx.runtime.version),
+    )
+
+
 def get_job(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
     result = ctx.ask(GetJobStatusQuery(job_id=job_id))
     if isinstance(result, dict) and not result.get("found", True):
-        return ServerResponse(status=404, body={"error": "job_not_found", "job_id": job_id})
+        return errors.job_not_found(job_id)
     if hasattr(result, "to_dict"):
         return ServerResponse(status=200, body=result.to_dict())
     return ServerResponse(status=200, body=result)
 
 
 def list_jobs(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    pagination = parse_pagination(request)
+    if isinstance(pagination, ServerResponse):
+        return pagination
+
     status = request.query.get("status")
-    limit = _optional_int(request.query.get("limit"))
-    rows = ctx.ask(ListJobStatusQuery(status=status, limit=limit))
+    rows = ctx.ask(ListJobStatusQuery(status=status, limit=None))
     if rows and hasattr(rows[0], "to_dict"):
         rows = [row.to_dict() for row in rows]
-    return ServerResponse(status=200, body={"jobs": rows})
+
+    body = list_envelope("jobs", rows, pagination)
+    return ServerResponse(status=200, body=body)
 
 
 def submit_job(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if not _require_auth(ctx, request):
-        return _unauthorized()
-    body = request.body
-    if body is None:
-        return _bad_request("empty body")
+        return errors.unauthorized()
+
+    body = require_body(request)
+    if isinstance(body, ServerResponse):
+        return body
 
     try:
         job = ctx.execute(_flow_command_from_body(body))
     except (TypeError, ValueError, KeyError) as exc:
-        return _bad_request(str(exc))
+        return errors.bad_request(str(exc))
     except Exception as exc:
-        return ServerResponse(status=500, body={"error": "submit_failed", "detail": str(exc)})
+        return errors.submit_failed(str(exc))
 
     ctx.wait_until_idle()
     job = ctx.runtime.get_job(job.id)
@@ -89,36 +111,38 @@ def submit_job(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
 
 def prepare_plans(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if not _require_auth(ctx, request):
-        return _unauthorized()
-    body = request.body
-    if body is None:
-        return _bad_request("empty body")
+        return errors.unauthorized()
+
+    body = require_body(request)
+    if isinstance(body, ServerResponse):
+        return body
 
     try:
         result = ctx.execute(PreparePlansCommand(body=body))
     except (TypeError, ValueError, KeyError) as exc:
-        return _bad_request(str(exc))
+        return errors.bad_request(str(exc))
 
     return ServerResponse(status=201, body=result)
 
 
 def submit_plans(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if not _require_auth(ctx, request):
-        return _unauthorized()
-    body = request.body
-    if body is None:
-        return _bad_request("empty body")
+        return errors.unauthorized()
 
-    plan_ids = body.get("plan_ids")
-    if not isinstance(plan_ids, list) or not plan_ids:
-        return _bad_request("plan_ids must be a non-empty list")
+    body = require_body(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    plan_ids = validate_plan_ids(body)
+    if isinstance(plan_ids, ServerResponse):
+        return plan_ids
 
     try:
-        result = ctx.execute(SubmitPlansCommand(plan_ids=[str(plan_id) for plan_id in plan_ids]))
+        result = ctx.execute(SubmitPlansCommand(plan_ids=plan_ids))
     except PlanNotFoundError as exc:
-        return ServerResponse(status=404, body={"error": "plan_not_found", "plan_id": exc.plan_id})
+        return errors.plan_not_found(exc.plan_id)
     except Exception as exc:
-        return ServerResponse(status=500, body={"error": "submit_failed", "detail": str(exc)})
+        return errors.submit_failed(str(exc))
 
     ctx.wait_until_idle()
     for item in result["jobs"]:
@@ -129,19 +153,22 @@ def submit_plans(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
 
 def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
     if not _require_auth(ctx, request):
-        return _unauthorized()
-    body = request.body
-    if body is None:
-        return _bad_request("empty body")
-    if "value" not in body:
-        return _bad_request("missing 'value'")
+        return errors.unauthorized()
+
+    body = require_body(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    field_errors = require_fields(body, "value")
+    if field_errors is not None:
+        return errors.bad_request("missing required fields", details=field_errors)
 
     try:
         slug = ctx.execute(ProvideInputCommand(job_id=job_id, value=body["value"]))
     except JobNotFoundError:
-        return ServerResponse(status=404, body={"error": "job_not_found", "job_id": job_id})
+        return errors.job_not_found(job_id)
     except (TypeError, RuntimeError) as exc:
-        return ServerResponse(status=400, body={"error": "input_rejected", "detail": str(exc)})
+        return errors.input_rejected(str(exc))
 
     ctx.wait_until_idle()
     job_view = ctx.ask(GetJobStatusQuery(job_id=job_id))
@@ -159,27 +186,33 @@ def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) ->
 
 
 def list_instances(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    pagination = parse_pagination(request)
+    if isinstance(pagination, ServerResponse):
+        return pagination
+
     status = request.query.get("status")
     flow_name = request.query.get("flow_name")
     include_terminal = request.query.get("include_terminal", "true").lower() != "false"
-    limit = _optional_int(request.query.get("limit"))
+
     rows = ctx.ask(
         ListInstancesQuery(
             status=status,
             flow_name=flow_name,
             include_terminal=include_terminal,
-            limit=limit,
+            limit=None,
         )
     )
     if rows and hasattr(rows[0], "to_dict"):
         rows = [row.to_dict() for row in rows]
-    return ServerResponse(status=200, body={"instances": rows})
+
+    body = list_envelope("instances", rows, pagination)
+    return ServerResponse(status=200, body=body)
 
 
 def get_instance(ctx: ServerContext, request: ServerRequest, *, instance_id: str) -> ServerResponse:
     row = ctx.ask(GetInstanceStatusQuery(instance_id=instance_id))
     if row is None:
-        return ServerResponse(status=404, body={"error": "instance_not_found", "instance_id": instance_id})
+        return errors.instance_not_found(instance_id)
     if hasattr(row, "to_dict"):
         return ServerResponse(status=200, body=row.to_dict())
     return ServerResponse(status=200, body=row)
@@ -187,11 +220,12 @@ def get_instance(ctx: ServerContext, request: ServerRequest, *, instance_id: str
 
 def resume_instance(ctx: ServerContext, request: ServerRequest, *, instance_id: str) -> ServerResponse:
     if not _require_auth(ctx, request):
-        return _unauthorized()
+        return errors.unauthorized()
+
     try:
         job = ctx.execute(ResumeProcessCommand(instance_id=instance_id))
     except Exception as exc:
-        return ServerResponse(status=400, body={"error": "resume_failed", "detail": str(exc)})
+        return errors.resume_failed(str(exc))
 
     ctx.wait_until_idle()
     return ServerResponse(
@@ -228,28 +262,6 @@ def _flow_command_from_body(body: dict[str, Any]) -> SubmitFlowCommand:
 
 def _require_auth(ctx: ServerContext, request: ServerRequest) -> bool:
     return authenticate_request(ctx.runtime, request.headers)
-
-
-def _unauthorized() -> ServerResponse:
-    from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER
-
-    return ServerResponse(
-        status=401,
-        body={
-            "error": "unauthorized",
-            "detail": f"missing or invalid {PALM_SUBJECT_HEADER} header",
-        },
-    )
-
-
-def _bad_request(detail: str) -> ServerResponse:
-    return ServerResponse(status=400, body={"error": "invalid_request", "detail": detail})
-
-
-def _optional_int(value: str | None) -> int | None:
-    if value is None:
-        return None
-    return int(value)
 
 
 def _optional_str(value: object | None) -> str | None:

@@ -1,5 +1,5 @@
 """
-MCP surface — extension point for Model Context Protocol integration.
+WebSocket surface — extension point for real-time interaction (0.11+).
 """
 
 from __future__ import annotations
@@ -7,31 +7,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.surfaces.base import BaseSurface
+from palm.common.runtimes.server.surface import BaseSurface
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
 
 
-class McpSurface(BaseSurface):
-    """Placeholder surface for future MCP tool/resource exposure."""
+class WebSocketSurface(BaseSurface):
+    """Placeholder surface documenting the WebSocket extension point."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
 
     @property
     def name(self) -> str:
-        return "mcp"
+        return "websocket"
 
     @property
     def mount_prefix(self) -> str:
-        return "/mcp"
+        return "/ws"
 
     def register(self, registry: RouteRegistry) -> None:
         registry.register(
             method="GET",
-            path="/v1/surfaces/mcp",
+            path="/v1/surfaces/websocket",
             handler=self._info,
             surface=self.name,
         )
@@ -42,7 +42,8 @@ class McpSurface(BaseSurface):
             body={
                 "surface": self.name,
                 "status": "planned",
-                "detail": "MCP integration will register tools and resources here.",
+                "message": "WebSocket transport will bind to this surface in a future release.",
+                "detail": "WebSocket transport will bind to this surface in a future release.",
                 "mount_prefix": self.mount_prefix,
             },
         )

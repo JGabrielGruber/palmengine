@@ -8,7 +8,7 @@ import asyncio
 from typing import Any
 
 from palm.common.runtimes.server.context import ServerContext
-from palm.common.runtimes.server.middleware import authenticate_request
+from palm.common.runtimes.server.middleware import authenticate_request, PALM_SUBJECT_HEADER
 from palm.common.runtimes.server.protocol import (
     RouteHandler,
     ServerRequest,
@@ -16,10 +16,7 @@ from palm.common.runtimes.server.protocol import (
     is_async_handler,
 )
 from palm.common.runtimes.server.registry import RouteRegistry, SurfaceRegistry
-from palm.common.runtimes.server.surfaces.mcp.surface import McpSurface
-from palm.common.runtimes.server.surfaces.rest.surface import RestSurface
-from palm.common.runtimes.server.surfaces.ssr.surface import SsrSurface
-from palm.common.runtimes.server.surfaces.websocket.surface import WebSocketSurface
+from palm.common.runtimes.server.responses import not_found, unauthorized
 from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 
 
@@ -86,10 +83,6 @@ class ServerApp:
         return spec.handler, params
 
     def _mount_surfaces(self) -> None:
-        if not self._surfaces.names():
-            for surface in default_surfaces(self._ctx):
-                self.register_surface(surface)
-            return
         for surface in self._surfaces.all():
             surface.register(self._routes)
 
@@ -98,38 +91,23 @@ def create_server_app(
     ctx: ServerContext,
     *,
     surfaces: list[Any] | None = None,
-    include_defaults: bool = True,
     webhook_bridge: ServerWebhookBridge | None = None,
 ) -> ServerApp:
     """
-    Build a :class:`ServerApp` with optional explicit surfaces.
+    Build a :class:`ServerApp` from explicitly provided surfaces.
 
-    When ``surfaces`` is omitted and ``include_defaults`` is true, mounts REST
-    plus placeholder WebSocket, MCP, and SSR extension points.
+    Use :func:`palm.runtimes.server.factory.create_app` to mount default Palm
+    surfaces (REST, WebSocket, MCP, SSR) from the runtime package.
     """
     registry = SurfaceRegistry()
-    if surfaces is not None:
-        for surface in surfaces:
-            registry.register(surface)
-    elif include_defaults:
-        for surface in default_surfaces(ctx):
-            registry.register(surface)
+    for surface in surfaces or ():
+        registry.register(surface)
 
     return ServerApp(
         ctx,
         surfaces=registry,
         webhook_bridge=webhook_bridge,
     )
-
-
-def default_surfaces(ctx: ServerContext) -> list[Any]:
-    """Built-in surfaces shipped with Palm 0.11 server evolution."""
-    return [
-        RestSurface(ctx),
-        WebSocketSurface(ctx),
-        McpSurface(ctx),
-        SsrSurface(ctx),
-    ]
 
 
 def _run_handler(
@@ -151,16 +129,8 @@ def _normalize_path(path: str) -> str:
 
 
 def _not_found_handler(request: ServerRequest, *, path: str = "") -> ServerResponse:
-    return ServerResponse(status=404, body={"error": "not_found", "path": path or request.path})
+    return not_found(path or request.path)
 
 
 def _unauthorized_handler(request: ServerRequest) -> ServerResponse:
-    from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER
-
-    return ServerResponse(
-        status=401,
-        body={
-            "error": "unauthorized",
-            "detail": f"missing or invalid {PALM_SUBJECT_HEADER} header",
-        },
-    )
+    return unauthorized(f"missing or invalid {PALM_SUBJECT_HEADER} header")

@@ -1,5 +1,7 @@
 """
-Base surface — shared helpers for server interaction models.
+Base surface — shared abstract base for server interaction models.
+
+Concrete surfaces (REST, WebSocket, MCP, SSR) live in ``palm.runtimes.server.surfaces``.
 """
 
 from __future__ import annotations

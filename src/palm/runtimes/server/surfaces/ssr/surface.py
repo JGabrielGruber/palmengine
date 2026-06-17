@@ -1,7 +1,5 @@
 """
-WebSocket surface — extension point for real-time interaction (0.11+).
-
-Routes are registered for discovery; transport binding arrives in a later step.
+SSR surface — extension point for server-rendered interactive flows.
 """
 
 from __future__ import annotations
@@ -9,31 +7,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.surfaces.base import BaseSurface
+from palm.common.runtimes.server.surface import BaseSurface
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
 
 
-class WebSocketSurface(BaseSurface):
-    """Placeholder surface documenting the WebSocket extension point."""
+class SsrSurface(BaseSurface):
+    """Placeholder surface for future server-side rendering of wizards and dashboards."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
 
     @property
     def name(self) -> str:
-        return "websocket"
+        return "ssr"
 
     @property
     def mount_prefix(self) -> str:
-        return "/ws"
+        return "/ssr"
 
     def register(self, registry: RouteRegistry) -> None:
         registry.register(
             method="GET",
-            path="/v1/surfaces/websocket",
+            path="/v1/surfaces/ssr",
             handler=self._info,
             surface=self.name,
         )
@@ -44,7 +42,8 @@ class WebSocketSurface(BaseSurface):
             body={
                 "surface": self.name,
                 "status": "planned",
-                "detail": "WebSocket transport will bind to this surface in a future release.",
+                "message": "SSR handlers will render interactive flows without a separate client.",
+                "detail": "SSR handlers will render interactive flows without a separate client.",
                 "mount_prefix": self.mount_prefix,
             },
         )

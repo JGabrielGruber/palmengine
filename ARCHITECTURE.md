@@ -675,24 +675,30 @@ palm/common/runtimes/     # shared infrastructure (single source of truth)
 ├── wiring.py             # Scheduler policy resolution
 ├── hooks/                # AuthMiddleware, DriveObservabilityHook
 ├── schedulers/           # InlineScheduler, QueuedScheduler
-└── server/               # ServerApp, surfaces, CQRS bridge, webhooks
-    ├── app.py            # create_server_app — mounts registered surfaces
+└── server/               # ServerApp, protocol, transport registry, CQRS bridge
+    ├── app.py            # ServerApp — mounts explicitly registered surfaces
     ├── context.py        # ServerContext — runtime + optional ApplicationHost
+    ├── protocol.py       # ServerRequest/Response, ServerSurface protocol
     ├── registry.py       # RouteRegistry, SurfaceRegistry
-    ├── surfaces/
-    │   ├── rest/         # CQRS-backed JSON API (plans, jobs, instances)
-    │   ├── websocket/    # extension point (planned transport)
-    │   ├── mcp/          # extension point (planned MCP)
-    │   └── ssr/          # extension point (planned SSR)
+    ├── surface.py        # BaseSurface abstract base
+    ├── transport.py      # BaseTransport protocol, TransportRegistry
+    ├── responses.py      # Shared error envelopes
     └── webhooks.py       # ServerWebhookBridge — outbox integration
 
 palm/runtimes/            # concrete surfaces (thin packages)
 ├── embedded/runtime.py   # EmbeddedRuntime — inline default
 ├── daemon/runtime.py     # DaemonRuntime — queued background
-├── server/               # ServerRuntime — thin transport binding
+├── server/               # ServerRuntime — surfaces + pluggable transport
 │   ├── runtime.py        # lifecycle + plan staging
-│   ├── factory.py        # create_app / build_server_context
-│   └── transport/        # stdlib HTTP (async-ready ServerApp dispatch)
+│   ├── factory.py        # create_app — mounts default surfaces
+│   ├── surfaces/
+│   │   ├── rest/         # CQRS JSON API (validation, pagination, OpenAPI)
+│   │   ├── websocket/    # extension point (planned)
+│   │   ├── mcp/          # extension point (planned)
+│   │   └── ssr/          # extension point (planned)
+│   └── transport/
+│       ├── stdlib.py     # default zero-dep HTTP (registered as "stdlib")
+│       └── (future)      # e.g. starlette — async REST + WebSocket
 └── cli/                  # CLI entry + commands/ (one-shot) + tui/ (REPL) + shared/
 ```
 
@@ -710,9 +716,9 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **BaseRuntime** (`common/runtimes`) | Shipped | Shared engine wiring, hooks, auth, plan registry |
 | **EmbeddedRuntime** | Shipped | Inline scheduler; libraries, tests, CLI |
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
-| **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces (REST, webhook bridge) |
+| **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **WebSocket / MCP / SSR** | Planned | Extension surfaces registered; transport binding in later steps |
+| **WebSocket / MCP / SSR** | Planned | Surfaces registered under `runtimes/server/surfaces/`; async transport TBD |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.
 

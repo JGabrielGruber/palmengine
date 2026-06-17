@@ -1,5 +1,5 @@
 """
-SSR surface — extension point for server-rendered interactive flows.
+MCP surface — extension point for Model Context Protocol integration.
 """
 
 from __future__ import annotations
@@ -7,31 +7,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.surfaces.base import BaseSurface
+from palm.common.runtimes.server.surface import BaseSurface
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
 
 
-class SsrSurface(BaseSurface):
-    """Placeholder surface for future server-side rendering of wizards and dashboards."""
+class McpSurface(BaseSurface):
+    """Placeholder surface for future MCP tool/resource exposure."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
 
     @property
     def name(self) -> str:
-        return "ssr"
+        return "mcp"
 
     @property
     def mount_prefix(self) -> str:
-        return "/ssr"
+        return "/mcp"
 
     def register(self, registry: RouteRegistry) -> None:
         registry.register(
             method="GET",
-            path="/v1/surfaces/ssr",
+            path="/v1/surfaces/mcp",
             handler=self._info,
             surface=self.name,
         )
@@ -42,7 +42,8 @@ class SsrSurface(BaseSurface):
             body={
                 "surface": self.name,
                 "status": "planned",
-                "detail": "SSR handlers will render interactive flows without a separate client.",
+                "message": "MCP integration will register tools and resources here.",
+                "detail": "MCP integration will register tools and resources here.",
                 "mount_prefix": self.mount_prefix,
             },
         )

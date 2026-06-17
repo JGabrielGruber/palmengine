@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from palm.common.runtimes.server.surfaces.base import BaseSurface
-from palm.common.runtimes.server.surfaces.rest import handlers
+from palm.common.runtimes.server.surface import BaseSurface
+from palm.runtimes.server.surfaces.rest import handlers
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -17,8 +17,9 @@ if TYPE_CHECKING:
 class RestSurface(BaseSurface):
     """Default REST interaction model mounted at ``/v1`` and ``/health``."""
 
-    def __init__(self, ctx: ServerContext) -> None:
+    def __init__(self, ctx: ServerContext, *, surface_names: list[str] | None = None) -> None:
         self._ctx = ctx
+        self._surface_names = surface_names or []
 
     @property
     def name(self) -> str:
@@ -26,10 +27,18 @@ class RestSurface(BaseSurface):
 
     def register(self, registry: RouteRegistry) -> None:
         ctx = self._ctx
+        names = self._surface_names
+
         registry.register(
             method="GET",
             path="/health",
-            handler=lambda req: handlers.health(ctx, req),
+            handler=lambda req: handlers.health_with_surfaces(ctx, names),
+            surface=self.name,
+        )
+        registry.register(
+            method="GET",
+            path="/v1/openapi.json",
+            handler=lambda req: handlers.openapi(ctx, req),
             surface=self.name,
         )
         registry.register(
