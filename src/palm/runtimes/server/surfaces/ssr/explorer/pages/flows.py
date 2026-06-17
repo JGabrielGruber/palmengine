@@ -3,7 +3,17 @@
 from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.runtimes.server.surfaces.ssr.explorer.components import action_button, badge, code_block, data_table
+from palm.runtimes.server.surfaces.ssr.explorer.components import (
+    action_button,
+    badge,
+    code_block,
+    data_table,
+    invoke_chain,
+)
+from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import (
+    resource_href,
+    wizard_resource_steps,
+)
 from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 from .base import PageContext
@@ -74,10 +84,63 @@ class FlowPages:
         flow = self._ctx.fetch.get_flow(flow_id)
         if flow is None:
             return not_found_page(self._ctx.version, f"Flow not found: {flow_id}")
+
+        resource_steps_html = ""
+        if flow.pattern == "wizard":
+            resource_steps = wizard_resource_steps(flow)
+            if resource_steps:
+                rows = []
+                for step in resource_steps:
+                    ref = str(step.get("resource_ref") or "—")
+                    provider_label = "resource"
+                    if ref != "—":
+                        described = self._ctx.fetch.describe_resource(ref)
+                        if described:
+                            provider_label = str(described.get("provider") or "resource")
+                    action = str(step.get("resource_action") or step.get("action") or "default")
+                    params = step.get("params") or {}
+                    param_summary = ", ".join(f"{k}={v}" for k, v in params.items()) if params else "—"
+                    ref_link = (
+                        f'<a href="{resource_href(ref)}">{escape(ref)}</a>'
+                        if ref != "—"
+                        else "—"
+                    )
+                    badge_html = badge(provider_label, tone="default")
+                    rows.append(
+                        [
+                            escape(str(step.get("slug") or "—")),
+                            ref_link,
+                            badge_html,
+                            escape(action),
+                            f"<code>{escape(param_summary)}</code>",
+                        ]
+                    )
+                palm_chain = invoke_chain(
+                    [
+                        {
+                            "label": str(step.get("resource_ref") or step.get("slug")),
+                            "action": step.get("resource_action") or "submit_flow",
+                            "depth": index,
+                        }
+                        for index, step in enumerate(resource_steps)
+                        if str(step.get("resource_ref", "")).startswith("submit-")
+                        or (step.get("params") or {}).get("wait")
+                    ]
+                )
+                resource_steps_html = (
+                    '<section class="section"><div class="panel">'
+                    "<h3>Resource steps</h3>"
+                    f"{data_table(['Step', 'Resource', 'Provider', 'Action', 'Params'], rows)}"
+                    '<h4>Compositional chain</h4>'
+                    f"{palm_chain}"
+                    "</div></section>"
+                )
+
         content = (
             '<section class="section">'
             f'<p class="btn-row">{action_button(start_flow_href(flow.definition_id), "Start this flow")}</p>'
             "</section>"
+            f"{resource_steps_html}"
             '<section class="section"><div class="panel">'
             f"<p>{badge(flow.pattern)} {badge('schema' if flow.has_state_schema else 'no schema', tone='default')}</p>"
             f"<p class=\"muted\">{escape(flow_description(flow))}</p>"

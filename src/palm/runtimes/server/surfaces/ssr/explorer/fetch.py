@@ -17,6 +17,7 @@ from palm.common.cqrs.query import (
     ListInstancesQuery,
     ListJobStatusQuery,
     ListProcessesQuery,
+    ListResourceInvocationsQuery,
 )
 from palm.core.registry import pattern_registry
 
@@ -78,7 +79,12 @@ class ExplorerFetcher:
         instance_id: str | None = None,
         job_id: str | None = None,
     ) -> dict[str, Any] | None:
-        return self._ctx.ask(GetResourceInvocationsQuery(instance_id=instance_id, job_id=job_id))
+        try:
+            return self._ctx.ask(
+                GetResourceInvocationsQuery(instance_id=instance_id, job_id=job_id),
+            )
+        except TypeError:
+            return None
 
     def get_instance(self, instance_id: str) -> dict[str, Any] | None:
         result = self._ctx.ask(GetInstanceStatusQuery(instance_id=instance_id))
@@ -106,6 +112,38 @@ class ExplorerFetcher:
         from palm.common.resource.catalog import ResourceCatalog
 
         return ResourceCatalog(self._ctx.runtime.repository).entries()
+
+    def list_resource_invocation_rows(self, *, limit: int = 50) -> list[dict[str, Any]]:
+        try:
+            rows = self._ctx.ask(ListResourceInvocationsQuery(limit=limit))
+        except TypeError:
+            return []
+        if isinstance(rows, list):
+            if rows and hasattr(rows[0], "to_dict"):
+                return [row.to_dict() for row in rows]
+            return [row for row in rows if isinstance(row, dict)]
+        return []
+
+    def invoke_resource(
+        self,
+        resource_ref: str,
+        *,
+        action: str | None = None,
+        params: dict[str, Any] | None = None,
+        state: Any = None,
+        resource_id: str | None = None,
+    ) -> Any:
+        """Invoke a resource definition on the hosting runtime."""
+        engine = self._ctx.runtime.resource
+        if not engine.is_initialized:
+            engine.initialize()
+        return engine.invoke(
+            resource_ref,
+            action=action,
+            params=params,
+            state=state,
+            resource_id=resource_id,
+        )
 
     def describe_resource(self, resource_id: str) -> dict[str, Any] | None:
         from palm.common.resource.catalog import ResourceCatalog

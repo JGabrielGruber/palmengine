@@ -184,6 +184,106 @@ def _flow_context_panel(flow: FlowDefinition) -> str:
     )
 
 
+def resource_invoke_form(
+    resource_id: str,
+    payload: Mapping[str, Any],
+    *,
+    action: str | None = None,
+    values: Mapping[str, Any] | None = None,
+    state_json: str = "",
+    errors: list[str] | None = None,
+    binding_rows: list[tuple[str, str]] | None = None,
+    result: Any | None = None,
+) -> str:
+    """Interactive Try Invoke form for Explorer resource detail."""
+    current = dict(values or {})
+    error_html = ""
+    if errors:
+        items = "".join(f"<li>{escape(error)}</li>" for error in errors)
+        error_html = f'<div class="alert alert-error"><ul class="form-errors">{items}</ul></div>'
+
+    param_keys = payload.get("param_keys") or list((payload.get("params") or {}).keys())
+    fields: list[str] = []
+    params_spec = payload.get("params") or {}
+    for key in param_keys:
+        raw_default = params_spec.get(key, "") if isinstance(params_spec, dict) else ""
+        fields.append(
+            _render_field(
+                str(key),
+                {
+                    "type": "string",
+                    "title": str(key),
+                    "description": f"Binding template: {raw_default}" if raw_default else "",
+                },
+                current.get(key, ""),
+            )
+        )
+
+    resource_id_value = current.get("resource_id", payload.get("resource_id") or "")
+    fields.insert(
+        0,
+        _render_field(
+            "resource_id",
+            {"type": "string", "title": "Resource ID", "description": "Optional override"},
+            resource_id_value,
+        ),
+    )
+
+    action_value = current.get("action", action or payload.get("action") or "fetch")
+    fields.insert(
+        0,
+        _render_field(
+            "action",
+            {"type": "string", "title": "Action", "description": "Provider action to invoke"},
+            action_value,
+        ),
+    )
+
+    state_text = state_json or current.get("state_json") or "{}"
+    binding_html = ""
+    if binding_rows:
+        rows = "".join(
+            f"<tr><td>{escape(key)}</td><td><code>{escape(value)}</code></td></tr>"
+            for key, value in binding_rows
+        )
+        binding_html = (
+            '<div class="binding-preview panel">'
+            "<h4>State binding preview</h4>"
+            f'<table class="data-table"><tbody>{rows}</tbody></table>'
+            "</div>"
+        )
+
+    result_html = ""
+    if result is not None:
+        from palm.runtimes.server.surfaces.ssr.explorer.components import code_block
+
+        result_html = (
+            '<div class="panel invoke-result">'
+            "<h4>Invoke result</h4>"
+            f"{code_block(result)}"
+            "</div>"
+        )
+
+    post_action = f"/explorer/resources/{escape(resource_id)}/invoke"
+    return (
+        f'<form class="schema-form resource-invoke-form" action="{post_action}" method="POST">'
+        f"{error_html}"
+        f"{result_html}"
+        f"{binding_html}"
+        f'{"".join(fields)}'
+        '<div class="form-field">'
+        '<label for="state_json">State (JSON)</label>'
+        f'<textarea id="state_json" name="state_json" rows="5" '
+        f'placeholder="{{&quot;customer_id&quot;: &quot;42&quot;}}">{escape(state_text)}</textarea>'
+        '<span class="field-hint">Used to resolve <code>{{ state.key }}</code> placeholders in params.</span>'
+        "</div>"
+        '<div class="form-actions">'
+        '<button class="btn-primary" type="submit">Invoke resource</button>'
+        "</div>"
+        "</form>"
+    )
+
+
 def job_input_form(
     job_id: str,
     pattern: Mapping[str, Any],

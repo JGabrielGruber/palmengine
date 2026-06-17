@@ -143,6 +143,43 @@ main { padding: 2rem 2.5rem 4rem; max-width: 80rem; }
 }
 .advanced-panel summary { cursor: pointer; font-weight: 600; color: var(--muted); }
 .advanced-panel[open] summary { margin-bottom: 0.75rem; color: var(--text); }
+.catalog-filters {
+  display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; margin-bottom: 1rem;
+}
+.catalog-filters .filter-search {
+  flex: 1 1 14rem; min-width: 10rem; padding: 0.55rem 0.65rem; border-radius: 0.45rem;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit;
+}
+.catalog-filters select {
+  padding: 0.55rem 0.65rem; border-radius: 0.45rem;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit;
+}
+.filter-hint { font-size: 0.78rem; }
+.filter-hint kbd {
+  font-size: 0.72rem; padding: 0.1rem 0.35rem; border-radius: 0.25rem;
+  border: 1px solid var(--border); background: var(--surface-2);
+}
+.empty-state {
+  text-align: center; padding: 2rem 1rem; border: 1px dashed var(--border);
+  border-radius: 0.75rem; background: var(--surface);
+}
+.empty-state h3 { margin: 0 0 0.5rem; }
+.definition-dl { display: grid; grid-template-columns: 10rem 1fr; gap: 0.35rem 1rem; margin: 0; }
+.definition-dl dt { color: var(--muted); font-size: 0.85rem; }
+.definition-dl dd { margin: 0; }
+.invoke-chain { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.5rem; }
+.chain-node {
+  padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 0.5rem;
+  background: var(--surface-2); margin-left: calc(var(--depth, 0) * 1.25rem);
+}
+.chain-label { font-weight: 600; margin-right: 0.5rem; }
+.chain-arrow { text-align: center; color: var(--accent); font-size: 1.1rem; }
+.binding-preview { margin-bottom: 1rem; }
+.invoke-result { margin-bottom: 1rem; border-color: var(--accent); }
+.btn-default {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+}
+.btn-default:hover { border-color: var(--accent); text-decoration: none; }
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }

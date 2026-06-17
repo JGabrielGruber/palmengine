@@ -96,6 +96,139 @@ def alert(message: str, *, tone: str = "success") -> str:
     return forms.alert(message, tone=tone)
 
 
+def empty_state(title: str, message: str, *, action_href: str = "", action_label: str = "") -> str:
+    action_html = ""
+    if action_href and action_label:
+        action_html = f'<p class="btn-row">{action_button(action_href, action_label)}</p>'
+    return (
+        '<div class="empty-state">'
+        f"<h3>{escape(title)}</h3>"
+        f'<p class="muted">{escape(message)}</p>'
+        f"{action_html}"
+        "</div>"
+    )
+
+
+def catalog_filter_form(
+    *,
+    action: str,
+    providers: list[str],
+    selected_provider: str = "",
+    query: str = "",
+    placeholder: str = "Search resources…",
+) -> str:
+    options = ['<option value="">All providers</option>']
+    for provider in providers:
+        selected = " selected" if provider == selected_provider else ""
+        options.append(f'<option value="{escape(provider)}"{selected}>{escape(provider)}</option>')
+    return (
+        f'<form class="catalog-filters" action="{escape(action)}" method="GET">'
+        f'<input type="search" name="q" value="{escape(query)}" placeholder="{escape(placeholder)}" '
+        f'class="filter-search" aria-label="Search resources" />'
+        f'<select name="provider" aria-label="Filter by provider">{"".join(options)}</select>'
+        f'<button class="btn btn-primary" type="submit">Filter</button>'
+        f'<span class="muted filter-hint">Press <kbd>/</kbd> to focus search</span>'
+        f"</form>"
+    )
+
+
+def definition_dl(rows: list[tuple[str, str]]) -> str:
+    items = []
+    for label, value in rows:
+        items.append(f"<dt>{escape(label)}</dt><dd>{escape(value)}</dd>")
+    return f'<dl class="definition-dl">{"".join(items)}</dl>'
+
+
+def action_catalog(actions: list[dict[str, str]]) -> str:
+    if not actions:
+        return empty_state("No actions", "This provider did not advertise any actions.")
+    rows = []
+    for action in actions:
+        name = action.get("name", "—")
+        default = " ★" if action.get("default") else ""
+        rows.append(
+            [
+                f"<strong>{escape(name)}</strong>{default}",
+                escape(action.get("description", "")),
+            ]
+        )
+    return data_table(["Action", "Description"], rows)
+
+
+def resource_timeline_table(entries: list[dict[str, Any]]) -> str:
+    if not entries:
+        return empty_state(
+            "No invocations yet",
+            "Resource calls appear here after flows, wizards, or Try Invoke runs.",
+        )
+    rows = []
+    for entry in entries:
+        status = "ok" if entry.get("success") else ("fail" if entry.get("success") is False else "—")
+        job_cell = "—"
+        job_id = entry.get("job_id")
+        if job_id:
+            job_cell = f'<a href="/explorer/jobs/{escape(str(job_id))}">{escape(str(job_id))}</a>'
+        inst_cell = "—"
+        instance_id = entry.get("instance_id")
+        if instance_id:
+            inst_cell = (
+                f'<a href="/explorer/instances/{escape(str(instance_id))}">'
+                f"{escape(str(instance_id))}</a>"
+            )
+        rows.append(
+            [
+                escape(str(entry.get("recorded_at") or "—")),
+                escape(str(entry.get("event_type") or "—")),
+                escape(str(entry.get("action") or "—")),
+                escape(str(entry.get("step_slug") or "—")),
+                job_cell,
+                inst_cell,
+                escape(status),
+            ]
+        )
+    return data_table(
+        ["Recorded", "Event", "Action", "Step", "Job", "Instance", "Status"],
+        rows,
+    )
+
+
+def invoke_chain(chain: list[dict[str, Any]]) -> str:
+    if not chain:
+        return '<p class="muted">No compositional invoke chain recorded yet.</p>'
+    nodes = []
+    for index, node in enumerate(chain):
+        label = escape(str(node.get("label") or "invoke"))
+        action = node.get("action")
+        depth = node.get("depth")
+        meta = f"{action}" if action else ""
+        if depth is not None:
+            meta = f"{meta} · depth {depth}".strip(" ·")
+        job_id = node.get("job_id") or node.get("parent_job_id")
+        job_link = ""
+        if job_id:
+            job_link = f' <a href="/explorer/jobs/{escape(str(job_id))}">job</a>'
+        nodes.append(
+            f'<div class="chain-node" style="--depth:{int(depth or 0)}">'
+            f'<span class="chain-label">{label}</span>'
+            f'<span class="muted">{escape(meta)}{job_link}</span>'
+            f"</div>"
+        )
+        if index < len(chain) - 1:
+            nodes.append('<div class="chain-arrow" aria-hidden="true">↓</div>')
+    return f'<div class="invoke-chain">{"".join(nodes)}</div>'
+
+
+def link_pills(links: list[dict[str, str]], *, key: str, label_key: str) -> str:
+    if not links:
+        return '<p class="muted">None yet.</p>'
+    pills = []
+    for item in links:
+        href = item.get("href", "#")
+        label = item.get(label_key, item.get(key, "—"))
+        pills.append(f'<a class="pill" href="{escape(href)}">{escape(str(label))}</a>')
+    return f'<div class="pill-row">{"".join(pills)}</div>'
+
+
 def schema_form(
     schema: object,
     *,

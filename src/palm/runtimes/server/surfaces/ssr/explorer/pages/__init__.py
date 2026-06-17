@@ -71,6 +71,12 @@ class ExplorerPages:
     def resource_detail(self, request: ServerRequest, *, resource_id: str) -> ServerResponse:
         return self._resources.detail(request, resource_id=resource_id)
 
+    def resource_invoke(self, request: ServerRequest, *, resource_id: str) -> ServerResponse:
+        return self._resources.invoke(request, resource_id=resource_id)
+
+    def resource_invoke_post(self, request: ServerRequest, *, resource_id: str) -> ServerResponse:
+        return self._resources.invoke_post(request, resource_id=resource_id)
+
     def patterns(self, request: ServerRequest) -> ServerResponse:
         return self._patterns.catalog(request)
 

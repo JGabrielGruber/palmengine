@@ -9,8 +9,11 @@ from palm.runtimes.server.surfaces.ssr.explorer.components import (
     code_block,
     data_table,
     event_timeline,
+    invoke_chain,
+    resource_timeline_table,
     stat_card,
 )
+from palm.runtimes.server.surfaces.ssr.explorer.resource_helpers import palm_invoke_chain
 from palm.runtimes.server.surfaces.ssr.explorer.forms import job_input_form
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 from .base import PageContext
@@ -66,6 +69,24 @@ class JobPages:
                 "</div></section>"
             )
 
+        resource_invocations = context.get("resource_invocations") or {}
+        resource_entries = resource_invocations.get("entries") or []
+        palm_chain_html = ""
+        chain = palm_invoke_chain(resource_entries if isinstance(resource_entries, list) else [])
+        if chain:
+            palm_chain_html = (
+                '<section class="section"><div class="panel"><h3>Compositional invoke chain</h3>'
+                f"{invoke_chain(chain)}"
+                "</div></section>"
+            )
+        resource_timeline_html = ""
+        if resource_entries:
+            resource_timeline_html = (
+                '<section class="section"><div class="panel"><h3>Resource invocations</h3>'
+                f"{resource_timeline_table(resource_entries if isinstance(resource_entries, list) else [])}"
+                "</div></section>"
+            )
+
         content = (
             f"{flash_banners(request)}"
             '<section class="section"><div class="grid-3">'
@@ -74,6 +95,8 @@ class JobPages:
             f"{stat_card('Step', pattern.get('step') or '—')}"
             "</div></section>"
             f"{input_form_html}"
+            f"{palm_chain_html}"
+            f"{resource_timeline_html}"
             '<section class="section"><div class="grid-2">'
             '<div class="panel"><h3>Interactive context</h3>'
             f"<p class=\"muted\">{escape(prompt) if prompt else 'No active prompt.'}</p>"

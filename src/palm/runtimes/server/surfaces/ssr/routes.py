@@ -56,6 +56,18 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         handler=pages.resource_detail,
         surface=_SURFACE,
     )
+    registry.register(
+        method="GET",
+        path="/explorer/resources/{resource_id}/invoke",
+        handler=pages.resource_invoke,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="POST",
+        path="/explorer/resources/{resource_id}/invoke",
+        handler=pages.resource_invoke_post,
+        surface=_SURFACE,
+    )
     registry.register(method="GET", path="/explorer/patterns", handler=pages.patterns, surface=_SURFACE)
     registry.register(method="GET", path="/explorer/schemas", handler=pages.schemas, surface=_SURFACE)
     registry.register(method="GET", path="/explorer/jobs", handler=pages.jobs, surface=_SURFACE)

@@ -327,3 +327,107 @@ def test_build_flow_submit_schema(sample_flow: FlowDefinition) -> None:
     schema = build_flow_submit_schema([sample_flow])
     flow_spec = schema.definition["properties"]["flow_id"]
     assert "explorer-flow-1" in flow_spec["enum"]
+
+
+def test_resource_catalog_page(server: ServerRuntime) -> None:
+    from palm.definitions import ResourceDefinition
+
+    server.repository.register_resource(
+        ResourceDefinition(
+            id="resource-check-health",
+            name="check-health",
+            provider="rest",
+            action="fetch",
+            resource_id="health/check",
+        )
+    )
+    status, html, _ = _get_html(server.base_url, "/explorer/resources")
+    assert status == 200
+    assert "Resource Catalog" in html
+    assert "check-health" in html
+    assert "Invoke" in html
+    assert "catalog-filters" in html
+
+    status, html, _ = _get_html(server.base_url, "/explorer/resources?provider=rest&q=health")
+    assert status == 200
+    assert "check-health" in html
+
+
+def test_resource_detail_and_invoke_pages(server: ServerRuntime) -> None:
+    from palm.definitions import FlowDefinition, ResourceDefinition
+
+    server.repository.register_resource(
+        ResourceDefinition(
+            id="resource-check-health",
+            name="check-health",
+            provider="rest",
+            action="fetch",
+            resource_id="health/check",
+            params={"probe": "true"},
+        )
+    )
+    server.repository.register_flow(
+        FlowDefinition(
+            id="flow-resource-demo",
+            name="resource-demo",
+            pattern="wizard",
+            options={
+                "steps": [
+                    {
+                        "slug": "preflight",
+                        "title": "Preflight",
+                        "step_kind": "resource",
+                        "resource_ref": "check-health",
+                    }
+                ],
+            },
+        )
+    )
+
+    status, html, _ = _get_html(server.base_url, "/explorer/resources/resource-check-health")
+    assert status == 200
+    assert "Try Invoke" in html
+    assert "Action catalog" in html
+    assert "resource-demo" in html
+
+    status, html, _ = _get_html(server.base_url, "/explorer/resources/resource-check-health/invoke")
+    assert status == 200
+    assert "Invoke resource" in html
+    assert "state_json" in html
+
+    status, html, _ = _get_html(server.base_url, "/explorer/flows/flow-resource-demo")
+    assert status == 200
+    assert "Resource steps" in html
+    assert "check-health" in html
+
+
+def test_resource_invoke_post(server: ServerRuntime) -> None:
+    import http.client
+    from urllib.parse import urlparse
+
+    from palm.definitions import ResourceDefinition
+
+    server.repository.register_resource(
+        ResourceDefinition(
+            id="resource-check-health",
+            name="check-health",
+            provider="rest",
+            action="fetch",
+            resource_id="health/check",
+        )
+    )
+    parsed = urlparse(server.base_url)
+    body = urllib.parse.urlencode({"action": "fetch", "state_json": "{}"}).encode()
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    conn.request(
+        "POST",
+        "/explorer/resources/resource-check-health/invoke",
+        body=body,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    response = conn.getresponse()
+    html = response.read().decode("utf-8")
+    conn.close()
+    assert response.status == 200
+    assert "Invoke result" in html
+    assert "rest" in html
