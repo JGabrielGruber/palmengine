@@ -48,8 +48,8 @@
 
   <link rel="stylesheet" href="styles/output.css">
 
-  <link rel="preload" as="image" href="/images/logo.webp" fetchpriority="high">
-  <link rel="preload" as="image" href="/images/philosophy-sunset.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="images/logo.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="images/philosophy-sunset.webp" fetchpriority="high">
 
   <style>
     body {
@@ -76,6 +76,35 @@
       overflow: hidden;
     }
 
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #18181b;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #52525b;
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: #09090b;
+    }
+
+    /* For Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #3f3f46 #18181b;
+}
+
   </style>
 
   <script type="application/ld+json">
@@ -89,11 +118,11 @@
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
       "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for rich interactive wizards, durable process instances, and transactional workflows that feel human.",
-      "version": "0.10.9",
+      "version": "0.11.8",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.10.9",
+      "softwareVersion": "0.11.8",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -115,6 +144,7 @@
         "State schemas and scoped validation",
         "Powerful TransformEngine with 22 built-in rules",
         "Parallel wizard branches with isolated scopes",
+        "Palm Explorer — living SSR hub for flows, jobs, and instances",
         "Modern CLI, live status dashboard, and REPL",
         "Extensible via registry-based patterns, providers, and storages"
       ],
@@ -168,13 +198,13 @@
     <div class="max-w-5xl mx-auto px-6 z-10">
       <div class="inline-flex items-center gap-x-2 bg-zinc-950/60 border border-zinc-300/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.10.9 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
+        <span class="text-sm font-medium tracking-widest">v0.11.8 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
         Orchestration that<br>feels <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
       </h1>
       <p class="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto mb-12">
-        Rich interactive wizards, durable workflows, and transactional reliability — built on clean Behavior Trees.
+        Rich interactive wizards, durable workflows, and transactional reliability  — built on clean Behavior Trees.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href="#quickstart"
@@ -275,16 +305,125 @@
     </div>
   </section>
 
+  <!-- Screenshots / In Action -->
+  <section id="in-action" class="py-24 bg-zinc-950 border-t border-zinc-800">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-6">Palm in action</h2>
+      <p class="text-xl text-zinc-400 text-center max-w-3xl mx-auto mb-16">
+        From the living Explorer hub to the rich REPL and live dashboard — see how Palm feels when you run it.
+      </p>
+
+      <div class="relative">
+        <div class="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-2 px-2">
+          <!-- Explorer -->
+          <div class="flex-none w-full max-w-3xl snap-center">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+              <div class="aspect-video bg-zinc-950 flex items-center justify-center">
+                <img src="images/screenshots/palmengine-explorer.webp" 
+                    alt="Palm Explorer" 
+                    class="w-full h-full object-cover">
+              </div>
+              <div class="p-8">
+                <h3 class="font-semibold text-2xl text-teal-400 mb-3">Palm Explorer</h3>
+                <p class="text-zinc-400">Living introspection hub. Browse flows, submit jobs, provide input, inspect context and snapshots — all in one beautiful interface.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- REPL -->
+          <div class="flex-none w-full max-w-3xl snap-center">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+              <div class="aspect-video bg-zinc-950 flex items-center justify-center">
+                <img src="images/screenshots/palmengine-repl.webp" 
+                    alt="REPL Wizard Interaction" 
+                    class="w-full h-full object-cover">
+              </div>
+              <div class="p-8">
+                <h3 class="font-semibold text-2xl text-teal-400 mb-3">Rich REPL Experience</h3>
+                <p class="text-zinc-400">Interactive wizards with numbered choices, backtracking, collection editing, and real-time feedback. Feels alive.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard -->
+          <div class="flex-none w-full max-w-3xl snap-center">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+              <div class="aspect-video bg-zinc-950 flex items-center justify-center">
+                <img src="images/screenshots/palmengine-status.webp" 
+                    alt="Live Status Dashboard" 
+                    class="w-full h-full object-cover">
+              </div>
+              <div class="p-8">
+                <h3 class="font-semibold text-2xl text-teal-400 mb-3">Live Dashboard</h3>
+                <p class="text-zinc-400">Real-time overview of jobs, instances, patterns, and host health. Refresh with <code>-r</code> for monitoring.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll hint -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-zinc-500 text-xs flex items-center gap-2 pointer-events-none">
+          <span>Scroll →</span>
+          <div class="w-8 h-px bg-zinc-600"></div>
+        </div>
+      </div>
+
+      <p class="text-center text-zinc-500 mt-12">
+        Run <code class="bg-zinc-900 px-2 py-1 rounded">palm host server</code> and open <code class="bg-zinc-900 px-2 py-1 rounded">http://localhost:8080/</code> to explore live.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- Documentation -->
+  <section id="docs" class="py-24 bg-zinc-900">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="text-5xl font-bold text-center mb-6">Documentation</h2>
+      <p class="text-xl text-zinc-400 text-center mb-12">
+        Architecture, development guides, and the living API reference.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">README</h3>
+          <p class="text-zinc-400 text-sm">Install, quick start, CLI commands, and feature overview.</p>
+        </a>
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">Architecture</h3>
+          <p class="text-zinc-400 text-sm">Layers, engines, CQRS, server surfaces, and extension model.</p>
+        </a>
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/DEVELOPMENT.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">Development</h3>
+          <p class="text-zinc-400 text-sm">Contributing, testing, type checking, and project conventions.</p>
+        </a>
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+          <h3 class="font-semibold text-teal-400 mb-2">Palm Explorer</h3>
+          <p class="text-zinc-400 text-sm">
+            When <code class="bg-zinc-900 px-1 rounded">ServerRuntime</code> is running, open
+            <code class="bg-zinc-900 px-1 rounded text-teal-300">/explorer</code> (or <code class="bg-zinc-900 px-1 rounded text-teal-300">/</code>)
+            for the living hub. REST reference:
+            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/docs</code> ·
+            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/openapi.json</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- REST API -->
   <section id="api" class="py-24 bg-zinc-950 border-t border-zinc-800">
     <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-4">REST API</h2>
       <p class="text-xl text-zinc-400 text-center max-w-3xl mx-auto mb-6">
         Palm ships a registry-driven HTTP surface on <code class="bg-zinc-900 px-2 py-1 rounded">ServerRuntime</code>.
-        Start a server, open the live docs hub, or explore the OpenAPI spec.
+        Start a server, open <strong class="text-white font-medium">Palm Explorer</strong>, browse the REST reference, or fetch OpenAPI.
       </p>
       <div class="flex flex-wrap justify-center gap-4 mb-14 text-sm">
         <a href="#api-try" class="text-teal-400 hover:text-teal-300">Try it →</a>
+        <span class="text-zinc-600">·</span>
+        <span class="text-zinc-400"><code class="text-teal-300">GET /explorer</code> — living hub (root redirects here)</span>
         <span class="text-zinc-600">·</span>
         <span class="text-zinc-400"><code class="text-teal-300">GET /v1/docs</code> — interactive reference</span>
         <span class="text-zinc-600">·</span>
@@ -294,19 +433,17 @@
       <div class="grid md:grid-cols-2 gap-8 mb-16">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
           <h3 class="text-xl font-semibold mb-4 text-teal-400">Start the server</h3>
-          <pre class="bg-black border border-zinc-800 rounded-2xl p-5 font-mono text-sm overflow-x-auto"><code># Python
-from palm.runtimes.server import ServerRuntime, run_server
-
-rt = ServerRuntime(host="127.0.0.1", port=8080)
-run_server(rt)  # blocks; serves /health, /v1/docs, /v1/openapi.json</code></pre>
+          <pre class="bg-black border border-zinc-800 rounded-2xl p-5 font-mono text-sm overflow-x-auto"><code>$ palm host server</code></pre>
           <p class="text-zinc-500 text-sm mt-4">
-            Default port is <code class="bg-zinc-950 px-1 rounded">8080</code>. Health at
-            <code class="bg-zinc-950 px-1 rounded">/health</code> links to docs and OpenAPI.
+            Default port is <code class="bg-zinc-950 px-1 rounded">8080</code>. Open
+            <code class="bg-zinc-950 px-1 rounded">http://localhost:8080/</code> — redirects to Palm Explorer.
+            Health at <code class="bg-zinc-950 px-1 rounded">/health</code> links to Explorer, docs, and OpenAPI.
           </p>
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
           <h3 class="text-xl font-semibold mb-4 text-teal-400">Endpoint groups</h3>
           <ul class="space-y-2 text-zinc-300 text-sm">
+            <li><strong class="text-white">Explorer</strong> — SSR hub for flows, jobs, instances, schemas</li>
             <li><strong class="text-white">Meta</strong> — health, OpenAPI, HTML docs</li>
             <li><strong class="text-white">Jobs</strong> — submit flows, list status, wizard input</li>
             <li><strong class="text-white">Plans</strong> — stage and batch-submit execution plans</li>
@@ -418,7 +555,7 @@ run_server(rt)  # blocks; serves /health, /v1/docs, /v1/openapi.json</code></pre
               </div>
               <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10&amp;offset=0' -H 'Accept: application/json'">Copy</button>
             </div>
-            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows?pattern=wizard&amp;limit=10' \
+            <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/flows?pattern=wizard' \
   -H 'Accept: application/json'</code></pre>
           </div>
           <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
@@ -443,52 +580,18 @@ run_server(rt)  # blocks; serves /health, /v1/docs, /v1/openapi.json</code></pre
     </div>
   </section>
 
-  <!-- Documentation -->
-  <section id="docs" class="py-24 bg-zinc-900">
-    <div class="max-w-4xl mx-auto px-6">
-      <h2 class="text-5xl font-bold text-center mb-6">Documentation</h2>
-      <p class="text-xl text-zinc-400 text-center mb-12">
-        Architecture, development guides, and the living API reference.
-      </p>
-      <div class="grid sm:grid-cols-2 gap-6">
-        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/README.md" target="_blank"
-          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
-          <h3 class="font-semibold text-teal-400 mb-2">README</h3>
-          <p class="text-zinc-400 text-sm">Install, quick start, CLI commands, and feature overview.</p>
-        </a>
-        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/ARCHITECTURE.md" target="_blank"
-          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
-          <h3 class="font-semibold text-teal-400 mb-2">Architecture</h3>
-          <p class="text-zinc-400 text-sm">Layers, engines, CQRS, server surfaces, and extension model.</p>
-        </a>
-        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/DEVELOPMENT.md" target="_blank"
-          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
-          <h3 class="font-semibold text-teal-400 mb-2">Development</h3>
-          <p class="text-zinc-400 text-sm">Contributing, testing, type checking, and project conventions.</p>
-        </a>
-        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
-          <h3 class="font-semibold text-teal-400 mb-2">Live API docs</h3>
-          <p class="text-zinc-400 text-sm">
-            When <code class="bg-zinc-900 px-1 rounded">ServerRuntime</code> is running:
-            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/docs</code> (HTML hub) and
-            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/openapi.json</code> (machine-readable).
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Quick Start -->
   <section id="quickstart" class="py-24 neon-container">
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-5xl font-bold text-center mb-12">Start in seconds</h2>
       <div class="bg-black border-4 border-teal-900 rounded-3xl p-5 font-mono text-base overflow-x-auto">
         <pre><code>$ pip install palmengine[cli]
+$ palm                             # REPL cli
 $ palm doctor
 $ palm status
 $ palm flow start onboard          # rich wizard example
-$ palm flow start schema-onboard   # schemas + scopes
-$ palm flow start todo-builder     # dynamic lists</code></pre>
+$ palm host server                 # http://localhost:8080/explorer
+</code></pre>
       </div>
       <p class="text-center text-zinc-400 mt-6">
         Or with uv (recommended): <code class="bg-zinc-900 px-2 py-1 rounded">uvx palmengine palm doctor</code>

@@ -10,6 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 STALE_VERSION_PATTERNS = (
+    re.compile(r"\b0\.10\.9\b"),
+    re.compile(r"\bv0\.10\.9\b"),
     re.compile(r"\b0\.9\.7\b"),
     re.compile(r"\bv0\.9\.7\b"),
     re.compile(r'"softwareVersion":\s*"0\.9'),

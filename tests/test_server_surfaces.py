@@ -81,6 +81,7 @@ def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/explorer")
     assert status == 200
     assert payload["status"] == "active"
+    assert payload["home"] == "/explorer"
     assert payload["explorer"] == "/explorer"
 
 

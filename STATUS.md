@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.10.9`  
-**Last Updated:** June 16, 2026  
-**Maturity:** Architecture stabilized. Documentation and website aligned with 0.10.9.
+**Current Version:** `0.11.8`  
+**Last Updated:** June 17, 2026  
+**Maturity:** Architecture stabilized. Palm Explorer shipped; documentation and website aligned with 0.11.8.
 
 ## Quick Overview
 
@@ -36,12 +36,19 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Composable host roles (`ApplicationHost` + `HostProfile`)
 - Rich CLI + REPL with live dashboard (`palm status`)
 - Multiple runtimes (Embedded, Daemon, Server, CLI)
+- **Palm Explorer** — SSR hub at `/explorer` (flows, jobs, instances, schemas); `GET /` redirects here
 
 ## Recent Freshness Work (June 2026)
 
-Documentation refinement pass completed:
+**0.11.8 polish release:**
 
-- **Website (`docs/index.html`)** — JSON-LD, meta tags, hero badge, and feature highlights updated to 0.10.9; ApplicationHost and CQRS surfaced prominently
+- **Palm Explorer** — living server hub replaces legacy wiki/docs paths; flow submission UX refined
+- **Root redirect** — `GET /` → `/explorer`; health includes `home`
+- **Website (`docs/index.html`)** — hero, quickstart, and REST section highlight Explorer
+
+Documentation refinement pass (ApplicationHost release):
+
+- **Website (`docs/index.html`)** — JSON-LD, meta tags, hero badge, and feature highlights updated; ApplicationHost and CQRS surfaced prominently
 - **`docs/llms.txt`** — Expanded into a high-quality AI agent context guide (architecture, entry points, invariants, extension patterns)
 - **`README.md`** — Removed stale version stamp from Transforms section heading
 - **`ARCHITECTURE.md`** — Transform rule count clarified (22 built-in rules)
@@ -66,12 +73,12 @@ Documentation refinement pass completed:
 
 | Document              | Status          | Notes |
 |-----------------------|------------------|-------|
-| `README.md`           | Good            | ApplicationHost recommended; 0.10.9 accurate |
+| `README.md`           | Good            | ApplicationHost recommended; Palm Explorer documented |
 | `ARCHITECTURE.md`     | Good            | Reflects current layers and reliability primitives |
 | `DEVELOPMENT.md`      | Good            | Contributor guide solid; ApplicationHost bootstrap documented |
 | `AGENTS.md`           | Good            | Constitution aligned with 0.10+ |
 | `MIGRATION-0.10.md`   | Excellent       | Clear upgrade path from 0.9.x |
-| `docs/index.html`     | Good            | Updated to 0.10.9 with ApplicationHost highlights |
+| `docs/index.html`     | Good            | Updated to 0.11.8 with Palm Explorer highlights |
 | `docs/llms.txt`       | Good            | Rich AI context guide |
 | `examples/README.md`  | Good            | Host-backed CLI paths documented |
 

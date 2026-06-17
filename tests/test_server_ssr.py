@@ -81,6 +81,19 @@ def test_explorer_overview_renders(server: ServerRuntime) -> None:
     assert "/explorer/instances" in html
 
 
+def test_root_redirects_to_explorer(server: ServerRuntime) -> None:
+    import http.client
+    from urllib.parse import urlparse
+
+    parsed = urlparse(server.base_url)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    conn.request("GET", "/", headers={"Accept": "text/html"})
+    response = conn.getresponse()
+    assert response.status == 302
+    assert response.getheader("Location") == "/explorer"
+    conn.close()
+
+
 def test_docs_redirects_to_explorer(server: ServerRuntime) -> None:
     import http.client
     from urllib.parse import urlparse
@@ -260,6 +273,7 @@ def test_health_includes_explorer_link(server: ServerRuntime) -> None:
     req = urllib.request.Request(f"{server.base_url}/health", method="GET")
     with urllib.request.urlopen(req, timeout=5) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
+    assert payload["home"] == "/explorer"
     assert payload["explorer"] == "/explorer"
     assert payload["wiki"] == "/explorer"
 
@@ -273,7 +287,7 @@ def test_explorer_fetcher_lists_patterns(server: ServerRuntime) -> None:
 
 
 def test_explorer_layout_renders_title() -> None:
-    html = explorer_page(title="Test", version="0.10.9", content="<p>Body</p>")
+    html = explorer_page(title="Test", version="0.11.8", content="<p>Body</p>")
     assert "Test" in html
     assert "Body" in html
     assert "Palm Explorer" in html

@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.10.9` — ApplicationHost, CQRS projections, outbox, compensation, live status dashboard · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
+**Current release:** `0.11.8` — Palm Explorer hub, ApplicationHost, CQRS projections, outbox, compensation · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.10.md](MIGRATION-0.10.md) · [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -62,6 +62,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Patterns** | **Wizard** (collection, transform steps, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
+| **Palm Explorer** | Server SSR hub at `/explorer` — flows, jobs, instances, schemas; `/` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm host` deployment roles, `just` quality recipes |
 
@@ -107,6 +108,18 @@ with ApplicationHost(profile=HostProfile.all_in_one()) as host:
 ```
 
 Demo script: `uv run python examples/full_demo.py` (host + resume across restart).
+
+**Server + Palm Explorer:**
+
+```bash
+# Start HTTP server (default port 8080)
+python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+
+# Open the living hub — flows, jobs, instances, schemas
+open http://localhost:8080/explorer   # or just http://localhost:8080/ (redirects)
+```
+
+REST reference: `GET /v1/docs` · OpenAPI: `GET /v1/openapi.json` · Health: `GET /health`
 
 **Try the new examples:**
 
@@ -280,6 +293,23 @@ palm doctor    # shows flows with state schemas
 ```
 
 Details: [examples/README.md](examples/README.md)
+
+---
+
+## Living Explorer Hub
+
+When `ServerRuntime` is running, **Palm Explorer** is the browser-first control surface for operators and integrators:
+
+| Path | Purpose |
+|------|---------|
+| `/explorer` | Overview — registered flows, active jobs, instance counts |
+| `/explorer/flows` | Flow catalog with **Start this flow** actions |
+| `/explorer/flows/submit` | Schema-driven flow submission (registered or test wizard) |
+| `/explorer/jobs` | Job board with wizard input forms |
+| `/explorer/instances` | Durable process instance browser |
+| `/explorer/schemas` | State schema introspection |
+
+Legacy `/wiki/*` and `/docs` redirect to `/explorer`. Implementation: `palm/runtimes/server/surfaces/ssr/explorer/`.
 
 ---
 

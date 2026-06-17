@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.10.9 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.11.8 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -54,6 +54,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **CQRS** | Command/query buses; projections (`instance_index`, `wizard_progress`, `job_status_board`) |
 | **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
+| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances; `GET /` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 
 ## Quick Commands
@@ -69,6 +70,12 @@ palm flow start parallel-demo
 ```
 
 From source: `uv sync --group dev --extra cli && uv pip install -e ".[cli]"`
+
+Server + Explorer:
+```bash
+python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+# → http://localhost:8080/explorer (root / redirects here)
+```
 
 Durable local storage:
 ```bash

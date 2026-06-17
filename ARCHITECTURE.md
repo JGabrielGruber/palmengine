@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.10.9** · ApplicationHost + CQRS · June 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.11.8** · ApplicationHost + CQRS + Palm Explorer · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -724,7 +724,7 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
 | **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; common `ssr/` = render + layout shell |
+| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; `GET /` → `/explorer`; `/wiki` + `/docs` aliases; common `ssr/` = render + layout shell |
 | **WebSocket / MCP** | Planned | Surfaces registered under `runtimes/server/surfaces/`; async transport TBD |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.

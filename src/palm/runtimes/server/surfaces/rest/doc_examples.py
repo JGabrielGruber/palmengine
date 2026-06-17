@@ -89,7 +89,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
     "health": {
         "status": "ok",
         "runtime": "ServerRuntime",
-        "version": "0.10.9",
+        "version": "0.11.8",
         "auth_enforce": False,
         "surfaces": ["rest"],
         "docs": "/v1/docs",

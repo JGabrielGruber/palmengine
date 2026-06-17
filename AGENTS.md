@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** June 2026 (0.10.9 architecture)
+**Last updated:** June 2026 (0.11.8 architecture)
 
 ---
 

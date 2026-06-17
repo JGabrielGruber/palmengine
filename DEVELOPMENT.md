@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.10.9** (ApplicationHost + CQRS release).
+Guide for contributors working on Palm **0.11.8** (ApplicationHost + CQRS + Palm Explorer).
 
 ## Setup
 
@@ -63,7 +63,8 @@ src/palm/
 ├── runtimes/          # Concrete surfaces (thin packages on common.runtimes)
 │   ├── embedded/      # EmbeddedRuntime
 │   ├── daemon/        # DaemonRuntime
-│   ├── server/        # ServerRuntime + HTTP
+│   ├── server/        # ServerRuntime + HTTP surfaces (REST, Explorer SSR)
+│   │   └── surfaces/ssr/explorer/  # Palm Explorer pages, forms, actions
 │   └── cli/           # Entry point + commands/ (one-shot) + tui/ (REPL) + shared/
 └── utils/
 
@@ -486,4 +487,4 @@ Host tests: `tests/test_application_host_cqrs.py`, `tests/test_cqrs_phase4.py`, 
 
 ---
 
-Last updated: June 2026 (0.10.9)
+Last updated: June 2026 (0.11.8)

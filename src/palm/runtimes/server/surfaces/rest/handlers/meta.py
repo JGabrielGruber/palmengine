@@ -21,6 +21,7 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
         "version": runtime.version,
         "auth_enforce": runtime.auth_enforce,
         "surfaces": surface_names,
+        "home": "/explorer",
         "docs": "/v1/docs",
         "explorer": "/explorer",
         "wiki": "/explorer",

@@ -104,6 +104,13 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
 
     registry.register(
         method="GET",
+        path="/",
+        handler=lambda req: redirect("/explorer"),
+        surface=_SURFACE,
+    )
+
+    registry.register(
+        method="GET",
         path="/docs",
         handler=lambda req: redirect("/explorer"),
         surface=_SURFACE,
@@ -134,6 +141,7 @@ def _surface_info(request: object) -> object:
             "surface": "explorer",
             "status": "active",
             "message": "Palm Explorer — living introspection and control hub.",
+            "home": "/explorer",
             "explorer": "/explorer",
             "wiki": "/explorer",
             "docs_alias": "/docs",

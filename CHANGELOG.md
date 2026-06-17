@@ -6,6 +6,28 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 _No changes yet._
 
+## [0.11.8] — 2026-06-17
+
+**Explorer polish release** — Palm Explorer becomes the living server hub; legacy wiki/docs paths redirect; flow submission UX refined.
+
+### Added
+
+- **Palm Explorer** — schema-driven SSR hub at `/explorer` for flows, jobs, instances, schemas, patterns, and processes
+- **Explorer surface** — `ExplorerSurface` (`explorer`); `/v1/surfaces/explorer` and `/v1/surfaces/ssr` surface info endpoints
+- **Flow submission UX** — registered-flow primary form, advanced test-wizard panel, **Start this flow** buttons, `?flow=` pre-fill on submit page
+- **Instance browser** — browse and inspect durable process instances and snapshots from the hub
+- **Root redirect** — `GET /` → `/explorer` (302); health payload includes `home`
+
+### Changed
+
+- **SSR layering** — `palm/common/runtimes/server/ssr/` stays thin (render + layout shell); Explorer implementation lives in `palm/runtimes/server/surfaces/ssr/explorer/`
+- **Legacy paths** — `/wiki/*` and `/docs` redirect to `/explorer`; health keeps `wiki: "/explorer"` as deprecated alias
+- **REST docs hub** — links to Palm Explorer alongside `/v1/docs` and OpenAPI
+
+### Fixed
+
+- **Explorer forms** — choice fields tolerate `choices: null` without crashing (`_normalize_choices`)
+
 ## [0.10.9] — 2026-06-16
 
 **Architecture evolution release** — ApplicationHost becomes the primary orchestrator, CQRS read models power the CLI, and reliability primitives (outbox, compensation) ship for production-style deployments.
