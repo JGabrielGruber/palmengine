@@ -66,3 +66,30 @@ def input_rejected(detail: str) -> ServerResponse:
 
 def resume_failed(detail: str) -> ServerResponse:
     return error_response(400, "resume_failed", detail)
+
+
+def snapshot_not_found(instance_id: str, snapshot_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "snapshot_not_found",
+        f"Snapshot not found: {snapshot_id}",
+        extra={"instance_id": instance_id, "snapshot_id": snapshot_id},
+    )
+
+
+def flow_not_found(flow_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "flow_not_found",
+        f"Flow not found: {flow_id}",
+        extra={"flow_id": flow_id},
+    )
+
+
+def process_not_found(process_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "process_not_found",
+        f"Process not found: {process_id}",
+        extra={"process_id": process_id},
+    )

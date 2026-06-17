@@ -17,15 +17,22 @@ from palm.common.cqrs.command import (
     SubmitProcessCommand,
 )
 from palm.common.cqrs.query import (
+    GetFlowQuery,
+    GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
     GetJobStatusQuery,
+    GetProcessQuery,
     GetWizardProgressQuery,
+    ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
+    ListProcessesQuery,
     ListWizardProgressQuery,
     Query,
 )
+from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
+from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError
 from palm.common.exceptions import PlanNotFoundError
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
@@ -139,7 +146,17 @@ class StandaloneQueryHandlers:
         if isinstance(query, GetInstanceStatusQuery):
             return self._get_instance(query)
         if isinstance(query, ListInstanceSnapshotsQuery):
-            return self._runtime.instance_manager.list_state_snapshots(query.instance_id)
+            return self._list_snapshots(query.instance_id)
+        if isinstance(query, GetInstanceSnapshotQuery):
+            return self._get_snapshot(query)
+        if isinstance(query, ListFlowsQuery):
+            return self._list_flows(query)
+        if isinstance(query, GetFlowQuery):
+            return self._get_flow(query)
+        if isinstance(query, ListProcessesQuery):
+            return self._list_processes()
+        if isinstance(query, GetProcessQuery):
+            return self._get_process(query)
         if isinstance(query, GetWizardProgressQuery):
             return self._wizard_progress(query)
         if isinstance(query, ListWizardProgressQuery):
@@ -217,6 +234,40 @@ class StandaloneQueryHandlers:
             "process_name": instance.process_name,
         }
 
+    def _list_snapshots(self, instance_id: str) -> list[Any]:
+        try:
+            return self._runtime.instance_manager.list_state_snapshots(instance_id)
+        except InstanceNotFoundError as exc:
+            raise exc
+
+    def _get_snapshot(self, query: GetInstanceSnapshotQuery) -> Any:
+        snapshots = self._list_snapshots(query.instance_id)
+        resolved = resolve_snapshot(snapshots, query.snapshot_id)
+        if resolved is None:
+            return None
+        return resolved
+
+    def _list_flows(self, query: ListFlowsQuery) -> list[Any]:
+        flows = self._runtime.repository.list_flows()
+        if query.pattern is not None:
+            flows = [flow for flow in flows if flow.pattern == query.pattern]
+        return flows
+
+    def _get_flow(self, query: GetFlowQuery) -> Any:
+        try:
+            return resolve_flow(self._runtime.repository, query.flow_id)
+        except DefinitionNotFoundError:
+            return None
+
+    def _list_processes(self) -> list[Any]:
+        return self._runtime.repository.list_processes()
+
+    def _get_process(self, query: GetProcessQuery) -> Any:
+        try:
+            return resolve_process(self._runtime.repository, query.process_id)
+        except DefinitionNotFoundError:
+            return None
+
     def _wizard_progress(self, query: GetWizardProgressQuery) -> dict[str, Any] | None:
         job_id = query.job_id
         if job_id is None:
@@ -257,6 +308,11 @@ def wire_standalone_buses(
         ListInstancesQuery,
         GetInstanceStatusQuery,
         ListInstanceSnapshotsQuery,
+        GetInstanceSnapshotQuery,
+        ListFlowsQuery,
+        GetFlowQuery,
+        ListProcessesQuery,
+        GetProcessQuery,
         GetWizardProgressQuery,
         ListWizardProgressQuery,
     ):

@@ -32,16 +32,26 @@ from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
 from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
 from palm.common.cqrs.query import (
+    GetFlowQuery,
+    GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
     GetJobStatusQuery,
+    GetProcessQuery,
     GetWizardProgressQuery,
+    ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
+    ListProcessesQuery,
     ListWizardProgressQuery,
 )
+from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
+from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError
 
 if TYPE_CHECKING:
+    from palm.definitions.flow import FlowDefinition
+    from palm.definitions.process import ProcessDefinition
+    from palm.instances import StateSnapshot
     from palm.app.app import PalmApp
     from palm.common.managers.instance_manager import InstanceManager
 
@@ -176,6 +186,16 @@ class HostQueryHandlers:
             return self._instances.get_instance(query)
         if isinstance(query, ListInstanceSnapshotsQuery):
             return self._instance_manager.list_state_snapshots(query.instance_id)
+        if isinstance(query, GetInstanceSnapshotQuery):
+            return self._get_snapshot(query)
+        if isinstance(query, ListFlowsQuery):
+            return self._list_flows(query)
+        if isinstance(query, GetFlowQuery):
+            return self._get_flow(query)
+        if isinstance(query, ListProcessesQuery):
+            return self._app.list_processes()
+        if isinstance(query, GetProcessQuery):
+            return self._get_process(query)
         if isinstance(query, GetWizardProgressQuery):
             return self._wizard_progress.get_progress(query)
         if isinstance(query, GetJobStatusQuery):
@@ -217,6 +237,34 @@ class HostQueryHandlers:
             payload["error"] = str(job.error)
         return payload
 
+    def _get_snapshot(self, query: GetInstanceSnapshotQuery) -> tuple[int, StateSnapshot] | None:
+        try:
+            snapshots = self._instance_manager.list_state_snapshots(query.instance_id)
+        except InstanceNotFoundError:
+            raise
+        resolved = resolve_snapshot(snapshots, query.snapshot_id)
+        if resolved is None:
+            return None
+        return resolved
+
+    def _list_flows(self, query: ListFlowsQuery) -> list[FlowDefinition]:
+        flows = self._app.list_flows()
+        if query.pattern is not None:
+            flows = [flow for flow in flows if flow.pattern == query.pattern]
+        return flows
+
+    def _get_flow(self, query: GetFlowQuery) -> FlowDefinition | None:
+        try:
+            return resolve_flow(self._app.repository(), query.flow_id)
+        except DefinitionNotFoundError:
+            return None
+
+    def _get_process(self, query: GetProcessQuery) -> ProcessDefinition | None:
+        try:
+            return resolve_process(self._app.repository(), query.process_id)
+        except DefinitionNotFoundError:
+            return None
+
 
 def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> None:
     handler = PalmCommandHandlers(app, router)
@@ -251,6 +299,11 @@ def wire_query_bus(
         ListInstancesQuery,
         GetInstanceStatusQuery,
         ListInstanceSnapshotsQuery,
+        GetInstanceSnapshotQuery,
+        ListFlowsQuery,
+        GetFlowQuery,
+        ListProcessesQuery,
+        GetProcessQuery,
         GetWizardProgressQuery,
         GetJobStatusQuery,
         ListJobStatusQuery,

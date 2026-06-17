@@ -88,6 +88,64 @@ LIST_INSTANCES_QUERY = DictStateSchema(
     }
 )
 
+LIST_FLOWS_QUERY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "pattern": _STRING,
+            "limit": {"type": "integer", "minimum": 1, "maximum": 200},
+            "offset": {"type": "integer", "minimum": 0},
+        },
+    }
+)
+
+LIST_SNAPSHOTS_QUERY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "limit": {"type": "integer", "minimum": 1, "maximum": 200},
+            "offset": {"type": "integer", "minimum": 0},
+        },
+    }
+)
+
+SNAPSHOT_SUMMARY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "snapshot_id": _STRING,
+            "status": _STRING,
+            "recorded_at": _STRING,
+            "job_id": _STRING,
+            "wizard_step_slug": _STRING,
+        },
+    }
+)
+
+FLOW_SUMMARY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "flow_id": _STRING,
+            "name": _STRING,
+            "pattern": _STRING,
+            "has_state_schema": _BOOL,
+        },
+    }
+)
+
+PROCESS_SUMMARY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "process_id": _STRING,
+            "name": _STRING,
+            "storage": _STRING,
+            "flow_count": {"type": "integer", "minimum": 0},
+        },
+    }
+)
+
 # OpenAPI component names → schema instances
 NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "SubmitJobBody": SUBMIT_JOB_BODY,
@@ -96,6 +154,11 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "ProvideInputBody": PROVIDE_INPUT_BODY,
     "ListJobsQuery": LIST_JOBS_QUERY,
     "ListInstancesQuery": LIST_INSTANCES_QUERY,
+    "ListFlowsQuery": LIST_FLOWS_QUERY,
+    "ListSnapshotsQuery": LIST_SNAPSHOTS_QUERY,
+    "SnapshotSummary": SNAPSHOT_SUMMARY,
+    "FlowSummary": FLOW_SUMMARY,
+    "ProcessSummary": PROCESS_SUMMARY,
 }
 
 

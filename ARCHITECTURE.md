@@ -693,9 +693,9 @@ palm/runtimes/            # concrete surfaces (thin packages)
 │   ├── factory.py        # create_app — mounts default surfaces
 │   ├── surfaces/
 │   │   ├── rest/         # CQRS JSON API
-│   │   │   ├── routes.py       # central route table (groups: Meta, Jobs, Plans, Instances)
+│   │   │   ├── routes.py       # central route table (Meta, Jobs, Plans, Instances, Snapshots, Catalog)
 │   │   │   ├── schemas.py      # DictStateSchema request/query definitions
-│   │   │   ├── handlers/       # meta, jobs, plans, instances
+│   │   │   ├── handlers/       # meta, jobs, plans, instances, snapshots, catalog
 │   │   │   ├── openapi.py      # spec generated from routes + schemas
 │   │   │   └── docs.py         # self-contained HTML at GET /v1/docs
 │   │   ├── websocket/    # extension point (planned)

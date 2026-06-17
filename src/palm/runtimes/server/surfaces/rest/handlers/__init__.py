@@ -1,5 +1,5 @@
 """REST resource handlers."""
 
-from palm.runtimes.server.surfaces.rest.handlers import instances, jobs, meta, plans
+from palm.runtimes.server.surfaces.rest.handlers import catalog, instances, jobs, meta, plans, snapshots
 
-__all__ = ["instances", "jobs", "meta", "plans"]
+__all__ = ["catalog", "instances", "jobs", "meta", "plans", "snapshots"]

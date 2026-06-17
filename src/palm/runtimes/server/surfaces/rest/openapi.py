@@ -30,6 +30,7 @@ def build_openapi_spec(*, version: str) -> dict[str, Any]:
             "description": (
                 "Registry-driven REST surface for Palm orchestration. "
                 "Submit flows, stage plans, inspect jobs and instances, "
+                "browse the definition catalog, inspect state snapshots, "
                 "and provide interactive wizard input."
             ),
         },
@@ -172,6 +173,8 @@ def _ensure_tag(tags: dict[str, dict[str, str]], group: str) -> None:
         "Jobs": "Orchestration job submission and interactive input.",
         "Plans": "Deferred plan staging and batch submission.",
         "Instances": "Durable process instance queries and resume.",
+        "Snapshots": "Point-in-time blackboard captures for audit and replay.",
+        "Catalog": "Registered flow and process definitions from the repository.",
     }
     tags.setdefault(group, {"description": descriptions.get(group, group)})
 

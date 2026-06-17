@@ -62,6 +62,40 @@ class ListWizardProgressQuery(Query):
     active_only: bool = False
 
 
+@dataclass(frozen=True)
+class GetInstanceSnapshotQuery(Query):
+    """Load a single state snapshot by index or ``recorded_at`` timestamp."""
+
+    instance_id: str
+    snapshot_id: str
+
+
+@dataclass(frozen=True)
+class ListFlowsQuery(Query):
+    """List registered flow definitions from the repository."""
+
+    pattern: str | None = None
+
+
+@dataclass(frozen=True)
+class GetFlowQuery(Query):
+    """Load a flow definition by id or name."""
+
+    flow_id: str
+
+
+@dataclass(frozen=True)
+class ListProcessesQuery(Query):
+    """List registered process definitions from the repository."""
+
+
+@dataclass(frozen=True)
+class GetProcessQuery(Query):
+    """Load a process definition by id or name."""
+
+    process_id: str
+
+
 @runtime_checkable
 class QueryHandler(Protocol):
     """Answer a single query type."""

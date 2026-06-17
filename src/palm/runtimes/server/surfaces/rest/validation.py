@@ -8,7 +8,12 @@ from typing import Any
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_query_dict
-from palm.runtimes.server.surfaces.rest.schemas import LIST_INSTANCES_QUERY, LIST_JOBS_QUERY
+from palm.runtimes.server.surfaces.rest.schemas import (
+    LIST_FLOWS_QUERY,
+    LIST_INSTANCES_QUERY,
+    LIST_JOBS_QUERY,
+    LIST_SNAPSHOTS_QUERY,
+)
 
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
@@ -54,6 +59,25 @@ def parse_list_instances_query(request: ServerRequest) -> dict[str, Any] | Serve
     if "include_terminal" not in validated:
         validated["include_terminal"] = True
     return validated
+
+
+def parse_list_flows_query(request: ServerRequest) -> dict[str, Any] | ServerResponse:
+    """Coerce and validate flow/process catalog list query parameters."""
+    coerced = _coerce_pagination_query(request.query)
+    if isinstance(coerced, ServerResponse):
+        return coerced
+    pattern = request.query.get("pattern")
+    if pattern is not None:
+        coerced["pattern"] = pattern
+    return validate_query_dict(coerced, LIST_FLOWS_QUERY)
+
+
+def parse_list_snapshots_query(request: ServerRequest) -> dict[str, Any] | ServerResponse:
+    """Coerce and validate snapshot list query parameters."""
+    coerced = _coerce_pagination_query(request.query)
+    if isinstance(coerced, ServerResponse):
+        return coerced
+    return validate_query_dict(coerced, LIST_SNAPSHOTS_QUERY)
 
 
 def _coerce_pagination_query(query: dict[str, str]) -> dict[str, Any] | ServerResponse:
