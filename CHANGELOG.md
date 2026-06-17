@@ -19,7 +19,15 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **Cross-cutting** — `enrich_resource` + `resource_ref`, compensation for mutating invokes, CQRS projection, Explorer timelines
 - **Examples** — compositional demo (parent flow → child flow → resume)
 
-_No code shipped yet — documentation and planning only._
+### Added (Phase 1)
+
+- **`ResourceDefinition`** — declarative resource contracts in `palm/definitions/resource.py`
+- **`DefinitionRepository` resource CRUD** — register, save, get, list, delete with storage roundtrip
+- **Bootstrap hydration** — resources loaded from storage alongside flows and processes
+- **CLI** — `resource list`, `resource describe <ref>`; `palm doctor` and `process list` catalog show resources
+- **Example** — `examples/definitions/fetch_customer.py`
+
+_Phases 2–6 remain planned._
 
 ## [0.11.8] — 2026-06-17
 

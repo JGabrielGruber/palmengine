@@ -15,6 +15,7 @@ from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
+from palm.definitions.resource import ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from palm.runtimes.cli.shared.instances import resolve_instance_id as _resolve_instance_id
 
@@ -86,6 +87,9 @@ class CliContext:
 
     def resolve_process(self, ref: str) -> ProcessDefinition:
         return self.app.resolve_process(ref)
+
+    def resolve_resource(self, ref: str) -> ResourceDefinition:
+        return self.app.resolve_resource(ref)
 
     def submit_flow(
         self,

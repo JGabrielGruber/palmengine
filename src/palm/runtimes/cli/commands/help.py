@@ -29,6 +29,10 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
   process list              Catalog of process + flow definitions
   process submit <ref>        Start a process by name or id
 
+[bold]Resources[/] [dim](declarative provider contracts — 0.12)[/]
+  resource list             All registered resource definitions
+  resource describe <ref>     Inspect provider, action, schemas, params
+
 [bold]Instances[/] [dim](reads via host queries)[/]
   instance list [--all] [--status S] [--flow F] [--limit N] [--format json]
   instance resume <id>      Resume a persisted instance

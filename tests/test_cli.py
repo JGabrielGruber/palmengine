@@ -28,6 +28,18 @@ def test_process_list_registers_examples(cli_ctx) -> None:
     assert "approval-workflow" in names
 
 
+def test_resource_list_registers_example(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "resource list") == 0
+    names = {item.name for item in cli_ctx.app.list_resources()}
+    assert "fetch-customer" in names
+
+
+def test_resource_describe_example(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "resource describe fetch-customer") == 0
+
+
 def test_doctor_reports_healthy(cli_ctx) -> None:
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "doctor") == 0

@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from palm.core.orchestration import Job
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
+    from palm.definitions.resource import ResourceDefinition
     from palm.instances import ProcessInstance, StateSnapshot
 
 class PalmApp:
@@ -142,6 +143,12 @@ class PalmApp:
 
         return resolve_process_for_app(self, ref, runtime_name=runtime_name)
 
+    def resolve_resource(self, ref: str, *, runtime_name: str | None = None) -> ResourceDefinition:
+        """Resolve a resource by display name, falling back to definition id."""
+        from palm.app.resolvers import resolve_resource_for_app
+
+        return resolve_resource_for_app(self, ref, runtime_name=runtime_name)
+
     def submit_flow(
         self,
         ref: FlowDefinition | str,
@@ -223,6 +230,10 @@ class PalmApp:
     def list_processes(self, *, runtime_name: str | None = None) -> list[ProcessDefinition]:
         """List process definitions from a registered runtime repository."""
         return self.repository(runtime_name=runtime_name).list_processes()
+
+    def list_resources(self, *, runtime_name: str | None = None) -> list[ResourceDefinition]:
+        """List resource definitions from a registered runtime repository."""
+        return self.repository(runtime_name=runtime_name).list_resources()
 
     def current_wizard_step(self, job_id: str, *, runtime_name: str | None = None) -> str | None:
         """Return the active wizard step slug when applicable."""

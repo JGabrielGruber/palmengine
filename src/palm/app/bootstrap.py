@@ -26,13 +26,16 @@ def ensure_plugins() -> None:
 
 
 def hydrate_definitions_from_storage(repository: DefinitionRepository) -> int:
-    """Load flow/process definitions from storage into the in-memory cache."""
+    """Load flow/process/resource definitions from storage into the in-memory cache."""
     count = 0
     for flow in repository.list_flows():
         repository.register_flow(flow)
         count += 1
     for process in repository.list_processes():
         repository.register_process(process)
+        count += 1
+    for resource in repository.list_resources():
+        repository.register_resource(resource)
         count += 1
     return count
 

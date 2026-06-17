@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from palm.common.exceptions import DefinitionNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
+from palm.definitions.resource import ResourceDefinition
 
 if TYPE_CHECKING:
     from palm.app.app import PalmApp
@@ -43,3 +44,18 @@ def resolve_process_for_app(
 ) -> ProcessDefinition:
     """Resolve a process via a :class:`~palm.app.app.PalmApp` runtime repository."""
     return resolve_process(app.repository(runtime_name=runtime_name), ref)
+
+
+def resolve_resource(repository: DefinitionRepository, ref: str) -> ResourceDefinition:
+    """Resolve a resource by display name, falling back to definition id."""
+    try:
+        return repository.get_resource(ref)
+    except DefinitionNotFoundError:
+        return repository.get_resource(ref, by_id=True)
+
+
+def resolve_resource_for_app(
+    app: PalmApp, ref: str, *, runtime_name: str | None = None
+) -> ResourceDefinition:
+    """Resolve a resource via a :class:`~palm.app.app.PalmApp` runtime repository."""
+    return resolve_resource(app.repository(runtime_name=runtime_name), ref)

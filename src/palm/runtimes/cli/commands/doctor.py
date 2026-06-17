@@ -88,7 +88,9 @@ def run_doctor(ctx: CliContext) -> int:
 
     flows = app.list_flows()
     processes = app.list_processes()
+    resources = app.list_resources()
     schema_flows = sum(1 for flow in flows if flow.has_state_schema)
+    schema_resources = sum(1 for item in resources if item.has_schemas)
     inst_table = Table(title="Catalog & Persistence", show_lines=True)
     inst_table.add_column("Resource", style="cyan")
     inst_table.add_column("Count", justify="right")
@@ -96,6 +98,12 @@ def run_doctor(ctx: CliContext) -> int:
     schema_note = f"{schema_flows} with state_schema" if schema_flows else "none with state_schema"
     inst_table.add_row("flow definitions", str(len(flows)), f"in-memory + storage ({schema_note})")
     inst_table.add_row("process definitions", str(len(processes)), "")
+    resource_note = (
+        f"{schema_resources} with input/output schema"
+        if schema_resources
+        else "declarative contracts (invoke in 0.12 Phase 2+)"
+    )
+    inst_table.add_row("resource definitions", str(len(resources)), resource_note)
     summaries = ctx.list_instance_summaries()
     active = [item for item in summaries if not is_terminal_status(item.status)]
     inst_table.add_row("process instances", str(len(summaries)), "durable snapshots")

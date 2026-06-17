@@ -64,7 +64,7 @@ Documentation refinement pass (ApplicationHost release):
 
 | Component | Status |
 |-----------|--------|
-| `ResourceDefinition` + repository | **Planned** (Phase 1) |
+| `ResourceDefinition` + repository | **Shipped** (Phase 1) |
 | `ResourceEngine` / `BaseProvider` evolution | **Planned** (Phase 2) |
 | `ResourceLeaf` (core BT node) | **Planned** (Phase 3) |
 | `palm` provider (local + remote recursion) | **Planned** (Phase 4) |
@@ -114,8 +114,8 @@ Documentation refinement pass (ApplicationHost release):
 
 ## Priorities & Next Steps
 
-1. **0.12 Phase 1** — implement `ResourceDefinition` and `DefinitionRepository` extension
-2. **0.12 Phase 2** — evolve `BaseProvider` contract and `ResourceEngine.invoke()` lifecycle
+1. **0.12 Phase 2** — evolve `BaseProvider` contract and `ResourceEngine.invoke()` lifecycle
+2. **0.12 Phase 3** — implement `ResourceLeaf` and pattern builders
 3. Continue maturing reliability features (compensation patterns, webhook consumers)
 4. Extend `just docs-check` with optional link validation when needed
 5. Draft `MIGRATION-0.12.md` when provider contract changes land

@@ -11,6 +11,7 @@ from palm.core.exceptions import StorageNotConfiguredError
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
+from palm.definitions.resource import ResourceDefinition
 from palm.definitions.schema import StateSchemaDefinition
 
 _DEFAULT_PREFIX = "palm:definitions"
@@ -18,7 +19,7 @@ _DEFAULT_PREFIX = "palm:definitions"
 
 class DefinitionRepository:
     """
-    CRUD for flow and process definitions.
+    CRUD for flow, process, resource, and state schema definitions.
 
     Code-defined definitions can be registered in memory. When a
     ``StorageEngine`` is attached and initialized, ``save_*`` persists records
@@ -39,6 +40,8 @@ class DefinitionRepository:
         self._processes_by_name: dict[str, ProcessDefinition] = {}
         self._schemas_by_id: dict[str, StateSchemaDefinition] = {}
         self._schemas_by_name: dict[str, StateSchemaDefinition] = {}
+        self._resources_by_id: dict[str, ResourceDefinition] = {}
+        self._resources_by_name: dict[str, ResourceDefinition] = {}
 
     @property
     def prefix(self) -> str:
@@ -271,6 +274,82 @@ class DefinitionRepository:
             return False
 
     # ------------------------------------------------------------------
+    # Resource CRUD
+    # ------------------------------------------------------------------
+
+    def register_resource(self, resource: ResourceDefinition) -> ResourceDefinition:
+        """Register a resource in memory (does not persist)."""
+        self._index_resource(resource)
+        return resource
+
+    def save_resource(self, resource: ResourceDefinition) -> ResourceDefinition:
+        """Register and persist a resource definition."""
+        self._index_resource(resource)
+        storage = self._require_storage()
+        storage.set(
+            self._key("resource", resource.definition_id),
+            resource.to_storage_record(),
+        )
+        self._update_index("resource", resource.definition_id)
+        return resource
+
+    def get_resource(self, ref: str, *, by_id: bool = False) -> ResourceDefinition:
+        """Load a resource by id (default) or by display name."""
+        if by_id:
+            return self.get_resource_by_id(ref)
+        return self.get_resource_by_name(ref)
+
+    def get_resource_by_id(self, definition_id: str) -> ResourceDefinition:
+        cached = self._resources_by_id.get(definition_id)
+        if cached is not None:
+            return cached
+        record = self._load_record("resource", definition_id)
+        if record is None:
+            raise DefinitionNotFoundError("resource", definition_id)
+        resource = ResourceDefinition.from_dict(record)
+        self._index_resource(resource)
+        return resource
+
+    def get_resource_by_name(self, name: str) -> ResourceDefinition:
+        cached = self._resources_by_name.get(name)
+        if cached is not None:
+            return cached
+        for resource in self._resources_by_id.values():
+            if resource.name == name:
+                return resource
+        loaded = self._scan_storage_for_name("resource", name)
+        if isinstance(loaded, ResourceDefinition):
+            self._index_resource(loaded)
+            return loaded
+        raise DefinitionNotFoundError("resource", name)
+
+    def delete_resource(self, ref: str, *, by_id: bool = True) -> bool:
+        try:
+            resource = self.get_resource(ref, by_id=by_id)
+        except DefinitionNotFoundError:
+            return False
+        self._unindex_resource(resource)
+        self._delete_record("resource", resource.definition_id)
+        return True
+
+    def list_resources(self) -> list[ResourceDefinition]:
+        ids = self._collect_ids("resource", self._resources_by_id)
+        resources: list[ResourceDefinition] = []
+        for definition_id in ids:
+            try:
+                resources.append(self.get_resource_by_id(definition_id))
+            except DefinitionNotFoundError:
+                continue
+        return resources
+
+    def has_resource(self, ref: str, *, by_id: bool = True) -> bool:
+        try:
+            self.get_resource(ref, by_id=by_id)
+            return True
+        except DefinitionNotFoundError:
+            return False
+
+    # ------------------------------------------------------------------
     # Internal indexing / storage
     # ------------------------------------------------------------------
 
@@ -300,6 +379,15 @@ class DefinitionRepository:
         self._schemas_by_id.pop(schema.definition_id, None)
         if self._schemas_by_name.get(schema.name) is schema:
             self._schemas_by_name.pop(schema.name, None)
+
+    def _index_resource(self, resource: ResourceDefinition) -> None:
+        self._resources_by_id[resource.definition_id] = resource
+        self._resources_by_name[resource.name] = resource
+
+    def _unindex_resource(self, resource: ResourceDefinition) -> None:
+        self._resources_by_id.pop(resource.definition_id, None)
+        if self._resources_by_name.get(resource.name) is resource:
+            self._resources_by_name.pop(resource.name, None)
 
     def _key(self, kind: str, definition_id: str) -> str:
         return f"{self._prefix}:{kind}:{definition_id}"
@@ -367,11 +455,13 @@ class DefinitionRepository:
             return self._processes_by_id
         if kind == "state_schema":
             return self._schemas_by_id
+        if kind == "resource":
+            return self._resources_by_id
         return self._flows_by_id
 
     def _scan_storage_for_name(
         self, kind: str, name: str
-    ) -> FlowDefinition | ProcessDefinition | StateSchemaDefinition | None:
+    ) -> FlowDefinition | ProcessDefinition | ResourceDefinition | StateSchemaDefinition | None:
         ids = self._collect_ids(kind, self._definition_memory(kind))
         for definition_id in ids:
             record = self._load_record(kind, definition_id)
@@ -383,6 +473,8 @@ class DefinitionRepository:
                 return FlowDefinition.from_dict(record)
             if kind == "state_schema":
                 return StateSchemaDefinition.from_dict(record)
+            if kind == "resource":
+                return ResourceDefinition.from_dict(record)
             return ProcessDefinition.from_dict(record)
         return None
 

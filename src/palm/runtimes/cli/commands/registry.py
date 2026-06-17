@@ -15,6 +15,7 @@ from palm.runtimes.cli.commands import (
     flow,
     instance,
     process,
+    resource,
     system,
     wizard,
 )
@@ -77,6 +78,10 @@ def build_registry() -> CommandRegistry:
     # Definitions & multi-flow processes
     reg.register("process list", process.cmd_process_list)
     reg.register("process submit", process.cmd_process_submit)
+
+    # Resource definitions (0.12 Phase 1)
+    reg.register("resource list", resource.cmd_resource_list)
+    reg.register("resource describe", resource.cmd_resource_describe)
 
     # Instances (host queries + resume command)
     reg.register("instance list", instance.cmd_instance_list)
