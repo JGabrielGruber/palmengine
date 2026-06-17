@@ -27,7 +27,18 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 - **CLI** — `resource list`, `resource describe <ref>`; `palm doctor` and `process list` catalog show resources
 - **Example** — `examples/definitions/fetch_customer.py`
 
-_Phases 2–6 remain planned._
+### Added (Phase 2)
+
+- **`ProviderResult`** — structured invoke outcomes (`success`, `data`, `error`, `metadata`)
+- **`BaseProvider.invoke()`** — action-based contract; `describe()` and `health()` metadata
+- **`ResourceEngine.invoke()`** — definition ref or direct provider; `{{ state.* }}` and `{param}` binding
+- **Events** — `resource.invoked`, `resource.completed`, `resource.failed` via injected `EventEngine`
+- **`palm/common/resource/`** — `resource_definition_resolver()` bridge (core purity preserved)
+- **`PalmApp.invoke_resource()`** / **`ApplicationHost.invoke_resource()`**
+- **CLI** — `resource invoke <ref> key=value ...` and direct `--provider` mode
+- **Integration** — `WizardActionLeaf`, `enrich_resource` transform use engine invoke path
+
+_Phases 3–6 remain planned._
 
 ## [0.11.8] — 2026-06-17
 

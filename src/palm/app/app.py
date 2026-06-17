@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from palm.core.orchestration import Job
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
+    from palm.core.resource import ProviderResult
     from palm.definitions.resource import ResourceDefinition
     from palm.instances import ProcessInstance, StateSnapshot
 
@@ -234,6 +235,29 @@ class PalmApp:
     def list_resources(self, *, runtime_name: str | None = None) -> list[ResourceDefinition]:
         """List resource definitions from a registered runtime repository."""
         return self.repository(runtime_name=runtime_name).list_resources()
+
+    def invoke_resource(
+        self,
+        resource_ref: str | None = None,
+        *,
+        provider: str | None = None,
+        action: str | None = None,
+        params: dict[str, Any] | None = None,
+        state: Any = None,
+        resource_id: str | None = None,
+        runtime_name: str | None = None,
+        **kwargs: Any,
+    ) -> ProviderResult:
+        """Invoke a resource definition or direct provider action on a runtime."""
+        return self.runtime(runtime_name).resource.invoke(
+            resource_ref,
+            provider=provider,
+            action=action,
+            params=params,
+            state=state,
+            resource_id=resource_id,
+            **kwargs,
+        )
 
     def current_wizard_step(self, job_id: str, *, runtime_name: str | None = None) -> str | None:
         """Return the active wizard step slug when applicable."""

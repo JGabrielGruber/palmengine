@@ -205,20 +205,21 @@ flowchart TB
 
 High-level delivery plan. Each phase ships tests, docs, and at least one example.
 
-### Phase 1 — Definitions & repository
+### Phase 1 — Definitions & repository ✅ Shipped
 
-- Introduce `ResourceDefinition` in `palm/definitions/`
-- Extend `DefinitionRepository` (register, save, get, list, serialize)
-- CLI / Explorer listing for resource definitions
-- **Exit criteria:** persist and load resource definitions; `palm doctor` shows resource catalog
+- `ResourceDefinition` in `palm/definitions/`
+- `DefinitionRepository` resource CRUD + storage roundtrip
+- CLI: `resource list`, `resource describe`; `palm doctor` catalog
+- Example: `examples/definitions/fetch_customer.py`
 
-### Phase 2 — Engine & provider contract
+### Phase 2 — Engine & provider contract ✅ Shipped
 
-- Evolve `BaseProvider` with `invoke`, `describe`, structured `ProviderResult`
-- Upgrade `ResourceEngine`: resolve, bind, invoke, event emission
-- Migrate `WizardActionLeaf` internals to engine invoke path (behavior preserved)
-- Harden `rest` / `graphql` / `postgres` behind new contract
-- **Exit criteria:** existing wizard resource steps pass; new unit tests for engine lifecycle
+- `BaseProvider.invoke()` / `describe()` / `health()` + `ProviderResult`
+- `ResourceEngine.invoke()` — definition ref or direct provider, param binding (`{{ state.* }}`, `{param}`)
+- Injected `definition_resolver` (`palm/common/resource/`) + `EventEngine` events (`resource.invoked`, `resource.completed`, `resource.failed`)
+- `WizardActionLeaf` and `enrich_resource` use engine invoke path
+- `PalmApp` / `ApplicationHost.invoke_resource()`; CLI: `resource invoke`
+- **Exit criteria met:** wizard action tests pass; `tests/test_resource_engine.py`
 
 ### Phase 3 — `ResourceLeaf` & pattern builders
 

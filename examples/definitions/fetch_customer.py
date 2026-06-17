@@ -2,7 +2,7 @@
 Fetch customer — example resource definition for REST provider lookup.
 
 Demonstrates declarative resource contracts stored in the definition repository.
-Invocation wiring arrives in 0.12 Phase 2+ (ResourceEngine + ResourceLeaf).
+Invoke via CLI: ``palm resource invoke fetch-customer customer_id=cust-42``
 """
 
 from __future__ import annotations

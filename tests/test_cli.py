@@ -40,6 +40,11 @@ def test_resource_describe_example(cli_ctx) -> None:
     assert reg.dispatch(cli_ctx, "resource describe fetch-customer") == 0
 
 
+def test_resource_invoke_example(cli_ctx) -> None:
+    reg = build_registry()
+    assert reg.dispatch(cli_ctx, "resource invoke fetch-customer customer_id=cust-42") == 0
+
+
 def test_doctor_reports_healthy(cli_ctx) -> None:
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "doctor") == 0

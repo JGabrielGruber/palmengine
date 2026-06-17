@@ -82,6 +82,7 @@ def build_registry() -> CommandRegistry:
     # Resource definitions (0.12 Phase 1)
     reg.register("resource list", resource.cmd_resource_list)
     reg.register("resource describe", resource.cmd_resource_describe)
+    reg.register("resource invoke", resource.cmd_resource_invoke)
 
     # Instances (host queries + resume command)
     reg.register("instance list", instance.cmd_instance_list)

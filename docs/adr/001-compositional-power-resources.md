@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed** — June 2026
+**Accepted** — June 2026 (Phases 1–2 implemented)
 
 ## Context
 
@@ -29,6 +29,19 @@ Adopt **0.12 — Compositional Power** with the following architectural choices:
 6. **Integration** with transforms (`enrich_resource` + `resource_ref`), compensation (mutating invoke metadata), and CQRS projections (resource invocation timeline) ships in Phase 5 of the implementation plan.
 
 Wizard `action` steps remain supported via compatibility mapping to resource invocation specs during a deprecation window.
+
+### Implementation progress (June 2026)
+
+| Phase | Status |
+|-------|--------|
+| 1 — `ResourceDefinition` + repository | **Shipped** |
+| 2 — `ResourceEngine.invoke` + `BaseProvider` contract | **Shipped** |
+| 3 — `ResourceLeaf` | Planned |
+| 4 — `palm` provider | Planned |
+| 5 — Cross-cutting integration | Planned (partial: `enrich_resource` + `resource_ref`) |
+| 6 — Release polish | Planned |
+
+Phase 2 wires definition resolution via `palm/common/resource/resolver.py` injected at `BaseRuntime.start()` — core stays pure.
 
 ## Consequences
 

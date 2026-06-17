@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.resource import BaseProvider
+from palm.core.resource.result import ProviderActionDescriptor, ProviderDescriptor
 
 
 class RestProvider(BaseProvider):
@@ -18,3 +19,12 @@ class RestProvider(BaseProvider):
 
     def disconnect(self) -> None:
         pass
+
+    def describe(self) -> ProviderDescriptor:
+        return ProviderDescriptor(
+            name=self.name,
+            description="HTTP REST resource access",
+            actions=(
+                ProviderActionDescriptor("fetch", "GET a resource by path or id"),
+            ),
+        )

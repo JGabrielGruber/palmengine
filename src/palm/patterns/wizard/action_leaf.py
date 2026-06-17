@@ -98,8 +98,27 @@ class WizardActionLeaf(InteractiveLeaf):
             return PatternStatus.WAITING_FOR_INPUT
 
         resource_id = self._step.resource_id or str(value)
-        provider = self._resource_engine.use(self._step.resource_provider)
-        result = provider.fetch(resource_id)
+        invoke_result = self._resource_engine.invoke(
+            provider=self._step.resource_provider,
+            action="fetch",
+            resource_id=resource_id,
+            state=state,
+        )
+        if not invoke_result.success:
+            publish_validation_feedback(
+                state,
+                (invoke_result.error or "Resource invocation failed",),
+                prompt_bundle=prompt_bundle,
+                prompt_key=self.prompt_key(),
+            )
+            self._fire(
+                WizardEventType.VALIDATION_FAILED,
+                slug=self._step.slug,
+                errors=[invoke_result.error or "Resource invocation failed"],
+            )
+            return PatternStatus.WAITING_FOR_INPUT
+
+        result = invoke_result.data
         state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}", result)
         leave_step(state, self._step.slug, context=self._context)
         state.delete(WizardKeys.ACTIVE_PROMPT)

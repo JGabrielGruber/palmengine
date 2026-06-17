@@ -37,25 +37,46 @@ class EnrichResourceRule(BaseTransformRule):
             raise TransformApplicationError(
                 f"{self.rule_name} requires resource_engine (configure runtime ResourceEngine)",
             )
+        resource_ref = options.get("resource_ref")
         provider_name = options.get("provider")
-        if not provider_name:
-            raise TransformApplicationError(f"{self.rule_name} requires provider=")
+        if not resource_ref and not provider_name:
+            raise TransformApplicationError(
+                f"{self.rule_name} requires provider= or resource_ref=",
+            )
 
         value = context.value
+        state = value if isinstance(value, dict) else {}
         id_field = str(options.get("id_field", "id"))
         resource_id = options.get("resource_id")
-        if resource_id is None:
-            if isinstance(value, dict) and id_field in value:
-                resource_id = value[id_field]
-            elif isinstance(value, str):
-                resource_id = value
-            else:
-                raise TransformApplicationError(
-                    f"{self.rule_name} requires resource_id= or mapping with {id_field!r}",
-                )
+        if resource_ref is None:
+            if resource_id is None:
+                if isinstance(value, dict) and id_field in value:
+                    resource_id = value[id_field]
+                elif isinstance(value, str):
+                    resource_id = value
+                else:
+                    raise TransformApplicationError(
+                        f"{self.rule_name} requires resource_id= or mapping with {id_field!r}",
+                    )
+            invoke_result = engine.invoke(
+                provider=str(provider_name),
+                action="fetch",
+                resource_id=str(resource_id),
+                state=state,
+            )
+        else:
+            invoke_result = engine.invoke(
+                resource_ref=str(resource_ref),
+                state=state,
+            )
+            resource_id = invoke_result.metadata.get("resource_id", resource_id)
+            provider_name = invoke_result.metadata.get("provider", provider_name)
 
-        provider = engine.use(str(provider_name))
-        fetched = provider.fetch(str(resource_id))
+        if not invoke_result.success:
+            raise TransformApplicationError(
+                invoke_result.error or f"{self.rule_name} invocation failed",
+            )
+        fetched = invoke_result.data
         merge = bool(options.get("merge", True))
         target_field = str(options.get("target_field", "resource"))
 

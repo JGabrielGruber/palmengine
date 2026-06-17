@@ -32,6 +32,8 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
 [bold]Resources[/] [dim](declarative provider contracts — 0.12)[/]
   resource list             All registered resource definitions
   resource describe <ref>     Inspect provider, action, schemas, params
+  resource invoke <ref> [k=v] Invoke definition (state binding via k=v)
+  resource invoke --provider <p> --resource-id <id>  Direct provider invoke
 
 [bold]Instances[/] [dim](reads via host queries)[/]
   instance list [--all] [--status S] [--flow F] [--limit N] [--format json]

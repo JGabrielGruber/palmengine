@@ -61,6 +61,7 @@ if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
     from palm.core.orchestration import Job
     from palm.definitions.flow import FlowDefinition
+    from palm.core.resource import ProviderResult
     from palm.definitions.process import ProcessDefinition
 
 
@@ -314,6 +315,30 @@ class ApplicationHost:
 
     def recent_host_events(self, *, limit: int = 10) -> list[RecordedEvent]:
         return self._event_recorder.recent(limit=limit)
+
+    def invoke_resource(
+        self,
+        resource_ref: str | None = None,
+        *,
+        provider: str | None = None,
+        action: str | None = None,
+        params: dict[str, Any] | None = None,
+        state: Any = None,
+        resource_id: str | None = None,
+        runtime_name: str | None = None,
+        **kwargs: Any,
+    ) -> ProviderResult:
+        """Invoke a resource definition or direct provider on the host runtime."""
+        return self.app.invoke_resource(
+            resource_ref,
+            provider=provider,
+            action=action,
+            params=params,
+            state=state,
+            resource_id=resource_id,
+            runtime_name=runtime_name,
+            **kwargs,
+        )
 
     def submit_flow(
         self,

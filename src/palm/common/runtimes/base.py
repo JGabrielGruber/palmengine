@@ -15,6 +15,7 @@ import palm.providers  # — register providers
 import palm.storages  # noqa: F401 — register core backends
 from palm import __version__
 from palm.common import DefinitionExecutor, DefinitionRepository, InstanceRepository
+from palm.common.resource import resource_definition_resolver
 from palm.common.events import OutboxProcessor, OutboxStore, wire_reliable_events
 from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSnapshotHook
 from palm.common.managers import InstanceManager
@@ -108,7 +109,10 @@ class BaseRuntime:
 
         self.context.initialize()
         self.event.initialize()
-        self.resource.initialize()
+        self.resource.initialize(
+            event_engine=self.event,
+            definition_resolver=resource_definition_resolver(self.repository),
+        )
         self.auth.initialize()
         authenticate_runtime(self.auth, options.get("credentials"))
 
