@@ -44,6 +44,7 @@ def _resolve_handler(
         "docs": lambda req: meta.docs(ctx, req),
         "list_jobs": lambda req: jobs.list_jobs(ctx, req),
         "get_job": lambda req, job_id: jobs.get_job(ctx, req, job_id=job_id),
+        "get_job_context": lambda req, job_id: jobs.get_job_context(ctx, req, job_id=job_id),
         "submit_job": lambda req: jobs.submit_job(ctx, req),
         "provide_input": lambda req, job_id: jobs.provide_input(ctx, req, job_id=job_id),
         "prepare_plans": lambda req: plans.prepare_plans(ctx, req),

@@ -345,6 +345,19 @@ run_server(rt)  # blocks; serves /health, /v1/docs, /v1/openapi.json</code></pre
           <div class="flex justify-between items-start gap-4 mb-3">
             <div>
               <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
+              <span class="ml-2 font-mono text-sm">/v1/jobs/{job_id}/context</span>
+              <p class="text-zinc-500 text-sm mt-1">Rich job view — wizard step, snapshots, next actions</p>
+            </div>
+            <button type="button" class="copy-curl text-xs text-zinc-400 hover:text-teal-400 border border-zinc-700 px-3 py-1 rounded-lg shrink-0" data-curl="curl -s 'http://localhost:8080/v1/jobs/job-abc123/context' -H 'Accept: application/json'">Copy</button>
+          </div>
+          <pre class="bg-black rounded-xl p-4 font-mono text-xs overflow-x-auto text-zinc-300"><code>curl -s 'http://localhost:8080/v1/jobs/job-abc123/context' \
+  -H 'Accept: application/json'</code></pre>
+        </div>
+
+        <div class="api-example bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+          <div class="flex justify-between items-start gap-4 mb-3">
+            <div>
+              <span class="text-xs font-bold tracking-wider text-teal-400 bg-teal-950 px-2 py-0.5 rounded">GET</span>
               <span class="ml-2 font-mono text-sm">/v1/jobs</span>
               <p class="text-zinc-500 text-sm mt-1">Paginated orchestration job board</p>
             </div>

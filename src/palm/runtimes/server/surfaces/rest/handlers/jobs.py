@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
-from palm.common.cqrs.query import GetJobStatusQuery, ListJobStatusQuery
+from palm.common.cqrs.query import GetJobContextQuery, GetJobStatusQuery, ListJobStatusQuery
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.server.surfaces.rest import errors
@@ -26,6 +26,13 @@ if TYPE_CHECKING:
 
 def get_job(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
     result = ctx.ask(GetJobStatusQuery(job_id=job_id))
+    if isinstance(result, dict) and not result.get("found", True):
+        return errors.job_not_found(job_id)
+    return ok(read_model_body(result))
+
+
+def get_job_context(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
+    result = ctx.ask(GetJobContextQuery(job_id=job_id))
     if isinstance(result, dict) and not result.get("found", True):
         return errors.job_not_found(job_id)
     return ok(read_model_body(result))

@@ -110,6 +110,36 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "metadata": {"pattern": "wizard"},
         "step": "name",
     },
+    "get_job_context": {
+        "found": True,
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "metadata": {"pattern": "wizard"},
+        "pattern": {
+            "pattern": "wizard",
+            "step": "name",
+            "prompt": "Your name?",
+            "answers": {},
+        },
+        "instance": {
+            "instance_id": "inst-abc123",
+            "link": "/v1/instances/inst-abc123",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "wizard_progress": {
+            "current_step": "name",
+            "completed_steps": [],
+        },
+        "blackboard_snapshot": None,
+        "recent_events": [],
+        "next_actions": [
+            {
+                "action": "provide_input",
+                "method": "POST",
+                "path": "/v1/jobs/job-abc123/input",
+            }
+        ],
+    },
     "submit_job": {
         "job_id": "job-abc123",
         "status": "RUNNING",
@@ -289,6 +319,7 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
     featured_ids = (
         "health",
         "list_jobs",
+        "get_job_context",
         "submit_job",
         "provide_input",
         "list_instances",

@@ -16,10 +16,12 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
     SubmitProcessCommand,
 )
+from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
+    GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
     GetWizardProgressQuery,
@@ -139,6 +141,8 @@ class StandaloneQueryHandlers:
     def ask(self, query: Query) -> Any:
         if isinstance(query, GetJobStatusQuery):
             return self._get_job(query)
+        if isinstance(query, GetJobContextQuery):
+            return self._get_job_context(query)
         if isinstance(query, ListJobStatusQuery):
             return self._list_jobs(query)
         if isinstance(query, ListInstancesQuery):
@@ -182,6 +186,31 @@ class StandaloneQueryHandlers:
         if step is not None:
             payload["step"] = step
         return payload
+
+    def _get_job_context(self, query: GetJobContextQuery) -> dict[str, Any]:
+        try:
+            job = self._runtime.get_job(query.job_id)
+        except JobNotFoundError:
+            return {"found": False, "job_id": query.job_id}
+
+        instance_id = instance_id_for_job(job)
+        instance = None
+        try:
+            instance = self._runtime.instance_manager.get(instance_id)
+        except InstanceNotFoundError:
+            pass
+
+        wizard_progress = self._wizard_progress(
+            GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
+        )
+        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+
+        return build_job_context(
+            job,
+            pattern=inspect_job_json(job),
+            instance=instance,
+            wizard_progress=wizard_progress,
+        )
 
     def _list_jobs(self, query: ListJobStatusQuery) -> list[dict[str, Any]]:
         jobs = self._runtime.orchestration.list_jobs()
@@ -304,6 +333,7 @@ def wire_standalone_buses(
         command_bus.register(command_type, commands)
     for query_type in (
         GetJobStatusQuery,
+        GetJobContextQuery,
         ListJobStatusQuery,
         ListInstancesQuery,
         GetInstanceStatusQuery,

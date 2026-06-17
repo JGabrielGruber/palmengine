@@ -15,6 +15,7 @@ RouteId = Literal[
     "docs",
     "list_jobs",
     "get_job",
+    "get_job_context",
     "submit_job",
     "provide_input",
     "prepare_plans",
@@ -90,6 +91,17 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Jobs",
             summary="Get job",
             description="Fetch a single job by id.",
+        ),
+        RouteDefinition(
+            route_id="get_job_context",
+            method="GET",
+            path="/v1/jobs/{job_id}/context",
+            group="Jobs",
+            summary="Get job context",
+            description=(
+                "Rich job view with pattern state, wizard progress, blackboard snapshot, "
+                "recent events, next actions, and related instance link."
+            ),
         ),
         RouteDefinition(
             route_id="submit_job",

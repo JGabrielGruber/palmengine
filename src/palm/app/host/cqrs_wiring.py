@@ -31,10 +31,12 @@ from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_pr
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
 from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
+from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
+    GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
     GetWizardProgressQuery,
@@ -200,6 +202,8 @@ class HostQueryHandlers:
             return self._wizard_progress.get_progress(query)
         if isinstance(query, GetJobStatusQuery):
             return self._get_job(query)
+        if isinstance(query, GetJobContextQuery):
+            return self._get_job_context(query)
         if isinstance(query, ListJobStatusQuery):
             return self._job_board.list_jobs(query)
         if isinstance(query, ListWizardProgressQuery):
@@ -236,6 +240,32 @@ class HostQueryHandlers:
         if job.error is not None:
             payload["error"] = str(job.error)
         return payload
+
+    def _get_job_context(self, query: GetJobContextQuery) -> dict[str, Any]:
+        try:
+            job = self._app.runtime().get_job(query.job_id)
+        except Exception:
+            return {"found": False, "job_id": query.job_id}
+
+        instance_id = instance_id_for_job(job)
+        instance = None
+        try:
+            instance = self._instance_manager.get(instance_id)
+        except InstanceNotFoundError:
+            pass
+
+        progress = self._wizard_progress.get_progress(
+            GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
+        )
+        wizard_progress = progress.to_dict() if progress is not None else None
+        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+
+        return build_job_context(
+            job,
+            pattern=inspect_job_json(job),
+            instance=instance,
+            wizard_progress=wizard_progress,
+        )
 
     def _get_snapshot(self, query: GetInstanceSnapshotQuery) -> tuple[int, StateSnapshot] | None:
         try:
@@ -306,6 +336,7 @@ def wire_query_bus(
         GetProcessQuery,
         GetWizardProgressQuery,
         GetJobStatusQuery,
+        GetJobContextQuery,
         ListJobStatusQuery,
         ListWizardProgressQuery,
     ):

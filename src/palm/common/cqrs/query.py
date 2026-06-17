@@ -55,6 +55,13 @@ class GetJobStatusQuery(Query):
 
 
 @dataclass(frozen=True)
+class GetJobContextQuery(Query):
+    """Rich job context — pattern state, snapshots, events, and next actions."""
+
+    job_id: str
+
+
+@dataclass(frozen=True)
 class ListWizardProgressQuery(Query):
     """List wizard progress read models (newest first)."""
 
