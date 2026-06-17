@@ -191,7 +191,7 @@ Wizard steps are **nodes**, not callbacks scattered through a framework. Future 
 | **OrchestrationEngine** | Job lifecycle: pending, running, waiting for input, terminal |
 | **ContextEngine** | Stack-scoped execution metadata (job, instance ids) |
 | **StorageEngine** | Active backend selection and key/value persistence |
-| **ResourceEngine** | Provider resolution and fetch lifecycle |
+| **ResourceEngine** | Provider resolution and fetch lifecycle (0.12: definition resolve, invoke, events — see [Future: Resource layer](#future-resource-layer-012-compositional-power)) |
 | **EventEngine** | Synchronous observability bus |
 | **AuthEngine** | Minimal auth primitives (enforcement at runtime / BT) |
 
@@ -735,13 +735,80 @@ Static typing is enforced project-wide via **mypy strict** (`just typecheck` / `
 
 ---
 
-## Future: compute & data (architectural direction)
+## Future: Resource layer (0.12 — Compositional Power)
+
+**Status:** Vision and ADR complete; implementation planned for 0.12.  
+**Documents:** [docs/VISION-0.12.md](docs/VISION-0.12.md) · [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+
+0.12 elevates Resources to the same declarative tier as flows and processes.
+
+### Definition model (symmetric trio)
+
+| Kind | Module | Repository | Executes via |
+|------|--------|------------|--------------|
+| Flow | `palm/definitions/flow.py` | `DefinitionRepository` | Pattern builder → BT |
+| Process | `palm/definitions/process.py` | `DefinitionRepository` | `ProcessPlan` → BT |
+| **Resource** (0.12) | `palm/definitions/resource.py` | `DefinitionRepository` | **`ResourceLeaf` → ResourceEngine** |
+
+`ResourceDefinition` describes provider, action, param bindings, and optional input/output schemas. Patterns reference resources by `resource_ref` instead of inlining provider details.
+
+### Execution path
+
+```mermaid
+flowchart LR
+    def[ResourceDefinition] --> leaf[ResourceLeaf]
+    leaf --> engine[ResourceEngine]
+    engine --> prov[BaseProvider.invoke]
+    prov --> state[BaseState write]
+    engine --> evt[EventEngine]
+```
+
+- **`ResourceLeaf`** — core BT leaf (`palm/core/behavior_tree/nodes/leaf/`); patterns materialize it from declarative step/stage config
+- **`ResourceEngine`** — resolve definition, bind params from scoped state, invoke provider action, emit correlation events
+- **`BaseProvider`** — evolves from `fetch(id)` to `invoke(action, params)` with `describe()` metadata; `fetch` remains the default read action
+
+### The `palm` provider (flagship)
+
+New plugin: `palm/providers/palm/`. Enables **Palm calling Palm**:
+
+| Mode | Delegates to |
+|------|--------------|
+| Local | Hosting `ApplicationHost` — `submit_flow`, `submit_process`, `ask` |
+| Remote | `ServerRuntime` HTTP — `/v1/jobs`, flow submit endpoints |
+
+Recursion guardrails (depth limits, cycle detection, child job linkage on parent state) live in the provider; engine supplies correlation metadata. This is the primary enabler of hierarchical, distributed, and agent-friendly workflows.
+
+### Integration targets
+
+| Layer | 0.12 touchpoint |
+|-------|-----------------|
+| Wizard | `step_kind: resource` (successor to `action` steps) |
+| Transforms | `enrich_resource` accepts `resource_ref` |
+| Compensation | Mutating invokes register undo metadata for `CompensationCoordinator` |
+| CQRS | Optional `ResourceInvocationProjection` for dashboards |
+| Explorer | Resource step timeline on instance views |
+| Runtimes | `ResourceEngine` wired through `BaseRuntime` (unchanged entry; richer events) |
+
+**Core purity preserved:** contracts in `palm/core/resource/`; `PalmProvider` and external providers in `palm/providers/`; repository wiring in `palm/common/persistence/`.
+
+### Implementation phases
+
+1. `ResourceDefinition` + repository  
+2. Engine & provider contract  
+3. `ResourceLeaf` + pattern builders  
+4. `palm` provider  
+5. Transforms, compensation, observability  
+6. Release polish  
+
+---
+
+## Future: compute & data (beyond 0.12)
 
 Not yet in the main package, but aligned with the BT model:
 
 - **KernelLeaf** — GPU-resident kernels, fixed VRAM buffers, batch ticks
-- **Resource staging** — Parquet or large artifacts as provider-backed resources flowing through context into kernel nodes
-- Stronger coupling between **ResourceEngine** and pattern action/commit paths
+- **Resource staging** — Parquet or large artifacts as `ResourceDefinition`-backed stages flowing through `ResourceLeaf` into kernel nodes
+- **Compositional GPU pipelines** — `palm` provider sub-flows coordinating CPU staging and kernel execution
 
 Prototypes under `archive/experimental/gpubatches/` explore batch GPU execution; they inform design but are not part of the supported architecture until promoted with tests and documentation.
 
@@ -772,6 +839,7 @@ New production code must not import from `archive/`.
 ## Related documents
 
 - [SCOPE.md](SCOPE.md) — vision, in/out of scope, roadmap
+- [docs/VISION-0.12.md](docs/VISION-0.12.md) — 0.12 Resource System vision
 - [README.md](README.md) — quick start and CLI
 - [MIGRATION-0.10.md](MIGRATION-0.10.md) — upgrade from 0.9.x bootstrap paths
 - [DEVELOPMENT.md](DEVELOPMENT.md) — contributor guide

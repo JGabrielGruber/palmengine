@@ -1,6 +1,6 @@
 # Palm Engine — Project Scope & Roadmap
 
-**Version:** 0.6.0 · **Last updated:** June 2026
+**Version:** 0.11.8 (shipping) · **0.12 in planning** · **Last updated:** June 2026
 
 This document describes what Palm is for, what it does today, and where it is headed. For layer-by-layer technical detail, see [ARCHITECTURE.md](ARCHITECTURE.md). For day-to-day usage, see [README.md](README.md).
 
@@ -116,19 +116,50 @@ Step definitions stay focused on **user-facing intent** (prompt, validation, res
 
 ## Roadmap
 
-### Near term (0.6.x)
+### Current release — 0.11.x
+
+- **ApplicationHost** + CQRS + reliability primitives (outbox, compensation)
+- **Palm Explorer** — SSR hub for flows, jobs, instances
+- Rich wizard (collections, transforms, parallel branches, backtracking)
+- Multiple runtimes (Embedded, Daemon, Server, CLI)
+
+### Next major — 0.12 “Compositional Power”
+
+**Theme:** Make Resources first-class, declarative citizens — on the same level as Flows and Processes.
+
+Full vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+
+| Pillar | What ships |
+|--------|------------|
+| **`ResourceDefinition`** | Declarative, reusable, repository-backed resource contracts |
+| **`ResourceEngine` + `BaseProvider`** | Richer invoke lifecycle — actions, schemas, structured results, events |
+| **`palm` provider** | Flagship recursion — Palm calling Palm flows/processes locally or remotely |
+| **`ResourceLeaf`** | Native Behavior Tree integration across wizards, pipelines, and DAGs |
+| **Cross-cutting** | Transforms, compensation, observability, Explorer timelines |
+
+**Why it matters:** Enables hierarchical, distributed, and agent-friendly orchestration — sub-workflows, federated Palm instances, and tool-like flow delegation without leaving the BT model.
+
+**Implementation phases (summary):**
+
+1. Definitions & repository
+2. Engine & provider contract
+3. `ResourceLeaf` & pattern builders
+4. `palm` provider (local + remote)
+5. Transforms, compensation, CQRS, Explorer
+6. Polish, examples, release
+
+### Near term (0.11.x → 0.12 prep)
 
 - Harden transactional wizard and instance resume across storage backends
-- Time-travel replay from `state_snapshots[]` (inspection shipped in 0.6.0)
-- Stronger **ResourceEngine** usage in patterns and commit handlers
-- Expand runtime middleware (auth policies, observability exporters) without core pollution
 - WebSocket runtime for live wizard and job streaming
+- Expand runtime middleware (auth policies, observability exporters) without core pollution
+- Begin Phase 1 (ResourceDefinition + repository) behind feature flags if needed
 
-### Medium term
+### Medium term (post-0.12)
 
-- **Improved observability** — structured events, richer audit dashboards atop `state_snapshots[]`, long-running job management UI
+- **Improved observability** — structured events, richer audit dashboards, long-running job management UI
 - **Long-running process management** — cancel, pause, progress reporting across runtimes
-- Richer **DAG** and **ETL** patterns aligned with definition-driven submission
+- Richer **DAG** and **ETL** patterns with native resource stages
 - Optional **BT guard nodes** catalog (auth guard, validation decorator, retry)
 
 ### Long term — compute & data
@@ -145,8 +176,8 @@ flowchart LR
 Planned direction (not yet in main scope):
 
 - **`KernelLeaf` nodes** — resident GPU kernels, fixed VRAM buffers, batch execution
-- **Resource nodes** — large dataset staging (e.g. Parquet → context → kernel → output artifact)
-- Integration with **ResourceEngine** for providers that represent datasets, models, and compute endpoints
+- **Resource nodes** — large dataset staging (e.g. Parquet → context → kernel → output artifact); builds on 0.12 `ResourceDefinition` + `ResourceLeaf`
+- **KernelLeaf** integration with compositional sub-flows via `palm` provider
 
 Early experiments live in `archive/experimental/gpubatches/`. They inform the roadmap but are **not** part of the supported API until promoted into `patterns/` or `providers/` with tests and docs.
 
@@ -181,7 +212,7 @@ Palm is succeeding when:
 2. Core purity checks pass and new features extend via registries, not core edits.
 3. Definitions remain the contract between authors, storage, and execution.
 4. Human steps and automated steps share one BT execution model.
-5. The path from wizard → DAG → GPU kernel feels like one engine, not three products.
+5. The path from wizard → resource invoke → sub-flow → DAG → GPU kernel feels like one engine, not three products.
 
 ---
 
@@ -191,4 +222,5 @@ Palm is succeeding when:
 - [ARCHITECTURE.md](ARCHITECTURE.md) — layers, engines, data flow
 - [DEVELOPMENT.md](DEVELOPMENT.md) — contributor workflow
 - [CHANGELOG.md](CHANGELOG.md) — release history
+- [docs/VISION-0.12.md](docs/VISION-0.12.md) — 0.12 Compositional Power vision
 - [AGENTS.md](AGENTS.md) — rules for AI and human contributors

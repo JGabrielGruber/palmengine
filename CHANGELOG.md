@@ -2,9 +2,24 @@
 
 All notable changes to Palm are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [Unreleased] — 0.12 “Compositional Power”
 
-_No changes yet._
+**Theme:** Resources as first-class, declarative citizens — compositional orchestration at scale.
+
+Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+
+### Planned
+
+- **`ResourceDefinition`** — declarative, reusable resource contracts in `DefinitionRepository`
+- **`ResourceEngine` evolution** — resolve, bind params, invoke actions, structured events
+- **`BaseProvider` richness** — `invoke()`, `describe()`, structured `ProviderResult`, action catalog
+- **`ResourceLeaf`** — core Behavior Tree leaf for resource invocation in any pattern
+- **`palm` provider** — flagship recursion: Palm flows/processes invoked locally or via remote Server HTTP
+- **Pattern integration** — `step_kind: resource` in wizards; resource stages in pipeline/DAG builders
+- **Cross-cutting** — `enrich_resource` + `resource_ref`, compensation for mutating invokes, CQRS projection, Explorer timelines
+- **Examples** — compositional demo (parent flow → child flow → resume)
+
+_No code shipped yet — documentation and planning only._
 
 ## [0.11.8] — 2026-06-17
 

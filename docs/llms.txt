@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.11.8 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.11.8 (shipping) · **Next:** 0.12 Compositional Power (planned) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -56,6 +56,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
 | **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances; `GET /` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
+| **Resources (0.11)** | `ResourceEngine` + providers; wizard `action` steps; `enrich_resource` transform |
 
 ## Quick Commands
 
@@ -118,6 +119,18 @@ src/palm/
 | Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
 | Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
 | CQRS handler | `palm/common/cqrs/` | Wire in `palm/app/host/cqrs_wiring.py` |
+
+## 0.12 Planned — Compositional Power
+
+Resources become first-class definitions (like flows/processes):
+
+- `ResourceDefinition` in `DefinitionRepository`
+- `ResourceLeaf` — core BT node for invocation
+- `ResourceEngine.invoke()` — bind params, emit events
+- `palm` provider — Palm calling Palm (local `ApplicationHost` or remote Server HTTP)
+- Integration: wizards (`step_kind: resource`), transforms, compensation, Explorer
+
+Vision: `docs/VISION-0.12.md` · ADR: `docs/adr/001-compositional-power-resources.md`
 
 ## Invariants (Never Break)
 

@@ -368,7 +368,7 @@ High-level direction (not all shipped yet). Full detail in [SCOPE.md](SCOPE.md).
 |-------|-----------|
 | **Runtimes** | WebSocket surface, persistent plan registry, richer server auth |
 | **Middleware** | Runtime-level auth/observability; optional BT guard nodes for step policy |
-| **Resources** | Deeper `ResourceEngine` integration in patterns and commit handlers |
+| **Resources (0.12)** | `ResourceDefinition`, `ResourceLeaf`, richer providers, **`palm` provider** (Palm calling Palm) — [VISION-0.12](docs/VISION-0.12.md) |
 | **Compute** | `KernelLeaf` GPU nodes, resident kernels, dataset staging (Parquet → context → kernel → artifact) |
 | **Observability** | Structured events, long-running job management |
 

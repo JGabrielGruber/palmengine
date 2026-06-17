@@ -1,0 +1,280 @@
+# Palm Engine 0.12 — Compositional Power
+
+**Codename:** Compositional Power  
+**Theme:** Resources as first-class citizens  
+**Status:** Vision & planning (unreleased)  
+**Last updated:** June 2026
+
+> *“A flow that calls a flow that calls a service — and every step knows where it stands in the tree.”*
+
+---
+
+## Why 0.12
+
+Through 0.11, Palm matured its **definition-driven** model: flows and processes are declarative, durable, and observable. Resources exist — `ResourceEngine`, providers, wizard action steps, `enrich_resource` transforms — but they still feel like **integration glue** rather than peers to flows and processes.
+
+**0.12 closes that gap.** Resources become declarative, reusable, repository-backed definitions. They execute as native Behavior Tree leaves. And Palm gains a flagship **`palm` provider** that lets orchestration call orchestration — locally or across the network.
+
+The result is **compositional power**: hierarchical workflows, distributed handoffs, and agent-friendly surfaces where “invoke this capability” is as natural as “ask this question.”
+
+---
+
+## North star
+
+| Today (0.11) | Target (0.12) |
+|--------------|---------------|
+| Resource calls are wizard action steps or transform side-effects | Resources are **declared**, **stored**, and **invoked** like flows |
+| Providers are thin `fetch(id)` stubs | Providers expose a **rich contract** — actions, schemas, metadata, lifecycle |
+| External integration only (REST, GraphQL, Postgres) | **`palm` provider** — Palm invokes Palm (embedded or remote) |
+| BT integration is pattern-specific (`WizardActionLeaf`) | **`ResourceLeaf`** — universal BT node for any pattern |
+| Observability sees jobs and instances | Resource invocations are **first-class events** with correlation |
+
+---
+
+## Core concepts
+
+### 1. `ResourceDefinition`
+
+A declarative, serializable description of *what* to call and *how* to bind it — symmetric with `FlowDefinition` and `ProcessDefinition`.
+
+```yaml
+# Example (illustrative — not final schema)
+kind: resource
+name: fetch-customer
+provider: rest
+resource_id: customers/{customer_id}
+params:
+  customer_id: "{{ state.customer_id }}"
+input_schema:
+  customer_id: { type: string, required: true }
+output_schema:
+  type: object
+  properties:
+    id: { type: string }
+    email: { type: string }
+metadata:
+  description: Load customer record before commit
+  tags: [crm, read]
+```
+
+**Properties:**
+
+- Stored in `DefinitionRepository` alongside flows and processes
+- Referenced by name (`resource_ref`) from wizard steps, pipeline stages, DAG nodes, and transforms
+- Supports inline overrides at invocation time (params, timeouts, idempotency keys)
+- Versioned serialization (`kind: resource`, `version: 1`)
+
+### 2. Evolved `ResourceEngine`
+
+The engine graduates from “provider lookup + fetch” to a **coordination hub**:
+
+| Capability | Purpose |
+|------------|---------|
+| **Resolve** | Load `ResourceDefinition` from repository or accept inline invocation spec |
+| **Bind** | Evaluate param templates against scoped blackboard state |
+| **Invoke** | Route to provider action (`fetch`, `submit`, `query`, …) with validated inputs |
+| **Observe** | Emit structured events (started, succeeded, failed, compensated) with correlation ids |
+| **Compensate** | Register undo handlers when a resource mutation participates in a transactional step |
+
+Core stays pure: the engine defines contracts and lifecycle; concrete providers live at the edges.
+
+### 3. Richer `BaseProvider`
+
+Providers grow beyond `connect` / `fetch` / `disconnect`:
+
+```python
+# Illustrative contract evolution (high-level)
+class BaseProvider(ABC):
+    def connect(self) -> None: ...
+    def disconnect(self) -> None: ...
+    def describe(self) -> ProviderDescriptor: ...      # actions, param schemas
+    def invoke(self, action: str, *, params: dict) -> ProviderResult: ...
+    def health(self) -> ProviderHealth: ...              # optional
+```
+
+- **Actions** — `fetch` remains the default read path; mutating providers expose `submit`, `patch`, `delete`, etc.
+- **Schemas** — optional input/output validation at the provider boundary
+- **Results** — structured `ProviderResult` (data, metadata, side-effect handles for compensation)
+- **Thread-safety** — documented per provider; engine manages connection pooling where needed
+
+Existing providers (`rest`, `graphql`, `postgres`) evolve incrementally; stubs become real implementations behind the new contract.
+
+### 4. The `palm` provider (flagship)
+
+**Palm calling Palm** — the compositional heart of 0.12.
+
+| Mode | Behavior |
+|------|----------|
+| **Local** | `PalmProvider` delegates to the hosting `ApplicationHost` — `submit_flow`, `submit_process`, `ask`, or synchronous read/query |
+| **Remote** | Same API surface over `ServerRuntime` HTTP (`/v1/jobs`, `/v1/flows/{name}/submit`, …) with auth context propagation |
+| **Sync vs async** | Short flows may complete inline; long flows return a child job handle linked via correlation metadata |
+
+Use cases unlocked:
+
+- **Sub-workflows** — onboarding wizard calls a dedicated “verify identity” flow
+- **Agent loops** — an outer orchestrator flow delegates tool-like sub-flows
+- **Federated orchestration** — Palm instance A invokes flows on Palm instance B
+- **Recursive composition** — a process step spawns a child flow whose commit triggers a parent resume
+
+Guardrails (designed in, not bolted on):
+
+- Depth limits and cycle detection for local recursion
+- Explicit `wait_policy` (inline, poll, webhook-resume) per invocation
+- Child instance linkage on parent blackboard (`__palm:child_jobs`)
+
+### 5. `ResourceLeaf` — Behavior Tree integration
+
+Resources become a **first-class leaf node** in the core BT model, alongside `TransformLeaf` and interactive leaves.
+
+```
+Sequence
+├── WizardInputLeaf (collect customer_id)
+├── ResourceLeaf (resource_ref: fetch-customer)
+├── TransformLeaf (normalize response)
+└── CommitLeaf
+```
+
+**`ResourceLeaf` responsibilities:**
+
+- Resolve definition + bind params from `BaseState`
+- Call `ResourceEngine.invoke()` with execution context (job id, instance id, scope)
+- Write outputs to configurable state keys (default: slug-based)
+- Surface failures as `PatternStatus.FAILURE` with structured error payload
+- Support optional confirmation gate (human approves before mutating invoke)
+
+Pattern builders (wizard, DAG, pipeline) gain a declarative `step_kind: resource` that materializes `ResourceLeaf` — replacing the wizard-only `action` path over time.
+
+### 6. Deep integration
+
+| Area | 0.12 direction |
+|------|----------------|
+| **Wizards** | `step_kind: resource` with schema validation, summary visibility, backtrack-safe re-invoke |
+| **Transforms** | `enrich_resource` accepts `resource_ref`; chain output into subsequent rules |
+| **Compensation** | Mutating invokes register compensation metadata; `CompensationCoordinator` can invoke provider undo or child-flow rollback |
+| **Observability** | `EventEngine` + outbox events: `resource.invoked`, `resource.completed`, `resource.compensated`; Explorer shows resource step timeline |
+| **CQRS** | Optional `ResourceInvocationProjection` for dashboards and agent introspection |
+
+---
+
+## Architectural diagram
+
+```mermaid
+flowchart TB
+    subgraph Definitions["DefinitionRepository"]
+        flow[FlowDefinition]
+        proc[ProcessDefinition]
+        res[ResourceDefinition]
+    end
+
+    subgraph BT["Behavior Tree"]
+        wiz[WizardInputLeaf]
+        rleaf[ResourceLeaf]
+        xform[TransformLeaf]
+        commit[CommitLeaf]
+    end
+
+    subgraph Engine["ResourceEngine (core)"]
+        resolve[Resolve + bind params]
+        invoke[Invoke action]
+        observe[Emit events]
+    end
+
+    subgraph Providers["Provider registry"]
+        palm[palm — local / remote]
+        rest[rest]
+        gql[graphql]
+        pg[postgres]
+    end
+
+    flow --> BT
+    res --> rleaf
+    wiz --> rleaf --> xform --> commit
+    rleaf --> resolve --> invoke
+    invoke --> palm
+    invoke --> rest
+    invoke --> gql
+    invoke --> pg
+    invoke --> observe
+```
+
+**Dependency rule preserved:** `ResourceLeaf` and `ResourceEngine` live in core; `PalmProvider` lives in `palm/providers/palm/`; repository wiring lives in `palm/common/`.
+
+---
+
+## Implementation phases
+
+High-level delivery plan. Each phase ships tests, docs, and at least one example.
+
+### Phase 1 — Definitions & repository
+
+- Introduce `ResourceDefinition` in `palm/definitions/`
+- Extend `DefinitionRepository` (register, save, get, list, serialize)
+- CLI / Explorer listing for resource definitions
+- **Exit criteria:** persist and load resource definitions; `palm doctor` shows resource catalog
+
+### Phase 2 — Engine & provider contract
+
+- Evolve `BaseProvider` with `invoke`, `describe`, structured `ProviderResult`
+- Upgrade `ResourceEngine`: resolve, bind, invoke, event emission
+- Migrate `WizardActionLeaf` internals to engine invoke path (behavior preserved)
+- Harden `rest` / `graphql` / `postgres` behind new contract
+- **Exit criteria:** existing wizard resource steps pass; new unit tests for engine lifecycle
+
+### Phase 3 — `ResourceLeaf` & pattern builders
+
+- Add `ResourceLeaf` to `palm/core/behavior_tree/nodes/leaf/`
+- Wizard `step_kind: resource` (alias/deprecate `action` step shape)
+- Pipeline and DAG builders accept resource stage definitions
+- **Exit criteria:** example flow with standalone `ResourceLeaf` outside wizard-only paths
+
+### Phase 4 — `palm` provider
+
+- New `palm/providers/palm/` app — `PalmProvider` with local `ApplicationHost` delegation
+- Remote mode via Server HTTP client + auth header propagation
+- Recursion guardrails (depth, cycle detection, child job linkage)
+- **Exit criteria:** `examples/compositional_demo.py` — parent flow submits child flow, resumes on completion
+
+### Phase 5 — Cross-cutting integration
+
+- Transform `enrich_resource` + `resource_ref`
+- Compensation hooks for mutating invokes
+- CQRS projection for resource invocations (optional but recommended)
+- Explorer timeline for resource steps
+- **Exit criteria:** commit failure triggers compensation on a mutating resource step in demo
+
+### Phase 6 — Polish & promotion
+
+- Documentation pass (README, ARCHITECTURE, migration notes)
+- Performance and timeout policies
+- Agent-oriented docs (`docs/llms.txt`, OpenAPI examples for remote `palm` invoke)
+- **Exit criteria:** 0.12 release tag; `just full-check` green
+
+---
+
+## Non-goals (0.12)
+
+- **KernelLeaf / GPU execution** — remains future work; 0.12 focuses on compositional orchestration
+- **Full service mesh** — remote `palm` provider uses explicit HTTP contract, not automatic discovery
+- **Breaking wizard YAML without migration** — `action` steps gain a compatibility path to `resource`
+
+---
+
+## Success criteria
+
+0.12 succeeds when:
+
+1. A developer defines a `ResourceDefinition` once and references it from a wizard, pipeline, and transform.
+2. A parent flow invokes a child flow via the `palm` provider — locally in tests and remotely against `ServerRuntime`.
+3. `ResourceLeaf` appears in the BT execution trace alongside wizard and transform leaves.
+4. A failed commit after a mutating resource invoke triggers visible compensation.
+5. Core purity checks pass; all new capability registers at the edges.
+
+---
+
+## Related documents
+
+- [SCOPE.md](../SCOPE.md) — roadmap entry for 0.12
+- [ARCHITECTURE.md](../ARCHITECTURE.md) — future Resource layer section
+- [STATUS.md](../STATUS.md) — current progress and next steps
+- [CHANGELOG.md](../CHANGELOG.md) — unreleased 0.12 goals
+- [docs/adr/001-compositional-power-resources.md](adr/001-compositional-power-resources.md) — ADR

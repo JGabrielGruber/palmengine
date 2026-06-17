@@ -1,8 +1,9 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.11.8`  
+**Current Version:** `0.11.8` (shipping)  
+**Next Major:** `0.12` — Compositional Power (vision defined, implementation not started)  
 **Last Updated:** June 17, 2026  
-**Maturity:** Architecture stabilized. Palm Explorer shipped; documentation and website aligned with 0.11.8.
+**Maturity:** Architecture stabilized. Palm Explorer shipped; 0.12 Resource System vision documented.
 
 ## Quick Overview
 
@@ -54,12 +55,29 @@ Documentation refinement pass (ApplicationHost release):
 - **`ARCHITECTURE.md`** — Transform rule count clarified (22 built-in rules)
 - **`PalmApp` module docstring** — Aligned with infrastructure-layer role
 
+## 0.12 — Compositional Power (Planning)
+
+**Vision document:** [docs/VISION-0.12.md](docs/VISION-0.12.md)  
+**ADR:** [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
+
+**Goal:** Elevate Resources to first-class, declarative citizens — symmetric with Flows and Processes.
+
+| Component | Status |
+|-----------|--------|
+| `ResourceDefinition` + repository | **Planned** (Phase 1) |
+| `ResourceEngine` / `BaseProvider` evolution | **Planned** (Phase 2) |
+| `ResourceLeaf` (core BT node) | **Planned** (Phase 3) |
+| `palm` provider (local + remote recursion) | **Planned** (Phase 4) |
+| Transform / compensation / observability integration | **Planned** (Phase 5) |
+
+**Current resource baseline (0.11):** `ResourceEngine` resolves providers; wizard `action` steps and `enrich_resource` transforms call `fetch()`; REST/GraphQL/Postgres providers are stubs or minimal.
+
 ## Areas Under Active Improvement
 
+- **0.12 Resource System** — vision and ADR complete; implementation begins with Phase 1 (`ResourceDefinition`)
 - Lightweight automation for version + documentation consistency at release time
 - Further tightening of public API surface (`__all__` declarations are consistent but `palm/__init__.py` remains intentionally minimal)
-- Potential deeper integration between TransformEngine and ResourceEngine
-- Ongoing evolution of compensation and saga-style patterns
+- Ongoing evolution of compensation and saga-style patterns (will deepen in 0.12 Phase 5)
 
 ## Known Limitations & Technical Debt
 
@@ -73,8 +91,10 @@ Documentation refinement pass (ApplicationHost release):
 
 | Document              | Status          | Notes |
 |-----------------------|------------------|-------|
-| `README.md`           | Good            | ApplicationHost recommended; Palm Explorer documented |
-| `ARCHITECTURE.md`     | Good            | Reflects current layers and reliability primitives |
+| `README.md`           | Good            | ApplicationHost recommended; 0.12 direction surfaced |
+| `ARCHITECTURE.md`     | Good            | 0.12 Resource layer section added |
+| `docs/VISION-0.12.md` | New             | Compositional Power vision for Resource System |
+| `docs/adr/001-*.md`   | Proposed        | Resource evolution ADR |
 | `DEVELOPMENT.md`      | Good            | Contributor guide solid; ApplicationHost bootstrap documented |
 | `AGENTS.md`           | Good            | Constitution aligned with 0.10+ |
 | `MIGRATION-0.10.md`   | Excellent       | Clear upgrade path from 0.9.x |
@@ -94,10 +114,11 @@ Documentation refinement pass (ApplicationHost release):
 
 ## Priorities & Next Steps
 
-1. Extend `just docs-check` with optional link validation when needed
-2. Continue maturing reliability features (compensation patterns, webhook consumers)
-3. Explore deeper Knowledge Graph integration (Knowkey) for architecture documentation
-4. Consider ADR for documentation freshness automation when implemented
+1. **0.12 Phase 1** — implement `ResourceDefinition` and `DefinitionRepository` extension
+2. **0.12 Phase 2** — evolve `BaseProvider` contract and `ResourceEngine.invoke()` lifecycle
+3. Continue maturing reliability features (compensation patterns, webhook consumers)
+4. Extend `just docs-check` with optional link validation when needed
+5. Draft `MIGRATION-0.12.md` when provider contract changes land
 
 ## Useful Links
 
@@ -107,6 +128,7 @@ Documentation refinement pass (ApplicationHost release):
 - [AGENTS.md](AGENTS.md) — Constitution for agents and contributors
 - [DEVELOPMENT.md](DEVELOPMENT.md)
 - [SCOPE.md](SCOPE.md)
+- [docs/VISION-0.12.md](docs/VISION-0.12.md) — 0.12 Compositional Power vision
 - Examples: `examples/README.md`
 
 ## How to Contribute
