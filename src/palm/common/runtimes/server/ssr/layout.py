@@ -44,7 +44,7 @@ a:hover { text-decoration: underline; }
 .nav-link:hover, .nav-link.active {
   background: var(--bg); color: var(--text); text-decoration: none;
 }
-main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
+main { padding: 2rem 2.5rem 4rem; max-width: 80rem; }
 .hero { margin-bottom: 2rem; }
 .hero h1 { font-size: 2rem; margin: 0 0 0.5rem; }
 .hero p { color: var(--muted); max-width: 46rem; margin: 0; }
