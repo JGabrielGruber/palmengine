@@ -1,0 +1,1 @@
+"""Dynamic Palm wiki — living documentation from registries and runtime state."""

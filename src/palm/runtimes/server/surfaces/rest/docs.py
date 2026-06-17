@@ -207,6 +207,7 @@ def build_docs_html(*, version: str) -> str:
       <div class="version">v{html.escape(version)}</div>
       <nav>{nav}</nav>
       <div class="sidebar-links">
+        <a href="/wiki">Palm Wiki (SSR)</a>
         <a href="/v1/openapi.json">OpenAPI JSON</a>
         <a href="/health">Health check</a>
         <a href="https://github.com/JGabrielGruber/palmengine">GitHub</a>
