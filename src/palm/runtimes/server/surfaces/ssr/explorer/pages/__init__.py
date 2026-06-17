@@ -13,6 +13,7 @@ from .jobs import JobPages
 from .overview import OverviewPages
 from .patterns import PatternPages
 from .processes import ProcessPages
+from .resources import ResourcePages
 from .schemas import SchemaPages
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ __all__ = [
     "PageContext",
     "PatternPages",
     "ProcessPages",
+    "ResourcePages",
     "SchemaPages",
 ]
 
@@ -39,6 +41,7 @@ class ExplorerPages:
         self._overview = OverviewPages(page_ctx)
         self._flows = FlowPages(page_ctx)
         self._processes = ProcessPages(page_ctx)
+        self._resources = ResourcePages(page_ctx)
         self._patterns = PatternPages(page_ctx)
         self._schemas = SchemaPages(page_ctx)
         self._jobs = JobPages(page_ctx)
@@ -61,6 +64,12 @@ class ExplorerPages:
 
     def process_detail(self, request: ServerRequest, *, process_id: str) -> ServerResponse:
         return self._processes.detail(request, process_id=process_id)
+
+    def resources(self, request: ServerRequest) -> ServerResponse:
+        return self._resources.catalog(request)
+
+    def resource_detail(self, request: ServerRequest, *, resource_id: str) -> ServerResponse:
+        return self._resources.detail(request, resource_id=resource_id)
 
     def patterns(self, request: ServerRequest) -> ServerResponse:
         return self._patterns.catalog(request)

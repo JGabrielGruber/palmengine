@@ -75,6 +75,25 @@ def run_doctor(ctx: CliContext) -> int:
     reg_table.add_row("transforms", ", ".join(sorted(transform_registry.names())) or "—")
     console.print(reg_table)
 
+    from palm.common.resource.catalog import ResourceCatalog
+
+    resource_catalog = ResourceCatalog(app.repository())
+    catalog_entries = resource_catalog.entries()
+    if catalog_entries:
+        resource_table = Table(title="Resource Providers & Actions", show_lines=True)
+        resource_table.add_column("Resource", style="green")
+        resource_table.add_column("Provider", style="cyan")
+        resource_table.add_column("Action")
+        resource_table.add_column("Provider Actions", style="dim")
+        for entry in catalog_entries[:20]:
+            resource_table.add_row(
+                entry.name,
+                entry.provider,
+                entry.action,
+                ", ".join(entry.provider_actions) or "—",
+            )
+        console.print(resource_table)
+
     from palm.common.transforms.catalog import TRANSFORM_CATALOG
 
     transform_names = sorted(transform_registry.names())

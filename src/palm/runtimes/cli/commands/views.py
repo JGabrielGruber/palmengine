@@ -8,7 +8,7 @@ from typing import Any
 
 from palm.core.orchestration import Job, JobStatus
 from palm.runtimes.cli.shared.flow_labels import flow_detail_label
-from palm.runtimes.cli.shared.resource_labels import resource_detail_label
+from palm.common.resource.catalog import ResourceCatalog
 from palm.runtimes.cli.shared.instance_ops import short_instance_id, status_emoji
 from palm.runtimes.cli.shared.job_inspect import format_step_context, inspect_job
 from palm.runtimes.cli.tui.display import render_job_panel
@@ -66,6 +66,7 @@ def render_definition_catalog(ctx: Any) -> None:
     flows = ctx.app.list_flows()
     processes = ctx.app.list_processes()
     resources = ctx.app.list_resources()
+    catalog = ResourceCatalog(ctx.app.repository())
 
     if resources:
         rt = Table(title="Resource Definitions", show_lines=True)
@@ -73,14 +74,24 @@ def render_definition_catalog(ctx: Any) -> None:
         rt.add_column("ID", style="cyan")
         rt.add_column("Provider")
         rt.add_column("Action", style="dim")
+        rt.add_column("Schemas", style="dim")
         rt.add_column("Detail", style="dim")
-        for resource in resources:
+        for entry in catalog.entries():
+            schema = "—"
+            if entry.has_input_schema or entry.has_output_schema:
+                bits: list[str] = []
+                if entry.has_input_schema:
+                    bits.append("in")
+                if entry.has_output_schema:
+                    bits.append("out")
+                schema = "+".join(bits)
             rt.add_row(
-                resource.name,
-                resource.definition_id,
-                resource.provider,
-                resource.action,
-                resource_detail_label(resource),
+                entry.name,
+                entry.definition_id,
+                entry.provider,
+                entry.action,
+                schema,
+                entry.summary(),
             )
         console.print(rt)
 

@@ -93,6 +93,24 @@ class ExplorerFetcher:
             items.append({"name": name, "class": cls.__name__, "summary": doc})
         return items
 
+    def list_resource_catalog(self) -> list[Any]:
+        from palm.common.resource.catalog import ResourceCatalog
+
+        return ResourceCatalog(self._ctx.runtime.repository).entries()
+
+    def describe_resource(self, resource_id: str) -> dict[str, Any] | None:
+        from palm.common.resource.catalog import ResourceCatalog
+        from palm.common.exceptions import DefinitionNotFoundError
+
+        catalog = ResourceCatalog(self._ctx.runtime.repository)
+        try:
+            return catalog.describe(resource_id, by_id=True)
+        except DefinitionNotFoundError:
+            try:
+                return catalog.describe(resource_id, by_id=False)
+            except DefinitionNotFoundError:
+                return None
+
     def list_schemas(self) -> list[dict[str, Any]]:
         schemas: list[dict[str, Any]] = []
         for flow in self.list_flows():

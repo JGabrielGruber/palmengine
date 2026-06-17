@@ -63,6 +63,10 @@ class PalmSettings(BaseSettings):
     webhook_urls: list[str] = Field(default_factory=list)
     webhook_event_types: list[str] = Field(default_factory=list)
     worker_ready_timeout: float = 5.0
+    resource_cache_definitions: bool = True
+    resource_cache_results: bool = False
+    resource_cache_ttl_seconds: float = 60.0
+    resource_cache_max_entries: int = 256
 
     @classmethod
     def for_tests(

@@ -342,6 +342,30 @@ class DefinitionRepository:
                 continue
         return resources
 
+    def list_resources_by_provider(self, provider: str) -> list[ResourceDefinition]:
+        """Return resources registered for a given provider name."""
+        return [item for item in self.list_resources() if item.provider == provider]
+
+    def find_resources(self, query: str) -> list[ResourceDefinition]:
+        """Case-insensitive search across resource name, id, provider, and action."""
+        needle = query.strip().lower()
+        if not needle:
+            return self.list_resources()
+        matches: list[ResourceDefinition] = []
+        for resource in self.list_resources():
+            haystack = " ".join(
+                (
+                    resource.name,
+                    resource.definition_id,
+                    resource.provider,
+                    resource.action,
+                    str(resource.resource_id or ""),
+                ),
+            ).lower()
+            if needle in haystack:
+                matches.append(resource)
+        return matches
+
     def has_resource(self, ref: str, *, by_id: bool = True) -> bool:
         try:
             self.get_resource(ref, by_id=by_id)

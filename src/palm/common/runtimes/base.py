@@ -109,10 +109,14 @@ class BaseRuntime:
 
         self.context.initialize()
         self.event.initialize()
-        self.resource.initialize(
-            event_engine=self.event,
-            definition_resolver=resource_definition_resolver(self.repository),
-        )
+        cache_options = options.get("resource_cache")
+        resource_options: dict[str, Any] = {
+            "event_engine": self.event,
+            "definition_resolver": resource_definition_resolver(self.repository),
+        }
+        if cache_options is not None:
+            resource_options["resource_cache"] = cache_options
+        self.resource.initialize(**resource_options)
         self.auth.initialize()
         authenticate_runtime(self.auth, options.get("credentials"))
 

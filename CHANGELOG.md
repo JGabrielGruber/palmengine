@@ -67,6 +67,15 @@ Vision: [docs/VISION-0.12.md](docs/VISION-0.12.md) · ADR: [docs/adr/001-composi
 
 See [MIGRATION-0.12.md](MIGRATION-0.12.md).
 
+### Added (Phase C — future-proofing)
+
+- **`palm/core/utils/recursion.py`** — reusable `recursion_frame()` depth/cycle guard
+- **`ResourceCatalog`** — rich discovery (`describe`, provider actions, schemas)
+- **Explorer** — `/explorer/resources` catalog and detail pages
+- **`ResourceEngine` caching** — optional definition + read-result TTL caches (`PALM_RESOURCE_CACHE_*`)
+- **`DefinitionRepository.find_resources()`** / `list_resources_by_provider()`
+- **Examples** — expanded compositional demo (nesting + remote URL pattern)
+
 _Phases 5–6 remain planned._
 
 ## [0.11.8] — 2026-06-17

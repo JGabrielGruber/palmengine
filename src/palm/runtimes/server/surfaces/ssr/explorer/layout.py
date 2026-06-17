@@ -8,6 +8,7 @@ _EXPLORER_NAV = (
     ("Home", "/explorer"),
     ("Flows", "/explorer/flows"),
     ("Processes", "/explorer/processes"),
+    ("Resources", "/explorer/resources"),
     ("Patterns", "/explorer/patterns"),
     ("Schemas", "/explorer/schemas"),
     ("Jobs", "/explorer/jobs"),

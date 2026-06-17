@@ -254,13 +254,31 @@ High-level delivery plan. Each phase ships tests, docs, and at least one example
 - Agent-oriented docs (`docs/llms.txt`, OpenAPI examples for remote `palm` invoke)
 - **Exit criteria:** 0.12 release tag; `just full-check` green
 
+### Phase C — Future-proofing ✅ Shipped
+
+- **`palm/core/utils/recursion.py`** — reusable `recursion_frame()` guard for any provider or pattern
+- **`ResourceCatalog`** — discovery with provider `describe()` metadata; Explorer `/explorer/resources`
+- **`ResourceEngine` caches** — optional definition + read-result TTL caches via `PalmSettings`
+- **Examples** — expanded `compositional_demo.py` (nesting + remote shape)
+
+---
+
+## Resource best practices
+
+1. **Define once, reference everywhere** — store contracts as `ResourceDefinition`; use `resource_ref` in wizards, `ResourceLeaf` in BTs, and `enrich_resource` in transforms.
+2. **Prefer declarative params** — bind with `{{ state.key }}`; promote wizard answers before resource steps (see `promote_binding_keys()`).
+3. **Use the `palm` provider for composition** — sub-flows and federated HTTP via `remote_url`; rely on `recursion_frame()` depth/cycle guardrails.
+4. **Emit and observe `resource.*` events** — completed/failed payloads include correlation (`invoke_depth`, `invoke_chain`, `parent_job_id`).
+5. **Cache reads, not writes** — enable `resource_cache_results` only for idempotent `fetch` actions; keep definition caching on by default.
+6. **Discover before invoke** — `ResourceCatalog`, `palm doctor`, and Explorer show provider actions and schemas before runtime calls.
+
 ---
 
 ## Non-goals (0.12)
 
 - **KernelLeaf / GPU execution** — remains future work; 0.12 focuses on compositional orchestration
 - **Full service mesh** — remote `palm` provider uses explicit HTTP contract, not automatic discovery
-- **Breaking wizard YAML without migration** — `action` steps gain a compatibility path to `resource`
+- **Legacy wizard `action` steps** — removed in Phase B; see `MIGRATION-0.12.md`
 
 ---
 

@@ -137,6 +137,12 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
     options["max_loaded_instances"] = settings.max_loaded_instances
     options["max_concurrent_active"] = settings.max_concurrent_active
     options["reconcile_on_startup"] = settings.reconcile_instances_on_startup
+    options["resource_cache"] = {
+        "cache_definitions": settings.resource_cache_definitions,
+        "cache_results": settings.resource_cache_results,
+        "ttl_seconds": settings.resource_cache_ttl_seconds,
+        "max_entries": settings.resource_cache_max_entries,
+    }
     options.update(overrides)
     return options
 

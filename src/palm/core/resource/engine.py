@@ -15,6 +15,12 @@ from palm.core.base import BasePalmEngine
 from palm.core.event.engine import Event
 from palm.core.registry import provider_registry
 from palm.core.resource.base_provider import BaseProvider
+from palm.core.resource.cache import (
+    ResourceCacheConfig,
+    TtlCache,
+    definition_cache_key,
+    result_cache_key,
+)
 from palm.core.resource.invocation import (
     ResolvedResourceSpec,
     bind_resource_id,
@@ -34,6 +40,9 @@ class ResourceEngine(BasePalmEngine):
         self._active: dict[str, BaseProvider] = {}
         self._definition_resolver: DefinitionResolver | None = None
         self._publish_event: EventPublisher | None = None
+        self._cache_config = ResourceCacheConfig()
+        self._definition_cache: TtlCache | None = None
+        self._result_cache: TtlCache | None = None
 
     def use(self, name: str) -> BaseProvider:
         """Return a connected provider instance for ``name``."""
@@ -86,7 +95,7 @@ class ResourceEngine(BasePalmEngine):
                 )
                 return result
             try:
-                spec = self._definition_resolver(resource_ref)
+                spec = self._resolve_definition(resource_ref)
             except Exception as exc:
                 result = ProviderResult.fail(
                     str(exc),
@@ -114,6 +123,16 @@ class ResourceEngine(BasePalmEngine):
 
         bound_params = bind_resource_params(spec_params, state)
         bound_resource_id = bind_resource_id(spec_resource_id, bound_params, state)
+
+        cached = self._cached_result(
+            provider=spec_provider,
+            action=spec_action,
+            resource_ref=resource_ref,
+            resource_id=bound_resource_id,
+            params=bound_params,
+        )
+        if cached is not None:
+            return cached
 
         event_base = {
             "provider": spec_provider,
@@ -154,8 +173,17 @@ class ResourceEngine(BasePalmEngine):
         }
         correlation = _correlation_payload(result)
         if result.success:
+            final = ProviderResult.ok(result.data, **metadata)
+            self._store_result_cache(
+                provider=spec_provider,
+                action=spec_action,
+                resource_ref=resource_ref,
+                resource_id=bound_resource_id,
+                params=bound_params,
+                result=final,
+            )
             self._emit("resource.completed", **event_base, **correlation)
-            return ProviderResult.ok(result.data, **metadata)
+            return final
         self._emit(
             "resource.failed",
             error=result.error,
@@ -166,6 +194,66 @@ class ResourceEngine(BasePalmEngine):
             result.error or "invoke failed",
             **metadata,
         )
+
+    def clear_caches(self) -> None:
+        """Drop cached definitions and results."""
+        if self._definition_cache is not None:
+            self._definition_cache.clear()
+        if self._result_cache is not None:
+            self._result_cache.clear()
+
+    def _resolve_definition(self, resource_ref: str) -> ResolvedResourceSpec:
+        if self._definition_cache is not None:
+            cached = self._definition_cache.get(definition_cache_key(resource_ref))
+            if cached is not None:
+                return cached
+        assert self._definition_resolver is not None
+        spec = self._definition_resolver(resource_ref)
+        if self._definition_cache is not None:
+            self._definition_cache.set(definition_cache_key(resource_ref), spec)
+        return spec
+
+    def _cached_result(
+        self,
+        *,
+        provider: str,
+        action: str,
+        resource_ref: str | None,
+        resource_id: str | None,
+        params: dict[str, Any],
+    ) -> ProviderResult | None:
+        if self._result_cache is None or action not in self._cache_config.cacheable_actions:
+            return None
+        key = result_cache_key(
+            provider=provider,
+            action=action,
+            resource_ref=resource_ref,
+            resource_id=resource_id,
+            params=params,
+        )
+        cached = self._result_cache.get(key)
+        return cached if isinstance(cached, ProviderResult) else None
+
+    def _store_result_cache(
+        self,
+        *,
+        provider: str,
+        action: str,
+        resource_ref: str | None,
+        resource_id: str | None,
+        params: dict[str, Any],
+        result: ProviderResult,
+    ) -> None:
+        if self._result_cache is None or action not in self._cache_config.cacheable_actions:
+            return
+        key = result_cache_key(
+            provider=provider,
+            action=action,
+            resource_ref=resource_ref,
+            resource_id=resource_id,
+            params=params,
+        )
+        self._result_cache.set(key, result)
 
     def _do_initialize(self, **options: Any) -> None:
         resolver = options.get("definition_resolver")
@@ -183,12 +271,32 @@ class ResourceEngine(BasePalmEngine):
 
                 self._publish_event = _publish
 
+        cache_config = options.get("resource_cache")
+        if isinstance(cache_config, ResourceCacheConfig):
+            self._cache_config = cache_config
+        elif isinstance(cache_config, dict):
+            self._cache_config = ResourceCacheConfig(**cache_config)
+
+        if self._cache_config.cache_definitions:
+            self._definition_cache = TtlCache(
+                max_entries=self._cache_config.max_entries,
+                ttl_seconds=self._cache_config.ttl_seconds,
+            )
+        if self._cache_config.cache_results:
+            self._result_cache = TtlCache(
+                max_entries=self._cache_config.max_entries,
+                ttl_seconds=self._cache_config.ttl_seconds,
+            )
+
     def _do_shutdown(self) -> None:
         for provider in self._active.values():
             provider.disconnect()
         self._active.clear()
         self._definition_resolver = None
         self._publish_event = None
+        self.clear_caches()
+        self._definition_cache = None
+        self._result_cache = None
 
     def _emit(self, event_type: str, **payload: Any) -> None:
         if self._publish_event is None:

@@ -49,6 +49,13 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         handler=pages.process_detail,
         surface=_SURFACE,
     )
+    registry.register(method="GET", path="/explorer/resources", handler=pages.resources, surface=_SURFACE)
+    registry.register(
+        method="GET",
+        path="/explorer/resources/{resource_id}",
+        handler=pages.resource_detail,
+        surface=_SURFACE,
+    )
     registry.register(method="GET", path="/explorer/patterns", handler=pages.patterns, surface=_SURFACE)
     registry.register(method="GET", path="/explorer/schemas", handler=pages.schemas, surface=_SURFACE)
     registry.register(method="GET", path="/explorer/jobs", handler=pages.jobs, surface=_SURFACE)
