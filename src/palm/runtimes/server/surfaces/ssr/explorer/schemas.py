@@ -86,15 +86,16 @@ def build_flow_submit_schema(flows: list[FlowDefinition]) -> DictStateSchema:
                 "flow_id": flow_id_spec,
                 "wizard_name": {
                     "type": "string",
-                    "title": "Wizard name",
-                    "description": "Inline wizard identifier",
+                    "title": "Test wizard name",
+                    "description": "Label for a throwaway inline wizard (not from the repository)",
                 },
                 "wizard_steps": {
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 50,
                     "default": 2,
-                    "title": "Step count",
+                    "title": "Number of steps",
+                    "description": "How many placeholder steps the test wizard should run",
                 },
                 "job_id": {
                     "type": "string",

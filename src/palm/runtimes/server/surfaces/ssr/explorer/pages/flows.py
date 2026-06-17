@@ -34,7 +34,7 @@ class FlowPages:
         ]
         content = (
             '<section class="section">'
-            f'<p class="btn-row">{action_button("/explorer/flows/submit", "Submit any flow")}</p>'
+            f'<p class="btn-row">{action_button("/explorer/flows/submit", "Start a flow")}</p>'
             f"{data_table(['Name', 'Pattern', 'Description', ''], rows) if rows else '<p class=\"muted\">No flows registered.</p>'}"
             "</section>"
         )
@@ -53,20 +53,20 @@ class FlowPages:
         selected = query_flow_id(request)
         content = (
             '<section class="section"><div class="panel">'
-            "<h3>Start a job</h3>"
-            "<p class=\"muted\">Pick a registered flow from the dropdown, or switch to inline wizard mode. "
-            "For advanced payloads use <code>POST /v1/jobs</code>.</p>"
+            "<h3>Start a registered flow</h3>"
+            "<p class=\"muted\">Select a flow from your repository and click <strong>Start this flow</strong>. "
+            "Use <strong>Start</strong> on the <a href=\"/explorer/flows\">flow catalog</a> to pre-fill your selection.</p>"
             f"{flash_banners(request)}"
             f"{flow_submit_form(flows, selected_flow_id=selected or None)}"
             "</div></section>"
         )
         return html_response(
             explorer_page(
-                title="Submit Flow",
+                title="Start Flow",
                 version=self._ctx.version,
                 content=content,
                 active_nav="/explorer/flows",
-                subtitle="Schema-driven flow submission for common operator actions.",
+                subtitle="Primary path: registered definitions. Advanced test wizard available below.",
             )
         )
 

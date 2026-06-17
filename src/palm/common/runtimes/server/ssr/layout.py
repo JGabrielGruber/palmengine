@@ -136,6 +136,13 @@ main { padding: 2rem 2.5rem 4rem; max-width: 1100px; }
 .form-section h4 { margin: 0 0 0.75rem; font-size: 0.95rem; }
 .flow-context-panel { margin-top: 0.75rem; padding: 0.85rem 1rem; }
 .muted-section { opacity: 0.92; }
+.flow-submit-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+.advanced-panel {
+  border: 1px solid var(--border); border-radius: 0.6rem; padding: 0.85rem 1rem;
+  background: var(--surface);
+}
+.advanced-panel summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+.advanced-panel[open] summary { margin-bottom: 0.75rem; color: var(--text); }
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }

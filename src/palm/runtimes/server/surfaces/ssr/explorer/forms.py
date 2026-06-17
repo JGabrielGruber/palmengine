@@ -63,53 +63,77 @@ def flow_submit_form(
     errors: list[str] | None = None,
 ) -> str:
     """Render a context-aware flow submission form with a registered-flow dropdown."""
-    from palm.runtimes.server.surfaces.ssr.explorer.pages import utils as page_utils
-
-    flow_description = page_utils.flow_description
-    flow_option_label = page_utils.flow_option_label
-
     current = dict(values or {})
     if selected_flow_id and not current.get("flow_id"):
         current["flow_id"] = selected_flow_id
-    if not current.get("submit_mode"):
-        current["submit_mode"] = "registered"
 
     schema = build_flow_submit_schema(flows)
+    props = _schema_properties(schema)
     selected = str(current.get("flow_id") or "")
     selected_flow = _find_flow(flows, selected)
+    prefill_note = ""
+    if selected_flow:
+        prefill_note = (
+            f'<p class="muted">Pre-selected: <strong>{escape(selected_flow.name)}</strong> '
+            f"— review and click <strong>Start this flow</strong>.</p>"
+        )
 
     error_html = ""
     if errors:
         items = "".join(f"<li>{escape(error)}</li>" for error in errors)
         error_html = f'<div class="alert alert-error"><ul class="form-errors">{items}</ul></div>'
 
-    mode_field = _render_field("submit_mode", schema.definition["properties"]["submit_mode"], current.get("submit_mode", "registered"))
     flow_field = _render_flow_select(flows, selected=selected)
     context_panel = _flow_context_panel(selected_flow) if selected_flow else ""
-    job_field = _render_field("job_id", schema.definition["properties"]["job_id"], current.get("job_id", ""))
+    job_spec = props.get("job_id", {})
+    job_field = _render_field(
+        "job_id",
+        job_spec if isinstance(job_spec, dict) else {},
+        current.get("job_id", ""),
+    )
+    advanced_job_field = _render_field(
+        "job_id",
+        {**(job_spec if isinstance(job_spec, dict) else {}), "title": "Job ID (optional)"},
+        current.get("job_id", ""),
+        field_id="job_id_advanced",
+    )
 
-    wizard_props = schema.definition["properties"]
-    wizard_name_field = _render_field("wizard_name", wizard_props["wizard_name"], current.get("wizard_name", ""))
-    wizard_steps_field = _render_field("wizard_steps", wizard_props["wizard_steps"], current.get("wizard_steps", 2))
-
-    return (
-        f'<form class="schema-form flow-submit-form" action="{escape(action)}" method="POST">'
+    registered_form = (
+        f'<form class="schema-form flow-submit-form flow-submit-primary" action="{escape(action)}" method="POST">'
         f"{error_html}"
-        f"{mode_field}"
-        f'<div class="form-section" data-mode="registered">'
-        f"<h4>Registered flow</h4>"
+        f'<input type="hidden" name="submit_mode" value="registered" />'
+        f"{prefill_note}"
         f"{flow_field}"
         f"{context_panel}"
-        f"</div>"
-        f'<div class="form-section muted-section" data-mode="inline_wizard">'
-        f"<h4>Inline wizard</h4>"
-        f'<p class="muted">Start a lightweight wizard without a persisted definition.</p>'
-        f"{wizard_name_field}"
-        f"{wizard_steps_field}"
-        f"</div>"
         f"{job_field}"
-        f'<div class="form-actions"><button class="btn-primary" type="submit">Start flow</button></div>'
+        f'<div class="form-actions"><button class="btn-primary" type="submit">Start this flow</button></div>'
         f"</form>"
+    )
+
+    wizard_name_spec = props.get("wizard_name", {})
+    wizard_steps_spec = props.get("wizard_steps", {})
+    advanced_form = (
+        f'<form class="schema-form flow-submit-advanced" action="{escape(action)}" method="POST">'
+        f'<input type="hidden" name="submit_mode" value="inline_wizard" />'
+        f"{_render_field('wizard_name', wizard_name_spec if isinstance(wizard_name_spec, dict) else {}, current.get('wizard_name', ''))}"
+        f"{_render_field('wizard_steps', wizard_steps_spec if isinstance(wizard_steps_spec, dict) else {}, current.get('wizard_steps', 2))}"
+        f"{advanced_job_field}"
+        f'<div class="form-actions">'
+        f'<button class="btn-primary" type="submit">Start test wizard</button>'
+        f"</div>"
+        f"</form>"
+    )
+
+    return (
+        f'<div class="flow-submit-stack">'
+        f"{registered_form}"
+        f'<details class="advanced-panel">'
+        f"<summary>Advanced: quick test wizard (no registered definition)</summary>"
+        f'<p class="muted">For operator experiments only — starts a minimal inline wizard. '
+        f"Prefer registered flows above, or use <code>POST /v1/jobs</code> for full payloads.</p>"
+        f"{advanced_form}"
+        f"</details>"
+        f"</div>"
     )
 
 
@@ -123,6 +147,13 @@ def _find_flow(flows: list[FlowDefinition], flow_id: str) -> FlowDefinition | No
 def _render_flow_select(flows: list[FlowDefinition], *, selected: str) -> str:
     from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import flow_option_label
 
+    if not flows:
+        return (
+            '<div class="form-field">'
+            '<p class="muted">No flows registered yet. Register a definition or use the advanced test wizard below.</p>'
+            "</div>"
+        )
+
     options = ['<option value="">Choose a flow…</option>']
     for flow in flows:
         flow_id = flow.definition_id
@@ -133,8 +164,8 @@ def _render_flow_select(flows: list[FlowDefinition], *, selected: str) -> str:
     return (
         '<div class="form-field">'
         '<label for="flow_id">Registered flow</label>'
-        f'<select id="flow_id" name="flow_id">{body}</select>'
-        '<span class="field-hint">Flows are loaded from the running engine repository.</span>'
+        f'<select id="flow_id" name="flow_id" required>{body}</select>'
+        '<span class="field-hint">Name · pattern · description. Tip: use <strong>Start</strong> on the flow catalog to pre-fill.</span>'
         "</div>"
     )
 
@@ -252,46 +283,71 @@ def _coerce_field_value(raw: str, spec: Mapping[str, Any]) -> Any:
     return raw
 
 
-def _render_field(key: str, spec: Mapping[str, Any], value: Any) -> str:
+def _normalize_choices(choices: object | None) -> list[Any]:
+    """Return a safe iterable for choice fields (never None)."""
+    if choices is None:
+        return []
+    if isinstance(choices, list):
+        return choices
+    if isinstance(choices, (tuple, set)):
+        return list(choices)
+    return []
+
+
+def _schema_properties(schema: DictStateSchema) -> dict[str, Any]:
+    props = schema.definition.get("properties", {})
+    return dict(props) if isinstance(props, dict) else {}
+
+
+def _render_field(
+    key: str,
+    spec: Mapping[str, Any],
+    value: Any,
+    *,
+    field_id: str | None = None,
+) -> str:
+    if not spec:
+        spec = {}
     field_type = spec.get("type", "string")
     label = spec.get("title", key.replace("_", " ").title())
     required = key in spec.get("required", []) or key in (spec.get("parent_required") or [])
     req_attr = " required" if required else ""
-    field_id = escape(key)
+    element_id = escape(field_id or key)
     display = escape(value) if value is not None else ""
 
-    if "enum" in spec and isinstance(spec["enum"], list):
+    enum_values = spec.get("enum")
+    if isinstance(enum_values, list) and enum_values:
         options = []
         placeholder = spec.get("x-placeholder")
         if placeholder:
             selected = " selected" if not value else ""
             options.append(f'<option value=""{selected}>{escape(placeholder)}</option>')
-        for item in spec["enum"]:
+        for item in enum_values:
             selected = " selected" if str(item) == str(value) else ""
             options.append(f'<option value="{escape(item)}"{selected}>{escape(item)}</option>')
-        control = f'<select id="{field_id}" name="{field_id}"{req_attr}>{"".join(options)}</select>'
+        control = f'<select id="{element_id}" name="{escape(key)}"{req_attr}>{"".join(options)}</select>'
     elif field_type == "boolean":
         checked = " checked" if str(value).lower() in {"true", "1", "yes", "on"} else ""
-        control = f'<input type="checkbox" id="{field_id}" name="{field_id}" value="true"{checked}{req_attr} />'
+        control = f'<input type="checkbox" id="{element_id}" name="{escape(key)}" value="true"{checked}{req_attr} />'
     elif field_type in {"integer", "number"}:
         step = "1" if field_type == "integer" else "any"
         control = (
-            f'<input type="number" id="{field_id}" name="{field_id}" value="{display}" '
+            f'<input type="number" id="{element_id}" name="{escape(key)}" value="{display}" '
             f'step="{step}"{req_attr} />'
         )
     elif field_type in {"object", "array"}:
         text = display if display else "{}"
         control = (
-            f'<textarea id="{field_id}" name="{field_id}" rows="4"{req_attr}>{text}</textarea>'
+            f'<textarea id="{element_id}" name="{escape(key)}" rows="4"{req_attr}>{text}</textarea>'
         )
     else:
-        control = f'<input type="text" id="{field_id}" name="{field_id}" value="{display}"{req_attr} />'
+        control = f'<input type="text" id="{element_id}" name="{escape(key)}" value="{display}"{req_attr} />'
 
     hint = spec.get("description")
     hint_html = f'<span class="field-hint">{escape(hint)}</span>' if hint else ""
     return (
         f'<div class="form-field">'
-        f'<label for="{field_id}">{escape(label)}</label>'
+        f'<label for="{element_id}">{escape(label)}</label>'
         f"{control}{hint_html}"
         f"</div>"
     )
@@ -300,15 +356,21 @@ def _render_field(key: str, spec: Mapping[str, Any], value: Any) -> str:
 def _render_job_value_field(pattern: Mapping[str, Any], value: Any) -> str:
     field_type = pattern.get("field_type")
     schema_type = pattern.get("effective_schema_type")
-    choices = pattern.get("choices")
+    choices = _normalize_choices(pattern.get("choices"))
     display = escape(value) if value is not None else ""
 
-    if field_type == "choice" or (isinstance(choices, list) and choices):
+    if field_type == "choice" and choices:
         options = []
         for item in choices:
             selected = " selected" if str(item) == str(value) else ""
             options.append(f'<option value="{escape(item)}"{selected}>{escape(item)}</option>')
         return f'<select id="value" name="value" required>{"".join(options)}</select>'
+
+    if field_type == "choice" and not choices:
+        return (
+            f'<input type="text" id="value" name="value" value="{display}" required />'
+            '<span class="field-hint">No choices configured for this step — enter a value.</span>'
+        )
 
     if field_type == "confirm" or schema_type == "boolean":
         checked = " checked" if str(value).lower() in {"true", "1", "yes", "on"} else ""

@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
-from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form, schema_form
+from palm.runtimes.server.surfaces.ssr.explorer.forms import flow_submit_form, job_input_form, schema_form
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import (
     flow_description,
@@ -138,9 +138,13 @@ def test_flow_submit_form_renders(server: ServerRuntime, sample_flow: FlowDefini
     status, html, _ = _get_html(server.base_url, "/explorer/flows/submit")
     assert status == 200
     assert 'name="flow_id"' in html
-    assert 'name="submit_mode"' in html
+    assert 'value="registered"' in html
+    assert "Start this flow" in html
     assert "explorer-flow · wizard" in html
+    assert "Advanced: quick test wizard" in html
     assert 'action="/explorer/flows/submit"' in html
+    assert 'type="hidden" name="submit_mode" value="registered"' in html
+    assert "Submission mode" not in html
 
 
 def test_flow_submit_prefills_from_query(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
@@ -149,6 +153,7 @@ def test_flow_submit_prefills_from_query(server: ServerRuntime, sample_flow: Flo
     assert status == 200
     assert 'value="explorer-flow-1" selected' in html
     assert "Demo onboarding wizard" in html
+    assert "Pre-selected" in html
 
 
 def test_flow_submit_post_registered_flow(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
@@ -285,6 +290,17 @@ def test_flow_submit_form_builder(sample_flow: FlowDefinition) -> None:
     assert "explorer-flow · wizard · Demo onboarding wizard" in html
     assert 'value="explorer-flow-1" selected' in html
     assert "flow-context-panel" in html
+    assert "Start this flow" in html
+    assert "<details" in html
+
+
+def test_job_input_form_handles_none_choices() -> None:
+    html = job_input_form(
+        "job-1",
+        {"field_type": "choice", "choices": None, "prompt": "Pick one"},
+    )
+    assert 'name="value"' in html
+    assert "No choices configured" in html
 
 
 def test_flow_utils(sample_flow: FlowDefinition) -> None:
