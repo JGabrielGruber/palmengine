@@ -298,6 +298,11 @@ def wizard_input_form(
     htmx: bool = True,
 ) -> str:
     """Interactive wizard input with optional HTMX partial updates."""
+    if prompt.get("step_kind") == "collection" or prompt.get("collection_phase"):
+        from palm.runtimes.server.surfaces.ssr.explorer.components import collection_form
+
+        return collection_form(instance_id, dict(prompt))
+
     action = f"/explorer/instances/{instance_id}/input"
     label = prompt.get("title") or prompt.get("text") or "Value"
     pattern = {
@@ -322,22 +327,13 @@ def wizard_input_form(
     if validation:
         validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
 
-    collection_html = _wizard_collection_hint(prompt)
-
-    htmx_attrs = ""
-    if htmx:
-        htmx_attrs = (
-            f' hx-post="{escape(action)}"'
-            ' hx-target="#wizard-workspace"'
-            ' hx-swap="outerHTML"'
-            ' hx-indicator="#wizard-loading"'
-        )
+    htmx_attrs = _wizard_htmx_attrs(action) if htmx else ""
 
     choice_buttons = _wizard_choice_buttons(prompt, htmx=htmx, action=action)
 
     return (
         f'<form class="schema-form wizard-input-form" action="{escape(action)}" method="POST"{htmx_attrs}>'
-        f"{error_html}{validation_html}{prompt_html}{collection_html}"
+        f"{error_html}{validation_html}{prompt_html}"
         f"{choice_buttons}"
         f'<div class="form-field">'
         f'<label for="value">{escape(label)}</label>'
@@ -345,30 +341,186 @@ def wizard_input_form(
         f"</div>"
         f'<div class="form-actions">'
         f'<button class="btn-primary" type="submit">Submit input</button>'
-        f'<span id="wizard-loading" class="htmx-indicator wizard-loading">Updating…</span>'
+        f'{_wizard_loading_indicator()}'
         f"</div>"
         f"</form>"
     )
 
 
-def _wizard_collection_hint(prompt: Mapping[str, Any]) -> str:
-    phase = prompt.get("collection_phase")
-    items = prompt.get("collection_items")
-    if not phase and not items:
-        return ""
-    parts = []
-    if phase:
-        parts.append(f"Phase: <strong>{escape(str(phase))}</strong>")
-    if isinstance(items, list) and items:
+def collection_action_form(
+    instance_id: str,
+    action: str,
+    *,
+    item_index: int | None = None,
+    label: str,
+    tone: str = "primary",
+    value: str | None = None,
+) -> str:
+    """Compact HTMX button form for collection menu actions."""
+    post_action = f"/explorer/instances/{instance_id}/input"
+    hidden = f'<input type="hidden" name="collection_action" value="{escape(action)}" />'
+    if item_index is not None:
+        hidden += f'<input type="hidden" name="item_index" value="{item_index}" />'
+    if value is not None:
+        hidden += f'<input type="hidden" name="value" value="{escape(value)}" />'
+    btn_class = "btn-primary" if tone == "primary" else f"btn btn-{escape(tone)}"
+    if tone == "ghost":
+        btn_class = "btn-ghost"
+    elif tone == "danger":
+        btn_class = "btn-danger"
+    return (
+        f'<form class="collection-action-form" action="{escape(post_action)}" method="POST"'
+        f'{_wizard_htmx_attrs(post_action)}>'
+        f"{hidden}"
+        f'<button type="submit" class="{btn_class}">{escape(label)}</button>'
+        f"</form>"
+    )
+
+
+def collection_field_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
+    """Sequential item field input during add/edit."""
+    action = f"/explorer/instances/{instance_id}/input"
+    label = prompt.get("title") or prompt.get("text") or "Value"
+    pattern = {
+        "field_type": prompt.get("field_type"),
+        "effective_schema_type": prompt.get("effective_schema_type"),
+        "choices": prompt.get("choices"),
+    }
+    field_html = _render_job_value_field(pattern, None)
+
+    prompt_text = prompt.get("text")
+    prompt_html = f'<p class="wizard-prompt-text">{escape(prompt_text)}</p>' if prompt_text else ""
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    progress = prompt.get("collection_progress")
+    progress_html = ""
+    if progress:
+        progress_html = f'<p class="collection-field-progress">{escape(str(progress))}</p>'
+
+    draft = prompt.get("collection_draft")
+    draft_html = ""
+    if isinstance(draft, dict) and draft:
         rows = []
-        for item in items:
-            if isinstance(item, dict):
-                label = item.get("label") or item.get("id") or str(item)
-            else:
-                label = str(item)
-            rows.append(f"<li>{escape(str(label))}</li>")
-        parts.append(f'<ul class="collection-items">{"".join(rows)}</ul>')
-    return f'<div class="collection-panel muted-section">{"".join(parts)}</div>'
+        for key, val in draft.items():
+            rows.append(f"<dt>{escape(str(key))}</dt><dd>{escape(str(val))}</dd>")
+        draft_html = (
+            f'<div class="collection-draft-panel">'
+            f"<h4>Draft so far</h4>"
+            f'<dl class="definition-dl">{"".join(rows)}</dl>'
+            f"</div>"
+        )
+
+    choice_buttons = _wizard_choice_buttons(prompt, htmx=True, action=action)
+    cancel_btn = collection_action_form(instance_id, "cancel", label="Cancel", tone="ghost")
+
+    return (
+        f'<div class="collection-field-panel">'
+        f"{progress_html}{draft_html}"
+        f'<form class="schema-form wizard-input-form collection-field-form" '
+        f'action="{escape(action)}" method="POST"{_wizard_htmx_attrs(action)}>'
+        f"{validation_html}{prompt_html}"
+        f"{choice_buttons}"
+        f'<div class="form-field">'
+        f'<label for="value">{escape(str(label))}</label>'
+        f"{field_html}"
+        f"</div>"
+        f'<div class="form-actions">'
+        f'<button class="btn-primary" type="submit">Save field</button>'
+        f'{_wizard_loading_indicator()}'
+        f"</div>"
+        f"</form>"
+        f'<div class="form-actions" style="margin-top:0.5rem">{cancel_btn}</div>'
+        f"</div>"
+    )
+
+
+def collection_remove_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
+    """Confirm removal with item preview."""
+    from palm.runtimes.server.surfaces.ssr.explorer.components import (
+        _collection_item_field_lines,
+        _collection_item_title,
+    )
+
+    index = prompt.get("collection_remove_index")
+    items = prompt.get("collection_items") or []
+    preview_html = '<p class="muted">Item preview unavailable.</p>'
+    if isinstance(index, int) and isinstance(items, list) and 0 <= index < len(items):
+        item = items[index]
+        if isinstance(item, dict):
+            label_field = prompt.get("label_field")
+            item_fields = prompt.get("item_fields")
+            field_specs = list(item_fields) if isinstance(item_fields, list) else None
+            title = _collection_item_title(item, index, label_field, field_specs)
+            lines = _collection_item_field_lines(item, label_field, field_specs)
+            body = f"<strong>{escape(title)}</strong>"
+            if lines:
+                body += f'<div class="item-fields">{"<br>".join(lines)}</div>'
+            preview_html = f'<div class="collection-remove-preview">{body}</div>'
+
+    prompt_text = prompt.get("text")
+    prompt_html = f'<p class="wizard-prompt-text">{escape(prompt_text)}</p>' if prompt_text else ""
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    return (
+        f'<div class="collection-remove-confirm">'
+        f"<h4>Confirm removal</h4>"
+        f"{prompt_html}{validation_html}"
+        f"{preview_html}"
+        f'<div class="form-actions" style="margin-top:1rem">'
+        f'{collection_action_form(instance_id, "confirm_remove", label="Yes, remove", tone="danger", value="yes")}'
+        f'{collection_action_form(instance_id, "confirm_remove", label="No, keep it", tone="ghost", value="no")}'
+        f'{_wizard_loading_indicator()}'
+        f"</div>"
+        f"</div>"
+    )
+
+
+def collection_select_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
+    """Fallback select-item UI when compound edit/remove is not used."""
+    from palm.runtimes.server.surfaces.ssr.explorer.components import collection_list
+
+    action_label = prompt.get("collection_select_action") or "edit"
+    title = "Select item to edit" if action_label == "edit" else "Select item to remove"
+    prompt_text = prompt.get("text")
+    prompt_html = f'<p class="wizard-prompt-text">{escape(prompt_text)}</p>' if prompt_text else ""
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    return (
+        f'<div class="collection-select-panel">'
+        f"<h4>{escape(str(title))}</h4>"
+        f"{prompt_html}{validation_html}"
+        f'{collection_list(instance_id, dict(prompt), action="select")}'
+        f'<div class="collection-toolbar">'
+        f'{collection_action_form(instance_id, "cancel", label="Cancel", tone="ghost")}'
+        f'{_wizard_loading_indicator()}'
+        f"</div>"
+        f"</div>"
+    )
+
+
+def _wizard_htmx_attrs(action: str) -> str:
+    return (
+        f' hx-post="{escape(action)}"'
+        ' hx-target="#wizard-workspace"'
+        ' hx-swap="outerHTML"'
+        ' hx-indicator="#wizard-loading"'
+    )
+
+
+def _wizard_loading_indicator() -> str:
+    return '<span id="wizard-loading" class="htmx-indicator wizard-loading">Updating…</span>'
 
 
 def _wizard_choice_buttons(
@@ -382,14 +534,7 @@ def _wizard_choice_buttons(
     if field_type != "choice" or not choices:
         return ""
     buttons = []
-    htmx_attrs = ""
-    if htmx:
-        htmx_attrs = (
-            f' hx-post="{escape(action)}"'
-            ' hx-target="#wizard-workspace"'
-            ' hx-swap="outerHTML"'
-            ' hx-indicator="#wizard-loading"'
-        )
+    htmx_attrs = _wizard_htmx_attrs(action) if htmx else ""
     for choice in choices:
         buttons.append(
             f'<form class="wizard-choice-form" action="{escape(action)}" method="POST"{htmx_attrs}>'

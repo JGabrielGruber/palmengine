@@ -15,6 +15,7 @@ from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.render import html_response, redirect
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from palm.runtimes.server.surfaces.ssr.explorer.collection_input import resolve_wizard_form_input
 from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
 from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values
 from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import is_htmx_request
@@ -60,7 +61,6 @@ class ExplorerActions:
             return redirect(f"/explorer/instances/{instance_id}?error=Wizard+not+found")
 
         form_data = request.body or {}
-        raw_value = form_data.get("value", "")
         prompt = wizard.get("prompt") or {}
         pattern = {
             "field_type": prompt.get("field_type"),
@@ -69,8 +69,12 @@ class ExplorerActions:
         }
 
         try:
-            value = coerce_job_input(str(raw_value), pattern)
-            self._ctx.execute(ProvideWizardInputCommand(instance_id=instance_id, value=value))
+            resolved = resolve_wizard_form_input(form_data, wizard)
+            if isinstance(resolved, tuple):
+                self._execute_collection_compound(instance_id, resolved)
+            else:
+                value = coerce_job_input(str(resolved), pattern)
+                self._ctx.execute(ProvideWizardInputCommand(instance_id=instance_id, value=value))
         except InstanceNotFoundError:
             return self._wizard_action_response(
                 request,
@@ -86,6 +90,34 @@ class ExplorerActions:
 
         self._ctx.wait_until_idle()
         return self._wizard_action_response(request, instance_id, notice="Input accepted")
+
+    def _execute_collection_compound(
+        self,
+        instance_id: str,
+        resolved: tuple[str, ...],
+    ) -> None:
+        kind = resolved[0]
+        index = int(resolved[1])
+        selection = str(index + 1)
+        if kind == "__compound_edit__":
+            self._ctx.execute(
+                ProvideWizardInputCommand(instance_id=instance_id, value="Edit an item")
+            )
+            self._ctx.wait_until_idle()
+            self._ctx.execute(
+                ProvideWizardInputCommand(instance_id=instance_id, value=selection)
+            )
+            return
+        if kind == "__compound_remove__":
+            self._ctx.execute(
+                ProvideWizardInputCommand(instance_id=instance_id, value="Remove an item")
+            )
+            self._ctx.wait_until_idle()
+            self._ctx.execute(
+                ProvideWizardInputCommand(instance_id=instance_id, value=selection)
+            )
+            return
+        raise ValueError(f"Unsupported collection compound action: {kind}")
 
     def backtrack_wizard(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
         form_data = request.body or {}

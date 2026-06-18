@@ -51,6 +51,15 @@ class JobContext:
     collection_items: tuple[dict[str, Any], ...] = ()
     collection_phase: str | None = None
     collection_item_previews: tuple[str, ...] = ()
+    collection_draft: dict[str, Any] = field(default_factory=dict)
+    collection_progress: str | None = None
+    collection_field: str | None = None
+    collection_select_action: str | None = None
+    collection_remove_index: int | None = None
+    step_kind: str | None = None
+    min_items: int = 1
+    label_field: str | None = None
+    item_fields: tuple[dict[str, Any], ...] = ()
     transform_rule: str | None = None
     transform_source_key: str | None = None
     transform_target_key: str | None = None
@@ -124,6 +133,24 @@ def inspect_job_json(job: Job) -> dict[str, Any]:
         payload["collection_items"] = list(ctx.collection_items)
     if ctx.collection_item_previews:
         payload["collection_item_previews"] = list(ctx.collection_item_previews)
+    if ctx.collection_draft:
+        payload["collection_draft"] = dict(ctx.collection_draft)
+    if ctx.collection_progress:
+        payload["collection_progress"] = ctx.collection_progress
+    if ctx.collection_field:
+        payload["collection_field"] = ctx.collection_field
+    if ctx.collection_select_action:
+        payload["collection_select_action"] = ctx.collection_select_action
+    if ctx.collection_remove_index is not None:
+        payload["collection_remove_index"] = ctx.collection_remove_index
+    if ctx.step_kind:
+        payload["step_kind"] = ctx.step_kind
+    if ctx.min_items != 1:
+        payload["min_items"] = ctx.min_items
+    if ctx.label_field:
+        payload["label_field"] = ctx.label_field
+    if ctx.item_fields:
+        payload["item_fields"] = list(ctx.item_fields)
     if ctx.transform_rule:
         payload["transform_rule"] = ctx.transform_rule
         payload["transform_source_key"] = ctx.transform_source_key
@@ -183,6 +210,8 @@ def _inspect_parallel(job: Job, parallel: ParallelPattern) -> JobContext:
 
 
 def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
+    from palm.patterns.wizard.collection_selection import default_label_field
+
     state = _as_blackboard(job.state)
     prompt_bundle = _prompt_from_state(state)
     answers = wizard.answers(state)
@@ -190,6 +219,28 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
     collection_items, collection_phase, collection_item_previews = _collection_from_bundle(
         prompt_bundle,
     )
+    step_slug = wizard.current_step_slug(state)
+    step_config = wizard.config.get_step(step_slug) if step_slug else None
+    step_kind = step_config.step_kind if step_config is not None else None
+    min_items = step_config.min_items if step_config is not None else 1
+    label_field: str | None = None
+    item_fields: tuple[dict[str, Any], ...] = ()
+    if step_config is not None and step_config.step_kind == "collection":
+        label_field = default_label_field(
+            step_config.item_fields,
+            explicit=step_config.label_field,
+        )
+        item_fields = tuple(
+            {
+                "slug": field.slug,
+                "title": field.title,
+                "prompt": field.prompt,
+                "field_type": field.field_type,
+                "choices": list(field.choices),
+                "required": field.required,
+            }
+            for field in step_config.item_fields
+        )
     transform_rule, transform_source_key, transform_target_key, transform_source_preview = (
         _transform_from_bundle(prompt_bundle)
     )
@@ -207,6 +258,15 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         collection_items=collection_items,
         collection_phase=collection_phase,
         collection_item_previews=collection_item_previews,
+        collection_draft=_dict_from_bundle(prompt_bundle, "collection_draft"),
+        collection_progress=_str_from_bundle(prompt_bundle, "collection_progress"),
+        collection_field=_str_from_bundle(prompt_bundle, "collection_field"),
+        collection_select_action=_str_from_bundle(prompt_bundle, "collection_select_action"),
+        collection_remove_index=_int_from_bundle(prompt_bundle, "collection_remove_index"),
+        step_kind=step_kind,
+        min_items=min_items,
+        label_field=label_field,
+        item_fields=item_fields,
         transform_rule=transform_rule,
         transform_source_key=transform_source_key,
         transform_target_key=transform_target_key,
@@ -327,6 +387,27 @@ def _transform_from_bundle(
         str(target) if target is not None else None,
         str(preview) if preview is not None else None,
     )
+
+
+def _dict_from_bundle(bundle: dict[str, Any] | None, key: str) -> dict[str, Any]:
+    if not bundle:
+        return {}
+    raw = bundle.get(key)
+    return dict(raw) if isinstance(raw, dict) else {}
+
+
+def _str_from_bundle(bundle: dict[str, Any] | None, key: str) -> str | None:
+    if not bundle:
+        return None
+    raw = bundle.get(key)
+    return str(raw) if raw is not None else None
+
+
+def _int_from_bundle(bundle: dict[str, Any] | None, key: str) -> int | None:
+    if not bundle:
+        return None
+    raw = bundle.get(key)
+    return int(raw) if isinstance(raw, int) else None
 
 
 def _collection_from_bundle(

@@ -528,3 +528,53 @@ def test_flow_detail_start_wizard_label(server: ServerRuntime, sample_flow: Flow
     status, html, _ = _get_html(server.base_url, f"/explorer/flows/{sample_flow.definition_id}")
     assert status == 200
     assert "Start Wizard" in html
+
+
+def _register_todo_collection_flow(server: ServerRuntime) -> None:
+    from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+    from tests.test_wizard_collection import _todo_flow
+
+    default_commit_registry().register(
+        "test_persist_todos",
+        lambda ctx: CommitResult.success({"todos": ctx.answers.get("todos")}),
+    )
+    server.repository.register_flow(_todo_flow())
+
+
+def test_wizard_collection_overview_renders(server: ServerRuntime) -> None:
+    _register_todo_collection_flow(server)
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"flow_name": "todo-test"},
+    )
+    instance_id = created["instance_id"]
+
+    status, html, _ = _get_html(server.base_url, f"/explorer/instances/{instance_id}")
+    assert status == 200
+    assert "collection-overview" in html
+    assert "Add New" in html
+    assert "collection-phase-badge" in html
+    assert "0</strong> of <strong>2</strong> minimum" in html
+
+
+def test_wizard_collection_add_item_htmx(server: ServerRuntime) -> None:
+    _register_todo_collection_flow(server)
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"flow_name": "todo-test"},
+    )
+    instance_id = created["instance_id"]
+
+    status, html, _ = _post_form(
+        server.base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"collection_action": "add"},
+        extra_headers={"HX-Request": "true"},
+    )
+    assert status == 200
+    assert 'id="wizard-workspace"' in html
+    assert "collection-field-panel" in html
+    assert "Save field" in html
+    assert "Draft so far" not in html or "collection-draft-panel" in html

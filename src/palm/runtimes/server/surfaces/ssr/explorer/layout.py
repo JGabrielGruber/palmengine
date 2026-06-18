@@ -86,6 +86,64 @@ _WIZARD_EXPLORER_CSS = """
 .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
 .htmx-request .htmx-indicator { opacity: 1; }
 .wizard-loading { color: var(--muted); font-size: 0.85rem; }
+.collection-overview {
+  border: 1px solid var(--border); border-radius: 0.85rem; padding: 1.1rem;
+  background: var(--surface); margin-bottom: 1rem;
+}
+.collection-overview-header {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
+  justify-content: space-between; margin-bottom: 0.85rem;
+}
+.collection-count { font-size: 0.88rem; color: var(--muted); }
+.collection-count strong { color: var(--accent); }
+.collection-item-grid {
+  display: grid; gap: 0.65rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin-bottom: 1rem;
+}
+.collection-item-card {
+  border: 1px solid var(--border); border-radius: 0.65rem; padding: 0.85rem;
+  background: var(--surface-2); position: relative;
+}
+.collection-item-card .item-number {
+  font-size: 0.72rem; font-weight: 700; color: var(--accent); letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 0.25rem;
+}
+.collection-item-card .item-title { font-weight: 600; margin-bottom: 0.35rem; }
+.collection-item-card .item-fields { font-size: 0.82rem; color: var(--muted); }
+.collection-item-actions {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.65rem;
+}
+.collection-toolbar {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  padding-top: 0.5rem; border-top: 1px solid var(--border);
+}
+.collection-phase-badge {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--amber);
+}
+.collection-draft-panel {
+  margin: 0.75rem 0; padding: 0.75rem; border-radius: 0.5rem;
+  border: 1px dashed var(--border); background: #0c1211;
+}
+.collection-remove-confirm {
+  border: 1px solid var(--rose); border-radius: 0.75rem; padding: 1.1rem;
+  background: #1a0a0d;
+}
+.collection-remove-preview {
+  margin: 0.75rem 0; padding: 0.75rem; border-radius: 0.5rem;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.collection-field-progress {
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem;
+}
+.btn-danger {
+  background: #7f1d1d; color: var(--text); border: 1px solid var(--rose);
+}
+.btn-danger:hover { background: #991b1b; }
+.btn-ghost {
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--accent); }
 """
 
 

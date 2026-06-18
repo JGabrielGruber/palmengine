@@ -306,13 +306,249 @@ def wizard_prompt_card(
         )
 
     title = prompt.get("title") or prompt.get("step") or "Current step"
+    is_collection = _is_collection_prompt(prompt)
+    body = collection_form(instance_id, prompt) if is_collection else wizard_input_form(instance_id, prompt)
+    phase_badge = ""
+    if is_collection:
+        phase = str(prompt.get("collection_phase") or "menu")
+        phase_badge = f'<span class="collection-phase-badge">{escape(phase)}</span> '
+
     return (
         f'<section class="wizard-prompt-card" id="wizard-prompt-panel">'
         f"{banner}"
-        f"<h3>{escape(str(title))}</h3>"
-        f"{wizard_input_form(instance_id, prompt)}"
+        f"<h3>{phase_badge}{escape(str(title))}</h3>"
+        f"{body}"
         "</section>"
     )
+
+
+def _is_collection_prompt(prompt: dict[str, Any]) -> bool:
+    return prompt.get("step_kind") == "collection" or bool(prompt.get("collection_phase"))
+
+
+def collection_item_card(
+    instance_id: str,
+    index: int,
+    item: dict[str, Any],
+    *,
+    label_field: str | None = None,
+    item_fields: list[dict[str, Any]] | None = None,
+    preview: str | None = None,
+    action: str = "menu",
+) -> str:
+    """Single numbered collection item with edit/remove or select actions."""
+    from palm.runtimes.server.surfaces.ssr.explorer.forms import collection_action_form
+
+    title = preview or _collection_item_title(item, index, label_field, item_fields)
+    field_lines = _collection_item_field_lines(item, label_field, item_fields)
+    fields_html = ""
+    if field_lines:
+        fields_html = f'<div class="item-fields">{"<br>".join(field_lines)}</div>'
+
+    if action == "select":
+        actions_html = collection_action_form(
+            instance_id,
+            "select_item",
+            item_index=index,
+            label=f"Select #{index + 1}",
+            tone="primary",
+        )
+    else:
+        actions_html = (
+            f'<div class="collection-item-actions">'
+            f'{collection_action_form(instance_id, "edit", item_index=index, label="Edit", tone="ghost")}'
+            f'{collection_action_form(instance_id, "remove", item_index=index, label="Remove", tone="danger")}'
+            f"</div>"
+        )
+
+    return (
+        f'<article class="collection-item-card" data-item-index="{index}">'
+        f'<div class="item-number">Item {index + 1}</div>'
+        f'<div class="item-title">{escape(title)}</div>'
+        f"{fields_html}"
+        f"{actions_html}"
+        f"</article>"
+    )
+
+
+def collection_list(
+    instance_id: str,
+    prompt: dict[str, Any],
+    *,
+    action: str = "menu",
+) -> str:
+    """Grid of collection item cards."""
+    items = prompt.get("collection_items") or []
+    if not isinstance(items, list) or not items:
+        return '<p class="muted collection-empty">No items yet — add your first one below.</p>'
+
+    previews = prompt.get("collection_item_previews") or []
+    label_field = prompt.get("label_field")
+    item_fields = prompt.get("item_fields")
+    field_specs = list(item_fields) if isinstance(item_fields, list) else None
+
+    cards = []
+    for index, raw in enumerate(items):
+        if not isinstance(raw, dict):
+            continue
+        preview = previews[index] if index < len(previews) else None
+        cards.append(
+            collection_item_card(
+                instance_id,
+                index,
+                raw,
+                label_field=label_field,
+                item_fields=field_specs,
+                preview=str(preview) if preview is not None else None,
+                action=action,
+            )
+        )
+    if not cards:
+        return '<p class="muted collection-empty">No items yet — add your first one below.</p>'
+    return f'<div class="collection-item-grid">{"".join(cards)}</div>'
+
+
+def collection_overview_card(instance_id: str, prompt: dict[str, Any]) -> str:
+    """Menu-phase collection workspace — item list, progress, and toolbar."""
+    from palm.runtimes.server.surfaces.ssr.explorer.forms import collection_action_form
+
+    items = prompt.get("collection_items") or []
+    count = len(items) if isinstance(items, list) else 0
+    min_items = int(prompt.get("min_items") or 1)
+    progress_html = _collection_progress_label(count, min_items)
+
+    prompt_text = prompt.get("text")
+    intro = ""
+    if prompt_text:
+        intro = f'<p class="wizard-prompt-text">{escape(str(prompt_text))}</p>'
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    done_label = _collection_done_label(prompt, count, min_items)
+    can_continue = count >= min_items
+
+    toolbar = (
+        f'<div class="collection-toolbar">'
+        f'{collection_action_form(instance_id, "add", label="Add New", tone="primary")}'
+    )
+    if can_continue:
+        toolbar += collection_action_form(
+            instance_id,
+            "done",
+            label=done_label,
+            tone="primary",
+        )
+    else:
+        toolbar += (
+            f'<span class="muted collection-need-more">'
+            f"Need {min_items - count} more item{'s' if min_items - count != 1 else ''} to continue"
+            f"</span>"
+        )
+    toolbar += "</div>"
+
+    return (
+        f'<div class="collection-overview">'
+        f'<div class="collection-overview-header">'
+        f"<h4>Collection</h4>"
+        f'<div class="collection-count">{progress_html}</div>'
+        f"</div>"
+        f"{intro}{validation_html}"
+        f'{collection_list(instance_id, prompt, action="menu")}'
+        f"{toolbar}"
+        f"</div>"
+    )
+
+
+def collection_form(instance_id: str, prompt: dict[str, Any]) -> str:
+    """Route collection phase to the appropriate panel."""
+    from palm.runtimes.server.surfaces.ssr.explorer.forms import (
+        collection_field_form,
+        collection_remove_form,
+        collection_select_form,
+    )
+
+    phase = str(prompt.get("collection_phase") or "menu")
+    if phase == "field":
+        return collection_field_form(instance_id, prompt)
+    if phase == "remove_confirm":
+        return collection_remove_form(instance_id, prompt)
+    if phase == "select_item":
+        return collection_select_form(instance_id, prompt)
+    return collection_overview_card(instance_id, prompt)
+
+
+def _collection_progress_label(count: int, min_items: int) -> str:
+    if count >= min_items:
+        suffix = "ready to continue" if count > min_items else "minimum met"
+        return f"<strong>{count}</strong> item{'s' if count != 1 else ''} — {suffix}"
+    needed = min_items - count
+    return (
+        f"<strong>{count}</strong> of <strong>{min_items}</strong> minimum "
+        f"({needed} more needed)"
+    )
+
+
+def _collection_done_label(prompt: dict[str, Any], count: int, min_items: int) -> str:
+    choices = prompt.get("choices") or []
+    if isinstance(choices, list):
+        for choice in choices:
+            text = str(choice)
+            if text.startswith("Continue to summary"):
+                return text
+    if count < min_items:
+        return f"Continue to summary (need {min_items - count} more)"
+    return "Continue to summary"
+
+
+def _collection_item_title(
+    item: dict[str, Any],
+    index: int,
+    label_field: str | None,
+    item_fields: list[dict[str, Any]] | None,
+) -> str:
+    if label_field and item.get(label_field) not in (None, ""):
+        return str(item[label_field])
+    for field in item_fields or []:
+        if not isinstance(field, dict):
+            continue
+        slug = field.get("slug")
+        if slug and item.get(slug) not in (None, ""):
+            return str(item[slug])
+    for key, value in item.items():
+        if value not in (None, ""):
+            return str(value)
+    return f"Item {index + 1}"
+
+
+def _collection_item_field_lines(
+    item: dict[str, Any],
+    label_field: str | None,
+    item_fields: list[dict[str, Any]] | None,
+    *,
+    max_fields: int = 3,
+) -> list[str]:
+    lines: list[str] = []
+    if item_fields:
+        for field in item_fields[:max_fields]:
+            if not isinstance(field, dict):
+                continue
+            slug = field.get("slug")
+            if not slug or slug == label_field:
+                continue
+            value = item.get(slug)
+            if value in (None, ""):
+                continue
+            title = field.get("title") or str(slug).replace("_", " ").title()
+            lines.append(f"{escape(title)}: {escape(str(value))}")
+        return lines
+    for key, value in list(item.items())[:max_fields]:
+        if key == label_field or value in (None, ""):
+            continue
+        lines.append(f"{escape(str(key))}: {escape(str(value))}")
+    return lines
 
 
 def wizard_answers_section(wizard: dict[str, Any]) -> str:

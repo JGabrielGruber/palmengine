@@ -113,6 +113,7 @@ def _prompt_block(pattern: dict[str, Any] | None) -> dict[str, Any] | None:
         "title": pattern.get("prompt_title"),
         "text": pattern.get("prompt"),
         "field_type": pattern.get("field_type"),
+        "effective_schema_type": pattern.get("effective_schema_type"),
         "validation_error": pattern.get("validation_error"),
         "scope_path": pattern.get("scope_path"),
     }
@@ -125,6 +126,27 @@ def _prompt_block(pattern: dict[str, Any] | None) -> dict[str, Any] | None:
     collection_items = pattern.get("collection_items")
     if collection_items:
         prompt["collection_items"] = list(collection_items)
+    collection_item_previews = pattern.get("collection_item_previews")
+    if collection_item_previews:
+        prompt["collection_item_previews"] = list(collection_item_previews)
+    collection_draft = pattern.get("collection_draft")
+    if isinstance(collection_draft, dict) and collection_draft:
+        prompt["collection_draft"] = dict(collection_draft)
+    for key in (
+        "collection_progress",
+        "collection_field",
+        "collection_select_action",
+        "collection_remove_index",
+        "step_kind",
+        "label_field",
+        "min_items",
+    ):
+        value = pattern.get(key)
+        if value is not None:
+            prompt[key] = value
+    item_fields = pattern.get("item_fields")
+    if item_fields:
+        prompt["item_fields"] = list(item_fields)
     transform_rule = pattern.get("transform_rule")
     if transform_rule:
         prompt["transform_rule"] = transform_rule
