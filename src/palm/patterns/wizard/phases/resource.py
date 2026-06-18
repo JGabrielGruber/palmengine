@@ -1,5 +1,5 @@
 """
-WizardResourceLeaf — declarative resource invocation inside a wizard sequence.
+Resource phase — declarative ResourceLeaf invocation inside a wizard step.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ from palm.patterns.wizard.leaf_support import (
     leave_wizard_step,
     publish_prompt,
 )
+from palm.patterns.wizard.phases._base import WizardPhaseContext, wizard_prompt_key
 from palm.patterns.wizard.state import get_answers, set_answers
-from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -64,16 +64,8 @@ class WizardResourceLeaf(LeafNode):
 
     PROMPT_KEY_PREFIX = "__bt_prompt__"
 
-    def __init__(
-        self,
-        step: WizardStepConfig,
-        *,
-        wizard_name: str,
-        step_index: int,
-        emit: EventEmitter | None = None,
-        context_engine: Any | None = None,
-        resource_engine: ResourceEngine | None = None,
-    ) -> None:
+    def __init__(self, ctx: WizardPhaseContext) -> None:
+        step = ctx.step
         super().__init__(step.slug)
         if step.step_kind != "resource":
             raise ValueError(
@@ -81,63 +73,56 @@ class WizardResourceLeaf(LeafNode):
             )
         if not step.resource_ref:
             raise ValueError(f"Resource step {step.slug!r} requires resource_ref")
-        self._step = step
-        self._wizard_name = wizard_name
-        self._step_index = step_index
-        self._emit = emit
-        self._context = context_engine
+        self._ctx = ctx
         self._inner = build_resource_leaf(
             step.slug,
-            resource_engine=resource_engine,
+            resource_engine=ctx.resource_engine,
             resource_ref=step.resource_ref,
             action=step.resource_action,
             params=dict(step.params),
             output_key=step.output_key or step.slug,
             error_key=f"{WizardKeys.PREFIX}.resource_error:{step.slug}",
             step_slug=step.slug,
-            wizard_name=wizard_name,
+            wizard_name=ctx.wizard_name,
         )
 
-    @property
-    def step(self) -> WizardStepConfig:
-        return self._step
-
     def prompt_key(self) -> str:
-        return f"{self.PROMPT_KEY_PREFIX}:{self._step.slug}"
+        return wizard_prompt_key(self._ctx.step.slug)
 
     def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
+        step = self._ctx.step
         return build_prompt_bundle(
             state,
-            wizard_name=self._wizard_name,
-            step=self._step,
-            step_index=self._step_index,
-            context=self._context,
+            wizard_name=self._ctx.wizard_name,
+            step=step,
+            step_index=self._ctx.step_index,
+            context=self._ctx.context_engine,
             include_validation=False,
-            prompt=self._step.prompt or default_resource_prompt(self._step),
+            prompt=step.prompt or default_resource_prompt(step),
             field_type="resource",
-            resource_ref=self._step.resource_ref,
-            output_key=self._step.output_key or self._step.slug,
+            resource_ref=step.resource_ref,
+            output_key=step.output_key or step.slug,
         )
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         enter_wizard_step(
             state,
-            self._step,
-            index=self._step_index,
-            context=self._context,
+            self._ctx.step,
+            index=self._ctx.step_index,
+            context=self._ctx.context_engine,
         )
 
         prompt_bundle = self._prompt_bundle(state)
         publish_prompt(state, prompt_key=self.prompt_key(), bundle=prompt_bundle)
         emit_wizard_event(
-            self._emit,
-            self._wizard_name,
+            self._ctx.emit,
+            self._ctx.wizard_name,
             WizardEventType.STEP_STARTED,
-            slug=self._step.slug,
-            title=self._step.title,
-            step_index=self._step_index,
+            slug=self._ctx.step.slug,
+            title=self._ctx.step.title,
+            step_index=self._ctx.step_index,
             step_kind="resource",
-            resource_ref=self._step.resource_ref,
+            resource_ref=self._ctx.step.resource_ref,
         )
 
         self._promote_answers_for_binding(state)
@@ -146,13 +131,13 @@ class WizardResourceLeaf(LeafNode):
         if status == PatternStatus.SUCCESS:
             result_value = state.get(self._inner.output_key)
             self._persist_resource_result(state, result_value)
-            leave_wizard_step(state, self._step, context=self._context)
+            leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
             clear_active_prompt(state, prompt_key=self.prompt_key())
             clear_validation_feedback(state)
             trace = state.get(self._inner.trace_key)
             trace_dict = trace if isinstance(trace, dict) else {}
             resource_id = trace_dict.get("resource_id")
-            action = trace_dict.get("action") or self._step.resource_action
+            action = trace_dict.get("action") or self._ctx.step.resource_action
             provider = trace_dict.get("provider")
             if is_mutating_action(str(action) if action else None):
                 invocations = state.get(WizardKeys.RESOURCE_INVOCATIONS)
@@ -161,17 +146,17 @@ class WizardResourceLeaf(LeafNode):
                     WizardKeys.RESOURCE_INVOCATIONS,
                     track_resource_invocation(
                         tracked,
-                        resource_ref=self._step.resource_ref or "",
+                        resource_ref=self._ctx.step.resource_ref or "",
                         action=str(action or "invoke"),
                         provider=str(provider) if provider else None,
                         resource_id=str(resource_id) if resource_id else None,
-                        step_slug=self._step.slug,
+                        step_slug=self._ctx.step.slug,
                     ),
                 )
             state.set(
                 WizardKeys.RESOURCE_FEEDBACK,
                 format_resource_feedback(
-                    self._step,
+                    self._ctx.step,
                     resource_id=str(resource_id) if resource_id else None,
                     provider=str(provider) if provider else None,
                     action=str(action) if action else None,
@@ -179,17 +164,17 @@ class WizardResourceLeaf(LeafNode):
                 ),
             )
             state.set(
-                f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}",
+                f"{WizardKeys.RESOURCE_RESULT}:{self._ctx.step.slug}",
                 result_value,
             )
             emit_wizard_event(
-                self._emit,
-                self._wizard_name,
+                self._ctx.emit,
+                self._ctx.wizard_name,
                 WizardEventType.STEP_COMPLETED,
-                slug=self._step.slug,
-                step_index=self._step_index,
+                slug=self._ctx.step.slug,
+                step_index=self._ctx.step_index,
                 step_kind="resource",
-                resource_ref=self._step.resource_ref,
+                resource_ref=self._ctx.step.resource_ref,
                 output_key=self._inner.output_key,
                 resource_id=resource_id,
             )
@@ -201,12 +186,12 @@ class WizardResourceLeaf(LeafNode):
         state.set(
             WizardKeys.RESOURCE_FEEDBACK,
             format_resource_feedback(
-                self._step,
+                self._ctx.step,
                 resource_id=str(trace_dict.get("resource_id"))
                 if trace_dict.get("resource_id")
                 else None,
                 provider=str(trace_dict.get("provider")) if trace_dict.get("provider") else None,
-                action=str(trace_dict.get("action") or self._step.resource_action or "invoke"),
+                action=str(trace_dict.get("action") or self._ctx.step.resource_action or "invoke"),
                 success=False,
                 error=message,
             ),
@@ -220,15 +205,15 @@ class WizardResourceLeaf(LeafNode):
             prompt_key=self.prompt_key(),
         )
         emit_wizard_event(
-            self._emit,
-            self._wizard_name,
+            self._ctx.emit,
+            self._ctx.wizard_name,
             WizardEventType.VALIDATION_FAILED,
-            slug=self._step.slug,
+            slug=self._ctx.step.slug,
             errors=[message],
             step_kind="resource",
-            resource_ref=self._step.resource_ref,
+            resource_ref=self._ctx.step.resource_ref,
         )
-        leave_wizard_step(state, self._step, context=self._context)
+        leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
         return PatternStatus.FAILURE
 
     def _promote_answers_for_binding(self, state: BaseState) -> None:
@@ -246,7 +231,7 @@ class WizardResourceLeaf(LeafNode):
             state.set_validated(target, value)
 
     def _failure_message(self, state: BaseState) -> str:
-        error_key = f"{WizardKeys.PREFIX}.resource_error:{self._step.slug}"
+        error_key = f"{WizardKeys.PREFIX}.resource_error:{self._ctx.step.slug}"
         raw = state.get(error_key)
         if raw is not None:
             return str(raw)
@@ -254,9 +239,13 @@ class WizardResourceLeaf(LeafNode):
         if isinstance(trace, dict) and trace.get("error"):
             return str(trace["error"])
         action = (
-            self._step.resource_action or trace.get("action") if isinstance(trace, dict) else None
+            self._ctx.step.resource_action or trace.get("action") if isinstance(trace, dict) else None
         )
         action_label = action or "invoke"
-        return f"Resource {self._step.resource_ref!r} (action={action_label}) failed"
+        return f"Resource {self._ctx.step.resource_ref!r} (action={action_label}) failed"
+
+
+def build_resource_phase(ctx: WizardPhaseContext) -> WizardResourceLeaf:
+    return WizardResourceLeaf(ctx)
 
 

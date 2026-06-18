@@ -1,5 +1,5 @@
 """
-WizardPattern — multi-step interactive behavior tree with events and backtracking.
+WizardPattern — thin orchestrator over a behavior-tree of wizard phases.
 """
 
 from __future__ import annotations
@@ -10,26 +10,20 @@ from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventContext, EventEngine
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.backtrack_policy import can_backtrack_to
 from palm.patterns.wizard.config import WizardConfig
-from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import CommitRegistry, default_commit_registry
 from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.phases._base import provide_wizard_input
+from palm.patterns.wizard.phases.backtrack import WizardSequenceNode, request_backtrack
 from palm.patterns.wizard.tree import build_wizard_tree
-from palm.patterns.wizard.wizard_sequence import WizardSequenceNode
 
 
 class WizardPattern(BasePattern):
     """
-    Interactive wizard with validation, summary, commit, and resource actions.
+    Interactive wizard driven entirely by its behavior tree.
 
-    Drive with repeated ``tick(state)`` until SUCCESS. Supply input via
-    ``provide_input`` or by writing to the active step's ``input_key`` in state.
-
-    Execution is behavior-tree driven: steps run inside a
-    :class:`~palm.patterns.wizard.wizard_sequence.WizardSequenceNode`, completion
-    checks live in :class:`~palm.patterns.wizard.completion_guard.WizardCompletionGuardNode`,
-    and backtrack is applied by the sequence before each tick.
+    Phase logic (input, collection, summary, commit, resource, transform,
+    backtrack, completion) lives under ``palm.patterns.wizard.phases``.
     """
 
     def __init__(
@@ -73,7 +67,6 @@ class WizardPattern(BasePattern):
 
     @property
     def sequence(self) -> WizardSequenceNode:
-        """The wizard step sequence (for resume, tests, and composition)."""
         return self._sequence
 
     @property
@@ -89,33 +82,16 @@ class WizardPattern(BasePattern):
         self._root.reset()
 
     def provide_input(self, state: BaseState, value: Any) -> str | None:
-        prompt = state.get(WizardKeys.ACTIVE_PROMPT)
-        if not isinstance(prompt, dict):
-            return None
-        input_key = prompt.get("input_key")
-        if not isinstance(input_key, str):
-            return None
-        state.set(input_key, value)
-        slug = prompt.get("slug")
-        return str(slug) if slug is not None else None
+        return provide_wizard_input(state, value)
 
     def request_backtrack(self, state: BaseState, to_slug: str) -> None:
-        if not self._config.allow_backtrack:
-            raise ValueError("Backtracking is disabled for this wizard")
-        if not can_backtrack_to(self._config, to_slug):
-            self._emit_event(
-                WizardEventType.BACKTRACK_BLOCKED,
-                target=to_slug,
-                protected=list(self._config.protected_slugs()),
-            )
-            raise ValueError(f"Cannot backtrack to protected step: {to_slug!r}")
-        self._config.index_of(to_slug)
-        self._emit_event(
-            WizardEventType.BACKTRACK_REQUESTED,
-            from_step=state.get(WizardKeys.CURRENT_STEP),
-            to_slug=to_slug,
+        request_backtrack(
+            state,
+            self._config,
+            to_slug,
+            emit=self._bridge_emit,
+            wizard_name=self.name,
         )
-        state.set(WizardKeys.BACKTRACK_TO, to_slug)
 
     def current_step_slug(self, state: BaseState) -> str | None:
         value = state.get(WizardKeys.CURRENT_STEP)
@@ -138,10 +114,6 @@ class WizardPattern(BasePattern):
             return None
         return EventContext.from_mapping(self._context_engine.current)
 
-    def _emit_event(self, event_type: str, **payload: Any) -> None:
-        self._bridge_emit(event_type, payload)
-
 
 def default_wizard_config(step_count: int = 1) -> WizardConfig:
-    """Factory for registry-compatible minimal wizards."""
     return WizardConfig.from_slugs([f"step_{i + 1}" for i in range(step_count)])

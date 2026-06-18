@@ -8,17 +8,18 @@ from typing import TYPE_CHECKING
 
 from palm.core.behavior_tree import RootNode
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.completion_guard import WizardCompletionGuardNode
 from palm.patterns.wizard.config import WizardConfig
-from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import CommitRegistry
-from palm.patterns.wizard.step_leaf import EventEmitter
-from palm.patterns.wizard.step_registry import (
-    WizardStepBuildContext,
+from palm.patterns.wizard.phases._base import EventEmitter, WizardPhaseContext
+from palm.patterns.wizard.phases.backtrack import (
+    WizardCompletionGuardNode,
+    WizardSequenceNode,
+    backtrack_notifier,
+)
+from palm.patterns.wizard.phases.registry import (
     WizardStepKindRegistry,
     default_wizard_step_registry,
 )
-from palm.patterns.wizard.wizard_sequence import BacktrackNotifier, WizardSequenceNode
 
 if TYPE_CHECKING:
     from palm.core.context import ContextEngine
@@ -37,23 +38,20 @@ def build_wizard_tree(
     """
     Return ``(root, sequence)`` for the given wizard configuration.
 
-    The tree shape is::
+    Tree shape::
 
         RootNode
           └─ WizardCompletionGuardNode
                └─ WizardSequenceNode
-                    ├─ step leaf …
-                    └─ step leaf …
-
-    Custom step kinds can be supplied via ``step_registry`` (defaults to the
-    global built-in registry).
+                    ├─ phase node …
+                    └─ phase node …
     """
     registry = step_registry or default_wizard_step_registry()
-    on_backtrack = _backtrack_notifier(emit, wizard_name) if emit is not None else None
+    on_backtrack = backtrack_notifier(emit, wizard_name) if emit is not None else None
 
     leaves = [
         registry.build(
-            WizardStepBuildContext(
+            WizardPhaseContext(
                 wizard_name=wizard_name,
                 step_index=idx,
                 step=step,
@@ -77,27 +75,7 @@ def build_wizard_tree(
         child=sequence,
         config=config,
         emit=emit,
+        wizard_name=wizard_name,
     )
     root = RootNode(f"{wizard_name}_root", child=guard)
     return root, sequence
-
-
-def _backtrack_notifier(
-    emit: EventEmitter,
-    wizard_name: str,
-) -> BacktrackNotifier:
-    from palm.core.context import BaseState
-    from palm.patterns.wizard.keys import WizardKeys
-
-    def notify(index: int, state: BaseState, slug: str, from_step: object) -> None:
-        payload = {
-            "wizard": wizard_name,
-            "step_index": index,
-            "slug": slug,
-            "from_step": from_step,
-            "to_slug": slug,
-        }
-        emit(WizardEventType.BACKTRACK, payload)
-        emit(WizardEventType.BACKTRACK_EXECUTED, payload)
-
-    return notify

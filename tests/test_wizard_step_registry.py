@@ -8,17 +8,16 @@ from palm.common.exceptions import DefinitionBuildError
 from palm.core.behavior_tree import ActionNode, BaseNode, PatternStatus, RootNode
 from palm.core.context import BaseState
 from palm.patterns.wizard.builder import wizard_config_from_options
-from palm.patterns.wizard.completion_guard import WizardCompletionGuardNode
+from palm.patterns.wizard.phases.backtrack import WizardCompletionGuardNode
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.step_registry import (
-    WizardStepBuildContext,
+from palm.patterns.wizard.phases import WizardPhaseContext, WizardSequenceNode
+from palm.patterns.wizard.phases.registry import (
     WizardStepKindRegistry,
     default_wizard_step_registry,
     register_builtin_wizard_step_kinds,
 )
 from palm.patterns.wizard.tree import build_wizard_tree
-from palm.patterns.wizard.wizard_sequence import WizardSequenceNode
 from palm.states import BlackboardState
 
 
@@ -34,7 +33,7 @@ def test_custom_step_kind_can_be_registered() -> None:
     registry = WizardStepKindRegistry()
     register_builtin_wizard_step_kinds(registry)
 
-    def build_note(ctx: WizardStepBuildContext) -> BaseNode:
+    def build_note(ctx: WizardPhaseContext) -> BaseNode:
         return ActionNode(
             ctx.step.slug,
             action=lambda _s: PatternStatus.SUCCESS,

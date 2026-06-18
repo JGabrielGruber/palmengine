@@ -1,5 +1,5 @@
 """
-WizardSummaryLeaf — review collected answers before commit.
+Summary phase — review collected answers before commit.
 """
 
 from __future__ import annotations
@@ -7,12 +7,18 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
-from palm.core.context import BaseState, ContextEngine
-from palm.patterns.wizard.config import WizardStepConfig
+from palm.core.context import BaseState
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import enrich_prompt_bundle, enter_step, get_answers, leave_step
-from palm.patterns.wizard.step_leaf import EventEmitter
+from palm.patterns.wizard.leaf_support import emit_wizard_event, leave_wizard_step
+from palm.patterns.wizard.phases._base import (
+    WizardPhaseContext,
+    activate_prompt,
+    build_phase_prompt,
+    clear_phase_prompt,
+    is_affirmative,
+)
+from palm.patterns.wizard.state import get_answers
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -23,35 +29,18 @@ from palm.patterns.wizard.validation import (
 class WizardSummaryLeaf(InteractiveLeaf):
     """Presents a summary of answers and requires explicit confirmation."""
 
-    def __init__(
-        self,
-        step: WizardStepConfig,
-        *,
-        wizard_name: str,
-        step_index: int,
-        emit: EventEmitter | None = None,
-        context_engine: ContextEngine | None = None,
-    ) -> None:
-        super().__init__(step.slug)
-        self._step = step
-        self._wizard_name = wizard_name
-        self._step_index = step_index
-        self._emit = emit
-        self._context = context_engine
+    def __init__(self, ctx: WizardPhaseContext) -> None:
+        super().__init__(ctx.step.slug)
+        self._ctx = ctx
 
     def _prompt_bundle(self, state: BaseState, answers: dict[str, Any]) -> dict[str, Any]:
-        bundle = {
-            "wizard": self._wizard_name,
-            "slug": self._step.slug,
-            "title": self._step.title,
-            "prompt": self._step.prompt,
-            "field_type": "confirm",
-            "step_kind": "summary",
-            "step_index": self._step_index,
-            "input_key": self.input_key(),
-            "summary": dict(answers),
-        }
-        return enrich_prompt_bundle(state, bundle, context=self._context)
+        return build_phase_prompt(
+            state,
+            self._ctx,
+            field_type="confirm",
+            step_kind="summary",
+            summary=dict(answers),
+        )
 
     def _activate_summary(
         self,
@@ -61,21 +50,21 @@ class WizardSummaryLeaf(InteractiveLeaf):
         answers: dict[str, Any],
         schema_valid: bool,
     ) -> PatternStatus:
-        state.set(self.prompt_key(), prompt_bundle)
-        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
-        state.set(WizardKeys.CURRENT_STEP, self._step.slug)
-        state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug, context=self._context)
-        self._fire(
+        activate_prompt(state, ctx=self._ctx, bundle=prompt_bundle)
+        emit_wizard_event(
+            self._ctx.emit,
+            self._ctx.wizard_name,
             WizardEventType.SUMMARY_SHOWN,
             summary=answers,
             schema_valid=schema_valid,
         )
-        self._fire(
+        emit_wizard_event(
+            self._ctx.emit,
+            self._ctx.wizard_name,
             WizardEventType.STEP_STARTED,
-            slug=self._step.slug,
-            title=self._step.title,
-            step_index=self._step_index,
+            slug=self._ctx.step.slug,
+            title=self._ctx.step.title,
+            step_index=self._ctx.step_index,
         )
         return PatternStatus.WAITING_FOR_INPUT
 
@@ -90,9 +79,11 @@ class WizardSummaryLeaf(InteractiveLeaf):
                 prompt_bundle=prompt_bundle,
                 prompt_key=self.prompt_key(),
             )
-            self._fire(
+            emit_wizard_event(
+                self._ctx.emit,
+                self._ctx.wizard_name,
                 WizardEventType.VALIDATION_FAILED,
-                slug=self._step.slug,
+                slug=self._ctx.step.slug,
                 errors=list(validation.errors),
                 reason="summary_schema",
             )
@@ -112,36 +103,45 @@ class WizardSummaryLeaf(InteractiveLeaf):
                 prompt_bundle=prompt_bundle,
                 prompt_key=self.prompt_key(),
             )
-            self._fire(
+            emit_wizard_event(
+                self._ctx.emit,
+                self._ctx.wizard_name,
                 WizardEventType.VALIDATION_FAILED,
-                slug=self._step.slug,
+                slug=self._ctx.step.slug,
                 errors=list(validation.errors),
                 reason="summary_schema",
             )
             return PatternStatus.WAITING_FOR_INPUT
 
-        if not _is_affirmative(value):
+        if not is_affirmative(value):
             publish_validation_feedback(
                 state,
                 ("Please confirm the summary to continue.",),
                 prompt_bundle=self._prompt_bundle(state, answers),
                 prompt_key=self.prompt_key(),
             )
-            self._fire(WizardEventType.VALIDATION_FAILED, slug=self._step.slug, reason="summary")
+            emit_wizard_event(
+                self._ctx.emit,
+                self._ctx.wizard_name,
+                WizardEventType.VALIDATION_FAILED,
+                slug=self._ctx.step.slug,
+                reason="summary",
+            )
             return PatternStatus.WAITING_FOR_INPUT
 
         state.set(WizardKeys.SUMMARY_ACK, True)
-        leave_step(state, self._step.slug, context=self._context)
-        state.delete(WizardKeys.ACTIVE_PROMPT)
+        leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
+        clear_phase_prompt(state, self._ctx.step.slug)
         clear_validation_feedback(state)
-        self._fire(WizardEventType.INPUT_RECEIVED, slug=self._step.slug, value=value)
+        emit_wizard_event(
+            self._ctx.emit,
+            self._ctx.wizard_name,
+            WizardEventType.INPUT_RECEIVED,
+            slug=self._ctx.step.slug,
+            value=value,
+        )
         return PatternStatus.SUCCESS
 
-    def _fire(self, event_type: str, **payload: Any) -> None:
-        if self._emit is not None:
-            payload.setdefault("wizard", self._wizard_name)
-            self._emit(event_type, payload)
 
-
-def _is_affirmative(value: Any) -> bool:
-    return value in (True, "yes", "Yes", "YES")
+def build_summary_phase(ctx: WizardPhaseContext) -> WizardSummaryLeaf:
+    return WizardSummaryLeaf(ctx)

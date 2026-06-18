@@ -9,13 +9,10 @@ from __future__ import annotations
 
 from palm.core.behavior_tree import ActionNode, BaseNode, PatternStatus
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard import (
-    WizardStepBuildContext,
-    default_wizard_step_registry,
-)
+from palm.patterns.wizard import WizardPhaseContext, default_wizard_step_registry
 
 
-def _build_log_step(ctx: WizardStepBuildContext) -> BaseNode:
+def _build_log_step(ctx: WizardPhaseContext) -> BaseNode:
     """Auto-tick step that records a marker in wizard answers."""
 
     slug = ctx.step.slug
