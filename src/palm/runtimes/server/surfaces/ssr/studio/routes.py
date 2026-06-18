@@ -37,6 +37,30 @@ def register_studio_routes(registry: RouteRegistry, ctx: ServerContext) -> None:
         surface=_SURFACE,
     )
     registry.register(
+        method="POST",
+        path="/v1/studio/definitions/flows",
+        handler=api.save_flow,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="POST",
+        path="/v1/studio/definitions/processes",
+        handler=api.save_process,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="GET",
+        path="/v1/studio/templates",
+        handler=api.list_templates,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="GET",
+        path="/v1/studio/templates/{template_id}",
+        handler=api.get_template,
+        surface=_SURFACE,
+    )
+    registry.register(
         method="GET",
         path="/studio/assets/{filename}",
         handler=pages.assets_file,
