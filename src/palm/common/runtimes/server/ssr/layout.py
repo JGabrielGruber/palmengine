@@ -199,6 +199,7 @@ def page_shell(
     subtitle: str = "",
     footer_pills: Sequence[tuple[str, str]] = (),
     extra_css: str = "",
+    extra_head: str = "",
 ) -> str:
     """Wrap content in a sidebar layout shell for SSR surfaces."""
     nav_html = []
@@ -223,6 +224,7 @@ def page_shell(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{escape(title)} · {escape(brand)}</title>
   <style>{css}</style>
+  {extra_head}
 </head>
 <body>
   <div class="layout">

@@ -12,6 +12,7 @@ from palm.common.cqrs.query import (
     GetJobStatusQuery,
     GetProcessQuery,
     GetResourceInvocationsQuery,
+    GetWizardStatusQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -99,6 +100,21 @@ class ExplorerFetcher:
         if hasattr(result, "to_dict"):
             return result.to_dict()
         return dict(result)
+
+    def get_wizard(self, instance_id: str) -> dict[str, Any] | None:
+        """Rich wizard view keyed by durable instance id."""
+        result = self._ctx.ask(GetWizardStatusQuery(instance_id=instance_id))
+        if result is None:
+            return None
+        if hasattr(result, "to_dict"):
+            return result.to_dict()
+        if isinstance(result, dict):
+            return result
+        return None
+
+    def flow_pattern_by_name(self) -> dict[str, str]:
+        """Map flow name → pattern for catalog badges."""
+        return {flow.name: flow.pattern for flow in self.list_flows()}
 
     def list_patterns(self) -> list[dict[str, str]]:
         import palm.patterns  # noqa: F401 — register installed patterns

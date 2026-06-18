@@ -70,6 +70,14 @@ def not_found_page(version: str, message: str) -> ServerResponse:
     )
 
 
+def is_htmx_request(request: ServerRequest) -> bool:
+    """Return whether the request was issued by HTMX."""
+    for key, value in request.headers.items():
+        if key.lower() == "hx-request":
+            return str(value).lower() == "true"
+    return False
+
+
 def flash_banners(request: ServerRequest) -> str:
     from palm.runtimes.server.surfaces.ssr.explorer.forms import alert
 

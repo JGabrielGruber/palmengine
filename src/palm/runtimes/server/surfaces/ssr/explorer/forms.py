@@ -289,6 +289,117 @@ def resource_invoke_form(
     )
 
 
+def wizard_input_form(
+    instance_id: str,
+    prompt: Mapping[str, Any],
+    *,
+    value: Any = None,
+    errors: list[str] | None = None,
+    htmx: bool = True,
+) -> str:
+    """Interactive wizard input with optional HTMX partial updates."""
+    action = f"/explorer/instances/{instance_id}/input"
+    label = prompt.get("title") or prompt.get("text") or "Value"
+    pattern = {
+        "prompt": prompt.get("text"),
+        "prompt_title": prompt.get("title"),
+        "field_type": prompt.get("field_type"),
+        "effective_schema_type": prompt.get("effective_schema_type"),
+        "choices": prompt.get("choices"),
+        "collection_phase": prompt.get("collection_phase"),
+    }
+    field_html = _render_job_value_field(pattern, value)
+    error_html = ""
+    if errors:
+        items = "".join(f"<li>{escape(error)}</li>" for error in errors)
+        error_html = f'<div class="alert alert-error"><ul class="form-errors">{items}</ul></div>'
+
+    prompt_text = prompt.get("text")
+    prompt_html = f'<p class="wizard-prompt-text">{escape(prompt_text)}</p>' if prompt_text else ""
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    collection_html = _wizard_collection_hint(prompt)
+
+    htmx_attrs = ""
+    if htmx:
+        htmx_attrs = (
+            f' hx-post="{escape(action)}"'
+            ' hx-target="#wizard-workspace"'
+            ' hx-swap="outerHTML"'
+            ' hx-indicator="#wizard-loading"'
+        )
+
+    choice_buttons = _wizard_choice_buttons(prompt, htmx=htmx, action=action)
+
+    return (
+        f'<form class="schema-form wizard-input-form" action="{escape(action)}" method="POST"{htmx_attrs}>'
+        f"{error_html}{validation_html}{prompt_html}{collection_html}"
+        f"{choice_buttons}"
+        f'<div class="form-field">'
+        f'<label for="value">{escape(label)}</label>'
+        f"{field_html}"
+        f"</div>"
+        f'<div class="form-actions">'
+        f'<button class="btn-primary" type="submit">Submit input</button>'
+        f'<span id="wizard-loading" class="htmx-indicator wizard-loading">Updating…</span>'
+        f"</div>"
+        f"</form>"
+    )
+
+
+def _wizard_collection_hint(prompt: Mapping[str, Any]) -> str:
+    phase = prompt.get("collection_phase")
+    items = prompt.get("collection_items")
+    if not phase and not items:
+        return ""
+    parts = []
+    if phase:
+        parts.append(f"Phase: <strong>{escape(str(phase))}</strong>")
+    if isinstance(items, list) and items:
+        rows = []
+        for item in items:
+            if isinstance(item, dict):
+                label = item.get("label") or item.get("id") or str(item)
+            else:
+                label = str(item)
+            rows.append(f"<li>{escape(str(label))}</li>")
+        parts.append(f'<ul class="collection-items">{"".join(rows)}</ul>')
+    return f'<div class="collection-panel muted-section">{"".join(parts)}</div>'
+
+
+def _wizard_choice_buttons(
+    prompt: Mapping[str, Any],
+    *,
+    htmx: bool,
+    action: str,
+) -> str:
+    choices = _normalize_choices(prompt.get("choices"))
+    field_type = prompt.get("field_type")
+    if field_type != "choice" or not choices:
+        return ""
+    buttons = []
+    htmx_attrs = ""
+    if htmx:
+        htmx_attrs = (
+            f' hx-post="{escape(action)}"'
+            ' hx-target="#wizard-workspace"'
+            ' hx-swap="outerHTML"'
+            ' hx-indicator="#wizard-loading"'
+        )
+    for choice in choices:
+        buttons.append(
+            f'<form class="wizard-choice-form" action="{escape(action)}" method="POST"{htmx_attrs}>'
+            f'<input type="hidden" name="value" value="{escape(str(choice))}" />'
+            f'<button type="submit" class="wizard-choice-btn">{escape(str(choice))}</button>'
+            f"</form>"
+        )
+    return f'<div class="wizard-choice-grid" role="group" aria-label="Choices">{"".join(buttons)}</div>'
+
+
 def job_input_form(
     job_id: str,
     pattern: Mapping[str, Any],

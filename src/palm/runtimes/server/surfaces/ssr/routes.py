@@ -102,6 +102,18 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         surface=_SURFACE,
     )
     registry.register(
+        method="POST",
+        path="/explorer/instances/{instance_id}/input",
+        handler=actions.provide_wizard_input,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="POST",
+        path="/explorer/instances/{instance_id}/backtrack",
+        handler=actions.backtrack_wizard,
+        surface=_SURFACE,
+    )
+    registry.register(
         method="GET",
         path="/explorer/instances/{instance_id}/snapshots",
         handler=pages.snapshots,

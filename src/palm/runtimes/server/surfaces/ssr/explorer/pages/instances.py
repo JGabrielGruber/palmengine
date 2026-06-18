@@ -4,16 +4,24 @@ from __future__ import annotations
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.render import escape, html_response
-from palm.runtimes.server.surfaces.ssr.explorer.components import code_block, data_table, stat_card
+from palm.runtimes.server.surfaces.ssr.explorer.components import (
+    action_button,
+    badge,
+    code_block,
+    data_table,
+    stat_card,
+)
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 
 from .base import PageContext
-from .utils import not_found_page
+from .utils import not_found_page, status_badge
+from .wizards import WizardPages
 
 
 class InstancePages:
     def __init__(self, ctx: PageContext) -> None:
         self._ctx = ctx
+        self._wizards = WizardPages(ctx)
 
     def _resource_timeline(
         self,
@@ -61,18 +69,38 @@ class InstancePages:
 
     def catalog(self, request: ServerRequest) -> ServerResponse:
         instances = self._ctx.fetch.list_instances(limit=50)
-        rows = [
-            [
-                f'<a href="/explorer/instances/{escape(row.get("instance_id", ""))}">{escape(row.get("instance_id", ""))}</a>',
-                escape(str(row.get("status") or "—")),
-                escape(str(row.get("flow_name") or "—")),
-                escape(str(row.get("wizard_step_slug") or "—")),
-            ]
-            for row in instances
-        ]
+        flow_patterns = self._ctx.fetch.flow_pattern_by_name()
+        rows = []
+        for row in instances:
+            instance_id = str(row.get("instance_id") or "")
+            flow_name = str(row.get("flow_name") or "")
+            is_wizard = flow_patterns.get(flow_name) == "wizard" or bool(
+                row.get("wizard_step_slug")
+            )
+            if not is_wizard and row.get("status") == "WAITING_FOR_INPUT":
+                wizard_view = self._ctx.fetch.get_wizard(instance_id)
+                is_wizard = bool(wizard_view and wizard_view.get("pattern") == "wizard")
+            pattern_cell = badge("Wizard", tone="waiting") if is_wizard else "—"
+            continue_cell = "—"
+            if is_wizard and row.get("status") == "WAITING_FOR_INPUT":
+                continue_cell = action_button(
+                    f"/explorer/instances/{instance_id}",
+                    "Continue",
+                    tone="primary",
+                )
+            rows.append(
+                [
+                    f'<a href="/explorer/instances/{escape(instance_id)}">{escape(instance_id)}</a>',
+                    status_badge(str(row.get("status") or "—")),
+                    escape(flow_name or "—"),
+                    pattern_cell,
+                    escape(str(row.get("wizard_step_slug") or "—")),
+                    continue_cell,
+                ]
+            )
         content = (
             '<section class="section">'
-            f"{data_table(['Instance', 'Status', 'Flow', 'Step'], rows) if rows else '<p class=\"muted\">No instances yet.</p>'}"
+            f"{data_table(['Instance', 'Status', 'Flow', 'Pattern', 'Step', ''], rows) if rows else '<p class=\"muted\">No instances yet.</p>'}"
             "</section>"
         )
         return html_response(
@@ -89,6 +117,9 @@ class InstancePages:
         instance = self._ctx.fetch.get_instance(instance_id)
         if instance is None:
             return not_found_page(self._ctx.version, f"Instance not found: {instance_id}")
+
+        if self._wizards.is_wizard_instance(instance_id, instance):
+            return self._wizards.detail(request, instance_id=instance_id, instance=instance)
 
         job_id = instance.get("job_id", "")
         timeline = self._resource_timeline(instance_id=instance_id, job_id=job_id or None)

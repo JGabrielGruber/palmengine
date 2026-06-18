@@ -137,9 +137,10 @@ class FlowPages:
                     "</div></section>"
                 )
 
+        start_label = "Start Wizard" if flow.pattern == "wizard" else "Start this flow"
         content = (
             '<section class="section">'
-            f'<p class="btn-row">{action_button(start_flow_href(flow.definition_id), "Start this flow")}</p>'
+            f'<p class="btn-row">{action_button(start_flow_href(flow.definition_id), start_label, tone="primary")}</p>'
             "</section>"
             f"{resource_steps_html}"
             '<section class="section"><div class="panel">'

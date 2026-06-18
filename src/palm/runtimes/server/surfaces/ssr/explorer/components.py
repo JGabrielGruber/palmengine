@@ -250,3 +250,254 @@ def schema_form(
         submit_label=submit_label,
         hidden_fields=hidden_fields,
     )
+
+
+def wizard_progress_bar(*, completed: int, total: int, current_step: str | None = None) -> str:
+    total = max(total, 1)
+    pct = min(100, int((completed / total) * 100))
+    step_hint = f" · current: {escape(current_step)}" if current_step else ""
+    return (
+        '<div class="wizard-progress">'
+        '<div class="wizard-progress-track">'
+        f'<div class="wizard-progress-fill" style="width:{pct}%"></div>'
+        "</div>"
+        f'<div class="wizard-progress-label">{completed} of {total} steps{step_hint}</div>'
+        "</div>"
+    )
+
+
+def wizard_prompt_card(
+    instance_id: str,
+    wizard: dict[str, Any],
+    *,
+    notice: str = "",
+    error: str = "",
+) -> str:
+    from palm.runtimes.server.surfaces.ssr.explorer.forms import alert, wizard_input_form
+
+    status = str(wizard.get("status") or "")
+    prompt = wizard.get("prompt") or {}
+    banner = ""
+    if notice:
+        banner += alert(notice)
+    if error:
+        banner += alert(error, tone="error")
+
+    if status != "WAITING_FOR_INPUT":
+        message = "Wizard is not waiting for input."
+        if status == "SUCCEEDED":
+            message = "Wizard completed successfully."
+        elif status in {"FAILED", "CANCELLED"}:
+            message = f"Wizard ended with status {status}."
+        return (
+            f'<section class="wizard-prompt-card" id="wizard-prompt-panel">'
+            f"{banner}"
+            f'<p class="muted">{escape(message)}</p>'
+            f'<p><a href="/v1/wizards/{escape(instance_id)}">REST status</a></p>'
+            "</section>"
+        )
+
+    if not prompt:
+        return (
+            f'<section class="wizard-prompt-card" id="wizard-prompt-panel">'
+            f"{banner}"
+            '<p class="muted">No active prompt — refresh or inspect the job context.</p>'
+            "</section>"
+        )
+
+    title = prompt.get("title") or prompt.get("step") or "Current step"
+    return (
+        f'<section class="wizard-prompt-card" id="wizard-prompt-panel">'
+        f"{banner}"
+        f"<h3>{escape(str(title))}</h3>"
+        f"{wizard_input_form(instance_id, prompt)}"
+        "</section>"
+    )
+
+
+def wizard_answers_section(wizard: dict[str, Any]) -> str:
+    answers = wizard.get("answers") or {}
+    if not isinstance(answers, dict) or not answers:
+        return (
+            '<section class="panel"><h3>Answers so far</h3>'
+            '<p class="muted">No answers captured yet.</p></section>'
+        )
+    rows = [
+        [escape(str(key)), escape(_preview_value(value))]
+        for key, value in sorted(answers.items())
+    ]
+    return (
+        '<section class="panel"><h3>Answers so far</h3>'
+        f'{data_table(["Step", "Value"], rows)}'
+        "</section>"
+    )
+
+
+def wizard_step_timeline(wizard: dict[str, Any], *, instance_id: str) -> str:
+    progress = wizard.get("wizard_progress") or {}
+    completed = progress.get("completed_steps") or []
+    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    trace = progress.get("backtrack_trace") or []
+
+    if not completed and not current:
+        return (
+            '<section class="panel"><h3>Step timeline</h3>'
+            '<p class="muted">Step history will appear as the wizard advances.</p></section>'
+        )
+
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for slug in completed:
+        if isinstance(slug, str) and slug not in seen:
+            seen.add(slug)
+            ordered.append(slug)
+    if isinstance(current, str) and current not in seen:
+        ordered.append(current)
+
+    items = []
+    for slug in ordered:
+        state_class = "active" if slug == current else "done"
+        meta = "completed" if slug in completed and slug != current else "current"
+        backtrack_btn = ""
+        if slug != current and slug in completed:
+            backtrack_btn = wizard_backtrack_button(instance_id, slug)
+        items.append(
+            f'<li class="{state_class}">'
+            f'<span class="dot" aria-hidden="true"></span>'
+            f'<div><div class="step-label">{escape(slug)}</div>'
+            f'<div class="step-meta">{escape(meta)}{backtrack_btn}</div></div>'
+            f"</li>"
+        )
+
+    trace_items = []
+    for entry in trace[-5:]:
+        if not isinstance(entry, dict):
+            continue
+        trace_items.append(
+            f'<li><span class="dot"></span><div class="step-meta">'
+            f'{escape(str(entry.get("event_type") or "backtrack"))}: '
+            f'{escape(str(entry.get("from_step") or "—"))} → '
+            f'{escape(str(entry.get("to_step") or "—"))}'
+            f"</div></li>"
+        )
+
+    trace_html = ""
+    if trace_items:
+        trace_html = (
+            '<h4>Recent backtracks</h4><ul class="wizard-timeline">'
+            f'{"".join(trace_items)}</ul>'
+        )
+
+    return (
+        '<section class="panel"><h3>Step timeline</h3>'
+        f'<ul class="wizard-timeline">{"".join(items)}</ul>'
+        f"{trace_html}"
+        "</section>"
+    )
+
+
+def wizard_backtrack_button(instance_id: str, to_step: str, *, label: str | None = None) -> str:
+    action = f"/explorer/instances/{instance_id}/backtrack"
+    text = label or f"Back to {to_step}"
+    return (
+        f'<form class="wizard-backtrack-inline" action="{escape(action)}" method="POST" '
+        f'hx-post="{escape(action)}" hx-target="#wizard-workspace" hx-swap="outerHTML" '
+        f'hx-indicator="#wizard-loading" style="display:inline">'
+        f'<input type="hidden" name="to_step" value="{escape(to_step)}" />'
+        f'<button type="submit" class="wizard-choice-btn" style="margin-left:0.35rem">{escape(text)}</button>'
+        f"</form>"
+    )
+
+
+def wizard_backtrack_controls(instance_id: str, wizard: dict[str, Any]) -> str:
+    progress = wizard.get("wizard_progress") or {}
+    completed = progress.get("completed_steps") or []
+    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    if not completed:
+        return ""
+
+    targets = [slug for slug in completed if isinstance(slug, str) and slug != current]
+    if not targets:
+        return ""
+
+    buttons = [
+        (
+            f'<form action="/explorer/instances/{escape(instance_id)}/backtrack" method="POST" '
+            f'hx-post="/explorer/instances/{escape(instance_id)}/backtrack" '
+            f'hx-target="#wizard-workspace" hx-swap="outerHTML" hx-indicator="#wizard-loading">'
+            f'<input type="hidden" name="to_step" value="{escape(slug)}" />'
+            f'<button type="submit" class="wizard-choice-btn">{escape(f"← {slug}")}</button>'
+            f"</form>"
+        )
+        for slug in reversed(targets[-4:])
+    ]
+    default_action = f"/explorer/instances/{instance_id}/backtrack"
+    return (
+        '<section class="panel"><h3>Backtrack</h3>'
+        '<p class="muted">Return to a prior step and re-answer. Protected steps cannot be targeted.</p>'
+        f'<div class="wizard-choice-grid">{"".join(buttons)}</div>'
+        f'<form action="{escape(default_action)}" method="POST" '
+        f'hx-post="{escape(default_action)}" hx-target="#wizard-workspace" hx-swap="outerHTML" '
+        f'hx-indicator="#wizard-loading" style="margin-top:0.75rem">'
+        f'<button type="submit" class="btn btn-default">Back one step</button>'
+        f"</form></section>"
+    )
+
+
+def wizard_workspace(
+    instance_id: str,
+    wizard: dict[str, Any],
+    *,
+    notice: str = "",
+    error: str = "",
+    total_steps: int | None = None,
+) -> str:
+    """Composable wizard detail workspace (full page or HTMX partial)."""
+    from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import status_badge
+
+    progress = wizard.get("wizard_progress") or {}
+    completed_steps = progress.get("completed_steps") or []
+    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    total = total_steps or max(len(completed_steps) + (1 if current else 0), 1)
+    flow_name = wizard.get("flow_name") or wizard.get("wizard_progress", {}).get("wizard_name") or "Wizard"
+
+    header = (
+        '<header class="wizard-header">'
+        f"<div><h2>{escape(str(flow_name))}</h2>"
+        f'<div class="wizard-meta">{badge("wizard", tone="default")} '
+        f"{status_badge(str(wizard.get('status') or '—'))}</div></div>"
+        f"{wizard_progress_bar(completed=len(completed_steps), total=total, current_step=current)}"
+        "</header>"
+    )
+
+    prompt_panel = wizard_prompt_card(instance_id, wizard, notice=notice, error=error)
+    sidebar = wizard_answers_section(wizard) + wizard_step_timeline(wizard, instance_id=instance_id)
+    backtrack = wizard_backtrack_controls(instance_id, wizard)
+    links = (
+        '<section class="panel"><h3>Links</h3>'
+        f'<p><a href="/v1/wizards/{escape(instance_id)}">REST wizard API</a> · '
+        f'<a href="/explorer/instances/{escape(instance_id)}/snapshots">Snapshots</a>'
+    )
+    job_id = wizard.get("job_id")
+    if job_id:
+        links += f' · <a href="/explorer/jobs/{escape(str(job_id))}">Job context</a>'
+    links += "</p></section>"
+
+    return (
+        f'<div id="wizard-workspace" class="wizard-workspace">'
+        f"{header}"
+        f'<div class="grid-2">{prompt_panel}{sidebar}</div>'
+        f"{backtrack}{links}"
+        "</div>"
+    )
+
+
+def _preview_value(value: Any) -> str:
+    if isinstance(value, (dict, list)):
+        import json
+
+        try:
+            return json.dumps(value, ensure_ascii=False)
+        except TypeError:
+            return str(value)
+    return str(value)

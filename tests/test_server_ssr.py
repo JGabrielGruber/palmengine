@@ -151,7 +151,7 @@ def test_flow_catalog_page(server: ServerRuntime, sample_flow: FlowDefinition) -
     status, html, _ = _get_html(server.base_url, "/explorer/flows/explorer-flow-1")
     assert status == 200
     assert "wizard" in html
-    assert "Start this flow" in html
+    assert "Start Wizard" in html
 
 
 def test_flow_submit_form_renders(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
@@ -303,6 +303,7 @@ def test_explorer_layout_renders_title() -> None:
     assert "Test" in html
     assert "Body" in html
     assert "Palm Explorer" in html
+    assert "htmx.org" in html
 
 
 def test_schema_form_renders_fields() -> None:
@@ -443,3 +444,87 @@ def test_resource_invoke_post(server: ServerRuntime) -> None:
     assert response.status == 200
     assert "Invoke result" in html
     assert "rest" in html
+
+
+def _post_form(
+    base_url: str,
+    path: str,
+    fields: dict[str, str],
+    *,
+    extra_headers: dict[str, str] | None = None,
+) -> tuple[int, str, dict[str, str]]:
+    import http.client
+    from urllib.parse import urlparse
+
+    parsed = urlparse(base_url)
+    body = urllib.parse.urlencode(fields).encode("utf-8")
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    if extra_headers:
+        headers.update(extra_headers)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    conn.request("POST", path, body=body, headers=headers)
+    response = conn.getresponse()
+    resp_headers = {key.lower(): value for key, value in response.getheaders()}
+    raw = response.read().decode("utf-8")
+    conn.close()
+    return response.status, raw, resp_headers
+
+
+def test_wizard_instance_detail_renders_prompt(server: ServerRuntime) -> None:
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    instance_id = created["instance_id"]
+
+    status, html, _ = _get_html(server.base_url, f"/explorer/instances/{instance_id}")
+    assert status == 200
+    assert "wizard-workspace" in html
+    assert "wizard-prompt-card" in html
+    assert "Submit input" in html
+    assert "htmx.org" in html
+    assert "Step timeline" in html
+    assert "Answers so far" in html
+
+
+def test_wizard_instance_list_shows_continue(server: ServerRuntime) -> None:
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    instance_id = created["instance_id"]
+
+    status, html, _ = _get_html(server.base_url, "/explorer/instances")
+    assert status == 200
+    assert "Wizard" in html
+    assert instance_id in html
+    assert "Continue" in html
+
+
+def test_wizard_input_htmx_partial(server: ServerRuntime) -> None:
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    instance_id = created["instance_id"]
+
+    status, html, _ = _post_form(
+        server.base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"value": "Ada"},
+        extra_headers={"HX-Request": "true"},
+    )
+    assert status == 200
+    assert 'id="wizard-workspace"' in html
+    assert "Input accepted" in html or "step_2" in html
+
+
+def test_flow_detail_start_wizard_label(server: ServerRuntime, sample_flow: FlowDefinition) -> None:
+    server.repository.register_flow(sample_flow)
+
+    status, html, _ = _get_html(server.base_url, f"/explorer/flows/{sample_flow.definition_id}")
+    assert status == 200
+    assert "Start Wizard" in html

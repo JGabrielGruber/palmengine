@@ -4,12 +4,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
+from palm.common.cqrs.command import (
+    ProvideInputCommand,
+    ProvideWizardInputCommand,
+    RequestWizardBacktrackCommand,
+    SubmitFlowCommand,
+)
+from palm.common.exceptions import InstanceNotFoundError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.ssr.render import redirect
+from palm.common.runtimes.server.ssr.render import html_response, redirect
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
 from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values
+from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import is_htmx_request
+from palm.runtimes.server.surfaces.ssr.explorer.pages.wizards import _estimate_step_total
 from palm.runtimes.server.surfaces.ssr.explorer.schemas import build_flow_submit_schema
 
 if TYPE_CHECKING:
@@ -42,6 +51,100 @@ class ExplorerActions:
 
         self._ctx.wait_until_idle()
         return redirect(f"/explorer/jobs/{job_id}?notice=Input+accepted")
+
+    def provide_wizard_input(
+        self, request: ServerRequest, *, instance_id: str
+    ) -> ServerResponse:
+        wizard = self._fetch.get_wizard(instance_id)
+        if wizard is None:
+            return redirect(f"/explorer/instances/{instance_id}?error=Wizard+not+found")
+
+        form_data = request.body or {}
+        raw_value = form_data.get("value", "")
+        prompt = wizard.get("prompt") or {}
+        pattern = {
+            "field_type": prompt.get("field_type"),
+            "effective_schema_type": prompt.get("effective_schema_type"),
+            "choices": prompt.get("choices"),
+        }
+
+        try:
+            value = coerce_job_input(str(raw_value), pattern)
+            self._ctx.execute(ProvideWizardInputCommand(instance_id=instance_id, value=value))
+        except InstanceNotFoundError:
+            return self._wizard_action_response(
+                request,
+                instance_id,
+                error="Wizard not found",
+            )
+        except (TypeError, ValueError, RuntimeError) as exc:
+            return self._wizard_action_response(
+                request,
+                instance_id,
+                error=str(exc),
+            )
+
+        self._ctx.wait_until_idle()
+        return self._wizard_action_response(request, instance_id, notice="Input accepted")
+
+    def backtrack_wizard(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
+        form_data = request.body or {}
+        to_step = _optional_str(form_data.get("to_step"))
+
+        try:
+            self._ctx.execute(
+                RequestWizardBacktrackCommand(instance_id=instance_id, to_step=to_step)
+            )
+        except InstanceNotFoundError:
+            return self._wizard_action_response(
+                request,
+                instance_id,
+                error="Wizard not found",
+            )
+        except (TypeError, ValueError) as exc:
+            return self._wizard_action_response(
+                request,
+                instance_id,
+                error=str(exc),
+            )
+
+        self._ctx.wait_until_idle()
+        label = to_step or "previous step"
+        return self._wizard_action_response(
+            request,
+            instance_id,
+            notice=f"Backtracked to {label}",
+        )
+
+    def _wizard_action_response(
+        self,
+        request: ServerRequest,
+        instance_id: str,
+        *,
+        notice: str = "",
+        error: str = "",
+    ) -> ServerResponse:
+        if is_htmx_request(request):
+            wizard = self._fetch.get_wizard(instance_id)
+            instance = self._fetch.get_instance(instance_id) or {}
+            if wizard is None:
+                return html_response(
+                    f'<div id="wizard-workspace" class="wizard-workspace">'
+                    f'<p class="alert alert-error">Wizard not found.</p></div>',
+                    status=404,
+                )
+            body = wizard_workspace(
+                instance_id,
+                wizard,
+                notice=notice,
+                error=error,
+                total_steps=_estimate_step_total(self._fetch, wizard, instance),
+            )
+            return html_response(body)
+
+        if error:
+            return redirect(f"/explorer/instances/{instance_id}?error={_quote(error)}")
+        return redirect(f"/explorer/instances/{instance_id}?notice={_quote(notice)}")
 
     def submit_flow(self, request: ServerRequest) -> ServerResponse:
         flows = self._fetch.list_flows()
