@@ -4,6 +4,21 @@ import type { PaletteItem, PaletteSection } from "../shared/types";
 let sections = $state<PaletteSection[]>([]);
 let loading = $state(false);
 let error = $state<string | null>(null);
+let query = $state("");
+let collapsed = $state<Record<string, boolean>>({});
+
+function matches(item: PaletteItem, needle: string): boolean {
+  const haystack = [
+    item.label,
+    item.description,
+    item.ref ?? "",
+    item.kind,
+    item.provider ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+}
 
 export const paletteStore = {
   get sections() {
@@ -15,10 +30,32 @@ export const paletteStore = {
   get error() {
     return error;
   },
-  get draggableItems() {
-    return sections.flatMap((section) =>
-      section.items.filter((item) => item.draggable),
-    );
+  get query() {
+    return query;
+  },
+  get filteredSections() {
+    const needle = query.trim().toLowerCase();
+    if (!needle) {
+      return sections;
+    }
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => matches(item, needle)),
+      }))
+      .filter((section) => section.items.length > 0);
+  },
+  isCollapsed(sectionId: string) {
+    return collapsed[sectionId] ?? false;
+  },
+  setQuery(value: string) {
+    query = value;
+  },
+  toggleSection(sectionId: string) {
+    collapsed = {
+      ...collapsed,
+      [sectionId]: !paletteStore.isCollapsed(sectionId),
+    };
   },
   async load() {
     loading = true;

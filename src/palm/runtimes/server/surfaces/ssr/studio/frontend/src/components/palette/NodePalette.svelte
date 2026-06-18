@@ -1,15 +1,12 @@
 <script lang="ts">
   import type { PaletteItem } from "../../shared/types";
+  import { importFlowDefinition } from "../../shared/import/definition";
+  import { api } from "../../shared/api/client";
+  import { canvasStore } from "../../stores/canvas.svelte";
+  import { feedbackStore } from "../../stores/feedback.svelte";
   import { paletteStore } from "../../stores/palette.svelte";
-
-  const kindAccent: Record<PaletteItem["kind"], string> = {
-    action: "border-l-[#3b82f6]",
-    condition: "border-l-[#f59e0b]",
-    resource: "border-l-[#10b981]",
-    transform: "border-l-[#8b5cf6]",
-    pattern: "border-l-[#ec4899]",
-    flow: "border-l-[#64748b]",
-  };
+  import { projectStore } from "../../stores/project.svelte";
+  import PaletteCard from "./PaletteCard.svelte";
 
   const DRAG_MIME = "application/palm-studio-palette";
 
@@ -21,39 +18,71 @@
     event.dataTransfer.setData(DRAG_MIME, item.id);
     event.dataTransfer.effectAllowed = "copy";
   }
+
+  async function importFlowItem(item: PaletteItem) {
+    if (!item.ref) {
+      return;
+    }
+    try {
+      const flow = await api.getFlow(item.ref);
+      const imported = importFlowDefinition(flow);
+      canvasStore.replaceCanvas({ nodes: imported.nodes, edges: imported.edges });
+      projectStore.setName(imported.name);
+      projectStore.setPattern(imported.pattern);
+      feedbackStore.success(`Imported flow “${imported.name}”`);
+    } catch (err) {
+      feedbackStore.error(
+        err instanceof Error ? err.message : "Failed to import flow",
+      );
+    }
+  }
 </script>
 
-<div class="space-y-4">
+<div class="space-y-3">
+  <div class="sticky top-0 z-10 bg-[#0d1526] pb-2">
+    <input
+      type="search"
+      placeholder="Search palette…"
+      class="w-full rounded-lg border border-[#2a3a5c] bg-[#151d2e] px-3 py-2 text-sm text-[#e8edf7] outline-none placeholder:text-[#6b7c9e] focus:border-[#60a5fa]"
+      value={paletteStore.query}
+      oninput={(event) =>
+        paletteStore.setQuery((event.currentTarget as HTMLInputElement).value)}
+    />
+  </div>
+
   {#if paletteStore.loading}
     <p class="text-xs text-[#9aa8c7]">Loading palette…</p>
   {:else if paletteStore.error}
     <p class="text-xs text-[#fca5a5]">{paletteStore.error}</p>
+  {:else if paletteStore.filteredSections.length === 0}
+    <p class="text-xs text-[#9aa8c7]">No palette items match your search.</p>
   {:else}
-    {#each paletteStore.sections as section (section.id)}
-      <section>
-        <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#9aa8c7]">
-          {section.label}
-          <span class="ml-1 text-[#6b7c9e]">({section.items.length})</span>
-        </h3>
-        <div class="space-y-1.5">
-          {#each section.items as item (item.id)}
-            <div
-              role="button"
-              tabindex="0"
-              draggable={item.draggable}
-              class={`rounded-md border border-[#1e2a42] border-l-4 bg-[#151d2e] p-2.5 text-left transition ${kindAccent[item.kind]} ${item.draggable ? "cursor-grab hover:bg-[#1a2740] active:cursor-grabbing" : "opacity-70"}`}
-              ondragstart={(event) => onDragStart(item, event)}
-            >
-              <div class="text-sm font-medium leading-tight">{item.label}</div>
-              <div class="mt-1 line-clamp-2 text-[11px] text-[#9aa8c7]">
-                {item.description}
-              </div>
-              {#if item.ref}
-                <div class="mt-1 font-mono text-[10px] text-[#6b7c9e]">{item.ref}</div>
-              {/if}
-            </div>
-          {/each}
-        </div>
+    {#each paletteStore.filteredSections as section (section.id)}
+      <section class="rounded-lg border border-[#1e2a42]/80">
+        <button
+          type="button"
+          class="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#151d2e]"
+          onclick={() => paletteStore.toggleSection(section.id)}
+        >
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#9aa8c7]">
+            {section.label}
+          </span>
+          <span class="text-xs text-[#6b7c9e]">
+            {section.items.length}
+            {paletteStore.isCollapsed(section.id) ? "▸" : "▾"}
+          </span>
+        </button>
+        {#if !paletteStore.isCollapsed(section.id)}
+          <div class="space-y-2 border-t border-[#1e2a42] p-2">
+            {#each section.items as item (item.id)}
+              <PaletteCard
+                {item}
+                {onDragStart}
+                onImport={item.kind === "flow" ? importFlowItem : undefined}
+              />
+            {/each}
+          </div>
+        {/if}
       </section>
     {/each}
   {/if}
