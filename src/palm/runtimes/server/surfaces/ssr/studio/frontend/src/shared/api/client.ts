@@ -3,7 +3,11 @@ import type {
   FlowDefinitionJson,
   FlowSummary,
   PaletteResponse,
+  ProcessDefinitionJson,
+  ProcessSummary,
   StudioDraft,
+  StudioTemplateDetail,
+  StudioTemplateSummary,
 } from "../types";
 
 type RequestOptions = {
@@ -17,11 +21,17 @@ export class StudioApiClient {
   async fetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: options.method ?? "GET",
-      headers: options.body ? { "Content-Type": "application/json" } : undefined,
+      headers: options.body
+        ? { "Content-Type": "application/json", Accept: "application/json" }
+        : { Accept: "application/json" },
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
     if (!response.ok) {
-      throw new Error(`API ${response.status}: ${path}`);
+      const payload = await response.json().catch(() => ({}));
+      const message =
+        (payload as { message?: string }).message ??
+        `API ${response.status}: ${path}`;
+      throw new Error(message);
     }
     return (await response.json()) as T;
   }
@@ -36,6 +46,43 @@ export class StudioApiClient {
 
   getFlow(flowId: string) {
     return this.fetch<FlowDefinitionJson>(`/flows/${encodeURIComponent(flowId)}`);
+  }
+
+  listProcesses() {
+    return this.fetch<{ processes: ProcessSummary[] }>("/processes?limit=200");
+  }
+
+  getProcess(processId: string) {
+    return this.fetch<ProcessDefinitionJson>(
+      `/processes/${encodeURIComponent(processId)}`,
+    );
+  }
+
+  saveFlow(flow: FlowDefinitionJson) {
+    return this.fetch<{ saved: boolean; flow: FlowDefinitionJson }>(
+      "/studio/definitions/flows",
+      { method: "POST", body: flow },
+    );
+  }
+
+  saveProcess(process: ProcessDefinitionJson) {
+    return this.fetch<{ saved: boolean; process: ProcessDefinitionJson }>(
+      "/studio/definitions/processes",
+      { method: "POST", body: process },
+    );
+  }
+
+  listTemplates() {
+    return this.fetch<{
+      templates: StudioTemplateSummary[];
+      categories: string[];
+    }>("/studio/templates");
+  }
+
+  getTemplate(templateId: string) {
+    return this.fetch<{ template: StudioTemplateDetail }>(
+      `/studio/templates/${encodeURIComponent(templateId)}`,
+    );
   }
 
   listDrafts() {

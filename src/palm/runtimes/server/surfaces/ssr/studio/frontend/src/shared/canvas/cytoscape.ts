@@ -132,6 +132,25 @@ export function createGraph(
         },
       },
       {
+        selector: "node.sim-active",
+        style: {
+          "border-color": "var(--studio-accent)",
+          "border-width": 4,
+          "background-color": "var(--studio-surface-2)",
+          "overlay-opacity": 0.2,
+          "overlay-color": "var(--studio-accent)",
+          "overlay-padding": 10,
+        },
+      },
+      {
+        selector: "node.sim-completed",
+        style: {
+          "border-color": "var(--studio-accent-soft)",
+          "background-color": "var(--studio-surface)",
+          opacity: 0.85,
+        },
+      },
+      {
         selector: "node.connect-target",
         style: {
           "border-color": "var(--studio-accent)",
@@ -324,4 +343,23 @@ export function zoomBy(cy: Core, factor: number) {
     level: Math.min(3, Math.max(0.15, level * factor)),
     renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 },
   });
+}
+
+export function applySimulationTrace(
+  cy: Core,
+  activeNodeIds: string[],
+  completedNodeIds: string[],
+) {
+  const active = new Set(activeNodeIds);
+  const completed = new Set(completedNodeIds);
+  for (const node of cy.nodes()) {
+    if (node.hasClass("studio-group")) {
+      continue;
+    }
+    const id = node.id();
+    const isActive = active.has(id);
+    const isCompleted = completed.has(id);
+    node.toggleClass("sim-active", isActive);
+    node.toggleClass("sim-completed", isCompleted && !isActive);
+  }
 }

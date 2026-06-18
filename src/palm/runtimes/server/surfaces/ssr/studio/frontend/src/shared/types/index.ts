@@ -78,6 +78,26 @@ export type FlowSummary = {
   has_state_schema: boolean;
 };
 
+export type ProcessSummary = {
+  process_id: string;
+  name: string;
+  storage: string;
+  flow_count: number;
+};
+
+export type StudioTemplateSummary = {
+  id: string;
+  name: string;
+  description: string;
+  pattern: string;
+  category: string;
+  tags: string[];
+};
+
+export type StudioTemplateDetail = StudioTemplateSummary & {
+  flow: FlowDefinitionJson;
+};
+
 export type StudioCanvas = {
   nodes: CanvasNode[];
   edges: CanvasEdge[];

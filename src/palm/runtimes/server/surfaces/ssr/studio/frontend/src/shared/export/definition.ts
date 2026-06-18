@@ -103,10 +103,14 @@ export function buildWizardSteps(nodes: CanvasNode[]): Record<string, unknown>[]
       });
       continue;
     }
+    const prompt =
+      typeof node.meta?.prompt === "string" && node.meta.prompt
+        ? node.meta.prompt
+        : `Enter ${node.label}`;
     steps.push({
       slug,
       title: node.label,
-      prompt: `Enter ${node.label}`,
+      prompt,
       validation: [{ rule: "not_empty" }],
     });
   }

@@ -4,6 +4,7 @@
     exportProcessDefinition,
   } from "../../shared/export/definition";
   import { importFlowDefinition } from "../../shared/import/definition";
+  import CatalogModal from "../catalog/CatalogModal.svelte";
   import { api } from "../../shared/api/client";
   import { studio } from "../../shared/theme/classes";
   import type { FlowSummary } from "../../shared/types";
@@ -23,6 +24,7 @@
   let exportText = $state<string | null>(null);
   let showExport = $state(false);
   let showImport = $state(false);
+  let showCatalog = $state(false);
   let flows = $state<FlowSummary[]>([]);
   let importLoading = $state(false);
   let selectedFlowId = $state("");
@@ -34,6 +36,43 @@
       } else {
         await draftStore.saveServer();
       }
+    } catch {
+      /* surfaced via feedback */
+    }
+  }
+
+  function projectPayload() {
+    return {
+      name: projectStore.name,
+      pattern: projectStore.pattern,
+      nodes: canvasStore.nodes,
+      edges: canvasStore.edges,
+    };
+  }
+
+  async function saveAsFlow() {
+    if (validationStore.errorCount > 0) {
+      feedbackStore.warning("Fix validation errors before saving.");
+      return;
+    }
+    try {
+      const flow = exportFlowDefinition(projectPayload());
+      await feedbackStore.run("Saving flow to catalog", () => api.saveFlow(flow));
+    } catch {
+      /* surfaced via feedback */
+    }
+  }
+
+  async function saveAsProcess() {
+    if (validationStore.errorCount > 0) {
+      feedbackStore.warning("Fix validation errors before saving.");
+      return;
+    }
+    try {
+      const process = exportProcessDefinition(projectPayload());
+      await feedbackStore.run("Saving process to catalog", () =>
+        api.saveProcess(process),
+      );
     } catch {
       /* surfaced via feedback */
     }
@@ -170,8 +209,17 @@
     <button type="button" class={studio.btn} onclick={() => onSimulate?.()}>
       Simulate
     </button>
+    <button type="button" class={studio.btn} onclick={() => (showCatalog = true)}>
+      Open catalog
+    </button>
     <button type="button" class={studio.btn} onclick={openImport}>
       Import flow
+    </button>
+    <button type="button" class="{studio.btn} text-[var(--studio-accent)]" onclick={saveAsFlow}>
+      Save as flow
+    </button>
+    <button type="button" class="{studio.btn} text-[var(--studio-accent)]" onclick={saveAsProcess}>
+      Save as process
     </button>
     <button type="button" class={studio.btn} onclick={() => saveDraft(true)}>
       Save draft
@@ -248,3 +296,5 @@
     <pre class="overflow-auto p-4 text-xs text-[var(--studio-muted)]">{exportText}</pre>
   </div>
 {/if}
+
+<CatalogModal open={showCatalog} onClose={() => (showCatalog = false)} />

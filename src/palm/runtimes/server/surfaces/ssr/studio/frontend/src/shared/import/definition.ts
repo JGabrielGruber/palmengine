@@ -71,7 +71,11 @@ function importWizardSteps(
       ref: stepRef(step, kind),
       x: 80 + (index + 1) * H_SPACING,
       y: V_CENTER,
-      meta: { slug: step.slug, imported: true },
+      meta: {
+        slug: step.slug,
+        prompt: step.prompt,
+        imported: true,
+      },
     });
     const sourceId = previousId ?? nodes[0].id;
     const sourceNode = nodes.find((node) => node.id === sourceId)!;

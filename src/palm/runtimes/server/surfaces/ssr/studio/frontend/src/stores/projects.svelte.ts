@@ -137,6 +137,28 @@ export const projectsStore = {
     );
     persist();
   },
+  openInNewTab(project: {
+    name: string;
+    pattern: string;
+    canvas: StudioCanvas;
+    sourceId?: string;
+  }) {
+    const timestamp = now();
+    const entry: StudioProject = {
+      id: crypto.randomUUID(),
+      name: project.name,
+      pattern: project.pattern,
+      canvas: project.canvas,
+      draftVersion: 1,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    projects = [...projects, entry];
+    activeId = entry.id;
+    persist();
+    studioEvents.emit("project:switched", { projectId: entry.id });
+    return entry;
+  },
 };
 
 /** Backward-compatible accessors used across the UI. */

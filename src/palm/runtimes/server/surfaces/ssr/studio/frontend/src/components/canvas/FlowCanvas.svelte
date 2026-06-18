@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { Core } from "cytoscape";
   import {
+    applySimulationTrace,
     createGraph,
     modelPosition,
     panBy,
@@ -15,7 +16,9 @@
   import { draftStore } from "../../stores/draft.svelte";
   import { paletteStore } from "../../stores/palette.svelte";
   import { projectsStore } from "../../stores/projects.svelte";
+  import { simulationStore } from "../../stores/simulation.svelte";
   import CanvasControls from "./CanvasControls.svelte";
+  import CanvasMinimap from "./CanvasMinimap.svelte";
   import ConnectionHandles from "./ConnectionHandles.svelte";
 
   const DRAG_MIME = "application/palm-studio-palette";
@@ -182,6 +185,17 @@
       lastSelected = null;
     }
   });
+
+  $effect(() => {
+    if (!cy || !simulationStore.active) {
+      if (cy) {
+        applySimulationTrace(cy, [], []);
+      }
+      return;
+    }
+    const trace = simulationStore.trace;
+    applySimulationTrace(cy, trace.activeNodeIds, trace.completedNodeIds);
+  });
 </script>
 
 <div
@@ -199,6 +213,7 @@
   ></div>
 
   <CanvasControls />
+  <CanvasMinimap />
 
   {#if cy && container}
     <ConnectionHandles {cy} {container} />
