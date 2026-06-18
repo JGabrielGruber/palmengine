@@ -130,6 +130,74 @@ def test_studio_extensions_contract(server: ServerRuntime) -> None:
     assert "register" in payload["plugin_contract"]["register"]
 
 
+def test_studio_save_flow_registers_in_repository(server: ServerRuntime) -> None:
+    body = {
+        "version": 1,
+        "kind": "flow",
+        "id": "studio-saved-flow",
+        "name": "studio-saved-flow",
+        "pattern": "wizard",
+        "options": {
+            "steps": [{"slug": "one", "title": "One", "prompt": "One?"}],
+        },
+    }
+    status, payload = _json(
+        server.base_url, "POST", "/v1/studio/definitions/flows", body=body
+    )
+    assert status == 200
+    assert payload["saved"] is True
+    assert payload["flow"]["name"] == "studio-saved-flow"
+
+    status, listed = _json(server.base_url, "GET", "/v1/flows")
+    assert status == 200
+    assert any(row["flow_id"] == "studio-saved-flow" for row in listed["flows"])
+
+
+def test_studio_save_process_registers_in_repository(server: ServerRuntime) -> None:
+    body = {
+        "version": 1,
+        "kind": "process",
+        "id": "studio-saved-process",
+        "name": "studio-saved-process",
+        "storage": "memory",
+        "metadata": {"source": "studio"},
+        "flows": [
+            {
+                "version": 1,
+                "kind": "flow",
+                "id": "nested-flow",
+                "name": "nested-flow",
+                "pattern": "wizard",
+                "options": {"steps": []},
+            }
+        ],
+    }
+    status, payload = _json(
+        server.base_url, "POST", "/v1/studio/definitions/processes", body=body
+    )
+    assert status == 200
+    assert payload["saved"] is True
+    assert payload["process"]["name"] == "studio-saved-process"
+
+    status, listed = _json(server.base_url, "GET", "/v1/processes")
+    assert status == 200
+    assert any(row["process_id"] == "studio-saved-process" for row in listed["processes"])
+
+
+def test_studio_templates_list_and_load(server: ServerRuntime) -> None:
+    status, payload = _json(server.base_url, "GET", "/v1/studio/templates")
+    assert status == 200
+    assert len(payload["templates"]) >= 2
+    assert "getting-started" in payload["categories"]
+
+    template_id = payload["templates"][0]["id"]
+    status, detail = _json(
+        server.base_url, "GET", f"/v1/studio/templates/{template_id}"
+    )
+    assert status == 200
+    assert detail["template"]["flow"]["pattern"]
+
+
 def test_health_reports_studio(server: ServerRuntime) -> None:
     req = urllib.request.Request(
         f"{server.base_url}/health",
