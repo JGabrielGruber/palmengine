@@ -2,7 +2,20 @@
 
 :root {
   color-scheme: dark;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
+
+  /* Aligned with Palm Explorer SSR theme */
+  --studio-bg: #09090b;
+  --studio-surface: #18181b;
+  --studio-surface-2: #27272a;
+  --studio-border: #3f3f46;
+  --studio-text: #fafafa;
+  --studio-muted: #a1a1aa;
+  --studio-accent: #14b8a6;
+  --studio-accent-soft: #0d9488;
+  --studio-rose: #fb7185;
+  --studio-amber: #fbbf24;
+  --studio-focus: #2dd4bf;
 }
 
 html,
@@ -13,6 +26,27 @@ body,
 }
 
 body {
-  background: #0b1220;
-  color: #e8edf7;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--studio-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .studio-hide-mobile {
+    display: none !important;
+  }
+
+  .studio-show-mobile {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 901px) {
+  .studio-show-mobile {
+    display: none !important;
+  }
 }

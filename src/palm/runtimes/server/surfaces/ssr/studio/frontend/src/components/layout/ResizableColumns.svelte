@@ -18,6 +18,7 @@
   let leftWidth = $state(DEFAULT_LEFT);
   let rightWidth = $state(DEFAULT_RIGHT);
   let dragging: "left" | "right" | null = $state(null);
+  let compact = $state(false);
 
   $effect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -37,6 +38,16 @@
     }
   });
 
+  $effect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => {
+      compact = media.matches;
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  });
+
   function clamp(value: number) {
     return Math.min(MAX, Math.max(MIN, value));
   }
@@ -49,7 +60,7 @@
   }
 
   function onPointerMove(event: PointerEvent) {
-    if (!dragging) {
+    if (!dragging || compact) {
       return;
     }
     if (dragging === "left") {
@@ -70,6 +81,9 @@
   }
 
   function startDragging(side: "left" | "right", event: PointerEvent) {
+    if (compact) {
+      return;
+    }
     dragging = side;
     event.preventDefault();
     window.addEventListener("pointermove", onPointerMove);
@@ -77,33 +91,44 @@
   }
 </script>
 
-<div
-  class="grid min-h-0 flex-1"
-  style={`grid-template-columns: ${leftWidth}px 5px minmax(0, 1fr) 5px ${rightWidth}px;`}
->
-  <aside class="min-h-0 overflow-hidden bg-[#0d1526]">
-    {@render left()}
-  </aside>
+{#if compact}
+  <div class="grid min-h-0 flex-1 grid-rows-[minmax(10rem,1fr)_minmax(0,2fr)]">
+    <aside class="min-h-0 overflow-hidden border-b border-[var(--studio-border)] bg-[var(--studio-surface)]">
+      {@render left()}
+    </aside>
+    <main class="relative min-h-0 overflow-hidden bg-[var(--studio-bg)]">
+      {@render center()}
+    </main>
+  </div>
+{:else}
+  <div
+    class="grid min-h-0 flex-1"
+    style={`grid-template-columns: ${leftWidth}px 5px minmax(0, 1fr) 5px ${rightWidth}px;`}
+  >
+    <aside class="min-h-0 overflow-hidden bg-[var(--studio-surface)]">
+      {@render left()}
+    </aside>
 
-  <button
-    type="button"
-    aria-label="Resize palette panel"
-    class={`w-full cursor-col-resize border-x border-[#1e2a42] bg-[#111a2c] transition hover:bg-[#1a2740] ${dragging === "left" ? "bg-[#1a2740]" : ""}`}
-    onpointerdown={(event) => startDragging("left", event)}
-  ></button>
+    <button
+      type="button"
+      aria-label="Resize palette panel"
+      class={`w-full cursor-col-resize border-x border-[var(--studio-border)] bg-[var(--studio-surface-2)] transition hover:bg-[var(--studio-surface)] ${dragging === "left" ? "bg-[var(--studio-surface)]" : ""}`}
+      onpointerdown={(event) => startDragging("left", event)}
+    ></button>
 
-  <main class="relative min-h-0 overflow-hidden bg-[#0b1220]">
-    {@render center()}
-  </main>
+    <main class="relative min-h-0 overflow-hidden bg-[var(--studio-bg)]">
+      {@render center()}
+    </main>
 
-  <button
-    type="button"
-    aria-label="Resize inspector panel"
-    class={`w-full cursor-col-resize border-x border-[#1e2a42] bg-[#111a2c] transition hover:bg-[#1a2740] ${dragging === "right" ? "bg-[#1a2740]" : ""}`}
-    onpointerdown={(event) => startDragging("right", event)}
-  ></button>
+    <button
+      type="button"
+      aria-label="Resize inspector panel"
+      class={`w-full cursor-col-resize border-x border-[var(--studio-border)] bg-[var(--studio-surface-2)] transition hover:bg-[var(--studio-surface)] ${dragging === "right" ? "bg-[var(--studio-surface)]" : ""}`}
+      onpointerdown={(event) => startDragging("right", event)}
+    ></button>
 
-  <aside class="min-h-0 overflow-hidden bg-[#0d1526]">
-    {@render right()}
-  </aside>
-</div>
+    <aside class="min-h-0 overflow-hidden bg-[var(--studio-surface)]">
+      {@render right()}
+    </aside>
+  </div>
+{/if}

@@ -17,7 +17,7 @@
   role="button"
   tabindex="0"
   draggable={item.draggable}
-  class={`group rounded-lg border bg-[#151d2e] p-3 text-left transition ${item.draggable ? "cursor-grab border-[#1e2a42] hover:-translate-y-0.5 hover:border-[#2a3a5c] hover:bg-[#1a2740] hover:shadow-md active:cursor-grabbing" : "border-[#1e2a42]/70 opacity-80"}`}
+  class={`group rounded-lg border bg-[var(--studio-bg)] p-3 text-left transition ${item.draggable ? "cursor-grab border-[var(--studio-border)] hover:-translate-y-0.5 hover:border-[var(--studio-accent)]/50 hover:bg-[var(--studio-surface-2)] hover:shadow-md active:cursor-grabbing" : "border-[var(--studio-border)]/70 opacity-80"}`}
   style={`border-left: 3px solid ${theme.border};`}
   ondragstart={(event) => onDragStart(item, event)}
 >
@@ -31,15 +31,15 @@
     <div class="min-w-0 flex-1">
       <div class="flex items-center justify-between gap-2">
         <div class="truncate text-sm font-medium">{item.label}</div>
-        <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[#6b7c9e]">
+        <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--studio-muted)]">
           {item.kind}
         </span>
       </div>
-      <div class="mt-1 line-clamp-2 text-[11px] leading-relaxed text-[#9aa8c7]">
+      <div class="mt-1 line-clamp-2 text-[11px] leading-relaxed text-[var(--studio-muted)]">
         {item.description}
       </div>
       {#if item.ref}
-        <div class="mt-1.5 truncate font-mono text-[10px] text-[#6b7c9e]">{item.ref}</div>
+        <div class="mt-1.5 truncate font-mono text-[10px] text-[var(--studio-muted)]">{item.ref}</div>
       {/if}
     </div>
   </div>
@@ -47,7 +47,7 @@
   {#if !item.draggable && item.kind === "flow" && onImport}
     <button
       type="button"
-      class="mt-2 w-full rounded border border-[#2a3a5c] px-2 py-1 text-[11px] text-[#93c5fd] opacity-0 transition group-hover:opacity-100 hover:bg-[#1a2740]"
+      class="mt-2 w-full rounded border border-[var(--studio-border)] px-2 py-1 text-[11px] text-[var(--studio-accent)] opacity-0 transition group-hover:opacity-100 hover:bg-[var(--studio-surface-2)]"
       onclick={() => onImport?.(item)}
     >
       Import to canvas
