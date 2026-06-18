@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+from urllib.parse import unquote
 
 from palm.common.runtimes.server.context import ServerContext
 from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER, authenticate_request
@@ -80,6 +81,8 @@ class ServerApp:
 
         match = spec.pattern.match(_normalize_path(request.path))
         params = match.groupdict() if match is not None else {}
+        if params:
+            params = {key: unquote(value) for key, value in params.items()}
         return spec.handler, params
 
     def _mount_surfaces(self) -> None:

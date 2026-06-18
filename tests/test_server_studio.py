@@ -197,6 +197,13 @@ def test_studio_templates_list_and_load(server: ServerRuntime) -> None:
     assert status == 200
     assert detail["template"]["flow"]["pattern"]
 
+    encoded_id = "template%3Apipeline-transform"
+    status, encoded = _json(
+        server.base_url, "GET", f"/v1/studio/templates/{encoded_id}"
+    )
+    assert status == 200
+    assert encoded["template"]["id"] == "template:pipeline-transform"
+
 
 def test_health_reports_studio(server: ServerRuntime) -> None:
     req = urllib.request.Request(
