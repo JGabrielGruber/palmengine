@@ -17,6 +17,7 @@
 
   function refreshHandles() {
     handles = canvasStore.nodes
+      .filter((node) => !node.parentId || canvasStore.groups.every((g) => g.id !== node.id))
       .map((node) => {
         const position = renderedHandlePosition(cy, container, node.id);
         return position ? { id: node.id, ...position } : null;

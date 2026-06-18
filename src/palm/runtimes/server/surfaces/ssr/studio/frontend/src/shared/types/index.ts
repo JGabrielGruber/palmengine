@@ -41,6 +41,18 @@ export type PaletteResponse = {
   sections: PaletteSection[];
 };
 
+export type CanvasGroupKind = "parallel" | "subflow";
+
+export type CanvasGroup = {
+  id: string;
+  label: string;
+  kind: CanvasGroupKind;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type CanvasNode = {
   id: string;
   kind: PaletteNodeKind;
@@ -48,6 +60,7 @@ export type CanvasNode = {
   x: number;
   y: number;
   ref?: string;
+  parentId?: string;
   meta?: Record<string, unknown>;
 };
 
@@ -68,6 +81,36 @@ export type FlowSummary = {
 export type StudioCanvas = {
   nodes: CanvasNode[];
   edges: CanvasEdge[];
+  groups?: CanvasGroup[];
+};
+
+export type StudioProject = {
+  id: string;
+  name: string;
+  pattern: string;
+  canvas: StudioCanvas;
+  draftVersion: number;
+  updatedAt: string;
+  createdAt: string;
+};
+
+export type JobContext = {
+  found?: boolean;
+  job_id: string;
+  status: string;
+  pattern?: {
+    pattern?: string;
+    step?: string;
+    prompt?: string;
+    field_type?: string;
+    choices?: string[];
+    validation_error?: string;
+    answers?: Record<string, unknown>;
+  };
+  wizard_progress?: Record<string, unknown>;
+  next_actions?: Array<{ action: string; description: string }>;
+  error?: string;
+  result?: unknown;
 };
 
 export type StudioDraft = {
