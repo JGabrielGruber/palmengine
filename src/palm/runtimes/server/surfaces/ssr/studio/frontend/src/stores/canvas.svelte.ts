@@ -1,3 +1,4 @@
+import { cloneStudioCanvas } from "../shared/canvas/clone";
 import { edgeLabel } from "../shared/canvas/nodeTheme";
 import { groupBounds } from "../shared/canvas/layout";
 import { canConnect } from "../shared/canvas/validation";
@@ -21,7 +22,7 @@ let selectedId = $state<string | null>(null);
 let counter = 0;
 
 function snapshot(): StudioCanvas {
-  return structuredClone({ nodes, edges, groups });
+  return cloneStudioCanvas({ nodes, edges, groups });
 }
 
 function syncProject() {

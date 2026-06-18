@@ -1,13 +1,10 @@
+import { cloneStudioCanvas } from "../shared/canvas/clone";
 import type { StudioCanvas } from "../shared/types";
 
 const MAX_HISTORY = 50;
 
 let past = $state<StudioCanvas[]>([]);
 let future = $state<StudioCanvas[]>([]);
-
-function cloneCanvas(canvas: StudioCanvas): StudioCanvas {
-  return structuredClone(canvas);
-}
 
 export const historyStore = {
   get canUndo() {
@@ -17,7 +14,7 @@ export const historyStore = {
     return future.length > 0;
   },
   record(canvas: StudioCanvas) {
-    past = [...past.slice(-(MAX_HISTORY - 1)), cloneCanvas(canvas)];
+    past = [...past.slice(-(MAX_HISTORY - 1)), cloneStudioCanvas(canvas)];
     future = [];
   },
   undo(current: StudioCanvas): StudioCanvas | null {
@@ -26,8 +23,8 @@ export const historyStore = {
     }
     const previous = past[past.length - 1];
     past = past.slice(0, -1);
-    future = [cloneCanvas(current), ...future];
-    return cloneCanvas(previous);
+    future = [cloneStudioCanvas(current), ...future];
+    return cloneStudioCanvas(previous);
   },
   redo(current: StudioCanvas): StudioCanvas | null {
     if (future.length === 0) {
@@ -35,8 +32,8 @@ export const historyStore = {
     }
     const [next, ...rest] = future;
     future = rest;
-    past = [...past, cloneCanvas(current)];
-    return cloneCanvas(next);
+    past = [...past, cloneStudioCanvas(current)];
+    return cloneStudioCanvas(next);
   },
   clear() {
     past = [];
