@@ -1,4 +1,4 @@
-import type { CanvasNode, PaletteNode } from "../lib/types";
+import type { CanvasNode, PaletteNode } from "../shared/types";
 
 let nodes = $state<CanvasNode[]>([
   { id: "start", kind: "action", label: "Start", x: 120, y: 120 },

@@ -3,7 +3,7 @@
   import NodePalette from "../palette/NodePalette.svelte";
   import Inspector from "./Inspector.svelte";
   import Sidebar from "./Sidebar.svelte";
-  import { bootstrap } from "../../lib/bootstrap";
+  import { bootstrap } from "../../shared/bootstrap";
 
   type Props = {
     version: string;

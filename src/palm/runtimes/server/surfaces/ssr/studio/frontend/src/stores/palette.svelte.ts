@@ -1,4 +1,4 @@
-import type { PaletteNode } from "../lib/types";
+import type { PaletteNode } from "../shared/types";
 
 const palette = $state<PaletteNode[]>([
   {

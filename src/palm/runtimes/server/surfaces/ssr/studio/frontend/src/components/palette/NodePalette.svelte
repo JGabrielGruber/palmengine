@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PaletteNode } from "../../lib/types";
+  import type { PaletteNode } from "../../shared/types";
   import { canvasStore } from "../../stores/canvas.svelte";
   import { paletteStore } from "../../stores/palette.svelte";
 

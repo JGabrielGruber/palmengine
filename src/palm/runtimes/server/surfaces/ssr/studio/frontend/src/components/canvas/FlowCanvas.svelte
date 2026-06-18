@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import type { Core } from "cytoscape";
-  import { createGraph, syncNodes } from "../../lib/canvas/cytoscape";
+  import { createGraph, syncNodes } from "../../shared/canvas/cytoscape";
   import { canvasStore } from "../../stores/canvas.svelte";
 
   let container: HTMLDivElement | undefined = $state();
