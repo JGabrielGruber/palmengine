@@ -4,34 +4,48 @@
   import {
     createGraph,
     modelPosition,
+    pulseSelection,
     syncGraph,
   } from "../../shared/canvas/cytoscape";
   import { canvasStore } from "../../stores/canvas.svelte";
   import { draftStore } from "../../stores/draft.svelte";
+  import { historyStore } from "../../stores/history.svelte";
   import { paletteStore } from "../../stores/palette.svelte";
+  import ConnectionHandles from "./ConnectionHandles.svelte";
 
   const DRAG_MIME = "application/palm-studio-palette";
 
   let container: HTMLDivElement | undefined = $state();
-  let cy: Core | undefined;
-
-  function handleNodeTap(id: string) {
-    if (canvasStore.isConnectMode) {
-      canvasStore.completeConnect(id);
-      return;
-    }
-    canvasStore.select(id);
-  }
+  let cy: Core | undefined = $state();
+  let lastSelected: string | null = null;
 
   function onKeyDown(event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    const typing =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable;
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+      if (typing) {
+        return;
+      }
+      event.preventDefault();
+      if (event.shiftKey) {
+        canvasStore.redo();
+      } else {
+        canvasStore.undo();
+      }
+      return;
+    }
+
     if (event.key === "Escape") {
-      canvasStore.cancelConnect();
       canvasStore.select(null);
       return;
     }
+
     if (event.key === "Delete" || event.key === "Backspace") {
-      const target = event.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+      if (typing) {
         return;
       }
       event.preventDefault();
@@ -64,21 +78,18 @@
     cy = createGraph(container, canvasStore.nodes, canvasStore.edges);
 
     cy.on("tap", "node", (event) => {
-      handleNodeTap(event.target.id());
+      canvasStore.select(event.target.id());
     });
 
     cy.on("tap", (event) => {
       if (event.target === cy) {
-        if (canvasStore.isConnectMode) {
-          canvasStore.cancelConnect();
-        }
         canvasStore.select(null);
       }
     });
 
     cy.on("dragfree", "node", (event) => {
       const position = event.target.position();
-      canvasStore.updatePosition(event.target.id(), position.x, position.y);
+      canvasStore.commitPosition(event.target.id(), position.x, position.y);
     });
 
     window.addEventListener("keydown", onKeyDown);
@@ -97,14 +108,19 @@
     syncGraph(cy, canvasStore.nodes, canvasStore.edges);
     if (canvasStore.selectedId) {
       cy.getElementById(canvasStore.selectedId).select();
+      if (canvasStore.selectedId !== lastSelected) {
+        pulseSelection(cy, canvasStore.selectedId);
+        lastSelected = canvasStore.selectedId;
+      }
     } else {
       cy.$(":selected").unselect();
+      lastSelected = null;
     }
   });
 </script>
 
 <div
-  class="absolute inset-0"
+  class="absolute inset-0 overflow-hidden"
   role="application"
   aria-label="Flow canvas"
   ondragover={(event) => event.preventDefault()}
@@ -115,13 +131,14 @@
     class="h-full w-full"
     style="background-image: radial-gradient(circle, #1e2a42 1px, transparent 1px); background-size: 24px 24px;"
   ></div>
+
+  {#if cy && container}
+    <ConnectionHandles {cy} {container} />
+  {/if}
+
   <div
     class="pointer-events-none absolute bottom-3 left-3 rounded-md border border-[#2a3a5c] bg-[#0d1526]/90 px-3 py-2 text-xs text-[#9aa8c7]"
   >
-    {#if canvasStore.isConnectMode}
-      Click a target node to connect · Esc to cancel
-    {:else}
-      Drag from palette · Select node · Del to remove · Inspector to connect
-    {/if}
+    Drag palette items · Drag blue handles to connect · Ctrl+Z undo
   </div>
 </div>
