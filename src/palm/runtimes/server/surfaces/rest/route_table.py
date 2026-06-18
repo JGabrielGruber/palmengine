@@ -20,6 +20,8 @@ RouteId = Literal[
     "provide_input",
     "submit_wizard",
     "get_wizard",
+    "provide_wizard_input",
+    "backtrack_wizard",
     "prepare_plans",
     "submit_plans",
     "list_instances",
@@ -150,6 +152,32 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
                 "Rich wizard view: instance status, step progress, current prompt, "
                 "answers, and suggested next actions."
             ),
+        ),
+        RouteDefinition(
+            route_id="provide_wizard_input",
+            method="POST",
+            path="/v1/wizards/{instance_id}/input",
+            group="Wizards",
+            summary="Provide wizard input",
+            description=(
+                "Deliver interactive input to a waiting wizard step. "
+                "Accepts scalars or structured values for collection steps."
+            ),
+            auth_required=True,
+            request_schema="WizardInputBody",
+        ),
+        RouteDefinition(
+            route_id="backtrack_wizard",
+            method="POST",
+            path="/v1/wizards/{instance_id}/backtrack",
+            group="Wizards",
+            summary="Backtrack wizard",
+            description=(
+                "Backtrack to a prior step. Omit ``to_step`` to return to the "
+                "immediately preceding step."
+            ),
+            auth_required=True,
+            request_schema="WizardBacktrackBody",
         ),
         RouteDefinition(
             route_id="prepare_plans",

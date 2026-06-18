@@ -59,6 +59,12 @@ def _resolve_handler(
         "get_wizard": lambda req, instance_id: wizard.get_wizard(
             ctx, req, instance_id=instance_id
         ),
+        "provide_wizard_input": lambda req, instance_id: wizard.provide_wizard_input(
+            ctx, req, instance_id=instance_id
+        ),
+        "backtrack_wizard": lambda req, instance_id: wizard.backtrack_wizard(
+            ctx, req, instance_id=instance_id
+        ),
         "prepare_plans": lambda req: plans.prepare_plans(ctx, req),
         "submit_plans": lambda req: plans.submit_plans(ctx, req),
         "list_instances": lambda req: instances.list_instances(ctx, req),

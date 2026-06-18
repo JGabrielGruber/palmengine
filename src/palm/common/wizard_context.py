@@ -63,10 +63,18 @@ def derive_wizard_next_actions(
     if status == JobStatus.WAITING_FOR_INPUT.value:
         actions.append(
             {
-                "action": "provide_input",
+                "action": "provide_wizard_input",
                 "method": "POST",
-                "path": f"/v1/jobs/{job_id}/input",
+                "path": f"/v1/wizards/{instance_id}/input",
                 "description": "Deliver interactive wizard input",
+            }
+        )
+        actions.append(
+            {
+                "action": "request_backtrack",
+                "method": "POST",
+                "path": f"/v1/wizards/{instance_id}/backtrack",
+                "description": "Backtrack to a prior wizard step",
             }
         )
 

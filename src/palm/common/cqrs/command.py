@@ -49,6 +49,24 @@ class ProvideInputCommand(Command):
 
 
 @dataclass(frozen=True)
+class ProvideWizardInputCommand(Command):
+    """Deliver interactive input to a wizard instance."""
+
+    instance_id: str
+    value: Any
+    runtime_name: str | None = None
+
+
+@dataclass(frozen=True)
+class RequestWizardBacktrackCommand(Command):
+    """Backtrack a wizard to a prior step (defaults to the previous step)."""
+
+    instance_id: str
+    to_step: str | None = None
+    runtime_name: str | None = None
+
+
+@dataclass(frozen=True)
 class ResumeProcessCommand(Command):
     instance_id: str
     runtime_name: str | None = None

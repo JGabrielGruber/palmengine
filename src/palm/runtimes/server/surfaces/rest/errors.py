@@ -78,6 +78,10 @@ def input_rejected(detail: str) -> ServerResponse:
     return error_response(400, "input_rejected", detail)
 
 
+def backtrack_rejected(detail: str) -> ServerResponse:
+    return error_response(400, "backtrack_rejected", detail)
+
+
 def resume_failed(detail: str) -> ServerResponse:
     return error_response(400, "resume_failed", detail)
 

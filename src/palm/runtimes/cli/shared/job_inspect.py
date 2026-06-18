@@ -112,9 +112,23 @@ def inspect_job_json(job: Job) -> dict[str, Any]:
         "validation_error": ctx.validation_error,
         "effective_schema_type": ctx.effective_schema_type,
         "prompt": ctx.prompt,
+        "prompt_title": ctx.prompt_title,
         "field_type": ctx.field_type,
         "answers": ctx.answers_preview,
     }
+    if ctx.choices:
+        payload["choices"] = list(ctx.choices)
+    if ctx.collection_phase:
+        payload["collection_phase"] = ctx.collection_phase
+    if ctx.collection_items:
+        payload["collection_items"] = list(ctx.collection_items)
+    if ctx.collection_item_previews:
+        payload["collection_item_previews"] = list(ctx.collection_item_previews)
+    if ctx.transform_rule:
+        payload["transform_rule"] = ctx.transform_rule
+        payload["transform_source_key"] = ctx.transform_source_key
+        payload["transform_target_key"] = ctx.transform_target_key
+        payload["transform_source_preview"] = ctx.transform_source_preview
     if ctx.branches:
         payload["branches"] = [
             {

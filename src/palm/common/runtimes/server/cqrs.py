@@ -11,6 +11,8 @@ from palm.common.cqrs.command import (
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
+    ProvideWizardInputCommand,
+    RequestWizardBacktrackCommand,
     ResumeProcessCommand,
     SubmitFlowCommand,
     SubmitPlansCommand,
@@ -38,6 +40,10 @@ from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_sn
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.wizard_context import build_wizard_view
+from palm.common.wizard_runtime import (
+    provide_wizard_input_for_instance,
+    request_wizard_backtrack_for_instance,
+)
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -68,6 +74,28 @@ class StandaloneCommandHandlers:
             return self._submit_process(command)
         if isinstance(command, ProvideInputCommand):
             return self._runtime.provide_input(command.job_id, command.value)
+        if isinstance(command, ProvideWizardInputCommand):
+            job, slug = provide_wizard_input_for_instance(
+                self._runtime,
+                command.instance_id,
+                command.value,
+            )
+            return {
+                "instance_id": command.instance_id,
+                "job_id": job.id,
+                "slug": slug,
+            }
+        if isinstance(command, RequestWizardBacktrackCommand):
+            job, to_step = request_wizard_backtrack_for_instance(
+                self._runtime,
+                command.instance_id,
+                command.to_step,
+            )
+            return {
+                "instance_id": command.instance_id,
+                "job_id": job.id,
+                "to_step": to_step,
+            }
         if isinstance(command, ResumeProcessCommand):
             return self._runtime.resume_process(command.instance_id)
         if isinstance(command, PreparePlansCommand):
@@ -402,6 +430,8 @@ def wire_standalone_buses(
         SubmitWizardCommand,
         SubmitProcessCommand,
         ProvideInputCommand,
+        ProvideWizardInputCommand,
+        RequestWizardBacktrackCommand,
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,

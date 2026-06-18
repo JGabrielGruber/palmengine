@@ -38,6 +38,12 @@ REQUEST_BODIES: dict[str, dict[str, Any]] = {
     "ProvideInputBody": {
         "value": "Ada Lovelace",
     },
+    "WizardInputBody": {
+        "value": "Ada Lovelace",
+    },
+    "WizardBacktrackBody": {
+        "to_step": "name",
+    },
 }
 
 OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
@@ -85,6 +91,26 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
         "default": {
             "summary": "Answer a wizard prompt",
             "value": {"value": "Ada Lovelace"},
+        },
+    },
+    "WizardInputBody": {
+        "scalar": {
+            "summary": "Answer a text prompt",
+            "value": {"value": "Ada Lovelace"},
+        },
+        "collection": {
+            "summary": "Select a collection menu action",
+            "value": {"value": "Add item"},
+        },
+    },
+    "WizardBacktrackBody": {
+        "explicit": {
+            "summary": "Backtrack to a named step",
+            "value": {"to_step": "name"},
+        },
+        "previous": {
+            "summary": "Backtrack to the previous step",
+            "value": {},
         },
     },
 }
@@ -198,11 +224,45 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         },
         "next_actions": [
             {
-                "action": "provide_input",
+                "action": "provide_wizard_input",
                 "method": "POST",
-                "path": "/v1/jobs/job-abc123/input",
+                "path": "/v1/wizards/inst-abc123/input",
+            },
+            {
+                "action": "request_backtrack",
+                "method": "POST",
+                "path": "/v1/wizards/inst-abc123/backtrack",
+            },
+        ],
+    },
+    "provide_wizard_input": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "slug": "step_2",
+        "prompt": {
+            "step": "step_2",
+            "text": "Step 2?",
+        },
+        "answers": {"step_1": "Ada Lovelace"},
+        "next_actions": [
+            {
+                "action": "provide_wizard_input",
+                "method": "POST",
+                "path": "/v1/wizards/inst-abc123/input",
             }
         ],
+    },
+    "backtrack_wizard": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "to_step": "step_1",
+        "prompt": {
+            "step": "step_1",
+            "text": "Step 1?",
+        },
+        "answers": {},
     },
     "prepare_plans": {
         "plans": [
@@ -377,6 +437,8 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
         "submit_job",
         "submit_wizard",
         "get_wizard",
+        "provide_wizard_input",
+        "backtrack_wizard",
         "provide_input",
         "list_instances",
         "list_snapshots",

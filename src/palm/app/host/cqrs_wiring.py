@@ -20,6 +20,8 @@ from palm.common.cqrs.command import (
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
+    ProvideWizardInputCommand,
+    RequestWizardBacktrackCommand,
     ResumeProcessCommand,
     SubmitFlowCommand,
     SubmitPlansCommand,
@@ -52,6 +54,10 @@ from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_sn
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.wizard_context import build_wizard_view
+from palm.common.wizard_runtime import (
+    provide_wizard_input_for_instance,
+    request_wizard_backtrack_for_instance,
+)
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 
@@ -120,6 +126,32 @@ class PalmCommandHandlers:
                 command.value,
                 runtime_name=runtime_name,
             )
+        if isinstance(command, ProvideWizardInputCommand):
+            runtime_name = self._router.route_job_runtime(command.runtime_name)
+            runtime = self._app.runtime(runtime_name)
+            job, slug = provide_wizard_input_for_instance(
+                runtime,
+                command.instance_id,
+                command.value,
+            )
+            return {
+                "instance_id": command.instance_id,
+                "job_id": job.id,
+                "slug": slug,
+            }
+        if isinstance(command, RequestWizardBacktrackCommand):
+            runtime_name = self._router.route_job_runtime(command.runtime_name)
+            runtime = self._app.runtime(runtime_name)
+            job, to_step = request_wizard_backtrack_for_instance(
+                runtime,
+                command.instance_id,
+                command.to_step,
+            )
+            return {
+                "instance_id": command.instance_id,
+                "job_id": job.id,
+                "to_step": to_step,
+            }
         if isinstance(command, ResumeProcessCommand):
             runtime_name = self._router.route_job_runtime(command.runtime_name)
             return self._app.resume_process(
@@ -387,6 +419,8 @@ def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> No
         SubmitWizardCommand,
         SubmitProcessCommand,
         ProvideInputCommand,
+        ProvideWizardInputCommand,
+        RequestWizardBacktrackCommand,
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,

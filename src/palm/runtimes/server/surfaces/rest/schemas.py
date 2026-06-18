@@ -77,6 +77,25 @@ PROVIDE_INPUT_BODY = DictStateSchema(
     }
 )
 
+WIZARD_INPUT_BODY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "value": {},
+        },
+        "required": ["value"],
+    }
+)
+
+WIZARD_BACKTRACK_BODY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "to_step": _STRING,
+        },
+    }
+)
+
 LIST_JOBS_QUERY = DictStateSchema(
     {
         "type": "object",
@@ -166,6 +185,8 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "PreparePlansBody": PREPARE_PLANS_BODY,
     "SubmitPlansBody": SUBMIT_PLANS_BODY,
     "ProvideInputBody": PROVIDE_INPUT_BODY,
+    "WizardInputBody": WIZARD_INPUT_BODY,
+    "WizardBacktrackBody": WIZARD_BACKTRACK_BODY,
     "ListJobsQuery": LIST_JOBS_QUERY,
     "ListInstancesQuery": LIST_INSTANCES_QUERY,
     "ListFlowsQuery": LIST_FLOWS_QUERY,
