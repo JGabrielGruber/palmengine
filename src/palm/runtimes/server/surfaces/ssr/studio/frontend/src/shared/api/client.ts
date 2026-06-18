@@ -1,5 +1,10 @@
 import { bootstrap } from "../bootstrap";
-import type { PaletteResponse, StudioDraft } from "../types";
+import type {
+  FlowDefinitionJson,
+  FlowSummary,
+  PaletteResponse,
+  StudioDraft,
+} from "../types";
 
 type RequestOptions = {
   method?: string;
@@ -23,6 +28,14 @@ export class StudioApiClient {
 
   palette() {
     return this.fetch<PaletteResponse>("/studio/palette");
+  }
+
+  listFlows() {
+    return this.fetch<{ flows: FlowSummary[] }>("/flows?limit=200");
+  }
+
+  getFlow(flowId: string) {
+    return this.fetch<FlowDefinitionJson>(`/flows/${encodeURIComponent(flowId)}`);
   }
 
   listDrafts() {

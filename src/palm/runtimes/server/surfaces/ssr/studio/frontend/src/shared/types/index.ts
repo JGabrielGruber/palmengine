@@ -55,6 +55,14 @@ export type CanvasEdge = {
   id: string;
   source: string;
   target: string;
+  label?: string;
+};
+
+export type FlowSummary = {
+  flow_id: string;
+  name: string;
+  pattern: string;
+  has_state_schema: boolean;
 };
 
 export type StudioCanvas = {
