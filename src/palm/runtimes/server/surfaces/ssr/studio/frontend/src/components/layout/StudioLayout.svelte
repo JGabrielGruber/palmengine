@@ -1,11 +1,11 @@
 <script lang="ts">
   import FlowCanvas from "../canvas/FlowCanvas.svelte";
-  import NodePalette from "../palette/NodePalette.svelte";
+  import OnboardingTour from "../onboarding/OnboardingTour.svelte";
   import SimulateModal from "../simulate/SimulateModal.svelte";
   import Inspector from "./Inspector.svelte";
   import ProjectTabs from "./ProjectTabs.svelte";
   import ResizableColumns from "./ResizableColumns.svelte";
-  import Sidebar from "./Sidebar.svelte";
+  import SidebarPanel from "./SidebarPanel.svelte";
   import Toolbar from "./Toolbar.svelte";
   import ToastStack from "../feedback/ToastStack.svelte";
   import { bootstrap } from "../../shared/bootstrap";
@@ -59,9 +59,9 @@
 
   <ResizableColumns>
     {#snippet left()}
-      <Sidebar>
-        <NodePalette />
-      </Sidebar>
+      <aside class="flex min-h-0 flex-col bg-[var(--studio-surface)]">
+        <SidebarPanel />
+      </aside>
     {/snippet}
 
     {#snippet center()}
@@ -114,4 +114,5 @@
   {/if}
 
   <SimulateModal open={simulateOpen} onClose={() => (simulateOpen = false)} />
+  <OnboardingTour />
 </div>
