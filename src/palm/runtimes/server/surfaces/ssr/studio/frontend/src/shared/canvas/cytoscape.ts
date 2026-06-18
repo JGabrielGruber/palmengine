@@ -287,10 +287,14 @@ export function modelPosition(
   clientY: number,
 ): { x: number; y: number } {
   const rect = container.getBoundingClientRect();
-  return cy.renderer().renderedToModelPosition({
-    x: clientX - rect.left,
-    y: clientY - rect.top,
-  });
+  const zoom = cy.zoom();
+  const pan = cy.pan();
+  const renderedX = clientX - rect.left;
+  const renderedY = clientY - rect.top;
+  return {
+    x: (renderedX - pan.x) / zoom,
+    y: (renderedY - pan.y) / zoom,
+  };
 }
 
 export function nodeAtPoint(
