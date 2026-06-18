@@ -15,13 +15,15 @@ from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import (
-    enrich_prompt_bundle,
-    enter_step,
-    get_answers,
-    leave_step,
-    set_answers,
+from palm.patterns.wizard.leaf_support import (
+    build_prompt_bundle,
+    clear_active_prompt,
+    emit_wizard_event,
+    enter_wizard_step,
+    leave_wizard_step,
+    publish_prompt,
 )
+from palm.patterns.wizard.state import get_answers, set_answers
 from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
@@ -104,33 +106,32 @@ class WizardResourceLeaf(LeafNode):
         return f"{self.PROMPT_KEY_PREFIX}:{self._step.slug}"
 
     def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
-        bundle = {
-            "wizard": self._wizard_name,
-            "slug": self._step.slug,
-            "title": self._step.title,
-            "prompt": self._step.prompt or default_resource_prompt(self._step),
-            "field_type": "resource",
-            "step_kind": "resource",
-            "step_index": self._step_index,
-            "resource_ref": self._step.resource_ref,
-            "output_key": self._step.output_key or self._step.slug,
-        }
-        return enrich_prompt_bundle(
+        return build_prompt_bundle(
             state,
-            bundle,
+            wizard_name=self._wizard_name,
+            step=self._step,
+            step_index=self._step_index,
             context=self._context,
             include_validation=False,
+            prompt=self._step.prompt or default_resource_prompt(self._step),
+            field_type="resource",
+            resource_ref=self._step.resource_ref,
+            output_key=self._step.output_key or self._step.slug,
         )
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
-        state.set(WizardKeys.CURRENT_STEP, self._step.slug)
-        state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug, step=self._step, context=self._context)
+        enter_wizard_step(
+            state,
+            self._step,
+            index=self._step_index,
+            context=self._context,
+        )
 
         prompt_bundle = self._prompt_bundle(state)
-        state.set(self.prompt_key(), prompt_bundle)
-        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
-        self._fire(
+        publish_prompt(state, prompt_key=self.prompt_key(), bundle=prompt_bundle)
+        emit_wizard_event(
+            self._emit,
+            self._wizard_name,
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
             title=self._step.title,
@@ -145,9 +146,8 @@ class WizardResourceLeaf(LeafNode):
         if status == PatternStatus.SUCCESS:
             result_value = state.get(self._inner.output_key)
             self._persist_resource_result(state, result_value)
-            leave_step(state, self._step.slug, context=self._context)
-            state.delete(self.prompt_key())
-            state.delete(WizardKeys.ACTIVE_PROMPT)
+            leave_wizard_step(state, self._step, context=self._context)
+            clear_active_prompt(state, prompt_key=self.prompt_key())
             clear_validation_feedback(state)
             trace = state.get(self._inner.trace_key)
             trace_dict = trace if isinstance(trace, dict) else {}
@@ -182,7 +182,9 @@ class WizardResourceLeaf(LeafNode):
                 f"{WizardKeys.RESOURCE_RESULT}:{self._step.slug}",
                 result_value,
             )
-            self._fire(
+            emit_wizard_event(
+                self._emit,
+                self._wizard_name,
                 WizardEventType.STEP_COMPLETED,
                 slug=self._step.slug,
                 step_index=self._step_index,
@@ -217,14 +219,16 @@ class WizardResourceLeaf(LeafNode):
             prompt_bundle=prompt_bundle,
             prompt_key=self.prompt_key(),
         )
-        self._fire(
+        emit_wizard_event(
+            self._emit,
+            self._wizard_name,
             WizardEventType.VALIDATION_FAILED,
             slug=self._step.slug,
             errors=[message],
             step_kind="resource",
             resource_ref=self._step.resource_ref,
         )
-        leave_step(state, self._step.slug, context=self._context)
+        leave_wizard_step(state, self._step, context=self._context)
         return PatternStatus.FAILURE
 
     def _promote_answers_for_binding(self, state: BaseState) -> None:
@@ -255,7 +259,4 @@ class WizardResourceLeaf(LeafNode):
         action_label = action or "invoke"
         return f"Resource {self._step.resource_ref!r} (action={action_label}) failed"
 
-    def _fire(self, event_type: str, **payload: Any) -> None:
-        if self._emit is not None:
-            payload.setdefault("wizard", self._wizard_name)
-            self._emit(event_type, payload)
+

@@ -6,16 +6,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, SequenceNode
+from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventContext, EventEngine
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.backtrack import apply_backtrack, can_backtrack_to
+from palm.patterns.wizard.backtrack_policy import can_backtrack_to
 from palm.patterns.wizard.config import WizardConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.handler import CommitRegistry, default_commit_registry
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.tree import build_wizard_tree
+from palm.patterns.wizard.wizard_sequence import WizardSequenceNode
 
 
 class WizardPattern(BasePattern):
@@ -24,6 +25,11 @@ class WizardPattern(BasePattern):
 
     Drive with repeated ``tick(state)`` until SUCCESS. Supply input via
     ``provide_input`` or by writing to the active step's ``input_key`` in state.
+
+    Execution is behavior-tree driven: steps run inside a
+    :class:`~palm.patterns.wizard.wizard_sequence.WizardSequenceNode`, completion
+    checks live in :class:`~palm.patterns.wizard.completion_guard.WizardCompletionGuardNode`,
+    and backtrack is applied by the sequence before each tick.
     """
 
     def __init__(
@@ -47,7 +53,7 @@ class WizardPattern(BasePattern):
         self._commit_registry = commit_registry or default_commit_registry()
         self._context_engine = context_engine
         self._root: RootNode
-        self._sequence: SequenceNode
+        self._sequence: WizardSequenceNode
         self._root, self._sequence = build_wizard_tree(
             name,
             self._config,
@@ -66,47 +72,18 @@ class WizardPattern(BasePattern):
         return self._root
 
     @property
+    def sequence(self) -> WizardSequenceNode:
+        """The wizard step sequence (for resume, tests, and composition)."""
+        return self._sequence
+
+    @property
     def commit_registry(self) -> CommitRegistry:
         return self._commit_registry
 
     def tick(self, state: BaseState) -> PatternStatus:
         if self._context_engine is not None and self._context_engine.current_state is not state:
             self._context_engine.bind_state(state)
-        if state.get(WizardKeys.COMPLETED):
-            return PatternStatus.SUCCESS
-
-        from_step = state.get(WizardKeys.CURRENT_STEP)
-        applied = apply_backtrack(state, self._root, self._sequence, self._config)
-        if applied is not None:
-            slug = self._config.iter_tree_steps()[applied].slug
-            self._emit_event(
-                WizardEventType.BACKTRACK,
-                step_index=applied,
-                slug=slug,
-                from_step=from_step,
-                to_slug=slug,
-            )
-            self._emit_event(
-                WizardEventType.BACKTRACK_EXECUTED,
-                step_index=applied,
-                slug=slug,
-                from_step=from_step,
-                to_slug=slug,
-            )
-
-        status = self._root.tick(state)
-        if status == PatternStatus.SUCCESS:
-            if self._config.include_commit and not state.get(WizardKeys.COMMITTED):
-                return PatternStatus.FAILURE
-            state.set(WizardKeys.COMPLETED, True)
-            state.set(WizardKeys.CURRENT_STEP, None)
-            state.delete(WizardKeys.ACTIVE_PROMPT)
-            self._emit_event(
-                WizardEventType.COMPLETED,
-                answers=state.get(WizardKeys.ANSWERS, {}),
-                committed=bool(state.get(WizardKeys.COMMITTED)),
-            )
-        return status
+        return self._root.tick(state)
 
     def reset(self) -> None:
         self._root.reset()

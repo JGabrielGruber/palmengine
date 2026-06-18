@@ -20,8 +20,7 @@ def restore_wizard_position(wizard: WizardPattern, state: BaseState) -> None:
     if isinstance(index, int) and index >= 0:
         steps = wizard.config.iter_tree_steps()
         if index < len(steps):
-            wizard._sequence._current_index = index
-            state.set(WizardKeys.CURRENT_STEP, steps[index].slug)
+            wizard.sequence.restore_position(state, index)
 
 
 def wizard_runtime_position(wizard: WizardPattern, state: BaseState) -> dict[str, int | str | None]:
@@ -29,6 +28,6 @@ def wizard_runtime_position(wizard: WizardPattern, state: BaseState) -> dict[str
     index = state.get(WizardKeys.STEP_INDEX)
     slug = state.get(WizardKeys.CURRENT_STEP)
     return {
-        "sequence_index": index if isinstance(index, int) else wizard._sequence._current_index,
+        "sequence_index": index if isinstance(index, int) else wizard.sequence.current_index,
         "current_step": str(slug) if slug is not None else None,
     }

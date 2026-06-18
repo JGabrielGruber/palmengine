@@ -46,8 +46,7 @@ def prepare_wizard_resume_state(
     """Restore wizard tree position after loading a persisted blackboard snapshot."""
     if isinstance(executable, WizardPattern):
         restore_wizard_position(executable, state)
-        if instance.runtime_position.get("sequence_index") is not None:
-            idx = instance.runtime_position["sequence_index"]
-            if isinstance(idx, int):
-                executable._sequence._current_index = idx
+        idx = instance.runtime_position.get("sequence_index")
+        if isinstance(idx, int):
+            executable.sequence.restore_position(state, idx)
     return state

@@ -6,19 +6,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from palm.core.behavior_tree import BaseNode, RootNode, SequenceNode
+from palm.core.behavior_tree import RootNode
 from palm.core.resource import ResourceEngine
+from palm.patterns.wizard.completion_guard import WizardCompletionGuardNode
+from palm.patterns.wizard.config import WizardConfig
+from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.handler import CommitRegistry
+from palm.patterns.wizard.step_leaf import EventEmitter
+from palm.patterns.wizard.step_registry import (
+    WizardStepBuildContext,
+    WizardStepKindRegistry,
+    default_wizard_step_registry,
+)
+from palm.patterns.wizard.wizard_sequence import BacktrackNotifier, WizardSequenceNode
 
 if TYPE_CHECKING:
     from palm.core.context import ContextEngine
-from palm.patterns.wizard.collection_leaf import WizardCollectionLeaf
-from palm.patterns.wizard.commit_leaf import WizardCommitLeaf
-from palm.patterns.wizard.config import WizardConfig
-from palm.patterns.wizard.handler import CommitRegistry
-from palm.patterns.wizard.resource_leaf import WizardResourceLeaf
-from palm.patterns.wizard.step_leaf import EventEmitter, WizardStepLeaf
-from palm.patterns.wizard.summary_leaf import WizardSummaryLeaf
-from palm.patterns.wizard.transform_leaf import WizardTransformLeaf
 
 
 def build_wizard_tree(
@@ -29,83 +32,72 @@ def build_wizard_tree(
     commit_registry: CommitRegistry | None = None,
     resource_engine: ResourceEngine | None = None,
     context_engine: ContextEngine | None = None,
-) -> tuple[RootNode, SequenceNode]:
-    """Return ``(root, sequence)`` for the given wizard configuration."""
-    registry = commit_registry
-    leaves: list[BaseNode] = []
+    step_registry: WizardStepKindRegistry | None = None,
+) -> tuple[RootNode, WizardSequenceNode]:
+    """
+    Return ``(root, sequence)`` for the given wizard configuration.
 
-    for idx, step in enumerate(config.iter_tree_steps()):
-        if step.step_kind == "summary":
-            leaves.append(
-                WizardSummaryLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    emit=emit,
-                    context_engine=context_engine,
-                )
-            )
-        elif step.step_kind == "commit":
-            hook = step.commit_hook or config.commit_hook
-            if not hook or registry is None:
-                raise ValueError(
-                    f"Commit step {step.slug!r} requires commit_hook and CommitRegistry"
-                )
-            leaves.append(
-                WizardCommitLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    hook_name=hook,
-                    commit_registry=registry,
-                    resource_engine=resource_engine,
-                    emit=emit,
-                    context_engine=context_engine,
-                )
-            )
-        elif step.step_kind == "collection":
-            leaves.append(
-                WizardCollectionLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    emit=emit,
-                    context_engine=context_engine,
-                )
-            )
-        elif step.step_kind == "resource":
-            leaves.append(
-                WizardResourceLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    resource_engine=resource_engine,
-                    emit=emit,
-                    context_engine=context_engine,
-                )
-            )
-        elif step.step_kind == "transform":
-            leaves.append(
-                WizardTransformLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    emit=emit,
-                    context_engine=context_engine,
-                    resource_engine=resource_engine,
-                )
-            )
-        else:
-            leaves.append(
-                WizardStepLeaf(
-                    step,
-                    wizard_name=wizard_name,
-                    step_index=idx,
-                    emit=emit,
-                    context_engine=context_engine,
-                )
-            )
+    The tree shape is::
 
-    sequence = SequenceNode(f"{wizard_name}_sequence", children=leaves)
-    root = RootNode(f"{wizard_name}_root", child=sequence)
+        RootNode
+          └─ WizardCompletionGuardNode
+               └─ WizardSequenceNode
+                    ├─ step leaf …
+                    └─ step leaf …
+
+    Custom step kinds can be supplied via ``step_registry`` (defaults to the
+    global built-in registry).
+    """
+    registry = step_registry or default_wizard_step_registry()
+    on_backtrack = _backtrack_notifier(emit, wizard_name) if emit is not None else None
+
+    leaves = [
+        registry.build(
+            WizardStepBuildContext(
+                wizard_name=wizard_name,
+                step_index=idx,
+                step=step,
+                emit=emit,
+                commit_registry=commit_registry,
+                resource_engine=resource_engine,
+                context_engine=context_engine,
+            )
+        )
+        for idx, step in enumerate(config.iter_tree_steps())
+    ]
+
+    sequence = WizardSequenceNode(
+        f"{wizard_name}_sequence",
+        config=config,
+        children=leaves,
+        on_backtrack=on_backtrack,
+    )
+    guard = WizardCompletionGuardNode(
+        f"{wizard_name}_completion",
+        child=sequence,
+        config=config,
+        emit=emit,
+    )
+    root = RootNode(f"{wizard_name}_root", child=guard)
     return root, sequence
+
+
+def _backtrack_notifier(
+    emit: EventEmitter,
+    wizard_name: str,
+) -> BacktrackNotifier:
+    from palm.core.context import BaseState
+    from palm.patterns.wizard.keys import WizardKeys
+
+    def notify(index: int, state: BaseState, slug: str, from_step: object) -> None:
+        payload = {
+            "wizard": wizard_name,
+            "step_index": index,
+            "slug": slug,
+            "from_step": from_step,
+            "to_slug": slug,
+        }
+        emit(WizardEventType.BACKTRACK, payload)
+        emit(WizardEventType.BACKTRACK_EXECUTED, payload)
+
+    return notify

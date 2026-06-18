@@ -18,6 +18,7 @@ from palm.patterns.wizard.collection_selection import (
     item_selection_prompt,
     resolve_item_index,
 )
+from palm.patterns.wizard.collection_fields import build_collection_field_sequence
 from palm.patterns.wizard.collection_state import (
     ACTION_ADD,
     ACTION_DONE,
@@ -31,14 +32,10 @@ from palm.patterns.wizard.collection_state import (
     collection_remove_index,
     collection_select_action,
     ensure_scope,
-    enter_field_scope,
-    field_as_step,
     format_item_label,
     get_collection_items,
     item_scope_name,
-    leave_field_scope,
     leave_item_scope,
-    normalize_optional_field_value,
     set_collection_draft,
     set_collection_edit_index,
     set_collection_field_index,
@@ -55,11 +52,9 @@ from palm.patterns.wizard.step_leaf import EventEmitter
 from palm.patterns.wizard.validation import (
     choice_selection_error,
     clear_validation_feedback,
-    prepare_step_input,
     publish_validation_feedback,
     resolve_choice_value,
     validate_collected_answers,
-    validate_step_input,
 )
 
 
@@ -85,6 +80,14 @@ class WizardCollectionLeaf(InteractiveLeaf):
         self._fields = step.item_fields
         self._min_items = step.min_items
         self._label_field = default_label_field(step.item_fields, step.label_field)
+        self._field_sequence = build_collection_field_sequence(
+            step,
+            wizard_name=wizard_name,
+            step_index=step_index,
+            collection_key=self._collection_key,
+            emit=emit,
+            context_engine=context_engine,
+        )
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         key = self.input_key()
@@ -270,6 +273,7 @@ class WizardCollectionLeaf(InteractiveLeaf):
         set_collection_draft(state, draft)
         set_collection_field_index(state, 0)
         set_collection_phase(state, "field")
+        self._field_sequence.reset()
         ensure_scope(state, self._step.slug, step=self._step, context=self._context)
         ensure_scope(state, item_scope_name(index), context=self._context)
         return self._request_field_input(state)
@@ -279,36 +283,14 @@ class WizardCollectionLeaf(InteractiveLeaf):
         if field_index >= len(self._fields):
             return self._commit_item(state)
 
-        field = self._fields[field_index]
-        edit_index = collection_edit_index(state)
-        item_index = (
-            edit_index
-            if edit_index is not None
-            else len(
-                get_collection_items(state, self._collection_key),
-            )
-        )
-        enter_field_scope(state, self._step, field, item_index, context=self._context)
-
-        draft = collection_draft(state)
-        progress = f"Item field {field_index + 1}/{len(self._fields)}"
-        if edit_index is not None:
-            progress = f"Editing item #{edit_index + 1} — {progress}"
-
-        bundle = self._prompt_bundle(
-            state,
-            prompt=field.prompt,
-            field_type=field.field_type,
-            choices=list(field.choices),
-            title=field.title,
-            extra={
-                "step_kind": "collection",
-                "collection_phase": "field",
-                "collection_field": field.slug,
-                "collection_draft": draft,
-                "collection_progress": progress,
-            },
-        )
+        leaf = self._field_sequence.children[field_index]
+        leaf.tick(state)
+        bundle = state.get(self.prompt_key())
+        if not isinstance(bundle, dict):
+            return PatternStatus.FAILURE
+        bundle = dict(bundle)
+        bundle.setdefault("input_key", self.input_key())
+        bundle.setdefault("step_kind", "collection")
         return self._activate(state, bundle)
 
     def _handle_field_input(self, value: Any, state: BaseState) -> PatternStatus:
@@ -316,72 +298,13 @@ class WizardCollectionLeaf(InteractiveLeaf):
         if field_index >= len(self._fields):
             return self._commit_item(state)
 
-        field = self._fields[field_index]
-        step_field = field_as_step(field)
-        value = normalize_optional_field_value(field, value)
-        value, choice_error = prepare_step_input(state, step_field, value)
-        if choice_error is not None:
-            return self._fail(
-                state,
-                choice_error.errors,
-                prompt_bundle=self._prompt_bundle(
-                    state,
-                    prompt=field.prompt,
-                    field_type=field.field_type,
-                    choices=list(field.choices),
-                    title=field.title,
-                    extra={
-                        "step_kind": "collection",
-                        "collection_phase": "field",
-                        "collection_field": field.slug,
-                        "collection_draft": collection_draft(state),
-                    },
-                ),
-            )
-        validation = validate_step_input(state, step_field, value)
-        if not validation.ok:
-            return self._fail(
-                state,
-                validation.errors,
-                prompt_bundle=self._prompt_bundle(
-                    state,
-                    prompt=field.prompt,
-                    field_type=field.field_type,
-                    choices=list(field.choices),
-                    title=field.title,
-                    extra={
-                        "step_kind": "collection",
-                        "collection_phase": "field",
-                        "collection_field": field.slug,
-                        "collection_draft": collection_draft(state),
-                    },
-                ),
-            )
+        leaf = self._field_sequence.children[field_index]
+        status = leaf.apply_input(value, state)
+        if status == PatternStatus.FAILURE:
+            return PatternStatus.WAITING_FOR_INPUT
 
-        edit_index = collection_edit_index(state)
-        item_index = (
-            edit_index
-            if edit_index is not None
-            else len(
-                get_collection_items(state, self._collection_key),
-            )
-        )
-        leave_field_scope(state, field, item_index, context=self._context)
-        draft = collection_draft(state)
-        if value is None:
-            draft.pop(field.slug, None)
-        else:
-            draft[field.slug] = value
-        set_collection_draft(state, draft)
-        set_collection_field_index(state, field_index + 1)
         clear_validation_feedback(state)
-        self._fire(
-            WizardEventType.INPUT_RECEIVED,
-            slug=f"{self._step.slug}.{field.slug}",
-            value=value,
-            step_index=self._step_index,
-        )
-        if field_index + 1 >= len(self._fields):
+        if collection_field_index(state) >= len(self._fields):
             return self._commit_item(state)
         return self._request_field_input(state)
 

@@ -16,21 +16,11 @@ from palm.patterns.wizard.options import parse_wizard_flow_options
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.resource_leaf import default_resource_prompt
 from palm.patterns.wizard.step_kinds import WizardStepKind
+from palm.patterns.wizard.step_registry import default_wizard_step_registry
 from palm.patterns.wizard.transform_leaf import default_transform_prompt
 from palm.patterns.wizard.validation import StepValidationRule
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
-_WIZARD_STEP_KINDS = frozenset(
-    {
-        "input",
-        "introduction",
-        "summary",
-        "commit",
-        "resource",
-        "collection",
-        "transform",
-    }
-)
 
 
 def build(
@@ -173,8 +163,13 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         raise DefinitionBuildError(
             "step_kind 'action' was removed in 0.12; use step_kind 'resource' with resource_ref",
         )
-    if step_kind not in _WIZARD_STEP_KINDS:
-        raise DefinitionBuildError(f"Invalid wizard step_kind: {step_kind!r}")
+    if not default_wizard_step_registry().has(step_kind):
+        available = default_wizard_step_registry().names()
+        raise DefinitionBuildError(
+            f"Invalid wizard step_kind: {step_kind!r}. "
+            f"Register custom kinds via default_wizard_step_registry().register(...). "
+            f"Available: {available}"
+        )
 
     inline_schema = data.get("state_schema")
     state_schema = dict(inline_schema) if isinstance(inline_schema, dict) else None

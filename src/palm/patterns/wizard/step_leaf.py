@@ -4,26 +4,26 @@ WizardStepLeaf — interactive leaf bound to a configured wizard step.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
-from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.state import (
-    complete_step_input,
-    enrich_prompt_bundle,
-    enter_step,
-    leave_step,
+from palm.patterns.wizard.leaf_support import (
+    EventEmitter,
+    build_prompt_bundle,
+    clear_active_prompt,
+    emit_wizard_event,
+    enter_wizard_step,
+    leave_wizard_step,
+    publish_prompt,
 )
+from palm.patterns.wizard.state import complete_step_input
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
 )
-
-EventEmitter = Callable[[str, dict[str, Any]], None]
 
 
 class WizardStepLeaf(InteractiveLeaf):
@@ -50,26 +50,27 @@ class WizardStepLeaf(InteractiveLeaf):
         return self._step
 
     def _prompt_bundle(self, state: BaseState) -> dict[str, Any]:
-        bundle = {
-            "wizard": self._wizard_name,
-            "slug": self._step.slug,
-            "title": self._step.title,
-            "prompt": self._step.prompt,
-            "field_type": self._step.field_type,
-            "choices": list(self._step.choices),
-            "step_index": self._step_index,
-            "input_key": self.input_key(),
-        }
-        return enrich_prompt_bundle(state, bundle, context=self._context)
+        return build_prompt_bundle(
+            state,
+            wizard_name=self._wizard_name,
+            step=self._step,
+            step_index=self._step_index,
+            context=self._context,
+            input_key=self.input_key(),
+        )
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        state.set(WizardKeys.CURRENT_STEP, self._step.slug)
-        state.set(WizardKeys.STEP_INDEX, self._step_index)
-        enter_step(state, self._step.slug, step=self._step, context=self._context)
+        enter_wizard_step(
+            state,
+            self._step,
+            index=self._step_index,
+            context=self._context,
+        )
         prompt_bundle = self._prompt_bundle(state)
-        state.set(self.prompt_key(), prompt_bundle)
-        state.set(WizardKeys.ACTIVE_PROMPT, prompt_bundle)
-        self._fire(
+        publish_prompt(state, prompt_key=self.prompt_key(), bundle=prompt_bundle)
+        emit_wizard_event(
+            self._emit,
+            self._wizard_name,
             WizardEventType.STEP_STARTED,
             slug=self._step.slug,
             title=self._step.title,
@@ -86,31 +87,32 @@ class WizardStepLeaf(InteractiveLeaf):
                 prompt_bundle=self._prompt_bundle(state),
                 prompt_key=self.prompt_key(),
             )
-            self._fire(
+            emit_wizard_event(
+                self._emit,
+                self._wizard_name,
                 WizardEventType.VALIDATION_FAILED,
                 slug=self._step.slug,
                 errors=list(validation.errors),
             )
             return PatternStatus.WAITING_FOR_INPUT
 
-        leave_step(state, self._step.slug, context=self._context)
-        state.delete(WizardKeys.ACTIVE_PROMPT)
+        leave_wizard_step(state, self._step, context=self._context)
+        clear_active_prompt(state, prompt_key=self.prompt_key())
         clear_validation_feedback(state)
-        self._fire(
+        emit_wizard_event(
+            self._emit,
+            self._wizard_name,
             WizardEventType.INPUT_RECEIVED,
             slug=self._step.slug,
             value=value,
             step_index=self._step_index,
         )
-        self._fire(
+        emit_wizard_event(
+            self._emit,
+            self._wizard_name,
             WizardEventType.STEP_COMPLETED,
             slug=self._step.slug,
             value=value,
             step_index=self._step_index,
         )
         return PatternStatus.SUCCESS
-
-    def _fire(self, event_type: str, **payload: Any) -> None:
-        if self._emit is not None:
-            payload.setdefault("wizard", self._wizard_name)
-            self._emit(event_type, payload)
