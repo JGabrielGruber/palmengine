@@ -121,6 +121,15 @@ def test_studio_draft_save_and_load(server: ServerRuntime) -> None:
     assert any(row["id"] == draft_id for row in listing["drafts"])
 
 
+def test_studio_extensions_contract(server: ServerRuntime) -> None:
+    status, payload = _json(server.base_url, "GET", "/v1/studio/extensions")
+    assert status == 200
+    assert "canvas:node:added" in payload["events"]
+    assert "plugin:registered" in payload["events"]
+    assert "action" in payload["node_type_kinds"]
+    assert "register" in payload["plugin_contract"]["register"]
+
+
 def test_health_reports_studio(server: ServerRuntime) -> None:
     req = urllib.request.Request(
         f"{server.base_url}/health",
