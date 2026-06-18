@@ -14,9 +14,9 @@ from palm.common.exceptions import InstanceNotFoundError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.render import html_response, redirect
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 from palm.runtimes.server.surfaces.ssr.explorer.collection_input import resolve_wizard_form_input
 from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
+from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values
 from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import is_htmx_request
 from palm.runtimes.server.surfaces.ssr.explorer.pages.wizards import _estimate_step_total
@@ -161,8 +161,8 @@ class ExplorerActions:
             instance = self._fetch.get_instance(instance_id) or {}
             if wizard is None:
                 return html_response(
-                    f'<div id="wizard-workspace" class="wizard-workspace">'
-                    f'<p class="alert alert-error">Wizard not found.</p></div>',
+                    '<div id="wizard-workspace" class="wizard-workspace">'
+                    '<p class="alert alert-error">Wizard not found.</p></div>',
                     status=404,
                 )
             body = wizard_workspace(

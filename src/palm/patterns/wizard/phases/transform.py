@@ -12,11 +12,11 @@ from palm.common.transforms.preview import preview_value
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.behavior_tree.nodes.leaf.transform_leaf import TransformLeaf
 from palm.core.context import BaseState
-from palm.core.resource import ResourceEngine
 from palm.core.transform.engine import _MISSING
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.phases._base import WizardPhaseContext, wizard_prompt_key
 from palm.patterns.wizard.state import (
     enrich_prompt_bundle,
     enter_step,
@@ -24,7 +24,6 @@ from palm.patterns.wizard.state import (
     leave_step,
     set_answers,
 )
-from palm.patterns.wizard.phases._base import WizardPhaseContext, wizard_prompt_key
 from palm.patterns.wizard.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -271,10 +270,6 @@ class WizardTransformLeaf(LeafNode):
         if self._ctx.emit is not None:
             payload.setdefault("wizard", self._ctx.wizard_name)
             self._ctx.emit(event_type, payload)
-
-
-def build_transform_phase(ctx: WizardPhaseContext) -> WizardTransformLeaf:
-    return WizardTransformLeaf(ctx)
 
 
 def build_transform_phase(ctx: WizardPhaseContext) -> WizardTransformLeaf:

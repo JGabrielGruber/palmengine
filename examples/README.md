@@ -96,12 +96,23 @@ palm status <instance_id>
 
 ## Todo builder (`todo-builder`)
 
-Dynamic **todo list wizard** using the `collection` step kind.
+Dynamic **todo list wizard** using the `collection` step kind — ideal for Explorer collection UI demos.
 
 ```bash
 palm flow start todo-builder
 palm status <instance_id>
 ```
+
+**Explorer (0.13):** with `ServerRuntime` running:
+
+```bash
+curl -s -X POST http://localhost:8080/v1/wizards \
+  -H 'Content-Type: application/json' \
+  -d '{"flow_name": "todo-builder"}'
+# Open /explorer/instances/<instance_id> — Add New, edit/remove items, continue to summary
+```
+
+See [EXPLORER-WIZARD.md](../EXPLORER-WIZARD.md).
 
 ## Quick wizard (`quick`)
 

@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.12.9** (Compositional Power + ApplicationHost + Palm Explorer).
+Guide for contributors working on Palm **0.13.0** (Wizard Experience + Compositional Power + Palm Explorer).
 
 ## Setup
 
@@ -487,4 +487,4 @@ Host tests: `tests/test_application_host_cqrs.py`, `tests/test_cqrs_phase4.py`, 
 
 ---
 
-Last updated: June 2026 (0.12.9)
+Last updated: June 2026 (0.13.0)

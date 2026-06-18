@@ -20,11 +20,11 @@ def _build_log_step(ctx: WizardPhaseContext) -> BaseNode:
     def mark(state: object) -> PatternStatus:
         from palm.patterns.wizard import WizardKeys
 
-        answers = getattr(state, "get")(WizardKeys.ANSWERS, {}) or {}
+        answers = state.get(WizardKeys.ANSWERS, {}) or {}
         if isinstance(answers, dict):
             answers = dict(answers)
             answers[slug] = f"logged:{ctx.step.prompt}"
-            getattr(state, "set")(WizardKeys.ANSWERS, answers)
+            state.set(WizardKeys.ANSWERS, answers)
         return PatternStatus.SUCCESS
 
     return ActionNode(slug, action=mark)

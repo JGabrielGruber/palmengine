@@ -21,6 +21,7 @@ from palm.patterns.wizard.collection_state import (
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.leaf_support import emit_wizard_event
+from palm.patterns.wizard.phases._base import WizardPhaseContext
 from palm.patterns.wizard.phases.bt import phase_transition
 from palm.patterns.wizard.phases.collection._base import (
     CollectionPhaseLeaf,
@@ -28,7 +29,6 @@ from palm.patterns.wizard.phases.collection._base import (
     step_collection_key,
     step_label_field,
 )
-from palm.patterns.wizard.phases._base import WizardPhaseContext
 from palm.patterns.wizard.state import get_answers, leave_step, persist_step_answer
 from palm.patterns.wizard.validation import (
     choice_selection_error,

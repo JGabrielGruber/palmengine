@@ -4,7 +4,6 @@ Wizard phase foundations — context, input bridge, and shared interactive helpe
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 

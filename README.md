@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.12.9` — Compositional Power: `ResourceDefinition`, `ResourceLeaf`, `palm` provider, Explorer resources hub · See [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.12.md](MIGRATION-0.12.md) · [VISION-0.12](docs/VISION-0.12.md) · [SCOPE.md](SCOPE.md)
+**Current release:** `0.13.0` — Wizard Experience: `/v1/wizards` REST, Explorer wizard workspace, collection UI · See [CHANGELOG.md](CHANGELOG.md) · [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md) · [VISION-0.13](docs/VISION-0.13.md) · [SCOPE.md](SCOPE.md)
 
 ---
 
@@ -64,7 +64,8 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Patterns** | **Wizard** (collection, transform, resource steps, summary/commit); **parallel** branches; DAG and ETL stubs |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
-| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **resources** (catalog, invoke, timelines); `/` redirects here |
+| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **wizard workspace** (HTMX + collection editor), **resources**; `/` redirects here |
+| **Wizard REST** | `/v1/wizards` — submit, status, input, backtrack keyed by `instance_id` |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm resource *`, `just` quality recipes |
 
@@ -122,6 +123,26 @@ open http://localhost:8080/explorer   # or just http://localhost:8080/ (redirect
 ```
 
 REST reference: `GET /v1/docs` · OpenAPI: `GET /v1/openapi.json` · Health: `GET /health`
+
+### Try in Explorer
+
+The instance detail page is a **live wizard workspace** — progress bar, prompt card, answers, timeline, and backtrack. Collection steps get a rich multi-item editor (add / edit / remove) with HTMX partial updates.
+
+```bash
+# 1. Start server
+python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+
+# 2. Submit todo-builder (collection demo)
+curl -s -X POST http://localhost:8080/v1/wizards \
+  -H 'Content-Type: application/json' \
+  -d '{"flow_name": "todo-builder"}'
+# → copy instance_id from JSON
+
+# 3. Open workspace
+open http://localhost:8080/explorer/instances/<instance_id>
+```
+
+Use **Add New** on the collection overview, fill fields, edit or remove items, then **Continue to summary**. Full guide: [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md).
 
 **Try the new examples:**
 

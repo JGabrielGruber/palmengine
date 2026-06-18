@@ -20,6 +20,7 @@ from palm.patterns.wizard.collection_state import (
     set_collection_remove_index,
     set_collection_select_action,
 )
+from palm.patterns.wizard.phases._base import WizardPhaseContext
 from palm.patterns.wizard.phases.bt import phase_transition
 from palm.patterns.wizard.phases.collection._base import (
     CollectionPhaseLeaf,
@@ -27,7 +28,6 @@ from palm.patterns.wizard.phases.collection._base import (
     step_collection_key,
     step_label_field,
 )
-from palm.patterns.wizard.phases._base import WizardPhaseContext
 
 
 class CollectionSelectPhase(CollectionPhaseLeaf):

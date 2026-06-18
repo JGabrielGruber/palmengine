@@ -6,6 +6,36 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 _No changes yet._
 
+## [0.13.0] — 2026-06-18
+
+**Wizard Experience release** — first-class `/v1/wizards` REST surface, HTMX-powered Explorer workspace, and rich collection-step UI.
+
+Vision: [docs/VISION-0.13.md](docs/VISION-0.13.md) · Guide: [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md) · Phases: [src/palm/patterns/wizard/MIGRATION-WIZARD-PHASES.md](src/palm/patterns/wizard/MIGRATION-WIZARD-PHASES.md)
+
+### Added
+
+- **`/v1/wizards` REST API** — `POST` submit, `GET` rich status, `POST` input, `POST` backtrack keyed by durable `instance_id`
+- **`build_wizard_view()`** — instance-centric read model combining projections, job inspection, prompt, answers, and `next_actions`
+- **CQRS** — `SubmitWizardCommand`, `ProvideWizardInputCommand`, `RequestWizardBacktrackCommand`, `GetWizardStatusQuery`
+- **Palm Explorer wizard workspace** — HTMX partial updates at `/explorer/instances/{id}` with progress bar, prompt card, answers panel, step timeline, and backtrack controls
+- **Collection step UI** — overview card, numbered item cards, add/edit/remove flows, field-phase draft panel, remove confirmation dialog
+- **`collection_input.py`** — maps Explorer form actions to wizard `provide_input` values (including compound edit/remove)
+- **Extended job inspection** — collection phase metadata (`collection_draft`, `collection_progress`, `item_fields`, …) flows into wizard `prompt`
+- **Guide** — [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md) for operators and integrators
+- **Tests** — `tests/test_server_wizards.py`, Explorer wizard + collection HTMX coverage in `tests/test_server_ssr.py`
+
+### Changed
+
+- **Wizard phase modularization** — collection, input, summary, commit, resource, and transform phases live under `palm/patterns/wizard/phases/` with BT routing (`PhaseKeyedSelectorNode`, `PhaseTransitionLoopNode`)
+- **`WizardPattern`** — slim orchestration surface; step logic owned by phase nodes
+- **OpenAPI / `/v1/docs`** — wizard request examples for collection menu, field input, and continue actions
+- **Documentation** — README “Try in Explorer”, ARCHITECTURE wizard Explorer section, `docs/index.html` and `docs/llms.txt` refreshed for 0.13
+
+### Developer notes
+
+- Explorer collection UI posts `collection_action` (+ optional `item_index`) to `/explorer/instances/{id}/input`; REST clients use `/v1/wizards/{id}/input` with wizard menu strings (`"Add a new item"`, etc.)
+- HTMX targets `#wizard-workspace` with `outerHTML` swap; forms disable controls during flight via `hx-disabled-elt`
+
 ## [0.12.9] — 2026-06-17
 
 **Compositional Power release** — Resources as first-class, declarative citizens; Palm calling Palm via the `palm` provider; Explorer resource hub.

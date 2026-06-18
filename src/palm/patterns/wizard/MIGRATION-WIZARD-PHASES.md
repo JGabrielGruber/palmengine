@@ -67,3 +67,26 @@ default_wizard_step_registry().register("audit", build_audit)
 
 `WizardPattern` only binds context/state and ticks the root tree. Backtrack,
 completion, and per-step logic are handled by phase nodes.
+
+## Explorer + REST (0.13)
+
+Operators can run the same collection phases through **Palm Explorer** without
+typing menu strings:
+
+| Explorer action | Wizard input equivalent |
+|-----------------|-------------------------|
+| Add New | `"Add a new item"` |
+| Edit item N | `"Edit an item"` + item selection |
+| Remove item N | `"Remove an item"` + item selection |
+| Continue to summary | `"Continue to summary"` |
+| Field value | per-field `provide_input` |
+| Remove confirm | `yes` / `no` |
+
+Explorer posts `collection_action` forms to `/explorer/instances/{id}/input`.
+REST clients use `/v1/wizards/{id}/input` with `{"value": ...}`.
+
+The `prompt` block on `GET /v1/wizards/{id}` includes `collection_phase`,
+`collection_items`, `collection_draft`, `item_fields`, and related metadata
+from live job inspection — Explorer renders phase-specific UI from this payload.
+
+See [EXPLORER-WIZARD.md](../../../../EXPLORER-WIZARD.md) (repo root).

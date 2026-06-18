@@ -7,6 +7,14 @@ from typing import Any
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
 from palm.patterns.wizard.collection_selection import default_label_field
+from palm.patterns.wizard.collection_state import (
+    ensure_scope,
+    get_collection_items,
+    item_scope_name,
+    set_collection_draft,
+    set_collection_edit_index,
+    set_collection_field_index,
+)
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.leaf_support import emit_wizard_event
@@ -15,14 +23,6 @@ from palm.patterns.wizard.phases._base import (
     activate_prompt,
     wizard_input_key,
     wizard_prompt_key,
-)
-from palm.patterns.wizard.collection_state import (
-    ensure_scope,
-    get_collection_items,
-    item_scope_name,
-    set_collection_draft,
-    set_collection_edit_index,
-    set_collection_field_index,
 )
 from palm.patterns.wizard.state import enrich_prompt_bundle
 from palm.patterns.wizard.validation import publish_validation_feedback

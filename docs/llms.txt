@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.12.9 (shipping) · **Theme:** Compositional Power · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.13.0 (shipping) · **Theme:** Wizard Experience · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -55,7 +55,8 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
-| **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **resources**; `GET /` redirects here |
+| **Wizard REST (0.13)** | `/v1/wizards` — submit, status, input, backtrack by `instance_id` |
+| **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
 
@@ -80,6 +81,8 @@ Server + Explorer:
 ```bash
 python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
 # → http://localhost:8080/explorer (root / redirects here)
+curl -s -X POST http://localhost:8080/v1/wizards -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'
+# → open /explorer/instances/<instance_id> for wizard workspace + collection UI
 ```
 
 Durable local storage:
@@ -111,8 +114,10 @@ src/palm/
 | STATUS.md | Living current state |
 | ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
 | DEVELOPMENT.md | Contributor setup and patterns |
+| EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
+| docs/VISION-0.13.md | Wizard Experience release vision |
 | docs/VISION-0.12.md | Compositional Power vision and best practices |
 | examples/README.md | Runnable flow definitions |
 

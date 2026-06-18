@@ -43,7 +43,7 @@ def _get_html(base_url: str, path: str) -> tuple[int, str]:
 
 
 def test_build_docs_html_includes_rich_structure() -> None:
-    html = build_docs_html(version="0.12.9")
+    html = build_docs_html(version="0.13.0")
     assert "endpoint-card" in html
     assert "REST API Reference" in html
     assert 'href="/v1/openapi.json"' in html

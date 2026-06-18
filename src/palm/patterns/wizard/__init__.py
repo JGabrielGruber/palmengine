@@ -17,6 +17,12 @@ from palm.patterns.wizard.handler import (
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.options import parse_wizard_flow_options, wizard_metadata_from_flow
 from palm.patterns.wizard.pattern import WizardPattern, default_wizard_config
+from palm.patterns.wizard.persistence import (
+    extract_instance_fields_from_job,
+    prepare_wizard_resume_state,
+    wizard_runtime_position_for_job,
+    wizard_step_slug_for_job,
+)
 from palm.patterns.wizard.phases import (
     WizardPhaseContext,
     WizardSequenceNode,
@@ -25,13 +31,6 @@ from palm.patterns.wizard.phases import (
     register_builtin_wizard_step_kinds,
 )
 from palm.patterns.wizard.phases.registry import WizardStepKindRegistry
-from palm.patterns.wizard.tree import build_wizard_tree
-from palm.patterns.wizard.persistence import (
-    extract_instance_fields_from_job,
-    prepare_wizard_resume_state,
-    wizard_runtime_position_for_job,
-    wizard_step_slug_for_job,
-)
 from palm.patterns.wizard.state import (
     complete_step_input,
     enter_step,
@@ -40,6 +39,7 @@ from palm.patterns.wizard.state import (
     step_scope,
 )
 from palm.patterns.wizard.submission import wizard_submission_metadata
+from palm.patterns.wizard.tree import build_wizard_tree
 from palm.patterns.wizard.validation import (
     StepValidationRule,
     ValidationRegistry,

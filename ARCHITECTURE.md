@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.12.9** · Compositional Power + ApplicationHost + Palm Explorer · June 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.13.0** · Wizard Experience + Compositional Power + Palm Explorer · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -440,6 +440,38 @@ Configuration: `collection_key`, `item_fields`, `min_items`, optional `label_fie
 
 Reference flow: `todo-builder` (`examples/definitions/todo_builder.py`).
 
+### Wizard REST + Explorer (0.13)
+
+Interactive wizards are addressable by **durable instance id** — not only by ephemeral `job_id`:
+
+| Surface | Path | Role |
+|---------|------|------|
+| REST submit | `POST /v1/wizards` | Start wizard (`wizard`, `flow`, or `flow_name` body variants) |
+| REST status | `GET /v1/wizards/{instance_id}` | Rich view: `prompt`, `answers`, `wizard_progress`, `next_actions` |
+| REST input | `POST /v1/wizards/{instance_id}/input` | Deliver operator input (`{"value": ...}`) |
+| REST backtrack | `POST /v1/wizards/{instance_id}/backtrack` | Return to prior step (`to_step` optional) |
+| Explorer workspace | `GET /explorer/instances/{instance_id}` | Full SSR wizard detail page |
+| Explorer HTMX | `POST /explorer/instances/{instance_id}/input` | Partial workspace refresh (`HX-Request: true`) |
+
+Read model assembly lives in `palm/common/wizard_context.py` (`build_wizard_view`). Live prompt metadata comes from `inspect_job_json()` via `GetWizardStatusQuery`.
+
+**Explorer workspace** (`palm/runtimes/server/surfaces/ssr/explorer/`):
+
+```mermaid
+flowchart LR
+    page[Instance detail page] --> ws[wizard_workspace]
+    ws --> prompt[wizard_prompt_card]
+    ws --> side[answers + timeline]
+    ws --> back[backtrack controls]
+    prompt --> coll[collection_overview_card]
+    prompt --> field[collection_field_form]
+    htmx[HTMX POST input] --> ws
+```
+
+Collection steps render a dedicated UI (overview grid, per-item edit/remove, field-phase draft, remove confirm) that maps to the same backend phase strings the CLI uses. See [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md).
+
+**Wizard phase system** (0.13 internal refactor): each `step_kind` registers a phase factory under `palm/patterns/wizard/phases/`. Collection steps compose a `PhaseKeyedSelectorNode` subtree (`menu` → `select_item` → `field` → `remove_confirm`). `WizardPattern.tick()` only drives the root tree — backtrack, validation, and completion are phase responsibilities. See [MIGRATION-WIZARD-PHASES.md](src/palm/patterns/wizard/MIGRATION-WIZARD-PHASES.md).
+
 ### Transform step kind
 
 `step_kind: transform` runs a registered rule or chain between interactive steps:
@@ -724,7 +756,7 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
 | **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; `GET /` → `/explorer`; `/wiki` + `/docs` aliases; common `ssr/` = render + layout shell |
+| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; wizard workspace + collection UI; `/v1/wizards` REST; `GET /` → `/explorer` |
 | **WebSocket / MCP** | Planned | Surfaces registered under `runtimes/server/surfaces/`; async transport TBD |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.

@@ -98,9 +98,17 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
             "summary": "Answer a text prompt",
             "value": {"value": "Ada Lovelace"},
         },
-        "collection": {
-            "summary": "Select a collection menu action",
-            "value": {"value": "Add item"},
+        "collection_menu": {
+            "summary": "Collection menu — add a new item",
+            "value": {"value": "Add a new item"},
+        },
+        "collection_field": {
+            "summary": "Collection field — save item title",
+            "value": {"value": "Buy milk"},
+        },
+        "collection_done": {
+            "summary": "Collection menu — continue to summary",
+            "value": {"value": "Continue to summary"},
         },
     },
     "WizardBacktrackBody": {
@@ -129,7 +137,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
     "health": {
         "status": "ok",
         "runtime": "ServerRuntime",
-        "version": "0.12.9",
+        "version": "0.13.0",
         "auth_enforce": False,
         "surfaces": ["rest"],
         "docs": "/v1/docs",
@@ -204,16 +212,21 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "instance_id": "inst-abc123",
         "job_id": "job-abc123",
         "status": "WAITING_FOR_INPUT",
-        "flow_name": "onboard",
-        "wizard_step_slug": "name",
+        "flow_name": "todo-builder",
+        "wizard_step_slug": "todos",
         "wizard_progress": {
-            "current_step": "name",
+            "current_step": "todos",
             "completed_steps": [],
         },
         "prompt": {
-            "step": "name",
-            "title": "Name",
-            "text": "Your name?",
+            "step": "todos",
+            "title": "Todo List",
+            "text": "Manage your todos — add items, edit/remove, then continue.",
+            "step_kind": "collection",
+            "collection_phase": "menu",
+            "collection_items": [{"title": "Buy milk", "priority": "high"}],
+            "label_field": "title",
+            "min_items": 1,
         },
         "answers": {},
         "committed": False,

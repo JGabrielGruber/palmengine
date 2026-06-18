@@ -362,7 +362,7 @@ def collection_item_card(
         )
 
     return (
-        f'<article class="collection-item-card" data-item-index="{index}">'
+        f'<article class="collection-item-card" role="listitem" data-item-index="{index}">'
         f'<div class="item-number">Item {index + 1}</div>'
         f'<div class="item-title">{escape(title)}</div>'
         f"{fields_html}"
@@ -405,7 +405,7 @@ def collection_list(
         )
     if not cards:
         return '<p class="muted collection-empty">No items yet — add your first one below.</p>'
-    return f'<div class="collection-item-grid">{"".join(cards)}</div>'
+    return f'<div class="collection-item-grid" role="list">{"".join(cards)}</div>'
 
 
 def collection_overview_card(instance_id: str, prompt: dict[str, Any]) -> str:
@@ -450,9 +450,9 @@ def collection_overview_card(instance_id: str, prompt: dict[str, Any]) -> str:
     toolbar += "</div>"
 
     return (
-        f'<div class="collection-overview">'
+        f'<div class="collection-overview" role="region" aria-labelledby="collection-overview-title">'
         f'<div class="collection-overview-header">'
-        f"<h4>Collection</h4>"
+        f'<h4 id="collection-overview-title">Collection</h4>'
         f'<div class="collection-count">{progress_html}</div>'
         f"</div>"
         f"{intro}{validation_html}"
@@ -517,7 +517,7 @@ def _collection_item_title(
         slug = field.get("slug")
         if slug and item.get(slug) not in (None, ""):
             return str(item[slug])
-    for key, value in item.items():
+    for _key, value in item.items():
         if value not in (None, ""):
             return str(value)
     return f"Item {index + 1}"
@@ -720,7 +720,7 @@ def wizard_workspace(
     links += "</p></section>"
 
     return (
-        f'<div id="wizard-workspace" class="wizard-workspace">'
+        f'<div id="wizard-workspace" class="wizard-workspace" aria-live="polite">'
         f"{header}"
         f'<div class="grid-2">{prompt_panel}{sidebar}</div>'
         f"{backtrack}{links}"
@@ -729,7 +729,7 @@ def wizard_workspace(
 
 
 def _preview_value(value: Any) -> str:
-    if isinstance(value, (dict, list)):
+    if isinstance(value, dict | list):
         import json
 
         try:

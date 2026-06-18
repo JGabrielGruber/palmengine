@@ -299,7 +299,7 @@ def test_explorer_fetcher_lists_patterns(server: ServerRuntime) -> None:
 
 
 def test_explorer_layout_renders_title() -> None:
-    html = explorer_page(title="Test", version="0.12.9", content="<p>Body</p>")
+    html = explorer_page(title="Test", version="0.13.0", content="<p>Body</p>")
     assert "Test" in html
     assert "Body" in html
     assert "Palm Explorer" in html
@@ -578,3 +578,76 @@ def test_wizard_collection_add_item_htmx(server: ServerRuntime) -> None:
     assert "collection-field-panel" in html
     assert "Save field" in html
     assert "Draft so far" not in html or "collection-draft-panel" in html
+
+
+def _collection_add_item(
+    base_url: str,
+    instance_id: str,
+    *,
+    title: str,
+    priority: str,
+) -> str:
+    htmx = {"HX-Request": "true"}
+    _post_form(
+        base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"collection_action": "add"},
+        extra_headers=htmx,
+    )
+    _post_form(
+        base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"value": title},
+        extra_headers=htmx,
+    )
+    status, html, _ = _post_form(
+        base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"value": priority},
+        extra_headers=htmx,
+    )
+    return html
+
+
+def test_wizard_collection_shows_item_in_overview(server: ServerRuntime) -> None:
+    _register_todo_collection_flow(server)
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"flow_name": "todo-test"},
+    )
+    instance_id = created["instance_id"]
+    html = _collection_add_item(
+        server.base_url,
+        instance_id,
+        title="Buy milk",
+        priority="high",
+    )
+    assert "collection-overview" in html
+    assert "Buy milk" in html
+    assert "collection-item-card" in html
+
+
+def test_wizard_collection_edit_item_htmx(server: ServerRuntime) -> None:
+    _register_todo_collection_flow(server)
+    _, created = _post_json(
+        server.base_url,
+        "/v1/wizards",
+        body={"flow_name": "todo-test"},
+    )
+    instance_id = created["instance_id"]
+    _collection_add_item(
+        server.base_url,
+        instance_id,
+        title="Walk dog",
+        priority="medium",
+    )
+    status, html, _ = _post_form(
+        server.base_url,
+        f"/explorer/instances/{instance_id}/input",
+        {"collection_action": "edit", "item_index": "0"},
+        extra_headers={"HX-Request": "true"},
+    )
+    assert status == 200
+    assert "collection-field-panel" in html
+    assert "Editing item" in html or "Save field" in html

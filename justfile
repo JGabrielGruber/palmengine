@@ -169,8 +169,12 @@ publish: build
     uv publish --token "${PYPI_TOKEN}"
     @echo '✅ Published to PyPI. Users can: pip install palmengine[cli]'
 
+docs-build:
+    cd docs && npx @tailwindcss/cli -i styles/input.css -o styles/output.css
+    @echo "✅ docs/styles/output.css rebuilt"
+
 release-prep:
-    @echo "📋 Release prep for {{package}} — see RELEASE-0.12.9.md"
+    @echo "📋 Release prep for {{package}} — see RELEASE-0.13.0.md"
     @echo "   Version: $(uv run python -c 'import palm; print(palm.__version__)')"
     just docs-check
     just full-check
@@ -206,6 +210,7 @@ help:
     @echo "   just publish-test     → Build + TestPyPI"
     @echo "   just publish          → Build + PyPI (5s warning)"
     @echo "   just docs-check       → Version + documentation surface consistency"
+    @echo "   just docs-build       → Rebuild docs site Tailwind CSS"
     @echo "   just release-prep     → docs-check + full-check + build"
     @echo "   just demo-full        → examples/full_demo.py"
     @echo "   just clean            → Remove data/ + tool caches"

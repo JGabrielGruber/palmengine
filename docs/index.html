@@ -118,11 +118,11 @@
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
       "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for rich interactive wizards, durable process instances, and transactional workflows that feel human.",
-      "version": "0.12.9",
+      "version": "0.13.0",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.12.9",
+      "softwareVersion": "0.13.0",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -145,7 +145,8 @@
         "Powerful TransformEngine with 22 built-in rules",
         "Parallel wizard branches with isolated scopes",
         "Compositional Power — ResourceDefinition, ResourceLeaf, palm provider",
-        "Palm Explorer — living SSR hub for flows, jobs, instances, and resources",
+        "Palm Explorer — wizard workspace with collection UI, flows, jobs, instances, and resources",
+        "Wizard REST API at /v1/wizards — instance-keyed submit, input, and backtrack",
         "Modern CLI, live status dashboard, and REPL",
         "Extensible via registry-based patterns, providers, and storages"
       ],
@@ -199,7 +200,7 @@
     <div class="max-w-5xl mx-auto px-6 z-10">
       <div class="inline-flex items-center gap-x-2 bg-zinc-950/60 border border-zinc-300/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.12.9 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
+        <span class="text-sm font-medium tracking-widest">v0.13.0 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
         Orchestration that<br>feels <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
@@ -326,7 +327,7 @@
               </div>
               <div class="p-8">
                 <h3 class="font-semibold text-2xl text-teal-400 mb-3">Palm Explorer</h3>
-                <p class="text-zinc-400">Living introspection hub. Browse flows, submit jobs, provide input, inspect context and snapshots — all in one beautiful interface.</p>
+                <p class="text-zinc-400">Living introspection hub with HTMX wizard workspaces — collection editors, backtrack, progress timelines, and REST-linked instance detail.</p>
               </div>
             </div>
           </div>
@@ -399,16 +400,15 @@
           <h3 class="font-semibold text-teal-400 mb-2">Development</h3>
           <p class="text-zinc-400 text-sm">Contributing, testing, type checking, and project conventions.</p>
         </a>
-        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
-          <h3 class="font-semibold text-teal-400 mb-2">Palm Explorer</h3>
+        <a href="https://github.com/JGabrielGruber/palmengine/blob/main/EXPLORER-WIZARD.md" target="_blank"
+          class="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-teal-700 transition-colors">
+          <h3 class="font-semibold text-teal-400 mb-2">Explorer Wizards (0.13)</h3>
           <p class="text-zinc-400 text-sm">
-            When <code class="bg-zinc-900 px-1 rounded">ServerRuntime</code> is running, open
-            <code class="bg-zinc-900 px-1 rounded text-teal-300">/explorer</code> (or <code class="bg-zinc-900 px-1 rounded text-teal-300">/</code>)
-            for the living hub. REST reference:
-            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/docs</code> ·
-            <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/openapi.json</code>.
+            Instance workspace at <code class="bg-zinc-900 px-1 rounded text-teal-300">/explorer/instances/{id}</code>,
+            collection UI, and <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/wizards</code> REST.
+            See <strong>EXPLORER-WIZARD.md</strong>.
           </p>
-        </div>
+        </a>
       </div>
     </div>
   </section>
@@ -444,9 +444,10 @@
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
           <h3 class="text-xl font-semibold mb-4 text-teal-400">Endpoint groups</h3>
           <ul class="space-y-2 text-zinc-300 text-sm">
-            <li><strong class="text-white">Explorer</strong> — SSR hub for flows, jobs, instances, schemas</li>
+            <li><strong class="text-white">Explorer</strong> — SSR hub with wizard workspace and collection UI</li>
             <li><strong class="text-white">Meta</strong> — health, OpenAPI, HTML docs</li>
-            <li><strong class="text-white">Jobs</strong> — submit flows, list status, wizard input</li>
+            <li><strong class="text-white">Wizards</strong> — instance-keyed submit, status, input, backtrack</li>
+            <li><strong class="text-white">Jobs</strong> — submit flows, list status, job-level input</li>
             <li><strong class="text-white">Plans</strong> — stage and batch-submit execution plans</li>
             <li><strong class="text-white">Instances</strong> — durable process index and resume</li>
             <li><strong class="text-white">Snapshots</strong> — point-in-time blackboard captures</li>

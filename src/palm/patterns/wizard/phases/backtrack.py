@@ -163,13 +163,13 @@ def apply_backtrack(
     if target is None:
         return None
 
-    index, slug = sequence._resolve_backtrack_target(target)  # noqa: SLF001
+    index, slug = sequence._resolve_backtrack_target(target)
     if index is None or slug is None:
         state.delete(WizardKeys.BACKTRACK_TO)
         return None
 
     state.delete(WizardKeys.BACKTRACK_TO)
-    sequence._reset_for_backtrack(state, index, slug)  # noqa: SLF001
+    sequence._reset_for_backtrack(state, index, slug)
     return index
 
 

@@ -6,7 +6,11 @@ from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.render import html_response
-from palm.runtimes.server.surfaces.ssr.studio.assets import file_response, index_asset, resolve_asset
+from palm.runtimes.server.surfaces.ssr.studio.assets import (
+    file_response,
+    index_asset,
+    resolve_asset,
+)
 from palm.runtimes.server.surfaces.ssr.studio.bootstrap import render_shell
 
 if TYPE_CHECKING:

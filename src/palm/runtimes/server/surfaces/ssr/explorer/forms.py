@@ -370,9 +370,10 @@ def collection_action_form(
         btn_class = "btn-danger"
     return (
         f'<form class="collection-action-form" action="{escape(post_action)}" method="POST"'
-        f'{_wizard_htmx_attrs(post_action)}>'
+        f'{_wizard_htmx_attrs(post_action)} role="group" aria-label="{escape(label)}">'
         f"{hidden}"
-        f'<button type="submit" class="{btn_class}">{escape(label)}</button>'
+        f'<button type="submit" class="{btn_class}" aria-label="{escape(label)}">'
+        f"{escape(label)}</button>"
         f"</form>"
     )
 
@@ -416,18 +417,24 @@ def collection_field_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
 
     choice_buttons = _wizard_choice_buttons(prompt, htmx=True, action=action)
     cancel_btn = collection_action_form(instance_id, "cancel", label="Cancel", tone="ghost")
+    has_choices = bool(_normalize_choices(prompt.get("choices")))
+    value_field = ""
+    if not has_choices:
+        value_field = (
+            f'<div class="form-field">'
+            f'<label for="value">{escape(str(label))}</label>'
+            f"{field_html}"
+            f"</div>"
+        )
 
     return (
-        f'<div class="collection-field-panel">'
+        f'<div class="collection-field-panel" role="region" aria-label="Item field input">'
         f"{progress_html}{draft_html}"
         f'<form class="schema-form wizard-input-form collection-field-form" '
         f'action="{escape(action)}" method="POST"{_wizard_htmx_attrs(action)}>'
         f"{validation_html}{prompt_html}"
         f"{choice_buttons}"
-        f'<div class="form-field">'
-        f'<label for="value">{escape(str(label))}</label>'
-        f"{field_html}"
-        f"</div>"
+        f"{value_field}"
         f'<div class="form-actions">'
         f'<button class="btn-primary" type="submit">Save field</button>'
         f'{_wizard_loading_indicator()}'
@@ -470,8 +477,8 @@ def collection_remove_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
         validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
 
     return (
-        f'<div class="collection-remove-confirm">'
-        f"<h4>Confirm removal</h4>"
+        f'<div class="collection-remove-confirm" role="alertdialog" aria-labelledby="collection-remove-title">'
+        f'<h4 id="collection-remove-title">Confirm removal</h4>'
         f"{prompt_html}{validation_html}"
         f"{preview_html}"
         f'<div class="form-actions" style="margin-top:1rem">'
@@ -498,7 +505,7 @@ def collection_select_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
         validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
 
     return (
-        f'<div class="collection-select-panel">'
+        f'<div class="collection-select-panel" role="region" aria-label="{escape(str(title))}">'
         f"<h4>{escape(str(title))}</h4>"
         f"{prompt_html}{validation_html}"
         f'{collection_list(instance_id, dict(prompt), action="select")}'
@@ -516,11 +523,15 @@ def _wizard_htmx_attrs(action: str) -> str:
         ' hx-target="#wizard-workspace"'
         ' hx-swap="outerHTML"'
         ' hx-indicator="#wizard-loading"'
+        ' hx-disabled-elt="button, input, select, textarea"'
     )
 
 
 def _wizard_loading_indicator() -> str:
-    return '<span id="wizard-loading" class="htmx-indicator wizard-loading">Updating…</span>'
+    return (
+        '<span id="wizard-loading" class="htmx-indicator wizard-loading" '
+        'role="status" aria-live="polite" aria-atomic="true">Updating…</span>'
+    )
 
 
 def _wizard_choice_buttons(

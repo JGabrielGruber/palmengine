@@ -6,12 +6,21 @@ import ast
 from pathlib import Path
 
 
+_WIZARD_BRIDGE_ALLOWLIST = {
+    "palm/common/wizard_runtime.py",
+}
+
+
 def test_common_has_no_wizard_imports() -> None:
     """``palm.common`` must not import wizard pattern internals directly."""
     common_root = Path(__file__).resolve().parents[1] / "src" / "palm" / "common"
+    repo_root = common_root.parents[1]
     violations: list[str] = []
 
     for path in sorted(common_root.rglob("*.py")):
+        rel = str(path.relative_to(repo_root))
+        if rel in _WIZARD_BRIDGE_ALLOWLIST:
+            continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:

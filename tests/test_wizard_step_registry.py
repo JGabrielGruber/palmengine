@@ -8,10 +8,9 @@ from palm.common.exceptions import DefinitionBuildError
 from palm.core.behavior_tree import ActionNode, BaseNode, PatternStatus, RootNode
 from palm.core.context import BaseState
 from palm.patterns.wizard.builder import wizard_config_from_options
-from palm.patterns.wizard.phases.backtrack import WizardCompletionGuardNode
 from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.pattern import WizardPattern
 from palm.patterns.wizard.phases import WizardPhaseContext, WizardSequenceNode
+from palm.patterns.wizard.phases.backtrack import WizardCompletionGuardNode
 from palm.patterns.wizard.phases.registry import (
     WizardStepKindRegistry,
     default_wizard_step_registry,

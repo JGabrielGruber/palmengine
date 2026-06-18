@@ -144,6 +144,23 @@ _WIZARD_EXPLORER_CSS = """
   background: transparent; color: var(--muted); border: 1px solid var(--border);
 }
 .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+.collection-action-form { display: inline-block; }
+.wizard-choice-btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .collection-item-grid { grid-template-columns: 1fr; }
+  .wizard-header { flex-direction: column; align-items: stretch; }
+  .collection-toolbar { flex-direction: column; align-items: stretch; }
+  .collection-toolbar .collection-action-form { width: 100%; }
+  .collection-toolbar .collection-action-form button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wizard-progress-fill, .htmx-indicator { transition: none; }
+}
 """
 
 

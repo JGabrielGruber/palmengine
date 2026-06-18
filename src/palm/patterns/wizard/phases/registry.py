@@ -9,7 +9,7 @@ from collections.abc import Callable
 
 from palm.core.behavior_tree import BaseNode
 from palm.core.exceptions import RegistryError
-from palm.patterns.wizard.phases._base import EventEmitter, WizardPhaseContext
+from palm.patterns.wizard.phases._base import WizardPhaseContext
 from palm.patterns.wizard.phases.collection.step import build_collection_phase
 from palm.patterns.wizard.phases.commit import build_commit_phase
 from palm.patterns.wizard.phases.input import build_input_phase

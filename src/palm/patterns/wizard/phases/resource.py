@@ -11,7 +11,6 @@ from palm.common.resource.builder import build_resource_leaf
 from palm.common.resource.compensation import is_mutating_action, track_resource_invocation
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
-from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys

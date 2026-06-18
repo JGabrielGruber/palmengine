@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 
 def resolve_wizard_form_input(
     form_data: Mapping[str, Any],
     wizard: Mapping[str, Any],
-) -> str | tuple[str, ...]:
+) -> str | tuple[str, int]:
     """Map Explorer collection UI posts to wizard ``provide_input`` values."""
     action = str(form_data.get("collection_action") or "").strip().lower()
     if action == "add":
