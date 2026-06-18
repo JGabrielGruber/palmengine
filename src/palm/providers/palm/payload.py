@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.core.orchestration import Job
+from palm.core.orchestration import Job, JobStatus
+from palm.core.resource.invocation import WaitMode
 
 
 def job_payload(job: Job) -> dict[str, Any]:
@@ -41,10 +42,36 @@ def with_invoke_context(
     depth: int,
     chain: tuple[str, ...],
     parent_job_id: str | None,
+    wait_mode: WaitMode | None = None,
 ) -> dict[str, Any]:
     """Attach recursion/correlation fields to an invoke result payload."""
     enriched = dict(payload)
     enriched["invoke_depth"] = depth
     enriched["invoke_chain"] = list(chain)
     enriched["parent_job_id"] = parent_job_id
+    if wait_mode is not None:
+        enriched = enrich_wait_metadata(enriched, wait_mode=wait_mode)
+    return enriched
+
+
+def enrich_wait_metadata(
+    payload: dict[str, Any],
+    *,
+    wait_mode: WaitMode,
+) -> dict[str, Any]:
+    """Attach wait-policy metadata for Explorer and parent wizard correlation."""
+    enriched = dict(payload)
+    enriched["wait_mode"] = wait_mode.value
+    status = str(enriched.get("status") or "").upper()
+    job_id = enriched.get("job_id")
+    instance_id = enriched.get("instance_id")
+
+    if wait_mode == WaitMode.UNTIL_INPUT and status == JobStatus.WAITING_FOR_INPUT.value:
+        enriched["waiting_for_child_wizard"] = True
+        enriched["child_job_id"] = job_id
+        enriched["child_instance_id"] = instance_id
+        if job_id:
+            enriched["child_job_href"] = f"/explorer/jobs/{job_id}"
+        if instance_id:
+            enriched["child_instance_href"] = f"/explorer/instances/{instance_id}"
     return enriched

@@ -551,6 +551,61 @@ def _collection_item_field_lines(
     return lines
 
 
+def wizard_child_wizards_section(wizard: dict[str, Any]) -> str:
+    """Surface nested child wizards spawned via until_input resource steps."""
+    answers = wizard.get("answers") or {}
+    if not isinstance(answers, dict):
+        return ""
+
+    children: list[dict[str, Any]] = []
+    for step_key, value in answers.items():
+        if not isinstance(value, dict):
+            continue
+        if not value.get("waiting_for_child_wizard"):
+            continue
+        children.append(
+            {
+                "step": step_key,
+                "job_id": value.get("child_job_id") or value.get("job_id"),
+                "instance_id": value.get("child_instance_id") or value.get("instance_id"),
+                "status": value.get("status"),
+                "job_href": value.get("child_job_href"),
+                "instance_href": value.get("child_instance_href"),
+            }
+        )
+
+    if not children:
+        return ""
+
+    rows = []
+    for child in children:
+        job_id = child.get("job_id")
+        instance_id = child.get("instance_id")
+        job_link = "—"
+        if job_id:
+            href = child.get("job_href") or f"/explorer/jobs/{escape(str(job_id))}"
+            job_link = f'<a href="{escape(str(href))}">{escape(str(job_id))}</a>'
+        instance_link = "—"
+        if instance_id:
+            href = child.get("instance_href") or f"/explorer/instances/{escape(str(instance_id))}"
+            instance_link = f'<a href="{escape(str(href))}">{escape(str(instance_id))}</a>'
+        rows.append(
+            [
+                escape(str(child.get("step") or "—")),
+                escape(str(child.get("status") or "WAITING_FOR_INPUT")),
+                job_link,
+                instance_link,
+            ]
+        )
+
+    return (
+        '<section class="panel"><h3>Waiting for child wizard</h3>'
+        '<p class="muted">Nested flows paused for interactive input. Open the child to continue.</p>'
+        f'{data_table(["Parent step", "Child status", "Child job", "Child instance"], rows)}'
+        "</section>"
+    )
+
+
 def wizard_answers_section(wizard: dict[str, Any]) -> str:
     answers = wizard.get("answers") or {}
     if not isinstance(answers, dict) or not answers:
@@ -707,7 +762,11 @@ def wizard_workspace(
     )
 
     prompt_panel = wizard_prompt_card(instance_id, wizard, notice=notice, error=error)
-    sidebar = wizard_answers_section(wizard) + wizard_step_timeline(wizard, instance_id=instance_id)
+    sidebar = (
+        wizard_child_wizards_section(wizard)
+        + wizard_answers_section(wizard)
+        + wizard_step_timeline(wizard, instance_id=instance_id)
+    )
     backtrack = wizard_backtrack_controls(instance_id, wizard)
     links = (
         '<section class="panel"><h3>Links</h3>'

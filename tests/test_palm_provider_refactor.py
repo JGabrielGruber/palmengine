@@ -16,6 +16,22 @@ from palm.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
 from palm.providers.palm.params import PalmInvokeParams
 
 
+def test_palm_invoke_params_wait_mode_until_input() -> None:
+    params = PalmInvokeParams.from_mapping(
+        {"flow_name": "child-wizard", "wait_mode": "until_input", "timeout_seconds": 42},
+    )
+    assert params.wait is True
+    assert params.wait_mode == "until_input"
+    assert params.wait_timeout == 42.0
+    assert params.resolved_wait_mode.value == "until_input"
+
+
+def test_palm_invoke_params_fire_and_forget_by_default() -> None:
+    params = PalmInvokeParams.from_mapping({"flow_name": "child-wizard"})
+    assert params.wait is False
+    assert params.resolved_wait_mode.value == "fire_and_forget"
+
+
 def test_palm_invoke_params_from_mapping_typed_fields() -> None:
     params = PalmInvokeParams.from_mapping(
         {

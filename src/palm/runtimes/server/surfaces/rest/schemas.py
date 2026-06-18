@@ -166,6 +166,30 @@ FLOW_SUMMARY = DictStateSchema(
     }
 )
 
+PALM_INVOKE_PARAMS = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "wait": _BOOL,
+            "wait_mode": {
+                "type": "string",
+                "enum": ["until_terminal", "until_input", "fire_and_forget"],
+                "description": (
+                    "How long to block on a child job. "
+                    "until_terminal waits for SUCCESS/FAILED/CANCELLED (default when wait=true). "
+                    "until_input returns when the child reaches WAITING_FOR_INPUT. "
+                    "fire_and_forget submits and continues immediately."
+                ),
+            },
+            "timeout_seconds": {"type": "number", "minimum": 0},
+            "wait_timeout": {"type": "number", "minimum": 0},
+            "flow_name": _STRING,
+            "remote_url": _STRING,
+            "max_depth": {"type": "integer", "minimum": 1},
+        },
+    }
+)
+
 PROCESS_SUMMARY = DictStateSchema(
     {
         "type": "object",
@@ -194,6 +218,7 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "SnapshotSummary": SNAPSHOT_SUMMARY,
     "FlowSummary": FLOW_SUMMARY,
     "ProcessSummary": PROCESS_SUMMARY,
+    "PalmInvokeParams": PALM_INVOKE_PARAMS,
 }
 
 

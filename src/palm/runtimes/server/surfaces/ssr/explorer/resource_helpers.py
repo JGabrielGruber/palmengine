@@ -219,8 +219,14 @@ def describe_provider_actions(payload: dict[str, Any]) -> list[dict[str, str]]:
     provider_actions = payload.get("provider_actions") or []
     descriptions = {
         "fetch": "Read a resource by id or path",
-        "submit_flow": "Submit a child Palm flow (compositional)",
-        "submit_process": "Submit a child Palm process",
+        "submit_flow": (
+            "Submit a child Palm flow (compositional). "
+            "wait_mode: until_terminal | until_input | fire_and_forget"
+        ),
+        "submit_process": (
+            "Submit a child Palm process. "
+            "wait_mode: until_terminal | until_input | fire_and_forget"
+        ),
         "invoke_resource": "Nested resource invocation via palm provider",
     }
     if isinstance(provider_actions, list) and provider_actions:

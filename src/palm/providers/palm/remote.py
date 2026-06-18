@@ -9,6 +9,7 @@ import urllib.request
 from typing import Any
 
 from palm.core.orchestration import JobStatus
+from palm.core.resource.invocation import WaitMode
 from palm.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
 
 _TRANSIENT_STATUS = frozenset({429, 502, 503, 504})
@@ -208,9 +209,11 @@ def wait_for_job_remote(
     timeout: float = 10.0,
     poll_interval: float = 0.05,
     retries: int = 2,
+    wait_mode: WaitMode = WaitMode.UNTIL_TERMINAL,
 ) -> dict[str, Any]:
-    """Poll remote job status until terminal or timeout."""
+    """Poll remote job status until the configured wait policy is satisfied."""
     deadline = time.monotonic() + timeout
+    last: dict[str, Any] = {"job_id": job_id, "status": "unknown"}
     while time.monotonic() < deadline:
         last = get_job_remote(
             base_url,
@@ -219,15 +222,53 @@ def wait_for_job_remote(
             timeout=timeout,
             retries=retries,
         )
-        status = str(last.get("status", "")).upper()
-        if status in {
+        if _remote_job_ready(last, wait_mode):
+            return last
+        time.sleep(poll_interval)
+    raise PalmTimeoutError(_format_remote_wait_timeout(job_id, last, wait_mode, timeout))
+
+
+def _remote_job_ready(payload: dict[str, Any], wait_mode: WaitMode) -> bool:
+    status = str(payload.get("status", "")).upper()
+    if wait_mode == WaitMode.FIRE_AND_FORGET:
+        return True
+    if wait_mode == WaitMode.UNTIL_INPUT:
+        return status in {
             JobStatus.SUCCEEDED.value,
             JobStatus.FAILED.value,
             JobStatus.CANCELLED.value,
-        }:
-            return last
-        time.sleep(poll_interval)
-    raise PalmTimeoutError(f"Timed out waiting for remote job {job_id!r}")
+            JobStatus.WAITING_FOR_INPUT.value,
+        }
+    return status in {
+        JobStatus.SUCCEEDED.value,
+        JobStatus.FAILED.value,
+        JobStatus.CANCELLED.value,
+    }
+
+
+def _format_remote_wait_timeout(
+    job_id: str,
+    payload: dict[str, Any],
+    wait_mode: WaitMode,
+    timeout: float,
+) -> str:
+    status = str(payload.get("status", "unknown")).upper()
+    base = (
+        f"Timed out after {timeout:g}s waiting for remote job {job_id!r} "
+        f"(wait_mode={wait_mode.value}, current status={status})"
+    )
+    if wait_mode == WaitMode.UNTIL_TERMINAL and status == JobStatus.WAITING_FOR_INPUT.value:
+        return (
+            f"{base}. The child flow is waiting for interactive input. "
+            "Use wait_mode='until_input' on the resource step to return control "
+            "to the parent wizard with the child job_id and instance_id."
+        )
+    if wait_mode == WaitMode.UNTIL_INPUT and status == JobStatus.RUNNING.value:
+        return (
+            f"{base}. The child job has not reached WAITING_FOR_INPUT yet; "
+            "increase timeout_seconds or verify the child flow exposes an interactive step."
+        )
+    return base
 
 
 def _transport_error(method: str, path: str, exc: Exception) -> PalmRemoteError:

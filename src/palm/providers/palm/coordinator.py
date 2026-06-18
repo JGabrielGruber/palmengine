@@ -6,7 +6,8 @@ import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from palm.core.orchestration import Job
+from palm.core.orchestration import Job, JobStatus
+from palm.core.resource.invocation import WaitMode
 from palm.providers.palm.exceptions import PalmLocalError, PalmRemoteError, PalmTimeoutError
 from palm.providers.palm.params import PalmInvokeParams
 from palm.providers.palm.payload import job_payload, remote_job_payload, with_invoke_context
@@ -99,8 +100,13 @@ class LocalPalmInvoker:
             )
             job_list = jobs if isinstance(jobs, list) else [jobs]
             primary = job_list[0]
-            if params.wait:
-                primary = _wait_for_job(runtime, primary.id, params.wait_timeout)
+            if params.wait_options.should_wait:
+                primary = _wait_for_job(
+                    runtime,
+                    primary.id,
+                    params.wait_timeout,
+                    params.resolved_wait_mode,
+                )
             payload = job_payload(primary)
             payload["jobs"] = [job_payload(job) for job in job_list]
             return with_invoke_context(
@@ -108,6 +114,7 @@ class LocalPalmInvoker:
                 depth=context.depth,
                 chain=context.chain,
                 parent_job_id=context.parent_job_id,
+                wait_mode=params.resolved_wait_mode,
             )
 
         job = runtime.submit_flow(
@@ -117,13 +124,19 @@ class LocalPalmInvoker:
             state=state,
             metadata=metadata,
         )
-        if params.wait:
-            job = _wait_for_job(runtime, job.id, params.wait_timeout)
+        if params.wait_options.should_wait:
+            job = _wait_for_job(
+                runtime,
+                job.id,
+                params.wait_timeout,
+                params.resolved_wait_mode,
+            )
         return with_invoke_context(
             job_payload(job),
             depth=context.depth,
             chain=context.chain,
             parent_job_id=context.parent_job_id,
+            wait_mode=params.resolved_wait_mode,
         )
 
 
@@ -173,13 +186,14 @@ class RemotePalmInvoker:
             )
             payload = remote_job_payload(accepted)
 
-        if params.wait and payload.get("job_id"):
+        if params.wait_options.should_wait and payload.get("job_id"):
             completed = wait_for_job_remote(
                 base_url,
                 str(payload["job_id"]),
                 token=params.remote_token,
                 timeout=params.wait_timeout,
                 retries=params.remote_retries,
+                wait_mode=params.resolved_wait_mode,
             )
             payload = remote_job_payload(completed)
 
@@ -188,6 +202,7 @@ class RemotePalmInvoker:
             depth=context.depth,
             chain=context.chain,
             parent_job_id=context.parent_job_id,
+            wait_mode=params.resolved_wait_mode,
         )
 
 
@@ -239,12 +254,56 @@ def _require_local_runtime() -> Any:
     return runtime
 
 
-def _wait_for_job(runtime: Any, job_id: str, timeout: float) -> Job:
+def _wait_for_job(
+    runtime: Any,
+    job_id: str,
+    timeout: float,
+    wait_mode: WaitMode,
+) -> Job:
     deadline = time.monotonic() + timeout
+    last: Job | None = None
     while time.monotonic() < deadline:
         job = runtime.get_job(job_id)
-        if job.is_terminal:
+        last = job
+        if _job_ready(job, wait_mode):
             return job
         runtime.wait_until_idle(timeout=min(0.1, max(0.0, deadline - time.monotonic())))
         time.sleep(0.01)
-    raise PalmTimeoutError(f"Timed out waiting for job {job_id!r}")
+    raise PalmTimeoutError(_format_wait_timeout(job_id, last, wait_mode, timeout))
+
+
+def _job_ready(job: Job, wait_mode: WaitMode) -> bool:
+    if wait_mode == WaitMode.FIRE_AND_FORGET:
+        return True
+    if wait_mode == WaitMode.UNTIL_INPUT:
+        return job.is_terminal or job.status == JobStatus.WAITING_FOR_INPUT
+    return job.is_terminal
+
+
+def _format_wait_timeout(
+    job_id: str,
+    job: Job | None,
+    wait_mode: WaitMode,
+    timeout: float,
+) -> str:
+    status = job.status.value if job is not None else "unknown"
+    base = (
+        f"Timed out after {timeout:g}s waiting for job {job_id!r} "
+        f"(wait_mode={wait_mode.value}, current status={status})"
+    )
+    if (
+        wait_mode == WaitMode.UNTIL_TERMINAL
+        and job is not None
+        and job.status == JobStatus.WAITING_FOR_INPUT
+    ):
+        return (
+            f"{base}. The child flow is waiting for interactive input. "
+            "Use wait_mode='until_input' on the resource step to return control "
+            "to the parent wizard with the child job_id and instance_id."
+        )
+    if wait_mode == WaitMode.UNTIL_INPUT and job is not None and job.status == JobStatus.RUNNING:
+        return (
+            f"{base}. The child job has not reached WAITING_FOR_INPUT yet; "
+            "increase timeout_seconds or verify the child flow exposes an interactive step."
+        )
+    return base

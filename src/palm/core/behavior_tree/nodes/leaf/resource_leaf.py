@@ -70,8 +70,9 @@ class ResourceLeaf(LeafNode):
     def trace_key(self) -> str:
         return self._trace_key
 
-    def _resolved_action(self) -> str:
-        return self._action or "fetch"
+    def _resolved_action(self) -> str | None:
+        """Return an explicit action override, or ``None`` to use the definition default."""
+        return self._action
 
     def _resolved_target(self) -> str:
         return self._resource_ref or self._provider or self.name
@@ -97,11 +98,12 @@ class ResourceLeaf(LeafNode):
             ),
         )
 
+        resolved_action = action or result.metadata.get("action") or "fetch"
         trace: dict[str, Any] = {
             "success": result.success,
             "resource_ref": self._resource_ref,
             "provider": self._provider or result.metadata.get("provider"),
-            "action": action,
+            "action": resolved_action,
             "definition_id": result.metadata.get("definition_id"),
             "definition_name": result.metadata.get("definition_name"),
             "resource_id": result.metadata.get("resource_id"),
@@ -111,7 +113,21 @@ class ResourceLeaf(LeafNode):
             "invoke_chain": _invoke_chain(result),
             "parent_job_id": result.metadata.get("parent_job_id"),
             "mode": result.metadata.get("mode"),
+            "wait_mode": result.metadata.get("wait_mode"),
+            "waiting_for_child_wizard": result.metadata.get("waiting_for_child_wizard"),
+            "child_job_id": result.metadata.get("child_job_id"),
+            "child_instance_id": result.metadata.get("child_instance_id"),
         }
+        if isinstance(result.data, dict):
+            for key in (
+                "waiting_for_child_wizard",
+                "child_job_id",
+                "child_instance_id",
+                "child_job_href",
+                "child_instance_href",
+            ):
+                if key in result.data:
+                    trace[key] = result.data[key]
         state.set(self._trace_key, trace)
 
         if not result.success:
@@ -123,9 +139,10 @@ class ResourceLeaf(LeafNode):
         return PatternStatus.SUCCESS
 
     def _fail(self, state: BaseState, message: str) -> PatternStatus:
+        action_label = self._action or "invoke"
         detail = (
             f"Resource {self._resolved_target()!r} "
-            f"(action={self._resolved_action()}) failed: {message}"
+            f"(action={action_label}) failed: {message}"
         )
         if self._error_key:
             state.set(self._error_key, detail)

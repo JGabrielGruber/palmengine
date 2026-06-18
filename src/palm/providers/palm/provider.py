@@ -88,6 +88,10 @@ class PalmProvider(BaseProvider):
             mode="remote" if invoke_params.is_remote else "local",
             invoke_depth=payload.get("invoke_depth"),
             parent_job_id=invoke_params.parent_job_id,
+            wait_mode=invoke_params.resolved_wait_mode.value,
+            waiting_for_child_wizard=payload.get("waiting_for_child_wizard"),
+            child_job_id=payload.get("child_job_id"),
+            child_instance_id=payload.get("child_instance_id"),
         )
 
     def describe(self) -> ProviderDescriptor:
@@ -97,11 +101,15 @@ class PalmProvider(BaseProvider):
             actions=(
                 ProviderActionDescriptor(
                     "submit_flow",
-                    "Submit a child flow by name or flow:<ref>",
+                    "Submit a child flow by name or flow:<ref>. "
+                    "Use wait_mode: until_terminal (default when wait=true), "
+                    "until_input (return when child wizard needs input), "
+                    "or fire_and_forget.",
                 ),
                 ProviderActionDescriptor(
                     "submit_process",
-                    "Submit a child process by name or process:<ref>",
+                    "Submit a child process by name or process:<ref>. "
+                    "Supports the same wait_mode policy as submit_flow.",
                 ),
                 ProviderActionDescriptor(
                     "invoke_resource",

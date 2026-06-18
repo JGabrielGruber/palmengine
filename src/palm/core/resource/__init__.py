@@ -12,10 +12,13 @@ from palm.core.resource.exceptions import (
     ResourceResolutionError,
 )
 from palm.core.resource.invocation import (
+    ResourceWaitOptions,
     ResolvedResourceSpec,
+    WaitMode,
     bind_resource_id,
     bind_resource_params,
     bind_resource_value,
+    parse_wait_mode,
 )
 from palm.core.resource.result import (
     ProviderActionDescriptor,
@@ -30,7 +33,10 @@ __all__ = [
     "ProviderDescriptor",
     "ProviderHealth",
     "ProviderResult",
+    "ResourceWaitOptions",
     "ResolvedResourceSpec",
+    "WaitMode",
+    "parse_wait_mode",
     "ResourceEngine",
     "ResourceError",
     "ResourceInvokeError",

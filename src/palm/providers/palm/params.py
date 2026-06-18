@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, fields
 from typing import Any
 
+from palm.core.resource.invocation import ResourceWaitOptions, WaitMode, parse_wait_mode
 from palm.states import BlackboardState
 
 
@@ -15,6 +16,7 @@ class PalmInvokeParams:
     remote_url: str | None = None
     remote_token: str | None = None
     wait: bool = False
+    wait_mode: str | None = None
     wait_timeout: float = 30.0
     max_depth: int = 8
     remote_retries: int = 2
@@ -61,11 +63,14 @@ class PalmInvokeParams:
             else:
                 extras[key] = value
 
+        wait_options = ResourceWaitOptions.from_params(merged)
+
         return cls(
             remote_url=_optional_str(known.get("remote_url")),
             remote_token=_optional_str(known.get("remote_token")),
-            wait=_as_bool(known.get("wait", False)),
-            wait_timeout=_as_float(known.get("wait_timeout"), default=30.0),
+            wait=wait_options.should_wait,
+            wait_mode=wait_options.mode.value,
+            wait_timeout=wait_options.timeout_seconds,
             max_depth=_as_int(known.get("max_depth"), default=8),
             remote_retries=_as_int(known.get("remote_retries"), default=2),
             by_id=_as_bool(known.get("by_id", False)),
@@ -91,6 +96,19 @@ class PalmInvokeParams:
     @property
     def is_remote(self) -> bool:
         return bool(self.remote_url)
+
+    @property
+    def resolved_wait_mode(self) -> WaitMode:
+        parsed = parse_wait_mode(self.wait_mode)
+        if parsed is not None:
+            return parsed
+        if self.wait:
+            return WaitMode.UNTIL_TERMINAL
+        return WaitMode.FIRE_AND_FORGET
+
+    @property
+    def wait_options(self) -> ResourceWaitOptions:
+        return ResourceWaitOptions(mode=self.resolved_wait_mode, timeout_seconds=self.wait_timeout)
 
     def resolve_job_id(self, *, resource_id: str | None = None) -> str:
         """Return the job id for ``fetch`` actions."""
