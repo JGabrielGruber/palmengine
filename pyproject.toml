@@ -89,6 +89,9 @@ Changelog = "https://github.com/JGabrielGruber/palmengine/blob/main/CHANGELOG.md
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
+artifacts = [
+    "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [

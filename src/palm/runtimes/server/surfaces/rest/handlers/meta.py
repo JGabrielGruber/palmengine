@@ -24,6 +24,7 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
         "home": "/explorer",
         "docs": "/v1/docs",
         "explorer": "/explorer",
+        "studio": "/studio",
         "wiki": "/explorer",
         "openapi": "/v1/openapi.json",
     }

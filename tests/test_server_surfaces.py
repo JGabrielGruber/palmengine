@@ -61,6 +61,7 @@ def test_surface_registry_lists_default_surfaces(server: ServerRuntime) -> None:
     assert "websocket" in names
     assert "mcp" in names
     assert "explorer" in names
+    assert "studio" in names
 
 
 def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
@@ -68,7 +69,7 @@ def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
     assert status == 200
     assert payload["runtime"] == "ServerRuntime"
     assert payload["status"] == "ok"
-    assert set(payload["surfaces"]) == {"rest", "websocket", "mcp", "explorer"}
+    assert set(payload["surfaces"]) == {"rest", "websocket", "mcp", "explorer", "studio"}
 
 
 def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
@@ -141,5 +142,5 @@ def test_create_server_app_with_explicit_rest_surface(server: ServerRuntime) -> 
 
 def test_create_app_mounts_default_surfaces(server: ServerRuntime) -> None:
     app = create_app(server)
-    assert set(app.surfaces.names()) == {"rest", "websocket", "mcp", "explorer"}
-    assert len(default_surfaces(ServerContext(server))) == 4
+    assert set(app.surfaces.names()) == {"rest", "websocket", "mcp", "explorer", "studio"}
+    assert len(default_surfaces(ServerContext(server))) == 5
