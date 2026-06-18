@@ -5,6 +5,7 @@
   import ResizableColumns from "./ResizableColumns.svelte";
   import Sidebar from "./Sidebar.svelte";
   import Toolbar from "./Toolbar.svelte";
+  import ToastStack from "../feedback/ToastStack.svelte";
   import { bootstrap } from "../../shared/bootstrap";
 
   type Props = {
@@ -36,6 +37,8 @@
   </header>
 
   <Toolbar />
+
+  <ToastStack />
 
   <ResizableColumns>
     {#snippet left()}

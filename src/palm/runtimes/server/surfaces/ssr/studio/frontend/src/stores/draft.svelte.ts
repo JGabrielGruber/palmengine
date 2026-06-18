@@ -13,7 +13,7 @@ export const draftStore = {
     projectStore.setName(draft.name);
     projectStore.setPattern(draft.pattern);
     projectStore.setDraftId(draft.id);
-    canvasStore.loadCanvas(draft.canvas);
+    canvasStore.replaceCanvas(draft.canvas);
     return true;
   },
   snapshot(): StudioDraft {

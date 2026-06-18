@@ -68,7 +68,7 @@ function resolvePattern(project: ExportProject): string {
   return patternNode?.ref ?? project.pattern ?? "wizard";
 }
 
-function buildWizardSteps(nodes: CanvasNode[]): Record<string, unknown>[] {
+export function buildWizardSteps(nodes: CanvasNode[]): Record<string, unknown>[] {
   const steps: Record<string, unknown>[] = [];
   for (const node of nodes) {
     if (node.kind === "pattern") {
