@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import json
+import urllib.error
 import urllib.request
+from typing import Any
 
 import pytest
 
+from palm.definitions import FlowDefinition
 from palm.runtimes.server import ServerRuntime
+from palm.runtimes.server.surfaces.ssr.studio.api.drafts import clear_drafts
 
 
 @pytest.fixture
@@ -48,6 +52,73 @@ def test_studio_surface_info(server: ServerRuntime) -> None:
     assert payload["status"] == "active"
     assert payload["home"] == "/studio"
     assert payload["surface"] == "studio"
+
+
+def _json(
+    base_url: str,
+    method: str,
+    path: str,
+    *,
+    body: dict[str, Any] | None = None,
+) -> tuple[int, dict[str, Any]]:
+    data = None
+    headers = {"Accept": "application/json"}
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(
+        f"{base_url}{path}",
+        data=data,
+        headers=headers,
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        return exc.code, json.loads(exc.read().decode("utf-8"))
+
+
+def test_studio_palette_lists_registry_sections(server: ServerRuntime) -> None:
+    server.repository.register_flow(
+        FlowDefinition(
+            id="studio-template-flow",
+            name="studio-template",
+            pattern="wizard",
+            options={"steps": []},
+        )
+    )
+    status, payload = _json(server.base_url, "GET", "/v1/studio/palette")
+    assert status == 200
+    section_ids = {section["id"] for section in payload["sections"]}
+    assert section_ids == {"structural", "patterns", "transforms", "resources", "flows"}
+    patterns = next(s for s in payload["sections"] if s["id"] == "patterns")
+    assert any(item["kind"] == "pattern" for item in patterns["items"])
+    transforms = next(s for s in payload["sections"] if s["id"] == "transforms")
+    assert any(item["ref"] == "rename_field" for item in transforms["items"])
+    flows = next(s for s in payload["sections"] if s["id"] == "flows")
+    assert any(item["ref"] == "studio-template-flow" for item in flows["items"])
+
+
+def test_studio_draft_save_and_load(server: ServerRuntime) -> None:
+    clear_drafts()
+    body = {
+        "name": "demo-flow",
+        "pattern": "wizard",
+        "canvas": {"nodes": [{"id": "n1"}], "edges": []},
+    }
+    status, created = _json(server.base_url, "POST", "/v1/studio/drafts", body=body)
+    assert status == 200
+    draft_id = created["draft"]["id"]
+    assert created["draft"]["name"] == "demo-flow"
+
+    status, loaded = _json(server.base_url, "GET", f"/v1/studio/drafts/{draft_id}")
+    assert status == 200
+    assert loaded["draft"]["canvas"]["nodes"][0]["id"] == "n1"
+
+    status, listing = _json(server.base_url, "GET", "/v1/studio/drafts")
+    assert status == 200
+    assert any(row["id"] == draft_id for row in listing["drafts"])
 
 
 def test_health_reports_studio(server: ServerRuntime) -> None:
