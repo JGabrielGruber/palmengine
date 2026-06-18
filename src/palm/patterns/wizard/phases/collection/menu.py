@@ -21,10 +21,14 @@ from palm.patterns.wizard.collection_state import (
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.leaf_support import emit_wizard_event
-from palm.patterns.wizard.phases.collection._base import CollectionPhaseContext, CollectionPhaseLeaf
-from palm.patterns.wizard.phases.collection.fields import CollectionFieldsPhase
-from palm.patterns.wizard.phases.collection.remove import CollectionRemovePhase
-from palm.patterns.wizard.phases.collection.select import CollectionSelectPhase
+from palm.patterns.wizard.phases.bt import phase_transition
+from palm.patterns.wizard.phases.collection._base import (
+    CollectionPhaseLeaf,
+    begin_item_session,
+    step_collection_key,
+    step_label_field,
+)
+from palm.patterns.wizard.phases._base import WizardPhaseContext
 from palm.patterns.wizard.state import get_answers, leave_step, persist_step_answer
 from palm.patterns.wizard.validation import (
     choice_selection_error,
@@ -37,22 +41,9 @@ from palm.patterns.wizard.validation import (
 class CollectionMenuPhase(CollectionPhaseLeaf):
     phase_key = "menu"
 
-    def __init__(
-        self,
-        ctx: CollectionPhaseContext,
-        *,
-        fields_phase: CollectionFieldsPhase,
-        select_phase: CollectionSelectPhase,
-        remove_phase: CollectionRemovePhase,
-    ) -> None:
-        super().__init__(ctx)
-        self._fields = fields_phase
-        self._select = select_phase
-        self._remove = remove_phase
-
     def _request_input(self, state: BaseState) -> PatternStatus:
         ensure_scope(state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine)
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         choices, actions = self._menu_choices(items)
         bundle = self._prompt_bundle(
             state,
@@ -61,7 +52,7 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
             choices=choices,
             extra={
                 "collection_phase": "menu",
-                "collection_key": self._ctx.collection_key,
+                "collection_key": step_collection_key(self._ctx),
                 "collection_items": items,
                 "collection_actions": actions,
             },
@@ -69,7 +60,7 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
         return self._activate(state, bundle)
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         choices, actions = self._menu_choices(items)
         resolved = resolve_choice_value(value, choices)
         if resolved is None:
@@ -87,23 +78,25 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
 
         action = actions[choices.index(resolved)]
         if action == ACTION_ADD:
-            return self._fields.start_item(state, edit_index=None)
+            begin_item_session(state, self._ctx, edit_index=None)
+            set_collection_phase(state, "field")
+            return phase_transition()
         if action == ACTION_DONE:
             return self._finish_collection(state, items)
         if action == ACTION_EDIT_SELECT:
             set_collection_select_action(state, "edit")
             set_collection_phase(state, "select_item")
-            return self._select.run(state, None)
+            return phase_transition()
         if action == ACTION_REMOVE_SELECT:
             set_collection_select_action(state, "remove")
             set_collection_phase(state, "select_item")
-            return self._select.run(state, None)
+            return phase_transition()
         return self._request_input(state)
 
     def _finish_collection(self, state: BaseState, items: list[dict[str, Any]]) -> PatternStatus:
-        if len(items) < self._ctx.min_items:
+        if len(items) < self._ctx.step.min_items:
             message = (
-                f"Add at least {self._ctx.min_items} item(s) before continuing "
+                f"Add at least {self._ctx.step.min_items} item(s) before continuing "
                 f"({len(items)} so far)."
             )
             choices, _actions = self._menu_choices(items)
@@ -120,7 +113,7 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
             )
 
         answers = get_answers(state)
-        answers[self._ctx.collection_key] = items
+        answers[step_collection_key(self._ctx)] = items
         validation = validate_collected_answers(state, answers)
         if not validation.ok:
             choices, _actions = self._menu_choices(items)
@@ -136,7 +129,7 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
                 ),
             )
 
-        persist_step_answer(state, self._ctx.collection_key, items)
+        persist_step_answer(state, step_collection_key(self._ctx), items)
         clear_collection_session(state)
         leave_step(state, self._ctx.step.slug, context=self._ctx.context_engine)
         state.delete(WizardKeys.ACTIVE_PROMPT)
@@ -145,7 +138,7 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
             self._ctx.emit,
             self._ctx.wizard_name,
             WizardEventType.COLLECTION_COMPLETED,
-            collection_key=self._ctx.collection_key,
+            collection_key=step_collection_key(self._ctx),
             count=len(items),
         )
         return PatternStatus.SUCCESS
@@ -157,8 +150,8 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
             choices.extend(["Edit an item", "Remove an item"])
             actions.extend([ACTION_EDIT_SELECT, ACTION_REMOVE_SELECT])
         done_label = "Continue to summary"
-        if len(items) < self._ctx.min_items:
-            done_label = f"Continue to summary (need {self._ctx.min_items - len(items)} more)"
+        if len(items) < self._ctx.step.min_items:
+            done_label = f"Continue to summary (need {self._ctx.step.min_items - len(items)} more)"
         choices.append(done_label)
         actions.append(ACTION_DONE)
         return choices, actions
@@ -169,7 +162,11 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
             return base
         listing = format_numbered_item_list(
             items,
-            label_field=self._ctx.label_field,
-            item_fields=self._ctx.item_fields,
+            label_field=step_label_field(self._ctx),
+            item_fields=self._ctx.step.item_fields,
         )
         return f"{base}\n\nCurrent items:\n{listing}"
+
+
+def build_menu_phase(ctx: WizardPhaseContext) -> CollectionMenuPhase:
+    return CollectionMenuPhase(ctx)

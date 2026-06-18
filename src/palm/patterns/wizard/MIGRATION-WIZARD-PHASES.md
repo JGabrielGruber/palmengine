@@ -1,6 +1,6 @@
 # Wizard Phase Modularization
 
-Wizard execution is now organized as behavior-tree **phases** under
+Wizard execution is organized as behavior-tree **phases** under
 `palm/patterns/wizard/phases/`.
 
 ## Package layout
@@ -8,13 +8,14 @@ Wizard execution is now organized as behavior-tree **phases** under
 | Module | Responsibility |
 |--------|----------------|
 | `phases/_base.py` | `WizardPhaseContext`, input bridge, prompt helpers |
+| `phases/bt.py` | `PhaseKeyedSelectorNode`, `PhaseTransitionLoopNode` |
 | `phases/backtrack.py` | `WizardSequenceNode`, completion guard, backtrack policy |
 | `phases/input.py` | Interactive input / introduction steps |
 | `phases/summary.py` | Answer review and confirmation |
 | `phases/commit.py` | Transactional commit via `CommitRegistry` |
 | `phases/resource.py` | Core `ResourceLeaf` wrapper |
 | `phases/transform.py` | Core `TransformLeaf` wrapper |
-| `phases/collection/` | Menu, select, field sequence, remove sub-phases |
+| `phases/collection/` | Declarative collection subtree (`tree.py` + phase leaves) |
 | `phases/registry.py` | `step_kind` → phase factory registry |
 
 ## Tree shape
@@ -27,16 +28,27 @@ RootNode
             └─ …
 ```
 
-Collection steps use an internal phase loop (`menu` → `field` → `menu`, etc.)
-without orchestration in `WizardPattern`.
+Collection steps compose a routed subtree:
+
+```
+CollectionStepNode
+  └─ PhaseTransitionLoopNode
+       └─ PhaseKeyedSelectorNode
+            ├─ menu
+            ├─ select_item
+            ├─ field
+            └─ remove_confirm
+```
+
+Phase leaves signal intra-tick transitions with `PatternStatus.RUNNING` via
+`phase_transition()`. The loop re-dispatches when the blackboard phase changes.
 
 ## Breaking changes
 
 - Leaf modules at package root (`step_leaf.py`, `collection_leaf.py`, …) are
   removed. Import from `palm.patterns.wizard.phases` instead.
-- `WizardStepBuildContext` is an alias for `WizardPhaseContext`.
-- `WizardStepLeaf` is an alias for `WizardInputLeaf`.
-- `WizardCollectionLeaf` is an alias for `CollectionStepNode`.
+- Legacy aliases (`WizardStepBuildContext`, `WizardStepLeaf`, `WizardCollectionLeaf`)
+  are removed. Use `WizardPhaseContext`, `WizardInputLeaf`, `CollectionStepNode`.
 - Custom step kinds register factories as `Callable[[WizardPhaseContext], BaseNode]`.
 
 ## Register a custom step kind

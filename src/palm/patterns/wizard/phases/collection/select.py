@@ -17,36 +17,39 @@ from palm.patterns.wizard.collection_state import (
     collection_select_action,
     get_collection_items,
     set_collection_phase,
+    set_collection_remove_index,
     set_collection_select_action,
 )
-from palm.patterns.wizard.phases.collection._base import CollectionPhaseContext, CollectionPhaseLeaf
+from palm.patterns.wizard.phases.bt import phase_transition
+from palm.patterns.wizard.phases.collection._base import (
+    CollectionPhaseLeaf,
+    begin_item_session,
+    step_collection_key,
+    step_label_field,
+)
+from palm.patterns.wizard.phases._base import WizardPhaseContext
 
 
 class CollectionSelectPhase(CollectionPhaseLeaf):
     phase_key = "select_item"
-
-    def __init__(self, ctx: CollectionPhaseContext, *, fields_phase: Any, remove_phase: Any) -> None:
-        super().__init__(ctx)
-        self._fields = fields_phase
-        self._remove = remove_phase
 
     def _select_action(self, state: BaseState) -> str:
         action = collection_select_action(state)
         return "remove" if action == "remove" else "edit"
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         if not items:
             set_collection_phase(state, "menu")
-            return PatternStatus.FAILURE
+            return phase_transition()
 
         action = self._select_action(state)
         previews = [
             format_item_preview(
                 item,
                 index=index,
-                label_field=self._ctx.label_field,
-                item_fields=self._ctx.item_fields,
+                label_field=step_label_field(self._ctx),
+                item_fields=self._ctx.step.item_fields,
             )
             for index, item in enumerate(items)
         ]
@@ -65,14 +68,14 @@ class CollectionSelectPhase(CollectionPhaseLeaf):
         return self._activate(state, bundle)
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         action = self._select_action(state)
         if is_cancel_input(value):
             set_collection_select_action(state, None)
             set_collection_phase(state, "menu")
-            return PatternStatus.FAILURE
+            return phase_transition()
 
-        index = resolve_item_index(value, items, label_field=self._ctx.label_field)
+        index = resolve_item_index(value, items, label_field=step_label_field(self._ctx))
         if index is None:
             return self._fail(
                 state,
@@ -80,9 +83,9 @@ class CollectionSelectPhase(CollectionPhaseLeaf):
                     item_selection_error(
                         value,
                         items,
-                        label_field=self._ctx.label_field,
+                        label_field=step_label_field(self._ctx),
                         action=action,
-                        item_fields=self._ctx.item_fields,
+                        item_fields=self._ctx.step.item_fields,
                     ),
                 ),
                 prompt_bundle=self._prompt_bundle(
@@ -97,8 +100,8 @@ class CollectionSelectPhase(CollectionPhaseLeaf):
                             format_item_preview(
                                 item,
                                 index=idx,
-                                label_field=self._ctx.label_field,
-                                item_fields=self._ctx.item_fields,
+                                label_field=step_label_field(self._ctx),
+                                item_fields=self._ctx.step.item_fields,
                             )
                             for idx, item in enumerate(items)
                         ],
@@ -108,7 +111,15 @@ class CollectionSelectPhase(CollectionPhaseLeaf):
             )
 
         set_collection_select_action(state, None)
-        set_collection_phase(state, "menu")
         if action == "edit":
-            return self._fields.start_item(state, edit_index=index)
-        return self._remove.start_confirm(state, index=index)
+            begin_item_session(state, self._ctx, edit_index=index)
+            set_collection_phase(state, "field")
+            return phase_transition()
+
+        set_collection_remove_index(state, index)
+        set_collection_phase(state, "remove_confirm")
+        return phase_transition()
+
+
+def build_select_phase(ctx: WizardPhaseContext) -> CollectionSelectPhase:
+    return CollectionSelectPhase(ctx)

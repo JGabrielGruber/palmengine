@@ -1,79 +1,80 @@
-"""Collection phase shared context and leaf base."""
+"""Collection phase shared context, session helpers, and interactive leaf base."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
-from palm.core.behavior_tree import LeafNode, PatternStatus
-from palm.core.context import BaseState, ContextEngine
-from palm.patterns.wizard.collection import CollectionFieldConfig
+from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
+from palm.core.context import BaseState
 from palm.patterns.wizard.collection_selection import default_label_field
-from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.leaf_support import emit_wizard_event
 from palm.patterns.wizard.phases._base import (
-    EventEmitter,
     WizardPhaseContext,
     activate_prompt,
-    build_phase_prompt,
-    consume_wizard_input,
+    wizard_input_key,
     wizard_prompt_key,
+)
+from palm.patterns.wizard.collection_state import (
+    ensure_scope,
+    get_collection_items,
+    item_scope_name,
+    set_collection_draft,
+    set_collection_edit_index,
+    set_collection_field_index,
 )
 from palm.patterns.wizard.state import enrich_prompt_bundle
 from palm.patterns.wizard.validation import publish_validation_feedback
 
 
-@dataclass(frozen=True)
-class CollectionPhaseContext:
-    wizard_name: str
-    step_index: int
-    step: WizardStepConfig
-    emit: EventEmitter | None
-    context_engine: ContextEngine | None
-    collection_key: str
-    item_fields: tuple[CollectionFieldConfig, ...]
-    min_items: int
-    label_field: str | None
-
-    @classmethod
-    def from_wizard(cls, ctx: WizardPhaseContext) -> CollectionPhaseContext:
-        return cls(
-            wizard_name=ctx.wizard_name,
-            step_index=ctx.step_index,
-            step=ctx.step,
-            emit=ctx.emit,
-            context_engine=ctx.context_engine,
-            collection_key=ctx.step.collection_key or ctx.step.slug,
-            item_fields=ctx.step.item_fields,
-            min_items=ctx.step.min_items,
-            label_field=default_label_field(ctx.step.item_fields, ctx.step.label_field),
-        )
+def step_collection_key(ctx: WizardPhaseContext) -> str:
+    return ctx.step.collection_key or ctx.step.slug
 
 
-class CollectionPhaseLeaf(LeafNode):
-    """Base leaf for one collection sub-phase routed by ``CollectionPhaseRouter``."""
+def step_label_field(ctx: WizardPhaseContext) -> str | None:
+    return default_label_field(ctx.step.item_fields, ctx.step.label_field)
+
+
+def begin_item_session(
+    state: BaseState,
+    ctx: WizardPhaseContext,
+    *,
+    edit_index: int | None,
+) -> None:
+    """Initialize blackboard state for collecting or editing one collection item."""
+    key = step_collection_key(ctx)
+    items = get_collection_items(state, key)
+    if edit_index is None:
+        draft: dict[str, Any] = {}
+        index = len(items)
+    else:
+        draft = dict(items[edit_index])
+        index = edit_index
+
+    set_collection_edit_index(state, edit_index)
+    set_collection_draft(state, draft)
+    set_collection_field_index(state, 0)
+    session_id = int(state.get(WizardKeys.COLLECTION_SESSION_ID, 0)) + 1
+    state.set(WizardKeys.COLLECTION_SESSION_ID, session_id)
+    ensure_scope(state, ctx.step.slug, step=ctx.step, context=ctx.context_engine)
+    ensure_scope(state, item_scope_name(index), context=ctx.context_engine)
+
+
+class CollectionPhaseLeaf(InteractiveLeaf):
+    """Base interactive leaf for one routed collection sub-phase."""
 
     phase_key: str = "menu"
 
-    def __init__(self, ctx: CollectionPhaseContext) -> None:
+    def __init__(self, ctx: WizardPhaseContext) -> None:
         super().__init__(f"{ctx.step.slug}:{self.phase_key}")
         self._ctx = ctx
 
-    def run(self, state: BaseState, pending: Any | None) -> PatternStatus:
-        if pending is not None:
-            return self._handle_input(pending, state)
-        return self._request_input(state)
+    def input_key(self) -> str:
+        return wizard_input_key(self._ctx.step.slug)
 
-    def _tick_impl(self, state: BaseState) -> PatternStatus:
-        pending = consume_wizard_input(state, self._ctx.step.slug)
-        return self.run(state, pending)
-
-    def _request_input(self, state: BaseState) -> PatternStatus:
-        raise NotImplementedError
-
-    def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
-        raise NotImplementedError
+    def prompt_key(self) -> str:
+        return wizard_prompt_key(self._ctx.step.slug)
 
     def _prompt_bundle(
         self,
@@ -94,7 +95,7 @@ class CollectionPhaseLeaf(LeafNode):
             "choices": list(choices or ()),
             "step_index": self._ctx.step_index,
             "step_kind": "collection",
-            "input_key": f"__bt_input__:{self._ctx.step.slug}",
+            "input_key": wizard_input_key(self._ctx.step.slug),
         }
         if extra:
             bundle.update(extra)
@@ -103,13 +104,7 @@ class CollectionPhaseLeaf(LeafNode):
     def _activate(self, state: BaseState, bundle: dict[str, Any]) -> PatternStatus:
         activate_prompt(
             state,
-            ctx=WizardPhaseContext(
-                wizard_name=self._ctx.wizard_name,
-                step_index=self._ctx.step_index,
-                step=self._ctx.step,
-                emit=self._ctx.emit,
-                context_engine=self._ctx.context_engine,
-            ),
+            ctx=self._ctx,
             bundle=bundle,
             event_type=WizardEventType.STEP_STARTED,
             step_kind="collection",

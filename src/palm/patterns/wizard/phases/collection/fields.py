@@ -12,25 +12,26 @@ from palm.patterns.wizard.collection_state import (
     collection_draft,
     collection_edit_index,
     collection_field_index,
-    ensure_scope,
     enter_field_scope,
     field_as_step,
     get_collection_items,
-    item_scope_name,
     leave_field_scope,
     leave_item_scope,
     normalize_optional_field_value,
     set_collection_draft,
-    set_collection_edit_index,
     set_collection_field_index,
     set_collection_items,
     set_collection_phase,
 )
-from palm.patterns.wizard.config import WizardStepConfig
 from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.keys import WizardKeys
 from palm.patterns.wizard.leaf_support import build_prompt_bundle, emit_wizard_event
-from palm.patterns.wizard.phases._base import EventEmitter
-from palm.patterns.wizard.phases.collection._base import CollectionPhaseContext, CollectionPhaseLeaf
+from palm.patterns.wizard.phases._base import WizardPhaseContext
+from palm.patterns.wizard.phases.bt import phase_transition
+from palm.patterns.wizard.phases.collection._base import (
+    CollectionPhaseLeaf,
+    step_collection_key,
+)
 from palm.patterns.wizard.validation import (
     prepare_step_input,
     publish_validation_feedback,
@@ -45,7 +46,7 @@ class CollectionFieldLeaf(LeafNode):
         self,
         field: CollectionFieldConfig,
         *,
-        ctx: CollectionPhaseContext,
+        ctx: WizardPhaseContext,
     ) -> None:
         super().__init__(f"{ctx.step.slug}.{field.slug}")
         self._field = field
@@ -53,7 +54,7 @@ class CollectionFieldLeaf(LeafNode):
 
     def apply_input(self, value: Any, state: BaseState) -> PatternStatus:
         field_index = collection_field_index(state)
-        if field_index >= len(self._ctx.item_fields):
+        if field_index >= len(self._ctx.step.item_fields):
             return PatternStatus.SUCCESS
 
         value = normalize_optional_field_value(self._field, value)
@@ -70,7 +71,7 @@ class CollectionFieldLeaf(LeafNode):
         item_index = (
             edit_index
             if edit_index is not None
-            else len(get_collection_items(state, self._ctx.collection_key))
+            else len(get_collection_items(state, step_collection_key(self._ctx)))
         )
         leave_field_scope(state, self._field, item_index, context=self._ctx.context_engine)
 
@@ -93,21 +94,27 @@ class CollectionFieldLeaf(LeafNode):
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
         field_index = collection_field_index(state)
-        if field_index >= len(self._ctx.item_fields):
+        if field_index >= len(self._ctx.step.item_fields):
             return PatternStatus.SUCCESS
-        if self._ctx.item_fields[field_index].slug != self._field.slug:
+        if self._ctx.step.item_fields[field_index].slug != self._field.slug:
             return PatternStatus.FAILURE
 
         edit_index = collection_edit_index(state)
         item_index = (
             edit_index
             if edit_index is not None
-            else len(get_collection_items(state, self._ctx.collection_key))
+            else len(get_collection_items(state, step_collection_key(self._ctx)))
         )
-        enter_field_scope(state, self._ctx.step, self._field, item_index, context=self._ctx.context_engine)
+        enter_field_scope(
+            state,
+            self._ctx.step,
+            self._field,
+            item_index,
+            context=self._ctx.context_engine,
+        )
 
         draft = collection_draft(state)
-        progress = f"Item field {field_index + 1}/{len(self._ctx.item_fields)}"
+        progress = f"Item field {field_index + 1}/{len(self._ctx.step.item_fields)}"
         if edit_index is not None:
             progress = f"Editing item #{edit_index + 1} — {progress}"
 
@@ -154,39 +161,29 @@ class CollectionFieldLeaf(LeafNode):
         return PatternStatus.FAILURE
 
 
-def build_field_sequence(ctx: CollectionPhaseContext) -> SequenceNode:
-    children = [CollectionFieldLeaf(field, ctx=ctx) for field in ctx.item_fields]
+def build_field_sequence(ctx: WizardPhaseContext) -> SequenceNode:
+    children = [CollectionFieldLeaf(field, ctx=ctx) for field in ctx.step.item_fields]
     return SequenceNode(f"{ctx.step.slug}_fields", children=children)
 
 
 class CollectionFieldsPhase(CollectionPhaseLeaf):
     phase_key = "field"
 
-    def __init__(self, ctx: CollectionPhaseContext) -> None:
+    def __init__(self, ctx: WizardPhaseContext) -> None:
         super().__init__(ctx)
         self._sequence = build_field_sequence(ctx)
+        self._session_id = 0
 
-    def start_item(self, state: BaseState, *, edit_index: int | None) -> PatternStatus:
-        items = get_collection_items(state, self._ctx.collection_key)
-        if edit_index is None:
-            draft: dict[str, Any] = {}
-            index = len(items)
-        else:
-            draft = dict(items[edit_index])
-            index = edit_index
-
-        set_collection_edit_index(state, edit_index)
-        set_collection_draft(state, draft)
-        set_collection_field_index(state, 0)
-        set_collection_phase(state, "field")
-        self._sequence.reset()
-        ensure_scope(state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine)
-        ensure_scope(state, item_scope_name(index), context=self._ctx.context_engine)
-        return self.run(state, None)
+    def _maybe_reset_sequence(self, state: BaseState) -> None:
+        session_id = int(state.get(WizardKeys.COLLECTION_SESSION_ID, 0))
+        if session_id != self._session_id:
+            self._session_id = session_id
+            self._sequence.reset()
 
     def _request_input(self, state: BaseState) -> PatternStatus:
+        self._maybe_reset_sequence(state)
         field_index = collection_field_index(state)
-        if field_index >= len(self._ctx.item_fields):
+        if field_index >= len(self._ctx.step.item_fields):
             return self._commit_item(state)
 
         leaf = self._sequence.children[field_index]
@@ -198,7 +195,7 @@ class CollectionFieldsPhase(CollectionPhaseLeaf):
 
     def _handle_input(self, value: Any, state: BaseState) -> PatternStatus:
         field_index = collection_field_index(state)
-        if field_index >= len(self._ctx.item_fields):
+        if field_index >= len(self._ctx.step.item_fields):
             return self._commit_item(state)
 
         leaf = self._sequence.children[field_index]
@@ -206,12 +203,12 @@ class CollectionFieldsPhase(CollectionPhaseLeaf):
         if status == PatternStatus.FAILURE:
             return PatternStatus.WAITING_FOR_INPUT
 
-        if collection_field_index(state) >= len(self._ctx.item_fields):
+        if collection_field_index(state) >= len(self._ctx.step.item_fields):
             return self._commit_item(state)
-        return self.run(state, None)
+        return self._request_input(state)
 
     def _commit_item(self, state: BaseState) -> PatternStatus:
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         draft = collection_draft(state)
         edit_index = collection_edit_index(state)
         item_index = edit_index if edit_index is not None else len(items)
@@ -221,16 +218,20 @@ class CollectionFieldsPhase(CollectionPhaseLeaf):
         else:
             items[edit_index] = dict(draft)
 
-        set_collection_items(state, self._ctx.collection_key, items)
+        set_collection_items(state, step_collection_key(self._ctx), items)
         leave_item_scope(state, self._ctx.step, item_index, context=self._ctx.context_engine)
         clear_collection_session(state)
         emit_wizard_event(
             self._ctx.emit,
             self._ctx.wizard_name,
             WizardEventType.COLLECTION_ITEM_SAVED,
-            collection_key=self._ctx.collection_key,
+            collection_key=step_collection_key(self._ctx),
             index=edit_index if edit_index is not None else len(items) - 1,
             item=dict(draft),
         )
         set_collection_phase(state, "menu")
-        return PatternStatus.FAILURE
+        return phase_transition()
+
+
+def build_fields_phase(ctx: WizardPhaseContext) -> CollectionFieldsPhase:
+    return CollectionFieldsPhase(ctx)

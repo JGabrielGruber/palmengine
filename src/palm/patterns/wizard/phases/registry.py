@@ -17,20 +17,17 @@ from palm.patterns.wizard.phases.resource import build_resource_phase
 from palm.patterns.wizard.phases.summary import build_summary_phase
 from palm.patterns.wizard.phases.transform import build_transform_phase
 
-WizardStepLeafFactory = Callable[[WizardPhaseContext], BaseNode]
-
-# Backward name used by tests and builder metadata.
-WizardStepBuildContext = WizardPhaseContext
+WizardStepFactory = Callable[[WizardPhaseContext], BaseNode]
 
 
 class WizardStepKindRegistry:
     """Thread-safe registry mapping ``step_kind`` to phase node factories."""
 
     def __init__(self) -> None:
-        self._factories: dict[str, WizardStepLeafFactory] = {}
+        self._factories: dict[str, WizardStepFactory] = {}
         self._lock = threading.RLock()
 
-    def register(self, kind: str, factory: WizardStepLeafFactory) -> None:
+    def register(self, kind: str, factory: WizardStepFactory) -> None:
         if not kind:
             raise ValueError("Wizard step kind must be non-empty")
         with self._lock:

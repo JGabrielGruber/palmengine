@@ -24,7 +24,7 @@ from palm.patterns.wizard.phases import (
     provide_wizard_input,
     register_builtin_wizard_step_kinds,
 )
-from palm.patterns.wizard.phases.registry import WizardStepBuildContext, WizardStepKindRegistry
+from palm.patterns.wizard.phases.registry import WizardStepKindRegistry
 from palm.patterns.wizard.tree import build_wizard_tree
 from palm.patterns.wizard.persistence import (
     extract_instance_fields_from_job,
@@ -60,7 +60,6 @@ __all__ = [
     "CommitResult",
     "StepValidationRule",
     "WizardPhaseContext",
-    "WizardStepBuildContext",
     "WizardStepKindRegistry",
     "WizardSequenceNode",
     "build_wizard_tree",

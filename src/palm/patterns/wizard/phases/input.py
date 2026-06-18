@@ -90,7 +90,3 @@ class WizardInputLeaf(InteractiveLeaf):
 
 def build_input_phase(ctx: WizardPhaseContext) -> WizardInputLeaf:
     return WizardInputLeaf(ctx)
-
-
-# Alias retained for documentation and gradual migration in downstream code.
-WizardStepLeaf = WizardInputLeaf

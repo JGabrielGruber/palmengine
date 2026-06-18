@@ -13,34 +13,33 @@ from palm.patterns.wizard.collection_state import (
     get_collection_items,
     set_collection_items,
     set_collection_phase,
-    set_collection_remove_index,
 )
 from palm.patterns.wizard.events import WizardEventType
 from palm.patterns.wizard.leaf_support import emit_wizard_event
-from palm.patterns.wizard.phases._base import is_affirmative
-from palm.patterns.wizard.phases.collection._base import CollectionPhaseContext, CollectionPhaseLeaf
+from palm.patterns.wizard.phases._base import WizardPhaseContext, is_affirmative
+from palm.patterns.wizard.phases.bt import phase_transition
+from palm.patterns.wizard.phases.collection._base import (
+    CollectionPhaseLeaf,
+    step_collection_key,
+    step_label_field,
+)
 
 
 class CollectionRemovePhase(CollectionPhaseLeaf):
     phase_key = "remove_confirm"
 
-    def start_confirm(self, state: BaseState, *, index: int) -> PatternStatus:
-        set_collection_remove_index(state, index)
-        set_collection_phase(state, "remove_confirm")
-        return self.run(state, None)
-
     def _request_input(self, state: BaseState) -> PatternStatus:
         index = collection_remove_index(state)
         if index is None:
             set_collection_phase(state, "menu")
-            return PatternStatus.FAILURE
+            return phase_transition()
 
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         label = format_item_label(
             items[index],
             index=index,
-            label_field=self._ctx.label_field,
-            item_fields=self._ctx.item_fields,
+            label_field=step_label_field(self._ctx),
+            item_fields=self._ctx.step.item_fields,
         )
         bundle = self._prompt_bundle(
             state,
@@ -55,7 +54,7 @@ class CollectionRemovePhase(CollectionPhaseLeaf):
         if value in (False, "no", "No", "NO"):
             clear_collection_session(state)
             set_collection_phase(state, "menu")
-            return PatternStatus.FAILURE
+            return phase_transition()
 
         if not is_affirmative(value):
             return self._fail(
@@ -73,20 +72,24 @@ class CollectionRemovePhase(CollectionPhaseLeaf):
         index = collection_remove_index(state)
         if index is None:
             set_collection_phase(state, "menu")
-            return PatternStatus.FAILURE
+            return phase_transition()
 
-        items = get_collection_items(state, self._ctx.collection_key)
+        items = get_collection_items(state, step_collection_key(self._ctx))
         if 0 <= index < len(items):
             removed = items.pop(index)
-            set_collection_items(state, self._ctx.collection_key, items)
+            set_collection_items(state, step_collection_key(self._ctx), items)
             emit_wizard_event(
                 self._ctx.emit,
                 self._ctx.wizard_name,
                 WizardEventType.COLLECTION_ITEM_REMOVED,
-                collection_key=self._ctx.collection_key,
+                collection_key=step_collection_key(self._ctx),
                 index=index,
                 item=removed,
             )
         clear_collection_session(state)
         set_collection_phase(state, "menu")
-        return PatternStatus.FAILURE
+        return phase_transition()
+
+
+def build_remove_phase(ctx: WizardPhaseContext) -> CollectionRemovePhase:
+    return CollectionRemovePhase(ctx)

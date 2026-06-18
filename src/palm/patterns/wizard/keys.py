@@ -28,6 +28,7 @@ class WizardKeys:
     COLLECTION_DRAFT = f"{PREFIX}.collection_draft"
     COLLECTION_REMOVE_INDEX = f"{PREFIX}.collection_remove_index"
     COLLECTION_SELECT_ACTION = f"{PREFIX}.collection_select_action"
+    COLLECTION_SESSION_ID = f"{PREFIX}.collection_session_id"
     TRANSFORM_FEEDBACK = f"{PREFIX}.transform_feedback"
     RESOURCE_FEEDBACK = f"{PREFIX}.resource_feedback"
     RESOURCE_INVOCATIONS = f"{PREFIX}.resource_invocations"
