@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from palm.runtimes.server.surfaces.ssr.studio.api.handlers import StudioApiHandlers
 from palm.runtimes.server.surfaces.ssr.studio.pages import StudioPages
 
 if TYPE_CHECKING:
@@ -16,8 +17,19 @@ _SURFACE = "studio"
 def register_studio_routes(registry: RouteRegistry, ctx: ServerContext) -> None:
     """Mount Palm Studio SPA routes and surface discovery."""
     pages = StudioPages(ctx)
+    api = StudioApiHandlers(ctx)
 
     registry.register(method="GET", path="/studio", handler=pages.index, surface=_SURFACE)
+    registry.register(method="GET", path="/v1/studio/palette", handler=api.palette, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/v1/studio/drafts", handler=api.list_drafts, surface=_SURFACE
+    )
+    registry.register(
+        method="GET", path="/v1/studio/drafts/{draft_id}", handler=api.get_draft, surface=_SURFACE
+    )
+    registry.register(
+        method="POST", path="/v1/studio/drafts", handler=api.save_draft, surface=_SURFACE
+    )
     registry.register(
         method="GET",
         path="/studio/assets/{filename}",
