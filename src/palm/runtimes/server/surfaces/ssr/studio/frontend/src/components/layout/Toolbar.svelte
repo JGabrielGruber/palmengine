@@ -5,13 +5,20 @@
   } from "../../shared/export/definition";
   import { importFlowDefinition } from "../../shared/import/definition";
   import { api } from "../../shared/api/client";
+  import { studio } from "../../shared/theme/classes";
   import type { FlowSummary } from "../../shared/types";
   import { canvasStore } from "../../stores/canvas.svelte";
   import { draftStore } from "../../stores/draft.svelte";
   import { feedbackStore } from "../../stores/feedback.svelte";
   import { historyStore } from "../../stores/history.svelte";
-  import { projectStore } from "../../stores/project.svelte";
+  import { projectStore, projectsStore } from "../../stores/projects.svelte";
   import { validationStore } from "../../stores/validation.svelte";
+
+  type Props = {
+    onSimulate?: () => void;
+  };
+
+  let { onSimulate }: Props = $props();
 
   let exportText = $state<string | null>(null);
   let showExport = $state(false);
@@ -24,7 +31,6 @@
     try {
       if (localOnly) {
         draftStore.saveLocal();
-        feedbackStore.success("Draft saved locally");
       } else {
         await draftStore.saveServer();
       }
@@ -78,8 +84,11 @@
       const flow = await api.getFlow(selectedFlowId);
       const imported = importFlowDefinition(flow);
       canvasStore.replaceCanvas({ nodes: imported.nodes, edges: imported.edges });
-      projectStore.setName(imported.name);
-      projectStore.setPattern(imported.pattern);
+      projectsStore.replaceActive({
+        name: imported.name,
+        pattern: imported.pattern,
+        canvas: { nodes: imported.nodes, edges: imported.edges, groups: [] },
+      });
       showImport = false;
       feedbackStore.success(`Imported “${imported.name}”`);
     } catch (err) {
@@ -113,24 +122,27 @@
   }
 </script>
 
-<div class="flex flex-wrap items-center gap-2 border-b border-[#1e2a42] px-4 py-2">
-  <label class="flex items-center gap-2 text-xs text-[#9aa8c7]">
+<div class="flex flex-wrap items-center gap-2 border-b border-[var(--studio-border)] px-4 py-2">
+  <label class="flex items-center gap-2 text-xs text-[var(--studio-muted)]">
     Flow name
     <input
-      class="rounded-md border border-[#2a3a5c] bg-[#151d2e] px-2 py-1 text-sm text-[#e8edf7] outline-none focus:border-[#60a5fa]"
+      class={studio.input}
       value={projectStore.name}
       oninput={(event) =>
         projectStore.setName((event.currentTarget as HTMLInputElement).value)}
     />
   </label>
 
-  <span class="rounded-full border border-[#2a3a5c] px-2 py-0.5 text-xs text-[#9aa8c7]">
+  <span class="rounded-full border border-[var(--studio-border)] px-2 py-0.5 text-xs text-[var(--studio-muted)]">
     pattern: {projectStore.pattern}
+  </span>
+  <span class="rounded-full border border-[var(--studio-border)] px-2 py-0.5 text-xs text-[var(--studio-muted)]">
+    draft v{projectStore.draftVersion}
   </span>
 
   {#if validationStore.warningCount > 0 || validationStore.errorCount > 0}
     <span
-      class={`rounded-full px-2 py-0.5 text-xs ${validationStore.errorCount > 0 ? "border border-[#7f1d1d] text-[#fca5a5]" : "border border-[#713f12] text-[#fcd34d]"}`}
+      class={`rounded-full px-2 py-0.5 text-xs ${validationStore.errorCount > 0 ? "border border-[var(--studio-rose)]/40 text-[var(--studio-rose)]" : "border border-[var(--studio-amber)]/40 text-[var(--studio-amber)]"}`}
     >
       {validationStore.errorCount} errors · {validationStore.warningCount} warnings
     </span>
@@ -139,7 +151,7 @@
   <div class="ml-auto flex flex-wrap items-center gap-2">
     <button
       type="button"
-      class="rounded-md border border-[#2a3a5c] px-2 py-1.5 text-xs disabled:opacity-40"
+      class="{studio.btn} disabled:opacity-40"
       disabled={!historyStore.canUndo}
       onclick={() => canvasStore.undo()}
       title="Undo (Ctrl+Z)"
@@ -148,46 +160,29 @@
     </button>
     <button
       type="button"
-      class="rounded-md border border-[#2a3a5c] px-2 py-1.5 text-xs disabled:opacity-40"
+      class="{studio.btn} disabled:opacity-40"
       disabled={!historyStore.canRedo}
       onclick={() => canvasStore.redo()}
       title="Redo (Ctrl+Shift+Z)"
     >
       Redo
     </button>
-    <button
-      type="button"
-      class="rounded-md border border-[#2a3a5c] px-3 py-1.5 text-xs hover:bg-[#151d2e]"
-      onclick={openImport}
-    >
+    <button type="button" class={studio.btn} onclick={() => onSimulate?.()}>
+      Simulate
+    </button>
+    <button type="button" class={studio.btn} onclick={openImport}>
       Import flow
     </button>
-    <button
-      type="button"
-      class="rounded-md border border-[#2a3a5c] px-3 py-1.5 text-xs hover:bg-[#151d2e]"
-      onclick={() => saveDraft(true)}
-    >
+    <button type="button" class={studio.btn} onclick={() => saveDraft(true)}>
       Save draft
     </button>
-    <button
-      type="button"
-      class="rounded-md border border-[#2a3a5c] px-3 py-1.5 text-xs hover:bg-[#151d2e]"
-      onclick={() => saveDraft(false)}
-    >
+    <button type="button" class={studio.btn} onclick={() => saveDraft(false)}>
       Save to server
     </button>
-    <button
-      type="button"
-      class="rounded-md bg-[#1a2740] px-3 py-1.5 text-xs text-[#93c5fd] hover:bg-[#243352]"
-      onclick={() => openExport("flow")}
-    >
+    <button type="button" class="{studio.btn} text-[var(--studio-accent)]" onclick={() => openExport("flow")}>
       Export flow
     </button>
-    <button
-      type="button"
-      class="rounded-md bg-[#1e3a2f] px-3 py-1.5 text-xs text-[#86efac] hover:bg-[#264d3f]"
-      onclick={() => openExport("process")}
-    >
+    <button type="button" class="{studio.btn} text-[var(--studio-accent)]" onclick={() => openExport("process")}>
       Export process
     </button>
   </div>
@@ -195,22 +190,19 @@
 
 {#if showImport}
   <div
-    class="absolute inset-x-4 top-20 z-20 max-w-lg overflow-hidden rounded-lg border border-[#2a3a5c] bg-[#0d1526] shadow-2xl"
+    class="absolute inset-x-4 top-20 z-20 max-w-lg overflow-hidden rounded-lg border border-[var(--studio-border)] bg-[var(--studio-surface)] shadow-2xl"
   >
-    <div class="border-b border-[#1e2a42] px-4 py-3">
+    <div class="border-b border-[var(--studio-border)] px-4 py-3">
       <h3 class="text-sm font-medium">Import flow</h3>
-      <p class="mt-1 text-xs text-[#9aa8c7]">
+      <p class="mt-1 text-xs text-[var(--studio-muted)]">
         Load a registered flow from the server onto the canvas.
       </p>
     </div>
     <div class="space-y-3 p-4">
       {#if importLoading && flows.length === 0}
-        <p class="text-xs text-[#9aa8c7]">Loading flows…</p>
+        <p class="text-xs text-[var(--studio-muted)]">Loading flows…</p>
       {:else}
-        <select
-          class="w-full rounded-md border border-[#2a3a5c] bg-[#151d2e] px-2 py-2 text-sm"
-          bind:value={selectedFlowId}
-        >
+        <select class="{studio.input} w-full py-2" bind:value={selectedFlowId}>
           {#each flows as flow (flow.flow_id)}
             <option value={flow.flow_id}>
               {flow.name} ({flow.pattern})
@@ -219,16 +211,12 @@
         </select>
       {/if}
       <div class="flex justify-end gap-2">
-        <button
-          type="button"
-          class="rounded border border-[#2a3a5c] px-3 py-1 text-xs"
-          onclick={() => (showImport = false)}
-        >
+        <button type="button" class={studio.btn} onclick={() => (showImport = false)}>
           Cancel
         </button>
         <button
           type="button"
-          class="rounded bg-[#1a2740] px-3 py-1 text-xs text-[#93c5fd] disabled:opacity-40"
+          class="{studio.btnAccent} disabled:opacity-40"
           disabled={importLoading || !selectedFlowId}
           onclick={confirmImport}
         >
@@ -241,34 +229,22 @@
 
 {#if showExport && exportText}
   <div
-    class="absolute inset-x-4 top-20 z-20 max-h-[70%] overflow-hidden rounded-lg border border-[#2a3a5c] bg-[#0d1526] shadow-2xl"
+    class="absolute inset-x-4 top-20 z-20 max-h-[70%] overflow-hidden rounded-lg border border-[var(--studio-border)] bg-[var(--studio-surface)] shadow-2xl"
   >
-    <div class="flex items-center justify-between border-b border-[#1e2a42] px-4 py-2">
+    <div class="flex items-center justify-between border-b border-[var(--studio-border)] px-4 py-2">
       <h3 class="text-sm font-medium">Exported definition</h3>
       <div class="flex gap-2">
-        <button
-          type="button"
-          class="rounded border border-[#2a3a5c] px-2 py-1 text-xs"
-          onclick={copyExport}
-        >
+        <button type="button" class={studio.btn} onclick={copyExport}>
           Copy
         </button>
-        <button
-          type="button"
-          class="rounded border border-[#2a3a5c] px-2 py-1 text-xs"
-          onclick={downloadExport}
-        >
+        <button type="button" class={studio.btn} onclick={downloadExport}>
           Download
         </button>
-        <button
-          type="button"
-          class="rounded border border-[#2a3a5c] px-2 py-1 text-xs"
-          onclick={() => (showExport = false)}
-        >
+        <button type="button" class={studio.btn} onclick={() => (showExport = false)}>
           Close
         </button>
       </div>
     </div>
-    <pre class="overflow-auto p-4 text-xs text-[#cbd5e1]">{exportText}</pre>
+    <pre class="overflow-auto p-4 text-xs text-[var(--studio-muted)]">{exportText}</pre>
   </div>
 {/if}
