@@ -1,4 +1,5 @@
 import { bootstrap } from "../bootstrap";
+import type { PaletteResponse, StudioDraft } from "../types";
 
 type RequestOptions = {
   method?: string;
@@ -20,8 +21,31 @@ export class StudioApiClient {
     return (await response.json()) as T;
   }
 
-  health() {
-    return fetch("/health").then((response) => response.json());
+  palette() {
+    return this.fetch<PaletteResponse>("/studio/palette");
+  }
+
+  listDrafts() {
+    return this.fetch<{ drafts: Array<{ id: string; name: string; updated_at: string }> }>(
+      "/studio/drafts",
+    );
+  }
+
+  getDraft(id: string) {
+    return this.fetch<{ draft: Record<string, unknown> }>(`/studio/drafts/${id}`);
+  }
+
+  saveDraft(payload: {
+    id?: string;
+    name: string;
+    pattern: string;
+    canvas: StudioDraft["canvas"];
+    created_at?: string;
+  }) {
+    return this.fetch<{ draft: Record<string, unknown> }>("/studio/drafts", {
+      method: "POST",
+      body: payload,
+    });
   }
 }
 

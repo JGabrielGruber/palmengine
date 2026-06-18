@@ -2,7 +2,9 @@
   import FlowCanvas from "../canvas/FlowCanvas.svelte";
   import NodePalette from "../palette/NodePalette.svelte";
   import Inspector from "./Inspector.svelte";
+  import ResizableColumns from "./ResizableColumns.svelte";
   import Sidebar from "./Sidebar.svelte";
+  import Toolbar from "./Toolbar.svelte";
   import { bootstrap } from "../../shared/bootstrap";
 
   type Props = {
@@ -12,9 +14,9 @@
   let { version }: Props = $props();
 </script>
 
-<div class="flex h-full min-h-0 flex-col bg-[#0b1220] text-[#e8edf7]">
+<div class="relative flex h-full min-h-0 flex-col bg-[#0b1220] text-[#e8edf7]">
   <header
-    class="flex items-center justify-between border-b border-[#1e2a42] px-4 py-3"
+    class="flex shrink-0 items-center justify-between border-b border-[#1e2a42] px-4 py-3"
   >
     <div class="flex items-center gap-3">
       <div
@@ -28,18 +30,26 @@
       </div>
     </div>
     <div class="flex items-center gap-3 text-xs text-[#9aa8c7]">
-      <a href={bootstrap.explorer} class="hover:text-[#e8edf7]">Explorer</a>
+      <a href={bootstrap.explorer} class="transition hover:text-[#e8edf7]">Explorer</a>
       <span class="rounded-full border border-[#2a3a5c] px-2 py-0.5">v{version}</span>
     </div>
   </header>
 
-  <div class="grid min-h-0 flex-1 grid-cols-[16rem_1fr_18rem]">
-    <Sidebar>
-      <NodePalette />
-    </Sidebar>
-    <main class="relative min-h-0 border-x border-[#1e2a42]">
+  <Toolbar />
+
+  <ResizableColumns>
+    {#snippet left()}
+      <Sidebar>
+        <NodePalette />
+      </Sidebar>
+    {/snippet}
+
+    {#snippet center()}
       <FlowCanvas />
-    </main>
-    <Inspector />
-  </div>
+    {/snippet}
+
+    {#snippet right()}
+      <Inspector />
+    {/snippet}
+  </ResizableColumns>
 </div>
