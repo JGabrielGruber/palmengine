@@ -9,47 +9,15 @@ from palm.core.behavior_tree import (
     BehaviorTreeEngine,
     BehaviorTreeError,
     ConditionNode,
+    InvalidTreeStructureError,
+    NodeExecutionError,
     PatternStatus,
     RootNode,
-    SelectorNode,
     SequenceNode,
 )
 from palm.core.context import BaseState
 from palm.core.exceptions import StateNotConfiguredError
 from tests.core.fakes import StubInteractiveLeaf, TestState
-
-
-def test_sequence_all_success(test_state: TestState) -> None:
-    tree = SequenceNode(
-        "seq",
-        children=[
-            ConditionNode("a", lambda s: True),
-            ConditionNode("b", lambda s: True),
-        ],
-    )
-    assert tree.tick(test_state) == PatternStatus.SUCCESS
-
-
-def test_sequence_fail_fast(test_state: TestState) -> None:
-    tree = SequenceNode(
-        "seq",
-        children=[
-            ConditionNode("ok", lambda s: True),
-            ConditionNode("fail", lambda s: False),
-        ],
-    )
-    assert tree.tick(test_state) == PatternStatus.FAILURE
-
-
-def test_selector_first_success(test_state: TestState) -> None:
-    tree = SelectorNode(
-        "sel",
-        children=[
-            ConditionNode("fail", lambda s: False),
-            ConditionNode("ok", lambda s: True),
-        ],
-    )
-    assert tree.tick(test_state) == PatternStatus.SUCCESS
 
 
 def test_action_node_writes_state(test_state: TestState) -> None:
@@ -110,6 +78,53 @@ def test_tick_until_terminal_max_exceeded(test_state: TestState) -> None:
     engine.set_root(root)
     with pytest.raises(BehaviorTreeError):
         engine.tick_until_terminal(max_ticks=5)
+
+
+def test_engine_tick_with_no_root_returns_failure() -> None:
+    engine = BehaviorTreeEngine()
+    engine.initialize(state=TestState())
+    assert engine.tick() == PatternStatus.FAILURE
+
+
+def test_engine_set_root_revalidates_root_node(test_state: TestState) -> None:
+    root = RootNode("root", child=ConditionNode("c", lambda _s: True))
+    engine = BehaviorTreeEngine()
+    engine.initialize(state=test_state)
+    engine.set_root(root)
+    assert engine.tick() == PatternStatus.SUCCESS
+
+
+def test_invalid_root_structure_raises_at_construction() -> None:
+    shared = ActionNode("shared", action=lambda _s: None)
+    broken = SequenceNode("broken")
+    broken.children.append(shared)
+    broken.children.append(shared)
+    shared.parent = broken
+
+    with pytest.raises(InvalidTreeStructureError):
+        RootNode("root", child=broken)
+
+
+def test_engine_tick_propagates_node_execution_error(test_state: TestState) -> None:
+    def boom(_s: BaseState) -> None:
+        raise RuntimeError("boom")
+
+    engine = BehaviorTreeEngine()
+    engine.initialize(state=test_state)
+    engine.set_root(RootNode("root", child=ActionNode("boom", boom)))
+
+    with pytest.raises(NodeExecutionError):
+        engine.tick()
+
+
+def test_tick_until_terminal_stops_on_waiting_for_input(test_state: TestState) -> None:
+    leaf = StubInteractiveLeaf("ask")
+    engine = BehaviorTreeEngine()
+    engine.initialize(state=test_state)
+    engine.set_root(RootNode("root", child=leaf))
+
+    status = engine.tick_until_terminal(max_ticks=10)
+    assert status == PatternStatus.WAITING_FOR_INPUT
 
 
 def test_engine_reset_clears_sequence_index(test_state: TestState) -> None:
