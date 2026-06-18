@@ -26,6 +26,9 @@ REQUEST_BODIES: dict[str, dict[str, Any]] = {
     "SubmitJobBody": {
         "flow_name": "onboard",
     },
+    "SubmitWizardBody": {
+        "wizard": {"name": "onboard", "steps": 3},
+    },
     "PreparePlansBody": {
         "process_name": "pipeline",
     },
@@ -46,6 +49,16 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
         "flow_name": {
             "summary": "Submit by repository name",
             "value": {"flow_name": "my_flow"},
+        },
+    },
+    "SubmitWizardBody": {
+        "wizard": {
+            "summary": "Inline wizard definition",
+            "value": {"wizard": {"name": "onboard", "steps": 3}},
+        },
+        "flow_name": {
+            "summary": "Submit registered wizard by name",
+            "value": {"flow_name": "onboard"},
         },
     },
     "PreparePlansBody": {
@@ -79,6 +92,7 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
 GROUP_DESCRIPTIONS: dict[str, str] = {
     "Meta": "Health, discovery, and API documentation.",
     "Jobs": "Orchestration job submission and interactive input.",
+    "Wizards": "Interactive wizard flows keyed by durable instance id.",
     "Plans": "Deferred plan staging and batch submission.",
     "Instances": "Durable process instance queries and resume.",
     "Snapshots": "Point-in-time blackboard captures for audit and replay.",
@@ -153,6 +167,42 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "job_id": "job-abc123",
         "status": "RUNNING",
         "metadata": {"pattern": "wizard"},
+    },
+    "submit_wizard": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "metadata": {"pattern": "wizard"},
+    },
+    "get_wizard": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "flow_name": "onboard",
+        "wizard_step_slug": "name",
+        "wizard_progress": {
+            "current_step": "name",
+            "completed_steps": [],
+        },
+        "prompt": {
+            "step": "name",
+            "title": "Name",
+            "text": "Your name?",
+        },
+        "answers": {},
+        "committed": False,
+        "links": {
+            "self": "/v1/wizards/inst-abc123",
+            "instance": "/v1/instances/inst-abc123",
+            "job": "/v1/jobs/job-abc123",
+        },
+        "next_actions": [
+            {
+                "action": "provide_input",
+                "method": "POST",
+                "path": "/v1/jobs/job-abc123/input",
+            }
+        ],
     },
     "prepare_plans": {
         "plans": [
@@ -325,6 +375,8 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
         "list_jobs",
         "get_job_context",
         "submit_job",
+        "submit_wizard",
+        "get_wizard",
         "provide_input",
         "list_instances",
         "list_snapshots",

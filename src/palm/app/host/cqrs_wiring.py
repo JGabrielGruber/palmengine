@@ -24,6 +24,7 @@ from palm.common.cqrs.command import (
     SubmitFlowCommand,
     SubmitPlansCommand,
     SubmitProcessCommand,
+    SubmitWizardCommand,
 )
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
@@ -38,6 +39,7 @@ from palm.common.cqrs.query import (
     GetProcessQuery,
     GetResourceInvocationsQuery,
     GetWizardProgressQuery,
+    GetWizardStatusQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -49,6 +51,7 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
+from palm.common.wizard_context import build_wizard_view
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 
@@ -68,6 +71,15 @@ class PalmCommandHandlers:
         self._router = router
 
     def handle(self, command: Command) -> Any:
+        if isinstance(command, SubmitWizardCommand):
+            return self.handle(
+                SubmitFlowCommand(
+                    flow=_wizard_flow_payload(command.body),
+                    runtime_name=command.runtime_name,
+                    by_id=bool(command.body.get("by_id", False)),
+                    job_id=_optional_str(command.body.get("job_id")),
+                )
+            )
         if isinstance(command, SubmitFlowCommand):
             runtime_name = self._router.route_job_runtime(command.runtime_name)
             if isinstance(command.flow, dict):
@@ -204,6 +216,8 @@ class HostQueryHandlers:
             return self._get_process(query)
         if isinstance(query, GetWizardProgressQuery):
             return self._wizard_progress.get_progress(query)
+        if isinstance(query, GetWizardStatusQuery):
+            return self._get_wizard_status(query)
         if isinstance(query, GetJobStatusQuery):
             return self._get_job(query)
         if isinstance(query, GetJobContextQuery):
@@ -309,11 +323,68 @@ class HostQueryHandlers:
         except DefinitionNotFoundError:
             return None
 
+    def _get_wizard_status(self, query: GetWizardStatusQuery) -> dict[str, Any] | None:
+        instance = self._instances.get_instance(GetInstanceStatusQuery(instance_id=query.instance_id))
+        if instance is None:
+            return None
+
+        instance_payload = instance.to_dict()
+        progress = self._wizard_progress.get_progress(
+            GetWizardProgressQuery(instance_id=query.instance_id, job_id=instance.job_id)
+        )
+        wizard_progress = progress.to_dict() if progress is not None else None
+
+        pattern: dict[str, Any] | None = None
+        job_status: str | None = None
+        try:
+            job = self._app.runtime().get_job(instance.job_id)
+            job_status = job.status.value
+            from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+
+            inspected = inspect_job_json(job)
+            if inspected.get("pattern") == "wizard":
+                pattern = inspected
+        except Exception:
+            pass
+
+        return build_wizard_view(
+            instance_payload,
+            wizard_progress=wizard_progress,
+            pattern=pattern,
+            job_status=job_status,
+        )
+
+
+def _wizard_flow_payload(body: dict[str, Any]) -> dict[str, Any] | str:
+    if "wizard" in body:
+        payload: dict[str, Any] = {"wizard": body["wizard"]}
+        if body.get("job_id") is not None:
+            payload["job_id"] = body["job_id"]
+        return payload
+    if "flow" in body and isinstance(body["flow"], dict):
+        flow = dict(body["flow"])
+        pattern = flow.get("pattern")
+        if pattern not in (None, "wizard"):
+            raise ValueError("flow.pattern must be 'wizard'")
+        flow["pattern"] = "wizard"
+        payload = {"flow": flow}
+        if body.get("job_id") is not None:
+            payload["job_id"] = body["job_id"]
+        return payload
+    if "flow_name" in body:
+        return str(body["flow_name"])
+    raise ValueError("expected 'wizard', 'flow', or 'flow_name' in request body")
+
+
+def _optional_str(value: object | None) -> str | None:
+    return str(value) if value is not None else None
+
 
 def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> None:
     handler = PalmCommandHandlers(app, router)
     for command_type in (
         SubmitFlowCommand,
+        SubmitWizardCommand,
         SubmitProcessCommand,
         ProvideInputCommand,
         ResumeProcessCommand,
@@ -351,6 +422,7 @@ def wire_query_bus(
         ListProcessesQuery,
         GetProcessQuery,
         GetWizardProgressQuery,
+        GetWizardStatusQuery,
         GetJobStatusQuery,
         GetJobContextQuery,
         ListJobStatusQuery,

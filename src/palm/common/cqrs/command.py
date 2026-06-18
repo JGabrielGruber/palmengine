@@ -34,6 +34,14 @@ class SubmitProcessCommand(Command):
 
 
 @dataclass(frozen=True)
+class SubmitWizardCommand(Command):
+    """Submit a wizard flow — always resolves to ``pattern='wizard'``."""
+
+    body: dict[str, Any]
+    runtime_name: str | None = None
+
+
+@dataclass(frozen=True)
 class ProvideInputCommand(Command):
     job_id: str
     value: Any

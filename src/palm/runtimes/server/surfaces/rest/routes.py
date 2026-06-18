@@ -14,6 +14,7 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     meta,
     plans,
     snapshots,
+    wizard,
 )
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, RouteId, rest_routes
 
@@ -54,6 +55,10 @@ def _resolve_handler(
         "get_job_context": lambda req, job_id: jobs.get_job_context(ctx, req, job_id=job_id),
         "submit_job": lambda req: jobs.submit_job(ctx, req),
         "provide_input": lambda req, job_id: jobs.provide_input(ctx, req, job_id=job_id),
+        "submit_wizard": lambda req: wizard.submit_wizard(ctx, req),
+        "get_wizard": lambda req, instance_id: wizard.get_wizard(
+            ctx, req, instance_id=instance_id
+        ),
         "prepare_plans": lambda req: plans.prepare_plans(ctx, req),
         "submit_plans": lambda req: plans.submit_plans(ctx, req),
         "list_instances": lambda req: instances.list_instances(ctx, req),

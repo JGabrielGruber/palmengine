@@ -61,6 +61,15 @@ def instance_not_found(instance_id: str) -> ServerResponse:
     )
 
 
+def wizard_not_found(instance_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "wizard_not_found",
+        f"Wizard not found: {instance_id}",
+        extra={"instance_id": instance_id},
+    )
+
+
 def submit_failed(detail: str) -> ServerResponse:
     return error_response(500, "submit_failed", detail)
 

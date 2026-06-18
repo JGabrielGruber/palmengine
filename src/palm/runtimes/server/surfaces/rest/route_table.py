@@ -18,6 +18,8 @@ RouteId = Literal[
     "get_job_context",
     "submit_job",
     "provide_input",
+    "submit_wizard",
+    "get_wizard",
     "prepare_plans",
     "submit_plans",
     "list_instances",
@@ -123,6 +125,31 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             description="Deliver interactive input to a waiting job.",
             auth_required=True,
             request_schema="ProvideInputBody",
+        ),
+        RouteDefinition(
+            route_id="submit_wizard",
+            method="POST",
+            path="/v1/wizards",
+            group="Wizards",
+            summary="Submit wizard",
+            description=(
+                "Start an interactive wizard flow. Equivalent to submitting a flow with "
+                "``pattern='wizard'``; returns the durable ``instance_id``."
+            ),
+            auth_required=True,
+            request_schema="SubmitWizardBody",
+            response_status=202,
+        ),
+        RouteDefinition(
+            route_id="get_wizard",
+            method="GET",
+            path="/v1/wizards/{instance_id}",
+            group="Wizards",
+            summary="Get wizard",
+            description=(
+                "Rich wizard view: instance status, step progress, current prompt, "
+                "answers, and suggested next actions."
+            ),
         ),
         RouteDefinition(
             route_id="prepare_plans",

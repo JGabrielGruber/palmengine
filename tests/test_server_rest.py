@@ -56,7 +56,7 @@ def _request(
 
 def test_rest_routes_are_grouped() -> None:
     groups = {route.group for route in rest_routes()}
-    assert groups == {"Meta", "Jobs", "Plans", "Instances", "Snapshots", "Catalog"}
+    assert groups == {"Meta", "Jobs", "Wizards", "Plans", "Instances", "Snapshots", "Catalog"}
 
 
 def test_submit_job_requires_flow_variant() -> None:

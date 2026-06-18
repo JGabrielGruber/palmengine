@@ -44,6 +44,13 @@ class GetWizardProgressQuery(Query):
 
 
 @dataclass(frozen=True)
+class GetWizardStatusQuery(Query):
+    """Rich wizard view keyed by durable instance id."""
+
+    instance_id: str
+
+
+@dataclass(frozen=True)
 class ListJobStatusQuery(Query):
     status: str | None = None
     limit: int | None = None

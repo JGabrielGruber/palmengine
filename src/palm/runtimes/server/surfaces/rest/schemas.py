@@ -29,6 +29,19 @@ SUBMIT_JOB_BODY = DictStateSchema(
     }
 )
 
+SUBMIT_WIZARD_BODY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "flow": _OBJECT,
+            "wizard": _OBJECT,
+            "flow_name": _STRING,
+            "job_id": _STRING,
+            "by_id": _BOOL,
+        },
+    }
+)
+
 PREPARE_PLANS_BODY = DictStateSchema(
     {
         "type": "object",
@@ -149,6 +162,7 @@ PROCESS_SUMMARY = DictStateSchema(
 # OpenAPI component names → schema instances
 NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "SubmitJobBody": SUBMIT_JOB_BODY,
+    "SubmitWizardBody": SUBMIT_WIZARD_BODY,
     "PreparePlansBody": PREPARE_PLANS_BODY,
     "SubmitPlansBody": SUBMIT_PLANS_BODY,
     "ProvideInputBody": PROVIDE_INPUT_BODY,
@@ -169,12 +183,20 @@ def openapi_components() -> dict[str, Any]:
 
 def submit_job_variant_errors(body: dict[str, Any]) -> list[str]:
     """Require exactly one flow submission style in the request body."""
-    keys = ("flow", "wizard", "flow_name")
+    return _single_variant_errors(body, ("flow", "wizard", "flow_name"))
+
+
+def submit_wizard_variant_errors(body: dict[str, Any]) -> list[str]:
+    """Require exactly one wizard submission style in the request body."""
+    return _single_variant_errors(body, ("flow", "wizard", "flow_name"))
+
+
+def _single_variant_errors(body: dict[str, Any], keys: tuple[str, ...]) -> list[str]:
     present = [key for key in keys if key in body]
     if len(present) == 1:
         return []
     if not present:
-        return ["one of 'flow', 'wizard', or 'flow_name' is required"]
+        return [f"one of {list(keys)} is required"]
     return [f"provide only one of {list(keys)}; found {present}"]
 
 
