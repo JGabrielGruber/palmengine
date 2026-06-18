@@ -1,5 +1,6 @@
 <script lang="ts">
   import { NODE_THEMES } from "../../shared/canvas/nodeTheme";
+  import { studio } from "../../shared/theme/classes";
   import { canvasStore } from "../../stores/canvas.svelte";
   import { validationStore } from "../../stores/validation.svelte";
 
@@ -20,6 +21,30 @@
       ? canvasStore.edges.filter((edge) => edge.source === selected.id)
       : [],
   );
+
+  let editLabel = $state("");
+  let editRef = $state("");
+  let editPrompt = $state("");
+
+  $effect(() => {
+    if (!selected) {
+      return;
+    }
+    editLabel = selected.label;
+    editRef = selected.ref ?? "";
+    editPrompt = String(selected.meta?.prompt ?? "");
+  });
+
+  function commitEdits() {
+    if (!selected) {
+      return;
+    }
+    canvasStore.updateNode(selected.id, {
+      label: editLabel.trim() || selected.label,
+      ref: editRef.trim() || undefined,
+      meta: { prompt: editPrompt.trim() || undefined },
+    });
+  }
 </script>
 
 <aside class="flex min-h-0 flex-col overflow-hidden">
@@ -56,17 +81,45 @@
         </div>
       </div>
 
-      <dl class="space-y-3">
+      <form class="space-y-3" onsubmit={(event) => event.preventDefault()}>
+        <label class="block text-xs text-[var(--studio-muted)]">
+          Label
+          <input
+            class="{studio.input} mt-1 w-full"
+            bind:value={editLabel}
+            onchange={commitEdits}
+          />
+        </label>
+        {#if selected.kind !== "pattern"}
+          <label class="block text-xs text-[var(--studio-muted)]">
+            Reference
+            <input
+              class="{studio.input} mt-1 w-full font-mono text-xs"
+              bind:value={editRef}
+              placeholder="transform rule, resource ref…"
+              onchange={commitEdits}
+            />
+          </label>
+        {/if}
+        {#if selected.kind === "action"}
+          <label class="block text-xs text-[var(--studio-muted)]">
+            Wizard prompt
+            <textarea
+              class="{studio.input} mt-1 w-full resize-y"
+              rows="2"
+              bind:value={editPrompt}
+              placeholder="Question shown during simulation"
+              onchange={commitEdits}
+            ></textarea>
+          </label>
+        {/if}
+      </form>
+
+      <dl class="mt-4 space-y-3">
         <div>
           <dt class="text-xs uppercase tracking-wide text-[var(--studio-muted)]">ID</dt>
           <dd class="mt-1 font-mono text-xs">{selected.id}</dd>
         </div>
-        {#if selected.ref}
-          <div>
-            <dt class="text-xs uppercase tracking-wide text-[var(--studio-muted)]">Ref</dt>
-            <dd class="mt-1 font-mono text-xs">{selected.ref}</dd>
-          </div>
-        {/if}
         <div>
           <dt class="text-xs uppercase tracking-wide text-[var(--studio-muted)]">Position</dt>
           <dd class="mt-1 font-mono text-xs">
@@ -103,8 +156,7 @@
       </div>
     {:else if !validationStore.issues.length}
       <p class="text-[var(--studio-muted)]">
-        Select a node to inspect it. Drag the blue handle on a node to create
-        connections.
+        Select a node to inspect and edit it. Drag handles to connect nodes.
       </p>
     {/if}
   </div>

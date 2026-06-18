@@ -97,6 +97,27 @@ export const canvasStore = {
   select(id: string | null) {
     selectedId = id;
   },
+  updateNode(
+    id: string,
+    patch: Partial<Pick<CanvasNode, "label" | "ref" | "meta">>,
+  ) {
+    const current = findNode(id);
+    if (!current) {
+      return false;
+    }
+    recordHistory();
+    nodes = nodes.map((node) =>
+      node.id === id
+        ? {
+            ...node,
+            ...patch,
+            meta: patch.meta ? { ...node.meta, ...patch.meta } : node.meta,
+          }
+        : node,
+    );
+    syncProject();
+    return true;
+  },
   connect(sourceId: string, targetId: string) {
     return addEdge(sourceId, targetId);
   },
