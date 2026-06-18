@@ -1,4 +1,5 @@
 import { api } from "../shared/api/client";
+import { studioPlugins } from "../shared/extensions/registry";
 import type { PaletteItem, PaletteSection } from "../shared/types";
 
 let sections = $state<PaletteSection[]>([]);
@@ -33,12 +34,26 @@ export const paletteStore = {
   get query() {
     return query;
   },
+  get allSections() {
+    const pluginSections = studioPlugins.extraPaletteSections();
+    const merged = [...sections];
+    for (const section of pluginSections) {
+      const existing = merged.find((entry) => entry.id === section.id);
+      if (existing) {
+        existing.items = [...existing.items, ...section.items];
+      } else {
+        merged.push(section);
+      }
+    }
+    return merged;
+  },
   get filteredSections() {
     const needle = query.trim().toLowerCase();
+    const source = paletteStore.allSections;
     if (!needle) {
-      return sections;
+      return source;
     }
-    return sections
+    return source
       .map((section) => ({
         ...section,
         items: section.items.filter((item) => matches(item, needle)),

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.runtimes.server.surfaces.ssr.studio.api.drafts import get_draft, list_drafts, save_draft
+from palm.runtimes.server.surfaces.ssr.studio.api.extensions import get_extensions
 from palm.runtimes.server.surfaces.ssr.studio.api.palette import get_palette
 
 if TYPE_CHECKING:
@@ -29,3 +30,6 @@ class StudioApiHandlers:
 
     def save_draft(self, request: ServerRequest) -> ServerResponse:
         return save_draft(request)
+
+    def extensions(self, request: ServerRequest) -> ServerResponse:
+        return get_extensions(request)

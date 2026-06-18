@@ -32,6 +32,12 @@ def register_studio_routes(registry: RouteRegistry, ctx: ServerContext) -> None:
     )
     registry.register(
         method="GET",
+        path="/v1/studio/extensions",
+        handler=api.extensions,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="GET",
         path="/studio/assets/{filename}",
         handler=pages.assets_file,
         surface=_SURFACE,
