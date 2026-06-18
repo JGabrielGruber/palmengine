@@ -551,28 +551,41 @@ def _collection_item_field_lines(
     return lines
 
 
-def wizard_child_wizards_section(wizard: dict[str, Any]) -> str:
+def wizard_child_wizards_section(wizard: dict[str, Any], *, instance_id: str = "") -> str:
     """Surface nested child wizards spawned via until_input resource steps."""
-    answers = wizard.get("answers") or {}
-    if not isinstance(answers, dict):
-        return ""
-
     children: list[dict[str, Any]] = []
-    for step_key, value in answers.items():
-        if not isinstance(value, dict):
-            continue
-        if not value.get("waiting_for_child_wizard"):
-            continue
+    prompt = wizard.get("prompt") or {}
+    if isinstance(prompt, dict) and prompt.get("waiting_for_child"):
         children.append(
             {
-                "step": step_key,
-                "job_id": value.get("child_job_id") or value.get("job_id"),
-                "instance_id": value.get("child_instance_id") or value.get("instance_id"),
-                "status": value.get("status"),
-                "job_href": value.get("child_job_href"),
-                "instance_href": value.get("child_instance_href"),
+                "step": prompt.get("step") or wizard.get("wizard_step_slug"),
+                "job_id": prompt.get("waiting_for_child_job_id"),
+                "instance_id": prompt.get("waiting_for_child_instance_id"),
+                "status": prompt.get("child_status"),
+                "job_href": prompt.get("child_job_href"),
+                "instance_href": prompt.get("child_instance_href"),
+                "active": True,
             }
         )
+
+    answers = wizard.get("answers") or {}
+    if isinstance(answers, dict):
+        for step_key, value in answers.items():
+            if not isinstance(value, dict):
+                continue
+            if not value.get("waiting_for_child_wizard"):
+                continue
+            children.append(
+                {
+                    "step": step_key,
+                    "job_id": value.get("child_job_id") or value.get("job_id"),
+                    "instance_id": value.get("child_instance_id") or value.get("instance_id"),
+                    "status": value.get("status"),
+                    "job_href": value.get("child_job_href"),
+                    "instance_href": value.get("child_instance_href"),
+                    "active": False,
+                }
+            )
 
     if not children:
         return ""
@@ -598,10 +611,24 @@ def wizard_child_wizards_section(wizard: dict[str, Any]) -> str:
             ]
         )
 
+    resume_html = ""
+    if instance_id and any(child.get("active") for child in children):
+        action = f"/explorer/instances/{escape(instance_id)}/resume-child-wait"
+        resume_html = (
+            '<form action="' + escape(action) + '" method="POST" '
+            'hx-post="' + escape(action) + '" '
+            'hx-target="#wizard-workspace" hx-swap="outerHTML" '
+            'hx-indicator="#wizard-loading" style="margin-top:0.75rem">'
+            '<button type="submit" class="btn btn-primary">Check nested wizard / resume parent</button>'
+            "</form>"
+        )
+
     return (
-        '<section class="panel"><h3>Waiting for child wizard</h3>'
-        '<p class="muted">Nested flows paused for interactive input. Open the child to continue.</p>'
+        '<section class="panel"><h3>Waiting for nested wizard</h3>'
+        '<p class="muted">Parent wizard is suspended until the child flow completes. '
+        "Open the child to provide input; the parent resumes automatically when the child succeeds.</p>"
         f'{data_table(["Parent step", "Child status", "Child job", "Child instance"], rows)}'
+        f"{resume_html}"
         "</section>"
     )
 
@@ -763,7 +790,7 @@ def wizard_workspace(
 
     prompt_panel = wizard_prompt_card(instance_id, wizard, notice=notice, error=error)
     sidebar = (
-        wizard_child_wizards_section(wizard)
+        wizard_child_wizards_section(wizard, instance_id=instance_id)
         + wizard_answers_section(wizard)
         + wizard_step_timeline(wizard, instance_id=instance_id)
     )

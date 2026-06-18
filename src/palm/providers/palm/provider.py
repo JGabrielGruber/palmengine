@@ -6,6 +6,7 @@ import uuid
 from typing import Any
 
 from palm.core.resource import BaseProvider
+from palm.core.resource.observability import execution_block_from_state
 from palm.core.resource.result import (
     ProviderActionDescriptor,
     ProviderDescriptor,
@@ -53,11 +54,13 @@ class PalmProvider(BaseProvider):
         resource_id: str | None = None,
         **kwargs: Any,
     ) -> ProviderResult:
+        execution_state = kwargs.pop("state", None)
         invoke_params = PalmInvokeParams.from_mapping(
             params,
             resource_id=resource_id,
             **kwargs,
         )
+        invoke_params = _inject_parent_job_from_state(invoke_params, execution_state)
 
         if action == "fetch":
             return self._fetch(action, invoke_params, resource_id=resource_id)
@@ -168,6 +171,22 @@ class PalmProvider(BaseProvider):
             provider=self.name,
             resource_id=resource_id,
         )
+
+
+def _inject_parent_job_from_state(
+    params: PalmInvokeParams,
+    execution_state: Any | None,
+) -> PalmInvokeParams:
+    if params.parent_job_id:
+        return params
+    block = execution_block_from_state(execution_state)
+    if not block.get("job_id"):
+        block = execution_block_from_state(params.resolve_state())
+    parent_job_id = block.get("job_id")
+    if not parent_job_id:
+        return params
+    params.parent_job_id = str(parent_job_id)
+    return params
 
 
 def new_child_job_id(prefix: str = "palm-child") -> str:

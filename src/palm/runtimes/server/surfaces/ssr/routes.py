@@ -114,6 +114,12 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         surface=_SURFACE,
     )
     registry.register(
+        method="POST",
+        path="/explorer/instances/{instance_id}/resume-child-wait",
+        handler=actions.resume_child_wait,
+        surface=_SURFACE,
+    )
+    registry.register(
         method="GET",
         path="/explorer/instances/{instance_id}/snapshots",
         handler=pages.snapshots,

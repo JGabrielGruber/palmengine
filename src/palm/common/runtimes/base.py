@@ -20,6 +20,7 @@ from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSna
 from palm.common.managers import InstanceManager
 from palm.common.resource import resource_definition_resolver
 from palm.common.runtimes.hooks import (
+    ChildWizardCompletionHook,
     AuthMiddleware,
     DriveObservabilityHook,
     JobExecutionContextHook,
@@ -154,6 +155,7 @@ class BaseRuntime:
                 )
             )
         hooks.append(JobExecutionContextHook())
+        hooks.append(ChildWizardCompletionHook(self))
         hooks.append(
             InstancePersistenceHook(
                 self.instance_manager,

@@ -156,6 +156,7 @@ class ResourceEngine(BasePalmEngine):
                 spec_action,
                 params=bound_params,
                 resource_id=bound_resource_id,
+                state=state,
                 **kwargs,
             )
         except Exception as exc:

@@ -11,6 +11,7 @@ from palm.core.behavior_tree.leaf import LeafNode
 from palm.core.context import BaseState
 from palm.core.resource.engine import ResourceEngine
 from palm.core.resource.observability import resource_correlation
+from palm.core.resource.result import ProviderResult
 
 
 class ResourceLeaf(LeafNode):
@@ -136,6 +137,8 @@ class ResourceLeaf(LeafNode):
         state.set(self._output_key, result.data)
         if self._error_key:
             state.delete(self._error_key)
+        if _should_wait_for_child(result):
+            return PatternStatus.WAITING_FOR_CHILD
         return PatternStatus.SUCCESS
 
     def _fail(self, state: BaseState, message: str) -> PatternStatus:
@@ -147,6 +150,13 @@ class ResourceLeaf(LeafNode):
         if self._error_key:
             state.set(self._error_key, detail)
         return PatternStatus.FAILURE
+
+
+def _should_wait_for_child(result: ProviderResult) -> bool:
+    if result.metadata.get("waiting_for_child_wizard"):
+        return True
+    data = result.data
+    return isinstance(data, dict) and bool(data.get("waiting_for_child_wizard"))
 
 
 def _invoke_chain(result: Any) -> list[str] | None:

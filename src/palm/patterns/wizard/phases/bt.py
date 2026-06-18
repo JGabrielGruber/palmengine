@@ -76,7 +76,12 @@ class PhaseTransitionLoopNode(DecoratorNode):
             status = self.child.tick(state)
             phase_after = self._resolve_phase(state)
 
-            if status in (PatternStatus.WAITING_FOR_INPUT, PatternStatus.SUCCESS, PatternStatus.FAILURE):
+            if status in (
+                PatternStatus.WAITING_FOR_INPUT,
+                PatternStatus.WAITING_FOR_CHILD,
+                PatternStatus.SUCCESS,
+                PatternStatus.FAILURE,
+            ):
                 return status
             if status == PatternStatus.RUNNING and phase_after != phase_before:
                 continue

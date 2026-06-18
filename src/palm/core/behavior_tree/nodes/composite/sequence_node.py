@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.core.behavior_tree.base import BaseNode
-from palm.core.behavior_tree.base_pattern import PatternStatus
+from palm.core.behavior_tree.base_pattern import PatternStatus, is_yielding_status
 from palm.core.behavior_tree.composite import CompositeNode
 from palm.core.context import BaseState
 
@@ -21,7 +21,7 @@ class SequenceNode(CompositeNode):
 
         while self._current_index < len(self.children):
             status = self.children[self._current_index].tick(state)
-            if status in (PatternStatus.RUNNING, PatternStatus.WAITING_FOR_INPUT):
+            if is_yielding_status(status):
                 return status
             if status == PatternStatus.FAILURE:
                 self._current_index = 0

@@ -107,17 +107,34 @@ def test_palm_provider_until_terminal_timeout_message(runtime: EmbeddedRuntime) 
     assert "WAITING_FOR_INPUT" in result.error or "interactive input" in result.error
 
 
-def test_parent_wizard_resource_step_until_input(runtime: EmbeddedRuntime) -> None:
-    job = runtime.submit_flow("parent-wizard")
+def test_parent_wizard_suspends_until_child_completes(runtime: EmbeddedRuntime) -> None:
+    parent_job = runtime.submit_flow("parent-wizard")
     runtime.wait_until_idle(timeout=5)
 
-    assert job.status != JobStatus.FAILED
-    answers = job.state.get(WizardKeys.ANSWERS) or {}
-    child_output = answers.get("child_job")
-    assert isinstance(child_output, dict)
-    assert child_output["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert child_output.get("waiting_for_child_wizard") is True
-    assert child_output.get("child_job_id")
+    assert parent_job.status == JobStatus.WAITING_FOR_INPUT
+    assert parent_job.state.get(WizardKeys.CURRENT_STEP) == "spawn_child"
 
-    child_job = runtime.get_job(str(child_output["child_job_id"]))
+    waiting = parent_job.state.get(WizardKeys.WAITING_FOR_CHILD)
+    assert isinstance(waiting, dict)
+    child_job_id = waiting["child_job_id"]
+    assert child_job_id
+
+    child_job = runtime.get_job(str(child_job_id))
     assert child_job.status == JobStatus.WAITING_FOR_INPUT
+    assert child_job.metadata.get("__palm:parent_job_id") == parent_job.id
+
+    answers = parent_job.state.get(WizardKeys.ANSWERS) or {}
+    assert "child_job" not in answers
+
+    runtime.provide_input(child_job_id, "nested answer")
+    runtime.wait_until_idle(timeout=5)
+
+    child_job = runtime.get_job(str(child_job_id))
+    assert child_job.status == JobStatus.SUCCEEDED
+
+    parent_job = runtime.get_job(parent_job.id)
+    assert parent_job.status == JobStatus.SUCCEEDED
+    answers = parent_job.state.get(WizardKeys.ANSWERS) or {}
+    assert isinstance(answers.get("child_job"), dict)
+    assert answers["child_job"]["status"] == JobStatus.SUCCEEDED.value
+    assert parent_job.state.get(WizardKeys.WAITING_FOR_CHILD) is None

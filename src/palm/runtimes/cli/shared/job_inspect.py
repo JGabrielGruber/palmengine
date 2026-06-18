@@ -64,6 +64,10 @@ class JobContext:
     transform_source_key: str | None = None
     transform_target_key: str | None = None
     transform_source_preview: str | None = None
+    waiting_for_child: bool = False
+    waiting_for_child_job_id: str | None = None
+    waiting_for_child_instance_id: str | None = None
+    child_status: str | None = None
 
     @property
     def repl_scope_suffix(self) -> str:
@@ -151,6 +155,11 @@ def inspect_job_json(job: Job) -> dict[str, Any]:
         payload["label_field"] = ctx.label_field
     if ctx.item_fields:
         payload["item_fields"] = list(ctx.item_fields)
+    if ctx.waiting_for_child:
+        payload["waiting_for_child"] = True
+        payload["waiting_for_child_job_id"] = ctx.waiting_for_child_job_id
+        payload["waiting_for_child_instance_id"] = ctx.waiting_for_child_instance_id
+        payload["child_status"] = ctx.child_status
     if ctx.transform_rule:
         payload["transform_rule"] = ctx.transform_rule
         payload["transform_source_key"] = ctx.transform_source_key
@@ -244,6 +253,7 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
     transform_rule, transform_source_key, transform_target_key, transform_source_preview = (
         _transform_from_bundle(prompt_bundle)
     )
+    waiting_for_child = bool(prompt_bundle.get("waiting_for_child")) if prompt_bundle else False
     return JobContext(
         pattern="wizard",
         step=wizard.current_step_slug(state),
@@ -271,6 +281,13 @@ def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
         transform_source_key=transform_source_key,
         transform_target_key=transform_target_key,
         transform_source_preview=transform_source_preview,
+        waiting_for_child=waiting_for_child,
+        waiting_for_child_job_id=_str_from_bundle(prompt_bundle, "waiting_for_child_job_id"),
+        waiting_for_child_instance_id=_str_from_bundle(
+            prompt_bundle,
+            "waiting_for_child_instance_id",
+        ),
+        child_status=_str_from_bundle(prompt_bundle, "child_status"),
     )
 
 

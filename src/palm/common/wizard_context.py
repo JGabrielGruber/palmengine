@@ -63,6 +63,14 @@ def derive_wizard_next_actions(
     if status == JobStatus.WAITING_FOR_INPUT.value:
         actions.append(
             {
+                "action": "resume_child_wait",
+                "method": "POST",
+                "path": f"/v1/wizards/{instance_id}/resume-child-wait",
+                "description": "Re-check nested child wizard and advance when complete",
+            }
+        )
+        actions.append(
+            {
                 "action": "provide_wizard_input",
                 "method": "POST",
                 "path": f"/v1/wizards/{instance_id}/input",
@@ -133,6 +141,12 @@ def _prompt_block(pattern: dict[str, Any] | None) -> dict[str, Any] | None:
     if isinstance(collection_draft, dict) and collection_draft:
         prompt["collection_draft"] = dict(collection_draft)
     for key in (
+        "waiting_for_child",
+        "waiting_for_child_job_id",
+        "waiting_for_child_instance_id",
+        "child_status",
+        "child_job_href",
+        "child_instance_href",
         "collection_progress",
         "collection_field",
         "collection_select_action",

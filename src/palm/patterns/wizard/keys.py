@@ -32,3 +32,4 @@ class WizardKeys:
     TRANSFORM_FEEDBACK = f"{PREFIX}.transform_feedback"
     RESOURCE_FEEDBACK = f"{PREFIX}.resource_feedback"
     RESOURCE_INVOCATIONS = f"{PREFIX}.resource_invocations"
+    WAITING_FOR_CHILD = f"{PREFIX}.waiting_for_child"
