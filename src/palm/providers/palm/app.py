@@ -7,8 +7,12 @@ Read this file first to understand which Palm subsystems the palm provider dogfo
 from __future__ import annotations
 
 from palm.common.providers.app import ProviderApp
-from palm.providers._registry import register_runtime_binding
-from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+from palm.providers._registry import register_runtime_accessor, register_runtime_binding
+from palm.providers.palm.bindings.runtimes.wiring import (
+    bind_palm_runtime,
+    clear_palm_runtime,
+    get_bound_runtime as resolve_bound_runtime,
+)
 
 
 class PalmProviderApp(ProviderApp):
@@ -24,10 +28,11 @@ class PalmProviderApp(ProviderApp):
         "runtimes.server",
     )
     actions = ("submit_flow", "submit_process", "invoke_resource", "fetch")
-    registry_hooks = ("provider_registry", "runtime_binding")
+    registry_hooks = ("provider_registry", "runtime_binding", "runtime_accessor")
 
     def ready(self) -> None:
         register_runtime_binding(bind_palm_runtime, unbind=clear_palm_runtime)
+        register_runtime_accessor(resolve_bound_runtime)
 
 
 palm_app = PalmProviderApp()

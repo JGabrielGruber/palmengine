@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from palm import __version__
 from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
 
@@ -137,7 +138,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
     "health": {
         "status": "ok",
         "runtime": "ServerRuntime",
-        "version": "0.13.0",
+        "version": __version__,
         "auth_enforce": False,
         "surfaces": ["rest"],
         "docs": "/v1/docs",
@@ -196,6 +197,17 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "job_id": "job-abc123",
         "status": "RUNNING",
         "metadata": {"pattern": "wizard"},
+    },
+    "invoke_resource": {
+        "success": True,
+        "data": {
+            "id": "health/check",
+            "source": "rest",
+            "status_code": 200,
+            "body": {"ok": True},
+        },
+        "error": None,
+        "metadata": {"action": "fetch", "provider": "rest"},
     },
     "provide_input": {
         "job_id": "job-abc123",

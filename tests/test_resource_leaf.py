@@ -16,26 +16,26 @@ from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
 
 
-def _fetch_customer_definition() -> ResourceDefinition:
+def _fetch_customer_definition(*, base_url: str) -> ResourceDefinition:
     return ResourceDefinition(
         id="resource-fetch-customer",
         name="fetch-customer",
         provider="rest",
         action="fetch",
         resource_id="customers/{customer_id}",
-        params={"customer_id": "{{ state.customer_id }}"},
+        params={"customer_id": "{{ state.customer_id }}", "base_url": base_url},
     )
 
 
-def _resource_engine_with_repo() -> ResourceEngine:
+def _resource_engine_with_repo(base_url: str) -> ResourceEngine:
     repo = DefinitionRepository()
-    repo.register_resource(_fetch_customer_definition())
+    repo.register_resource(_fetch_customer_definition(base_url=base_url))
     engine = ResourceEngine()
     engine.initialize(definition_resolver=resource_definition_resolver(repo))
     return engine
 
 
-def test_resource_leaf_direct_provider() -> None:
+def test_resource_leaf_direct_provider(rest_base_url: str) -> None:
     engine = ResourceEngine()
     engine.initialize()
     leaf = build_resource_leaf(
@@ -44,16 +44,17 @@ def test_resource_leaf_direct_provider() -> None:
         provider="rest",
         action="fetch",
         resource_id="health/check",
+        params={"base_url": rest_base_url},
         output_key="health",
     )
     state = BlackboardState()
     assert leaf.tick(state) == PatternStatus.SUCCESS
-    assert state.get("health")["source"] == "rest"
+    assert state.get("health")["body"]["ok"] is True
     engine.shutdown()
 
 
-def test_resource_leaf_definition_ref_with_state_binding() -> None:
-    engine = _resource_engine_with_repo()
+def test_resource_leaf_definition_ref_with_state_binding(rest_base_url: str) -> None:
+    engine = _resource_engine_with_repo(rest_base_url)
     leaf = build_resource_leaf(
         "get-customer",
         resource_engine=engine,
@@ -89,8 +90,8 @@ def test_resource_leaf_requires_ref_or_provider() -> None:
         ResourceLeaf("orphan")
 
 
-def test_wizard_resource_step_invokes_definition() -> None:
-    engine = _resource_engine_with_repo()
+def test_wizard_resource_step_invokes_definition(rest_base_url: str) -> None:
+    engine = _resource_engine_with_repo(rest_base_url)
     config = WizardConfig(
         steps=(
             WizardStepConfig(
@@ -123,8 +124,8 @@ def test_wizard_resource_step_invokes_definition() -> None:
     engine.shutdown()
 
 
-def test_resource_leaf_trace_includes_ref_and_action() -> None:
-    engine = _resource_engine_with_repo()
+def test_resource_leaf_trace_includes_ref_and_action(rest_base_url: str) -> None:
+    engine = _resource_engine_with_repo(rest_base_url)
     leaf = build_resource_leaf(
         "get-customer",
         resource_engine=engine,

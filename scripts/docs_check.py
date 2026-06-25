@@ -8,6 +8,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from version_utils import PYPROJECT, INIT, read_version  # noqa: E402
 
 STALE_ARCHITECTURE_PATTERNS = (
     (re.compile(r"patterns/wizard/handler\.py"), "use patterns/wizard/bindings/compensation/handler.py"),
@@ -45,39 +48,14 @@ STALE_VERSION_PATTERNS = (
     re.compile(r'"version":\s*"0\.9'),
 )
 
-VERSION_SOURCES = (
-    ROOT / "pyproject.toml",
-    ROOT / "src/palm/__init__.py",
-)
+VERSION_SOURCES = (PYPROJECT, INIT)
 
-SURFACE_FILES = (
+SYNC_SURFACE_FILES = (
     ROOT / "README.md",
     ROOT / "STATUS.md",
-    ROOT / "ARCHITECTURE.md",
-    ROOT / "DEVELOPMENT.md",
     ROOT / "docs/index.html",
     ROOT / "docs/llms.txt",
-    ROOT / "CHANGELOG.md",
 )
-
-
-def read_version() -> str:
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    match = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
-    if not match:
-        raise RuntimeError("Could not read version from pyproject.toml")
-    version = match.group(1)
-
-    init = (ROOT / "src/palm/__init__.py").read_text(encoding="utf-8")
-    init_match = re.search(r'__version__\s*=\s*"([^"]+)"', init)
-    if not init_match:
-        raise RuntimeError("Could not read __version__ from src/palm/__init__.py")
-    if init_match.group(1) != version:
-        raise RuntimeError(
-            f"Version mismatch: pyproject.toml={version!r} "
-            f"vs __init__.py={init_match.group(1)!r}"
-        )
-    return version
 
 
 def check_version_sources(version: str, errors: list[str]) -> None:
@@ -87,12 +65,12 @@ def check_version_sources(version: str, errors: list[str]) -> None:
             errors.append(f"{path.relative_to(ROOT)}: expected version {version!r}")
 
 
-def check_surfaces(version: str, errors: list[str]) -> None:
-    for path in SURFACE_FILES:
+def check_sync_surfaces(version: str, errors: list[str]) -> None:
+    for path in SYNC_SURFACE_FILES:
         rel = path.relative_to(ROOT)
         text = path.read_text(encoding="utf-8")
         if version not in text:
-            errors.append(f"{rel}: missing current version {version!r}")
+            errors.append(f"{rel}: missing current version {version!r} (run sync-version)")
 
     index_html = (ROOT / "docs/index.html").read_text(encoding="utf-8")
     for field in ("version", "softwareVersion"):
@@ -147,7 +125,7 @@ def main() -> int:
         return 1
 
     check_version_sources(version, errors)
-    check_surfaces(version, errors)
+    check_sync_surfaces(version, errors)
     check_stale_architecture_refs(errors)
     check_stale_versions(errors)
 

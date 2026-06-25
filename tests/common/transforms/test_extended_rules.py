@@ -87,7 +87,10 @@ def test_date_format_and_parse(executor: TransformExecutor) -> None:
     assert parsed.value == "2026-06-15"
 
 
-def test_enrich_resource_via_resource_ref(executor: TransformExecutor) -> None:
+def test_enrich_resource_via_resource_ref(
+    executor: TransformExecutor,
+    rest_base_url: str,
+) -> None:
     import palm.providers  # noqa: F401
     from palm.common import DefinitionRepository
     from palm.common.resource import resource_definition_resolver
@@ -100,6 +103,7 @@ def test_enrich_resource_via_resource_ref(executor: TransformExecutor) -> None:
             provider="rest",
             action="fetch",
             resource_id="health/check",
+            params={"base_url": rest_base_url},
         )
     )
     resource = ResourceEngine()
@@ -112,12 +116,12 @@ def test_enrich_resource_via_resource_ref(executor: TransformExecutor) -> None:
             resource_engine=resource,
         )
         assert result.value["tenant"] == "acme"
-        assert result.value["resource"]["source"] == "rest"
+        assert result.value["resource"]["body"]["ok"] is True
     finally:
         resource.shutdown()
 
 
-def test_enrich_resource_merges_fetch(executor: TransformExecutor) -> None:
+def test_enrich_resource_merges_fetch(executor: TransformExecutor, rest_base_url: str) -> None:
     import palm.providers  # noqa: F401
 
     resource = ResourceEngine()
@@ -128,10 +132,11 @@ def test_enrich_resource_merges_fetch(executor: TransformExecutor) -> None:
             {"id": "users/42", "name": "Ada"},
             provider="rest",
             resource_engine=resource,
+            params={"base_url": rest_base_url},
         )
         assert result.value["name"] == "Ada"
-        assert result.value["resource"]["id"] == "users/42"
-        assert result.value["resource"]["source"] == "rest"
+        assert result.value["resource"]["body"]["ok"] is True
+        assert "/users/42" in result.value["resource"]["body"]["path"]
     finally:
         resource.shutdown()
 

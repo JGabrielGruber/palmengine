@@ -6,8 +6,18 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     jobs,
     meta,
     plans,
+    resources,
     snapshots,
     wizard,
 )
 
-__all__ = ["catalog", "instances", "jobs", "meta", "plans", "snapshots", "wizard"]
+__all__ = [
+    "catalog",
+    "instances",
+    "jobs",
+    "meta",
+    "plans",
+    "resources",
+    "snapshots",
+    "wizard",
+]

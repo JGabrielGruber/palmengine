@@ -33,6 +33,7 @@ RouteId = Literal[
     "get_flow",
     "list_processes",
     "get_process",
+    "invoke_resource",
 ]
 
 
@@ -278,5 +279,16 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Catalog",
             summary="Get process",
             description="Fetch a full process definition by id or name.",
+        ),
+        RouteDefinition(
+            route_id="invoke_resource",
+            method="POST",
+            path="/v1/resources/invoke",
+            group="Resources",
+            summary="Invoke resource",
+            description="Invoke a registered resource definition via ResourceEngine.",
+            auth_required=True,
+            request_schema="InvokeResourceBody",
+            response_status=200,
         ),
     )

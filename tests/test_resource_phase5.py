@@ -165,7 +165,10 @@ def executor() -> TransformExecutor:
     return TransformExecutor()
 
 
-def test_enrich_resource_with_resource_ref_and_action(executor: TransformExecutor) -> None:
+def test_enrich_resource_with_resource_ref_and_action(
+    executor: TransformExecutor,
+    rest_base_url: str,
+) -> None:
     import palm.providers  # noqa: F401
 
     repo = DefinitionRepository()
@@ -176,6 +179,7 @@ def test_enrich_resource_with_resource_ref_and_action(executor: TransformExecuto
             provider="rest",
             action="fetch",
             resource_id="health/check",
+            params={"base_url": rest_base_url},
         )
     )
     resource = ResourceEngine()
@@ -189,13 +193,13 @@ def test_enrich_resource_with_resource_ref_and_action(executor: TransformExecuto
             target_field="health",
         )
         assert result.value["tenant"] == "acme"
-        assert result.value["health"]["source"] == "rest"
+        assert result.value["health"]["body"]["ok"] is True
         assert result.context.frames[-1].meta.get("resource_ref") == "check-health"
     finally:
         resource.shutdown()
 
 
-def test_resource_engine_emit_includes_job_context() -> None:
+def test_resource_engine_emit_includes_job_context(rest_base_url: str) -> None:
     captured: list[dict] = []
     bus = EventEngine()
     bus.initialize()
@@ -204,7 +208,12 @@ def test_resource_engine_emit_includes_job_context() -> None:
     engine = ResourceEngine()
     engine.initialize(event_engine=bus)
     with bus.bind_context(EventContext(job_id="job-ctx", instance_id="inst-ctx")):
-        result = engine.invoke(provider="rest", action="fetch", resource_id="x")
+        result = engine.invoke(
+            provider="rest",
+            action="fetch",
+            resource_id="x",
+            params={"base_url": rest_base_url},
+        )
     engine.shutdown()
     bus.shutdown()
 

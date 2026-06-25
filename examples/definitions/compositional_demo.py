@@ -18,7 +18,7 @@ REST_HEALTH_RESOURCE = ResourceDefinition(
     name="rest-health",
     provider="rest",
     action="fetch",
-    resource_id="health/check",
+    resource_id="https://httpbin.org/get",
 )
 
 SUBMIT_INGEST_ETL_RESOURCE = ResourceDefinition(

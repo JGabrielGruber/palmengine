@@ -166,6 +166,20 @@ FLOW_SUMMARY = DictStateSchema(
     }
 )
 
+INVOKE_RESOURCE_BODY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "resource_ref": _STRING,
+            "action": _STRING,
+            "params": _OBJECT,
+            "resource_id": _STRING,
+            "state": _OBJECT,
+        },
+        "required": ["resource_ref"],
+    }
+)
+
 PALM_INVOKE_PARAMS = DictStateSchema(
     {
         "type": "object",
@@ -219,6 +233,7 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "FlowSummary": FLOW_SUMMARY,
     "ProcessSummary": PROCESS_SUMMARY,
     "PalmInvokeParams": PALM_INVOKE_PARAMS,
+    "InvokeResourceBody": INVOKE_RESOURCE_BODY,
 }
 
 

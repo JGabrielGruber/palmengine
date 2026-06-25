@@ -90,7 +90,7 @@ def test_palm_provider_cycle_detection() -> None:
                     pass
 
 
-def test_palm_provider_invoke_resource(runtime: EmbeddedRuntime) -> None:
+def test_palm_provider_invoke_resource(runtime: EmbeddedRuntime, rest_base_url: str) -> None:
     runtime.repository.save_resource(
         ResourceDefinition(
             id="resource-rest-health",
@@ -98,6 +98,7 @@ def test_palm_provider_invoke_resource(runtime: EmbeddedRuntime) -> None:
             provider="rest",
             action="fetch",
             resource_id="health/check",
+            params={"base_url": rest_base_url},
         ),
     )
     provider = _palm_provider()
@@ -107,7 +108,39 @@ def test_palm_provider_invoke_resource(runtime: EmbeddedRuntime) -> None:
     )
     assert result.success is True
     assert result.data["kind"] == "resource"
-    assert result.data["result"]["source"] == "rest"
+    assert result.data["result"]["body"]["ok"] is True
+
+
+def test_palm_provider_remote_invoke_resource(rest_base_url: str) -> None:
+    server = ServerRuntime(host="127.0.0.1", port=0)
+    server.start(port=0)
+    server.repository.save_resource(
+        ResourceDefinition(
+            id="resource-rest-remote",
+            name="rest-remote",
+            provider="rest",
+            action="fetch",
+            resource_id="health/check",
+            params={"base_url": rest_base_url},
+        ),
+    )
+    try:
+        provider = _palm_provider()
+        result = provider.invoke(
+            "invoke_resource",
+            params={
+                "resource_ref": "rest-remote",
+                "remote_url": server.base_url,
+                "wait": False,
+            },
+        )
+        assert result.success is True
+        assert result.metadata["mode"] == "remote"
+        assert result.data["kind"] == "resource"
+        assert result.data["result"]["status_code"] == 200
+    finally:
+        server.stop()
+        clear_palm_runtime()
 
 
 def test_palm_provider_remote_submit_flow() -> None:

@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.13.0** · Wizard Experience + Compositional Power + Palm Explorer · June 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.13.13** · Provider apps + Wizard Experience + Compositional Power · June 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension. For product scope and roadmap, see [SCOPE.md](SCOPE.md).
 
@@ -816,14 +816,18 @@ flowchart LR
 
 ### The `palm` provider (flagship)
 
-New plugin: `palm/providers/palm/`. Enables **Palm calling Palm**:
+Django-style app at `palm/providers/palm/` with **`ProviderApp`** manifest ([`app.py`](src/palm/providers/palm/app.py)), **`bindings/`** (resource, orchestration, runtimes, recursion), and **`flow/`** (coordinator, params, target, remote). See [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md).
+
+Enables **Palm calling Palm**:
 
 | Mode | Delegates to |
 |------|--------------|
-| Local | Hosting `ApplicationHost` — `submit_flow`, `submit_process`, `ask` |
-| Remote | `ServerRuntime` HTTP — `/v1/jobs`, flow submit endpoints |
+| Local | Bound `BaseRuntime` — `submit_flow`, `submit_process`, `invoke_resource`, `fetch` |
+| Remote | `ServerRuntime` HTTP — `/v1/jobs`, `/v1/plans/*`, `/v1/resources/invoke` |
 
-Recursion guardrails (depth limits, cycle detection, child job linkage on parent state) live in the provider; engine supplies correlation metadata. This is the primary enabler of hierarchical, distributed, and agent-friendly workflows.
+Runtime attach/detach is registered via [`providers/_registry.py`](src/palm/providers/_registry.py) (`register_runtime_binding`) and consumed by `BaseRuntime.start()` / `stop()`.
+
+Recursion guardrails (depth limits, cycle detection, child job linkage on parent state) live in `bindings/recursion`; engine supplies correlation metadata. This is the primary enabler of hierarchical, distributed, and agent-friendly workflows.
 
 ### Integration targets
 

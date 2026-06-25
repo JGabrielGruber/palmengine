@@ -91,7 +91,7 @@ providers/<name>/
 | Provider | `bindings/` | `flow/` | `ProviderApp` hooks |
 |----------|-------------|---------|---------------------|
 | **palm** | resource, orchestration, runtimes, recursion | coordinator, params, target, remote | provider_registry, runtime_binding |
-| **rest** | — (stub) | — | provider_registry |
+| **rest** | resource, transport | params | provider_registry |
 | **graphql** | — (stub) | — | provider_registry |
 | **postgres** | — (stub) | — | provider_registry |
 
@@ -120,9 +120,23 @@ Future hooks (reserved): compensation handlers, CQRS projections for resource in
 | `bindings/orchestration` | `core.orchestration` | Child job payloads, local wait |
 | `bindings/runtimes` | `common.runtimes` | `bind_palm_runtime()` for embedded mode |
 | `bindings/recursion` | `core.utils.recursion` | Depth and cycle guardrails |
-| `flow/remote` | `runtimes.server` HTTP | Out-of-process Palm via `/v1/jobs` |
+| `flow/remote` | `runtimes.server` HTTP | Out-of-process Palm via `/v1/jobs`, `/v1/resources/invoke` |
 
 Actions: `submit_flow`, `submit_process`, `invoke_resource`, `fetch`.
+
+---
+
+## `palm.common` boundary (strict)
+
+**`palm.common` coordinates; it does not own provider semantics.**
+
+| Belongs in `palm.common` | Belongs in `palm.providers.<name>` |
+|--------------------------|-------------------------------------|
+| Generic child-wait primitives | Provider-specific invoke adapters |
+| `providers._registry` accessor hooks | `bindings/`, `flow/`, typed params |
+| Resource catalog / resolver wiring | HTTP transport, remote clients |
+
+`palm.common` may import `palm.providers._registry` only — never `palm.providers.<name>.bindings` or `flow`. Enforced by `tests/test_provider_boundary.py` and `just guard-common`.
 
 ---
 

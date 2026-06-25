@@ -84,7 +84,14 @@ guard-core:
 
 guard-common:
     @echo "🔒 Checking palm.common pattern boundary..."
-    uv run pytest -q tests/test_common_boundary.py tests/test_modular_apps.py --tb=short
+    uv run pytest -q tests/test_common_boundary.py tests/test_provider_boundary.py tests/test_modular_apps.py --tb=short
+
+sync-version:
+    @echo "🔄 Syncing version to documentation surfaces..."
+    uv run python scripts/sync_version.py
+
+bump-version version:
+    uv run python scripts/sync_version.py --set {{version}}
 
 docs-check:
     @echo "📄 Checking documentation version consistency..."
@@ -178,8 +185,9 @@ docs-build:
     @echo "✅ docs/styles/output.css rebuilt"
 
 release-prep:
-    @echo "📋 Release prep for {{package}} — see RELEASE-0.13.0.md"
+    @echo "📋 Release prep for {{package}}"
     @echo "   Version: $(uv run python -c 'import palm; print(palm.__version__)')"
+    just sync-version
     just docs-check
     just full-check
     just build

@@ -46,7 +46,7 @@ Providers are external-system adapters; the `palm` provider is the meta-case (Pa
 
 - More directories for the palm provider (mitigated by incremental adoption for stub providers)
 - Import paths change during migration (public `__init__.py` re-exports preserve stable APIs)
-- `common` and `wizard` still lazy-import `bindings/runtimes/wiring` for child-wait — acceptable edge coupling until a generic runtime accessor exists
+- Runtime accessor registered via `register_runtime_accessor()` — `child_wait` and wizard bridges use `providers._registry.get_bound_runtime()` only
 
 ## References
 

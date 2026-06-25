@@ -299,7 +299,9 @@ def test_explorer_fetcher_lists_patterns(server: ServerRuntime) -> None:
 
 
 def test_explorer_layout_renders_title() -> None:
-    html = explorer_page(title="Test", version="0.13.0", content="<p>Body</p>")
+    from palm import __version__
+
+    html = explorer_page(title="Test", version=__version__, content="<p>Body</p>")
     assert "Test" in html
     assert "Body" in html
     assert "Palm Explorer" in html

@@ -6,7 +6,10 @@ Core-only fixtures live in :mod:`tests.core.conftest` and apply under ``tests/co
 
 from __future__ import annotations
 
+import json
+import threading
 from collections.abc import Iterator
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
@@ -85,6 +88,37 @@ def cli_ctx(fast_cli_settings: PalmSettings) -> Iterator[CliContext]:
     ctx = bootstrap_runtime(settings=fast_cli_settings, show_banner=False)
     yield ctx
     shutdown_context(ctx)
+
+
+class _EchoHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        payload = {"path": self.path, "ok": True}
+        body = json.dumps(payload).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *_args: object) -> None:
+        return
+
+
+@pytest.fixture
+def http_echo_server() -> Iterator[str]:
+    """Local HTTP server that echoes GET path as JSON — for REST provider tests."""
+    server = HTTPServer(("127.0.0.1", 0), _EchoHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}"
+    finally:
+        server.shutdown()
+
+
+@pytest.fixture
+def rest_base_url(http_echo_server: str) -> str:
+    return http_echo_server
 
 
 @pytest.fixture

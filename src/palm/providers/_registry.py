@@ -17,11 +17,13 @@ if TYPE_CHECKING:
 
 RuntimeBindingFn = Callable[["BaseRuntime"], None]
 RuntimeUnbindingFn = Callable[[], None]
+RuntimeAccessorFn = Callable[[], "BaseRuntime | None"]
 
 _lock = threading.RLock()
 _provider_apps: dict[str, Any] = {}
 _runtime_binding: RuntimeBindingFn | None = None
 _runtime_unbinding: RuntimeUnbindingFn | None = None
+_runtime_accessor: RuntimeAccessorFn | None = None
 
 
 def register_provider_app(app: ProviderApp) -> None:
@@ -70,6 +72,21 @@ def get_runtime_unbinding() -> RuntimeUnbindingFn | None:
         return _runtime_unbinding
 
 
+def register_runtime_accessor(fn: RuntimeAccessorFn) -> None:
+    """Register a hook that returns the bound in-process runtime, if any."""
+    with _lock:
+        global _runtime_accessor
+        _runtime_accessor = fn
+
+
+def get_bound_runtime() -> BaseRuntime | None:
+    """Return the bound runtime via the registered accessor hook."""
+    with _lock:
+        if _runtime_accessor is None:
+            return None
+        return _runtime_accessor()
+
+
 def clear_provider_apps() -> None:
     """Remove provider app registrations (primarily for tests)."""
     with _lock:
@@ -79,6 +96,7 @@ def clear_provider_apps() -> None:
 def clear_runtime_binding() -> None:
     """Remove runtime binding hooks (primarily for tests)."""
     with _lock:
-        global _runtime_binding, _runtime_unbinding
+        global _runtime_binding, _runtime_unbinding, _runtime_accessor
         _runtime_binding = None
         _runtime_unbinding = None
+        _runtime_accessor = None

@@ -53,6 +53,16 @@ def test_installed_provider_apps_register() -> None:
     assert {app.name for app in installed_provider_apps()} == set(INSTALLED_PROVIDERS)
 
 
+def test_palm_provider_app_manifest() -> None:
+    from palm.providers._registry import get_provider_app
+
+    app = get_provider_app("palm")
+    assert app is not None
+    assert app.palm_layers
+    assert app.actions == ("submit_flow", "submit_process", "invoke_resource", "fetch")
+    assert "runtime_binding" in app.registry_hooks
+
+
 def test_installed_storage_apps_register() -> None:
     assert set(INSTALLED_STORAGES) == {"memory", "postgres", "mongodb", "filesystem"}
     assert set(CORE_STORAGES) == {"memory", "filesystem"}

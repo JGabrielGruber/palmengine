@@ -25,7 +25,7 @@ def _child_wait_hooks(job: Job) -> ChildWaitHooks:
 
 def bound_runtime() -> Any | None:
     """Return the in-process runtime used for compositional palm invokes."""
-    from palm.providers.palm.bindings.runtimes.wiring import get_bound_runtime
+    from palm.providers._registry import get_bound_runtime
 
     return get_bound_runtime()
 

@@ -58,7 +58,7 @@ def _wizard_parent_is_waiting(job: Job) -> bool:
 
 
 def _wizard_poll_child_for_parent(_state: Any, child_job_id: str) -> Job | None:
-    from palm.providers.palm.bindings.runtimes.wiring import get_bound_runtime
+    from palm.providers._registry import get_bound_runtime
 
     runtime = get_bound_runtime()
     if runtime is None:

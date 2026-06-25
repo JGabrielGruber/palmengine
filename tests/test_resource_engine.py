@@ -19,14 +19,17 @@ from palm.providers.rest.provider import RestProvider
 from palm.states import BlackboardState
 
 
-def _fetch_customer_definition() -> ResourceDefinition:
+def _fetch_customer_definition(*, base_url: str | None = None) -> ResourceDefinition:
+    params: dict[str, object] = {"customer_id": "{{ state.customer_id }}"}
+    if base_url is not None:
+        params["base_url"] = base_url
     return ResourceDefinition(
         id="resource-fetch-customer",
         name="fetch-customer",
         provider="rest",
         action="fetch",
         resource_id="customers/{customer_id}",
-        params={"customer_id": "{{ state.customer_id }}"},
+        params=params,
     )
 
 
@@ -53,15 +56,19 @@ def test_bind_resource_params_nested() -> None:
     assert bound == {"tenant": "acme", "nested": {"id": "acme"}}
 
 
-def test_rest_provider_invoke_fetch() -> None:
+def test_rest_provider_invoke_fetch(rest_base_url: str) -> None:
     provider = RestProvider(name="rest")
     provider.connect()
-    result = provider.invoke("fetch", resource_id="users/1", params={"limit": 5})
+    result = provider.invoke(
+        "fetch",
+        resource_id="users/1",
+        params={"base_url": rest_base_url, "limit": 5},
+    )
     provider.disconnect()
     assert result.success is True
-    assert result.data["id"] == "users/1"
-    assert result.data["source"] == "rest"
-    assert result.data["params"]["limit"] == 5
+    assert result.data["status_code"] == 200
+    assert result.data["body"]["ok"] is True
+    assert "/users/1" in result.data["body"]["path"]
 
 
 def test_rest_provider_describe_and_health() -> None:
@@ -73,23 +80,24 @@ def test_rest_provider_describe_and_health() -> None:
     assert health.healthy is True
 
 
-def test_resource_engine_direct_provider_invoke() -> None:
+def test_resource_engine_direct_provider_invoke(rest_base_url: str) -> None:
     engine = ResourceEngine()
     engine.initialize()
     result = engine.invoke(
         provider="rest",
         action="fetch",
         resource_id="health/check",
-        params={"probe": True},
+        params={"base_url": rest_base_url, "probe": True},
     )
     engine.shutdown()
     assert result.success is True
-    assert result.data["source"] == "rest"
+    assert result.data["status_code"] == 200
+    assert result.data["body"]["ok"] is True
 
 
-def test_resource_engine_invoke_via_definition_ref() -> None:
+def test_resource_engine_invoke_via_definition_ref(rest_base_url: str) -> None:
     repo = DefinitionRepository()
-    repo.register_resource(_fetch_customer_definition())
+    repo.register_resource(_fetch_customer_definition(base_url=rest_base_url))
     engine = ResourceEngine()
     engine.initialize(definition_resolver=resource_definition_resolver(repo))
     result = engine.invoke(
@@ -122,7 +130,7 @@ def test_correlation_payload_from_provider_result() -> None:
     }
 
 
-def test_resource_engine_emits_events() -> None:
+def test_resource_engine_emits_events(rest_base_url: str) -> None:
     events: list[str] = []
     event_engine = EventEngine()
     event_engine.initialize()
@@ -131,7 +139,12 @@ def test_resource_engine_emits_events() -> None:
 
     engine = ResourceEngine()
     engine.initialize(event_engine=event_engine)
-    result = engine.invoke(provider="rest", action="fetch", resource_id="x")
+    result = engine.invoke(
+        provider="rest",
+        action="fetch",
+        resource_id="x",
+        params={"base_url": rest_base_url},
+    )
     engine.shutdown()
     event_engine.shutdown()
 
@@ -178,9 +191,9 @@ def test_resource_engine_unknown_definition() -> None:
     assert "not found" in (result.error or "").lower()
 
 
-def test_resolved_resource_spec_from_repository() -> None:
+def test_resolved_resource_spec_from_repository(rest_base_url: str) -> None:
     repo = DefinitionRepository()
-    repo.register_resource(_fetch_customer_definition())
+    repo.register_resource(_fetch_customer_definition(base_url=rest_base_url))
     resolve = resource_definition_resolver(repo)
     spec = resolve("fetch-customer")
     assert isinstance(spec, ResolvedResourceSpec)

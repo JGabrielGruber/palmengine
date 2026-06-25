@@ -1,0 +1,1 @@
+"""REST provider bindings — resource contract and HTTP transport."""

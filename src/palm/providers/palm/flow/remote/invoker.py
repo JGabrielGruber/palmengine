@@ -13,11 +13,19 @@ from palm.providers.palm.flow.context import InvokeContext
 from palm.providers.palm.flow.params import PalmInvokeParams
 from palm.providers.palm.flow.remote.client import (
     get_job_remote,
+    invoke_resource_remote,
     submit_flow_remote,
     submit_process_remote,
     wait_for_job_remote,
 )
 from palm.providers.palm.flow.target import PalmInvokeTarget
+from palm.states import BlackboardState
+
+
+def _state_dict(state: BlackboardState | None) -> dict[str, Any] | None:
+    if state is None:
+        return None
+    return state.snapshot()
 
 
 class RemotePalmInvoker:
@@ -42,7 +50,29 @@ class RemotePalmInvoker:
         base_url = str(params.remote_url)
 
         if action == "invoke_resource" or target.kind == "resource":
-            raise PalmRemoteError("invoke_resource is not supported in remote mode yet")
+            remote_result = invoke_resource_remote(
+                base_url,
+                target.ref,
+                action=params.resource_action,
+                params=params.child_resource_params() or None,
+                resource_id=params.resource_id,
+                state=_state_dict(params.resolve_state()),
+                token=params.remote_token,
+                timeout=params.wait_timeout,
+                retries=params.remote_retries,
+            )
+            if not remote_result.get("success"):
+                raise PalmRemoteError(remote_result.get("error") or "remote resource invoke failed")
+            data = remote_result.get("data")
+            return {
+                "kind": "resource",
+                "ref": target.ref,
+                "invoke_depth": context.depth,
+                "invoke_chain": list(context.chain),
+                "parent_job_id": context.parent_job_id,
+                "result": data,
+                "metadata": dict(remote_result.get("metadata") or {}),
+            }
 
         if action == "submit_process" or target.kind == "process":
             accepted = submit_process_remote(

@@ -13,6 +13,7 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     jobs,
     meta,
     plans,
+    resources,
     snapshots,
     wizard,
 )
@@ -84,5 +85,6 @@ def _resolve_handler(
         "get_flow": lambda req, flow_id: catalog.get_flow(ctx, req, flow_id=flow_id),
         "list_processes": lambda req: catalog.list_processes(ctx, req),
         "get_process": lambda req, process_id: catalog.get_process(ctx, req, process_id=process_id),
+        "invoke_resource": lambda req: resources.invoke_resource(ctx, req),
     }
     return builders[route.route_id]

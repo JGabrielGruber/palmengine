@@ -10,7 +10,7 @@ from palm.core.resource.cache import ResourceCacheConfig
 from palm.definitions import ResourceDefinition
 
 
-def test_resource_engine_caches_fetch_results_when_enabled() -> None:
+def test_resource_engine_caches_fetch_results_when_enabled(rest_base_url: str) -> None:
     repo = DefinitionRepository()
     repo.register_resource(
         ResourceDefinition(
@@ -18,6 +18,7 @@ def test_resource_engine_caches_fetch_results_when_enabled() -> None:
             provider="rest",
             action="fetch",
             resource_id="health/check",
+            params={"base_url": rest_base_url},
         ),
     )
     engine = ResourceEngine()
@@ -38,7 +39,7 @@ def test_resource_engine_caches_fetch_results_when_enabled() -> None:
     assert first.data == second.data
 
 
-def test_resource_engine_definition_cache_avoids_repeated_resolve() -> None:
+def test_resource_engine_definition_cache_avoids_repeated_resolve(rest_base_url: str) -> None:
     repo = DefinitionRepository()
     repo.register_resource(
         ResourceDefinition(
@@ -46,6 +47,7 @@ def test_resource_engine_definition_cache_avoids_repeated_resolve() -> None:
             provider="rest",
             action="fetch",
             resource_id="health/check",
+            params={"base_url": rest_base_url},
         ),
     )
     calls = {"count": 0}

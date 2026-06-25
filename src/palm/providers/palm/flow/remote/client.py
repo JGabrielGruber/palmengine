@@ -99,6 +99,42 @@ def _request_with_retry(
     raise PalmRemoteError(f"Remote request failed for {method} {path}")
 
 
+def invoke_resource_remote(
+    base_url: str,
+    resource_ref: str,
+    *,
+    action: str | None = None,
+    params: dict[str, Any] | None = None,
+    resource_id: str | None = None,
+    state: dict[str, Any] | None = None,
+    token: str | None = None,
+    timeout: float = 10.0,
+    retries: int = 2,
+) -> dict[str, Any]:
+    """Invoke a resource via ``POST /v1/resources/invoke``."""
+    body: dict[str, Any] = {"resource_ref": resource_ref}
+    if action is not None:
+        body["action"] = action
+    if params is not None:
+        body["params"] = params
+    if resource_id is not None:
+        body["resource_id"] = resource_id
+    if state is not None:
+        body["state"] = state
+    status, payload = _request_with_retry(
+        base_url,
+        "POST",
+        "/v1/resources/invoke",
+        body=body,
+        token=token,
+        timeout=timeout,
+        retries=retries,
+    )
+    if status != 200 or not isinstance(payload, dict):
+        raise _remote_error("Remote resource invoke failed", status, payload)
+    return payload
+
+
 def submit_flow_remote(
     base_url: str,
     flow_name: str,

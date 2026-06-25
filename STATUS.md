@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.13.0` (shipping)  
+**Current Version:** `0.13.13` (shipping)  
 **Last Updated:** June 25, 2026  
 **Maturity:** Wizard Experience shipped — `/v1/wizards` REST, Explorer wizard workspace, collection UI.
 
@@ -19,7 +19,7 @@ Palm follows a **layered, registry-driven** model with a strictly pure core:
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
-- `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)).
+- `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
 - `palm/runtimes/` — Thin surfaces over the common runtime layer.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full details and rules.
@@ -73,6 +73,16 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 
 ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-apps-and-common-boundaries.md)
 
+## Provider app alignment (June 2026)
+
+| Provider | Structure | Status |
+|----------|-----------|--------|
+| palm | Full `bindings/` + `flow/` | ✅ Reference implementation |
+| rest | `bindings/resource` + `bindings/transport` | ✅ Real HTTP (stub fallback without base_url) |
+| graphql, postgres | `app.py` only | ✅ Honest stubs |
+
+ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
+
 ## Areas Under Active Improvement
 
 - WebSocket runtime surface for live wizard/job streaming
@@ -93,7 +103,9 @@ ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-a
 | `README.md`           | Good            | 0.13 Try in Explorer + wizard REST |
 | `ARCHITECTURE.md`     | Good            | Pattern apps section + wizard REST |
 | `docs/PATTERN-APPS.md`| Good            | Canonical PatternApp + bindings/flow guide |
+| `docs/PROVIDER-APPS.md`| Good           | Canonical ProviderApp + bindings/flow guide |
 | `docs/adr/002-*.md`   | Good            | Pattern/common boundary ADR |
+| `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
 | `docs/index.html`     | Good            | 0.13.0 highlights |

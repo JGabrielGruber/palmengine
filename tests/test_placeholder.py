@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import importlib.metadata
+
 import palm
 from palm.core import BehaviorTreeEngine, pattern_registry, storage_registry
 from palm.core.registry import Registry
@@ -10,7 +12,7 @@ from palm.storages import memory  # noqa: F401
 
 
 def test_version() -> None:
-    assert palm.__version__ == "0.13.0"
+    assert palm.__version__ == importlib.metadata.version("palmengine")
 
 
 def test_pattern_registry_has_wizard() -> None:
