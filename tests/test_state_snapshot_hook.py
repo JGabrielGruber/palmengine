@@ -37,7 +37,7 @@ def test_state_snapshot_roundtrip_dict() -> None:
         recorded_at="2026-01-01T00:00:00+00:00",
         state_snapshot={"answers": {"alpha": "one"}},
         job_id="job-1",
-        wizard_step_slug="beta",
+        current_step_slug="beta",
     )
     restored = StateSnapshot.from_dict(snapshot.to_dict())
     assert restored.status == "WAITING_FOR_INPUT"
@@ -184,13 +184,13 @@ def test_embedded_runtime_snapshots_wizard_flow_when_enabled() -> None:
         snapshots = rt.instances.list_state_snapshots(instance_id)
         assert len(snapshots) == 1
         assert snapshots[0].status == "WAITING_FOR_INPUT"
-        assert snapshots[0].wizard_step_slug == "alpha"
+        assert snapshots[0].current_step_slug == "alpha"
 
         rt.provide_input(job.id, "first")
         assert job.status == JobStatus.WAITING_FOR_INPUT
         snapshots = rt.instances.list_state_snapshots(instance_id)
         assert len(snapshots) == 2
-        assert snapshots[-1].wizard_step_slug == "beta"
+        assert snapshots[-1].current_step_slug == "beta"
         assert snapshots[-1].state_snapshot.get(WizardKeys.ANSWERS, {}).get("alpha") == "first"
 
         rt.provide_input(job.id, "second")

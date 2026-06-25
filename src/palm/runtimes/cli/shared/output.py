@@ -21,7 +21,7 @@ def snapshots_to_json(snapshots: list[StateSnapshot]) -> list[dict[str, Any]]:
         {
             "status": snap.status,
             "recorded_at": snap.recorded_at,
-            "wizard_step_slug": snap.wizard_step_slug,
+            "current_step_slug": snap.current_step_slug,
             "job_id": snap.job_id,
             "state_snapshot": snap.state_snapshot,
         }

@@ -39,7 +39,7 @@ class ProcessInstance:
     state_snapshots: list[StateSnapshot] = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
-    wizard_step_slug: str | None = None
+    current_step_slug: str | None = None
     runtime_position: dict[str, Any] = field(default_factory=dict)
     state_meta: dict[str, Any] = field(default_factory=dict)
 
@@ -63,7 +63,7 @@ class ProcessInstance:
             "state_snapshots": [entry.to_dict() for entry in self.state_snapshots],
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "wizard_step_slug": self.wizard_step_slug,
+            "current_step_slug": self.current_step_slug,
             "runtime_position": dict(self.runtime_position),
             "state_meta": dict(self.state_meta),
         }
@@ -95,7 +95,7 @@ class ProcessInstance:
             state_snapshots=snapshots,
             created_at=str(data.get("created_at", datetime.now(UTC).isoformat())),
             updated_at=str(data.get("updated_at", datetime.now(UTC).isoformat())),
-            wizard_step_slug=data.get("wizard_step_slug"),
+            current_step_slug=data.get("current_step_slug") or data.get("wizard_step_slug"),
             runtime_position=dict(data.get("runtime_position") or {}),
             state_meta=dict(data.get("state_meta") or {}),
         )

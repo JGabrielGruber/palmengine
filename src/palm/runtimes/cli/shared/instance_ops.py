@@ -121,8 +121,8 @@ def summary_to_dict(summary: InstanceSummary) -> dict[str, Any]:
         "status": summary.status,
         "flow_name": summary.flow_name,
         "process_name": summary.process_name,
-        "wizard_step_slug": summary.wizard_step_slug,
-        "context": format_step_context(summary.wizard_step_slug),
+        "current_step_slug": summary.current_step_slug,
+        "context": format_step_context(summary.current_step_slug),
         "updated_at": summary.updated_at,
         "snapshot_count": summary.snapshot_count,
     }

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import (
+from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
     SubmitWizardCommand,
 )
-from palm.common.cqrs.query import GetWizardStatusQuery
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.job_context import instance_id_for_job
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse

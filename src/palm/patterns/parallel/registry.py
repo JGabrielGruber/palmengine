@@ -16,6 +16,7 @@ from palm.patterns.parallel.persistence import (
     extract_instance_fields_from_job,
     prepare_parallel_resume_state,
 )
+from palm.patterns.parallel.app import parallel_app
 from palm.patterns.parallel.submission import parallel_submission_metadata
 
 pattern_registry.register("parallel", ParallelPattern)
@@ -26,3 +27,4 @@ register_instance_sync(
     resume=prepare_parallel_resume_state,
 )
 register_submission_metadata("parallel", parallel_submission_metadata)
+parallel_app.register()

@@ -38,19 +38,6 @@ class ListInstanceSnapshotsQuery(Query):
 
 
 @dataclass(frozen=True)
-class GetWizardProgressQuery(Query):
-    instance_id: str | None = None
-    job_id: str | None = None
-
-
-@dataclass(frozen=True)
-class GetWizardStatusQuery(Query):
-    """Rich wizard view keyed by durable instance id."""
-
-    instance_id: str
-
-
-@dataclass(frozen=True)
 class ListJobStatusQuery(Query):
     status: str | None = None
     limit: int | None = None
@@ -66,14 +53,6 @@ class GetJobContextQuery(Query):
     """Rich job context — pattern state, snapshots, events, and next actions."""
 
     job_id: str
-
-
-@dataclass(frozen=True)
-class ListWizardProgressQuery(Query):
-    """List wizard progress read models (newest first)."""
-
-    limit: int | None = 10
-    active_only: bool = False
 
 
 @dataclass(frozen=True)
@@ -131,3 +110,6 @@ class QueryHandler(Protocol):
 
     def ask(self, query: Query) -> object:
         """Return the read model result."""
+
+
+

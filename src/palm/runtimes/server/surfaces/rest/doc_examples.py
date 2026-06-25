@@ -213,7 +213,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "job_id": "job-abc123",
         "status": "WAITING_FOR_INPUT",
         "flow_name": "todo-builder",
-        "wizard_step_slug": "todos",
+        "current_step_slug": "todos",
         "wizard_progress": {
             "current_step": "todos",
             "completed_steps": [],
@@ -319,7 +319,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
                 "status": "WAITING_FOR_INPUT",
                 "recorded_at": "2026-06-17T12:00:00+00:00",
                 "job_id": "job-abc123",
-                "wizard_step_slug": "name",
+                "current_step_slug": "name",
             }
         ],
         "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},

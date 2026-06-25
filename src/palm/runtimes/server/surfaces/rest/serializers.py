@@ -15,7 +15,7 @@ def snapshot_summary(index: int, snapshot: StateSnapshot) -> dict[str, Any]:
         "status": snapshot.status,
         "recorded_at": snapshot.recorded_at,
         "job_id": snapshot.job_id,
-        "wizard_step_slug": snapshot.wizard_step_slug,
+        "current_step_slug": snapshot.current_step_slug,
     }
 
 

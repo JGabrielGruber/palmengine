@@ -43,7 +43,7 @@ class InstanceReadModel:
     status: str
     flow_name: str | None = None
     process_name: str | None = None
-    wizard_step_slug: str | None = None
+    current_step_slug: str | None = None
     updated_at: str = ""
     snapshot_count: int = 0
 
@@ -55,7 +55,7 @@ class InstanceReadModel:
             status=str(data.get("status", "")),
             flow_name=data.get("flow_name"),
             process_name=data.get("process_name"),
-            wizard_step_slug=data.get("wizard_step_slug"),
+            current_step_slug=data.get("current_step_slug") or data.get("wizard_step_slug"),
             updated_at=str(data.get("updated_at", "")),
             snapshot_count=int(data.get("snapshot_count") or 0),
         )
@@ -104,12 +104,16 @@ class InstanceIndexProjection(Projection):
             current = self._entries.get(str(instance_id))
             flow_name = current.flow_name if current else None
             process_name = current.process_name if current else None
-            wizard_step = current.wizard_step_slug if current else None
+            current_step = current.current_step_slug if current else None
             if event.type == OrchestrationEventType.INSTANCE_CREATED:
                 details = self._load_instance_details(str(instance_id))
                 flow_name = details.get("flow_name", flow_name)
                 process_name = details.get("process_name", process_name)
-                wizard_step = details.get("wizard_step_slug", wizard_step)
+                current_step = (
+                    details.get("current_step_slug")
+                    or details.get("wizard_step_slug")
+                    or current_step
+                )
             self._upsert(
                 InstanceReadModel(
                     instance_id=str(instance_id),
@@ -117,7 +121,7 @@ class InstanceIndexProjection(Projection):
                     status=str(payload.get("status") or (current.status if current else "")),
                     flow_name=flow_name,
                     process_name=process_name,
-                    wizard_step_slug=wizard_step,
+                    current_step_slug=current_step,
                     updated_at=_now_iso(),
                     snapshot_count=current.snapshot_count if current else 0,
                 )
@@ -145,7 +149,7 @@ class InstanceIndexProjection(Projection):
                 status=current.status,
                 flow_name=current.flow_name,
                 process_name=current.process_name,
-                wizard_step_slug=slug,
+                current_step_slug=slug,
                 updated_at=_now_iso(),
                 snapshot_count=current.snapshot_count,
             )
@@ -203,7 +207,7 @@ class InstanceIndexProjection(Projection):
                     status=summary.status,
                     flow_name=summary.flow_name,
                     process_name=summary.process_name,
-                    wizard_step_slug=summary.wizard_step_slug,
+                    current_step_slug=summary.current_step_slug,
                     updated_at=summary.updated_at,
                     snapshot_count=summary.snapshot_count,
                 )
@@ -246,7 +250,7 @@ class InstanceIndexProjection(Projection):
             status=summary.status,
             flow_name=summary.flow_name,
             process_name=summary.process_name,
-            wizard_step_slug=summary.wizard_step_slug,
+            current_step_slug=summary.current_step_slug,
             updated_at=summary.updated_at,
             snapshot_count=summary.snapshot_count,
         )
@@ -305,7 +309,7 @@ class InstanceIndexProjection(Projection):
         return {
             "flow_name": instance.flow_name,
             "process_name": instance.process_name,
-            "wizard_step_slug": instance.wizard_step_slug,
+            "current_step_slug": instance.current_step_slug,
         }
 
 

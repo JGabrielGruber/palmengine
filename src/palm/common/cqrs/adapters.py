@@ -16,7 +16,7 @@ def read_model_to_summary(model: InstanceReadModel) -> InstanceSummary:
         status=model.status,
         flow_name=model.flow_name,
         process_name=model.process_name,
-        wizard_step_slug=model.wizard_step_slug,
+        current_step_slug=model.current_step_slug,
         updated_at=model.updated_at,
         snapshot_count=model.snapshot_count,
     )

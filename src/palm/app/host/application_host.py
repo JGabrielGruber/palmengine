@@ -42,18 +42,21 @@ from palm.common.cqrs.projections.job_status_board import (
 from palm.common.cqrs.projections.resource_invocation import (
     ResourceInvocationProjection,
 )
-from palm.common.cqrs.projections.wizard_progress import (
-    WizardProgressProjection,
-    WizardProgressReadModel,
-)
 from palm.common.cqrs.query import (
     GetInstanceStatusQuery,
-    GetWizardProgressQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
-    ListWizardProgressQuery,
     Query,
+)
+from palm.patterns._registry import get_projection_factory, registered_projection_factories
+from palm.patterns.wizard.bindings.cqrs.projection import (
+    WizardProgressProjection,
+    WizardProgressReadModel,
+)
+from palm.patterns.wizard.bindings.cqrs.queries import (
+    GetWizardProgressQuery,
+    ListWizardProgressQuery,
 )
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
@@ -99,7 +102,7 @@ class ApplicationHost:
         self._router = RuntimeRouter(self._app)
         self._projection_manager = ProjectionManager()
         self._instance_projection: InstanceIndexProjection | None = None
-        self._wizard_projection: WizardProgressProjection | None = None
+        self._pattern_projections: dict[str, Any] = {}
         self._resource_projection: ResourceInvocationProjection | None = None
         self._job_board_projection: JobStatusBoardProjection | None = None
         self._outbox_service: OutboxBackgroundService | None = None
@@ -143,7 +146,11 @@ class ApplicationHost:
 
     @property
     def wizard_projection(self) -> WizardProgressProjection | None:
-        return self._wizard_projection
+        projection = self._pattern_projections.get("wizard")
+        return projection if isinstance(projection, WizardProgressProjection) else None
+
+    def pattern_projection(self, name: str) -> Any | None:
+        return self._pattern_projections.get(name)
 
     @property
     def resource_projection(self) -> ResourceInvocationProjection | None:
@@ -428,15 +435,22 @@ class ApplicationHost:
             start_http(host=self.profile.server_host, port=self.profile.server_port)
 
     def _wire_cqrs(self) -> None:
+        import palm.patterns  # noqa: F401 — ensure pattern projection factories are registered
+
         self._instance_projection = InstanceIndexProjection(
             self._app.storage,
             self._app.instance_manager,
         )
-        self._wizard_projection = WizardProgressProjection(self._app.storage)
         self._resource_projection = ResourceInvocationProjection(self._app.storage)
         self._job_board_projection = JobStatusBoardProjection(self._app.storage)
+        self._pattern_projections = {}
+        for pattern_name in registered_projection_factories():
+            factory = get_projection_factory(pattern_name)
+            if factory is not None:
+                self._pattern_projections[pattern_name] = factory(self._app.storage)
         self._projection_manager.register(self._instance_projection)
-        self._projection_manager.register(self._wizard_projection)
+        for projection in self._pattern_projections.values():
+            self._projection_manager.register(projection)
         self._projection_manager.register(self._resource_projection)
         self._projection_manager.register(self._job_board_projection)
         wire_command_bus(self._command_bus, self._app, self._router)
@@ -444,7 +458,7 @@ class ApplicationHost:
             self._query_bus,
             app=self._app,
             instances=self._instance_projection,
-            wizard_progress=self._wizard_projection,
+            pattern_projections=self._pattern_projections,
             resource_invocations=self._resource_projection,
             job_board=self._job_board_projection,
             instance_manager=self._app.instance_manager,

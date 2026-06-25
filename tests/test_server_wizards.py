@@ -91,7 +91,7 @@ def test_get_wizard_returns_prompt(server: ServerRuntime) -> None:
     assert payload["instance_id"] == instance_id
     assert payload["job_id"] == created["job_id"]
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert payload.get("prompt") is not None or payload.get("wizard_step_slug") is not None
+    assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
     assert payload["links"]["self"] == f"/v1/wizards/{instance_id}"
 
 
@@ -139,7 +139,7 @@ def test_provide_wizard_input_advances_step(server: ServerRuntime) -> None:
         JobStatus.WAITING_FOR_INPUT.value,
         JobStatus.SUCCEEDED.value,
     }
-    assert payload.get("prompt") is not None or payload.get("wizard_step_slug") is not None
+    assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
     next_actions = payload.get("next_actions") or []
     assert any(action["path"] == f"/v1/wizards/{instance_id}/input" for action in next_actions)
 
@@ -179,7 +179,7 @@ def test_backtrack_wizard_returns_to_previous_step(server: ServerRuntime) -> Non
     assert isinstance(payload, dict)
     assert payload["to_step"] == "step_1"
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert payload.get("prompt", {}).get("step") == "step_1" or payload.get("wizard_step_slug") == "step_1"
+    assert payload.get("prompt", {}).get("step") == "step_1" or payload.get("current_step_slug") == "step_1"
 
 
 def test_backtrack_wizard_rejects_first_step(server: ServerRuntime) -> None:

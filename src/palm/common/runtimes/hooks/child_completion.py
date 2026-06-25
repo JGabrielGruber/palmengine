@@ -1,10 +1,10 @@
-"""Auto-resume parent wizards when a correlated nested child job completes."""
+"""Auto-resume parent flows when a correlated nested child job completes."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.wizard_child_wait import resume_parent_after_child
+from palm.common.child_wait import resume_parent_after_child
 from palm.core.orchestration.hooks import JobHookAdapter
 from palm.core.orchestration.job import JobStatus
 
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from palm.core.orchestration.run_result import RunResult
 
 
-class ChildWizardCompletionHook(JobHookAdapter):
-    """Resume parent wizard jobs waiting on a nested child flow."""
+class ChildCompletionHook(JobHookAdapter):
+    """Resume parent jobs waiting on a nested child flow."""
 
     def __init__(self, runtime: Any) -> None:
         self._runtime = runtime
@@ -29,3 +29,9 @@ class ChildWizardCompletionHook(JobHookAdapter):
         if job.status != JobStatus.SUCCEEDED:
             return
         resume_parent_after_child(self._runtime, job)
+
+
+# Deprecated alias
+ChildWizardCompletionHook = ChildCompletionHook
+
+__all__ = ["ChildCompletionHook", "ChildWizardCompletionHook"]

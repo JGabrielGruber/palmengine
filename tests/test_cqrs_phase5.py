@@ -14,8 +14,8 @@ from palm.common.compensation import (
 )
 from palm.common.compensation.registry import CompensationRegistry
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection, InstanceReadModel
-from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
-from palm.common.cqrs.query import GetWizardProgressQuery
+from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.events import (
     OutboxStore,
@@ -41,7 +41,7 @@ class _Summary:
         self.status = "RUNNING"
         self.flow_name = "demo"
         self.process_name = None
-        self.wizard_step_slug = None
+        self.current_step_slug = None
         self.updated_at = "2026-06-01T00:00:00+00:00"
         self.snapshot_count = 0
 

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from palm.app.host.event_recorder import RecordedEvent
     from palm.common.cqrs.projections.instance_index import InstanceReadModel
     from palm.common.cqrs.projections.job_status_board import JobStatusReadModel
-    from palm.common.cqrs.projections.wizard_progress import WizardProgressReadModel
+    from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressReadModel
     from palm.runtimes.cli.shared.context import CliContext
 
 DEFAULT_REFRESH_INTERVAL = 2.0
@@ -198,7 +198,7 @@ def render_status_dashboard(ctx: CliContext, options: DashboardOptions | None = 
         active_table.add_column("Updated", style="dim", no_wrap=True)
         for inst in active_sorted:
             flow = inst.flow_name or inst.process_name or "—"
-            step = inst.wizard_step_slug or "—"
+            step = inst.current_step_slug or "—"
             active_table.add_row(
                 short_instance_id(inst.instance_id, length=12),
                 flow,

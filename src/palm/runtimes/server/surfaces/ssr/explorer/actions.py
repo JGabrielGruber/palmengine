@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import (
-    ProvideInputCommand,
+from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
+from palm.common.child_wait import resume_child_wait_for_instance
+from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
-    SubmitFlowCommand,
 )
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
@@ -120,7 +120,7 @@ class ExplorerActions:
         raise ValueError(f"Unsupported collection compound action: {kind}")
 
     def resume_child_wait(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
-        from palm.common.wizard_child_wait import resume_child_wait_for_instance
+
 
         try:
             resume_child_wait_for_instance(self._ctx.runtime, instance_id)

@@ -1,8 +1,5 @@
 """
-Wizard context assembly — instance-keyed REST read model for interactive flows.
-
-Combines durable instance status, wizard progress projection, and live pattern
-inspection (prompt, answers, validation) for human-first wizard endpoints.
+Wizard REST read model — instance-keyed view for interactive flows.
 """
 
 from __future__ import annotations
@@ -10,23 +7,6 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.orchestration import JobStatus
-
-
-def build_pattern_read_model(
-    pattern: str,
-    instance: dict[str, Any],
-    /,
-    **kwargs: Any,
-) -> dict[str, Any]:
-    """Dispatch a registered pattern read-model builder."""
-    import palm.patterns  # noqa: F401 — ensure bridge hooks are registered
-
-    from palm.patterns._registry import get_read_model_builder
-
-    builder = get_read_model_builder(pattern)
-    if builder is None:
-        raise RuntimeError(f"No read-model builder registered for pattern {pattern!r}")
-    return builder(instance, **kwargs)
 
 
 def build_wizard_view(
@@ -47,7 +27,8 @@ def build_wizard_view(
         "status": status,
         "flow_name": instance.get("flow_name"),
         "process_name": instance.get("process_name"),
-        "wizard_step_slug": instance.get("wizard_step_slug"),
+        "current_step_slug": instance.get("current_step_slug")
+        or instance.get("wizard_step_slug"),
         "wizard_progress": wizard_progress,
         "prompt": _prompt_block(pattern),
         "answers": _answers_block(pattern, wizard_progress),
@@ -206,3 +187,6 @@ def _is_committed(
         if commit_status == "succeeded":
             return True
     return False
+
+
+__all__ = ["build_wizard_view", "derive_wizard_next_actions"]

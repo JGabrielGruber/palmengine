@@ -558,7 +558,7 @@ def wizard_child_wizards_section(wizard: dict[str, Any], *, instance_id: str = "
     if isinstance(prompt, dict) and prompt.get("waiting_for_child"):
         children.append(
             {
-                "step": prompt.get("step") or wizard.get("wizard_step_slug"),
+                "step": prompt.get("step") or wizard.get("current_step_slug"),
                 "job_id": prompt.get("waiting_for_child_job_id"),
                 "instance_id": prompt.get("waiting_for_child_instance_id"),
                 "status": prompt.get("child_status"),
@@ -654,7 +654,7 @@ def wizard_answers_section(wizard: dict[str, Any]) -> str:
 def wizard_step_timeline(wizard: dict[str, Any], *, instance_id: str) -> str:
     progress = wizard.get("wizard_progress") or {}
     completed = progress.get("completed_steps") or []
-    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    current = progress.get("current_step") or wizard.get("current_step_slug")
     trace = progress.get("backtrack_trace") or []
 
     if not completed and not current:
@@ -730,7 +730,7 @@ def wizard_backtrack_button(instance_id: str, to_step: str, *, label: str | None
 def wizard_backtrack_controls(instance_id: str, wizard: dict[str, Any]) -> str:
     progress = wizard.get("wizard_progress") or {}
     completed = progress.get("completed_steps") or []
-    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    current = progress.get("current_step") or wizard.get("current_step_slug")
     if not completed:
         return ""
 
@@ -775,7 +775,7 @@ def wizard_workspace(
 
     progress = wizard.get("wizard_progress") or {}
     completed_steps = progress.get("completed_steps") or []
-    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    current = progress.get("current_step") or wizard.get("current_step_slug")
     total = total_steps or max(len(completed_steps) + (1 if current else 0), 1)
     flow_name = wizard.get("flow_name") or wizard.get("wizard_progress", {}).get("wizard_name") or "Wizard"
 

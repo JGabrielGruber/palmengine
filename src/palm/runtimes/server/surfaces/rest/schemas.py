@@ -149,7 +149,7 @@ SNAPSHOT_SUMMARY = DictStateSchema(
             "status": _STRING,
             "recorded_at": _STRING,
             "job_id": _STRING,
-            "wizard_step_slug": _STRING,
+            "current_step_slug": _STRING,
         },
     }
 )

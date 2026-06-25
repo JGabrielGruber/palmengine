@@ -10,7 +10,7 @@ from rich.console import Console
 from palm.app import ApplicationHost, HostProfile, PalmSettings
 from palm.app.host.event_recorder import HostEventRecorder
 from palm.app.host.events import HostEventType
-from palm.common.cqrs.query import ListWizardProgressQuery
+from palm.patterns.wizard.bindings.cqrs.queries import ListWizardProgressQuery
 from palm.runtimes.cli.cli import main
 from palm.runtimes.cli.commands.dashboard import (
     DashboardOptions,

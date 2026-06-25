@@ -37,7 +37,7 @@ class WizardPages:
             if patterns.get(str(flow_name)) == "wizard":
                 return True
 
-        return bool(instance.get("wizard_step_slug"))
+        return bool(instance.get("current_step_slug"))
 
     def detail(
         self,
@@ -89,7 +89,7 @@ class WizardPages:
 def _estimate_step_total(fetch: Any, wizard: dict[str, Any], instance: dict[str, Any]) -> int:
     progress = wizard.get("wizard_progress") or {}
     completed = progress.get("completed_steps") or []
-    current = progress.get("current_step") or wizard.get("wizard_step_slug")
+    current = progress.get("current_step") or wizard.get("current_step_slug")
     baseline = len(completed) + (1 if current else 0)
 
     flow_name = instance.get("flow_name") or wizard.get("flow_name")

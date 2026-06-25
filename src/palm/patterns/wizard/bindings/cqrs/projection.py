@@ -9,8 +9,11 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.projection import Projection
-from palm.common.cqrs.query import GetWizardProgressQuery, ListWizardProgressQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
+from palm.patterns.wizard.bindings.cqrs.queries import (
+    GetWizardProgressQuery,
+    ListWizardProgressQuery,
+)
 
 if TYPE_CHECKING:
     from palm.core.event import Event
@@ -298,3 +301,10 @@ def _str_or_none(value: object) -> str | None:
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
+
+
+__all__ = [
+    "BacktrackTraceEntry",
+    "WizardProgressProjection",
+    "WizardProgressReadModel",
+]

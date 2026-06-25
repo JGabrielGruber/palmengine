@@ -15,8 +15,13 @@ from typing import TYPE_CHECKING, Any
 from palm.core.orchestration import Job
 
 if TYPE_CHECKING:
+    from palm.common.cqrs.command import Command
+    from palm.common.cqrs.projection import Projection
+    from palm.common.cqrs.query import Query
+    from palm.common.patterns.app import PatternApp
     from palm.common.patterns.build_context import PatternBuildContext
     from palm.core.behavior_tree import BasePattern
+    from palm.core.storage import StorageEngine
     from palm.definitions.flow import FlowDefinition
     from palm.instances import ProcessInstance
     from palm.states import BlackboardState
@@ -32,12 +37,18 @@ if TYPE_CHECKING:
     ]
     SubmissionMetadataFn = Callable[[FlowDefinition], dict[str, Any]]
     ReadModelBuilderFn = Callable[..., dict[str, Any]]
+    ProjectionFactoryFn = Callable[[StorageEngine], Projection]
+    CommandHandlerFn = Callable[[Command, Any], Any]
+    QueryHandlerFn = Callable[[Query, Any], Any]
 else:
     PatternBuildFn = Callable[..., Any]
     InstanceFieldsFn = Callable[..., Any]
     ResumeStateFn = Callable[..., Any]
     SubmissionMetadataFn = Callable[..., Any]
     ReadModelBuilderFn = Callable[..., dict[str, Any]]
+    ProjectionFactoryFn = Callable[..., Any]
+    CommandHandlerFn = Callable[..., Any]
+    QueryHandlerFn = Callable[..., Any]
 
 
 @dataclass(frozen=True)
@@ -57,6 +68,17 @@ class ChildWaitHooks:
     resume_parent_after_child: Callable[[Any, Job], Job | None]
 
 
+@dataclass(frozen=True)
+class CqrsContributor:
+    """Pattern-owned CQRS command/query types and handler dispatch."""
+
+    pattern_name: str
+    command_types: tuple[type, ...] = ()
+    query_types: tuple[type, ...] = ()
+    handle_command: CommandHandlerFn | None = None
+    handle_query: QueryHandlerFn | None = None
+
+
 _lock = threading.RLock()
 _builders: dict[str, PatternBuildFn] = {}
 _instance_fields: dict[str, InstanceFieldsFn] = {}
@@ -65,6 +87,9 @@ _submission_metadata: dict[str, SubmissionMetadataFn] = {}
 _interactive_runtime: dict[str, InteractiveRuntimeHooks] = {}
 _child_wait: dict[str, ChildWaitHooks] = {}
 _read_model_builders: dict[str, ReadModelBuilderFn] = {}
+_pattern_apps: dict[str, Any] = {}
+_projection_factories: dict[str, ProjectionFactoryFn] = {}
+_cqrs_contributors: dict[str, CqrsContributor] = {}
 
 
 def register_builder(name: str, fn: PatternBuildFn) -> None:
@@ -217,3 +242,83 @@ def clear_read_model_builders() -> None:
     """Remove read-model builder registrations (primarily for tests)."""
     with _lock:
         _read_model_builders.clear()
+
+
+def register_pattern_app(app: Any) -> None:
+    """Register a :class:`~palm.common.patterns.app.PatternApp` instance."""
+    with _lock:
+        name = str(app.name)
+        if _pattern_apps.get(name) is app:
+            return
+        _pattern_apps[name] = app
+
+
+def get_pattern_app(name: str) -> Any | None:
+    """Return the registered pattern app for ``name``, if any."""
+    with _lock:
+        return _pattern_apps.get(name)
+
+
+def installed_pattern_apps() -> list[Any]:
+    """Return pattern apps in stable name order."""
+    with _lock:
+        return [_pattern_apps[name] for name in sorted(_pattern_apps)]
+
+
+def register_projection_factory(name: str, factory: ProjectionFactoryFn) -> None:
+    """Register a pattern-specific CQRS projection factory."""
+    with _lock:
+        if _projection_factories.get(name) is factory:
+            return
+        _projection_factories[name] = factory
+
+
+def get_projection_factory(name: str) -> ProjectionFactoryFn | None:
+    """Return the projection factory for pattern ``name``, if registered."""
+    with _lock:
+        return _projection_factories.get(name)
+
+
+def registered_projection_factories() -> list[str]:
+    """Return sorted pattern names with projection factories."""
+    with _lock:
+        return sorted(_projection_factories)
+
+
+def register_cqrs_contributor(contributor: CqrsContributor) -> None:
+    """Register pattern-owned CQRS types and handler dispatch."""
+    with _lock:
+        existing = _cqrs_contributors.get(contributor.pattern_name)
+        if existing is contributor:
+            return
+        _cqrs_contributors[contributor.pattern_name] = contributor
+
+
+def get_cqrs_contributor(name: str) -> CqrsContributor | None:
+    """Return the CQRS contributor for pattern ``name``, if registered."""
+    with _lock:
+        return _cqrs_contributors.get(name)
+
+
+def iter_cqrs_contributors() -> list[CqrsContributor]:
+    """Return CQRS contributors in stable pattern-name order."""
+    with _lock:
+        return [_cqrs_contributors[name] for name in sorted(_cqrs_contributors)]
+
+
+def clear_pattern_apps() -> None:
+    """Remove pattern app registrations (primarily for tests)."""
+    with _lock:
+        _pattern_apps.clear()
+
+
+def clear_projection_factories() -> None:
+    """Remove projection factory registrations (primarily for tests)."""
+    with _lock:
+        _projection_factories.clear()
+
+
+def clear_cqrs_contributors() -> None:
+    """Remove CQRS contributor registrations (primarily for tests)."""
+    with _lock:
+        _cqrs_contributors.clear()

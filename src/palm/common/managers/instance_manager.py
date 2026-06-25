@@ -41,7 +41,7 @@ class InstanceSummary:
     status: str
     flow_name: str | None
     process_name: str | None
-    wizard_step_slug: str | None
+    current_step_slug: str | None
     updated_at: str
     snapshot_count: int = 0
 
@@ -55,7 +55,7 @@ class InstanceSummary:
             status=str(record.get("status", "")),
             flow_name=record.get("flow_name"),
             process_name=record.get("process_name"),
-            wizard_step_slug=record.get("wizard_step_slug"),
+            current_step_slug=record.get("current_step_slug") or record.get("wizard_step_slug"),
             updated_at=str(record.get("updated_at", "")),
             snapshot_count=count,
         )

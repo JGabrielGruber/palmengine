@@ -72,7 +72,10 @@ def test_wizard_handler_exports() -> None:
 def test_wizard_bridge_hooks_register() -> None:
     from palm.patterns._registry import (
         get_child_wait_hooks,
+        get_cqrs_contributor,
         get_interactive_runtime,
+        get_pattern_app,
+        get_projection_factory,
         get_read_model_builder,
     )
 
@@ -82,3 +85,17 @@ def test_wizard_bridge_hooks_register() -> None:
     assert child_wait is not None
     read_model = get_read_model_builder("wizard")
     assert read_model is not None
+    assert get_projection_factory("wizard") is not None
+    assert get_cqrs_contributor("wizard") is not None
+
+
+def test_pattern_app_autoload() -> None:
+    from palm.common.patterns.app import PatternApp
+    from palm.patterns._registry import get_pattern_app, installed_pattern_apps
+
+    for name in INSTALLED_PATTERNS:
+        app = get_pattern_app(name)
+        assert app is not None
+        assert isinstance(app, PatternApp)
+        assert app.name == name
+    assert {app.name for app in installed_pattern_apps()} == set(INSTALLED_PATTERNS)

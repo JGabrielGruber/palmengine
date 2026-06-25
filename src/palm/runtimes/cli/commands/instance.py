@@ -80,7 +80,7 @@ def cmd_instance_snapshots(ctx: CliContext, args: list[str]) -> int:
             str(index),
             snapshot.status,
             snapshot.recorded_at,
-            snapshot.wizard_step_slug or "—",
+            snapshot.current_step_slug or "—",
             snapshot.job_id[:14],
         )
     ctx.console.print(table)

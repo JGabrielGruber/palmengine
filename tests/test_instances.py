@@ -42,7 +42,7 @@ def test_process_instance_roundtrip_dict() -> None:
         state_snapshot={"__wizard__.answers": {"name": "Ada"}},
         flow_definition=_wizard_flow().to_dict(),
         pattern="wizard",
-        wizard_step_slug="role",
+        current_step_slug="role",
     )
     inst.append_status("PENDING", event="created")
     restored = ProcessInstance.from_dict(inst.to_dict())

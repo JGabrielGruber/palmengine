@@ -75,7 +75,7 @@ class InstancePages:
             instance_id = str(row.get("instance_id") or "")
             flow_name = str(row.get("flow_name") or "")
             is_wizard = flow_patterns.get(flow_name) == "wizard" or bool(
-                row.get("wizard_step_slug")
+                row.get("current_step_slug")
             )
             if not is_wizard and row.get("status") == "WAITING_FOR_INPUT":
                 wizard_view = self._ctx.fetch.get_wizard(instance_id)
@@ -94,7 +94,7 @@ class InstancePages:
                     status_badge(str(row.get("status") or "—")),
                     escape(flow_name or "—"),
                     pattern_cell,
-                    escape(str(row.get("wizard_step_slug") or "—")),
+                    escape(str(row.get("current_step_slug") or "—")),
                     continue_cell,
                 ]
             )
@@ -156,7 +156,7 @@ class InstancePages:
                 f'<a href="/explorer/instances/{escape(instance_id)}/snapshots/{index}">{index}</a>',
                 escape(snap.status),
                 escape(snap.recorded_at),
-                escape(snap.wizard_step_slug or "—"),
+                escape(snap.current_step_slug or "—"),
             ]
             for index, snap in enumerate(snapshots)
         ]

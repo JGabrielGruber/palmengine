@@ -1,4 +1,4 @@
-"""Resume helpers for parent wizards waiting on nested child jobs."""
+"""Resume helpers for parent flows waiting on nested child jobs."""
 
 from __future__ import annotations
 
@@ -14,7 +14,9 @@ if TYPE_CHECKING:
 
 
 def _child_wait_hooks(job: Job) -> ChildWaitHooks:
-    name = str(job.metadata.get("pattern") or "wizard")
+    name = str(job.metadata.get("pattern") or "")
+    if not name:
+        raise RuntimeError("Job has no pattern metadata for child-wait dispatch")
     hooks = get_child_wait_hooks(name)
     if hooks is None:
         raise RuntimeError(f"Pattern {name!r} has no child-wait hooks registered")
@@ -33,7 +35,7 @@ def parent_is_waiting_for_child(job: Job) -> bool:
 
 
 def resume_parent_after_child(runtime: BaseRuntime, child_job: Job) -> Job | None:
-    """Resume a parent wizard when a correlated child job reaches a terminal state."""
+    """Resume a parent flow when a correlated child job reaches a terminal state."""
     parent_id = child_job.metadata.get("__palm:parent_job_id")
     if not parent_id:
         return None
@@ -41,7 +43,9 @@ def resume_parent_after_child(runtime: BaseRuntime, child_job: Job) -> Job | Non
         parent = runtime.get_job(str(parent_id))
     except Exception:
         return None
-    pattern = str(parent.metadata.get("pattern") or "wizard")
+    pattern = str(parent.metadata.get("pattern") or "")
+    if not pattern:
+        return None
     hooks = get_child_wait_hooks(pattern)
     if hooks is None:
         return None
@@ -49,18 +53,27 @@ def resume_parent_after_child(runtime: BaseRuntime, child_job: Job) -> Job | Non
 
 
 def resume_child_wait_for_instance(runtime: BaseRuntime, instance_id: str) -> Job:
-    """Manually re-poll the nested child and advance the parent wizard if ready."""
-    from palm.common.wizard_runtime import resolve_wizard_job
+    """Manually re-poll the nested child and advance the parent flow if ready."""
+    from palm.common.interactive_runtime import resolve_interactive_job
 
-    job = resolve_wizard_job(runtime, instance_id)
+    job = resolve_interactive_job(runtime, instance_id)
     if not parent_is_waiting_for_child(job):
-        raise RuntimeError(f"Wizard {instance_id!r} is not waiting for a nested child")
+        raise RuntimeError(f"Instance {instance_id!r} is not waiting for a nested child")
     runtime.orchestration.resume_job(job.id)
     return runtime.get_job(job.id)
 
 
-def poll_child_for_parent(state: Any, child_job_id: str) -> Job | None:
-    hooks = get_child_wait_hooks("wizard")
+def poll_child_for_parent(state: Any, child_job_id: str, *, pattern: str) -> Job | None:
+    hooks = get_child_wait_hooks(pattern)
     if hooks is None:
         return None
     return hooks.poll_child_for_parent(state, child_job_id)
+
+
+__all__ = [
+    "bound_runtime",
+    "parent_is_waiting_for_child",
+    "poll_child_for_parent",
+    "resume_child_wait_for_instance",
+    "resume_parent_after_child",
+]

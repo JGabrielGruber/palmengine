@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from palm.app import ApplicationHost, HostProfile, PalmSettings
-from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
-from palm.common.cqrs.query import GetWizardProgressQuery, ListInstancesQuery
+from palm.common.cqrs.query import ListInstancesQuery
+from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
@@ -202,5 +203,5 @@ def test_instance_index_updates_step_on_backtrack_event() -> None:
 
     view = projection.get_instance(GetInstanceStatusQuery(instance_id="inst-1"))
     assert view is not None
-    assert view.wizard_step_slug == "name"
+    assert view.current_step_slug == "name"
     storage.shutdown()

@@ -123,7 +123,7 @@ def _instance_block(instance_id: str, instance: ProcessInstance | None) -> dict[
         block["status"] = instance.status
         block["flow_name"] = instance.flow_name
         block["process_name"] = instance.process_name
-        block["wizard_step_slug"] = instance.wizard_step_slug
+        block["current_step_slug"] = instance.current_step_slug
     return block
 
 
@@ -141,7 +141,7 @@ def _snapshot_summary(index: int, snapshot: StateSnapshot) -> dict[str, Any]:
         "status": snapshot.status,
         "recorded_at": snapshot.recorded_at,
         "job_id": snapshot.job_id,
-        "wizard_step_slug": snapshot.wizard_step_slug,
+        "current_step_slug": snapshot.current_step_slug,
         "state_snapshot": dict(snapshot.state_snapshot),
     }
 

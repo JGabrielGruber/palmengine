@@ -160,7 +160,7 @@ def test_wizard_resume_restores_scope_and_step_schema() -> None:
             options={"steps": []},
         ).to_dict(),
         pattern="wizard",
-        wizard_step_slug="age",
+        current_step_slug="age",
     )
     restored_state = state_from_snapshot(instance.state_snapshot)
     assert restored_state.scope_stack() == ("age",)

@@ -103,7 +103,7 @@ def test_build_job_context_includes_pattern_and_actions() -> None:
             recorded_at="2026-06-17T12:00:00+00:00",
             state_snapshot={"answers": {}},
             job_id="job-ctx",
-            wizard_step_slug="name",
+            current_step_slug="name",
         )
     )
     instance.append_status(JobStatus.WAITING_FOR_INPUT.value, job_id="job-ctx")

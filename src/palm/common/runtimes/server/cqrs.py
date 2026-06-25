@@ -6,18 +6,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
+
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
-    ProvideWizardInputCommand,
-    RequestWizardBacktrackCommand,
     ResumeProcessCommand,
     SubmitFlowCommand,
     SubmitPlansCommand,
     SubmitProcessCommand,
-    SubmitWizardCommand,
 )
 from palm.common.cqrs.query import (
     GetFlowQuery,
@@ -26,27 +25,26 @@ from palm.common.cqrs.query import (
     GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
-    GetWizardProgressQuery,
-    GetWizardStatusQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
     ListProcessesQuery,
-    ListWizardProgressQuery,
     Query,
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
+from palm.common.interactive_runtime import (
+    provide_interactive_input_for_instance,
+    request_interactive_backtrack_for_instance,
+)
 from palm.common.job_context import build_job_context, instance_id_for_job
+from palm.common.patterns.pattern_read_model import build_pattern_read_model
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
-from palm.common.wizard_context import build_pattern_read_model
-from palm.common.wizard_runtime import (
-    provide_wizard_input_for_instance,
-    request_wizard_backtrack_for_instance,
-)
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.patterns._registry import iter_cqrs_contributors
+
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -60,42 +58,18 @@ class StandaloneCommandHandlers:
         self._plan_registry = plan_registry
 
     def handle(self, command: Command) -> Any:
-        if isinstance(command, SubmitWizardCommand):
-            return self.handle(
-                SubmitFlowCommand(
-                    flow=_wizard_flow_payload(command.body),
-                    by_id=bool(command.body.get("by_id", False)),
-                    job_id=_optional_str(command.body.get("job_id")),
-                )
-            )
+        for contributor in iter_cqrs_contributors():
+            if contributor.handle_command is None:
+                continue
+            if isinstance(command, contributor.command_types):
+                return contributor.handle_command(command, self)
+
         if isinstance(command, SubmitFlowCommand):
             return self._submit_flow(command)
         if isinstance(command, SubmitProcessCommand):
             return self._submit_process(command)
         if isinstance(command, ProvideInputCommand):
             return self._runtime.provide_input(command.job_id, command.value)
-        if isinstance(command, ProvideWizardInputCommand):
-            job, slug = provide_wizard_input_for_instance(
-                self._runtime,
-                command.instance_id,
-                command.value,
-            )
-            return {
-                "instance_id": command.instance_id,
-                "job_id": job.id,
-                "slug": slug,
-            }
-        if isinstance(command, RequestWizardBacktrackCommand):
-            job, to_step = request_wizard_backtrack_for_instance(
-                self._runtime,
-                command.instance_id,
-                command.to_step,
-            )
-            return {
-                "instance_id": command.instance_id,
-                "job_id": job.id,
-                "to_step": to_step,
-            }
         if isinstance(command, ResumeProcessCommand):
             return self._runtime.resume_process(command.instance_id)
         if isinstance(command, PreparePlansCommand):
@@ -175,8 +149,15 @@ class StandaloneQueryHandlers:
 
     def __init__(self, runtime: BaseRuntime) -> None:
         self._runtime = runtime
+        self._pattern_projections: dict[str, Any] = {}
 
     def ask(self, query: Query) -> Any:
+        for contributor in iter_cqrs_contributors():
+            if contributor.handle_query is None:
+                continue
+            if isinstance(query, contributor.query_types):
+                return contributor.handle_query(query, self)
+
         if isinstance(query, GetJobStatusQuery):
             return self._get_job(query)
         if isinstance(query, GetJobContextQuery):
@@ -199,12 +180,6 @@ class StandaloneQueryHandlers:
             return self._list_processes()
         if isinstance(query, GetProcessQuery):
             return self._get_process(query)
-        if isinstance(query, GetWizardProgressQuery):
-            return self._wizard_progress(query)
-        if isinstance(query, GetWizardStatusQuery):
-            return self._get_wizard_status(query)
-        if isinstance(query, ListWizardProgressQuery):
-            return []
         raise TypeError(f"Unsupported query: {type(query).__name__}")
 
     def _get_job(self, query: GetJobStatusQuery) -> dict[str, Any]:
@@ -241,7 +216,8 @@ class StandaloneQueryHandlers:
             pass
 
         wizard_progress = self._wizard_progress(
-            GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
+            instance_id=instance_id,
+            job_id=query.job_id,
         )
         from palm.runtimes.cli.shared.job_inspect import inspect_job_json
 
@@ -303,7 +279,7 @@ class StandaloneQueryHandlers:
             "status": instance.status,
             "flow_name": instance.flow_name,
             "process_name": instance.process_name,
-            "wizard_step_slug": instance.wizard_step_slug,
+            "current_step_slug": instance.current_step_slug,
         }
 
     def _list_snapshots(self, instance_id: str) -> list[Any]:
@@ -340,81 +316,30 @@ class StandaloneQueryHandlers:
         except DefinitionNotFoundError:
             return None
 
-    def _wizard_progress(self, query: GetWizardProgressQuery) -> dict[str, Any] | None:
-        job_id = query.job_id
-        if job_id is None and query.instance_id is not None:
-            instance = self._get_instance(GetInstanceStatusQuery(instance_id=query.instance_id))
+    def _wizard_progress(
+        self,
+        *,
+        instance_id: str | None = None,
+        job_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        resolved_job_id = job_id
+        if resolved_job_id is None and instance_id is not None:
+            instance = self._get_instance(GetInstanceStatusQuery(instance_id=instance_id))
             if instance is not None:
-                job_id = str(instance.get("job_id") or query.instance_id)
-        if job_id is None:
+                resolved_job_id = str(instance.get("job_id") or instance_id)
+        if resolved_job_id is None:
             return None
         try:
-            job = self._runtime.get_job(job_id)
+            job = self._runtime.get_job(resolved_job_id)
         except JobNotFoundError:
             return None
         return {
-            "job_id": job_id,
-            "instance_id": query.instance_id or instance_id_for_job(job),
+            "job_id": resolved_job_id,
+            "instance_id": instance_id or instance_id_for_job(job),
             "status": job.status.value,
-            "step": _safe_wizard_step(self._runtime, job_id),
-            "answers": self._runtime.wizard_answers(job_id),
+            "step": _safe_wizard_step(self._runtime, resolved_job_id),
+            "answers": self._runtime.wizard_answers(resolved_job_id),
         }
-
-    def _get_wizard_status(self, query: GetWizardStatusQuery) -> dict[str, Any] | None:
-        instance = self._get_instance(GetInstanceStatusQuery(instance_id=query.instance_id))
-        if instance is None:
-            return None
-
-        wizard_progress = self._wizard_progress(
-            GetWizardProgressQuery(instance_id=query.instance_id, job_id=instance.get("job_id"))
-        )
-
-        pattern: dict[str, Any] | None = None
-        job_status: str | None = None
-        job_id = str(instance.get("job_id") or query.instance_id)
-        try:
-            job = self._runtime.get_job(job_id)
-            job_status = job.status.value
-            from palm.runtimes.cli.shared.job_inspect import inspect_job_json
-
-            inspected = inspect_job_json(job)
-            if inspected.get("pattern") == "wizard":
-                pattern = inspected
-        except JobNotFoundError:
-            pass
-
-        return build_pattern_read_model(
-            "wizard",
-            instance,
-            wizard_progress=wizard_progress,
-            pattern=pattern,
-            job_status=job_status,
-        )
-
-
-def _wizard_flow_payload(body: dict[str, Any]) -> dict[str, Any] | str:
-    if "wizard" in body:
-        payload: dict[str, Any] = {"wizard": body["wizard"]}
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return payload
-    if "flow" in body and isinstance(body["flow"], dict):
-        flow = dict(body["flow"])
-        pattern = flow.get("pattern")
-        if pattern not in (None, "wizard"):
-            raise ValueError("flow.pattern must be 'wizard'")
-        flow["pattern"] = "wizard"
-        payload = {"flow": flow}
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return payload
-    if "flow_name" in body:
-        return str(body["flow_name"])
-    raise ValueError("expected 'wizard', 'flow', or 'flow_name' in request body")
-
-
-def _optional_str(value: object | None) -> str | None:
-    return str(value) if value is not None else None
 
 
 def wire_standalone_buses(
@@ -426,19 +351,15 @@ def wire_standalone_buses(
 ) -> None:
     commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
     queries = StandaloneQueryHandlers(runtime)
-    for command_type in (
+    command_types = [
         SubmitFlowCommand,
-        SubmitWizardCommand,
         SubmitProcessCommand,
         ProvideInputCommand,
-        ProvideWizardInputCommand,
-        RequestWizardBacktrackCommand,
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,
-    ):
-        command_bus.register(command_type, commands)
-    for query_type in (
+    ]
+    query_types = [
         GetJobStatusQuery,
         GetJobContextQuery,
         ListJobStatusQuery,
@@ -450,10 +371,13 @@ def wire_standalone_buses(
         GetFlowQuery,
         ListProcessesQuery,
         GetProcessQuery,
-        GetWizardProgressQuery,
-        GetWizardStatusQuery,
-        ListWizardProgressQuery,
-    ):
+    ]
+    for contributor in iter_cqrs_contributors():
+        command_types.extend(contributor.command_types)
+        query_types.extend(contributor.query_types)
+    for command_type in command_types:
+        command_bus.register(command_type, commands)
+    for query_type in query_types:
         query_bus.register(query_type, queries)
 
 
@@ -462,3 +386,5 @@ def _safe_wizard_step(runtime: BaseRuntime, job_id: str) -> str | None:
         return runtime.current_wizard_step(job_id)
     except TypeError:
         return None
+
+

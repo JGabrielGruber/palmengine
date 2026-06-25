@@ -20,6 +20,9 @@ Wizard execution is organized as behavior-tree **phases** under
 | `flow/extensions/` | `step_kind` → phase factory registry |
 | `flow/validation.py` | Step validation rules and feedback |
 | `bindings/bridges.py` | Runtime hooks on `patterns/_registry` (interactive, child-wait, read-model) |
+| `bindings/read_model.py` | REST wizard view assembly (`build_wizard_view`) |
+| `bindings/cqrs/` | Wizard-owned CQRS commands, queries, projection, and handlers |
+| `app.py` | `WizardApp(PatternApp)` — manifest, `ready()` registry wiring |
 
 ## Tree shape
 
@@ -45,6 +48,18 @@ CollectionStepNode
 
 Phase leaves signal intra-tick transitions with `PatternStatus.RUNNING` via
 `phase_transition()`. The loop re-dispatches when the blackboard phase changes.
+
+## Phase 3 — PatternApp + common cleanup
+
+- `PatternApp` base lives in `palm.common.patterns.app`; each pattern subpackage
+  provides an app stub and `WizardApp` registers bridges, projection factory, and
+  CQRS contributor hooks in `ready()`.
+- Wizard CQRS types and `WizardProgressProjection` moved to
+  `palm.patterns.wizard.bindings.cqrs.*`. Import from there (not `palm.common`).
+- Generic dispatchers in common: `interactive_runtime.py`, `child_wait.py`,
+  `patterns/pattern_read_model.py`. No `wizard_*` modules remain in `palm.common`.
+- Durable instance field renamed: `wizard_step_slug` → `current_step_slug`
+  (read compat accepts legacy `wizard_step_slug` in persisted JSON).
 
 ## Breaking changes
 

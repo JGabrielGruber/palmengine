@@ -1,6 +1,9 @@
 """Runtime middleware hooks for orchestration jobs."""
 
-from palm.common.runtimes.hooks.child_wizard import ChildWizardCompletionHook
+from palm.common.runtimes.hooks.child_completion import (
+    ChildCompletionHook,
+    ChildWizardCompletionHook,
+)
 from palm.common.runtimes.hooks.execution_context import JobExecutionContextHook
 from palm.common.runtimes.hooks.middleware import (
     AuthMiddleware,
@@ -11,6 +14,7 @@ from palm.common.runtimes.hooks.middleware import (
 
 __all__ = [
     "AuthMiddleware",
+    "ChildCompletionHook",
     "ChildWizardCompletionHook",
     "DriveObservabilityHook",
     "DriveSlice",

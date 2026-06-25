@@ -1,18 +1,20 @@
 """
 CQRS wiring — register ApplicationHost command and query handlers.
 
-**Adding a command:** define a dataclass in :mod:`palm.common.cqrs.command`,
-handle it in :class:`PalmCommandHandlers`, and call
-:func:`wire_command_bus` (or ``bus.register``) at host startup.
+**Adding a command:** define a dataclass in the pattern app (or
+:mod:`palm.common.cqrs.command` for generic commands), register a
+:class:`~palm.patterns._registry.CqrsContributor`, and ensure the pattern
+app is loaded via :func:`palm.patterns._apps.autoload`.
 
-**Adding a query:** define a dataclass in :mod:`palm.common.cqrs.query`, read
-from a projection (or authoritative store) in :class:`HostQueryHandlers`, and
-register the handler in :func:`wire_query_bus`.
+**Adding a query:** same pattern — contributor ``query_types`` and
+``handle_query`` dispatch through :class:`HostQueryHandlers`.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+
+import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
 
 from palm.app.host.router import RuntimeRouter
 from palm.common.cqrs.bus import CommandBus, QueryBus
@@ -20,18 +22,14 @@ from palm.common.cqrs.command import (
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
-    ProvideWizardInputCommand,
-    RequestWizardBacktrackCommand,
     ResumeProcessCommand,
     SubmitFlowCommand,
     SubmitPlansCommand,
     SubmitProcessCommand,
-    SubmitWizardCommand,
 )
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
 from palm.common.cqrs.projections.resource_invocation import ResourceInvocationProjection
-from palm.common.cqrs.projections.wizard_progress import WizardProgressProjection
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
@@ -40,29 +38,24 @@ from palm.common.cqrs.query import (
     GetJobStatusQuery,
     GetProcessQuery,
     GetResourceInvocationsQuery,
-    GetWizardProgressQuery,
-    GetWizardStatusQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
     ListJobStatusQuery,
     ListProcessesQuery,
     ListResourceInvocationsQuery,
-    ListWizardProgressQuery,
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
-from palm.common.wizard_context import build_pattern_read_model
-from palm.common.wizard_runtime import (
-    provide_wizard_input_for_instance,
-    request_wizard_backtrack_for_instance,
-)
+from palm.patterns._registry import iter_cqrs_contributors
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 if TYPE_CHECKING:
     from palm.app.app import PalmApp
+    from palm.common.cqrs.projection import Projection
     from palm.common.managers.instance_manager import InstanceManager
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
@@ -77,15 +70,12 @@ class PalmCommandHandlers:
         self._router = router
 
     def handle(self, command: Command) -> Any:
-        if isinstance(command, SubmitWizardCommand):
-            return self.handle(
-                SubmitFlowCommand(
-                    flow=_wizard_flow_payload(command.body),
-                    runtime_name=command.runtime_name,
-                    by_id=bool(command.body.get("by_id", False)),
-                    job_id=_optional_str(command.body.get("job_id")),
-                )
-            )
+        for contributor in iter_cqrs_contributors():
+            if contributor.handle_command is None:
+                continue
+            if isinstance(command, contributor.command_types):
+                return contributor.handle_command(command, self)
+
         if isinstance(command, SubmitFlowCommand):
             runtime_name = self._router.route_job_runtime(command.runtime_name)
             if isinstance(command.flow, dict):
@@ -126,32 +116,6 @@ class PalmCommandHandlers:
                 command.value,
                 runtime_name=runtime_name,
             )
-        if isinstance(command, ProvideWizardInputCommand):
-            runtime_name = self._router.route_job_runtime(command.runtime_name)
-            runtime = self._app.runtime(runtime_name)
-            job, slug = provide_wizard_input_for_instance(
-                runtime,
-                command.instance_id,
-                command.value,
-            )
-            return {
-                "instance_id": command.instance_id,
-                "job_id": job.id,
-                "slug": slug,
-            }
-        if isinstance(command, RequestWizardBacktrackCommand):
-            runtime_name = self._router.route_job_runtime(command.runtime_name)
-            runtime = self._app.runtime(runtime_name)
-            job, to_step = request_wizard_backtrack_for_instance(
-                runtime,
-                command.instance_id,
-                command.to_step,
-            )
-            return {
-                "instance_id": command.instance_id,
-                "job_id": job.id,
-                "to_step": to_step,
-            }
         if isinstance(command, ResumeProcessCommand):
             runtime_name = self._router.route_job_runtime(command.runtime_name)
             return self._app.resume_process(
@@ -217,19 +181,25 @@ class HostQueryHandlers:
         *,
         app: PalmApp,
         instances: InstanceIndexProjection,
-        wizard_progress: WizardProgressProjection,
+        pattern_projections: dict[str, Projection],
         resource_invocations: ResourceInvocationProjection,
         job_board: JobStatusBoardProjection,
         instance_manager: InstanceManager,
     ) -> None:
         self._app = app
         self._instances = instances
-        self._wizard_progress = wizard_progress
+        self._pattern_projections = pattern_projections
         self._resource_invocations = resource_invocations
         self._job_board = job_board
         self._instance_manager = instance_manager
 
     def ask(self, query: Any) -> Any:
+        for contributor in iter_cqrs_contributors():
+            if contributor.handle_query is None:
+                continue
+            if isinstance(query, contributor.query_types):
+                return contributor.handle_query(query, self)
+
         if isinstance(query, ListInstancesQuery):
             return self._instances.list_instances(query)
         if isinstance(query, GetInstanceStatusQuery):
@@ -246,27 +216,12 @@ class HostQueryHandlers:
             return self._app.list_processes()
         if isinstance(query, GetProcessQuery):
             return self._get_process(query)
-        if isinstance(query, GetWizardProgressQuery):
-            return self._wizard_progress.get_progress(query)
-        if isinstance(query, GetWizardStatusQuery):
-            return self._get_wizard_status(query)
         if isinstance(query, GetJobStatusQuery):
             return self._get_job(query)
         if isinstance(query, GetJobContextQuery):
             return self._get_job_context(query)
         if isinstance(query, ListJobStatusQuery):
             return self._job_board.list_jobs(query)
-        if isinstance(query, ListWizardProgressQuery):
-            rows = self._wizard_progress.list_progress(query)
-            if not query.active_only:
-                return rows
-            active_ids = {
-                row.instance_id
-                for row in self._instances.list_instances(
-                    ListInstancesQuery(include_terminal=False)
-                )
-            }
-            return [row for row in rows if row.instance_id in active_ids]
         if isinstance(query, GetResourceInvocationsQuery):
             row = self._resource_invocations.get_invocations(query)
             return row.to_dict() if row is not None else None
@@ -309,10 +264,14 @@ class HostQueryHandlers:
         except InstanceNotFoundError:
             pass
 
-        progress = self._wizard_progress.get_progress(
-            GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
-        )
-        wizard_progress = progress.to_dict() if progress is not None else None
+        wizard_progress = None
+        wizard_proj = self._pattern_projections.get("wizard")
+        if wizard_proj is not None:
+            progress = wizard_proj.get_progress(
+                GetWizardProgressQuery(job_id=query.job_id, instance_id=instance_id)
+            )
+            wizard_progress = progress.to_dict() if progress is not None else None
+
         resource_row = self._resource_invocations.get_invocations(
             GetResourceInvocationsQuery(job_id=query.job_id, instance_id=instance_id)
         )
@@ -355,99 +314,23 @@ class HostQueryHandlers:
         except DefinitionNotFoundError:
             return None
 
-    def _get_wizard_status(self, query: GetWizardStatusQuery) -> dict[str, Any] | None:
-        instance = self._instances.get_instance(GetInstanceStatusQuery(instance_id=query.instance_id))
-        if instance is None:
-            return None
 
-        instance_payload = instance.to_dict()
-        progress = self._wizard_progress.get_progress(
-            GetWizardProgressQuery(instance_id=query.instance_id, job_id=instance.job_id)
-        )
-        wizard_progress = progress.to_dict() if progress is not None else None
-
-        pattern: dict[str, Any] | None = None
-        job_status: str | None = None
-        try:
-            job = self._app.runtime().get_job(instance.job_id)
-            job_status = job.status.value
-            from palm.runtimes.cli.shared.job_inspect import inspect_job_json
-
-            inspected = inspect_job_json(job)
-            if inspected.get("pattern") == "wizard":
-                pattern = inspected
-        except Exception:
-            pass
-
-        return build_pattern_read_model(
-            "wizard",
-            instance_payload,
-            wizard_progress=wizard_progress,
-            pattern=pattern,
-            job_status=job_status,
-        )
-
-
-def _wizard_flow_payload(body: dict[str, Any]) -> dict[str, Any] | str:
-    if "wizard" in body:
-        payload: dict[str, Any] = {"wizard": body["wizard"]}
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return payload
-    if "flow" in body and isinstance(body["flow"], dict):
-        flow = dict(body["flow"])
-        pattern = flow.get("pattern")
-        if pattern not in (None, "wizard"):
-            raise ValueError("flow.pattern must be 'wizard'")
-        flow["pattern"] = "wizard"
-        payload = {"flow": flow}
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return payload
-    if "flow_name" in body:
-        return str(body["flow_name"])
-    raise ValueError("expected 'wizard', 'flow', or 'flow_name' in request body")
-
-
-def _optional_str(value: object | None) -> str | None:
-    return str(value) if value is not None else None
-
-
-def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> None:
-    handler = PalmCommandHandlers(app, router)
-    for command_type in (
+def collect_cqrs_command_types() -> tuple[type, ...]:
+    types: list[type] = [
         SubmitFlowCommand,
-        SubmitWizardCommand,
         SubmitProcessCommand,
         ProvideInputCommand,
-        ProvideWizardInputCommand,
-        RequestWizardBacktrackCommand,
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,
-    ):
-        bus.register(command_type, handler)
+    ]
+    for contributor in iter_cqrs_contributors():
+        types.extend(contributor.command_types)
+    return tuple(types)
 
 
-def wire_query_bus(
-    bus: QueryBus,
-    *,
-    app: PalmApp,
-    instances: InstanceIndexProjection,
-    wizard_progress: WizardProgressProjection,
-    resource_invocations: ResourceInvocationProjection,
-    job_board: JobStatusBoardProjection,
-    instance_manager: InstanceManager,
-) -> None:
-    handler = HostQueryHandlers(
-        app=app,
-        instances=instances,
-        wizard_progress=wizard_progress,
-        resource_invocations=resource_invocations,
-        job_board=job_board,
-        instance_manager=instance_manager,
-    )
-    for query_type in (
+def collect_cqrs_query_types() -> tuple[type, ...]:
+    types: list[type] = [
         ListInstancesQuery,
         GetInstanceStatusQuery,
         ListInstanceSnapshotsQuery,
@@ -456,13 +339,40 @@ def wire_query_bus(
         GetFlowQuery,
         ListProcessesQuery,
         GetProcessQuery,
-        GetWizardProgressQuery,
-        GetWizardStatusQuery,
         GetJobStatusQuery,
         GetJobContextQuery,
         ListJobStatusQuery,
-        ListWizardProgressQuery,
         GetResourceInvocationsQuery,
         ListResourceInvocationsQuery,
-    ):
+    ]
+    for contributor in iter_cqrs_contributors():
+        types.extend(contributor.query_types)
+    return tuple(types)
+
+
+def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> None:
+    handler = PalmCommandHandlers(app, router)
+    for command_type in collect_cqrs_command_types():
+        bus.register(command_type, handler)
+
+
+def wire_query_bus(
+    bus: QueryBus,
+    *,
+    app: PalmApp,
+    instances: InstanceIndexProjection,
+    pattern_projections: dict[str, Projection],
+    resource_invocations: ResourceInvocationProjection,
+    job_board: JobStatusBoardProjection,
+    instance_manager: InstanceManager,
+) -> None:
+    handler = HostQueryHandlers(
+        app=app,
+        instances=instances,
+        pattern_projections=pattern_projections,
+        resource_invocations=resource_invocations,
+        job_board=job_board,
+        instance_manager=instance_manager,
+    )
+    for query_type in collect_cqrs_query_types():
         bus.register(query_type, handler)

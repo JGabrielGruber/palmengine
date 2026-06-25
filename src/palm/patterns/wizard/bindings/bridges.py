@@ -103,6 +103,6 @@ def register_wizard_bridges() -> None:
             resume_parent_after_child=_wizard_resume_parent_after_child,
         ),
     )
-    from palm.common.wizard_context import build_wizard_view
+    from palm.patterns.wizard.bindings.read_model import build_wizard_view
 
     register_read_model_builder("wizard", build_wizard_view)

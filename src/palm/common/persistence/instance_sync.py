@@ -56,7 +56,7 @@ def build_instance_from_job(
         process_name=process_name or job.metadata.get("process"),
         metadata=dict(job.metadata),
         status_history=[],
-        wizard_step_slug=step_slug,
+        current_step_slug=step_slug,
         runtime_position=position,
         state_meta=snapshot_meta(job.state),
     )
@@ -68,14 +68,14 @@ def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInst
     instance.job_id = job.id
     instance.state_snapshot = snapshot_state(job.state)
     instance.metadata = dict(job.metadata)
-    instance.wizard_step_slug = step_slug
+    instance.current_step_slug = step_slug
     instance.runtime_position = position
     instance.state_meta = snapshot_meta(job.state)
     if instance.status != job.status.value:
         instance.append_status(
             job.status.value,
             job_id=job.id,
-            wizard_step=instance.wizard_step_slug,
+            current_step=instance.current_step_slug,
         )
     else:
         instance.updated_at = datetime.now(UTC).isoformat()

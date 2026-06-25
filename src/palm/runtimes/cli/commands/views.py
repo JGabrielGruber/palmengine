@@ -36,7 +36,7 @@ def render_instance_table(console: Any, instances: list[Any], *, hint: str | Non
 
     for inst in instances:
         emoji = status_emoji(inst.status)
-        context = format_step_context(inst.wizard_step_slug)
+        context = format_step_context(inst.current_step_slug)
         row = [
             short_instance_id(inst.instance_id),
             inst.instance_id,

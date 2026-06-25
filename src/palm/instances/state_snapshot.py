@@ -20,7 +20,7 @@ class StateSnapshot:
     recorded_at: str
     state_snapshot: dict[str, Any]
     job_id: str
-    wizard_step_slug: str | None = None
+    current_step_slug: str | None = None
     runtime_position: dict[str, Any] = field(default_factory=dict)
     detail: dict[str, Any] = field(default_factory=dict)
 
@@ -39,7 +39,7 @@ class StateSnapshot:
             recorded_at=datetime.now(UTC).isoformat(),
             state_snapshot=snapshot_state(job.state),
             job_id=job.id,
-            wizard_step_slug=step_slug,
+            current_step_slug=step_slug,
             runtime_position=runtime_position,
             detail=payload,
         )
@@ -50,7 +50,7 @@ class StateSnapshot:
             "recorded_at": self.recorded_at,
             "state_snapshot": dict(self.state_snapshot),
             "job_id": self.job_id,
-            "wizard_step_slug": self.wizard_step_slug,
+            "current_step_slug": self.current_step_slug,
             "runtime_position": dict(self.runtime_position),
             "detail": dict(self.detail),
         }
@@ -62,7 +62,7 @@ class StateSnapshot:
             recorded_at=str(data["recorded_at"]),
             state_snapshot=dict(data.get("state_snapshot") or {}),
             job_id=str(data["job_id"]),
-            wizard_step_slug=data.get("wizard_step_slug"),
+            current_step_slug=data.get("current_step_slug") or data.get("wizard_step_slug"),
             runtime_position=dict(data.get("runtime_position") or {}),
             detail=dict(data.get("detail") or {}),
         )

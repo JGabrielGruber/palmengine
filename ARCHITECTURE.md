@@ -453,7 +453,7 @@ Interactive wizards are addressable by **durable instance id** — not only by e
 | Explorer workspace | `GET /explorer/instances/{instance_id}` | Full SSR wizard detail page |
 | Explorer HTMX | `POST /explorer/instances/{instance_id}/input` | Partial workspace refresh (`HX-Request: true`) |
 
-Read model assembly lives in `palm/common/wizard_context.py` (`build_wizard_view`). Live prompt metadata comes from `inspect_job_json()` via `GetWizardStatusQuery`.
+Read model assembly lives in `palm/patterns/wizard/bindings/read_model.py` (`build_wizard_view`), dispatched via `palm/common/patterns/pattern_read_model.py` (`build_pattern_read_model`). Live prompt metadata comes from `inspect_job_json()` via `GetWizardStatusQuery` (wizard CQRS bindings).
 
 **Explorer workspace** (`palm/runtimes/server/surfaces/ssr/explorer/`):
 
