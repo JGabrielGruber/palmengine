@@ -14,6 +14,7 @@ from palm.patterns.wizard.bindings.instances.persistence import (
     prepare_wizard_resume_state,
 )
 from palm.patterns.wizard.bindings.instances.submission import wizard_submission_metadata
+from palm.patterns.wizard.bindings.bridges import register_wizard_bridges
 
 pattern_registry.register("wizard", WizardPattern)
 register_builder("wizard", build)
@@ -23,3 +24,4 @@ register_instance_sync(
     resume=prepare_wizard_resume_state,
 )
 register_submission_metadata("wizard", wizard_submission_metadata)
+register_wizard_bridges()

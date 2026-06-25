@@ -426,6 +426,7 @@ class DefinitionExecutor:
             event_engine=self._runtime.event,
             context_engine=getattr(self._runtime, "context", None),
             resource_engine=getattr(self._runtime, "resource", None),
+            commit_registry=getattr(self._runtime, "commit_registry", None),
             definition_repository=self._repository,
         )
 

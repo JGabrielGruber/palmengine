@@ -19,6 +19,7 @@ Wizard execution is organized as behavior-tree **phases** under
 | `flow/collection/` | Collection config, state, and `phases/` subtree |
 | `flow/extensions/` | `step_kind` → phase factory registry |
 | `flow/validation.py` | Step validation rules and feedback |
+| `bindings/bridges.py` | Runtime hooks on `patterns/_registry` (interactive, child-wait, read-model) |
 
 ## Tree shape
 

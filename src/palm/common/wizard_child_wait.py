@@ -4,13 +4,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.core.orchestration import Job, JobStatus
-from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns.wizard.bindings.resource.child_wait import child_job_id_from_wait, get_child_wait, poll_child_job
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
+import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
+
+from palm.core.orchestration import Job
+from palm.patterns._registry import ChildWaitHooks, get_child_wait_hooks
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
+
+
+def _child_wait_hooks(job: Job) -> ChildWaitHooks:
+    name = str(job.metadata.get("pattern") or "wizard")
+    hooks = get_child_wait_hooks(name)
+    if hooks is None:
+        raise RuntimeError(f"Pattern {name!r} has no child-wait hooks registered")
+    return hooks
 
 
 def bound_runtime() -> Any | None:
@@ -21,29 +29,23 @@ def bound_runtime() -> Any | None:
 
 
 def parent_is_waiting_for_child(job: Job) -> bool:
-    waiting = get_child_wait(job.state)
-    return isinstance(waiting, dict) and bool(waiting.get("child_job_id"))
+    return _child_wait_hooks(job).parent_is_waiting(job)
 
 
 def resume_parent_after_child(runtime: BaseRuntime, child_job: Job) -> Job | None:
     """Resume a parent wizard when a correlated child job reaches a terminal state."""
-    if child_job.status != JobStatus.SUCCEEDED:
-        return None
     parent_id = child_job.metadata.get("__palm:parent_job_id")
     if not parent_id:
         return None
     try:
         parent = runtime.get_job(str(parent_id))
-    except JobNotFoundError:
+    except Exception:
         return None
-    if parent.status != JobStatus.WAITING_FOR_INPUT:
+    pattern = str(parent.metadata.get("pattern") or "wizard")
+    hooks = get_child_wait_hooks(pattern)
+    if hooks is None:
         return None
-    waiting = get_child_wait(parent.state)
-    child_id = child_job_id_from_wait(waiting)
-    if child_id and child_id != child_job.id:
-        return None
-    runtime.orchestration.resume_job(parent.id)
-    return runtime.get_job(parent.id)
+    return hooks.resume_parent_after_child(runtime, child_job)
 
 
 def resume_child_wait_for_instance(runtime: BaseRuntime, instance_id: str) -> Job:
@@ -58,7 +60,7 @@ def resume_child_wait_for_instance(runtime: BaseRuntime, instance_id: str) -> Jo
 
 
 def poll_child_for_parent(state: Any, child_job_id: str) -> Job | None:
-    runtime = bound_runtime()
-    if runtime is None:
+    hooks = get_child_wait_hooks("wizard")
+    if hooks is None:
         return None
-    return poll_child_job(runtime, child_job_id)
+    return hooks.poll_child_for_parent(state, child_job_id)

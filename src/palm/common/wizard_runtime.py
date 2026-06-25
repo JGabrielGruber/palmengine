@@ -1,19 +1,35 @@
 """
 Wizard runtime helpers — resolve instances, deliver input, and request backtrack.
+
+Dispatches pattern-specific logic through :mod:`palm.patterns._registry` so this
+module stays free of ``palm.patterns.wizard`` imports.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
+
 from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.bindings.behavior_tree.backtrack import can_backtrack_to
+from palm.patterns._registry import InteractiveRuntimeHooks, get_interactive_runtime
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
+
+
+def _pattern_name(job: Job) -> str:
+    return str(job.metadata.get("pattern") or "")
+
+
+def _interactive_hooks(job: Job) -> InteractiveRuntimeHooks:
+    name = _pattern_name(job)
+    hooks = get_interactive_runtime(name)
+    if hooks is None:
+        raise TypeError(f"Job pattern {name!r} has no interactive runtime hooks")
+    return hooks
 
 
 def resolve_wizard_job(runtime: BaseRuntime, instance_id: str) -> Job:
@@ -30,9 +46,10 @@ def resolve_wizard_job(runtime: BaseRuntime, instance_id: str) -> Job:
         return runtime.resume_process(instance_id)
 
 
-def require_wizard_job(job: Job, instance_id: str) -> WizardPattern:
+def require_wizard_job(job: Job, instance_id: str) -> Any:
     executable = job.executable
-    if not isinstance(executable, WizardPattern):
+    hooks = _interactive_hooks(job)
+    if not hooks.is_executable(executable):
         raise TypeError(f"Instance {instance_id!r} is not a wizard flow")
     return executable
 
@@ -64,7 +81,8 @@ def request_wizard_backtrack_for_instance(
     """Queue backtrack, resume execution, and persist the updated job."""
     job = resolve_wizard_job(runtime, instance_id)
     wizard = require_wizard_job(job, instance_id)
-    target = to_step if to_step is not None else previous_wizard_step(wizard, job.state)
+    hooks = _interactive_hooks(job)
+    target = to_step if to_step is not None else hooks.previous_step(wizard, job.state)
 
     wizard.request_backtrack(job.state, target)
     runtime.orchestration.resume_job(job.id)
@@ -73,22 +91,9 @@ def request_wizard_backtrack_for_instance(
     return job, target
 
 
-def previous_wizard_step(wizard: WizardPattern, state: Any) -> str:
+def previous_wizard_step(wizard: Any, state: Any) -> str:
     """Return the slug of the step immediately before the current position."""
-    current = wizard.current_step_slug(state)
-    if current is None:
-        raise ValueError("Wizard has no active step; cannot backtrack")
-
-    config = wizard.config
-    if not config.allow_backtrack:
-        raise ValueError("Backtracking is disabled for this wizard")
-
-    index = config.index_of(current)
-    if index <= 0:
-        raise ValueError("Already at the first step; cannot backtrack further")
-
-    steps = config.iter_tree_steps()
-    target = steps[index - 1].slug
-    if not can_backtrack_to(config, target):
-        raise ValueError(f"Cannot backtrack to step: {target!r}")
-    return target
+    hooks = get_interactive_runtime("wizard")
+    if hooks is None:
+        raise RuntimeError("Wizard interactive runtime hooks are not registered")
+    return hooks.previous_step(wizard, state)

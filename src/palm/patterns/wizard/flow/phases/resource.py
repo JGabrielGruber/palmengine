@@ -12,7 +12,7 @@ from palm.common.resource.compensation import is_mutating_action, track_resource
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
 from palm.core.orchestration import JobStatus
-from palm.common.wizard_child_wait import poll_child_for_parent
+from palm.patterns._registry import get_child_wait_hooks
 from palm.patterns.wizard.bindings.resource.child_wait import (
     child_job_id_from_wait,
     child_wait_from_result,
@@ -202,7 +202,10 @@ class WizardResourceLeaf(LeafNode):
         if not child_job_id:
             return self._fail_step(state, message="Missing child_job_id while waiting for child")
 
-        child_job = poll_child_for_parent(state, child_job_id)
+        child_wait = get_child_wait_hooks("wizard")
+        child_job = (
+            child_wait.poll_child_for_parent(state, child_job_id) if child_wait is not None else None
+        )
         if child_job is None:
             publish_prompt(
                 state,

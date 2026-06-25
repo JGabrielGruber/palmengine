@@ -67,3 +67,18 @@ def test_wizard_handler_exports() -> None:
     from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry as HandlerRegistry
 
     assert CommitRegistry is HandlerRegistry
+
+
+def test_wizard_bridge_hooks_register() -> None:
+    from palm.patterns._registry import (
+        get_child_wait_hooks,
+        get_interactive_runtime,
+        get_read_model_builder,
+    )
+
+    interactive = get_interactive_runtime("wizard")
+    assert interactive is not None
+    child_wait = get_child_wait_hooks("wizard")
+    assert child_wait is not None
+    read_model = get_read_model_builder("wizard")
+    assert read_model is not None

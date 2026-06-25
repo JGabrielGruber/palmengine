@@ -55,7 +55,7 @@ from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundErro
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
-from palm.common.wizard_context import build_wizard_view
+from palm.common.wizard_context import build_pattern_read_model
 from palm.common.wizard_runtime import (
     provide_wizard_input_for_instance,
     request_wizard_backtrack_for_instance,
@@ -379,7 +379,8 @@ class HostQueryHandlers:
         except Exception:
             pass
 
-        return build_wizard_view(
+        return build_pattern_read_model(
+            "wizard",
             instance_payload,
             wizard_progress=wizard_progress,
             pattern=pattern,

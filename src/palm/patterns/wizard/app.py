@@ -28,6 +28,9 @@ WIZARD_APP: dict[str, Any] = {
         "builder",
         "instance_sync",
         "submission_metadata",
+        "interactive_runtime",
+        "child_wait",
+        "read_model_builder",
     ],
 }
 

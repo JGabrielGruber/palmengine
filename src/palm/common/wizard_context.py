@@ -12,6 +12,23 @@ from typing import Any
 from palm.core.orchestration import JobStatus
 
 
+def build_pattern_read_model(
+    pattern: str,
+    instance: dict[str, Any],
+    /,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Dispatch a registered pattern read-model builder."""
+    import palm.patterns  # noqa: F401 — ensure bridge hooks are registered
+
+    from palm.patterns._registry import get_read_model_builder
+
+    builder = get_read_model_builder(pattern)
+    if builder is None:
+        raise RuntimeError(f"No read-model builder registered for pattern {pattern!r}")
+    return builder(instance, **kwargs)
+
+
 def build_wizard_view(
     instance: dict[str, Any],
     *,
