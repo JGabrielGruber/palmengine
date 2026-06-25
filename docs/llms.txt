@@ -115,6 +115,7 @@ src/palm/
 | ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
 | DEVELOPMENT.md | Contributor setup and patterns |
 | docs/PATTERN-APPS.md | PatternApp manifests, bindings/flow layout, common boundary |
+| docs/PROVIDER-APPS.md | ProviderApp manifests, bindings/flow layout for providers; palm reference |
 | docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
@@ -128,7 +129,7 @@ src/palm/
 | Add | Where | How |
 |-----|-------|-----|
 | Pattern | `palm/patterns/<name>/` | `pattern.py` + `app.py` + `bindings/definitions/builder.py` + `registry.py`; add to `INSTALLED_PATTERNS`. See `docs/PATTERN-APPS.md` |
-| Provider | `palm/providers/<name>/` | Same structure; add to `INSTALLED_PROVIDERS` |
+| Provider | `palm/providers/<name>/` | `provider.py` + `app.py` (ProviderApp) + `registry.py` + `bindings/` + `flow/`; add to `INSTALLED_PROVIDERS`. See `docs/PROVIDER-APPS.md` |
 | Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
 | Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
 | CQRS handler | `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()` |

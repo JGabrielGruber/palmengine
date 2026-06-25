@@ -9,8 +9,12 @@ from examples.definitions.data_ingestion import INGEST_ETL_FLOW
 from palm.core.orchestration import JobStatus
 from palm.definitions import ResourceDefinition
 from palm.providers.palm.provider import PalmProvider
-from palm.providers.palm.recursion import PalmRecursionError, RecursionLimits, palm_invoke_frame
-from palm.providers.palm.wiring import clear_palm_runtime
+from palm.providers.palm.bindings.recursion.guard import (
+    PalmRecursionError,
+    RecursionLimits,
+    palm_invoke_frame,
+)
+from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.server import ServerRuntime
 

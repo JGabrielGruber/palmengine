@@ -147,7 +147,7 @@ class PalmInvokeParams:
         return None
 
     def as_target_dict(self) -> dict[str, Any]:
-        """Mapping shape expected by :func:`~palm.providers.palm.target.parse_target`."""
+        """Mapping shape expected by :func:`~palm.providers.palm.flow.target.parse_target`."""
         return {
             "by_id": self.by_id,
             "target_kind": self.target_kind,
@@ -165,13 +165,6 @@ _FIELD_NAMES = {item.name for item in fields(PalmInvokeParams)}
 
 def _as_bool(value: Any) -> bool:
     return bool(value)
-
-
-def _as_float(value: Any, *, default: float) -> float:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _as_int(value: Any, *, default: int) -> int:

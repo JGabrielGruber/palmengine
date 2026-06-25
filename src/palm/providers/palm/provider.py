@@ -2,23 +2,13 @@
 
 from __future__ import annotations
 
-import uuid
 from typing import Any
 
 from palm.core.resource import BaseProvider
-from palm.core.resource.observability import execution_block_from_state
-from palm.core.resource.result import (
-    ProviderActionDescriptor,
-    ProviderDescriptor,
-    ProviderHealth,
-    ProviderResult,
-)
-from palm.providers.palm.coordinator import PalmInvokeCoordinator
-from palm.providers.palm.exceptions import PalmProviderError, PalmTimeoutError
-from palm.providers.palm.params import PalmInvokeParams
-from palm.providers.palm.recursion import PalmRecursionError
-from palm.providers.palm.target import parse_target
-from palm.providers.palm.wiring import get_bound_runtime
+from palm.core.resource.result import ProviderDescriptor, ProviderHealth, ProviderResult
+from palm.providers.palm.bindings.resource.descriptor import describe, health
+from palm.providers.palm.bindings.resource.invoke import invoke_action
+from palm.providers.palm.flow.coordinator import PalmInvokeCoordinator
 
 
 class PalmProvider(BaseProvider):
@@ -55,140 +45,18 @@ class PalmProvider(BaseProvider):
         **kwargs: Any,
     ) -> ProviderResult:
         execution_state = kwargs.pop("state", None)
-        invoke_params = PalmInvokeParams.from_mapping(
-            params,
-            resource_id=resource_id,
-            **kwargs,
-        )
-        invoke_params = _inject_parent_job_from_state(invoke_params, execution_state)
-
-        if action == "fetch":
-            return self._fetch(action, invoke_params, resource_id=resource_id)
-
-        try:
-            target = parse_target(
-                action=action,
-                resource_id=resource_id,
-                params=invoke_params.as_target_dict(),
-            )
-        except ValueError as exc:
-            return self._fail(action, str(exc), resource_id=resource_id)
-
-        try:
-            payload = self._coordinator.invoke(action, target, invoke_params)
-        except PalmRecursionError as exc:
-            return self._fail(action, str(exc), resource_id=resource_id)
-        except PalmTimeoutError as exc:
-            return self._fail(action, str(exc), resource_id=resource_id)
-        except PalmProviderError as exc:
-            return self._fail(action, str(exc), resource_id=resource_id)
-
-        return ProviderResult.ok(
-            payload,
+        return invoke_action(
+            self._coordinator,
+            name=self.name,
             action=action,
-            provider=self.name,
-            resource_id=resource_id or target.ref,
-            mode="remote" if invoke_params.is_remote else "local",
-            invoke_depth=payload.get("invoke_depth"),
-            parent_job_id=invoke_params.parent_job_id,
-            wait_mode=invoke_params.resolved_wait_mode.value,
-            waiting_for_child_wizard=payload.get("waiting_for_child_wizard"),
-            child_job_id=payload.get("child_job_id"),
-            child_instance_id=payload.get("child_instance_id"),
+            params=params,
+            resource_id=resource_id,
+            execution_state=execution_state,
+            **kwargs,
         )
 
     def describe(self) -> ProviderDescriptor:
-        return ProviderDescriptor(
-            name=self.name,
-            description="Compositional Palm orchestration — invoke flows, processes, and resources",
-            actions=(
-                ProviderActionDescriptor(
-                    "submit_flow",
-                    "Submit a child flow by name or flow:<ref>. "
-                    "Use wait_mode: until_terminal (default when wait=true), "
-                    "until_input (return when child wizard needs input), "
-                    "or fire_and_forget.",
-                ),
-                ProviderActionDescriptor(
-                    "submit_process",
-                    "Submit a child process by name or process:<ref>. "
-                    "Supports the same wait_mode policy as submit_flow.",
-                ),
-                ProviderActionDescriptor(
-                    "invoke_resource",
-                    "Invoke a registered resource definition on the bound runtime",
-                ),
-                ProviderActionDescriptor(
-                    "fetch",
-                    "Fetch job status and result by job id",
-                ),
-            ),
-        )
+        return describe(name=self.name)
 
     def health(self) -> ProviderHealth:
-        runtime = get_bound_runtime()
-        if runtime is not None and runtime.is_started:
-            return ProviderHealth(healthy=True, message="local runtime bound")
-        return ProviderHealth(
-            healthy=False,
-            message="no local runtime bound; use remote_url for remote mode",
-        )
-
-    def _fetch(
-        self,
-        action: str,
-        params: PalmInvokeParams,
-        *,
-        resource_id: str | None,
-    ) -> ProviderResult:
-        job_id = params.resolve_job_id(resource_id=resource_id)
-        if not job_id:
-            return self._fail(
-                action, "fetch requires job_id or resource_id", resource_id=resource_id
-            )
-        try:
-            payload = self._coordinator.fetch(params, resource_id=resource_id)
-        except PalmProviderError as exc:
-            return self._fail(action, str(exc), resource_id=job_id)
-        return ProviderResult.ok(
-            payload,
-            action=action,
-            provider=self.name,
-            resource_id=job_id,
-            mode="remote" if params.is_remote else "local",
-        )
-
-    def _fail(
-        self,
-        action: str,
-        message: str,
-        *,
-        resource_id: str | None,
-    ) -> ProviderResult:
-        return ProviderResult.fail(
-            message,
-            action=action,
-            provider=self.name,
-            resource_id=resource_id,
-        )
-
-
-def _inject_parent_job_from_state(
-    params: PalmInvokeParams,
-    execution_state: Any | None,
-) -> PalmInvokeParams:
-    if params.parent_job_id:
-        return params
-    block = execution_block_from_state(execution_state)
-    if not block.get("job_id"):
-        block = execution_block_from_state(params.resolve_state())
-    parent_job_id = block.get("job_id")
-    if not parent_job_id:
-        return params
-    params.parent_job_id = str(parent_job_id)
-    return params
-
-
-def new_child_job_id(prefix: str = "palm-child") -> str:
-    """Generate a correlation-friendly child job id."""
-    return f"{prefix}-{uuid.uuid4().hex[:12]}"
+        return health()

@@ -19,6 +19,10 @@ STALE_ARCHITECTURE_PATTERNS = (
         re.compile(r"pattern\.py[`'\"]? \+ [`'\"]?builder\.py"),
         "use bindings/definitions/builder.py — see docs/PATTERN-APPS.md",
     ),
+    (
+        re.compile(r"providers/palm/(coordinator|params|payload|target|remote|wiring|recursion)\.py"),
+        "use bindings/ + flow/ layout — see docs/PROVIDER-APPS.md",
+    ),
 )
 
 STALE_ARCHITECTURE_SCAN_PATHS = (
@@ -29,6 +33,7 @@ STALE_ARCHITECTURE_SCAN_PATHS = (
     ROOT / "AGENTS.md",
     ROOT / "docs/llms.txt",
     ROOT / "docs/PATTERN-APPS.md",
+    ROOT / "docs/PROVIDER-APPS.md",
 )
 
 STALE_VERSION_PATTERNS = (

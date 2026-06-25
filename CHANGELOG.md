@@ -7,7 +7,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Added
 
 - **[docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)** — canonical guide for PatternApp manifests, `bindings/`/`flow/` layout, and `palm.common` boundaries
+- **[docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)** — canonical guide for ProviderApp manifests and provider `bindings/`/`flow/` layout
 - **ADR-002** — [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-apps-and-common-boundaries.md)
+- **ADR-003** — [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
+- **`ProviderApp`** — Django-style manifest base in `palm/common/providers/app.py`; `providers/_registry.py` for app lifecycle and runtime binding hooks
 - **`just guard-common`** — runs `test_common_boundary.py` + `test_modular_apps.py` (wired into `just check`)
 
 ### Changed
@@ -15,7 +18,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **parallel** — reorganized into `bindings/` (definitions, instances, context, behavior_tree) and `flow/` (branch, scope, merge); `ParallelApp` manifest documents `palm_layers`
 - **pipeline** — `bindings/definitions` + `bindings/behavior_tree`; enhanced `PipelineApp` manifest
 - **dag, etl** — `bindings/definitions/builder.py` + `flow/` scaffold; honest `PatternApp` manifests
-- **Documentation** — AGENTS, ARCHITECTURE, DEVELOPMENT, README, STATUS, `docs/llms.txt` updated for PatternApp model; stale `patterns/wizard/handler.py` and `wizard_step_slug` references fixed
+- **palm provider** — reorganized into `bindings/` (resource, orchestration, runtimes, recursion) and `flow/` (coordinator, params, target, remote); `PalmProviderApp` manifest; runtime binding via `providers/_registry.py` instead of hard import in `BaseRuntime`
+- **rest, graphql, postgres** — minimal `ProviderApp` manifests
+- **Documentation** — AGENTS, ARCHITECTURE, DEVELOPMENT, README, STATUS, `docs/llms.txt` updated for PatternApp and ProviderApp models; stale path bans in `scripts/docs_check.py`
 
 ## [0.13.0] — 2026-06-18
 

@@ -38,9 +38,19 @@ def test_installed_pattern_apps_register() -> None:
 
 
 def test_installed_provider_apps_register() -> None:
+    from palm.common.providers.app import ProviderApp
+    from palm.providers._registry import get_provider_app, installed_provider_apps
+
     assert set(INSTALLED_PROVIDERS) == {"rest", "graphql", "postgres", "palm"}
     for name in INSTALLED_PROVIDERS:
         provider_registry.get(name)
+
+    for name in INSTALLED_PROVIDERS:
+        app = get_provider_app(name)
+        assert app is not None
+        assert isinstance(app, ProviderApp)
+        assert app.name == name
+    assert {app.name for app in installed_provider_apps()} == set(INSTALLED_PROVIDERS)
 
 
 def test_installed_storage_apps_register() -> None:

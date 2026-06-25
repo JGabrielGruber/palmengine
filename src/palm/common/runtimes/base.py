@@ -199,18 +199,22 @@ class BaseRuntime:
         self.orchestration.start()
         self._started = True
 
-        from palm.providers.palm.wiring import bind_palm_runtime
+        from palm.providers._registry import get_runtime_binding
 
-        bind_palm_runtime(self)
+        bind_runtime = get_runtime_binding()
+        if bind_runtime is not None:
+            bind_runtime(self)
 
     def stop(self) -> None:
         """Stop orchestration and shut down all engines."""
         if not self._started:
             return
 
-        from palm.providers.palm.wiring import clear_palm_runtime
+        from palm.providers._registry import get_runtime_unbinding
 
-        clear_palm_runtime()
+        unbind_runtime = get_runtime_unbinding()
+        if unbind_runtime is not None:
+            unbind_runtime()
 
         self.orchestration.stop()
         if self._owns_instance_manager:
