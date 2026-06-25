@@ -9,10 +9,10 @@ from typing import Any, cast
 
 from palm.common.persistence.state_snapshot import state_from_snapshot
 from palm.core.orchestration import Job
-from palm.patterns.parallel.keys import ParallelKeys
-from palm.patterns.parallel.merge import get_branch_results
+from palm.patterns.parallel.bindings.context.keys import ParallelKeys
+from palm.patterns.parallel.flow.merge import get_branch_results
+from palm.patterns.parallel.flow.scope import load_branch_snapshot_for
 from palm.patterns.parallel.pattern import ParallelPattern
-from palm.patterns.parallel.scope import load_branch_snapshot_for
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState

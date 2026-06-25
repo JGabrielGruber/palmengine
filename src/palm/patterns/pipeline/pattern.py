@@ -7,8 +7,8 @@ from __future__ import annotations
 from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, SequenceNode
 from palm.core.context import BaseState
 from palm.core.transform.engine import TransformEngine
-from palm.patterns.pipeline.config import PipelineConfig
-from palm.patterns.pipeline.tree import build_pipeline_tree
+from palm.patterns.pipeline.bindings.behavior_tree.tree import build_pipeline_tree
+from palm.patterns.pipeline.bindings.definitions.config import PipelineConfig
 
 
 class PipelinePattern(BasePattern):

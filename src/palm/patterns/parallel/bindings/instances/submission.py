@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.parallel.builder import parallel_config_from_options
+from palm.patterns.parallel.bindings.definitions.builder import parallel_config_from_options
 
 
 def parallel_submission_metadata(flow: FlowDefinition) -> dict[str, Any]:

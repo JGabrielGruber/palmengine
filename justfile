@@ -34,7 +34,7 @@ hygiene:
 # -----------------------------------------------------------------------------
 # 2. Quality & Checking (the most used group)
 # -----------------------------------------------------------------------------
-check: lint typecheck test-quick guard-core
+check: lint typecheck test-quick guard-core guard-common
 
 full-check: format lint typecheck test-full audit guard-core demo-full
 
@@ -81,6 +81,10 @@ refactor:
 guard-core:
     @echo "🔒 Checking Core Purity Rules (0.6+ direction)..."
     uv run python scripts/guard_core.py
+
+guard-common:
+    @echo "🔒 Checking palm.common pattern boundary..."
+    uv run pytest -q tests/test_common_boundary.py tests/test_modular_apps.py --tb=short
 
 docs-check:
     @echo "📄 Checking documentation version consistency..."
@@ -201,7 +205,7 @@ clean: clean-dist
 help:
     @echo "🌴 Palm Tooling Commands:"
     @echo "   just dev              → Full setup + hygiene"
-    @echo "   just check            → Fast quality check + guard-core"
+    @echo "   just check            → Fast quality check + guard-core + guard-common"
     @echo "   just test-core        → Pure palm.core contract tests"
     @echo "   just full-check       → Everything + demo-full"
     @echo "   just prepr            → Pre-release gate"
@@ -209,6 +213,7 @@ help:
     @echo "   just install-local    → Editable palmengine install"
     @echo "   just publish-test     → Build + TestPyPI"
     @echo "   just publish          → Build + PyPI (5s warning)"
+    @echo "   just guard-common     → palm.common pattern boundary tests"
     @echo "   just docs-check       → Version + documentation surface consistency"
     @echo "   just docs-build       → Rebuild docs site Tailwind CSS"
     @echo "   just release-prep     → docs-check + full-check + build"

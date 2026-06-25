@@ -51,7 +51,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Transforms** | 22 built-in rules; pipelines, wizard steps, or `TransformExecutor` |
 | **State** | `DictStateSchema`, scoped blackboards, schema-aware snapshots (`__palm:meta`) |
 | **Persistence** | Durable `ProcessInstance` records; resume across restarts |
-| **CQRS** | Command/query buses; projections (`instance_index`, `wizard_progress`, `job_status_board`) |
+| **CQRS** | Command/query buses; host projections (`instance_index`, `job_status_board`); wizard CQRS in `patterns/wizard/bindings/cqrs/` |
 | **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
@@ -98,7 +98,7 @@ src/palm/
 ├── app/            # ApplicationHost, PalmApp, HostProfile, create_cli_host()
 ├── core/           # Pure engines (no external palm imports)
 ├── common/         # CQRS, hooks, persistence, transforms, runtimes base
-├── patterns/       # wizard, parallel, dag, etl, pipeline (extensible)
+├── patterns/       # PatternApp + bindings/ + flow/ (wizard, parallel, pipeline, dag, etl)
 ├── providers/      # rest, graphql, postgres (extensible)
 ├── storages/       # memory, filesystem, postgres, mongodb (extensible)
 ├── definitions/    # FlowDefinition, ProcessDefinition, ResourceDefinition
@@ -114,6 +114,8 @@ src/palm/
 | STATUS.md | Living current state |
 | ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
 | DEVELOPMENT.md | Contributor setup and patterns |
+| docs/PATTERN-APPS.md | PatternApp manifests, bindings/flow layout, common boundary |
+| docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
@@ -125,11 +127,11 @@ src/palm/
 
 | Add | Where | How |
 |-----|-------|-----|
-| Pattern | `palm/patterns/<name>/` | `pattern.py` + `builder.py` + `registry.py`; add to `INSTALLED_PATTERNS` |
+| Pattern | `palm/patterns/<name>/` | `pattern.py` + `app.py` + `bindings/definitions/builder.py` + `registry.py`; add to `INSTALLED_PATTERNS`. See `docs/PATTERN-APPS.md` |
 | Provider | `palm/providers/<name>/` | Same structure; add to `INSTALLED_PROVIDERS` |
 | Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
 | Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
-| CQRS handler | `palm/common/cqrs/` | Wire in `palm/app/host/cqrs_wiring.py` |
+| CQRS handler | `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()` |
 
 ## Resources (0.12 — Compositional Power)
 

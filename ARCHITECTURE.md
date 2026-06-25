@@ -97,7 +97,20 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/transforms/` | Built-in transform rules, `TransformExecutor`, and `register_transform()` helpers |
 | `common/runtimes/` | `BaseRuntime`, `RuntimeHost`, scheduler resolution, runtime middleware hooks |
 
-Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers) live in the owning pattern app under `palm.patterns`.
+Import shared coordination from **`palm.common`** (and its subpackages). Pattern-specific APIs (e.g. wizard commit handlers, CQRS commands, read models) live in the owning pattern app under `palm.patterns`.
+
+### Pattern apps (`palm/patterns/`)
+
+Each pattern is a **Django-style app** with a `PatternApp` manifest (`app.py`), `registry.py` wiring, and a `bindings/` + `flow/` layout. `palm.common.patterns` materializes definitions via `pattern_registry` — it does not own wizard, parallel, or pipeline semantics.
+
+| Pattern | `bindings/` | `flow/` | Host hooks |
+|---------|-------------|---------|------------|
+| wizard | Full (definitions, instances, context, BT, CQRS, compensation, read model) | collection, extensions, phases | projection, CQRS, interactive runtime, child wait |
+| parallel | definitions, instances, context, behavior_tree | branch, scope, merge | instance sync, submission metadata |
+| pipeline | definitions, behavior_tree | — | builder |
+| dag, etl | definitions (scaffold) | scaffold | builder |
+
+Canonical guide: [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) · ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-apps-and-common-boundaries.md)
 
 ### `common/transforms/` — shared transformation rules
 
@@ -241,8 +254,10 @@ Extension is explicit and import-time registered:
 | `pattern_registry` | `core/registry.py` | wizard, parallel, dag, etl |
 | `provider_registry` | `core/registry.py` | rest, graphql, postgres |
 | `storage_registry` | `core/registry.py` | memory, filesystem, postgres, mongodb |
-| Pattern builder map | `patterns/_registry.py` | per-pattern `build()` functions |
-| `CommitRegistry` | `patterns/wizard/handler.py` | named commit handlers |
+| Pattern builder map | `patterns/_registry.py` | per-pattern `build()` in `bindings/definitions/` |
+| `PatternApp` manifests | `patterns/<name>/app.py` | `palm_layers`, `registry_hooks`, `ready()` |
+| `CommitRegistry` | `patterns/wizard/bindings/compensation/handler.py` | named commit handlers |
+| CQRS contributors | `patterns/<name>/bindings/cqrs/` | wizard commands/queries via `register_cqrs_contributor()` |
 | `PlanRegistry` | `common/plans/registry.py` | deferred execution plans |
 | `RuntimeRegistry` | `app/registry.py` | named `PalmApp` runtimes |
 

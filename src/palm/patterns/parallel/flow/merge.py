@@ -8,8 +8,12 @@ from typing import Any
 
 from palm.core.context import BaseState
 from palm.core.exceptions import StateValidationError
-from palm.patterns.parallel.config import BranchConfig, MergeStrategy, ParallelConfig
-from palm.patterns.parallel.keys import ParallelKeys
+from palm.patterns.parallel.bindings.context.keys import ParallelKeys
+from palm.patterns.parallel.bindings.definitions.config import (
+    BranchConfig,
+    MergeStrategy,
+    ParallelConfig,
+)
 
 
 def get_branch_results(state: BaseState) -> dict[str, Any]:

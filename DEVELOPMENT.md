@@ -307,7 +307,7 @@ palm instance snapshots <instance_id>
 ```python
 snapshots = host.list_instance_snapshots(instance_id)
 for snap in snapshots:
-    print(snap.status, snap.recorded_at, snap.wizard_step_slug)
+    print(snap.status, snap.recorded_at, snap.current_step_slug)
     print(snap.state_snapshot)  # blackboard dict
 ```
 
@@ -343,13 +343,17 @@ pytest tests/test_state_snapshot_hook.py -q
 
 ## Adding a pattern (Django-style app)
 
+See **[docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)** for the full guide. Summary:
+
 1. Create `palm/patterns/<name>/` with:
    - `pattern.py` — `BasePattern` subclass
-   - `builder.py` — `build(flow, context, pattern_cls)` for flow options
-   - `registry.py` — `pattern_registry.register(...)` + `register_builder(...)`
+   - `app.py` — `PatternApp` manifest (`palm_layers`, `registry_hooks`, optional `ready()`)
+   - `bindings/definitions/builder.py` — `build(flow, context, pattern_cls)` for flow options
+   - `registry.py` — `pattern_registry.register(...)` + `register_builder(...)` + `<name>_app.register()`
    - `__init__.py` — import `registry` for side effect
 2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
-3. Add tests in `tests/`.
+3. Keep pattern-specific logic in `palm/patterns/<name>/` — **not** in `palm.common`. Run `just guard-common`.
+4. Add tests in `tests/`.
 
 ## Collection step kind (wizard)
 

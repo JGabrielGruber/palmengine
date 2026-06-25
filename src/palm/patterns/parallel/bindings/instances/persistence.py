@@ -9,7 +9,7 @@ from typing import Any
 from palm.core.behavior_tree import PatternStatus
 from palm.core.orchestration import Job
 from palm.instances import ProcessInstance
-from palm.patterns.parallel.keys import ParallelKeys
+from palm.patterns.parallel.bindings.context.keys import ParallelKeys
 from palm.patterns.parallel.pattern import ParallelPattern
 from palm.states import BlackboardState
 

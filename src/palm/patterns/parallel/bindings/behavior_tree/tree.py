@@ -7,9 +7,9 @@ from __future__ import annotations
 from typing import cast
 
 from palm.core.behavior_tree import BaseNode, ParallelNode, RootNode
-from palm.patterns.parallel.branch import BranchRunner
-from palm.patterns.parallel.branch_leaf import BranchLeaf
-from palm.patterns.parallel.config import ParallelConfig
+from palm.patterns.parallel.bindings.behavior_tree.branch_leaf import BranchLeaf
+from palm.patterns.parallel.bindings.definitions.config import ParallelConfig
+from palm.patterns.parallel.flow.branch import BranchRunner
 
 
 def build_parallel_tree(

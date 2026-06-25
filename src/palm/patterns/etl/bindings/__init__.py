@@ -1,0 +1,1 @@
+"""ETL pattern bindings — definition materialization (scaffold)."""

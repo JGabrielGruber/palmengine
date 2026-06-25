@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.13.0` (shipping)  
-**Last Updated:** June 18, 2026  
+**Last Updated:** June 25, 2026  
 **Maturity:** Wizard Experience shipped — `/v1/wizards` REST, Explorer wizard workspace, collection UI.
 
 ## Quick Overview
@@ -19,7 +19,7 @@ Palm follows a **layered, registry-driven** model with a strictly pure core:
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
-- `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps.
+- `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)).
 - `palm/runtimes/` — Thin surfaces over the common runtime layer.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full details and rules.
@@ -62,6 +62,17 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 **Migration:** [MIGRATION-0.12.md](MIGRATION-0.12.md)  
 **ADR:** [docs/adr/001-compositional-power-resources.md](docs/adr/001-compositional-power-resources.md)
 
+## Pattern app alignment (June 2026)
+
+| Pattern | Structure | Status |
+|---------|-----------|--------|
+| wizard | Full `bindings/` + `flow/` + phases | ✅ Reference implementation |
+| parallel | `bindings/` + `flow/` (branch, scope, merge) | ✅ Aligned |
+| pipeline | `bindings/definitions` + `behavior_tree` | ✅ Aligned |
+| dag, etl | `bindings/definitions` + `flow/` scaffold | ✅ Honest placeholders |
+
+ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-apps-and-common-boundaries.md)
+
 ## Areas Under Active Improvement
 
 - WebSocket runtime surface for live wizard/job streaming
@@ -71,7 +82,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 
 ## Known Limitations & Technical Debt
 
-- Documentation consistency enforced via `just docs-check` (wired into `just release-prep`)
+- Documentation consistency enforced via `just docs-check` and `just guard-common` (wired into `just check` / `just release-prep`)
 - Field-phase cancel in Explorer may not always map to wizard cancel (use REST/CLI for edge cases)
 - Standalone `ServerRuntime` may return empty resource invocation rows when projections aren't wired
 
@@ -80,7 +91,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 | Document              | Status          | Notes |
 |-----------------------|------------------|-------|
 | `README.md`           | Good            | 0.13 Try in Explorer + wizard REST |
-| `ARCHITECTURE.md`     | Good            | Wizard REST + Explorer section |
+| `ARCHITECTURE.md`     | Good            | Pattern apps section + wizard REST |
+| `docs/PATTERN-APPS.md`| Good            | Canonical PatternApp + bindings/flow guide |
+| `docs/adr/002-*.md`   | Good            | Pattern/common boundary ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
 | `docs/index.html`     | Good            | 0.13.0 highlights |

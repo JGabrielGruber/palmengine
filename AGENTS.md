@@ -76,11 +76,11 @@ Follow these patterns. They exist so growth remains orderly.
 
 | What you want to add | Where it goes | How |
 |----------------------|---------------|-----|
-| New pattern (wizard, parallel, dag, etc.) | `palm/patterns/<name>/` | `pattern.py` + `builder.py` + `registry.py`. Add to `INSTALLED_PATTERNS` in `patterns/_apps.py` |
+| New pattern (wizard, parallel, dag, etc.) | `palm/patterns/<name>/` | `pattern.py` + `app.py` (PatternApp) + `registry.py` + `bindings/definitions/builder.py`. Add to `INSTALLED_PATTERNS` in `patterns/_apps.py`. See [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) |
 | New provider (REST, GraphQL, Postgres, etc.) | `palm/providers/<name>/` | Same structure. Add to `INSTALLED_PROVIDERS` |
 | New storage backend | `palm/storages/<name>/` | Same structure. Add to `INSTALLED_STORAGES` (use optional extras when drivers are needed) |
 | New transform rule | `palm/common/transforms/rules/` | Implement `BaseTransformRule`, register with `register_transform()` or `@transform_rule` |
-| CQRS command or query | `palm/common/cqrs/` | Add dataclass + handler. Wire in `palm/app/host/cqrs_wiring.py` |
+| CQRS command or query | Pattern-owned: `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()`. Generic buses live in `palm/common/cqrs/` |
 | New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |
@@ -125,6 +125,7 @@ Documentation is not optional. It is part of the system.
 - [ ] Public API surface is explicit (`__all__` where relevant)
 - [ ] Backward compatibility or clear deprecation path considered
 - [ ] `palm doctor` and example flows still work (when relevant)
+- [ ] `just guard-common` passes (no pattern-specific logic in `palm.common`)
 
 ---
 

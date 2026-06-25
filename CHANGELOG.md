@@ -4,7 +4,18 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+
+- **[docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)** — canonical guide for PatternApp manifests, `bindings/`/`flow/` layout, and `palm.common` boundaries
+- **ADR-002** — [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-apps-and-common-boundaries.md)
+- **`just guard-common`** — runs `test_common_boundary.py` + `test_modular_apps.py` (wired into `just check`)
+
+### Changed
+
+- **parallel** — reorganized into `bindings/` (definitions, instances, context, behavior_tree) and `flow/` (branch, scope, merge); `ParallelApp` manifest documents `palm_layers`
+- **pipeline** — `bindings/definitions` + `bindings/behavior_tree`; enhanced `PipelineApp` manifest
+- **dag, etl** — `bindings/definitions/builder.py` + `flow/` scaffold; honest `PatternApp` manifests
+- **Documentation** — AGENTS, ARCHITECTURE, DEVELOPMENT, README, STATUS, `docs/llms.txt` updated for PatternApp model; stale `patterns/wizard/handler.py` and `wizard_step_slug` references fixed
 
 ## [0.13.0] — 2026-06-18
 

@@ -10,8 +10,8 @@ from palm.common.exceptions import DefinitionBuildError, DefinitionNotFoundError
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.core.behavior_tree import BasePattern
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.parallel.branch import BranchRunner
-from palm.patterns.parallel.config import BranchConfig, ParallelConfig
+from palm.patterns.parallel.bindings.definitions.config import BranchConfig, ParallelConfig
+from palm.patterns.parallel.flow.branch import BranchRunner
 from palm.patterns.parallel.pattern import ParallelPattern
 
 

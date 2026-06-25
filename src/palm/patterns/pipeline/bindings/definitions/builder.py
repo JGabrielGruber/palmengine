@@ -8,7 +8,7 @@ from palm.common.exceptions import DefinitionBuildError
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.core.behavior_tree import BasePattern
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.pipeline.config import PipelineConfig
+from palm.patterns.pipeline.bindings.definitions.config import PipelineConfig
 from palm.patterns.pipeline.pattern import PipelinePattern
 
 

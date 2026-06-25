@@ -9,6 +9,28 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+STALE_ARCHITECTURE_PATTERNS = (
+    (re.compile(r"patterns/wizard/handler\.py"), "use patterns/wizard/bindings/compensation/handler.py"),
+    (
+        re.compile(r"\bwizard_step_slug\b"),
+        "use current_step_slug (legacy JSON compat only in readers)",
+    ),
+    (
+        re.compile(r"pattern\.py[`'\"]? \+ [`'\"]?builder\.py"),
+        "use bindings/definitions/builder.py — see docs/PATTERN-APPS.md",
+    ),
+)
+
+STALE_ARCHITECTURE_SCAN_PATHS = (
+    ROOT / "README.md",
+    ROOT / "STATUS.md",
+    ROOT / "ARCHITECTURE.md",
+    ROOT / "DEVELOPMENT.md",
+    ROOT / "AGENTS.md",
+    ROOT / "docs/llms.txt",
+    ROOT / "docs/PATTERN-APPS.md",
+)
+
 STALE_VERSION_PATTERNS = (
     re.compile(r"\b0\.10\.9\b"),
     re.compile(r"\bv0\.10\.9\b"),
@@ -78,6 +100,18 @@ def check_surfaces(version: str, errors: list[str]) -> None:
         errors.append(f"docs/index.html: hero badge missing v{version}")
 
 
+def check_stale_architecture_refs(errors: list[str]) -> None:
+    """Flag outdated pattern layout references on active documentation surfaces."""
+    for path in STALE_ARCHITECTURE_SCAN_PATHS:
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        rel = path.relative_to(ROOT)
+        for pattern, hint in STALE_ARCHITECTURE_PATTERNS:
+            if pattern.search(text):
+                errors.append(f"{rel}: stale architecture reference ({hint})")
+
+
 def check_stale_versions(errors: list[str]) -> None:
     """Flag outdated version stamps on active public surfaces (not changelogs/migrations)."""
     scan_paths = [
@@ -109,6 +143,7 @@ def main() -> int:
 
     check_version_sources(version, errors)
     check_surfaces(version, errors)
+    check_stale_architecture_refs(errors)
     check_stale_versions(errors)
 
     if errors:

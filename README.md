@@ -56,12 +56,12 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Resources** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`; wizard `step_kind: resource` |
 | **`palm` provider** | Palm calling Palm — local `submit_flow` / `invoke_resource` or remote HTTP; recursion guardrails |
 | **ApplicationHost** | Top-level orchestrator — role profiles (`all_in_one`, `master`, `worker`, `server`), startup recovery |
-| **CQRS** | Command/query buses, projections (`instance_index`, `wizard_progress`, `job_status_board`, `resource_invocations`) |
+| **CQRS** | Command/query buses; host projections (`instance_index`, `job_status_board`, `resource_invocations`); wizard projection registered by `WizardApp` |
 | **Reliability** | Transactional outbox, compensation handlers (including resource undo), optional webhook dispatch |
 | **Core** | Behavior tree, orchestration, context, storage, resource, event, auth, **TransformEngine** |
 | **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`) |
 | **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization, `enrich_resource` |
-| **Patterns** | **Wizard** (collection, transform, resource steps, summary/commit); **parallel** branches; DAG and ETL stubs |
+| **Patterns** | **PatternApp** manifests + `bindings/`/`flow/` layout; **Wizard** (full CQRS/REST); **parallel** (scoped branches + merge); **pipeline** (transform sequences); DAG/ETL scaffolds — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
 | **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **wizard workspace** (HTMX + collection editor), **resources**; `/` redirects here |

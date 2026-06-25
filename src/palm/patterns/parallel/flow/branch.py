@@ -11,10 +11,10 @@ from palm.common.state.schema_binding import bind_schema_to_state
 from palm.core.behavior_tree import BasePattern, PatternStatus
 from palm.core.context import BaseState
 from palm.core.orchestration.input_capable import InputCapable, StepInspectable
-from palm.patterns.parallel.config import BranchConfig
-from palm.patterns.parallel.keys import ParallelKeys
-from palm.patterns.parallel.merge import record_branch_result
-from palm.patterns.parallel.scope import (
+from palm.patterns.parallel.bindings.context.keys import ParallelKeys
+from palm.patterns.parallel.bindings.definitions.config import BranchConfig
+from palm.patterns.parallel.flow.merge import record_branch_result
+from palm.patterns.parallel.flow.scope import (
     enter_branch,
     leave_branch,
     load_branch_snapshot,

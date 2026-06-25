@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.state.schema_binding import materialize_state_schema
 from palm.core.context import BaseState
-from palm.patterns.parallel.config import BranchConfig
-from palm.patterns.parallel.keys import ParallelKeys
+from palm.patterns.parallel.bindings.context.keys import ParallelKeys
+from palm.patterns.parallel.bindings.definitions.config import BranchConfig
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository

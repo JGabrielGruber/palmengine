@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.common.transforms.builder import build_transform_leaves
 from palm.core.behavior_tree import BaseNode, RootNode, SequenceNode
 from palm.core.transform.engine import TransformEngine
-from palm.patterns.pipeline.config import PipelineConfig
+from palm.patterns.pipeline.bindings.definitions.config import PipelineConfig
 
 
 def build_pipeline_tree(
