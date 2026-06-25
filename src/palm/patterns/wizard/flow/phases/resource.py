@@ -40,6 +40,15 @@ from palm.patterns.wizard.flow.validation import (
 )
 
 
+def _child_job_result(child_job: Any) -> Any:
+    """Return compositional child payload data, preferring ``job.result``."""
+    if child_job.result is not None:
+        return child_job.result
+    commit_result = child_job.state.get(WizardKeys.COMMIT_RESULT)
+    if commit_result is not None:
+        return commit_result
+    return None
+
 
 def default_resource_prompt(step: WizardStepConfig) -> str:
     """Build the default operator-facing prompt for a resource step."""
@@ -230,7 +239,7 @@ class WizardResourceLeaf(LeafNode):
                     "job_id": child_job.id,
                     "instance_id": child_job.metadata.get("instance_id"),
                     "status": child_job.status.value,
-                    "result": child_job.result,
+                    "result": _child_job_result(child_job),
                     "waiting_for_child_wizard": False,
                 }
             )

@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.13.15` (shipping)  
+**Current Version:** `0.13.16` (shipping)  
 **Last Updated:** June 25, 2026  
 **Maturity:** Wizard Experience shipped — `/v1/wizards` REST, Explorer wizard workspace, collection UI.
 

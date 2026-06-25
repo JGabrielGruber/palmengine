@@ -222,6 +222,7 @@ def test_transactional_wizard_from_stored_flow(runtime: EmbeddedRuntime) -> None
     runtime.provide_input(job.id, "yes")
     assert job.status == JobStatus.SUCCEEDED
     assert job.state.get(WizardKeys.COMMITTED) is True
+    assert job.result == {"id": "Ada"}
 
 
 def test_wizard_via_process_definition(runtime: EmbeddedRuntime) -> None:

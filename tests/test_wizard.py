@@ -268,6 +268,7 @@ def test_transactional_wizard_happy_path_with_commit() -> None:
     assert wizard.tick(state) == PatternStatus.SUCCESS
     assert wizard.is_committed(state)
     assert committed[0] == {"name": "Ada", "role": "dev"}
+    assert state.get("__result__") == {"stored": True}
 
 
 def test_validation_min_length_failure() -> None:

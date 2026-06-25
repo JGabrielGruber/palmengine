@@ -116,6 +116,8 @@ class WizardCommitLeaf(InteractiveLeaf):
         if result.ok:
             state.set(WizardKeys.COMMITTED, True)
             state.set(WizardKeys.COMMIT_RESULT, result.data)
+            if result.data is not None:
+                state.set("__result__", result.data)
             state.delete(WizardKeys.COMMIT_ERROR)
             leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
             clear_phase_prompt(state, self._ctx.step.slug)
