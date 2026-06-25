@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 from palm.core.orchestration import Job, JobStatus
+from palm.core.orchestration.drive import drive_job
 from palm.core.resource.invocation import WaitMode
 from palm.providers.palm.exceptions import PalmTimeoutError
 
@@ -24,9 +25,29 @@ def wait_for_job(
         last = job
         if job_ready(job, wait_mode):
             return job
+        if job.status == JobStatus.PENDING:
+            _drive_pending_job_slice(runtime, job)
         runtime.wait_until_idle(timeout=min(0.1, max(0.0, deadline - time.monotonic())))
         time.sleep(0.01)
     raise PalmTimeoutError(format_wait_timeout(job_id, last, wait_mode, timeout))
+
+
+def _drive_pending_job_slice(runtime: Any, job: Job) -> None:
+    """
+    Advance a pending child job inline while the parent blocks in ``wait_for_job``.
+
+    Without this, :class:`~palm.common.runtimes.schedulers.queued.QueuedScheduler`
+    deadlocks: the worker thread driving the parent cannot dequeue the child until
+    the parent slice finishes, but the parent slice waits for the child.
+    """
+    engine = getattr(runtime, "orchestration", None)
+    if engine is None:
+        return
+    scheduler = getattr(engine, "scheduler", None)
+    runner = getattr(scheduler, "runner", None)
+    if runner is None:
+        return
+    drive_job(engine, runner, job)
 
 
 def job_ready(job: Job, wait_mode: WaitMode) -> bool:
@@ -64,5 +85,10 @@ def format_wait_timeout(
         return (
             f"{base}. The child job has not reached WAITING_FOR_INPUT yet; "
             "increase timeout_seconds or verify the child flow exposes an interactive step."
+        )
+    if job is not None and job.status == JobStatus.PENDING:
+        return (
+            f"{base}. The child job was submitted but never started — "
+            "this often indicates a queued-scheduler deadlock during nested compositional invokes."
         )
     return base

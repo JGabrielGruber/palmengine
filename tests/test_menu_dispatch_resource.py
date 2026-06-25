@@ -175,6 +175,38 @@ def test_menu_dispatch_via_instance_input(runtime: EmbeddedRuntime) -> None:
     assert context.get("waiting_for_child") is True
 
 
+def test_menu_dispatch_spawns_child_with_queued_scheduler() -> None:
+    rt = EmbeddedRuntime()
+    rt.start(scheduler="queued")
+    try:
+        rt.repository.save_flow(_child_flow())
+        rt.repository.save_flow(_menu_flow())
+        rt.repository.save_resource(_route_resource())
+
+        parent = rt.submit_flow(FLOW_MENU)
+        rt.wait_until_idle(timeout=5)
+
+        rt.provide_input(parent.id, True)
+        rt.wait_until_idle(timeout=5)
+        rt.provide_input(parent.id, "capture_knowledge")
+        rt.wait_until_idle(timeout=10)
+
+        parent = rt.get_job(parent.id)
+        assert parent.status == JobStatus.WAITING_FOR_INPUT
+        assert parent.state.get(WizardKeys.CURRENT_STEP) == "dispatch"
+
+        context = inspect_job_json(parent)
+        assert context.get("waiting_for_child") is True
+
+        waiting = parent.state.get(WizardKeys.WAITING_FOR_CHILD)
+        assert isinstance(waiting, dict)
+        child = rt.get_job(str(waiting["child_job_id"]))
+        assert child.status == JobStatus.WAITING_FOR_INPUT
+    finally:
+        rt.stop()
+        clear_palm_runtime()
+
+
 def test_wizard_resource_form_has_no_text_input() -> None:
     html = wizard_input_form(
         "inst-1",
