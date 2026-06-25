@@ -120,6 +120,12 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
         surface=_SURFACE,
     )
     registry.register(
+        method="POST",
+        path="/explorer/instances/{instance_id}/resume-wizard-tick",
+        handler=actions.resume_wizard_tick,
+        surface=_SURFACE,
+    )
+    registry.register(
         method="GET",
         path="/explorer/instances/{instance_id}/snapshots",
         handler=pages.snapshots,

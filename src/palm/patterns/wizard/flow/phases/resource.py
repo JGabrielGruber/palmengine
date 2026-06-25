@@ -110,6 +110,7 @@ class WizardResourceLeaf(LeafNode):
             include_validation=False,
             prompt=prompt or step.prompt or default_resource_prompt(step),
             field_type="resource",
+            auto_advance=True,
             resource_ref=step.resource_ref,
             output_key=step.output_key or step.slug,
         )

@@ -289,6 +289,65 @@ def resource_invoke_form(
     )
 
 
+def wizard_resource_form(
+    instance_id: str,
+    prompt: Mapping[str, Any],
+    *,
+    htmx: bool = True,
+) -> str:
+    """Non-interactive resource step — auto-tick or child-wait, never free-text input."""
+    prompt_text = prompt.get("text") or prompt.get("prompt")
+    prompt_html = (
+        f'<p class="wizard-prompt-text">{escape(str(prompt_text))}</p>' if prompt_text else ""
+    )
+
+    validation = prompt.get("validation_error")
+    validation_html = ""
+    if validation:
+        validation_html = f'<p class="wizard-validation">{escape(str(validation))}</p>'
+
+    resource_error = prompt.get("resource_error")
+    if resource_error:
+        validation_html += f'<p class="wizard-validation">{escape(str(resource_error))}</p>'
+
+    if prompt.get("waiting_for_child"):
+        child_job_id = prompt.get("waiting_for_child_job_id") or "child"
+        child_status = prompt.get("child_status") or "WAITING_FOR_INPUT"
+        body = (
+            f"{prompt_html}{validation_html}"
+            f'<p class="muted">Nested wizard <code>{escape(str(child_job_id))}</code> '
+            f"is {escape(str(child_status))}. Open the child wizard below to continue.</p>"
+        )
+        resume_action = f"/explorer/instances/{instance_id}/resume-child-wait"
+        htmx_attrs = _wizard_htmx_attrs(resume_action) if htmx else ""
+        toolbar = (
+            f'<form class="resource-step-form" action="{escape(resume_action)}" method="POST"{htmx_attrs}>'
+            f'<button class="btn-primary" type="submit">Check nested wizard status</button>'
+            f"{_wizard_loading_indicator()}"
+            f"</form>"
+        )
+        return (
+            f'<div class="resource-step-panel" role="region" aria-live="polite">'
+            f"{body}{toolbar}</div>"
+        )
+
+    resume_action = f"/explorer/instances/{instance_id}/resume-wizard-tick"
+    htmx_attrs = _wizard_htmx_attrs(resume_action) if htmx else ""
+    auto_trigger = ' hx-trigger="load"' if htmx else ""
+    body = (
+        f"{prompt_html}{validation_html}"
+        "<p class=\"muted\">Resource steps run automatically — launching the nested flow now.</p>"
+    )
+    toolbar = (
+        f'<form class="resource-step-form resume-wizard-tick" action="{escape(resume_action)}" '
+        f'method="POST"{htmx_attrs}{auto_trigger}>'
+        f'<button class="btn-primary" type="submit">Launch flow</button>'
+        f"{_wizard_loading_indicator()}"
+        f"</form>"
+    )
+    return f'<div class="resource-step-panel" role="region" aria-live="polite">{body}{toolbar}</div>'
+
+
 def wizard_input_form(
     instance_id: str,
     prompt: Mapping[str, Any],
@@ -302,6 +361,9 @@ def wizard_input_form(
         from palm.runtimes.server.surfaces.ssr.explorer.components import collection_form
 
         return collection_form(instance_id, dict(prompt))
+
+    if prompt.get("step_kind") == "resource" or prompt.get("field_type") == "resource":
+        return wizard_resource_form(instance_id, prompt, htmx=htmx)
 
     action = f"/explorer/instances/{instance_id}/input"
     label = prompt.get("title") or prompt.get("text") or "Value"

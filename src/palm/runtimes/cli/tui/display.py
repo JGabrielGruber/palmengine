@@ -70,6 +70,14 @@ def render_job_panel(
                 )
             if ctx.transform_source_preview:
                 body += f"[dim]Input preview:[/] {ctx.transform_source_preview}\n"
+        if ctx.field_type == "resource":
+            if ctx.waiting_for_child:
+                body += (
+                    "\n[yellow]→[/] Waiting for nested wizard"
+                    f" [dim](job {ctx.waiting_for_child_job_id})[/].\n"
+                )
+            else:
+                body += "\n[yellow]→[/] Resource step — invokes automatically when reached.\n"
         if ctx.active_branch:
             body += f"\n[dim]Input goes to branch[/] [magenta]{ctx.active_branch}[/]"
             if ctx.branch_progress:

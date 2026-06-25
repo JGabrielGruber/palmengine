@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
 from palm.common.child_wait import resume_child_wait_for_instance
+from palm.common.interactive_runtime import resolve_interactive_job
+from palm.core.orchestration import JobStatus
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
@@ -120,8 +122,6 @@ class ExplorerActions:
         raise ValueError(f"Unsupported collection compound action: {kind}")
 
     def resume_child_wait(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
-
-
         try:
             resume_child_wait_for_instance(self._ctx.runtime, instance_id)
         except (InstanceNotFoundError, RuntimeError) as exc:
@@ -136,6 +136,30 @@ class ExplorerActions:
             request,
             instance_id,
             notice="Checked nested wizard status",
+        )
+
+    def resume_wizard_tick(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
+        """Re-drive a waiting wizard (e.g. auto-run a resource step)."""
+        try:
+            job = resolve_interactive_job(self._ctx.runtime, instance_id)
+            if job.status != JobStatus.WAITING_FOR_INPUT:
+                raise RuntimeError(
+                    f"Instance {instance_id!r} is not waiting for input "
+                    f"(status={job.status.value})"
+                )
+            self._ctx.runtime.orchestration.resume_job(job.id)
+        except (InstanceNotFoundError, RuntimeError) as exc:
+            return self._wizard_action_response(
+                request,
+                instance_id,
+                error=str(exc),
+            )
+
+        self._ctx.wait_until_idle()
+        return self._wizard_action_response(
+            request,
+            instance_id,
+            notice="Wizard advanced",
         )
 
     def backtrack_wizard(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
