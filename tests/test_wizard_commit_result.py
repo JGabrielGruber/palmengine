@@ -22,17 +22,14 @@ COMMIT_HOOK = "test_capture_node_commit"
 
 
 def _register_capture_commit_hook() -> None:
-    default_commit_registry().register(
-        COMMIT_HOOK,
-        lambda ctx: CommitResult.success(
-            {
-                "main_node": {
-                    "id": "node-test-1",
-                    "title": ctx.answers.get("title"),
-                }
-            }
-        ),
-    )
+    def _commit(ctx) -> CommitResult:
+        title = ctx.answers.get("title")
+        node = {"id": "node-test-1", "title": title}
+        if ctx.answers.get("capture_role") == "main":
+            return CommitResult.success({"node": node, "main_node": node})
+        return CommitResult.success({"node": node})
+
+    default_commit_registry().register(COMMIT_HOOK, _commit)
 
 
 def _child_flow() -> FlowDefinition:
@@ -75,6 +72,9 @@ def _parent_flow() -> FlowDefinition:
                     "step_kind": "resource",
                     "resource_ref": "submit-capture-node",
                     "output_key": "capture_main",
+                    "params": {
+                        "initial_state": {"capture_role": "main"},
+                    },
                 },
                 {
                     "slug": "merge_main",
@@ -150,7 +150,10 @@ def test_commit_sets_result_on_state() -> None:
 
 
 def test_stored_flow_sets_job_result(runtime: EmbeddedRuntime) -> None:
-    job = runtime.submit_flow(FLOW_CAPTURE_NODE)
+    job = runtime.submit_flow(
+        FLOW_CAPTURE_NODE,
+        state=BlackboardState({"capture_role": "main"}),
+    )
     runtime.wait_until_idle(timeout=5)
 
     runtime.provide_input(job.id, "Test Node")
@@ -160,7 +163,10 @@ def test_stored_flow_sets_job_result(runtime: EmbeddedRuntime) -> None:
 
     job = runtime.get_job(job.id)
     assert job.status == JobStatus.SUCCEEDED
-    assert job.result == {"main_node": {"id": "node-test-1", "title": "Test Node"}}
+    assert job.result == {
+        "node": {"id": "node-test-1", "title": "Test Node"},
+        "main_node": {"id": "node-test-1", "title": "Test Node"},
+    }
 
 
 def test_parent_merge_main_extracts_child_commit_result(runtime: EmbeddedRuntime) -> None:
@@ -184,7 +190,10 @@ def test_parent_merge_main_extracts_child_commit_result(runtime: EmbeddedRuntime
 
     child = runtime.get_job(child_job_id)
     assert child.status == JobStatus.SUCCEEDED
-    assert child.result == {"main_node": {"id": "node-test-1", "title": "Main Topic"}}
+    assert child.result == {
+        "node": {"id": "node-test-1", "title": "Main Topic"},
+        "main_node": {"id": "node-test-1", "title": "Main Topic"},
+    }
 
     parent = runtime.get_job(parent.id)
     assert parent.state.get(WizardKeys.CURRENT_STEP) == "confirm_done"
@@ -194,6 +203,7 @@ def test_parent_merge_main_extracts_child_commit_result(runtime: EmbeddedRuntime
     assert isinstance(capture_main, dict)
     assert capture_main.get("status") == JobStatus.SUCCEEDED.value
     assert capture_main.get("result") == {
+        "node": {"id": "node-test-1", "title": "Main Topic"},
         "main_node": {"id": "node-test-1", "title": "Main Topic"},
     }
     assert answers.get("main_node") == {"id": "node-test-1", "title": "Main Topic"}

@@ -83,6 +83,43 @@ def set_answers(state: BaseState, answers: dict[str, Any]) -> None:
     state.set(WizardKeys.ANSWERS, dict(answers))
 
 
+def merge_compositional_state_into_answers(state: BaseState) -> bool:
+    """
+    Promote pre-submitted blackboard keys into wizard answers when absent.
+
+    Compositional child flows receive ``initial_state`` on the job blackboard;
+    commit handlers and transforms read :data:`~WizardKeys.ANSWERS`, so keys
+    such as ``capture_role`` must be mirrored there before steps run.
+    """
+    snapshot_fn = getattr(state, "snapshot", None)
+    if not callable(snapshot_fn):
+        return False
+
+    answers = get_answers(state)
+    changed = False
+    for key, value in snapshot_fn().items():
+        if not _is_compositional_state_key(key):
+            continue
+        if key in answers and answers[key] is not None:
+            continue
+        if value is None:
+            continue
+        answers[key] = value
+        changed = True
+
+    if changed:
+        set_answers(state, answers)
+    return changed
+
+
+def _is_compositional_state_key(key: str) -> bool:
+    if key.startswith(WizardKeys.PREFIX):
+        return False
+    if key.startswith("__"):
+        return False
+    return True
+
+
 def enter_step(
     state: BaseState,
     slug: str,

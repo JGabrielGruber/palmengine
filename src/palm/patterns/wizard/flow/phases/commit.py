@@ -21,7 +21,7 @@ from palm.patterns.wizard.flow.phases._base import (
     enter_phase_scope,
     is_affirmative,
 )
-from palm.patterns.wizard.bindings.context.state import get_answers
+from palm.patterns.wizard.bindings.context.state import get_answers, merge_compositional_state_into_answers
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -102,6 +102,7 @@ class WizardCommitLeaf(InteractiveLeaf):
         if self._ctx.commit_registry is None:
             return PatternStatus.FAILURE
 
+        merge_compositional_state_into_answers(state)
         context = CommitContext(
             wizard_name=self._ctx.wizard_name,
             state=state,

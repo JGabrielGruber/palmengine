@@ -13,6 +13,7 @@ from palm.core.context import BaseState
 from palm.patterns.wizard.bindings.definitions.config import WizardConfig
 from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.state import merge_compositional_state_into_answers
 from palm.patterns.wizard.bindings.events.support import EventEmitter, emit_wizard_event
 
 BacktrackNotifier = Callable[[int, BaseState, str, Any], None]
@@ -194,6 +195,7 @@ class WizardCompletionGuardNode(DecoratorNode):
         if state.get(WizardKeys.COMPLETED):
             return PatternStatus.SUCCESS
 
+        merge_compositional_state_into_answers(state)
         status = self.child.tick(state)
         if status != PatternStatus.SUCCESS:
             return status
