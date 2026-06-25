@@ -7,16 +7,18 @@ Wizard execution is organized as behavior-tree **phases** under
 
 | Module | Responsibility |
 |--------|----------------|
-| `phases/_base.py` | `WizardPhaseContext`, input bridge, prompt helpers |
-| `phases/bt.py` | `PhaseKeyedSelectorNode`, `PhaseTransitionLoopNode` |
-| `phases/backtrack.py` | `WizardSequenceNode`, completion guard, backtrack policy |
-| `phases/input.py` | Interactive input / introduction steps |
-| `phases/summary.py` | Answer review and confirmation |
-| `phases/commit.py` | Transactional commit via `CommitRegistry` |
-| `phases/resource.py` | Core `ResourceLeaf` wrapper |
-| `phases/transform.py` | Core `TransformLeaf` wrapper |
-| `phases/collection/` | Declarative collection subtree (`tree.py` + phase leaves) |
-| `phases/registry.py` | `step_kind` → phase factory registry |
+| `app.py` | Manifest — Palm layer dependencies and registry hooks |
+| `bindings/behavior_tree/` | Tree assembly, BT composites, sequence/backtrack |
+| `bindings/context/` | Blackboard keys, scopes, step state |
+| `bindings/events/` | Event types and leaf emission helpers |
+| `bindings/resource/` | Child-job wait coordination |
+| `bindings/instances/` | Persistence, resume, submission metadata |
+| `bindings/definitions/` | Flow options, config, builder |
+| `bindings/compensation/` | Commit handlers |
+| `flow/phases/` | Interactive step leaves (input, summary, commit, resource, transform) |
+| `flow/collection/` | Collection config, state, and `phases/` subtree |
+| `flow/extensions/` | `step_kind` → phase factory registry |
+| `flow/validation.py` | Step validation rules and feedback |
 
 ## Tree shape
 
@@ -46,7 +48,11 @@ Phase leaves signal intra-tick transitions with `PatternStatus.RUNNING` via
 ## Breaking changes
 
 - Leaf modules at package root (`step_leaf.py`, `collection_leaf.py`, …) are
-  removed. Import from `palm.patterns.wizard.phases` instead.
+  removed. Import from `palm.patterns.wizard.flow.phases` (or the
+  `palm.patterns.wizard.phases` compatibility shim).
+- Internal modules moved under `bindings/` (Palm layer integration) and
+  `flow/` (wizard orchestration). Public `palm.patterns.wizard` exports are
+  unchanged.
 - Legacy aliases (`WizardStepBuildContext`, `WizardStepLeaf`, `WizardCollectionLeaf`)
   are removed. Use `WizardPhaseContext`, `WizardInputLeaf`, `CollectionStepNode`.
 - Custom step kinds register factories as `Callable[[WizardPhaseContext], BaseNode]`.

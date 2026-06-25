@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 
 ONBOARD_FLOW = FlowDefinition(
     id="flow-onboard",

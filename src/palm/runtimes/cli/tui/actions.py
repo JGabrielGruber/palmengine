@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from palm.core.orchestration import Job, JobStatus
-from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.flow_labels import flow_start_hint

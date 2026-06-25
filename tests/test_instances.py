@@ -10,7 +10,7 @@ from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance
 from palm.patterns.wizard import WizardKeys
-from palm.patterns.wizard.config import WizardConfig
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.storages import memory  # noqa: F401
 

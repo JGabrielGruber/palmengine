@@ -15,7 +15,7 @@ from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
 from palm.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.events import WizardEventType
+from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.states import BlackboardState
 from tests.core.fakes import TestState
 from tests.core.fakes.mode import TestMode

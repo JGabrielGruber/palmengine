@@ -13,7 +13,7 @@ from palm.patterns.parallel.keys import ParallelKeys
 from palm.patterns.parallel.merge import get_branch_results
 from palm.patterns.parallel.pattern import ParallelPattern
 from palm.patterns.parallel.scope import load_branch_snapshot_for
-from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
 
@@ -219,7 +219,7 @@ def _inspect_parallel(job: Job, parallel: ParallelPattern) -> JobContext:
 
 
 def _inspect_wizard(job: Job, wizard: WizardPattern) -> JobContext:
-    from palm.patterns.wizard.collection_selection import default_label_field
+    from palm.patterns.wizard.flow.collection.selection import default_label_field
 
     state = _as_blackboard(job.state)
     prompt_bundle = _prompt_from_state(state)

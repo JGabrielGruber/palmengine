@@ -9,7 +9,7 @@ from palm.core.event import Event, EventContext, EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
 from palm.patterns.wizard import WizardConfig, WizardEventType, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.events import WizardEventType as WizardEvents
+from palm.patterns.wizard.bindings.events.types import WizardEventType as WizardEvents
 from palm.runtimes.cli.shared.args import CliInvocation
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime
 from palm.states import BlackboardState

@@ -10,7 +10,7 @@ from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.phases.backtrack import can_backtrack_to
+from palm.patterns.wizard.bindings.behavior_tree.backtrack import can_backtrack_to
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime

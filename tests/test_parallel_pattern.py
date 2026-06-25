@@ -98,7 +98,7 @@ def _multi_step_branch_flow() -> FlowDefinition:
 
 def test_parallel_branch_advances_through_multiple_steps() -> None:
     from palm.patterns.parallel.scope import load_branch_snapshot_for
-    from palm.patterns.wizard.keys import WizardKeys
+    from palm.patterns.wizard.bindings.context.keys import WizardKeys
 
     flow = _multi_step_branch_flow()
     state = BlackboardState(schema=flow.materialize_state_schema())

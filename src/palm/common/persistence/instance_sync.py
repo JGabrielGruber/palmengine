@@ -4,7 +4,7 @@ Sync orchestration jobs with durable ``ProcessInstance`` records.
 Generic snapshot and instance shell logic only. Pattern-specific field
 extraction and resume restoration register via
 :mod:`palm.patterns._registry` (e.g. wizard hooks in
-``palm.patterns.wizard.persistence``).
+``palm.patterns.wizard.bindings.instances.persistence``).
 """
 
 from __future__ import annotations

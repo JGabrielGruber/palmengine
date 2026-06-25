@@ -190,7 +190,7 @@ def test_persisted_process_executes_after_reload() -> None:
 
 
 def test_transactional_wizard_from_stored_flow(runtime: EmbeddedRuntime) -> None:
-    from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+    from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 
     default_commit_registry().register(
         "persist_user",

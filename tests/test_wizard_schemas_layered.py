@@ -41,7 +41,7 @@ def _layered_config() -> WizardConfig:
 
 def test_layered_schemas_coerce_cli_string_input_for_integer_steps() -> None:
     from palm.core import DictStateSchema
-    from palm.patterns.wizard.builder import materialize_wizard_step_schemas
+    from palm.patterns.wizard.bindings.definitions.builder import materialize_wizard_step_schemas
 
     flow_schema = DictStateSchema(
         {
@@ -82,7 +82,7 @@ def test_layered_schemas_validate_step_and_flow_levels() -> None:
             "required": ["name", "age", "role"],
         },
     )
-    from palm.patterns.wizard.builder import materialize_wizard_step_schemas
+    from palm.patterns.wizard.bindings.definitions.builder import materialize_wizard_step_schemas
 
     config = materialize_wizard_step_schemas(_layered_config())
     state = BlackboardState(schema=flow_schema)
@@ -128,7 +128,7 @@ def test_wizard_resume_restores_scope_and_step_schema() -> None:
     from palm.core import DictStateSchema
     from palm.definitions import FlowDefinition
     from palm.instances import ProcessInstance
-    from palm.patterns.wizard.builder import materialize_wizard_step_schemas
+    from palm.patterns.wizard.bindings.definitions.builder import materialize_wizard_step_schemas
 
     config = materialize_wizard_step_schemas(_layered_config())
     flow_schema = DictStateSchema(

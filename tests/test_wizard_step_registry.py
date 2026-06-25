@@ -7,16 +7,16 @@ import pytest
 from palm.common.exceptions import DefinitionBuildError
 from palm.core.behavior_tree import ActionNode, BaseNode, PatternStatus, RootNode
 from palm.core.context import BaseState
-from palm.patterns.wizard.builder import wizard_config_from_options
-from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.phases import WizardPhaseContext, WizardSequenceNode
-from palm.patterns.wizard.phases.backtrack import WizardCompletionGuardNode
-from palm.patterns.wizard.phases.registry import (
+from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from palm.patterns.wizard.flow.phases import WizardPhaseContext, WizardSequenceNode
+from palm.patterns.wizard.bindings.behavior_tree.backtrack import WizardCompletionGuardNode
+from palm.patterns.wizard.flow.extensions.registry import (
     WizardStepKindRegistry,
     default_wizard_step_registry,
     register_builtin_wizard_step_kinds,
 )
-from palm.patterns.wizard.tree import build_wizard_tree
+from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
 from palm.states import BlackboardState
 
 

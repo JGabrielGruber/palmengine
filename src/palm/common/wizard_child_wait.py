@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any
 
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns.wizard.child_wait import child_job_id_from_wait, get_child_wait, poll_child_job
-from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.bindings.resource.child_wait import child_job_id_from_wait, get_child_wait, poll_child_job
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime

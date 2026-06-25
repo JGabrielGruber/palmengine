@@ -9,9 +9,9 @@ from palm.common.transforms import TransformExecutor, autoload
 from palm.core import PatternStatus
 from palm.core.transform.registry import transform_registry
 from palm.patterns.wizard import WizardKeys, WizardPattern
-from palm.patterns.wizard.builder import wizard_config_from_options
-from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.phases.transform import default_transform_prompt
+from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from palm.patterns.wizard.flow.phases.transform import default_transform_prompt
 from tests.core.fakes import TestState
 
 

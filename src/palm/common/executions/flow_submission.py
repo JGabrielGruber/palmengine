@@ -2,7 +2,7 @@
 Flow submission preparation — definitions to orchestration-ready payloads.
 
 Pattern-specific metadata enrichment registers via
-:mod:`palm.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.submission``).
+:mod:`palm.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.bindings.instances.submission``).
 """
 
 from __future__ import annotations

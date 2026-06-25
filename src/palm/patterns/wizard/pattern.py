@@ -10,12 +10,12 @@ from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventContext, EventEngine
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.config import WizardConfig
-from palm.patterns.wizard.handler import CommitRegistry, default_commit_registry
-from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.phases._base import provide_wizard_input
-from palm.patterns.wizard.phases.backtrack import WizardSequenceNode, request_backtrack
-from palm.patterns.wizard.tree import build_wizard_tree
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig
+from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry, default_commit_registry
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.flow.phases._base import provide_wizard_input
+from palm.patterns.wizard.bindings.behavior_tree.backtrack import WizardSequenceNode, request_backtrack
+from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
 
 
 class WizardPattern(BasePattern):
@@ -23,7 +23,7 @@ class WizardPattern(BasePattern):
     Interactive wizard driven entirely by its behavior tree.
 
     Phase logic (input, collection, summary, commit, resource, transform,
-    backtrack, completion) lives under ``palm.patterns.wizard.phases``.
+    backtrack, completion) lives under ``palm.patterns.wizard.flow.phases``.
     """
 
     def __init__(

@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions import FlowDefinition, ProcessDefinition, ResourceDefinition
-from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 
 REST_HEALTH_RESOURCE = ResourceDefinition(
     id="resource-rest-health",

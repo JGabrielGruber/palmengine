@@ -362,12 +362,12 @@ Use `step_kind: collection` for repeatable structured items (todo lists, line it
 | `min_items` | Minimum count before "continue" succeeds |
 | `label_field` | Field slug used for item labels and partial search (auto-detected if omitted) |
 
-Implementation lives in `palm/patterns/wizard/collection*.py`:
+Implementation lives in `palm/patterns/wizard/flow/collection/`:
 
-- `collection.py` — field config parsing
-- `collection_state.py` — phases, draft, scopes
-- `collection_selection.py` — compact edit/remove item lookup
-- `collection_leaf.py` — behavior tree leaf
+- `config.py` — field config parsing
+- `state.py` — phases, draft, scopes
+- `selection.py` — compact edit/remove item lookup
+- `phases/` — behavior-tree collection subtree (menu, select, fields, remove)
 
 Tests: `tests/test_wizard_collection.py`, `tests/test_collection_selection.py`.
 

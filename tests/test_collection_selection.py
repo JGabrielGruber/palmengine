@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.patterns.wizard.collection_selection import (
+from palm.patterns.wizard.flow.collection.selection import (
     default_label_field,
     format_numbered_item_list,
     is_cancel_input,
@@ -27,7 +27,7 @@ def test_resolve_item_cancel_input() -> None:
 
 
 def test_default_label_field_prefers_required_text() -> None:
-    from palm.patterns.wizard.collection import CollectionFieldConfig
+    from palm.patterns.wizard.flow.collection.config import CollectionFieldConfig
 
     fields = (
         CollectionFieldConfig(slug="title", title="Title", prompt="?", required=True),

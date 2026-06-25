@@ -64,6 +64,6 @@ def test_installed_transform_apps_register() -> None:
 
 def test_wizard_handler_exports() -> None:
     from palm.patterns.wizard import CommitRegistry
-    from palm.patterns.wizard.handler import CommitRegistry as HandlerRegistry
+    from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry as HandlerRegistry
 
     assert CommitRegistry is HandlerRegistry

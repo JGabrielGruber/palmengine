@@ -1,46 +1,54 @@
 """
 Wizard pattern app — interactive multi-step flows with backtracking and events.
 
-Phase implementations live in :mod:`palm.patterns.wizard.phases`.
+Package layout::
+
+    app.py          manifest — which Palm layers this app dogfoods
+    bindings/       integration with core and common (context, events, BT, …)
+    flow/           wizard-specific orchestration (phases, collection, validation)
+    pattern.py      thin ``BasePattern`` orchestrator
+    registry.py     ``INSTALLED_PATTERNS`` wiring
+
+Phase implementations live in :mod:`palm.patterns.wizard.flow.phases`.
 """
 
 from palm.patterns.wizard import registry as registry  # — side effect
-from palm.patterns.wizard.builder import materialize_wizard_step_schemas, wizard_config_from_options
-from palm.patterns.wizard.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.events import WizardEventType
-from palm.patterns.wizard.handler import (
+from palm.patterns.wizard.bindings.definitions.builder import materialize_wizard_step_schemas, wizard_config_from_options
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,
     CommitResult,
     default_commit_registry,
 )
-from palm.patterns.wizard.keys import WizardKeys
-from palm.patterns.wizard.options import parse_wizard_flow_options, wizard_metadata_from_flow
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options, wizard_metadata_from_flow
 from palm.patterns.wizard.pattern import WizardPattern, default_wizard_config
-from palm.patterns.wizard.persistence import (
+from palm.patterns.wizard.bindings.instances.persistence import (
     extract_instance_fields_from_job,
     prepare_wizard_resume_state,
     wizard_runtime_position_for_job,
     wizard_step_slug_for_job,
 )
-from palm.patterns.wizard.phases import (
+from palm.patterns.wizard.flow.phases import (
     WizardPhaseContext,
     WizardSequenceNode,
     default_wizard_step_registry,
     provide_wizard_input,
     register_builtin_wizard_step_kinds,
 )
-from palm.patterns.wizard.phases.registry import WizardStepKindRegistry
-from palm.patterns.wizard.state import (
+from palm.patterns.wizard.flow.extensions.registry import WizardStepKindRegistry
+from palm.patterns.wizard.bindings.context.state import (
     complete_step_input,
     enter_step,
     get_answers,
     leave_step,
     step_scope,
 )
-from palm.patterns.wizard.submission import wizard_submission_metadata
-from palm.patterns.wizard.tree import build_wizard_tree
-from palm.patterns.wizard.validation import (
+from palm.patterns.wizard.bindings.instances.submission import wizard_submission_metadata
+from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
+from palm.patterns.wizard.flow.validation import (
     StepValidationRule,
     ValidationRegistry,
     clear_validation_feedback,

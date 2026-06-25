@@ -531,7 +531,7 @@ def test_flow_detail_start_wizard_label(server: ServerRuntime, sample_flow: Flow
 
 
 def _register_todo_collection_flow(server: ServerRuntime) -> None:
-    from palm.patterns.wizard.handler import CommitResult, default_commit_registry
+    from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
     from tests.test_wizard_collection import _todo_flow
 
     default_commit_registry().register(

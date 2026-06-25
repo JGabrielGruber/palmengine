@@ -13,7 +13,7 @@ from palm.core.exceptions import RegistryError
 from palm.core.registry import Registry
 from palm.definitions import FlowDefinition
 from palm.patterns import _registry as builder_registry
-from palm.patterns.wizard.handler import CommitContext, CommitRegistry, CommitResult
+from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitRegistry, CommitResult
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 

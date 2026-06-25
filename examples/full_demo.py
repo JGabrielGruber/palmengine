@@ -25,8 +25,8 @@ from palm.app.bootstrap import runtime_start_options
 from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard.handler import CommitResult, default_commit_registry
-from palm.patterns.wizard.keys import WizardKeys
+from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
 
 
 def _register_demo_flow(repository: Any) -> FlowDefinition:
