@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.14.11 (shipping) · **0.14 MCP** (operator adapter) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.14.12 (shipping) · **0.14 MCP** (operator adapter) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -110,7 +110,7 @@ Grok: `.grok/config.toml` registers `palm-mcp` (stdio). Cursor/Claude: stdio com
 5. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_resume_child_wait` or inspect child.
 6. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
 7. **Interactive entry** — `palm_submit_wizard(flow_name=…)` for wizards. Never `palm_submit_process` on catalog processes (e.g. `knowkey_compose`); read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
-8. **Batch drive** — `palm_wizard_drive` accepts plain strings in `inputs`; use `payload={…}` for one structured step (batch JSON). After commit, `palm_compose_status` includes `result` / `result_summary`.
+8. **Batch drive** — `palm_wizard_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_compose_status` includes `result` / `result_summary`.
 
 ### Typical session
 

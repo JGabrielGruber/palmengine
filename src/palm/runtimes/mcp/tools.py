@@ -92,19 +92,21 @@ def register_core_tools(mcp: Any, rest_client: Any) -> None:
     @mcp.tool
     def palm_wizard_drive(
         instance_id: str,
-        inputs: list[str],
+        inputs: list[str] | None = None,
         max_steps: int = 30,
         payload: dict[str, Any] | None = None,
         include_steps: bool = False,
     ) -> dict[str, Any]:
         """Apply multiple wizard inputs in one call; stops on wait/child-wait/terminal.
 
-        Use ``payload`` for one structured step (e.g. batch JSON) instead of an escaped
-        string in ``inputs``. Plain yes/no/choice strings stay in ``inputs``.
+        Provide ``inputs`` (plain yes/no/choice strings), ``payload`` (one structured
+        object for the next step), or both. At least one is required.
         """
+        if not inputs and payload is None:
+            raise ValueError("provide at least one of inputs or payload")
         return drive_wizard_inputs(
             instance_id=instance_id,
-            inputs=inputs,
+            inputs=inputs or [],
             get_wizard=rest_client.get_wizard,
             provide_input=rest_client.provide_wizard_input,
             max_steps=max_steps,

@@ -198,6 +198,54 @@ async def test_palm_wizard_drive_tool(mcp_server) -> None:
 
 
 @pytest.mark.asyncio
+async def test_palm_wizard_drive_accepts_payload_without_inputs(mcp_server) -> None:
+    server, fake = mcp_server
+    state = {"done": False}
+
+    def get_wizard(instance_id: str) -> dict[str, Any]:
+        status = "SUCCESS" if state["done"] else "WAITING_FOR_INPUT"
+        return {
+            "instance_id": instance_id,
+            "flow_name": "batch",
+            "status": status,
+            "current_step_slug": "batch_payload",
+            "prompt": {"step": "batch_payload", "field_type": "text"},
+            "answers": {} if not state["done"] else {"batch_payload": {"main": {}}},
+            "next_actions": [],
+        }
+
+    def provide_wizard_input(instance_id: str, value: Any) -> dict[str, Any]:
+        fake.calls.append(("provide_wizard_input", instance_id, value))
+        state["done"] = True
+        return get_wizard(instance_id)
+
+    fake.get_wizard = get_wizard  # type: ignore[method-assign]
+    fake.provide_wizard_input = provide_wizard_input  # type: ignore[method-assign]
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_wizard_drive",
+            {
+                "instance_id": "inst-1",
+                "payload": {"main": {"title": "MCP Servers for LLMs"}},
+            },
+        )
+
+    assert result.data["stopped_reason"] == "terminal"
+    assert fake.calls == [
+        ("provide_wizard_input", "inst-1", {"main": {"title": "MCP Servers for LLMs"}}),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_palm_wizard_drive_requires_inputs_or_payload(mcp_server) -> None:
+    server, _ = mcp_server
+    async with Client(server) as client:
+        with pytest.raises(Exception, match="inputs or payload"):
+            await client.call_tool("palm_wizard_drive", {"instance_id": "inst-1"})
+
+
+@pytest.mark.asyncio
 async def test_palm_resume_child_wait_skips_when_not_waiting(mcp_server) -> None:
     server, fake = mcp_server
 
