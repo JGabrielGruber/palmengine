@@ -21,6 +21,16 @@ def register_wizard_mcp_tools(mcp: Any, rest_client: Any) -> None:
     ) -> dict[str, Any]:
         """Drive a wizard collection step: add, edit, remove, done, cancel, confirm_remove."""
         wizard_view = rest_client.get_wizard(instance_id)
+        prompt = wizard_view.get("prompt") or {}
+        if (
+            str(action or "").strip().lower() == "add"
+            and value is not None
+            and prompt.get("collection_phase") == "field"
+        ):
+            raise ValueError(
+                "'add' is a menu-phase collection action; "
+                "provide field values via palm_wizard_input(input=…)"
+            )
         resolved = resolve_wizard_collection_action(
             action,
             item_index=item_index,

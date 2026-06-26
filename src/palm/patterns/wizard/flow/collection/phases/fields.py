@@ -26,13 +26,14 @@ from palm.patterns.wizard.flow.collection.state import (
 from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.bindings.events.support import build_prompt_bundle, emit_wizard_event
-from palm.patterns.wizard.flow.phases._base import WizardPhaseContext
+from palm.patterns.wizard.flow.phases._base import WizardPhaseContext, wizard_input_key
 from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
 from palm.patterns.wizard.flow.collection.phases._base import (
     CollectionPhaseLeaf,
     step_collection_key,
 )
 from palm.patterns.wizard.flow.validation import (
+    clear_validation_feedback,
     prepare_step_input,
     publish_validation_feedback,
     validate_step_input,
@@ -82,6 +83,7 @@ class CollectionFieldLeaf(LeafNode):
             draft[self._field.slug] = value
         set_collection_draft(state, draft)
         set_collection_field_index(state, field_index + 1)
+        clear_validation_feedback(state)
         emit_wizard_event(
             self._ctx.emit,
             self._ctx.wizard_name,
@@ -138,24 +140,26 @@ class CollectionFieldLeaf(LeafNode):
         return PatternStatus.RUNNING
 
     def _fail(self, state: BaseState, errors: tuple[str, ...]) -> PatternStatus:
+        prompt_bundle = build_prompt_bundle(
+            state,
+            wizard_name=self._ctx.wizard_name,
+            step=self._ctx.step,
+            step_index=self._ctx.step_index,
+            context=self._ctx.context_engine,
+            prompt=self._field.prompt,
+            field_type=self._field.field_type,
+            choices=list(self._field.choices),
+            title=self._field.title,
+            step_kind="collection",
+            collection_phase="field",
+            collection_field=self._field.slug,
+            collection_draft=collection_draft(state),
+        )
+        prompt_bundle["input_key"] = wizard_input_key(self._ctx.step.slug)
         publish_validation_feedback(
             state,
             errors,
-            prompt_bundle=build_prompt_bundle(
-                state,
-                wizard_name=self._ctx.wizard_name,
-                step=self._ctx.step,
-                step_index=self._ctx.step_index,
-                context=self._ctx.context_engine,
-                prompt=self._field.prompt,
-                field_type=self._field.field_type,
-                choices=list(self._field.choices),
-                title=self._field.title,
-                step_kind="collection",
-                collection_phase="field",
-                collection_field=self._field.slug,
-                collection_draft=collection_draft(state),
-            ),
+            prompt_bundle=prompt_bundle,
             prompt_key=f"__bt_prompt__:{self._ctx.step.slug}",
         )
         return PatternStatus.FAILURE

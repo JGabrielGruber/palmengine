@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from palm.common.operator.collection_input import (
     resolve_wizard_collection_action,
     resolve_wizard_form_input,
@@ -10,6 +12,11 @@ from palm.common.operator.collection_input import (
 
 def test_resolve_collection_add() -> None:
     assert resolve_wizard_collection_action("add") == "Add a new item"
+
+
+def test_resolve_collection_add_with_value_raises() -> None:
+    with pytest.raises(ValueError, match="menu-phase"):
+        resolve_wizard_collection_action("add", value="main")
 
 
 def test_resolve_collection_edit() -> None:

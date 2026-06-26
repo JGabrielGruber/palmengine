@@ -121,6 +121,22 @@ def test_collection_add_two_items_and_complete() -> None:
     ]
 
 
+def test_collection_field_clears_validation_error_after_recovery() -> None:
+    state = BlackboardState(schema=_todo_flow().materialize_state_schema())
+    wizard = _build()
+
+    wizard.tick(state)
+    _menu_input(wizard, state, "Add a new item")
+
+    wizard.provide_input(state, "")
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert state.get(Keys.VALIDATION_ERROR) is not None
+
+    wizard.provide_input(state, "Buy milk")
+    assert wizard.tick(state) == PatternStatus.WAITING_FOR_INPUT
+    assert state.get(Keys.VALIDATION_ERROR) is None
+
+
 def test_collection_edit_and_remove() -> None:
     state = BlackboardState(schema=_todo_flow().materialize_state_schema())
     wizard = _build()

@@ -76,7 +76,10 @@ def resolve_mcp_wizard_input(
     if isinstance(raw, str):
         stripped = raw.strip()
         prompt = wizard_view.get("prompt") or {}
-        if prompt.get("collection_phase") or prompt.get("step_kind") == "collection":
+        collection_phase = prompt.get("collection_phase")
+        if collection_phase in ("field", "select_item", "remove_confirm"):
+            return coerce_job_input(stripped, pattern_from_wizard_view(wizard_view))
+        if collection_phase == "menu" or prompt.get("step_kind") == "collection":
             from palm.common.operator.collection_input import resolve_wizard_collection_action
 
             resolved = resolve_wizard_collection_action(

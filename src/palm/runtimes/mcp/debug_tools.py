@@ -24,7 +24,12 @@ def register_debug_tools(mcp: Any, rest_client: Any) -> None:
         job_id: str | None = None,
         by_id: bool = False,
     ) -> dict[str, Any]:
-        """Start a multi-flow process via staged plans (prepare + submit)."""
+        """Start a multi-flow process via staged plans (prepare + submit).
+
+        Submits one job per flow in the process — not a single interactive entry.
+        For menu-driven or wizard-driven apps, use palm_submit_wizard(flow_name=entry_flow)
+        instead (process metadata such as entry_flow is an app convention only).
+        """
         variants = sum(1 for value in (process_name, process) if value is not None)
         if variants != 1:
             raise ValueError("provide exactly one of process_name or process")

@@ -34,3 +34,30 @@ def test_resolve_mcp_wizard_input_confirm_string() -> None:
 def test_resolve_mcp_job_input_confirm_string() -> None:
     context = {"pattern": {"field_type": "confirm"}}
     assert resolve_mcp_job_input(input="yes", value=None, job_context=context) is True
+
+
+def test_resolve_mcp_wizard_input_collection_field_bypasses_action_routing() -> None:
+    wizard = {
+        "prompt": {
+            "field_type": "text",
+            "step_kind": "collection",
+            "collection_phase": "field",
+        },
+        "answers": {},
+    }
+    assert resolve_mcp_wizard_input(input="main", value=None, wizard_view=wizard) == "main"
+
+
+def test_resolve_mcp_wizard_input_collection_menu_routes_add_action() -> None:
+    wizard = {
+        "prompt": {
+            "field_type": "choice",
+            "step_kind": "collection",
+            "collection_phase": "menu",
+        },
+        "answers": {},
+    }
+    assert (
+        resolve_mcp_wizard_input(input="add", value=None, wizard_view=wizard)
+        == "Add a new item"
+    )

@@ -36,6 +36,11 @@ def resolve_wizard_collection_action(
     wizard = wizard_view or {}
 
     if normalized == "add":
+        if value is not None:
+            raise ValueError(
+                "'add' is a menu-phase collection action; "
+                "provide field values via palm_wizard_input(input=…)"
+            )
         return "Add a new item"
     if normalized == "done":
         return _done_choice(wizard)

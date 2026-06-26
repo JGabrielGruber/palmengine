@@ -89,7 +89,14 @@ just mcp-inspector                  # MCP Inspector UI
 
 5. **Compositional nesting** — Parent wizards waiting on child flows are normal. Check `waiting_for_child` in inspect, read `palm://instances/{id}/tree`, then `palm_resume_child_wait` or inspect the child instance.
 
-6. **Collection steps** — Use `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) instead of guessing raw input strings.
+6. **Collection steps** — Branch on `collection_phase` from inspect:
+   - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …)
+   - `field` / `select_item` / `remove_confirm` → `palm_wizard_input(instance_id, input="…")` (plain string)
+   - Never pass `value` with `action="add"` — `add` is menu-only; field text via `palm_wizard_input`.
+
+7. **Submit entry** — Use `palm_submit_wizard(flow_name=…)` for interactive operator-driven flows. `palm_submit_process` submits **one job per flow** in the process definition; `entry_flow` in process metadata is app convention only (Palm does not honor it).
+
+8. **Sequential driving** — Drive one instance at a time; parallel `palm_wizard_input` calls on the same `instance_id` race.
 
 ### Daily workflows
 

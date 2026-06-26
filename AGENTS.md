@@ -70,7 +70,7 @@ Coding agents should use the MCP operator adapter to develop and test flows — 
 | Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp` |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
-**Conventions:** instance-first (`instance_id`, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; `palm_wizard_collection_action` on collection steps; `palm_resume_child_wait` when `waiting_for_child`.
+**Conventions:** instance-first (`instance_id`, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; collection menu → `palm_wizard_collection_action`, collection field → `palm_wizard_input`; interactive entry → `palm_submit_wizard` (not `palm_submit_process`); `palm_resume_child_wait` when `waiting_for_child`.
 
 **Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
 

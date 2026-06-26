@@ -78,16 +78,19 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
 
         action = actions[choices.index(resolved)]
         if action == ACTION_ADD:
+            clear_validation_feedback(state)
             begin_item_session(state, self._ctx, edit_index=None)
             set_collection_phase(state, "field")
             return phase_transition()
         if action == ACTION_DONE:
             return self._finish_collection(state, items)
         if action == ACTION_EDIT_SELECT:
+            clear_validation_feedback(state)
             set_collection_select_action(state, "edit")
             set_collection_phase(state, "select_item")
             return phase_transition()
         if action == ACTION_REMOVE_SELECT:
+            clear_validation_feedback(state)
             set_collection_select_action(state, "remove")
             set_collection_phase(state, "select_item")
             return phase_transition()
