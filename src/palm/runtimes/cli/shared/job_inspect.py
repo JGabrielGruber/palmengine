@@ -165,6 +165,12 @@ def inspect_job_json(job: Job) -> dict[str, Any]:
         payload["transform_source_key"] = ctx.transform_source_key
         payload["transform_target_key"] = ctx.transform_target_key
         payload["transform_source_preview"] = ctx.transform_source_preview
+    commit_hook = _str_from_bundle(_prompt_from_state(_as_blackboard(job.state)), "commit_hook")
+    if commit_hook:
+        payload["commit_hook"] = commit_hook
+    summary = _dict_from_bundle(_prompt_from_state(_as_blackboard(job.state)), "summary")
+    if summary:
+        payload["summary"] = summary
     if ctx.branches:
         payload["branches"] = [
             {

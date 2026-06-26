@@ -1,6 +1,6 @@
 # Palm MCP — Operator Adapter
 
-**Status:** Phase 1 shipped · Phase 2a in progress · stdio transport via [FastMCP](https://pypi.org/project/fastmcp/)
+**Status:** Phase 1–3 shipped · stdio transport via [FastMCP](https://pypi.org/project/fastmcp/)
 
 Agents operate Palm through a thin **stdio MCP server** (`palm-mcp`) that proxies to the REST API. No in-process orchestration in the adapter — start `palm server` first.
 
@@ -87,13 +87,41 @@ just mcp-inspector            # terminal 2 — MCP Inspector UI
 | `palm://definitions/resources/{ref}` | `GET /v1/resources/{ref}` |
 | `palm://openapi` | `GET /v1/openapi.json` |
 
-## Phase 3+ — Deferred (YAGNI)
+## Phase 3 — Shipped (pattern contributors + prompts)
 
-- `register_mcp_contributor()` (pattern-specific tools: collection, parallel)
-- MCP prompts (`debug-wizard-block`, …)
+### Registry
+
+Patterns register MCP tools via `register_mcp_contributor()` in `palm/patterns/_registry.py` (same model as CQRS contributors). The stdio server autoloads `INSTALLED_PATTERNS` and applies contributors at startup.
+
+### Pattern-specific tools
+
+| Pattern | Tool | Purpose |
+|---------|------|---------|
+| **wizard** | `palm_wizard_collection_action` | `add` / `edit` / `remove` / `done` / `cancel` / `confirm_remove` with optional `item_index` |
+| **wizard** | `palm_wizard_commit_preview` | Answers + `commit_hook` payload before confirm |
+| **parallel** | `palm_parallel_branch_status` | Branch slugs, active branch, merge preview |
+| **pipeline** | `palm_pipeline_step_trace` | Transform chain from flow definition |
+
+### MCP prompts
+
+| Prompt | Use |
+|--------|-----|
+| `debug-wizard-block` | Find validation, child-wait, or collection blockers |
+| `drive-wizard-to-step` | Advance instance toward a target step |
+| `explain-compositional-stack` | Summarize invoke tree and next action |
+| `operator-handoff` | Human-readable summary with Explorer links |
+
+### Shared helpers (extended)
+
+- `resolve_wizard_collection_action()` — maps collection UI actions to wizard input values
+- `wizard_commit_preview()` — commit handler preview from wizard read model
+
+## Phase 4+ — Deferred (YAGNI)
+
 - Tier 3 debug tools (`palm_diff_snapshots`, `palm_trace_events`, …)
 - Native HTTP MCP on `McpSurface`
 - `palm_cancel_job` (needs REST), `palm_submit_process` (plans API)
+- App-level tools (e.g. KnowKey compose status)
 
 ## Package layout
 

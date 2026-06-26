@@ -93,7 +93,9 @@ ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 | REST: resume-child-wait, resume-wizard-tick, instance tree | ✅ Phase 1 |
 | Operator tools (inspect, input, list waiting, submit) | ✅ Phase 2a |
 | Definition catalog REST + MCP resources | ✅ Phase 2b |
-| Pattern MCP contributor registry | ⏳ Phase 3 |
+| Pattern MCP contributor registry | ✅ Phase 3 |
+| Pattern MCP tools (wizard collection, parallel branches) | ✅ Phase 3 |
+| MCP operator prompts | ✅ Phase 3 |
 
 ```bash
 uv sync --extra mcp && just palm-server    # REST backend
@@ -102,7 +104,7 @@ just mcp-inspector                       # MCP Inspector UI
 
 ## Areas Under Active Improvement
 
-- MCP definition catalog resources (Phase 2b)
+- Native HTTP MCP transport on `McpSurface`
 - WebSocket runtime surface for live wizard/job streaming
 - Explorer inline validation for collection field errors
 - Saga-style compensation patterns beyond single-resource undo

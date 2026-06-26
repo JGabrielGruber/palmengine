@@ -155,6 +155,8 @@ def _prompt_block(pattern: dict[str, Any] | None) -> dict[str, Any] | None:
         "auto_advance",
         "resource_ref",
         "output_key",
+        "commit_hook",
+        "summary",
     ):
         value = pattern.get(key)
         if value is not None:

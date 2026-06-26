@@ -7,6 +7,8 @@ from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.runtimes.mcp.config import PalmMcpConfig
+from palm.runtimes.mcp.contributors import register_pattern_mcp_tools
+from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
 
 try:
@@ -250,6 +252,9 @@ def create_mcp_server(
     def openapi_document() -> str:
         """Mirror GET /v1/openapi.json."""
         return json.dumps(rest_client.get_openapi())
+
+    register_core_prompts(mcp, resolved, rest_client)
+    register_pattern_mcp_tools(mcp, rest_client)
 
     mcp._palm_client = rest_client  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]

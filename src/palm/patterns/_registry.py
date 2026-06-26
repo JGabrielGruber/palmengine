@@ -79,6 +79,17 @@ class CqrsContributor:
     handle_query: QueryHandlerFn | None = None
 
 
+McpRegisterFn = Callable[[Any, Any], None]
+
+
+@dataclass(frozen=True)
+class McpContributor:
+    """Pattern-owned MCP tools registered on the stdio adapter."""
+
+    pattern_name: str
+    register: McpRegisterFn
+
+
 _lock = threading.RLock()
 _builders: dict[str, PatternBuildFn] = {}
 _instance_fields: dict[str, InstanceFieldsFn] = {}
@@ -90,6 +101,7 @@ _read_model_builders: dict[str, ReadModelBuilderFn] = {}
 _pattern_apps: dict[str, Any] = {}
 _projection_factories: dict[str, ProjectionFactoryFn] = {}
 _cqrs_contributors: dict[str, CqrsContributor] = {}
+_mcp_contributors: dict[str, McpContributor] = {}
 
 
 def register_builder(name: str, fn: PatternBuildFn) -> None:
@@ -322,3 +334,30 @@ def clear_cqrs_contributors() -> None:
     """Remove CQRS contributor registrations (primarily for tests)."""
     with _lock:
         _cqrs_contributors.clear()
+
+
+def register_mcp_contributor(contributor: McpContributor) -> None:
+    """Register pattern-owned MCP tools on the stdio adapter."""
+    with _lock:
+        existing = _mcp_contributors.get(contributor.pattern_name)
+        if existing is contributor:
+            return
+        _mcp_contributors[contributor.pattern_name] = contributor
+
+
+def get_mcp_contributor(name: str) -> McpContributor | None:
+    """Return the MCP contributor for pattern ``name``, if registered."""
+    with _lock:
+        return _mcp_contributors.get(name)
+
+
+def iter_mcp_contributors() -> list[McpContributor]:
+    """Return MCP contributors in stable pattern-name order."""
+    with _lock:
+        return [_mcp_contributors[name] for name in sorted(_mcp_contributors)]
+
+
+def clear_mcp_contributors() -> None:
+    """Remove MCP contributor registrations (primarily for tests)."""
+    with _lock:
+        _mcp_contributors.clear()

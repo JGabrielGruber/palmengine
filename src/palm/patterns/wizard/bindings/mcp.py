@@ -1,0 +1,46 @@
+"""Wizard pattern MCP tools — collection actions and commit preview."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from palm.common.operator.collection_input import resolve_wizard_collection_action
+from palm.common.operator.commit_preview import wizard_commit_preview
+from palm.common.operator.compact import compact_wizard_inspect
+
+
+def register_wizard_mcp_tools(mcp: Any, rest_client: Any) -> None:
+    """Register wizard-specific MCP tools on ``mcp``."""
+
+    @mcp.tool
+    def palm_wizard_collection_action(
+        instance_id: str,
+        action: str,
+        item_index: int | None = None,
+        value: Any = None,
+    ) -> dict[str, Any]:
+        """Drive a wizard collection step: add, edit, remove, done, cancel, confirm_remove."""
+        wizard_view = rest_client.get_wizard(instance_id)
+        resolved = resolve_wizard_collection_action(
+            action,
+            item_index=item_index,
+            value=value,
+            wizard_view=wizard_view,
+        )
+        if resolved == "" and value is None:
+            raise ValueError(
+                "collection action requires value for field input, or a recognized action name"
+            )
+        view = rest_client.provide_wizard_input(instance_id, resolved)
+        payload = compact_wizard_inspect(view)
+        payload["collection_action"] = action
+        return payload
+
+    @mcp.tool
+    def palm_wizard_commit_preview(instance_id: str) -> dict[str, Any]:
+        """Preview answers and commit hook payload before confirming commit."""
+        wizard_view = rest_client.get_wizard(instance_id)
+        return wizard_commit_preview(wizard_view)
+
+
+__all__ = ["register_wizard_mcp_tools"]

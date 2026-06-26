@@ -94,6 +94,9 @@ just mcp-inspector        # MCP Inspector UI
 # Grok: .grok/config.toml registers palm-mcp (stdio)
 # Tools: palm_list_waiting, palm_inspect_instance, palm_wizard_input, palm_resume_child_wait,
 #        palm_resume_wizard_tick, palm_wizard_backtrack, palm_inspect_job, palm_submit_wizard, …
+# Phase 3: palm_wizard_collection_action, palm_wizard_commit_preview,
+#          palm_parallel_branch_status, palm_pipeline_step_trace
+# Prompts: debug-wizard-block, drive-wizard-to-step, explain-compositional-stack, operator-handoff
 ```
 
 Durable local storage:
