@@ -6,6 +6,7 @@ from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.common.operator.input_coercion import resolve_mcp_job_input, resolve_mcp_wizard_input
+from palm.common.operator.waiting_jobs import slim_waiting_job_row
 from palm.runtimes.mcp.submit_body import submit_body
 
 
@@ -41,7 +42,7 @@ def register_core_tools(mcp: Any, rest_client: Any) -> None:
                 in str((row.get("metadata") or {}).get("flow_name", "")).lower()
                 or needle in str((row.get("metadata") or {}).get("flow", "")).lower()
             ]
-        rows = [_slim_waiting_row(row) for row in raw_rows]
+        rows = [slim_waiting_job_row(row) for row in raw_rows]
         return {"jobs": rows, "count": len(rows)}
 
     @mcp.tool
@@ -150,21 +151,6 @@ def register_core_tools(mcp: Any, rest_client: Any) -> None:
             by_id=by_id,
         )
         return rest_client.submit_flow(body)
-
-
-def _slim_waiting_row(row: dict[str, Any]) -> dict[str, Any]:
-    metadata = row.get("metadata")
-    if not isinstance(metadata, dict):
-        metadata = {}
-    instance_id = metadata.get("instance_id") or row.get("job_id")
-    return {
-        "job_id": row.get("job_id"),
-        "instance_id": instance_id,
-        "status": row.get("status"),
-        "pattern": metadata.get("pattern"),
-        "flow": metadata.get("flow_name") or metadata.get("flow"),
-        "step": metadata.get("step") or metadata.get("wizard_step_slug"),
-    }
 
 
 __all__ = ["register_core_tools"]

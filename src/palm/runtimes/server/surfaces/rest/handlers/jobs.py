@@ -47,6 +47,10 @@ def list_jobs(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if rows and hasattr(rows[0], "to_dict"):
         rows = [row.to_dict() for row in rows]
 
+    from palm.common.operator.waiting_jobs import enrich_job_list_rows
+
+    rows = enrich_job_list_rows(ctx.runtime, rows)
+
     from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
     params = PaginationParams(limit=query["limit"], offset=query["offset"])

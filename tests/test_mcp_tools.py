@@ -86,6 +86,30 @@ async def test_palm_list_waiting_tool(mcp_server) -> None:
 
 
 @pytest.mark.asyncio
+async def test_palm_list_waiting_omits_instance_id_when_unknown(mcp_server) -> None:
+    server, fake = mcp_server
+
+    def list_without_instance(*, limit: int = 50) -> dict[str, Any]:
+        return {
+            "jobs": [
+                {
+                    "job_id": "job-7bd386ce7f3c",
+                    "status": "WAITING_FOR_INPUT",
+                    "metadata": {},
+                }
+            ]
+        }
+
+    fake.list_waiting_jobs = list_without_instance  # type: ignore[method-assign]
+
+    async with Client(server) as client:
+        result = await client.call_tool("palm_list_waiting", {})
+    job = result.data["jobs"][0]
+    assert job["job_id"] == "job-7bd386ce7f3c"
+    assert "instance_id" not in job
+
+
+@pytest.mark.asyncio
 async def test_palm_inspect_instance_tool(mcp_server) -> None:
     server, fake = mcp_server
     async with Client(server) as client:
