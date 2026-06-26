@@ -222,3 +222,24 @@ def test_wizard_resource_form_has_no_text_input() -> None:
     assert 'name="value"' not in html
     assert "resource-step-panel" in html
     assert "resume-wizard-tick" in html
+
+
+def test_wizard_resource_form_waiting_for_child_shows_link_and_polls() -> None:
+    html = wizard_input_form(
+        "inst-parent",
+        {
+            "slug": "related_phase",
+            "title": "Related nodes phase",
+            "prompt": "Waiting for nested wizard...",
+            "field_type": "resource",
+            "step_kind": "resource",
+            "waiting_for_child": True,
+            "waiting_for_child_job_id": "job-child-1",
+            "waiting_for_child_instance_id": "inst-child-1",
+            "child_status": "WAITING_FOR_INPUT",
+        },
+    )
+    assert 'href="/explorer/instances/inst-child-1"' in html
+    assert "Open nested wizard" in html
+    assert "resume-child-wait" in html
+    assert 'hx-trigger="load, every 3s"' in html

@@ -312,17 +312,44 @@ def wizard_resource_form(
 
     if prompt.get("waiting_for_child"):
         child_job_id = prompt.get("waiting_for_child_job_id") or "child"
+        child_instance_id = prompt.get("waiting_for_child_instance_id")
         child_status = prompt.get("child_status") or "WAITING_FOR_INPUT"
+        child_instance_href = prompt.get("child_instance_href")
+        if not child_instance_href and child_instance_id:
+            child_instance_href = f"/explorer/instances/{child_instance_id}"
+        child_job_href = prompt.get("child_job_href")
+        if not child_job_href and child_job_id:
+            child_job_href = f"/explorer/jobs/{child_job_id}"
+
+        child_link = ""
+        if child_instance_href:
+            child_link = (
+                f'<p class="resource-child-link">'
+                f'<a class="btn-primary" href="{escape(str(child_instance_href))}">'
+                f"Open nested wizard"
+                f"</a>"
+            )
+            if child_job_href:
+                child_link += (
+                    f' <a class="btn-default" href="{escape(str(child_job_href))}">'
+                    f"View child job</a>"
+                )
+            child_link += "</p>"
+
         body = (
             f"{prompt_html}{validation_html}"
             f'<p class="muted">Nested wizard <code>{escape(str(child_job_id))}</code> '
-            f"is {escape(str(child_status))}. Open the child wizard below to continue.</p>"
+            f"is {escape(str(child_status))}. Complete it in a separate tab, then return here "
+            f"(this page auto-refreshes while waiting).</p>"
+            f"{child_link}"
         )
         resume_action = f"/explorer/instances/{instance_id}/resume-child-wait"
         htmx_attrs = _wizard_htmx_attrs(resume_action) if htmx else ""
+        auto_poll = ' hx-trigger="load, every 3s"' if htmx else ""
         toolbar = (
-            f'<form class="resource-step-form" action="{escape(resume_action)}" method="POST"{htmx_attrs}>'
-            f'<button class="btn-primary" type="submit">Check nested wizard status</button>'
+            f'<form class="resource-step-form resume-child-wait" action="{escape(resume_action)}" '
+            f'method="POST"{htmx_attrs}{auto_poll}>'
+            f'<button class="btn-default" type="submit">Check nested wizard status</button>'
             f"{_wizard_loading_indicator()}"
             f"</form>"
         )
