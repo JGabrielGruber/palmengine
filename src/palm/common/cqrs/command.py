@@ -62,6 +62,14 @@ class SubmitPlansCommand(Command):
     runtime_name: str | None = None
 
 
+@dataclass(frozen=True)
+class CancelJobCommand(Command):
+    """Cancel a non-terminal orchestration job."""
+
+    job_id: str
+    runtime_name: str | None = None
+
+
 @runtime_checkable
 class CommandHandler(Protocol):
     """Handle a single command type."""

@@ -1,6 +1,6 @@
 # Palm MCP — Operator Adapter
 
-**Status:** Phase 1–3 shipped · stdio transport via [FastMCP](https://pypi.org/project/fastmcp/)
+**Status:** Phase 1–4 shipped · stdio transport via [FastMCP](https://pypi.org/project/fastmcp/)
 
 Agents operate Palm through a thin **stdio MCP server** (`palm-mcp`) that proxies to the REST API. No in-process orchestration in the adapter — start `palm server` first.
 
@@ -116,12 +116,40 @@ Patterns register MCP tools via `register_mcp_contributor()` in `palm/patterns/_
 - `resolve_wizard_collection_action()` — maps collection UI actions to wizard input values
 - `wizard_commit_preview()` — commit handler preview from wizard read model
 
-## Phase 4+ — Deferred (YAGNI)
+## Phase 4 — Shipped (debug + lifecycle)
 
-- Tier 3 debug tools (`palm_diff_snapshots`, `palm_trace_events`, …)
-- Native HTTP MCP on `McpSurface`
-- `palm_cancel_job` (needs REST), `palm_submit_process` (plans API)
+### REST endpoints (added for MCP)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/v1/jobs/{job_id}/cancel` | Cancel non-terminal jobs |
+| `POST` | `/v1/flows/validate` | Dry-run flow build without submit |
+| `GET` | `/v1/doctor` | JSON engine health (registries, storage, jobs) |
+
+### Tier 3 + lifecycle MCP tools
+
+| Tool | REST / source |
+|------|---------------|
+| `palm_cancel_job` | `POST /v1/jobs/{id}/cancel` |
+| `palm_submit_process` | `POST /v1/plans/prepare` + `POST /v1/plans/submit` |
+| `palm_trace_events` | `GET /v1/jobs/{id}/context` → `recent_events` |
+| `palm_diff_snapshots` | `GET /v1/instances/{id}/snapshots/{a\|b}` |
+| `palm_explain_step` | `GET /v1/flows/{id}?verbose=1` |
+| `palm_validate_flow` | `POST /v1/flows/validate` |
+| `palm_doctor` | `GET /v1/doctor` |
+| `palm_fetch_job` | `POST /v1/resources/invoke` (palm `fetch`) |
+
+### Shared helpers (extended)
+
+- `diff_snapshot_states()` — blackboard key diff between snapshots
+- `explain_flow_step()` — step metadata from flow definition
+- `build_doctor_report()` — JSON doctor for REST/MCP
+
+## Phase 5+ — Deferred (YAGNI)
+
+- Native HTTP/SSE MCP on `McpSurface`
 - App-level tools (e.g. KnowKey compose status)
+- `palm_invoke_resource` as first-class MCP tool (use REST invoke today)
 
 ## Package layout
 

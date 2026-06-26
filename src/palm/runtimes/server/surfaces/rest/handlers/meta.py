@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from palm.common.runtimes.server.protocol import ServerRequest
 from palm.runtimes.server.surfaces.rest.docs import build_docs_html
 from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
+from palm.common.runtimes.server.diagnostics import build_doctor_report
 from palm.runtimes.server.surfaces.rest.responses import ok
 
 if TYPE_CHECKING:
@@ -32,6 +33,10 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
     if bridge is not None:
         payload["webhook_targets"] = len(bridge.targets)
     return ok(payload)
+
+
+def doctor(ctx: ServerContext, request: ServerRequest) -> Any:
+    return ok(build_doctor_report(ctx.runtime))
 
 
 def openapi(ctx: ServerContext, request: ServerRequest) -> Any:

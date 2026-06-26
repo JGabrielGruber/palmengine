@@ -8,8 +8,10 @@ from typing import Any
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.contributors import register_pattern_mcp_tools
+from palm.runtimes.mcp.debug_tools import register_debug_tools
 from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
+from palm.runtimes.mcp.submit_body import submit_body
 
 try:
     from fastmcp import FastMCP
@@ -136,7 +138,7 @@ def create_mcp_server(
         job_id: str | None = None,
     ) -> dict[str, Any]:
         """Start a wizard flow; returns instance_id and job_id."""
-        body = _submit_body(flow_name=flow_name, wizard=wizard, flow=flow, job_id=job_id)
+        body = submit_body(flow_name=flow_name, wizard=wizard, flow=flow, job_id=job_id)
         return rest_client.submit_wizard(body)
 
     @mcp.tool
@@ -148,7 +150,7 @@ def create_mcp_server(
         by_id: bool = False,
     ) -> dict[str, Any]:
         """Submit a flow or wizard as a job."""
-        body = _submit_body(
+        body = submit_body(
             flow_name=flow_name,
             wizard=wizard,
             flow=flow,
@@ -255,35 +257,11 @@ def create_mcp_server(
 
     register_core_prompts(mcp, resolved, rest_client)
     register_pattern_mcp_tools(mcp, rest_client)
+    register_debug_tools(mcp, rest_client)
 
     mcp._palm_client = rest_client  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]
     return mcp
-
-
-def _submit_body(
-    *,
-    flow_name: str | None,
-    wizard: dict[str, Any] | None,
-    flow: dict[str, Any] | None,
-    job_id: str | None,
-    by_id: bool = False,
-) -> dict[str, Any]:
-    variants = sum(1 for value in (flow_name, wizard, flow) if value is not None)
-    if variants != 1:
-        raise ValueError("provide exactly one of flow_name, wizard, or flow")
-    body: dict[str, Any] = {}
-    if flow_name is not None:
-        body["flow_name"] = flow_name
-        if by_id:
-            body["by_id"] = True
-    elif wizard is not None:
-        body["wizard"] = wizard
-    else:
-        body["flow"] = flow
-    if job_id is not None:
-        body["job_id"] = job_id
-    return body
 
 
 def _slim_waiting_row(row: dict[str, Any]) -> dict[str, Any]:

@@ -97,6 +97,8 @@ just mcp-inspector        # MCP Inspector UI
 # Phase 3: palm_wizard_collection_action, palm_wizard_commit_preview,
 #          palm_parallel_branch_status, palm_pipeline_step_trace
 # Prompts: debug-wizard-block, drive-wizard-to-step, explain-compositional-stack, operator-handoff
+# Phase 4: palm_cancel_job, palm_submit_process, palm_trace_events, palm_diff_snapshots,
+#          palm_explain_step, palm_validate_flow, palm_doctor, palm_fetch_job
 ```
 
 Durable local storage:

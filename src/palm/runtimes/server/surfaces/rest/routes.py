@@ -49,6 +49,7 @@ def _resolve_handler(
 ) -> RouteHandler:
     builders: dict[RouteId, RouteHandler] = {
         "health": lambda req: meta.health(ctx, surface_names),
+        "doctor": lambda req: meta.doctor(ctx, req),
         "openapi": lambda req: meta.openapi(ctx, req),
         "docs": lambda req: meta.docs(ctx, req),
         "list_jobs": lambda req: jobs.list_jobs(ctx, req),
@@ -56,6 +57,7 @@ def _resolve_handler(
         "get_job_context": lambda req, job_id: jobs.get_job_context(ctx, req, job_id=job_id),
         "submit_job": lambda req: jobs.submit_job(ctx, req),
         "provide_input": lambda req, job_id: jobs.provide_input(ctx, req, job_id=job_id),
+        "cancel_job": lambda req, job_id: jobs.cancel_job(ctx, req, job_id=job_id),
         "submit_wizard": lambda req: wizard.submit_wizard(ctx, req),
         "get_wizard": lambda req, instance_id: wizard.get_wizard(
             ctx, req, instance_id=instance_id
@@ -90,6 +92,7 @@ def _resolve_handler(
         "get_snapshot": lambda req, instance_id, snapshot_id: snapshots.get_snapshot(
             ctx, req, instance_id=instance_id, snapshot_id=snapshot_id
         ),
+        "validate_flow": lambda req: catalog.validate_flow(ctx, req),
         "list_flows": lambda req: catalog.list_flows(ctx, req),
         "get_flow": lambda req, flow_id: catalog.get_flow(ctx, req, flow_id=flow_id),
         "list_processes": lambda req: catalog.list_processes(ctx, req),

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
+from palm.common.cqrs.command import CancelJobCommand, ProvideInputCommand, SubmitFlowCommand
 from palm.common.cqrs.query import GetJobContextQuery, GetJobStatusQuery, ListJobStatusQuery
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -75,6 +75,17 @@ def submit_job(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
 
     ctx.wait_until_idle()
     return job_accepted(ctx.runtime.get_job(job.id))
+
+
+def cancel_job(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    result = ctx.execute(CancelJobCommand(job_id=job_id))
+    if isinstance(result, dict) and not result.get("found", True):
+        return errors.job_not_found(job_id)
+    return ok(result)
 
 
 def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:

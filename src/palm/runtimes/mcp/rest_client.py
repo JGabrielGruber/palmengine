@@ -121,6 +121,42 @@ class PalmRestClient:
     def get_openapi(self) -> dict[str, Any]:
         return self._request("GET", "/v1/openapi.json")
 
+    def cancel_job(self, job_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/jobs/{job_id}/cancel",
+            auth=True,
+        )
+
+    def prepare_plans(self, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", "/v1/plans/prepare", body=body, auth=True)
+
+    def submit_plans(self, plan_ids: list[str]) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            "/v1/plans/submit",
+            body={"plan_ids": plan_ids},
+            auth=True,
+        )
+
+    def get_doctor(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/doctor")
+
+    def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", "/v1/flows/validate", body=body, auth=True)
+
+    def list_snapshots(self, instance_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/instances/{instance_id}/snapshots")
+
+    def get_snapshot(self, instance_id: str, snapshot_id: str) -> dict[str, Any]:
+        return self._request(
+            "GET",
+            f"/v1/instances/{instance_id}/snapshots/{snapshot_id}",
+        )
+
+    def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", "/v1/resources/invoke", body=body, auth=True)
+
     def _request(
         self,
         method: str,

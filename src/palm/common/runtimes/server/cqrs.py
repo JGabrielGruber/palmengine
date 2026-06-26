@@ -10,6 +10,7 @@ import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are regi
 
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
+    CancelJobCommand,
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
@@ -76,7 +77,22 @@ class StandaloneCommandHandlers:
             return self._prepare_plans(command)
         if isinstance(command, SubmitPlansCommand):
             return self._submit_plans(command)
+        if isinstance(command, CancelJobCommand):
+            return self._cancel_job(command)
         raise TypeError(f"Unsupported command: {type(command).__name__}")
+
+    def _cancel_job(self, command: CancelJobCommand) -> dict[str, Any]:
+        try:
+            cancelled = self._runtime.cancel_job(command.job_id)
+        except JobNotFoundError:
+            return {"found": False, "job_id": command.job_id}
+        job = self._runtime.get_job(command.job_id)
+        return {
+            "found": True,
+            "job_id": command.job_id,
+            "cancelled": cancelled,
+            "status": job.status.value,
+        }
 
     def _submit_flow(self, command: SubmitFlowCommand) -> Any:
         if isinstance(command.flow, dict):
@@ -358,6 +374,7 @@ def wire_standalone_buses(
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,
+        CancelJobCommand,
     ]
     query_types = [
         GetJobStatusQuery,

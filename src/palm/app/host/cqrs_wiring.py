@@ -19,6 +19,7 @@ import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are regi
 from palm.app.host.router import RuntimeRouter
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
+    CancelJobCommand,
     Command,
     PreparePlansCommand,
     ProvideInputCommand,
@@ -47,6 +48,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
+from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
@@ -122,6 +124,20 @@ class PalmCommandHandlers:
                 command.instance_id,
                 runtime_name=runtime_name,
             )
+        if isinstance(command, CancelJobCommand):
+            runtime_name = self._router.route_job_runtime(command.runtime_name)
+            runtime = self._app.runtime(runtime_name)
+            try:
+                cancelled = runtime.cancel_job(command.job_id)
+            except JobNotFoundError:
+                return {"found": False, "job_id": command.job_id}
+            job = runtime.get_job(command.job_id)
+            return {
+                "found": True,
+                "job_id": command.job_id,
+                "cancelled": cancelled,
+                "status": job.status.value,
+            }
         raise TypeError(f"Unsupported command: {type(command).__name__}")
 
     def _prepare_plans(self, command: PreparePlansCommand) -> dict[str, Any]:
@@ -323,6 +339,7 @@ def collect_cqrs_command_types() -> tuple[type, ...]:
         ResumeProcessCommand,
         PreparePlansCommand,
         SubmitPlansCommand,
+        CancelJobCommand,
     ]
     for contributor in iter_cqrs_contributors():
         types.extend(contributor.command_types)

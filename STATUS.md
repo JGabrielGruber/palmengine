@@ -96,6 +96,8 @@ ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 | Pattern MCP contributor registry | ✅ Phase 3 |
 | Pattern MCP tools (wizard collection, parallel branches) | ✅ Phase 3 |
 | MCP operator prompts | ✅ Phase 3 |
+| REST: cancel job, validate flow, doctor | ✅ Phase 4 |
+| MCP debug + lifecycle tools (Tier 3) | ✅ Phase 4 |
 
 ```bash
 uv sync --extra mcp && just palm-server    # REST backend

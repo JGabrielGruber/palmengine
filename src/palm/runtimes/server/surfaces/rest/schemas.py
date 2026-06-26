@@ -42,6 +42,18 @@ SUBMIT_WIZARD_BODY = DictStateSchema(
     }
 )
 
+VALIDATE_FLOW_BODY = DictStateSchema(
+    {
+        "type": "object",
+        "properties": {
+            "flow": _OBJECT,
+            "wizard": _OBJECT,
+            "flow_name": _STRING,
+            "by_id": _BOOL,
+        },
+    }
+)
+
 PREPARE_PLANS_BODY = DictStateSchema(
     {
         "type": "object",
@@ -220,6 +232,7 @@ PROCESS_SUMMARY = DictStateSchema(
 NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "SubmitJobBody": SUBMIT_JOB_BODY,
     "SubmitWizardBody": SUBMIT_WIZARD_BODY,
+    "ValidateFlowBody": VALIDATE_FLOW_BODY,
     "PreparePlansBody": PREPARE_PLANS_BODY,
     "SubmitPlansBody": SUBMIT_PLANS_BODY,
     "ProvideInputBody": PROVIDE_INPUT_BODY,
@@ -244,6 +257,11 @@ def openapi_components() -> dict[str, Any]:
 
 def submit_job_variant_errors(body: dict[str, Any]) -> list[str]:
     """Require exactly one flow submission style in the request body."""
+    return _single_variant_errors(body, ("flow", "wizard", "flow_name"))
+
+
+def validate_flow_variant_errors(body: dict[str, Any]) -> list[str]:
+    """Require exactly one flow validation style in the request body."""
     return _single_variant_errors(body, ("flow", "wizard", "flow_name"))
 
 
