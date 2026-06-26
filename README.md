@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.13.17` — Provider apps + compositional follow-ups · Wizard Experience: `/v1/wizards` REST, Explorer workspace · See [CHANGELOG.md](CHANGELOG.md) · [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md) · [VISION-0.13](docs/VISION-0.13.md) · [SCOPE.md](SCOPE.md)
+**Current release:** `0.14.9` — Provider apps + compositional follow-ups · **0.14 MCP** operator adapter for coding agents · Wizard Experience: `/v1/wizards` REST, Explorer workspace · See [CHANGELOG.md](CHANGELOG.md) · [docs/MCP.md](docs/MCP.md) · [EXPLORER-WIZARD.md](EXPLORER-WIZARD.md)
 
 ---
 
@@ -66,6 +66,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
 | **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **wizard workspace** (HTMX + collection editor), **resources**; `/` redirects here |
 | **Wizard REST** | `/v1/wizards` — submit, status, input, backtrack keyed by `instance_id` |
+| **MCP (0.14)** | `palm-mcp` — 26 tools, 4 prompts, 10 resources for coding agents; [docs/MCP.md](docs/MCP.md) |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm resource *`, `just` quality recipes |
 
@@ -111,6 +112,22 @@ with ApplicationHost(profile=HostProfile.all_in_one()) as host:
 ```
 
 Demo script: `uv run python examples/full_demo.py` (host + resume across restart).
+
+### Agent development (MCP 0.14)
+
+Coding agents (Cursor, Grok, Claude) can operate Palm wizards headlessly via MCP — no curl, no JSON blobs.
+
+```bash
+uv sync --extra mcp
+just palm-server              # terminal 1 — REST on :8080 (required)
+just mcp-inspector            # terminal 2 — optional Inspector UI
+```
+
+Connect your IDE to the `palm-mcp` stdio server (`pip install "palmengine[mcp]"`). Read the **[Agent development guide](docs/MCP.md#agent-development-guide)** for workflows, conventions, and the full tool list.
+
+**Operator loop:** definitions → submit → inspect → input → wait on children → resume.
+
+**Key conventions:** use `instance_id` (not `job_id`) for wizards; pass plain `input` strings (`yes`, choice slugs, text); read `palm://agent/guide` (this repo’s `docs/llms.txt`) at session start.
 
 **Server + Palm Explorer:**
 

@@ -21,7 +21,7 @@ class ProviderApp(ABC):
     depends_on: ClassVar[tuple[str, ...]] = ()
     registry_hooks: ClassVar[tuple[str, ...]] = ()
 
-    def ready(self) -> None:
+    def ready(self) -> None:  # noqa: B027 — optional hook like Django AppConfig.ready()
         """Override to register runtime bindings, compensation, and CQRS hooks."""
 
     def register(self) -> None:

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.13.17"
+version = "0.14.9"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -93,6 +93,9 @@ Changelog = "https://github.com/JGabrielGruber/palmengine/blob/main/CHANGELOG.md
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
+exclude = [
+    "**/node_modules/**",
+]
 artifacts = [
     "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
 ]
@@ -105,6 +108,9 @@ include = [
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+]
+exclude = [
+    "**/node_modules/**",
 ]
 
 [tool.ruff]

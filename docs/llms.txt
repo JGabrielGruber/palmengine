@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.13.17 (shipping) · **Theme:** Provider apps + Wizard Experience · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.14.9 (shipping) · **0.14 MCP** (operator adapter) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -57,7 +57,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
 | **Wizard REST (0.13)** | `/v1/wizards` — submit, status, input, backtrack by `instance_id` |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
-| **MCP (0.14)** | `palm-mcp` stdio adapter (FastMCP) over REST — operator tools for agents; see `docs/MCP.md` |
+| **MCP (0.14)** | 26 tools, 4 prompts, 10 resources — agent operator adapter; see `docs/MCP.md` |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
 
@@ -86,23 +86,59 @@ curl -s -X POST http://localhost:8080/v1/wizards -H 'Content-Type: application/j
 # → open /explorer/instances/<instance_id> for wizard workspace + collection UI
 ```
 
-MCP (agents — Grok/Cursor):
+## Agent development with MCP (0.14)
+
+**Prerequisite:** `palm server` running on `:8080` before connecting MCP.
+
 ```bash
-uv sync --extra mcp
-just palm-server          # REST backend
-just mcp-inspector        # MCP Inspector UI
-# Grok: .grok/config.toml registers palm-mcp (stdio)
-# Tools: palm_list_waiting, palm_inspect_instance, palm_wizard_input, palm_resume_child_wait,
-#        palm_resume_wizard_tick, palm_wizard_backtrack, palm_inspect_job, palm_submit_wizard, …
-# Phase 3: palm_wizard_collection_action, palm_wizard_commit_preview,
-#          palm_parallel_branch_status, palm_pipeline_step_trace
-# Prompts: debug-wizard-block, drive-wizard-to-step, explain-compositional-stack, operator-handoff
-# Phase 4: palm_cancel_job, palm_submit_process, palm_trace_events, palm_diff_snapshots,
-#          palm_explain_step, palm_validate_flow, palm_doctor, palm_fetch_job
-# Phase 5: palm_invoke_resource, palm_compose_status; native HTTP at POST /mcp (streamable-http)
-# App tools: register_app_mcp_contributor() in palm/app/mcp_registry.py
-# Phase 6: tools.py/resources.py split; palm_wizard_input(input=plain string); SSE at /mcp/sse
+uv sync --extra mcp && just palm-server    # terminal 1
+just mcp-inspector                         # terminal 2 (optional)
 ```
+
+Grok: `.grok/config.toml` registers `palm-mcp` (stdio). Cursor/Claude: stdio command `palm-mcp` or `uv run --extra mcp palm-mcp`.
+
+### Operator loop (memorize this)
+
+`definitions → submit → inspect → input → wait on children → resume`
+
+### Rules for agents
+
+1. **Instance-first** — use `instance_id` for wizards (`palm_inspect_instance`, `palm_wizard_input`). `job_id` is a handle, not a durable instance key.
+2. **Plain input** — `palm_wizard_input(instance_id, input="yes")` not JSON blobs. `yes`/`no` coerce to boolean on confirm steps.
+3. **Compact inspect** — default slim responses; `format="verbose"` only when debugging.
+4. **Resources = read, tools = write** — catalogs via `palm://definitions/*`; mutations via tools.
+5. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_resume_child_wait` or inspect child.
+6. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
+
+### Typical session
+
+```
+palm_doctor
+palm_submit_wizard(flow_name="todo-builder")     → instance_id
+palm_inspect_instance(instance_id)                 → step, prompt, choices
+palm_wizard_input(instance_id, input="…")          → plain string
+# child-wait: palm_resume_child_wait(instance_id)
+# stuck: prompt debug-wizard-block + palm_compose_status(instance_id)
+```
+
+### Tool cheat sheet
+
+| Need | Tool / resource |
+|------|-----------------|
+| Project context | `palm://agent/guide` (this file) |
+| Flow catalog | `palm://definitions/flows` |
+| Start wizard | `palm_submit_wizard` |
+| Current step | `palm_inspect_instance` |
+| Send answer | `palm_wizard_input(input=…)` |
+| Parent/child stack | `palm://instances/{id}/tree`, `palm_compose_status` |
+| Collection UI | `palm_wizard_collection_action` |
+| Dry-run flow | `palm_validate_flow` |
+| Health | `palm_doctor` |
+| Invoke resource | `palm_invoke_resource` |
+
+**Prompts:** `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
+
+Full inventory: `docs/MCP.md`
 
 Durable local storage:
 ```bash
@@ -137,7 +173,8 @@ src/palm/
 | docs/PROVIDER-APPS.md | ProviderApp manifests, bindings/flow layout for providers; palm reference |
 | docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
-| docs/MCP.md | MCP operator adapter — phases, tools, setup |
+| docs/MCP.md | **Agent MCP guide** — setup, workflows, full tool inventory |
+| DEVELOPMENT.md | Contributor setup + MCP development workflow |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
 | docs/VISION-0.13.md | Wizard Experience release vision |

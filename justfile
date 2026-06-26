@@ -210,7 +210,7 @@ release-prep:
     just docs-check
     just full-check
     just build
-    @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.12.9.md"
+    @echo "🎉 Release prep complete — review dist/, CHANGELOG.md, RELEASE-0.14.9.md"
 
 # -----------------------------------------------------------------------------
 # 8. Convenience & CI-friendly

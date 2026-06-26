@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.13.17` (shipping)  
-**Last Updated:** June 25, 2026  
-**Maturity:** Wizard Experience shipped — `/v1/wizards` REST, Explorer wizard workspace, collection UI.
+**Current Version:** `0.14.9` (shipping)  
+**Last Updated:** June 26, 2026  
+**Maturity:** Wizard Experience shipped · **0.14 MCP** operator adapter shipped for coding agents.
 
 ## Quick Overview
 
@@ -39,6 +39,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Rich CLI + REPL with live dashboard (`palm status`) and `palm resource *` commands
 - Multiple runtimes (Embedded, Daemon, Server, CLI)
 - **Palm Explorer** — SSR hub at `/explorer` (flows, jobs, instances, wizard workspace, **resources**); `GET /` redirects here
+- **MCP operator adapter (0.14)** — `palm-mcp` stdio + native HTTP `/mcp`; 26 tools, 4 prompts, 10 resources for coding agents; [docs/MCP.md](docs/MCP.md)
 
 ## 0.13 — Wizard Experience (Shipped)
 
@@ -83,9 +84,9 @@ ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-a
 
 ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 
-## 0.14 — MCP Operator (In progress)
+## 0.14 — MCP Operator (Shipped)
 
-**Plan & status:** [docs/MCP.md](docs/MCP.md)
+**Agent guide:** [docs/MCP.md](docs/MCP.md) · **Agent context:** [docs/llms.txt](docs/llms.txt)
 
 | Component | Status |
 |-----------|--------|
@@ -126,21 +127,25 @@ just mcp-inspector                       # MCP Inspector UI
 
 | Document              | Status          | Notes |
 |-----------------------|------------------|-------|
-| `README.md`           | Good            | 0.13 Try in Explorer + wizard REST |
-| `ARCHITECTURE.md`     | Good            | Pattern apps section + wizard REST |
+| `README.md`           | Good            | 0.13 Explorer + 0.14 MCP agent section |
+| `ARCHITECTURE.md`     | Good            | Pattern apps + MCP stdio/HTTP surfaces |
+| `docs/MCP.md`         | Good            | **Agent development guide** — setup, workflows, tool inventory |
 | `docs/PATTERN-APPS.md`| Good            | Canonical PatternApp + bindings/flow guide |
 | `docs/PROVIDER-APPS.md`| Good           | Canonical ProviderApp + bindings/flow guide |
 | `docs/adr/002-*.md`   | Good            | Pattern/common boundary ADR |
 | `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
-| `EXPLORER-WIZARD.md`  | Good            | Operator + integrator guide |
+| `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
-| `docs/index.html`     | Good            | 0.13.0 highlights |
-| `docs/llms.txt`       | Good            | AI context for 0.13 |
-| `CHANGELOG.md`        | Good            | `[0.13.0]` section complete |
+| `docs/index.html`     | Good            | v0.14.9 badge + MCP in featureList |
+| `docs/llms.txt`       | Good            | AI context + MCP operator cheat sheet (`palm://agent/guide`) |
+| `AGENTS.md`           | Good            | MCP conventions + extension table |
+| `DEVELOPMENT.md`      | Good            | Contributor setup + MCP development workflow |
+| `CHANGELOG.md`        | Good            | `[0.14.9]` MCP Operator section complete |
+| `RELEASE-0.14.9.md`   | Good            | Release checklist |
 
 ## Priorities & Next Steps
 
-1. Publish `0.13.0` to PyPI (`just release-prep` → tag → publish)
+1. Publish `0.14.9` to PyPI (`just release-prep` → tag → publish) — see [RELEASE-0.14.9.md](RELEASE-0.14.9.md)
 2. WebSocket surface for live wizard prompts
 3. Explorer flow dry-run and definition preview
 
@@ -151,6 +156,8 @@ just mcp-inspector                       # MCP Inspector UI
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [AGENTS.md](AGENTS.md)
 - [DEVELOPMENT.md](DEVELOPMENT.md)
+- [docs/MCP.md](docs/MCP.md) — agent development with Palm MCP
+- [RELEASE-0.14.9.md](RELEASE-0.14.9.md) — release checklist
 - Examples: `examples/README.md`
 
 ## How to Contribute

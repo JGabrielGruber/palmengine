@@ -45,6 +45,9 @@ REQUEST_BODIES: dict[str, dict[str, Any]] = {
     "WizardBacktrackBody": {
         "to_step": "name",
     },
+    "ValidateFlowBody": {
+        "flow_name": "onboard",
+    },
 }
 
 OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
@@ -144,6 +147,22 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "docs": "/v1/docs",
         "openapi": "/v1/openapi.json",
     },
+    "doctor": {
+        "status": "ok",
+        "version": __version__,
+        "runtime": "ServerRuntime",
+        "auth_enforce": False,
+        "storage": {"backend": "memory", "open": True},
+        "registries": {
+            "patterns": ["wizard", "parallel", "pipeline"],
+            "providers": ["palm", "rest"],
+            "storages": ["memory"],
+            "transforms": ["enrich_resource"],
+        },
+        "resource_count": 2,
+        "jobs": {"total": 1, "waiting_for_input": 0},
+        "issues": [],
+    },
     "openapi": {"openapi": "3.0.3", "info": {"title": "Palm Engine API"}},
     "docs": "(HTML documentation page)",
     "list_jobs": {
@@ -213,6 +232,11 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "job_id": "job-abc123",
         "status": "RUNNING",
         "metadata": {"pattern": "wizard"},
+    },
+    "cancel_job": {
+        "job_id": "job-abc123",
+        "cancelled": True,
+        "status": "CANCELLED",
     },
     "submit_wizard": {
         "instance_id": "inst-abc123",
@@ -289,6 +313,19 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         },
         "answers": {},
     },
+    "resume_child_wait": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "current_step_slug": "resource_step",
+        "waiting_for_child": False,
+    },
+    "resume_wizard_tick": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "RUNNING",
+        "current_step_slug": "fetch_customer",
+    },
     "prepare_plans": {
         "plans": [
             {
@@ -319,6 +356,26 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "status": "WAITING_FOR_INPUT",
         "flow_name": "onboard",
     },
+    "get_instance_tree": {
+        "instance_id": "inst-abc123",
+        "root": {
+            "instance_id": "inst-abc123",
+            "job_id": "job-abc123",
+            "flow": "parent-wizard",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "ancestors": [],
+        "active_child": {
+            "instance_id": "inst-child456",
+            "job_id": "job-child456",
+            "flow": "child-wizard",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "links": {
+            "explorer": "http://localhost:8080/explorer/instances/inst-abc123",
+            "wizard": "/v1/wizards/inst-abc123",
+        },
+    },
     "resume_instance": {
         "job_id": "job-abc123",
         "status": "RUNNING",
@@ -342,6 +399,12 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "recorded_at": "2026-06-17T12:00:00+00:00",
         "job_id": "job-abc123",
         "state_snapshot": {"answers": {"name": "Ada"}},
+    },
+    "validate_flow": {
+        "valid": True,
+        "pattern": "wizard",
+        "flow": "onboard",
+        "step_slugs": ["name", "confirm"],
     },
     "list_flows": {
         "flows": [
@@ -378,6 +441,28 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "name": "onboarding",
         "storage": "memory",
         "flows": [{"name": "onboard", "pattern": "wizard", "options": {}}],
+    },
+    "list_resources": {
+        "resources": [
+            {
+                "definition_id": "fetch-customer",
+                "name": "fetch-customer",
+                "provider": "rest",
+                "action": "fetch",
+                "param_keys": ["customer_id"],
+                "has_input_schema": True,
+                "has_output_schema": True,
+            }
+        ],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "get_resource": {
+        "definition_id": "fetch-customer",
+        "name": "fetch-customer",
+        "provider": "rest",
+        "action": "fetch",
+        "params": {"customer_id": {"type": "string", "required": True}},
+        "summary": "Fetch customer record via REST provider",
     },
 }
 
