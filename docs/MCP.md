@@ -64,10 +64,28 @@ just mcp-inspector            # terminal 2 — MCP Inspector UI
 | `palm_submit_wizard` | `POST /v1/wizards` |
 | `palm_submit_flow` | `POST /v1/jobs` |
 
-## Phase 2b — Planned (definition catalogs)
+## Phase 2b — Shipped (definition catalogs)
 
-- REST: `GET /v1/resources` catalog, slim `flow_summary` with step slugs
-- Resources: `palm://definitions/flows`, `processes`, `resources`, `openapi`
+### REST enhancements
+
+| Method | Path | Notes |
+|--------|------|-------|
+| `GET` | `/v1/resources` | Resource catalog (paginated) |
+| `GET` | `/v1/resources/{ref}` | Describe by name or id |
+| `GET` | `/v1/flows/{id}?verbose=0` | Slim summary with `step_slugs` (default `verbose=1` = full) |
+| `GET` | `/v1/flows` | List includes `step_slugs` for wizard flows |
+
+### MCP resources
+
+| URI | REST |
+|-----|------|
+| `palm://definitions/flows` | `GET /v1/flows` |
+| `palm://definitions/flows/{id}` | `GET /v1/flows/{id}?verbose=0` |
+| `palm://definitions/processes` | `GET /v1/processes` |
+| `palm://definitions/processes/{id}` | `GET /v1/processes/{id}` |
+| `palm://definitions/resources` | `GET /v1/resources` |
+| `palm://definitions/resources/{ref}` | `GET /v1/resources/{ref}` |
+| `palm://openapi` | `GET /v1/openapi.json` |
 
 ## Phase 3+ — Deferred (YAGNI)
 

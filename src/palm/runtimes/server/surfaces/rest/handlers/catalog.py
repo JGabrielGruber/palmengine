@@ -36,7 +36,16 @@ def get_flow(ctx: ServerContext, request: ServerRequest, *, flow_id: str) -> Ser
     flow = ctx.ask(GetFlowQuery(flow_id=flow_id))
     if flow is None:
         return errors.flow_not_found(flow_id)
-    return ok(flow_detail(flow))
+    if _verbose_query(request):
+        return ok(flow_detail(flow))
+    return ok(flow_summary(flow))
+
+
+def _verbose_query(request: ServerRequest) -> bool:
+    raw = request.query.get("verbose")
+    if raw is None:
+        return True
+    return str(raw).strip().lower() not in {"0", "false", "no"}
 
 
 def list_processes(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

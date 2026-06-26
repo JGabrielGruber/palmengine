@@ -111,3 +111,12 @@ def process_not_found(process_id: str) -> ServerResponse:
         f"Process not found: {process_id}",
         extra={"process_id": process_id},
     )
+
+
+def resource_not_found(resource_ref: str) -> ServerResponse:
+    return error_response(
+        404,
+        "resource_not_found",
+        f"Resource not found: {resource_ref}",
+        extra={"resource_ref": resource_ref},
+    )

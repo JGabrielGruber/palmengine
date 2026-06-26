@@ -36,6 +36,8 @@ RouteId = Literal[
     "get_flow",
     "list_processes",
     "get_process",
+    "list_resources",
+    "get_resource",
     "invoke_resource",
 ]
 
@@ -316,6 +318,23 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Catalog",
             summary="Get process",
             description="Fetch a full process definition by id or name.",
+        ),
+        RouteDefinition(
+            route_id="list_resources",
+            method="GET",
+            path="/v1/resources",
+            group="Resources",
+            summary="List resources",
+            description="Paginated resource definition catalog with provider and param metadata.",
+            query_schema="ListFlowsQuery",
+        ),
+        RouteDefinition(
+            route_id="get_resource",
+            method="GET",
+            path="/v1/resources/{resource_ref}",
+            group="Resources",
+            summary="Get resource",
+            description="Describe a resource definition by name or id (params schema, provider, action).",
         ),
         RouteDefinition(
             route_id="invoke_resource",

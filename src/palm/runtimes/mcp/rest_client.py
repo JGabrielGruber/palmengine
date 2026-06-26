@@ -93,6 +93,34 @@ class PalmRestClient:
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         return self._request("POST", "/v1/jobs", body=body, auth=True)
 
+    def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
+        path = "/v1/flows"
+        if pattern:
+            path = f"{path}?pattern={pattern}"
+        return self._request("GET", path)
+
+    def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
+        suffix = "" if verbose else "?verbose=0"
+        return self._request("GET", f"/v1/flows/{flow_id}{suffix}")
+
+    def list_processes(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/processes")
+
+    def get_process(self, process_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/processes/{process_id}")
+
+    def list_resources(self, *, provider: str | None = None) -> dict[str, Any]:
+        path = "/v1/resources"
+        if provider:
+            path = f"{path}?provider={provider}"
+        return self._request("GET", path)
+
+    def get_resource(self, resource_ref: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/resources/{resource_ref}")
+
+    def get_openapi(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/openapi.json")
+
     def _request(
         self,
         method: str,

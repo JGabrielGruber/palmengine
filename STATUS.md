@@ -92,7 +92,7 @@ ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 | `palm-mcp` stdio adapter (FastMCP) | ✅ Phase 1 |
 | REST: resume-child-wait, resume-wizard-tick, instance tree | ✅ Phase 1 |
 | Operator tools (inspect, input, list waiting, submit) | ✅ Phase 2a |
-| Definition catalog MCP resources | ⏳ Phase 2b |
+| Definition catalog REST + MCP resources | ✅ Phase 2b |
 | Pattern MCP contributor registry | ⏳ Phase 3 |
 
 ```bash

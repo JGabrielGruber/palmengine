@@ -26,13 +26,32 @@ def snapshot_detail(index: int, snapshot: StateSnapshot) -> dict[str, Any]:
     }
 
 
+def flow_step_slugs(flow: FlowDefinition) -> list[str]:
+    """Extract wizard step slugs from flow options when present."""
+    options = flow.options or {}
+    steps = options.get("steps")
+    if not isinstance(steps, list):
+        return []
+    slugs: list[str] = []
+    for step in steps:
+        if isinstance(step, dict):
+            slug = step.get("slug")
+            if slug:
+                slugs.append(str(slug))
+    return slugs
+
+
 def flow_summary(flow: FlowDefinition) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "flow_id": flow.definition_id,
         "name": flow.name,
         "pattern": flow.pattern,
         "has_state_schema": flow.has_state_schema,
     }
+    slugs = flow_step_slugs(flow)
+    if slugs:
+        payload["step_slugs"] = slugs
+    return payload
 
 
 def flow_detail(flow: FlowDefinition) -> dict[str, Any]:

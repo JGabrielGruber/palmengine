@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from palm.core.orchestration import JobStatus
-from palm.definitions import FlowDefinition, ProcessDefinition
+from palm.definitions import FlowDefinition, ProcessDefinition, ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from palm.runtimes.server import ServerRuntime
 
@@ -110,6 +110,7 @@ def test_list_and_get_flows(server: ServerRuntime) -> None:
     assert len(payload["flows"]) == 1
     assert payload["flows"][0]["flow_id"] == "flow-api-1"
     assert payload["flows"][0]["pattern"] == "wizard"
+    assert payload["flows"][0]["step_slugs"] == ["one"]
     assert "pagination" in payload
 
     status, payload = _request(server.base_url, "GET", "/v1/flows/flow-api-1")
@@ -117,6 +118,12 @@ def test_list_and_get_flows(server: ServerRuntime) -> None:
     assert isinstance(payload, dict)
     assert payload["name"] == "api-flow"
     assert payload["pattern"] == "wizard"
+
+    status, slim = _request(server.base_url, "GET", "/v1/flows/flow-api-1?verbose=0")
+    assert status == 200
+    assert isinstance(slim, dict)
+    assert slim["step_slugs"] == ["one"]
+    assert "options" not in slim
 
     status, payload = _request(server.base_url, "GET", "/v1/flows/missing")
     assert status == 404
@@ -195,6 +202,39 @@ def test_list_and_get_snapshots(server: ServerRuntime) -> None:
     assert payload["error"] == "instance_not_found"
 
 
+def test_list_and_get_resources(server: ServerRuntime) -> None:
+    import palm.providers  # noqa: F401 — register providers
+
+    server.repository.register_resource(
+        ResourceDefinition(
+            id="resource-api-1",
+            name="api-resource",
+            provider="rest",
+            action="fetch",
+            resource_id="items/{id}",
+            params={"id": "{{ state.id }}"},
+        )
+    )
+
+    status, payload = _request(server.base_url, "GET", "/v1/resources")
+    assert status == 200
+    assert isinstance(payload, dict)
+    assert len(payload["resources"]) == 1
+    assert payload["resources"][0]["name"] == "api-resource"
+    assert payload["resources"][0]["provider"] == "rest"
+
+    status, payload = _request(server.base_url, "GET", "/v1/resources/api-resource")
+    assert status == 200
+    assert isinstance(payload, dict)
+    assert payload["name"] == "api-resource"
+    assert "param_keys" in payload
+
+    status, payload = _request(server.base_url, "GET", "/v1/resources/missing")
+    assert status == 404
+    assert isinstance(payload, dict)
+    assert payload["error"] == "resource_not_found"
+
+
 def test_openapi_and_docs_include_catalog_and_snapshots(server: ServerRuntime) -> None:
     status, payload = _request(server.base_url, "GET", "/v1/openapi.json")
     assert status == 200
@@ -203,6 +243,7 @@ def test_openapi_and_docs_include_catalog_and_snapshots(server: ServerRuntime) -
     assert {"Catalog", "Snapshots"}.issubset(tag_names)
     assert "/v1/flows" in payload["paths"]
     assert "/v1/processes" in payload["paths"]
+    assert "/v1/resources" in payload["paths"]
     assert "/v1/instances/{instance_id}/snapshots" in payload["paths"]
 
     status, payload = _request(server.base_url, "GET", "/v1/docs")

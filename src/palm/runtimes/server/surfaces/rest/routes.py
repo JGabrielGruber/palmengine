@@ -94,6 +94,10 @@ def _resolve_handler(
         "get_flow": lambda req, flow_id: catalog.get_flow(ctx, req, flow_id=flow_id),
         "list_processes": lambda req: catalog.list_processes(ctx, req),
         "get_process": lambda req, process_id: catalog.get_process(ctx, req, process_id=process_id),
+        "list_resources": lambda req: resources.list_resources(ctx, req),
+        "get_resource": lambda req, resource_ref: resources.get_resource(
+            ctx, req, resource_ref=resource_ref
+        ),
         "invoke_resource": lambda req: resources.invoke_resource(ctx, req),
     }
     return builders[route.route_id]
