@@ -167,18 +167,41 @@ When the `mcp` extra is installed, `palm server` exposes **streamable HTTP** MCP
 
 Applications register optional MCP tools via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py` (same model as pattern contributors). Downstream apps (e.g. KnowKey) can expose `knowkey_compose_status` without modifying core Palm.
 
-## Phase 6+ — Deferred (YAGNI)
+## Phase 6 — Shipped (module split + input coercion + SSE)
 
-- Split `server.py` into `tools.py` / `resources.py` as inventory grows
-- Dedicated SSE-only transport tuning on `McpSurface`
-- Version bump / CHANGELOG entry for 0.14.0 release train
+### Package split
+
+Core MCP registration is split for maintainability:
+
+| Module | Role |
+|--------|------|
+| `server.py` | `create_mcp_server()` orchestrator |
+| `tools.py` | Tier 1–2 operator tools |
+| `resources.py` | Definition catalogs and agent guide |
+
+### Plain-string wizard input
+
+`palm_wizard_input` and `palm_provide_job_input` accept a plain **`input`** string (preferred over `value`). Coercion matches Explorer forms: `yes` → boolean for confirm steps, choice slugs pass through, text stays text—agents do not need JSON wrappers.
+
+Shared helper: `resolve_mcp_wizard_input()` in `palm/common/operator/input_coercion.py`.
+
+### SSE transport tuning
+
+Native HTTP exposes both transports when the `mcp` extra is installed:
+
+| Transport | Endpoints |
+|-----------|-----------|
+| streamable-http | `POST /mcp` |
+| sse | `GET /mcp/sse`, `POST /mcp/messages` |
+
+`GET /v1/surfaces/mcp` documents both under `http.streamable_http` and `http.sse`.
 
 ## Package layout
 
 ```
-src/palm/runtimes/mcp/     # FastMCP stdio adapter (thin)
-src/palm/common/operator/  # compact inspect, invoke tree
-src/palm/runtimes/server/surfaces/mcp/  # discovery stub
+src/palm/runtimes/mcp/     # FastMCP adapter (server, tools, resources, …)
+src/palm/common/operator/  # compact inspect, invoke tree, input coercion
+src/palm/runtimes/server/surfaces/mcp/  # HTTP + discovery
 ```
 
 Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`

@@ -59,7 +59,12 @@ def test_mcp_surface_info_reports_active_http(server: ServerRuntime) -> None:
     payload = json.loads(raw.decode("utf-8"))
     assert payload["status"] == "active"
     assert "streamable-http" in payload["transports"]
+    assert "sse" in payload["transports"]
     assert payload["endpoint"] == "/mcp"
+    http = payload["http"]
+    assert http["streamable_http"]["path"] == "/mcp"
+    assert http["sse"]["sse_path"] == "/mcp/sse"
+    assert http["sse"]["message_path"] == "/mcp/messages"
 
 
 def test_mcp_http_initialize(server: ServerRuntime) -> None:

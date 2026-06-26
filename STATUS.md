@@ -101,6 +101,9 @@ ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 | Native HTTP MCP on `/mcp` (streamable-http) | ✅ Phase 5 |
 | `palm_invoke_resource`, `palm_compose_status` | ✅ Phase 5 |
 | App-level MCP contributor registry | ✅ Phase 5 |
+| MCP module split (`tools.py`, `resources.py`) | ✅ Phase 6 |
+| Plain-string wizard input coercion | ✅ Phase 6 |
+| SSE MCP (`/mcp/sse`, `/mcp/messages`) | ✅ Phase 6 |
 
 ```bash
 uv sync --extra mcp && just palm-server    # REST + /mcp HTTP

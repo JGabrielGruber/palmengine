@@ -15,7 +15,8 @@ def register_core_prompts(mcp: Any, config: Any, rest_client: Any) -> None:
         return (
             f"Debug Palm wizard instance {instance_id}.\n\n"
             "1. Call palm_inspect_instance with format=compact.\n"
-            "2. If validation_error is set, fix input and retry palm_wizard_input.\n"
+            "2. If validation_error is set, fix input and retry palm_wizard_input "
+            "(use plain input strings: yes/no, choice slugs, text—not JSON).\n"
             "3. If waiting_for_child is true, call palm_resume_child_wait or inspect the child.\n"
             "4. If collection_phase is set, use palm_wizard_collection_action for menu actions.\n"
             "5. Read palm://instances/{instance_id}/tree for compositional parent/child context.\n"
@@ -27,7 +28,7 @@ def register_core_prompts(mcp: Any, config: Any, rest_client: Any) -> None:
         """Advance a wizard toward target_step with minimal inputs."""
         return (
             f"Drive Palm wizard {instance_id} toward step {target_step!r}.\n\n"
-            "Loop: palm_inspect_instance → provide the requested input via palm_wizard_input "
+            "Loop: palm_inspect_instance → provide plain input via palm_wizard_input(input=…) "
             "or palm_wizard_collection_action → re-inspect until current step matches target "
             "or the wizard completes. Use palm_wizard_backtrack only when the operator asks."
         )

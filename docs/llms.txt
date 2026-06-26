@@ -101,6 +101,7 @@ just mcp-inspector        # MCP Inspector UI
 #          palm_explain_step, palm_validate_flow, palm_doctor, palm_fetch_job
 # Phase 5: palm_invoke_resource, palm_compose_status; native HTTP at POST /mcp (streamable-http)
 # App tools: register_app_mcp_contributor() in palm/app/mcp_registry.py
+# Phase 6: tools.py/resources.py split; palm_wizard_input(input=plain string); SSE at /mcp/sse
 ```
 
 Durable local storage:

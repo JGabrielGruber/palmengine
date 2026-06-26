@@ -59,6 +59,18 @@ class McpSurface(BaseSurface):
             handler=self._http_dispatch,
             surface=self.name,
         )
+        registry.register(
+            method="GET",
+            path="/mcp/sse",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
+        registry.register(
+            method="POST",
+            path="/mcp/messages",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
 
     def _info(self, request: ServerRequest) -> ServerResponse:
         from palm.runtimes.mcp.http_bridge import mcp_http_available
@@ -66,7 +78,7 @@ class McpSurface(BaseSurface):
         http_active = mcp_http_available()
         transports: list[str] = ["stdio"]
         if http_active:
-            transports.append("streamable-http")
+            transports.extend(["streamable-http", "sse"])
 
         body: dict[str, object] = {
             "surface": self.name,
@@ -77,11 +89,12 @@ class McpSurface(BaseSurface):
             "endpoint": "/mcp" if http_active else None,
             "message": (
                 "Palm operator MCP is available via stdio (``palm-mcp``) and, when the "
-                "``mcp`` extra is installed, streamable HTTP on ``/mcp``."
+                "``mcp`` extra is installed, HTTP on ``/mcp`` (streamable) and ``/mcp/sse``."
             ),
             "detail": (
                 "Stdio proxies to the REST API (PALM_BASE_URL). Native HTTP reuses the "
-                "same tool surface in-process via loopback REST."
+                "same tool surface in-process via loopback REST. Wizard input tools accept "
+                "plain ``input`` strings (yes/no, choice slugs, text)—not JSON wrappers."
             ),
             "mount_prefix": self.mount_prefix,
             "env": {
@@ -92,9 +105,14 @@ class McpSurface(BaseSurface):
         }
         if http_active:
             body["http"] = {
-                "transport": "streamable-http",
-                "path": "/mcp",
-                "accept": "application/json, text/event-stream",
+                "streamable_http": {
+                    "path": "/mcp",
+                    "accept": "application/json, text/event-stream",
+                },
+                "sse": {
+                    "sse_path": "/mcp/sse",
+                    "message_path": "/mcp/messages",
+                },
             }
         return ServerResponse(status=200, body=body)
 

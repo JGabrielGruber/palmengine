@@ -686,28 +686,9 @@ def parse_form_values(
 
 def coerce_job_input(raw: str, pattern: Mapping[str, Any]) -> Any:
     """Coerce a posted job input string to the expected Python value."""
-    field_type = pattern.get("field_type")
-    schema_type = pattern.get("effective_schema_type")
+    from palm.common.operator.input_coercion import coerce_job_input as _coerce
 
-    if field_type == "choice":
-        return raw
-    if field_type == "confirm":
-        return raw.lower() in {"true", "1", "yes", "on"}
-    if schema_type == "integer":
-        return int(raw)
-    if schema_type == "number":
-        return float(raw)
-    if schema_type == "boolean":
-        return raw.lower() in {"true", "1", "yes", "on"}
-
-    choices = pattern.get("choices")
-    if isinstance(choices, list) and raw in [str(item) for item in choices]:
-        return raw
-
-    try:
-        return json.loads(raw)
-    except (json.JSONDecodeError, TypeError):
-        return raw
+    return _coerce(raw, pattern)
 
 
 def _coerce_object_fields(schema: DictStateSchema, form_data: Mapping[str, Any]) -> dict[str, Any]:

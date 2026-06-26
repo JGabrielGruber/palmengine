@@ -105,11 +105,36 @@ async def test_palm_wizard_input_tool(mcp_server) -> None:
     async with Client(server) as client:
         result = await client.call_tool(
             "palm_wizard_input",
-            {"instance_id": "inst-1", "value": "Ada"},
+            {"instance_id": "inst-1", "input": "Ada"},
         )
     assert ("provide_wizard_input", "inst-1", "Ada") in fake.calls
     payload = result.data
     assert payload["answers_preview"]["step_1"] == "Ada"
+
+
+@pytest.mark.asyncio
+async def test_palm_wizard_input_coerces_confirm(mcp_server) -> None:
+    server, fake = mcp_server
+
+    def get_wizard(instance_id: str) -> dict[str, Any]:
+        return {
+            "instance_id": instance_id,
+            "flow_name": "onboard",
+            "status": "WAITING_FOR_INPUT",
+            "current_step_slug": "confirm",
+            "prompt": {"step": "confirm", "field_type": "confirm"},
+            "answers": {},
+            "next_actions": [],
+        }
+
+    fake.get_wizard = get_wizard  # type: ignore[method-assign]
+
+    async with Client(server) as client:
+        await client.call_tool(
+            "palm_wizard_input",
+            {"instance_id": "inst-1", "input": "yes"},
+        )
+    assert ("provide_wizard_input", "inst-1", True) in fake.calls
 
 
 @pytest.mark.asyncio

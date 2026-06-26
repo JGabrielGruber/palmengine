@@ -1,4 +1,4 @@
-"""Bridge Palm's stdlib HTTP transport to FastMCP streamable-http."""
+"""Bridge Palm's stdlib HTTP transport to FastMCP streamable-http and SSE."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ _bridges: dict[str, McpHttpBridge] = {}
 
 
 class McpHttpBridge:
-    """Serve FastMCP streamable-http on ``/mcp`` via a Starlette test client."""
+    """Serve FastMCP HTTP transports via a Starlette test client."""
 
     def __init__(self, *, base_url: str, starlette_app: Any) -> None:
         self._base_url = base_url
@@ -78,6 +78,26 @@ class McpHttpBridge:
         )
 
 
+def build_mcp_starlette_app(mcp_server: Any) -> Any:
+    """Combine streamable-http (``/mcp``) and SSE (``/mcp/sse``, ``/mcp/messages``) apps."""
+    from fastmcp.server.http import create_sse_app, create_streamable_http_app
+    from starlette.applications import Starlette
+
+    streamable = create_streamable_http_app(
+        mcp_server,
+        streamable_http_path="/mcp",
+    )
+    sse = create_sse_app(
+        mcp_server,
+        sse_path="/mcp/sse",
+        message_path="/mcp/messages",
+    )
+    return Starlette(
+        routes=[*streamable.routes, *sse.routes],
+        lifespan=streamable.lifespan,
+    )
+
+
 def get_mcp_http_bridge(base_url: str, *, subject: str = "dev") -> McpHttpBridge | None:
     """Return a started MCP HTTP bridge for ``base_url``, creating it on first use."""
     normalized = base_url.rstrip("/")
@@ -101,7 +121,7 @@ def get_mcp_http_bridge(base_url: str, *, subject: str = "dev") -> McpHttpBridge
             llms_txt_path=env_config.llms_txt_path,
         )
         mcp_server = create_mcp_server(config)
-        starlette_app = mcp_server.http_app(path="/mcp", transport="streamable-http")
+        starlette_app = build_mcp_starlette_app(mcp_server)
         bridge = McpHttpBridge(base_url=normalized, starlette_app=starlette_app)
         bridge.start()
         _bridges[cache_key] = bridge
@@ -138,6 +158,7 @@ def subject_from_request(request: ServerRequest, *, default: str = "dev") -> str
 
 __all__ = [
     "McpHttpBridge",
+    "build_mcp_starlette_app",
     "get_mcp_http_bridge",
     "mcp_http_available",
     "shutdown_mcp_http_bridges",
