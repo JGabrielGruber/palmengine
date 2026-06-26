@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from palm.common.operator.compact import compact_wizard_inspect
+from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
 
@@ -88,6 +88,73 @@ def create_mcp_server(
         view = rest_client.resume_child_wait(instance_id)
         return compact_wizard_inspect(view)
 
+    @mcp.tool
+    def palm_resume_wizard_tick(instance_id: str) -> dict[str, Any]:
+        """Re-drive a waiting wizard (for example auto-run a resource step)."""
+        view = rest_client.resume_wizard_tick(instance_id)
+        return compact_wizard_inspect(view)
+
+    @mcp.tool
+    def palm_wizard_backtrack(instance_id: str, to_step: str | None = None) -> dict[str, Any]:
+        """Backtrack a wizard to a prior step (omit to_step for previous step)."""
+        view = rest_client.backtrack_wizard(instance_id, to_step=to_step)
+        return compact_wizard_inspect(view)
+
+    @mcp.tool
+    def palm_inspect_job(
+        job_id: str,
+        format: str = "compact",
+        include: list[str] | None = None,
+        truncate_answers_at: int = 2000,
+    ) -> dict[str, Any]:
+        """Compact job context when only job_id is known."""
+        context = rest_client.get_job_context(job_id)
+        return compact_job_inspect(
+            context,
+            format=format,
+            include=include,
+            truncate_answers_at=truncate_answers_at,
+        )
+
+    @mcp.tool
+    def palm_provide_job_input(job_id: str, value: Any) -> dict[str, Any]:
+        """Deliver interactive input to a waiting job by job_id."""
+        result = rest_client.provide_job_input(job_id, value)
+        context = rest_client.get_job_context(job_id)
+        payload = compact_job_inspect(context)
+        if result.get("slug"):
+            payload["slug"] = result["slug"]
+        return payload
+
+    @mcp.tool
+    def palm_submit_wizard(
+        flow_name: str | None = None,
+        wizard: dict[str, Any] | None = None,
+        flow: dict[str, Any] | None = None,
+        job_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Start a wizard flow; returns instance_id and job_id."""
+        body = _submit_body(flow_name=flow_name, wizard=wizard, flow=flow, job_id=job_id)
+        return rest_client.submit_wizard(body)
+
+    @mcp.tool
+    def palm_submit_flow(
+        flow_name: str | None = None,
+        wizard: dict[str, Any] | None = None,
+        flow: dict[str, Any] | None = None,
+        job_id: str | None = None,
+        by_id: bool = False,
+    ) -> dict[str, Any]:
+        """Submit a flow or wizard as a job."""
+        body = _submit_body(
+            flow_name=flow_name,
+            wizard=wizard,
+            flow=flow,
+            job_id=job_id,
+            by_id=by_id,
+        )
+        return rest_client.submit_flow(body)
+
     @mcp.resource(
         "palm://agent/guide",
         mime_type="text/plain",
@@ -124,6 +191,31 @@ def create_mcp_server(
     mcp._palm_client = rest_client  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]
     return mcp
+
+
+def _submit_body(
+    *,
+    flow_name: str | None,
+    wizard: dict[str, Any] | None,
+    flow: dict[str, Any] | None,
+    job_id: str | None,
+    by_id: bool = False,
+) -> dict[str, Any]:
+    variants = sum(1 for value in (flow_name, wizard, flow) if value is not None)
+    if variants != 1:
+        raise ValueError("provide exactly one of flow_name, wizard, or flow")
+    body: dict[str, Any] = {}
+    if flow_name is not None:
+        body["flow_name"] = flow_name
+        if by_id:
+            body["by_id"] = True
+    elif wizard is not None:
+        body["wizard"] = wizard
+    else:
+        body["flow"] = flow
+    if job_id is not None:
+        body["job_id"] = job_id
+    return body
 
 
 def _slim_waiting_row(row: dict[str, Any]) -> dict[str, Any]:

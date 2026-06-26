@@ -57,6 +57,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
 | **Wizard REST (0.13)** | `/v1/wizards` — submit, status, input, backtrack by `instance_id` |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
+| **MCP (0.14)** | `palm-mcp` stdio adapter (FastMCP) over REST — operator tools for agents; see `docs/MCP.md` |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
 
@@ -83,6 +84,16 @@ python -c "from palm.runtimes.server import ServerRuntime, run_server; run_serve
 # → http://localhost:8080/explorer (root / redirects here)
 curl -s -X POST http://localhost:8080/v1/wizards -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'
 # → open /explorer/instances/<instance_id> for wizard workspace + collection UI
+```
+
+MCP (agents — Grok/Cursor):
+```bash
+uv sync --extra mcp
+just palm-server          # REST backend
+just mcp-inspector        # MCP Inspector UI
+# Grok: .grok/config.toml registers palm-mcp (stdio)
+# Tools: palm_list_waiting, palm_inspect_instance, palm_wizard_input, palm_resume_child_wait,
+#        palm_resume_wizard_tick, palm_wizard_backtrack, palm_inspect_job, palm_submit_wizard, …
 ```
 
 Durable local storage:
@@ -118,6 +129,7 @@ src/palm/
 | docs/PROVIDER-APPS.md | ProviderApp manifests, bindings/flow layout for providers; palm reference |
 | docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
+| docs/MCP.md | MCP operator adapter — phases, tools, setup |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
 | docs/VISION-0.13.md | Wizard Experience release vision |

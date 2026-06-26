@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.common.operator.compact import compact_wizard_inspect
+from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 
 
 def _sample_view() -> dict:
@@ -51,3 +51,25 @@ def test_compact_wizard_inspect_default_shape() -> None:
 def test_compact_wizard_inspect_verbose_passthrough() -> None:
     view = _sample_view()
     assert compact_wizard_inspect(view, format="verbose") == view
+
+
+def test_compact_job_inspect_from_context() -> None:
+    payload = compact_job_inspect(
+        {
+            "job_id": "job-1",
+            "status": "WAITING_FOR_INPUT",
+            "pattern": {
+                "pattern": "wizard",
+                "step": "step_1",
+                "field_type": "text",
+                "prompt": "Name?",
+                "answers": {"step_0": "ok"},
+            },
+            "instance": {"instance_id": "inst-1", "flow_name": "onboard"},
+            "next_actions": [{"action": "provide_input"}],
+        }
+    )
+    assert payload["job_id"] == "job-1"
+    assert payload["instance_id"] == "inst-1"
+    assert payload["step"] == "step_1"
+    assert payload["answers_keys"] == ["step_0"]

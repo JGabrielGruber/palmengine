@@ -83,8 +83,26 @@ ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-a
 
 ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 
+## 0.14 — MCP Operator (In progress)
+
+**Plan & status:** [docs/MCP.md](docs/MCP.md)
+
+| Component | Status |
+|-----------|--------|
+| `palm-mcp` stdio adapter (FastMCP) | ✅ Phase 1 |
+| REST: resume-child-wait, resume-wizard-tick, instance tree | ✅ Phase 1 |
+| Operator tools (inspect, input, list waiting, submit) | ✅ Phase 2a |
+| Definition catalog MCP resources | ⏳ Phase 2b |
+| Pattern MCP contributor registry | ⏳ Phase 3 |
+
+```bash
+uv sync --extra mcp && just palm-server    # REST backend
+just mcp-inspector                       # MCP Inspector UI
+```
+
 ## Areas Under Active Improvement
 
+- MCP definition catalog resources (Phase 2b)
 - WebSocket runtime surface for live wizard/job streaming
 - Explorer inline validation for collection field errors
 - Saga-style compensation patterns beyond single-resource undo

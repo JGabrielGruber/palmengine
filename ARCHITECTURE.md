@@ -772,7 +772,9 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
 | **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; wizard workspace + collection UI; `/v1/wizards` REST; `GET /` → `/explorer` |
-| **WebSocket / MCP** | Planned | Surfaces registered under `runtimes/server/surfaces/`; async transport TBD |
+| **MCP (stdio)** | Shipped (0.14) | `palm-mcp` FastMCP adapter over REST; `GET /v1/surfaces/mcp` discovery; see [docs/MCP.md](docs/MCP.md) |
+| **WebSocket** | Planned | `runtimes/server/surfaces/websocket/`; live job/wizard events |
+| **MCP (native HTTP)** | Planned | SSE/HTTP on `McpSurface` mount prefix `/mcp` |
 
 All runtimes build on `palm.common.runtimes.BaseRuntime` and the `palm.common` execution API — no duplicated orchestration logic.
 

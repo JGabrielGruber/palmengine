@@ -58,6 +58,41 @@ class PalmRestClient:
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         return self._request("GET", f"/v1/instances/{instance_id}/tree")
 
+    def get_job_context(self, job_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/jobs/{job_id}/context")
+
+    def provide_job_input(self, job_id: str, value: Any) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/jobs/{job_id}/input",
+            body={"value": value},
+            auth=True,
+        )
+
+    def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/wizards/{instance_id}/resume-wizard-tick",
+            auth=True,
+        )
+
+    def backtrack_wizard(self, instance_id: str, *, to_step: str | None = None) -> dict[str, Any]:
+        body: dict[str, Any] = {}
+        if to_step is not None:
+            body["to_step"] = to_step
+        return self._request(
+            "POST",
+            f"/v1/wizards/{instance_id}/backtrack",
+            body=body,
+            auth=True,
+        )
+
+    def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", "/v1/wizards", body=body, auth=True)
+
+    def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
+        return self._request("POST", "/v1/jobs", body=body, auth=True)
+
     def _request(
         self,
         method: str,
