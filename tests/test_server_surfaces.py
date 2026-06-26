@@ -80,8 +80,10 @@ def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
 
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/mcp")
     assert status == 200
-    assert payload["status"] == "stdio"
     assert payload["command"] == "palm-mcp"
+    assert payload["status"] in {"stdio", "active"}
+    if payload["status"] == "active":
+        assert payload["endpoint"] == "/mcp"
 
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/explorer")
     assert status == 200

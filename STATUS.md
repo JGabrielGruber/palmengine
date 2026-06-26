@@ -98,15 +98,16 @@ ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 | MCP operator prompts | ✅ Phase 3 |
 | REST: cancel job, validate flow, doctor | ✅ Phase 4 |
 | MCP debug + lifecycle tools (Tier 3) | ✅ Phase 4 |
+| Native HTTP MCP on `/mcp` (streamable-http) | ✅ Phase 5 |
+| `palm_invoke_resource`, `palm_compose_status` | ✅ Phase 5 |
+| App-level MCP contributor registry | ✅ Phase 5 |
 
 ```bash
-uv sync --extra mcp && just palm-server    # REST backend
+uv sync --extra mcp && just palm-server    # REST + /mcp HTTP
 just mcp-inspector                       # MCP Inspector UI
 ```
 
 ## Areas Under Active Improvement
-
-- Native HTTP MCP transport on `McpSurface`
 - WebSocket runtime surface for live wizard/job streaming
 - Explorer inline validation for collection field errors
 - Saga-style compensation patterns beyond single-resource undo

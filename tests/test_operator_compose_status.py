@@ -1,0 +1,39 @@
+"""Tests for compositional session status helper."""
+
+from __future__ import annotations
+
+from palm.common.operator.compose_status import build_compose_status
+
+
+def test_build_compose_status_merges_tree_and_inspect() -> None:
+    tree = {
+        "instance_id": "inst-root",
+        "root": {"instance_id": "inst-root", "flow": "main-menu", "step": "dispatch"},
+        "focus": {"instance_id": "inst-root", "flow": "main-menu", "step": "dispatch"},
+        "active_child": {
+            "instance_id": "inst-child",
+            "flow": "capture-knowledge",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "links": {"explorer": "http://localhost:8080/explorer/instances/inst-root"},
+    }
+    inspect = {
+        "instance_id": "inst-root",
+        "flow": "main-menu",
+        "status": "WAITING_FOR_INPUT",
+        "step": "dispatch",
+        "step_kind": "resource",
+        "answers_keys": ["goal", "menu_action"],
+        "answers_preview": {"goal": "Compose docs"},
+        "waiting_for_child": True,
+        "child": {"instance_id": "inst-child", "status": "WAITING_FOR_INPUT"},
+        "next_actions": ["resume_child_wait"],
+    }
+
+    payload = build_compose_status(tree, inspect)
+
+    assert payload["instance_id"] == "inst-root"
+    assert payload["active_child"]["flow"] == "capture-knowledge"
+    assert payload["answers_keys"] == ["goal", "menu_action"]
+    assert payload["next_actions"] == ["resume_child_wait"]
+    assert payload["links"]["explorer"].endswith("inst-root")

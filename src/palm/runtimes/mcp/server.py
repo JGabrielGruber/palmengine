@@ -7,8 +7,9 @@ from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.runtimes.mcp.config import PalmMcpConfig
-from palm.runtimes.mcp.contributors import register_pattern_mcp_tools
+from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
 from palm.runtimes.mcp.debug_tools import register_debug_tools
+from palm.runtimes.mcp.phase5_tools import register_phase5_tools
 from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
 from palm.runtimes.mcp.submit_body import submit_body
@@ -257,7 +258,9 @@ def create_mcp_server(
 
     register_core_prompts(mcp, resolved, rest_client)
     register_pattern_mcp_tools(mcp, rest_client)
+    register_app_mcp_tools(mcp, rest_client)
     register_debug_tools(mcp, rest_client)
+    register_phase5_tools(mcp, rest_client)
 
     mcp._palm_client = rest_client  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]

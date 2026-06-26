@@ -99,6 +99,8 @@ just mcp-inspector        # MCP Inspector UI
 # Prompts: debug-wizard-block, drive-wizard-to-step, explain-compositional-stack, operator-handoff
 # Phase 4: palm_cancel_job, palm_submit_process, palm_trace_events, palm_diff_snapshots,
 #          palm_explain_step, palm_validate_flow, palm_doctor, palm_fetch_job
+# Phase 5: palm_invoke_resource, palm_compose_status; native HTTP at POST /mcp (streamable-http)
+# App tools: register_app_mcp_contributor() in palm/app/mcp_registry.py
 ```
 
 Durable local storage:

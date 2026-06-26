@@ -1,0 +1,44 @@
+"""Phase 5 MCP tools — resource invoke and compositional session status."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from palm.common.operator.compose_status import build_compose_status
+
+
+def register_phase5_tools(mcp: Any, rest_client: Any) -> None:
+    """Register Phase 5 resource and compositional status tools."""
+
+    @mcp.tool
+    def palm_invoke_resource(
+        resource_ref: str,
+        action: str | None = None,
+        params: dict[str, Any] | None = None,
+        resource_id: str | None = None,
+        state: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Invoke a registered resource definition with optional params and state."""
+        body: dict[str, Any] = {"resource_ref": resource_ref}
+        if action is not None:
+            body["action"] = action
+        if params is not None:
+            body["params"] = params
+        if resource_id is not None:
+            body["resource_id"] = resource_id
+        if state is not None:
+            body["state"] = state
+        return rest_client.invoke_resource(body)
+
+    @mcp.tool
+    def palm_compose_status(instance_id: str) -> dict[str, Any]:
+        """Compositional session summary: invoke stack, step, and answer keys."""
+        tree = rest_client.get_instance_tree(instance_id)
+        view = rest_client.get_wizard(instance_id)
+        from palm.common.operator.compact import compact_wizard_inspect
+
+        inspect = compact_wizard_inspect(view)
+        return build_compose_status(tree, inspect)
+
+
+__all__ = ["register_phase5_tools"]

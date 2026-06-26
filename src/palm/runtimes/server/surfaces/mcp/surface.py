@@ -1,5 +1,5 @@
 """
-MCP surface — extension point for Model Context Protocol integration.
+MCP surface — stdio adapter discovery and native streamable-http transport.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class McpSurface(BaseSurface):
-    """Discovery surface for the stdio MCP adapter (``palm-mcp``)."""
+    """Operator MCP — ``palm-mcp`` stdio adapter and optional ``/mcp`` HTTP transport."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
@@ -35,29 +35,107 @@ class McpSurface(BaseSurface):
             handler=self._info,
             surface=self.name,
         )
+        registry.register(
+            method="POST",
+            path="/mcp",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
+        registry.register(
+            method="GET",
+            path="/mcp",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
+        registry.register(
+            method="DELETE",
+            path="/mcp",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
+        registry.register(
+            method="OPTIONS",
+            path="/mcp",
+            handler=self._http_dispatch,
+            surface=self.name,
+        )
 
     def _info(self, request: ServerRequest) -> ServerResponse:
-        return ServerResponse(
-            status=200,
-            body={
-                "surface": self.name,
-                "status": "stdio",
-                "transport": "stdio",
-                "command": "palm-mcp",
-                "message": (
-                    "Run the Palm MCP adapter as a stdio subprocess. "
-                    "It proxies to the REST API (PALM_BASE_URL, default "
-                    "http://127.0.0.1:8080)."
-                ),
-                "detail": (
-                    "Native HTTP/SSE MCP on this mount prefix is planned. "
-                    "Use ``palm-mcp`` for Cursor/Grok agent integration today."
-                ),
-                "mount_prefix": self.mount_prefix,
-                "env": {
-                    "PALM_BASE_URL": "Palm REST base URL",
-                    "PALM_SUBJECT": "X-Palm-Subject header for auth-enforced servers",
-                    "PALM_LLMS_TXT": "Optional path to docs/llms.txt for agent guide resource",
-                },
+        from palm.runtimes.mcp.http_bridge import mcp_http_available
+
+        http_active = mcp_http_available()
+        transports: list[str] = ["stdio"]
+        if http_active:
+            transports.append("streamable-http")
+
+        body: dict[str, object] = {
+            "surface": self.name,
+            "status": "active" if http_active else "stdio",
+            "transport": transports[0] if len(transports) == 1 else transports,
+            "transports": transports,
+            "command": "palm-mcp",
+            "endpoint": "/mcp" if http_active else None,
+            "message": (
+                "Palm operator MCP is available via stdio (``palm-mcp``) and, when the "
+                "``mcp`` extra is installed, streamable HTTP on ``/mcp``."
+            ),
+            "detail": (
+                "Stdio proxies to the REST API (PALM_BASE_URL). Native HTTP reuses the "
+                "same tool surface in-process via loopback REST."
+            ),
+            "mount_prefix": self.mount_prefix,
+            "env": {
+                "PALM_BASE_URL": "Palm REST base URL (stdio adapter)",
+                "PALM_SUBJECT": "X-Palm-Subject header for auth-enforced servers",
+                "PALM_LLMS_TXT": "Optional path to docs/llms.txt for agent guide resource",
             },
+        }
+        if http_active:
+            body["http"] = {
+                "transport": "streamable-http",
+                "path": "/mcp",
+                "accept": "application/json, text/event-stream",
+            }
+        return ServerResponse(status=200, body=body)
+
+    def _http_dispatch(self, request: ServerRequest) -> ServerResponse:
+        from palm.runtimes.mcp.http_bridge import (
+            get_mcp_http_bridge,
+            mcp_http_available,
+            subject_from_request,
         )
+
+        if not mcp_http_available():
+            return ServerResponse(
+                status=501,
+                body={
+                    "error": "mcp_extra_required",
+                    "message": (
+                        'Native HTTP MCP requires the optional "mcp" extra. '
+                        'Install with: pip install "palmengine[mcp]"'
+                    ),
+                    "command": "palm-mcp",
+                },
+            )
+
+        runtime = self._ctx.runtime
+        base_url = getattr(runtime, "base_url", None)
+        if not isinstance(base_url, str) or not base_url:
+            return ServerResponse(
+                status=503,
+                body={
+                    "error": "mcp_unavailable",
+                    "message": "Server runtime base_url is not available for MCP loopback",
+                },
+            )
+
+        bridge = get_mcp_http_bridge(
+            base_url,
+            subject=subject_from_request(request),
+        )
+        if bridge is None:
+            return ServerResponse(
+                status=503,
+                body={"error": "mcp_unavailable", "message": "Failed to start MCP HTTP bridge"},
+            )
+        return bridge.dispatch(request)

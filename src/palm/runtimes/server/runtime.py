@@ -175,6 +175,12 @@ class ServerRuntime(BaseRuntime):
         transport.stop()
         self._transport = None
         self._server_app = None
+        try:
+            from palm.runtimes.mcp.http_bridge import shutdown_mcp_http_bridges
+
+            shutdown_mcp_http_bridges()
+        except ImportError:
+            pass
 
     @staticmethod
     def _new_plan_registry() -> Any:

@@ -145,11 +145,33 @@ Patterns register MCP tools via `register_mcp_contributor()` in `palm/patterns/_
 - `explain_flow_step()` — step metadata from flow definition
 - `build_doctor_report()` — JSON doctor for REST/MCP
 
-## Phase 5+ — Deferred (YAGNI)
+## Phase 5 — Shipped (native HTTP + resource invoke)
 
-- Native HTTP/SSE MCP on `McpSurface`
-- App-level tools (e.g. KnowKey compose status)
-- `palm_invoke_resource` as first-class MCP tool (use REST invoke today)
+### Native HTTP transport
+
+When the `mcp` extra is installed, `palm server` exposes **streamable HTTP** MCP at `POST /mcp` (same tool surface as stdio, loopback REST). Discovery reports `status: active` and `endpoint: /mcp`.
+
+| Transport | Entry |
+|-----------|-------|
+| stdio | `palm-mcp` (proxies to `PALM_BASE_URL`) |
+| streamable-http | `POST /mcp` on the running server (`Accept: application/json, text/event-stream`) |
+
+### New MCP tools
+
+| Tool | Purpose |
+|------|---------|
+| `palm_invoke_resource` | `POST /v1/resources/invoke` — any resource ref, action, params, state |
+| `palm_compose_status` | Compositional session summary (invoke tree + compact wizard inspect) |
+
+### App-level contributor registry
+
+Applications register optional MCP tools via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py` (same model as pattern contributors). Downstream apps (e.g. KnowKey) can expose `knowkey_compose_status` without modifying core Palm.
+
+## Phase 6+ — Deferred (YAGNI)
+
+- Split `server.py` into `tools.py` / `resources.py` as inventory grows
+- Dedicated SSE-only transport tuning on `McpSurface`
+- Version bump / CHANGELOG entry for 0.14.0 release train
 
 ## Package layout
 
