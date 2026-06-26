@@ -32,7 +32,7 @@ def register_phase5_tools(mcp: Any, rest_client: Any) -> None:
 
     @mcp.tool
     def palm_compose_status(instance_id: str) -> dict[str, Any]:
-        """Compositional session summary: invoke stack, step, and answer keys."""
+        """Compositional session summary: invoke stack, step, answers, and operator_hint."""
         tree = rest_client.get_instance_tree(instance_id)
         view = rest_client.get_wizard(instance_id)
         from palm.common.operator.compact import compact_wizard_inspect

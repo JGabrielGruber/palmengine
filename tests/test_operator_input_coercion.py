@@ -48,6 +48,22 @@ def test_resolve_mcp_wizard_input_collection_field_bypasses_action_routing() -> 
     assert resolve_mcp_wizard_input(input="main", value=None, wizard_view=wizard) == "main"
 
 
+def test_resolve_mcp_wizard_input_collection_menu_accepts_done_label() -> None:
+    wizard = {
+        "prompt": {
+            "field_type": "choice",
+            "step_kind": "collection",
+            "collection_phase": "menu",
+            "choices": ["Add a new item", "Continue to summary (2 items)"],
+        },
+        "answers": {},
+    }
+    assert (
+        resolve_mcp_wizard_input(input="Continue to summary", value=None, wizard_view=wizard)
+        == "Continue to summary (2 items)"
+    )
+
+
 def test_resolve_mcp_wizard_input_collection_menu_routes_add_action() -> None:
     wizard = {
         "prompt": {

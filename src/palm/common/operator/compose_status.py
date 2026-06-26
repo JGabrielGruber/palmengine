@@ -37,6 +37,19 @@ def build_compose_status(
         if isinstance(child, dict):
             payload["child"] = child
 
+    for key in (
+        "collection_phase",
+        "collection_field",
+        "field_type",
+        "choices",
+        "validation_error",
+        "operator_hint",
+        "job_id",
+    ):
+        value = wizard_inspect.get(key)
+        if value is not None:
+            payload[key] = value
+
     return {key: value for key, value in payload.items() if value is not None}
 
 

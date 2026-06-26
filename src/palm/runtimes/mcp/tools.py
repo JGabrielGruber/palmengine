@@ -7,6 +7,8 @@ from typing import Any
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.common.operator.input_coercion import resolve_mcp_job_input, resolve_mcp_wizard_input
 from palm.common.operator.waiting_jobs import slim_waiting_job_row
+from palm.common.operator.drive_inputs import drive_wizard_inputs
+from palm.runtimes.mcp.rest_client import PalmRestError
 from palm.runtimes.mcp.submit_body import submit_body
 
 
@@ -76,8 +78,31 @@ def register_core_tools(mcp: Any, rest_client: Any) -> None:
     @mcp.tool
     def palm_resume_child_wait(instance_id: str) -> dict[str, Any]:
         """Re-check nested child wizard and advance parent when ready."""
-        view = rest_client.resume_child_wait(instance_id)
+        try:
+            view = rest_client.resume_child_wait(instance_id)
+        except PalmRestError as exc:
+            if exc.status != 400 or "not waiting for a nested child" not in str(exc).lower():
+                raise
+            view = rest_client.get_wizard(instance_id)
+            payload = compact_wizard_inspect(view)
+            payload["resume_child_wait"] = "skipped_not_waiting"
+            return payload
         return compact_wizard_inspect(view)
+
+    @mcp.tool
+    def palm_wizard_drive(
+        instance_id: str,
+        inputs: list[str],
+        max_steps: int = 30,
+    ) -> dict[str, Any]:
+        """Apply multiple wizard inputs in one call; stops on wait/child-wait/terminal."""
+        return drive_wizard_inputs(
+            instance_id=instance_id,
+            inputs=inputs,
+            get_wizard=rest_client.get_wizard,
+            provide_input=rest_client.provide_wizard_input,
+            max_steps=max_steps,
+        )
 
     @mcp.tool
     def palm_resume_wizard_tick(instance_id: str) -> dict[str, Any]:

@@ -80,7 +80,14 @@ def resolve_mcp_wizard_input(
         if collection_phase in ("field", "select_item", "remove_confirm"):
             return coerce_job_input(stripped, pattern_from_wizard_view(wizard_view))
         if collection_phase == "menu" or prompt.get("step_kind") == "collection":
+            from palm.common.operator.choice_input import resolve_menu_choice
             from palm.common.operator.collection_input import resolve_wizard_collection_action
+
+            choices = prompt.get("choices")
+            if isinstance(choices, list) and choices:
+                menu_choice = resolve_menu_choice(stripped, [str(item) for item in choices])
+                if menu_choice is not None:
+                    return menu_choice
 
             resolved = resolve_wizard_collection_action(
                 stripped,

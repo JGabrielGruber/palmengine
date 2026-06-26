@@ -10,6 +10,7 @@ fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
 from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from palm.runtimes.mcp.rest_client import PalmRestError  # noqa: E402
 from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
 
 
@@ -159,6 +160,57 @@ async def test_palm_wizard_input_coerces_confirm(mcp_server) -> None:
             {"instance_id": "inst-1", "input": "yes"},
         )
     assert ("provide_wizard_input", "inst-1", True) in fake.calls
+
+
+@pytest.mark.asyncio
+async def test_palm_wizard_drive_tool(mcp_server) -> None:
+    server, fake = mcp_server
+    state = {"done": False}
+
+    def get_wizard(instance_id: str) -> dict[str, Any]:
+        status = "SUCCESS" if state["done"] else "WAITING_FOR_INPUT"
+        return {
+            "instance_id": instance_id,
+            "flow_name": "onboard",
+            "status": status,
+            "current_step_slug": "step_1",
+            "prompt": {"step": "step_1", "field_type": "text"},
+            "answers": {"step_1": "Ada"} if state["done"] else {},
+            "next_actions": [],
+        }
+
+    def provide_wizard_input(instance_id: str, value: Any) -> dict[str, Any]:
+        fake.calls.append(("provide_wizard_input", instance_id, value))
+        state["done"] = True
+        return get_wizard(instance_id)
+
+    fake.get_wizard = get_wizard  # type: ignore[method-assign]
+    fake.provide_wizard_input = provide_wizard_input  # type: ignore[method-assign]
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_wizard_drive",
+            {"instance_id": "inst-1", "inputs": ["Ada"]},
+        )
+    payload = result.data
+    assert payload["stopped_reason"] == "terminal"
+    assert payload["steps_applied"] == 1
+
+
+@pytest.mark.asyncio
+async def test_palm_resume_child_wait_skips_when_not_waiting(mcp_server) -> None:
+    server, fake = mcp_server
+
+    def resume_child_wait(instance_id: str) -> dict[str, Any]:
+        raise PalmRestError(400, "Instance 'inst-1' is not waiting for a nested child")
+
+    fake.resume_child_wait = resume_child_wait  # type: ignore[method-assign]
+
+    async with Client(server) as client:
+        result = await client.call_tool("palm_resume_child_wait", {"instance_id": "inst-1"})
+    payload = result.data
+    assert payload["resume_child_wait"] == "skipped_not_waiting"
+    assert payload["instance_id"] == "inst-1"
 
 
 @pytest.mark.asyncio

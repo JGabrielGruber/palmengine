@@ -84,6 +84,14 @@ def compact_wizard_inspect(
     if collection_phase:
         payload["collection_phase"] = collection_phase
 
+    collection_field = prompt.get("collection_field")
+    if collection_field:
+        payload["collection_field"] = collection_field
+
+    hint = _operator_input_hint(payload)
+    if hint:
+        payload["operator_hint"] = hint
+
     if wizard_view.get("committed"):
         payload["committed"] = True
 
@@ -91,6 +99,37 @@ def compact_wizard_inspect(
         payload["result"] = wizard_view["result"]
 
     return payload
+
+
+def _operator_input_hint(payload: dict[str, Any]) -> str | None:
+    if payload.get("waiting_for_child"):
+        child = payload.get("child")
+        if isinstance(child, dict) and child.get("instance_id"):
+            return (
+                f"drive child {child['instance_id']}; "
+                "palm_resume_child_wait only while waiting_for_child"
+            )
+        return "inspect child instance; palm_resume_child_wait only while waiting_for_child"
+
+    phase = payload.get("collection_phase")
+    if phase == "menu":
+        return (
+            "collection menu: palm_wizard_collection_action(action=add|done|edit|remove) "
+            "or palm_wizard_input with choice label/number"
+        )
+    if phase == "field":
+        return "collection field: palm_wizard_input(input=plain text)"
+    if phase in ("select_item", "remove_confirm"):
+        return "palm_wizard_input(input=item number or label)"
+
+    field_type = payload.get("field_type")
+    if field_type == "confirm":
+        return "palm_wizard_input(input=yes|no)"
+    if field_type == "choice":
+        return "palm_wizard_input(input=choice slug or number)"
+    if payload.get("status") == "WAITING_FOR_INPUT":
+        return "palm_wizard_input(input=plain text)"
+    return None
 
 
 def _compact_next_actions(raw: Any) -> list[str]:

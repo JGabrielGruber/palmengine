@@ -48,6 +48,11 @@ def test_compact_wizard_inspect_default_shape() -> None:
     assert len(payload["answers_preview"]["goal"]) == 2001
 
 
+def test_compact_wizard_inspect_includes_operator_hint() -> None:
+    payload = compact_wizard_inspect(_sample_view())
+    assert "inst-child" in payload["operator_hint"]
+
+
 def test_compact_wizard_inspect_verbose_passthrough() -> None:
     view = _sample_view()
     assert compact_wizard_inspect(view, format="verbose") == view

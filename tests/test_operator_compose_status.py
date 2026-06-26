@@ -28,6 +28,8 @@ def test_build_compose_status_merges_tree_and_inspect() -> None:
         "waiting_for_child": True,
         "child": {"instance_id": "inst-child", "status": "WAITING_FOR_INPUT"},
         "next_actions": ["resume_child_wait"],
+        "operator_hint": "drive child inst-child",
+        "collection_phase": "menu",
     }
 
     payload = build_compose_status(tree, inspect)
@@ -36,4 +38,6 @@ def test_build_compose_status_merges_tree_and_inspect() -> None:
     assert payload["active_child"]["flow"] == "capture-knowledge"
     assert payload["answers_keys"] == ["goal", "menu_action"]
     assert payload["next_actions"] == ["resume_child_wait"]
+    assert payload["operator_hint"] == "drive child inst-child"
+    assert payload["collection_phase"] == "menu"
     assert payload["links"]["explorer"].endswith("inst-root")

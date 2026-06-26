@@ -89,14 +89,18 @@ just mcp-inspector                  # MCP Inspector UI
 
 5. **Compositional nesting** — Parent wizards waiting on child flows are normal. Check `waiting_for_child` in inspect, read `palm://instances/{id}/tree`, then `palm_resume_child_wait` or inspect the child instance.
 
-6. **Collection steps** — Branch on `collection_phase` from inspect:
-   - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …)
+6. **Collection steps** — Branch on `collection_phase` from inspect (or `operator_hint` on compact responses):
+   - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) **or** `palm_wizard_input` with choice label/number (`Continue to summary`, `3`, …)
    - `field` / `select_item` / `remove_confirm` → `palm_wizard_input(instance_id, input="…")` (plain string)
    - Never pass `value` with `action="add"` — `add` is menu-only; field text via `palm_wizard_input`.
 
 7. **Submit entry** — Use `palm_submit_wizard(flow_name=…)` for interactive operator-driven flows. `palm_submit_process` submits **one job per flow** in the process definition; `entry_flow` in process metadata is app convention only (Palm does not honor it).
 
-8. **Sequential driving** — Drive one instance at a time; parallel `palm_wizard_input` calls on the same `instance_id` race.
+8. **Batch stepping** — Use `palm_wizard_drive(instance_id, inputs=[…])` to apply multiple answers in one MCP call (stops on `waiting_for_child`, terminal status, or input exhaustion). Prefer batch flows at the app layer (e.g. KnowKey `knowkey_capture_knowledge_batch`) when available.
+
+9. **Session map** — Prefer `palm_compose_status(instance_id)` over repeated `palm_inspect_instance` when navigating compositional stacks; includes `operator_hint`, `collection_phase`, and invoke tree.
+
+10. **Sequential driving** — Drive one instance at a time; parallel `palm_wizard_input` calls on the same `instance_id` race. Call `palm_resume_child_wait` only while `waiting_for_child` is true (otherwise it returns current state with `resume_child_wait: skipped_not_waiting`).
 
 ### Daily workflows
 
@@ -113,8 +117,9 @@ just mcp-inspector                  # MCP Inspector UI
 ```
 1. palm_submit_wizard(flow_name="todo-builder")
    → note instance_id + job_id
-2. palm_inspect_instance(instance_id)   # step, prompt, choices, validation_error
+2. palm_compose_status(instance_id)      # invoke stack + operator_hint (or inspect_instance)
 3. palm_wizard_input(instance_id, input="<plain answer>")
+   — or palm_wizard_drive(instance_id, inputs=["yes", "value", …]) for multi-step bursts
 4. Repeat 2–3 until status is terminal or waiting_for_child
 5. If waiting_for_child:
      palm_resume_child_wait(instance_id)
@@ -155,7 +160,7 @@ Use prompt `debug-wizard-block` for a structured checklist.
 
 | Tier | Tools | When |
 |------|-------|------|
-| **1 — Operator loop** | `palm_list_waiting`, `palm_inspect_instance`, `palm_wizard_input`, `palm_resume_child_wait`, `palm_resume_wizard_tick`, `palm_wizard_backtrack` | Daily wizard driving |
+| **1 — Operator loop** | `palm_list_waiting`, `palm_inspect_instance`, `palm_wizard_input`, `palm_wizard_drive`, `palm_resume_child_wait`, `palm_resume_wizard_tick`, `palm_wizard_backtrack` | Daily wizard driving |
 | **2 — Lifecycle** | `palm_submit_flow`, `palm_submit_wizard`, `palm_submit_process`, `palm_provide_job_input`, `palm_cancel_job`, `palm_invoke_resource` | Start/stop work |
 | **3 — Debug** | `palm_trace_events`, `palm_diff_snapshots`, `palm_explain_step`, `palm_validate_flow`, `palm_doctor`, `palm_fetch_job`, `palm_compose_status` | Investigation |
 | **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` | Pattern-specific steps |
