@@ -146,8 +146,27 @@ palm-demo-approval:
     @echo "Starting approval workflow (interactive)…"
     uv run --extra cli palm wizard start approval
 
+palm-server *ARGS='':
+    uv run --extra cli palm host server {{ARGS}}
+
 demo-full:
     uv run python examples/full_demo.py
+
+# -----------------------------------------------------------------------------
+# 6b. MCP — stdio adapter & Inspector
+# https://modelcontextprotocol.io/docs/tools/inspector#inspecting-locally-developed-servers
+# -----------------------------------------------------------------------------
+mcp-sync:
+    uv sync --group dev --extra mcp
+    bash -c 'uv pip install --reinstall -e ".[mcp]"'
+    @echo "✅ MCP extra synced (palm-mcp + fastmcp)"
+
+mcp-inspector: mcp-sync
+    @echo "🔍 MCP Inspector → palm-mcp (stdio)"
+    @echo "   Docs: https://modelcontextprotocol.io/docs/tools/inspector"
+    @echo "   Start Palm REST if needed: just palm-server"
+    @echo "   PALM_BASE_URL=${PALM_BASE_URL:-http://127.0.0.1:8080}"
+    npx -y @modelcontextprotocol/inspector uv --directory {{justfile_directory()}} run --extra mcp palm-mcp
 
 # -----------------------------------------------------------------------------
 # 7. Packaging & Release (PyPI name: palmengine)
@@ -226,6 +245,8 @@ help:
     @echo "   just docs-build       → Rebuild docs site Tailwind CSS"
     @echo "   just release-prep     → docs-check + full-check + build"
     @echo "   just demo-full        → examples/full_demo.py"
+    @echo "   just mcp-inspector    → MCP Inspector UI for palm-mcp"
+    @echo "   just palm-server      → Palm HTTP API (REST backend for MCP)"
     @echo "   just clean            → Remove data/ + tool caches"
     @echo "   just palm --help      → CLI command list"
     @echo "Run 'just --list' for full list"
