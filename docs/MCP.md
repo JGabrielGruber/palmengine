@@ -1,22 +1,177 @@
-# Palm MCP — Operator Adapter
+# Palm MCP — Operator Adapter (0.14)
 
-**Status:** Phase 1–4 shipped · stdio transport via [FastMCP](https://pypi.org/project/fastmcp/)
+**Status:** Phases 1–6 shipped · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
 
-Agents operate Palm through a thin **stdio MCP server** (`palm-mcp`) that proxies to the REST API. No in-process orchestration in the adapter — start `palm server` first.
+Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). It proxies to the Palm REST API — **start `palm server` first**, then connect via stdio or native HTTP.
 
-## Quick start
+| Doc | Audience |
+|-----|----------|
+| This file | Full tool inventory + phase history |
+| [`docs/llms.txt`](llms.txt) | Compact agent context (load via `palm://agent/guide`) |
+| [`DEVELOPMENT.md`](../DEVELOPMENT.md) | Contributor setup + MCP workflow |
+| [`AGENTS.md`](../AGENTS.md) | Architecture rules for agents editing Palm |
+
+---
+
+## Agent development guide
+
+Use MCP to develop and operate Palm flows **without curl recipes or pasted JSON blobs**. The adapter mirrors how human operators work in Explorer and the CLI.
+
+### Mental model
+
+```mermaid
+flowchart LR
+    subgraph read [Read — MCP resources]
+        Guide[palm://agent/guide]
+        Catalogs[palm://definitions/*]
+        Tree[palm://instances/id/tree]
+    end
+    subgraph act [Act — MCP tools]
+        Submit[palm_submit_*]
+        Inspect[palm_inspect_*]
+        Input[palm_wizard_input]
+        Resume[palm_resume_*]
+    end
+    Agent[Coding agent] --> read
+    Agent --> act
+    act --> REST[Palm REST :8080]
+    REST --> Engine[Orchestration + wizards]
+```
+
+**Operator loop:** definitions → submit → inspect → input → wait on children → resume.
+
+### Setup (one time per machine)
 
 ```bash
 uv sync --extra mcp
-just palm-server              # terminal 1 — REST on :8080
-just mcp-inspector            # terminal 2 — MCP Inspector UI
+uv pip install -e ".[mcp]"          # from source
+# pip install "palmengine[mcp]"     # from PyPI
 ```
 
-**Grok (project-scoped):** [`.grok/config.toml`](../.grok/config.toml) registers `palm` MCP server.
+**Terminal 1 — REST backend (required):**
 
-**Env vars:** `PALM_BASE_URL` (default `http://127.0.0.1:8080`), `PALM_SUBJECT` (`X-Palm-Subject`), `PALM_LLMS_TXT` (optional path to `docs/llms.txt`).
+```bash
+just palm-server                    # http://127.0.0.1:8080
+# or: palm server
+```
 
-## Phase 1 — Shipped
+**Terminal 2 — verify MCP (optional):**
+
+```bash
+just mcp-inspector                  # MCP Inspector UI
+```
+
+**IDE integration:**
+
+| Environment | Config |
+|-------------|--------|
+| Grok (this repo) | [`.grok/config.toml`](../.grok/config.toml) — `uv run --extra mcp palm-mcp` |
+| Cursor / Claude Desktop | Add stdio server: command `palm-mcp`, or `uv run --extra mcp palm-mcp` in repo root |
+| HTTP clients | `POST /mcp` on running server (see [Transports](#transports)) |
+
+**Env vars:**
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target for stdio adapter |
+| `PALM_SUBJECT` | `dev` | `X-Palm-Subject` when auth is enforced |
+| `PALM_LLMS_TXT` | auto-detect `docs/llms.txt` | `palm://agent/guide` content |
+
+### Conventions agents must follow
+
+1. **Instance-first** — Wizards are keyed by `instance_id`. Use `job_id` only when you lack an instance handle (`palm_inspect_job`, `palm_provide_job_input`). `palm_list_waiting` returns real `instance_id` values (never aliases `job_id`).
+
+2. **Plain-string input** — Prefer `palm_wizard_input(instance_id, input="yes")` or `input="Ada"` or `input="capture_knowledge"`. Do **not** wrap answers in JSON objects. Coercion matches Explorer (`yes` → boolean on confirm steps).
+
+3. **Compact by default** — `palm_inspect_instance` / `palm_inspect_job` return slim snapshots. Use `format="verbose"` only when debugging schema or full answers.
+
+4. **Read vs write** — Use **resources** for catalogs and guides; use **tools** for submit, input, resume, cancel. Read `palm://openapi` before inventing REST paths.
+
+5. **Compositional nesting** — Parent wizards waiting on child flows are normal. Check `waiting_for_child` in inspect, read `palm://instances/{id}/tree`, then `palm_resume_child_wait` or inspect the child instance.
+
+6. **Collection steps** — Use `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) instead of guessing raw input strings.
+
+### Daily workflows
+
+#### Bootstrapping a session
+
+```
+1. palm_doctor                          # registries, storage, job counts
+2. Read palm://agent/guide              # project context
+3. palm://definitions/flows           # what can be submitted
+```
+
+#### Driving a wizard to completion
+
+```
+1. palm_submit_wizard(flow_name="todo-builder")
+   → note instance_id + job_id
+2. palm_inspect_instance(instance_id)   # step, prompt, choices, validation_error
+3. palm_wizard_input(instance_id, input="<plain answer>")
+4. Repeat 2–3 until status is terminal or waiting_for_child
+5. If waiting_for_child:
+     palm_resume_child_wait(instance_id)
+     or palm_inspect_instance(child.instance_id)
+```
+
+Use prompt `drive-wizard-to-step` with a target step slug for guided advancement.
+
+#### Debugging a stuck wizard
+
+```
+1. palm_inspect_instance(instance_id, include=["validation", "children"])
+2. palm://instances/{id}/tree         # compositional parent/child stack
+3. palm_compose_status(instance_id)    # invoke tree + answers_keys in one call
+4. palm_trace_events(job_id)           # recent events
+5. palm_explain_step(flow_id, step_slug)
+```
+
+Use prompt `debug-wizard-block` for a structured checklist.
+
+#### Developing a new flow
+
+```
+1. palm://definitions/flows           # existing catalog
+2. palm_validate_flow(flow_name=…)     # dry-run build without submit
+3. palm_submit_flow(flow_name=…)      # run it
+4. palm_diff_snapshots(instance_id, from_snapshot, to_snapshot)  # state changes
+```
+
+#### Invoking resources
+
+```
+1. palm://definitions/resources/{ref}  # params schema
+2. palm_invoke_resource(resource_ref, action, params={…})
+```
+
+### Tool tiers (quick reference)
+
+| Tier | Tools | When |
+|------|-------|------|
+| **1 — Operator loop** | `palm_list_waiting`, `palm_inspect_instance`, `palm_wizard_input`, `palm_resume_child_wait`, `palm_resume_wizard_tick`, `palm_wizard_backtrack` | Daily wizard driving |
+| **2 — Lifecycle** | `palm_submit_flow`, `palm_submit_wizard`, `palm_submit_process`, `palm_provide_job_input`, `palm_cancel_job`, `palm_invoke_resource` | Start/stop work |
+| **3 — Debug** | `palm_trace_events`, `palm_diff_snapshots`, `palm_explain_step`, `palm_validate_flow`, `palm_doctor`, `palm_fetch_job`, `palm_compose_status` | Investigation |
+| **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` | Pattern-specific steps |
+
+**Prompts:** `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
+
+### Transports
+
+| Transport | Entry | Notes |
+|-----------|-------|-------|
+| **stdio** | `palm-mcp` | Default for Cursor/Grok; proxies to `PALM_BASE_URL` |
+| **streamable-http** | `POST /mcp` | On running `palm server`; `Accept: application/json, text/event-stream` |
+| **sse** | `GET /mcp/sse`, `POST /mcp/messages` | Legacy SSE clients |
+
+Discovery: `GET /v1/surfaces/mcp` → `status: active`, transport endpoints, env hints.
+
+Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`
+
+---
+
+## Phase history
+
+### Phase 1 — Shipped
 
 ### REST endpoints (added for MCP)
 
@@ -48,10 +203,6 @@ just mcp-inspector            # terminal 2 — MCP Inspector UI
 - `compact_wizard_inspect()` — agent-friendly wizard snapshot
 - `compact_job_inspect()` — job context snapshot
 - `build_invoke_tree()` — parent/child stack
-
-### Discovery
-
-`GET /v1/surfaces/mcp` → `status: stdio`, `command: palm-mcp`. Native HTTP `/mcp` transport is planned.
 
 ## Phase 2a — Shipped (operator loop completion)
 
@@ -196,12 +347,6 @@ Native HTTP exposes both transports when the `mcp` extra is installed:
 
 `GET /v1/surfaces/mcp` documents both under `http.streamable_http` and `http.sse`.
 
-## Package layout
+### List enrichment (0.14)
 
-```
-src/palm/runtimes/mcp/     # FastMCP adapter (server, tools, resources, …)
-src/palm/common/operator/  # compact inspect, invoke tree, input coercion
-src/palm/runtimes/server/surfaces/mcp/  # HTTP + discovery
-```
-
-Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`
+`GET /v1/jobs` enriches rows with `instance_id`, `pattern`, `flow`, and `step` from job metadata and the instance manager. `palm_list_waiting` never reports `job_id` as `instance_id`.

@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.13.13** (Provider apps + Wizard Experience + Compositional Power).
+Guide for contributors working on Palm **0.13.17** (Provider apps + Wizard Experience) and **0.14 MCP** (agent operator adapter).
 
 ## Setup
 
@@ -33,6 +33,76 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 | Type check | `mypy src/palm/` |
 | Fast gate | `just check` |
 | Full gate | `just full-check` |
+| Palm server (REST) | `just palm-server` |
+| MCP Inspector | `just mcp-inspector` |
+| MCP extra sync | `just mcp-sync` |
+
+## Agent development with MCP (0.14)
+
+When developing or testing Palm flows as a coding agent, use the MCP operator adapter instead of hand-written curl. Full guide: [docs/MCP.md](docs/MCP.md).
+
+### Setup
+
+```bash
+uv sync --extra mcp
+just mcp-sync                     # reinstall palm-mcp + fastmcp
+just palm-server                  # terminal 1 — required REST backend
+just mcp-inspector                # terminal 2 — optional UI
+```
+
+**Grok:** [`.grok/config.toml`](.grok/config.toml) registers `palm-mcp` via `uv run --extra mcp palm-mcp`.
+
+**Env:** `PALM_BASE_URL` (default `http://127.0.0.1:8080`), `PALM_SUBJECT` (`dev`), `PALM_LLMS_TXT` (optional path to `docs/llms.txt`).
+
+### Operator loop
+
+```
+definitions → submit → inspect → input → wait on children → resume
+```
+
+1. Read `palm://agent/guide` (MCP resource → `docs/llms.txt`)
+2. `palm_doctor` — confirm registries and storage
+3. `palm://definitions/flows` — pick a flow
+4. `palm_submit_wizard(flow_name=…)` → `instance_id`
+5. `palm_inspect_instance(instance_id)` → step, prompt, choices
+6. `palm_wizard_input(instance_id, input="…")` — **plain strings**, not JSON
+7. Compositional parent: `palm_resume_child_wait` when `waiting_for_child`
+
+### Conventions (do not skip)
+
+| Rule | Why |
+|------|-----|
+| **Instance-first** | Wizards use `instance_id`; `job_id` is ephemeral |
+| **Plain `input`** | `input="yes"` coerces to boolean on confirm steps |
+| **Compact inspect** | Default slim view; `format="verbose"` only when debugging |
+| **Resources = read** | Catalogs via `palm://definitions/*` |
+| **Tools = write** | Submit, input, resume, cancel via MCP tools |
+| **Collection steps** | `palm_wizard_collection_action`, not raw strings |
+
+### Debugging stuck wizards
+
+```
+palm_inspect_instance(instance_id)
+palm://instances/{id}/tree
+palm_compose_status(instance_id)
+palm_trace_events(job_id)
+```
+
+MCP prompt `debug-wizard-block` provides a structured checklist.
+
+### Developing MCP itself
+
+| Area | Location |
+|------|----------|
+| Tool registration | `src/palm/runtimes/mcp/tools.py`, `debug_tools.py`, `phase5_tools.py` |
+| Resources | `src/palm/runtimes/mcp/resources.py` |
+| Pattern tools | `register_mcp_contributor()` in pattern `app.py` |
+| App tools | `register_app_mcp_contributor()` in `palm/app/mcp_registry.py` |
+| Shared helpers | `src/palm/common/operator/` (compact, invoke tree, input coercion) |
+| HTTP transport | `src/palm/runtimes/mcp/http_bridge.py`, `surfaces/mcp/surface.py` |
+| Tests | `tests/test_mcp_*.py`, `tests/test_operator_*.py` |
+
+Run MCP tests: `uv run pytest -q tests/test_mcp_tools.py tests/test_mcp_phase3.py tests/test_mcp_phase4.py tests/test_mcp_phase5.py tests/test_mcp_http_surface.py`
 
 ## Type checking
 
@@ -63,8 +133,9 @@ src/palm/
 ├── runtimes/          # Concrete surfaces (thin packages on common.runtimes)
 │   ├── embedded/      # EmbeddedRuntime
 │   ├── daemon/        # DaemonRuntime
-│   ├── server/        # ServerRuntime + HTTP surfaces (REST, Explorer SSR)
+│   ├── server/        # ServerRuntime + HTTP surfaces (REST, Explorer SSR, MCP)
 │   │   └── surfaces/ssr/explorer/  # Palm Explorer pages, forms, actions
+│   ├── mcp/           # palm-mcp stdio adapter (FastMCP → REST)
 │   └── cli/           # Entry point + commands/ (one-shot) + tui/ (REPL) + shared/
 └── utils/
 

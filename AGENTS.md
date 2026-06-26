@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** June 2026 (0.13.0 architecture)
+**Last updated:** June 2026 (0.14 MCP + 0.13 architecture)
 
 ---
 
@@ -59,6 +59,21 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 - Job state transitions happen only through `RunResult` + `OrchestrationEngine.apply_result()`.
 - Persistence and resume are first-class (via `InstancePersistenceHook` and state snapshots).
 
+### Operating Palm via MCP (0.14)
+
+Coding agents should use the MCP operator adapter to develop and test flows — not hand-written curl or JSON blobs.
+
+| Step | Action |
+|------|--------|
+| Read first | [docs/MCP.md](docs/MCP.md) and MCP resource `palm://agent/guide` ([docs/llms.txt](docs/llms.txt)) |
+| Setup | `uv sync --extra mcp` → `just palm-server` (REST on `:8080`) → connect `palm-mcp` stdio |
+| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp` |
+| Operator loop | definitions → submit → inspect → input → wait on children → resume |
+
+**Conventions:** instance-first (`instance_id`, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; `palm_wizard_collection_action` on collection steps; `palm_resume_child_wait` when `waiting_for_child`.
+
+**Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
+
 ---
 
 ## 3. Core Purity Rules (Strict)
@@ -84,6 +99,7 @@ Follow these patterns. They exist so growth remains orderly.
 | New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |
+| MCP tool, resource, or prompt | `palm/runtimes/mcp/` + pattern or app `app.py` | Pattern: `register_mcp_contributor()`. App: `register_app_mcp_contributor()`. See [docs/MCP.md](docs/MCP.md) |
 | Cross-cutting coordination | `palm/common/<area>/` | executions, plans, hooks, persistence, etc. |
 | Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
 
@@ -106,7 +122,8 @@ Documentation is not optional. It is part of the system.
   - `AGENTS.md` (this file)
   - `MIGRATION-*.md` when breaking changes occur
 - A living `STATUS.md` (or `docs/STATUS.md`) must exist and be kept reasonably current. It is the single source of truth for the current state of the project.
-- `docs/llms.txt` should be maintained as high-quality context for AI agents.
+- `docs/llms.txt` should be maintained as high-quality context for AI agents (served as `palm://agent/guide`).
+- `docs/MCP.md` is the canonical guide for agent development with Palm MCP (setup, workflows, tool inventory).
 - When updating the website (`docs/index.html`), structured data (JSON-LD) and feature highlights must reflect current capabilities.
 
 **Rule:** If the code and the documentation diverge, the documentation debt must be treated as seriously as a bug.
