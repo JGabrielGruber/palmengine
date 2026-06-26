@@ -57,7 +57,14 @@ def test_rest_routes_include_wizards_group() -> None:
     groups = {route.group for route in rest_routes()}
     assert "Wizards" in groups
     route_ids = {route.route_id for route in rest_routes()}
-    assert {"submit_wizard", "get_wizard", "provide_wizard_input", "backtrack_wizard"} <= route_ids
+    assert {
+        "submit_wizard",
+        "get_wizard",
+        "provide_wizard_input",
+        "backtrack_wizard",
+        "resume_child_wait",
+        "resume_wizard_tick",
+    } <= route_ids
 
 
 def test_submit_wizard_returns_instance_id(server: ServerRuntime) -> None:

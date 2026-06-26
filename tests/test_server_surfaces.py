@@ -73,11 +73,15 @@ def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
 
 
 def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
-    for path in ("/v1/surfaces/websocket", "/v1/surfaces/mcp"):
-        status, payload = _request(server.base_url, "GET", path)
-        assert status == 501
-        assert payload["status"] == "planned"
-        assert "message" in payload
+    status, payload = _request(server.base_url, "GET", "/v1/surfaces/websocket")
+    assert status == 501
+    assert payload["status"] == "planned"
+    assert "message" in payload
+
+    status, payload = _request(server.base_url, "GET", "/v1/surfaces/mcp")
+    assert status == 200
+    assert payload["status"] == "stdio"
+    assert payload["command"] == "palm-mcp"
 
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/explorer")
     assert status == 200

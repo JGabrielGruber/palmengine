@@ -1,0 +1,97 @@
+"""Thin HTTP client for the Palm REST API."""
+
+from __future__ import annotations
+
+import json
+import urllib.error
+import urllib.request
+from typing import Any
+
+from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER
+from palm.runtimes.mcp.config import PalmMcpConfig
+
+
+class PalmRestError(RuntimeError):
+    """REST call failed with a non-success response."""
+
+    def __init__(self, status: int, detail: Any) -> None:
+        self.status = status
+        self.detail = detail
+        message = detail if isinstance(detail, str) else json.dumps(detail)
+        super().__init__(f"Palm REST {status}: {message}")
+
+
+class PalmRestClient:
+    """Synchronous REST proxy used by MCP tools and resources."""
+
+    def __init__(self, config: PalmMcpConfig) -> None:
+        self._config = config
+
+    @property
+    def base_url(self) -> str:
+        return self._config.base_url
+
+    def get_health(self) -> dict[str, Any]:
+        return self._request("GET", "/health")
+
+    def list_waiting_jobs(self, *, limit: int = 50) -> dict[str, Any]:
+        return self._request("GET", f"/v1/jobs?status=WAITING_FOR_INPUT&limit={limit}")
+
+    def get_wizard(self, instance_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/wizards/{instance_id}")
+
+    def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/wizards/{instance_id}/input",
+            body={"value": value},
+            auth=True,
+        )
+
+    def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/wizards/{instance_id}/resume-child-wait",
+            auth=True,
+        )
+
+    def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/instances/{instance_id}/tree")
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        body: dict[str, Any] | None = None,
+        auth: bool = False,
+    ) -> dict[str, Any]:
+        url = f"{self._config.base_url}{path}"
+        headers = {"Accept": "application/json"}
+        if auth:
+            headers[PALM_SUBJECT_HEADER] = self._config.subject
+        data = None
+        if body is not None:
+            data = json.dumps(body).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+
+        request = urllib.request.Request(url, data=data, headers=headers, method=method)
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                raw = response.read().decode("utf-8")
+                if not raw:
+                    return {}
+                payload = json.loads(raw)
+                if not isinstance(payload, dict):
+                    raise PalmRestError(response.status, payload)
+                return payload
+        except urllib.error.HTTPError as exc:
+            raw = exc.read().decode("utf-8")
+            try:
+                detail: Any = json.loads(raw)
+            except json.JSONDecodeError:
+                detail = raw
+            raise PalmRestError(exc.code, detail) from exc
+
+
+__all__ = ["PalmRestClient", "PalmRestError"]

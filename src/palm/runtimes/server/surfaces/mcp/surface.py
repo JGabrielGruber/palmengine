@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class McpSurface(BaseSurface):
-    """Placeholder surface for future MCP tool/resource exposure."""
+    """Discovery surface for the stdio MCP adapter (``palm-mcp``)."""
 
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
@@ -38,12 +38,26 @@ class McpSurface(BaseSurface):
 
     def _info(self, request: ServerRequest) -> ServerResponse:
         return ServerResponse(
-            status=501,
+            status=200,
             body={
                 "surface": self.name,
-                "status": "planned",
-                "message": "MCP integration will register tools and resources here.",
-                "detail": "MCP integration will register tools and resources here.",
+                "status": "stdio",
+                "transport": "stdio",
+                "command": "palm-mcp",
+                "message": (
+                    "Run the Palm MCP adapter as a stdio subprocess. "
+                    "It proxies to the REST API (PALM_BASE_URL, default "
+                    "http://127.0.0.1:8080)."
+                ),
+                "detail": (
+                    "Native HTTP/SSE MCP on this mount prefix is planned. "
+                    "Use ``palm-mcp`` for Cursor/Grok agent integration today."
+                ),
                 "mount_prefix": self.mount_prefix,
+                "env": {
+                    "PALM_BASE_URL": "Palm REST base URL",
+                    "PALM_SUBJECT": "X-Palm-Subject header for auth-enforced servers",
+                    "PALM_LLMS_TXT": "Optional path to docs/llms.txt for agent guide resource",
+                },
             },
         )

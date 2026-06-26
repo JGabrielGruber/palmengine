@@ -76,9 +76,13 @@ all = [
 ]
 postgres = []
 mongodb = []
+mcp = [
+    "fastmcp>=3.4,<4.0",
+]
 
 [project.scripts]
 palm = "palm.runtimes.cli:main"
+palm-mcp = "palm.runtimes.mcp:main"
 
 [project.urls]
 Homepage = "https://palmengine.org"

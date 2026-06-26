@@ -22,10 +22,13 @@ RouteId = Literal[
     "get_wizard",
     "provide_wizard_input",
     "backtrack_wizard",
+    "resume_child_wait",
+    "resume_wizard_tick",
     "prepare_plans",
     "submit_plans",
     "list_instances",
     "get_instance",
+    "get_instance_tree",
     "resume_instance",
     "list_snapshots",
     "get_snapshot",
@@ -181,6 +184,29 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             request_schema="WizardBacktrackBody",
         ),
         RouteDefinition(
+            route_id="resume_child_wait",
+            method="POST",
+            path="/v1/wizards/{instance_id}/resume-child-wait",
+            group="Wizards",
+            summary="Resume child wait",
+            description=(
+                "Re-check a nested child wizard and advance the parent resource step "
+                "when the child reaches a terminal state."
+            ),
+            auth_required=True,
+        ),
+        RouteDefinition(
+            route_id="resume_wizard_tick",
+            method="POST",
+            path="/v1/wizards/{instance_id}/resume-wizard-tick",
+            group="Wizards",
+            summary="Resume wizard tick",
+            description=(
+                "Re-drive a waiting wizard (for example auto-run a resource step)."
+            ),
+            auth_required=True,
+        ),
+        RouteDefinition(
             route_id="prepare_plans",
             method="POST",
             path="/v1/plans/prepare",
@@ -218,6 +244,17 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Instances",
             summary="Get instance",
             description="Fetch a single process instance by id.",
+        ),
+        RouteDefinition(
+            route_id="get_instance_tree",
+            method="GET",
+            path="/v1/instances/{instance_id}/tree",
+            group="Instances",
+            summary="Get instance invoke tree",
+            description=(
+                "Compositional invoke stack: root, ancestors, active child, and "
+                "operator links for nested wizard flows."
+            ),
         ),
         RouteDefinition(
             route_id="resume_instance",

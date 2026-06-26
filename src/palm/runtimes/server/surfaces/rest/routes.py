@@ -66,10 +66,19 @@ def _resolve_handler(
         "backtrack_wizard": lambda req, instance_id: wizard.backtrack_wizard(
             ctx, req, instance_id=instance_id
         ),
+        "resume_child_wait": lambda req, instance_id: wizard.resume_child_wait(
+            ctx, req, instance_id=instance_id
+        ),
+        "resume_wizard_tick": lambda req, instance_id: wizard.resume_wizard_tick(
+            ctx, req, instance_id=instance_id
+        ),
         "prepare_plans": lambda req: plans.prepare_plans(ctx, req),
         "submit_plans": lambda req: plans.submit_plans(ctx, req),
         "list_instances": lambda req: instances.list_instances(ctx, req),
         "get_instance": lambda req, instance_id: instances.get_instance(
+            ctx, req, instance_id=instance_id
+        ),
+        "get_instance_tree": lambda req, instance_id: instances.get_instance_tree(
             ctx, req, instance_id=instance_id
         ),
         "resume_instance": lambda req, instance_id: instances.resume_instance(

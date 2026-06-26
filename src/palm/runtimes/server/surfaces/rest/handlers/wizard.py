@@ -4,15 +4,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from palm.common.child_wait import resume_child_wait_for_instance
+from palm.common.exceptions import InstanceNotFoundError
+from palm.common.interactive_runtime import resolve_interactive_job
+from palm.common.job_context import instance_id_for_job
+from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.core.orchestration import JobStatus
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
     SubmitWizardCommand,
 )
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
-from palm.common.exceptions import InstanceNotFoundError
-from palm.common.job_context import instance_id_for_job
-from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
@@ -126,6 +129,60 @@ def backtrack_wizard(
     if isinstance(view, ServerResponse):
         return view
     return ok(_merge_interaction(view, to_step=result.get("to_step")))
+
+
+def resume_child_wait(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    instance_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        resume_child_wait_for_instance(ctx.runtime, instance_id)
+    except InstanceNotFoundError:
+        return errors.wizard_not_found(instance_id)
+    except RuntimeError as exc:
+        return errors.input_rejected(str(exc))
+
+    ctx.wait_until_idle()
+    view = _wizard_view_or_not_found(ctx, instance_id)
+    if isinstance(view, ServerResponse):
+        return view
+    return ok(view)
+
+
+def resume_wizard_tick(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    instance_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        job = resolve_interactive_job(ctx.runtime, instance_id)
+        if job.status != JobStatus.WAITING_FOR_INPUT:
+            raise RuntimeError(
+                f"Instance {instance_id!r} is not waiting for input "
+                f"(status={job.status.value})"
+            )
+        ctx.runtime.orchestration.resume_job(job.id)
+    except InstanceNotFoundError:
+        return errors.wizard_not_found(instance_id)
+    except RuntimeError as exc:
+        return errors.input_rejected(str(exc))
+
+    ctx.wait_until_idle()
+    view = _wizard_view_or_not_found(ctx, instance_id)
+    if isinstance(view, ServerResponse):
+        return view
+    return ok(view)
 
 
 def _wizard_view_or_not_found(
