@@ -4,6 +4,44 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.14.9] — 2026-06-26
+
+**MCP Operator release** — `palm-mcp` adapter for coding agents: 26 tools, 4 prompts, 10 resources; stdio + native HTTP transports; agent-oriented docs.
+
+Guide: [docs/MCP.md](docs/MCP.md) · Agent context: [docs/llms.txt](docs/llms.txt) (`palm://agent/guide`)
+
+### Added
+
+- **`palm-mcp` stdio server** — FastMCP adapter proxying to Palm REST (`PALM_BASE_URL`); install via `pip install "palmengine[mcp]"` or `uv sync --extra mcp`
+- **26 MCP tools** — operator loop (`palm_inspect_instance`, `palm_wizard_input`, `palm_resume_child_wait`, …), lifecycle (`palm_submit_wizard`, `palm_cancel_job`, `palm_invoke_resource`, …), debug (`palm_doctor`, `palm_trace_events`, `palm_validate_flow`, …)
+- **10 MCP resources** — `palm://agent/guide`, `palm://definitions/*`, `palm://instances/{id}/tree`, `palm://openapi`, `palm://server/health`
+- **4 MCP prompts** — `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
+- **Pattern MCP contributors** — `register_mcp_contributor()` in `palm/patterns/_registry.py`; wizard (`palm_wizard_collection_action`, `palm_wizard_commit_preview`), parallel (`palm_parallel_branch_status`), pipeline (`palm_pipeline_step_trace`)
+- **App MCP contributors** — `register_app_mcp_contributor()` in `palm/app/mcp_registry.py` for downstream apps
+- **Native HTTP MCP** — streamable HTTP at `POST /mcp` and SSE at `/mcp/sse` + `/mcp/messages` when `mcp` extra installed; discovery via `GET /v1/surfaces/mcp`
+- **REST endpoints for MCP** — `POST /v1/wizards/{id}/resume-child-wait`, `resume-wizard-tick`; `GET /v1/instances/{id}/tree`; `POST /v1/jobs/{id}/cancel`; `POST /v1/flows/validate`; `GET /v1/doctor`; resource catalog `GET /v1/resources`, `GET /v1/resources/{ref}`
+- **`palm/common/operator/`** — `compact_wizard_inspect()`, `compact_job_inspect()`, `build_invoke_tree()`, `resolve_mcp_wizard_input()` (plain-string coercion), `enrich_job_list_rows()`, `slim_waiting_job_row()`, `build_doctor_report()`, snapshot diff helpers
+- **`palm_invoke_resource`, `palm_compose_status`** — resource invoke and compositional session summary tools
+- **Grok project config** — [`.grok/config.toml`](.grok/config.toml) registers `palm-mcp` stdio for this repo
+- **Just recipes** — `just mcp-sync`, `just mcp-inspector`
+- **Tests** — `tests/test_mcp_tools.py`, `test_mcp_phase3.py`, `test_mcp_phase4.py`, `test_mcp_phase5.py`, `test_mcp_http_surface.py`, `test_mcp_registry.py`, `test_operator_waiting_jobs.py`, `test_server_list_jobs_enrichment.py`
+- **Documentation** — [docs/MCP.md](docs/MCP.md) agent development guide; MCP sections in README, DEVELOPMENT, AGENTS, STATUS, `docs/llms.txt`
+
+### Changed
+
+- **MCP module split** — `src/palm/runtimes/mcp/tools.py`, `resources.py` extracted from monolithic `server.py`
+- **Plain-string wizard input** — `palm_wizard_input` and `palm_provide_job_input` prefer `input="yes"` over JSON `value`; coercion matches Explorer forms
+- **`GET /v1/flows`** — list includes `step_slugs` for wizard flows; `GET /v1/flows/{id}?verbose=0` returns slim summary
+- **`GET /v1/jobs`** — enriches rows with `instance_id`, `pattern`, `flow`, `step` from metadata and instance manager
+- **`palm_list_waiting`** — never aliases `job_id` as `instance_id`; omits `instance_id` when unknown
+
+### Developer notes
+
+- **Agent conventions:** instance-first (`instance_id`); plain `input` strings; resources = read, tools = write; `palm_resume_child_wait` when `waiting_for_child`
+- **Operator loop:** definitions → submit → inspect → input → wait on children → resume
+- **Prerequisite:** `palm server` on `:8080` before connecting MCP stdio
+- **MCP Inspector:** `just mcp-inspector` for interactive tool testing
+
 ## [0.13.13] — 2026-06-25
 
 **Provider apps + compositional follow-ups** — PatternApp alignment, ProviderApp framework, remote resource invoke, REST HTTP bindings.

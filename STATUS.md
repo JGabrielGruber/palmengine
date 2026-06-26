@@ -136,18 +136,18 @@ just mcp-inspector                       # MCP Inspector UI
 | `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
-| `docs/index.html`     | Fair            | 0.13 highlights; MCP not yet on landing page |
+| `docs/index.html`     | Good            | v0.14.9 badge + MCP in featureList |
 | `docs/llms.txt`       | Good            | AI context + MCP operator cheat sheet (`palm://agent/guide`) |
 | `AGENTS.md`           | Good            | MCP conventions + extension table |
 | `DEVELOPMENT.md`      | Good            | Contributor setup + MCP development workflow |
-| `CHANGELOG.md`        | Good            | `[0.13.0]` section complete; 0.14 not version-bumped yet |
+| `CHANGELOG.md`        | Good            | `[0.14.9]` MCP Operator section complete |
+| `RELEASE-0.14.9.md`   | Good            | Release checklist |
 
 ## Priorities & Next Steps
 
-1. Publish `0.13.0` to PyPI (`just release-prep` → tag → publish)
-2. Version bump + CHANGELOG for 0.14 MCP when ready
-3. WebSocket surface for live wizard prompts
-4. Explorer flow dry-run and definition preview
+1. Publish `0.14.9` to PyPI (`just release-prep` → tag → publish) — see [RELEASE-0.14.9.md](RELEASE-0.14.9.md)
+2. WebSocket surface for live wizard prompts
+3. Explorer flow dry-run and definition preview
 
 ## Useful Links
 
@@ -157,6 +157,7 @@ just mcp-inspector                       # MCP Inspector UI
 - [AGENTS.md](AGENTS.md)
 - [DEVELOPMENT.md](DEVELOPMENT.md)
 - [docs/MCP.md](docs/MCP.md) — agent development with Palm MCP
+- [RELEASE-0.14.9.md](RELEASE-0.14.9.md) — release checklist
 - Examples: `examples/README.md`
 
 ## How to Contribute

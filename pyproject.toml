@@ -93,6 +93,9 @@ Changelog = "https://github.com/JGabrielGruber/palmengine/blob/main/CHANGELOG.md
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
+exclude = [
+    "**/node_modules/**",
+]
 artifacts = [
     "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
 ]
@@ -105,6 +108,9 @@ include = [
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
+]
+exclude = [
+    "**/node_modules/**",
 ]
 
 [tool.ruff]

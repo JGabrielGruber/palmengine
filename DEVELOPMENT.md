@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.13.17** (Provider apps + Wizard Experience) and **0.14 MCP** (agent operator adapter).
+Guide for contributors working on Palm **0.14.9** (MCP Operator + Provider apps + Wizard Experience).
 
 ## Setup
 
