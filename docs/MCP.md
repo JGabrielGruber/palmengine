@@ -75,7 +75,7 @@ just mcp-inspector                  # MCP Inspector UI
 |----------|---------|---------|
 | `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target for stdio adapter |
 | `PALM_SUBJECT` | `dev` | `X-Palm-Subject` when auth is enforced |
-| `PALM_LLMS_TXT` | auto-detect `docs/llms.txt` | `palm://agent/guide` content |
+| `PALM_LLMS_TXT` | bundled `llms.txt` in package (override path optional) | `palm://agent/guide` content |
 
 ### Conventions agents must follow
 
@@ -94,7 +94,7 @@ just mcp-inspector                  # MCP Inspector UI
    - `field` / `select_item` / `remove_confirm` → `palm_wizard_input(instance_id, input="…")` (plain string)
    - Never pass `value` with `action="add"` — `add` is menu-only; field text via `palm_wizard_input`.
 
-7. **Submit entry** — Use `palm_submit_wizard(flow_name=…)` for interactive operator-driven flows. `palm_submit_process` submits **one job per flow** in the process definition; `entry_flow` in process metadata is app convention only (Palm does not honor it).
+7. **Submit entry** — Use `palm_submit_wizard(flow_name=…)` for interactive operator-driven flows. `palm_submit_process` submits **one job per flow**; it is **rejected** when the process declares `entry_flow` or `metadata.mcp.entries` (catalog processes). Read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`. Pass `mode='all_flows'` only for true pipelines.
 
 8. **Batch stepping** — Use `palm_wizard_drive(instance_id, inputs=[…])` to apply multiple answers in one MCP call (stops on `waiting_for_child`, terminal status, or input exhaustion). Prefer batch flows at the app layer (e.g. KnowKey `knowkey_capture_knowledge_batch`) when available.
 
@@ -149,11 +149,16 @@ Use prompt `debug-wizard-block` for a structured checklist.
 4. palm_diff_snapshots(instance_id, from_snapshot, to_snapshot)  # state changes
 ```
 
-#### Invoking resources
+#### Reading vs invoking resources
+
+| Kind | Examples | Access |
+|------|----------|--------|
+| MCP read resources | `palm://definitions/flows`, `palm://agent/guide` | `FetchMcpResource` / `read_resource` |
+| REST resource definitions | `knowkey.search_nodes`, `fetch-customer` | `palm_invoke_resource` or `POST /v1/resources/invoke` |
 
 ```
-1. palm://definitions/resources/{ref}  # params schema
-2. palm_invoke_resource(resource_ref, action, params={…})
+1. palm://definitions/resources/{ref}  # params schema (read)
+2. palm_invoke_resource(resource_ref, action, params={…})  # definition name, not palm://
 ```
 
 ### Tool tiers (quick reference)
@@ -300,7 +305,7 @@ Patterns register MCP tools via `register_mcp_contributor()` in `palm/patterns/_
 | `palm_explain_step` | `GET /v1/flows/{id}?verbose=1` |
 | `palm_validate_flow` | `POST /v1/flows/validate` |
 | `palm_doctor` | `GET /v1/doctor` |
-| `palm_fetch_job` | `POST /v1/resources/invoke` (palm `fetch`) |
+| `palm_fetch_job` | `GET /v1/jobs/{id}/context` (commit `result`, events) |
 
 ### Shared helpers (extended)
 

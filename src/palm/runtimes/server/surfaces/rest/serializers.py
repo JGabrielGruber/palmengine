@@ -59,12 +59,41 @@ def flow_detail(flow: FlowDefinition) -> dict[str, Any]:
 
 
 def process_summary(process: ProcessDefinition) -> dict[str, Any]:
-    return {
+    summary: dict[str, Any] = {
         "process_id": process.definition_id,
         "name": process.name,
         "storage": process.storage,
         "flow_count": len(process.flows),
     }
+    metadata = process.metadata or {}
+    entry_flow = metadata.get("entry_flow")
+    if isinstance(entry_flow, str) and entry_flow:
+        summary["entry_flow"] = entry_flow
+
+    mcp = metadata.get("mcp")
+    if isinstance(mcp, dict):
+        entries = mcp.get("entries")
+        if isinstance(entries, dict):
+            fast = entries.get("fast")
+            if isinstance(fast, dict):
+                flow = fast.get("flow")
+                if isinstance(flow, str) and flow:
+                    summary["mcp_default_entry"] = flow
+                submit = fast.get("submit")
+                if isinstance(submit, str) and submit:
+                    summary["submit_hint"] = submit
+        default_entry = mcp.get("default_entry")
+        if isinstance(default_entry, str) and default_entry:
+            summary["mcp_default_entry_mode"] = default_entry
+
+    if summary.get("entry_flow") or summary.get("mcp_default_entry"):
+        summary.setdefault(
+            "submit_hint",
+            f'palm_submit_wizard(flow_name="{summary.get("mcp_default_entry") or entry_flow}")',
+        )
+        summary["avoid"] = "palm_submit_process (submits one job per flow)"
+
+    return summary
 
 
 def process_detail(process: ProcessDefinition) -> dict[str, Any]:

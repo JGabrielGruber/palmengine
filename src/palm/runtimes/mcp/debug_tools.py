@@ -5,7 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 from palm.common.operator.explain_step import explain_flow_step
+from palm.common.operator.process_submit import validate_process_submit
 from palm.common.operator.snapshots import diff_snapshot_states
+from palm.runtimes.mcp.rest_client import PalmRestError
 from palm.runtimes.mcp.submit_body import submit_body
 
 
@@ -23,23 +25,35 @@ def register_debug_tools(mcp: Any, rest_client: Any) -> None:
         process: dict[str, Any] | None = None,
         job_id: str | None = None,
         by_id: bool = False,
+        mode: str = "default",
     ) -> dict[str, Any]:
         """Start a multi-flow process via staged plans (prepare + submit).
 
         Submits one job per flow in the process — not a single interactive entry.
         For menu-driven or wizard-driven apps, use palm_submit_wizard(flow_name=entry_flow)
         instead (process metadata such as entry_flow is an app convention only).
+        Pass mode='all_flows' to opt into one-job-per-flow on catalog processes.
         """
         variants = sum(1 for value in (process_name, process) if value is not None)
         if variants != 1:
             raise ValueError("provide exactly one of process_name or process")
         body: dict[str, Any] = {}
+        process_detail: dict[str, Any] | None = None
         if process_name is not None:
             body["process_name"] = process_name
             if by_id:
                 body["by_id"] = True
+            if mode != "all_flows":
+                try:
+                    process_detail = rest_client.get_process(process_name)
+                except PalmRestError:
+                    process_detail = None
         else:
             body["process"] = process
+            if isinstance(process, dict):
+                process_detail = process
+        if process_detail is not None:
+            validate_process_submit(process_detail, mode=mode)
         if job_id is not None:
             body["job_id"] = job_id
         prepared = rest_client.prepare_plans(body)
@@ -113,14 +127,8 @@ def register_debug_tools(mcp: Any, rest_client: Any) -> None:
 
     @mcp.tool
     def palm_fetch_job(job_id: str) -> dict[str, Any]:
-        """Fetch compositional child job payload via the palm provider."""
-        return rest_client.invoke_resource(
-            {
-                "resource_ref": "palm",
-                "action": "fetch",
-                "resource_id": job_id,
-            }
-        )
+        """Fetch job context including commit result and recent events."""
+        return rest_client.get_job_context(job_id)
 
 
 __all__ = ["register_debug_tools"]

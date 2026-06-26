@@ -88,6 +88,17 @@ async def test_palm_invoke_resource_tool(phase5_server) -> None:
 
 
 @pytest.mark.asyncio
+async def test_palm_invoke_resource_rejects_mcp_uri(phase5_server) -> None:
+    server, _ = phase5_server
+    async with Client(server) as client:
+        with pytest.raises(Exception, match="MCP read resource"):
+            await client.call_tool(
+                "palm_invoke_resource",
+                {"resource_ref": "palm://definitions/flows"},
+            )
+
+
+@pytest.mark.asyncio
 async def test_palm_compose_status_tool(phase5_server) -> None:
     server, _ = phase5_server
     async with Client(server) as client:

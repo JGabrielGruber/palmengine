@@ -47,8 +47,14 @@ class _Phase4FakeClient:
     def submit_plans(self, plan_ids: list[str]) -> dict[str, Any]:
         return {"jobs": [{"job_id": "job-1", "status": "RUNNING"}]}
 
-    def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
-        return {"success": True, "data": {"job_id": body.get("resource_id")}}
+    def get_process(self, process_id: str) -> dict[str, Any]:
+        if process_id == "catalog":
+            return {
+                "name": "catalog",
+                "flows": [{}, {}],
+                "metadata": {"entry_flow": "main-menu"},
+            }
+        return {"name": process_id, "flows": [{}], "metadata": {}}
 
     def list_waiting_jobs(self, *, limit: int = 50) -> dict[str, Any]:
         return {"jobs": []}
@@ -111,3 +117,23 @@ async def test_palm_submit_process_tool(phase4_server) -> None:
             {"process_name": "pipeline"},
         )
     assert result.data["jobs"][0]["job_id"] == "job-1"
+
+
+@pytest.mark.asyncio
+async def test_palm_submit_process_rejects_interactive_catalog(phase4_server) -> None:
+    server, _ = phase4_server
+    async with Client(server) as client:
+        with pytest.raises(Exception, match="interactive catalog"):
+            await client.call_tool(
+                "palm_submit_process",
+                {"process_name": "catalog"},
+            )
+
+
+@pytest.mark.asyncio
+async def test_palm_fetch_job_uses_job_context(phase4_server) -> None:
+    server, _ = phase4_server
+    async with Client(server) as client:
+        result = await client.call_tool("palm_fetch_job", {"job_id": "job-9"})
+    assert result.data["job_id"] == "job-9"
+    assert result.data["recent_events"][0]["type"] == "wizard.step.completed"

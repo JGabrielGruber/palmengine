@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.14.11` (shipping)  
+**Current Version:** `0.14.12` (shipping)  
 **Last Updated:** June 26, 2026  
 **Maturity:** Wizard Experience shipped · **0.14 MCP** operator adapter shipped for coding agents.
 

@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.operator.result_summary import summarize_commit_result
+
 
 def build_compose_status(
     invoke_tree: dict[str, Any],
@@ -45,10 +47,18 @@ def build_compose_status(
         "validation_error",
         "operator_hint",
         "job_id",
+        "committed",
+        "result",
     ):
         value = wizard_inspect.get(key)
         if value is not None:
             payload[key] = value
+
+    result = wizard_inspect.get("result")
+    if result is not None:
+        summary = summarize_commit_result(result)
+        if summary:
+            payload["result_summary"] = summary
 
     return {key: value for key, value in payload.items() if value is not None}
 

@@ -23,6 +23,7 @@ def compact_wizard_inspect(
     format: str = "compact",
     include: list[str] | None = None,
     truncate_answers_at: int = 2000,
+    include_operator_hint: bool = True,
 ) -> dict[str, Any]:
     """Reduce a full wizard read model to a compact operator snapshot."""
     if format == "verbose":
@@ -88,15 +89,16 @@ def compact_wizard_inspect(
     if collection_field:
         payload["collection_field"] = collection_field
 
-    hint = _operator_input_hint(payload)
-    if hint:
-        payload["operator_hint"] = hint
-
     if wizard_view.get("committed"):
         payload["committed"] = True
 
     if "result" in fields and wizard_view.get("result") is not None:
         payload["result"] = wizard_view["result"]
+
+    if include_operator_hint:
+        hint = _operator_input_hint(payload)
+        if hint:
+            payload["operator_hint"] = hint
 
     return payload
 
@@ -129,6 +131,8 @@ def _operator_input_hint(payload: dict[str, Any]) -> str | None:
         return "palm_wizard_input(input=choice slug or number)"
     if payload.get("status") == "WAITING_FOR_INPUT":
         return "palm_wizard_input(input=plain text)"
+    if payload.get("status") in {"SUCCESS", "SUCCEEDED"} and payload.get("result") is not None:
+        return "Job complete; see result or palm_fetch_job(job_id)"
     return None
 
 

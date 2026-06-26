@@ -57,6 +57,8 @@ SYNC_SURFACE_FILES = (
     ROOT / "docs/llms.txt",
 )
 
+BUNDLED_LLMS_TXT = ROOT / "src/palm/runtimes/mcp/data/llms.txt"
+
 
 def check_version_sources(version: str, errors: list[str]) -> None:
     for path in VERSION_SOURCES:
@@ -95,6 +97,23 @@ def check_stale_architecture_refs(errors: list[str]) -> None:
                 errors.append(f"{rel}: stale architecture reference ({hint})")
 
 
+def check_bundled_llms_txt(errors: list[str]) -> None:
+    source = ROOT / "docs/llms.txt"
+    if not source.is_file():
+        errors.append("docs/llms.txt: missing source agent guide")
+        return
+    if not BUNDLED_LLMS_TXT.is_file():
+        errors.append(
+            "src/palm/runtimes/mcp/data/llms.txt: missing bundled MCP agent guide"
+        )
+        return
+    if source.read_text(encoding="utf-8") != BUNDLED_LLMS_TXT.read_text(encoding="utf-8"):
+        errors.append(
+            "src/palm/runtimes/mcp/data/llms.txt: out of sync with docs/llms.txt "
+            "(copy docs/llms.txt into the MCP data package)"
+        )
+
+
 def check_stale_versions(errors: list[str]) -> None:
     """Flag outdated version stamps on active public surfaces (not changelogs/migrations)."""
     scan_paths = [
@@ -127,6 +146,7 @@ def main() -> int:
     check_version_sources(version, errors)
     check_sync_surfaces(version, errors)
     check_stale_architecture_refs(errors)
+    check_bundled_llms_txt(errors)
     check_stale_versions(errors)
 
     if errors:

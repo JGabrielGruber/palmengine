@@ -19,6 +19,12 @@ def register_phase5_tools(mcp: Any, rest_client: Any) -> None:
         state: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Invoke a registered resource definition with optional params and state."""
+        if resource_ref.startswith("palm://"):
+            raise ValueError(
+                f"{resource_ref!r} is an MCP read resource — use FetchMcpResource "
+                "(read_resource), not palm_invoke_resource. For invoke, use a "
+                "definition name from palm://definitions/resources."
+            )
         body: dict[str, Any] = {"resource_ref": resource_ref}
         if action is not None:
             body["action"] = action
@@ -37,7 +43,7 @@ def register_phase5_tools(mcp: Any, rest_client: Any) -> None:
         view = rest_client.get_wizard(instance_id)
         from palm.common.operator.compact import compact_wizard_inspect
 
-        inspect = compact_wizard_inspect(view)
+        inspect = compact_wizard_inspect(view, include_operator_hint=False)
         return build_compose_status(tree, inspect)
 
 

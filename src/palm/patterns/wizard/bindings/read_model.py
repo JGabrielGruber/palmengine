@@ -15,6 +15,7 @@ def build_wizard_view(
     wizard_progress: dict[str, Any] | None = None,
     pattern: dict[str, Any] | None = None,
     job_status: str | None = None,
+    job_result: Any = None,
 ) -> dict[str, Any]:
     """Assemble a wizard-centric view keyed by durable ``instance_id``."""
     instance_id = str(instance["instance_id"])
@@ -46,6 +47,8 @@ def build_wizard_view(
     }
     if pattern is not None:
         payload["pattern"] = pattern.get("pattern", "wizard")
+    if job_result is not None:
+        payload["result"] = job_result
     return payload
 
 
