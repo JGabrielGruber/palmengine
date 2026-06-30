@@ -99,14 +99,31 @@ REST / MCP / CLI  →  palm.common.services  →  CQRS buses  →  patterns/prov
 ## References
 
 - Design spec: [docs/superpowers/specs/2026-06-30-cqrs-schemas-service-layer-design.md](superpowers/specs/2026-06-30-cqrs-schemas-service-layer-design.md)
+- 0.15.3 cleanup spec: [docs/superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md](superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md)
 - ADR: [docs/adr/004-cqrs-schemas-service-layer.md](adr/004-cqrs-schemas-service-layer.md)
 - Implementation plan: [docs/superpowers/plans/2026-06-30-cqrs-schemas-service-layer.md](superpowers/plans/2026-06-30-cqrs-schemas-service-layer.md)
+- 0.15.3 plan: [docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md](superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
 
 ---
 
-## Next (0.16+)
+## Next — cleanup track
+
+Master spec: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)
+
+### 0.15.0 — release hygiene
+- Ruff fix (59 issues) + version bump + CHANGELOG + `RELEASE-0.15.0.md`
+
+### 0.15.2 — dedupe (public APIs stable)
+- REST input validation → `CqrsSchemaRegistry` via `rest/schema_bridge.py`
+- Serializer imports → `services.views`; MCP dual-backend test clarity
+
+### 0.15.3 — legacy removal (no migration window)
+- Delete `create_cli_app`, `interactive_runtime` wizard aliases, `ChildWizardCompletionHook`, remaining shims
+- Spec: [docs/superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md](superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md)
+
+### 0.16+ — new capabilities
 
 - Definition catalog write service methods + Studio integration
-- OpenAPI generation from `CqrsSchemaRegistry` + service view types
+- Full OpenAPI generation from `CqrsSchemaRegistry` + service view types
 - WebSocket surface streaming instance events
 - Optional `ServiceContributor` when patterns need custom business APIs

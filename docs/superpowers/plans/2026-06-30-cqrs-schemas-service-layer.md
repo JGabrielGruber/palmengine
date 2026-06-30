@@ -683,10 +683,12 @@ git commit -m "docs: add 0.15 vision, ADR 004, and architecture updates"
 
 ## Final verification
 
-- [ ] Run: `just check`
-- [ ] Run: `uv run pytest tests/test_cqrs_schemas.py tests/test_services_base.py tests/test_services_internal.py -v`
-- [ ] Confirm `rest/schemas.py` duplicates removed or marked deprecated where registry replaces them
-- [ ] Confirm MCP local mode avoids HTTP round-trip
+- [x] Run: `just check` (ruff noise deferred to 0.15.3a)
+- [x] Run: `uv run pytest tests/test_cqrs_schemas.py tests/test_services_base.py tests/test_services_internal.py -v`
+- [ ] Confirm `rest/schemas.py` input-body duplicates removed — **0.15.3b** ([0.15.3 plan](2026-06-30-0.15.3-legacy-cleanup.md))
+- [x] Confirm MCP local mode avoids HTTP round-trip
+
+**Follow-on:** [0.15 cleanup track](2026-06-30-0.15-cleanup-track-design.md) — [0.15.0 hygiene](2026-06-30-0.15.0-release-hygiene.md) → [0.15.2 dedupe](2026-06-30-0.15.2-dedupe.md) → [0.15.3 legacy removal](2026-06-30-0.15.3-legacy-cleanup.md). Experimental policy: no migration window.
 
 ---
 

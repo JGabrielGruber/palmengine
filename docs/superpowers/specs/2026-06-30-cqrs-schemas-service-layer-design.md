@@ -136,9 +136,11 @@ User payload → Service method → builds Command/Query dataclass
 
 Uses existing `DictStateSchema` from `palm/core/context/state_schema.py`.
 
-### Deletion target
+### Deletion target (0.15.3)
 
-Hand-maintained duplicates in `src/palm/runtimes/server/surfaces/rest/schemas.py` that mirror CQRS shapes (`SUBMIT_WIZARD_BODY`, `WIZARD_INPUT_BODY`, `PROVIDE_INPUT_BODY`, etc.). REST OpenAPI components derive from `CqrsSchemaRegistry`.
+Hand-maintained duplicates in `src/palm/runtimes/server/surfaces/rest/schemas.py` that mirror CQRS shapes (`WIZARD_INPUT_BODY`, `PROVIDE_INPUT_BODY`, etc.). REST OpenAPI request bodies for command-aligned routes derive from `CqrsSchemaRegistry` via `rest/schema_bridge.py`. HTTP multi-variant bodies (`SUBMIT_WIZARD_BODY`, `VALIDATE_FLOW_BODY`, …) remain REST-local.
+
+**Policy:** Palm is experimental — no deprecation window. Full cleanup track: [0.15 cleanup track spec](2026-06-30-0.15-cleanup-track-design.md) (0.15.0 hygiene → 0.15.2 dedupe → 0.15.3 legacy removal).
 
 ---
 

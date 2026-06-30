@@ -173,10 +173,14 @@ just mcp-inspector                       # MCP Inspector UI
 
 ## Priorities & Next Steps
 
-1. Tag and publish **0.15.0** (`just release-prep` → PyPI)
-2. Definition catalog write paths via `DefinitionService` (0.16)
-3. OpenAPI from `CqrsSchemaRegistry` + service views
-4. WebSocket surface for live wizard prompts
+Cleanup track: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)
+
+1. **0.15.0** — ruff fix + release hygiene (version, CHANGELOG, DEVELOPMENT/STATUS, `RELEASE-0.15.0.md`) — [plan](docs/superpowers/plans/2026-06-30-0.15.0-release-hygiene.md)
+2. **0.15.2** — REST validation → `CqrsSchemaRegistry`; serializer import consolidation; MCP dual-backend tests — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
+3. **0.15.3** — delete legacy aliases (`interactive_runtime`, `create_cli_app`, hooks) — **no migration window** — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
+4. Definition catalog write paths via `DefinitionService` (0.16+)
+5. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
+6. WebSocket surface for live wizard prompts (0.16+)
 
 ## Useful Links
 
