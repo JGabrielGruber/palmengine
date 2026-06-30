@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.services.views import flow_detail, process_detail
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
-from palm.common.services.views import flow_detail, process_detail
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

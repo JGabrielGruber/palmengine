@@ -8,6 +8,7 @@ from palm.common.child_wait import resume_child_wait_for_instance
 from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.interactive_runtime import resolve_interactive_job
+from palm.common.operator.collection_input import resolve_wizard_form_input
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.ssr.render import html_response, redirect
 from palm.core.orchestration import JobStatus
@@ -16,7 +17,6 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.collection_input import resolve_wizard_form_input
 from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values

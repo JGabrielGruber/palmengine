@@ -751,7 +751,7 @@ palm CLI → bootstrap_runtime() → create_cli_host() → ApplicationHost(all_i
 | `palm host` | `run_host(profile)` | Same CQRS path per role | Projections + recovery |
 | Library embed | `ApplicationHost` or `PalmApp` | Prefer host `execute()` | Prefer host `ask()` |
 
-`PalmApp.bootstrap_cli()` and the `cli/pkg/` shim are removed. `create_cli_app()` remains deprecated — returns `host.app` for legacy callers only.
+`PalmApp.bootstrap_cli()`, the `cli/pkg/` shim, and `create_cli_app()` are removed — use `create_cli_host()` → `ApplicationHost`.
 
 Low-level job helpers (`resume_job`, `persist_job`) stay on `CliContext` for wizard backtrack until a dedicated command exists.
 

@@ -31,7 +31,4 @@ class ChildCompletionHook(JobHookAdapter):
         resume_parent_after_child(self._runtime, job)
 
 
-# Deprecated alias
-ChildWizardCompletionHook = ChildCompletionHook
-
-__all__ = ["ChildCompletionHook", "ChildWizardCompletionHook"]
+__all__ = ["ChildCompletionHook"]

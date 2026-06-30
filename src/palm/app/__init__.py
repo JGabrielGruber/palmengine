@@ -8,7 +8,7 @@ Use :class:`~palm.app.app.PalmApp` directly only for low-level embedding tests.
 from palm.app.app import PalmApp
 from palm.app.host.roles import HostProfile
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
-from palm.app.session import create_cli_app, create_cli_host, create_console
+from palm.app.session import create_cli_host, create_console
 from palm.app.settings import PalmSettings
 
 __all__ = [
@@ -19,7 +19,6 @@ __all__ = [
     "RuntimeHandle",
     "RuntimeKind",
     "RuntimeRegistry",
-    "create_cli_app",
     "create_cli_host",
     "create_console",
     "run_host",

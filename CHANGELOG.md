@@ -4,6 +4,23 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.15.3] — 2026-06-30
+
+**Legacy removal** — experimental Palm; no deprecation window. Cleanup track after 0.15 service layer + 0.15.2 schema dedupe.
+
+### Removed
+
+- `create_cli_app()` — use `create_cli_host()`
+- `interactive_runtime` wizard aliases (`resolve_wizard_job`, `provide_wizard_input_for_instance`, `previous_wizard_step`, …)
+- `ChildWizardCompletionHook` — use `ChildCompletionHook`
+- `serializers.py` re-exports of `services.views` helpers (snapshot serializers remain)
+- `ssr/explorer/collection_input.py` shim — import `palm.common.operator.collection_input` directly
+
+### Added (prior cleanup track commits)
+
+- `rest/schema_bridge.py` — REST input bodies derived from `CqrsSchemaRegistry` (0.15.2)
+- Ruff hygiene + wizard isort exemptions (0.15.1)
+
 ## [0.14.9] — 2026-06-26
 
 **MCP Operator release** — `palm-mcp` adapter for coding agents: 26 tools, 4 prompts, 10 resources; stdio + native HTTP transports; agent-oriented docs.

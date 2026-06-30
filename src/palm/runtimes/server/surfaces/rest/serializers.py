@@ -1,27 +1,12 @@
-"""REST serializers — definition and snapshot response shapes."""
+"""REST serializers — snapshot response shapes."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from palm.common.services.views import (
-    flow_detail,
-    flow_step_slugs,
-    flow_summary,
-    process_detail,
-    process_summary,
-)
 from palm.instances import StateSnapshot
 
-__all__ = [
-    "flow_detail",
-    "flow_step_slugs",
-    "flow_summary",
-    "process_detail",
-    "process_summary",
-    "snapshot_detail",
-    "snapshot_summary",
-]
+__all__ = ["snapshot_detail", "snapshot_summary"]
 
 
 def snapshot_summary(index: int, snapshot: StateSnapshot) -> dict[str, Any]:

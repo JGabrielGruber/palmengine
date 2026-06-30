@@ -9,7 +9,7 @@ Palm **0.10.9** introduces `ApplicationHost` as the recommended top-level orches
 | Before (0.9) | After (0.10) |
 |--------------|--------------|
 | `PalmApp.bootstrap_cli()` | `create_cli_host()` → `ApplicationHost` |
-| `create_cli_app()` | **Deprecated** — use `create_cli_host()` |
+| `create_cli_app()` | **Removed in 0.15.3** — use `create_cli_host()` |
 | CLI writes via `ctx.app.submit_*` | CLI writes via host **command bus** (`host.submit_flow`, …) |
 | CLI reads via `InstanceManager` | CLI reads via **query bus** / projections |
 | Single embedded runtime `"cli"` | Collapsed `all_in_one` profile → runtime `"main"` |
@@ -21,17 +21,9 @@ Palm **0.10.9** introduces `ApplicationHost` as the recommended top-level orches
 
 ## CLI and terminal apps
 
-**Old (deprecated):**
+**Old (removed in 0.15.3):** `create_cli_app()` returned `host.app` without CQRS wiring — do not use.
 
-```python
-from palm.app import create_cli_app
-
-app = create_cli_app()
-app.submit_flow("onboard")
-app.shutdown()
-```
-
-**New (recommended):**
+**Current (recommended):**
 
 ```python
 from palm.app import ApplicationHost, HostProfile
@@ -153,7 +145,7 @@ The host wires `CompensationCoordinator` on start when `enable_compensation=True
 | `PalmApp.bootstrap_cli()` | `ApplicationHost` + `HostProfile.all_in_one()` |
 | `CLI_RUNTIME_NAME` | Use `host.running_runtimes()` (CLI → `["main"]`) |
 | `palm.runtimes.cli.pkg.*` | `palm.runtimes.cli.shared.*` |
-| `create_cli_app()` | `create_cli_host()` (deprecated wrapper still returns `.app`) |
+| `create_cli_app()` | `create_cli_host()` (removed in 0.15.3) |
 
 ---
 

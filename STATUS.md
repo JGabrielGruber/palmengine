@@ -177,8 +177,8 @@ Cleanup track: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](
 
 1. ~~**0.15.1 hygiene**~~ — ✅ ruff fix + format (`f44d36f`); wizard `I001` exempt in `pyproject.toml`
 2. **0.15.0 release prep** (optional) — version bump, CHANGELOG, `RELEASE-0.15.0.md` — [plan](docs/superpowers/plans/2026-06-30-0.15.0-release-hygiene.md)
-3. **0.15.2** — REST validation → `CqrsSchemaRegistry`; serializer import consolidation; MCP dual-backend tests — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
-4. **0.15.3** — delete legacy aliases (`interactive_runtime`, `create_cli_app`, hooks) — **no migration window** — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
+3. ~~**0.15.2**~~ — ✅ REST validation → `CqrsSchemaRegistry`; serializer imports; MCP dual-backend docs — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
+4. ~~**0.15.3**~~ — ✅ legacy aliases + shims removed on master — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
 5. Definition catalog write paths via `DefinitionService` (0.16+)
 6. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
 7. WebSocket surface for live wizard prompts (0.16+)

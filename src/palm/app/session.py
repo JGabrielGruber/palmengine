@@ -4,11 +4,9 @@ CLI session bootstrap — ApplicationHost entry for terminal surfaces.
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import Any
 
-from palm.app.app import PalmApp
 from palm.app.bootstrap import runtime_start_options
 from palm.app.cli_settings import resolve_cli_settings
 from palm.app.settings import PalmSettings
@@ -64,30 +62,3 @@ def create_cli_host(
     host = ApplicationHost(cfg, profile=host_profile_from_settings(cfg), storage=storage)
     host.start(**runtime_start_options(cfg))
     return host
-
-
-def create_cli_app(
-    *,
-    storage_backend: str | None = None,
-    data_dir: Path | None = None,
-    storage: StorageEngine | None = None,
-    settings: PalmSettings | None = None,
-) -> PalmApp:
-    """
-    Return the infrastructure :class:`~palm.app.app.PalmApp` from a CLI host.
-
-    .. deprecated::
-        Use :func:`create_cli_host` and interact through
-        :class:`~palm.app.host.ApplicationHost` for CQRS and recovery.
-    """
-    warnings.warn(
-        "create_cli_app() is deprecated; use create_cli_host() and ApplicationHost",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return create_cli_host(
-        storage_backend=storage_backend,
-        data_dir=data_dir,
-        storage=storage,
-        settings=settings,
-    ).app

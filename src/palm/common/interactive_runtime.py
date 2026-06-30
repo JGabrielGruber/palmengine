@@ -98,26 +98,10 @@ def previous_interactive_step(executable: Any, state: Any, *, pattern: str) -> s
     return hooks.previous_step(executable, state)
 
 
-# Deprecated aliases — prefer interactive_* names.
-resolve_wizard_job = resolve_interactive_job
-require_wizard_job = require_interactive_job
-provide_wizard_input_for_instance = provide_interactive_input_for_instance
-request_wizard_backtrack_for_instance = request_interactive_backtrack_for_instance
-
-
-def previous_wizard_step(wizard: Any, state: Any) -> str:
-    return previous_interactive_step(wizard, state, pattern="wizard")
-
-
 __all__ = [
     "provide_interactive_input_for_instance",
-    "provide_wizard_input_for_instance",
     "previous_interactive_step",
-    "previous_wizard_step",
     "request_interactive_backtrack_for_instance",
-    "request_wizard_backtrack_for_instance",
     "require_interactive_job",
-    "require_wizard_job",
     "resolve_interactive_job",
-    "resolve_wizard_job",
 ]
