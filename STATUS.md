@@ -162,12 +162,12 @@ just mcp-inspector                       # MCP Inspector UI
 | `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
-| `docs/index.html`     | Good            | v0.14.9 badge + MCP in featureList |
+| `docs/index.html`     | Good            | v0.14.13 badge + MCP in featureList |
 | `docs/llms.txt`       | Good            | AI context + 0.15 service layer + MCP in-process (`palm://agent/guide`) |
 | `docs/VISION-0.15.md` | Good            | Service layer release vision |
 | `docs/adr/004-*.md`   | Good            | CQRS schemas + service layer ADR |
 | `AGENTS.md`           | Good            | Service layer + MCP in-process conventions |
-| `DEVELOPMENT.md`      | Good            | Contributor setup + MCP development workflow |
+| `DEVELOPMENT.md`      | Good            | Contributor setup; 0.15 service layer on master |
 | `CHANGELOG.md`        | Good            | `[0.14.9]` MCP Operator section complete |
 | `RELEASE-0.14.9.md`   | Good            | Release checklist |
 
@@ -175,12 +175,13 @@ just mcp-inspector                       # MCP Inspector UI
 
 Cleanup track: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)
 
-1. **0.15.0** — ruff fix + release hygiene (version, CHANGELOG, DEVELOPMENT/STATUS, `RELEASE-0.15.0.md`) — [plan](docs/superpowers/plans/2026-06-30-0.15.0-release-hygiene.md)
-2. **0.15.2** — REST validation → `CqrsSchemaRegistry`; serializer import consolidation; MCP dual-backend tests — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
-3. **0.15.3** — delete legacy aliases (`interactive_runtime`, `create_cli_app`, hooks) — **no migration window** — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
-4. Definition catalog write paths via `DefinitionService` (0.16+)
-5. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
-6. WebSocket surface for live wizard prompts (0.16+)
+1. ~~**0.15.1 hygiene**~~ — ✅ ruff fix + format (`f44d36f`); wizard `I001` exempt in `pyproject.toml`
+2. **0.15.0 release prep** (optional) — version bump, CHANGELOG, `RELEASE-0.15.0.md` — [plan](docs/superpowers/plans/2026-06-30-0.15.0-release-hygiene.md)
+3. **0.15.2** — REST validation → `CqrsSchemaRegistry`; serializer import consolidation; MCP dual-backend tests — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
+4. **0.15.3** — delete legacy aliases (`interactive_runtime`, `create_cli_app`, hooks) — **no migration window** — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
+5. Definition catalog write paths via `DefinitionService` (0.16+)
+6. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
+7. WebSocket surface for live wizard prompts (0.16+)
 
 ## Useful Links
 

@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.14.9** (MCP Operator + Provider apps + Wizard Experience).
+Guide for contributors working on Palm **0.14.13** (PyPI) with **0.15** CQRS schemas + service layer on master (MCP in-process, `host.execution.on()`).
 
 ## Setup
 
