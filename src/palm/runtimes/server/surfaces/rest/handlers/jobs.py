@@ -12,9 +12,9 @@ from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import job_accepted, ok, read_model_body
+from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.schemas import (
-    PROVIDE_INPUT_BODY,
     SUBMIT_JOB_BODY,
     submit_job_variant_errors,
 )
@@ -97,7 +97,12 @@ def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) ->
     if auth_error is not None:
         return auth_error
 
-    body = validate_body(request, PROVIDE_INPUT_BODY)
+    body_schema = body_schema_for_command(
+        ctx.schemas,
+        ProvideInputCommand,
+        properties=("value",),
+    )
+    body = validate_body(request, body_schema)
     if isinstance(body, ServerResponse):
         return body
 

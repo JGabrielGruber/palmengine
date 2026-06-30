@@ -43,6 +43,15 @@ flowchart LR
 
 **Operator loop:** definitions → submit → inspect → input → wait on children → resume.
 
+### Dual backend
+
+| Mode | Env | Backend | When to use |
+|------|-----|---------|-------------|
+| **In-process** (default) | `PALM_MCP_IN_PROCESS=1` | `PalmInProcessBackend` → `palm.common.services` | Local agent dev; no `palm server` required |
+| **REST proxy** | `PALM_MCP_IN_PROCESS=0` + `PALM_BASE_URL` | `PalmRestClient` → HTTP `:8080` | Remote Palm, cross-process, CI against live server |
+
+Tests: `tests/test_mcp_in_process.py` (in-process) · `tests/test_mcp_tools.py` (REST client mocks).
+
 ### Setup (one time per machine)
 
 ```bash

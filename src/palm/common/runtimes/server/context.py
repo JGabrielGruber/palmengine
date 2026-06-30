@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
 from palm.common.cqrs.query import Query
-from palm.common.cqrs.schemas import build_schema_registry
+from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
 from palm.common.services.definition import DefinitionService
@@ -89,6 +89,12 @@ class ServerContext:
     @property
     def query_bus(self) -> QueryBus:
         return self._query_bus
+
+    @property
+    def schemas(self) -> CqrsSchemaRegistry:
+        if self._host is not None:
+            return self._host.schemas
+        return self._internal.schemas
 
     @property
     def internal(self) -> InternalService:

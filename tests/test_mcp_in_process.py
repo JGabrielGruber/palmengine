@@ -1,4 +1,7 @@
-"""Tests for in-process MCP backend (no HTTP round-trip)."""
+"""Tests for in-process MCP backend (``PALM_MCP_IN_PROCESS=1``, no HTTP round-trip).
+
+REST proxy mode (``PalmRestClient`` + ``PALM_BASE_URL``) is tested in ``tests/test_mcp_tools.py``.
+"""
 
 from __future__ import annotations
 

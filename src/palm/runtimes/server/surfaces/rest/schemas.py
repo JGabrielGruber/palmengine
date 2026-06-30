@@ -6,9 +6,16 @@ Schemas drive validation and OpenAPI component generation from a single source.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
+from palm.common.cqrs.command import ProvideInputCommand
 from palm.core.context.state_schema import DictStateSchema
+from palm.patterns.wizard.bindings.cqrs.commands import (
+    ProvideWizardInputCommand,
+    RequestWizardBacktrackCommand,
+)
+from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 
 # Shared fragments
 _STRING = {"type": "string"}
@@ -79,34 +86,36 @@ SUBMIT_PLANS_BODY = DictStateSchema(
     }
 )
 
-PROVIDE_INPUT_BODY = DictStateSchema(
-    {
-        "type": "object",
-        "properties": {
-            "value": {},
-        },
-        "required": ["value"],
-    }
-)
+@lru_cache(maxsize=1)
+def _cqrs_schema_registry():
+    from palm.common.cqrs.schemas import build_schema_registry
 
-WIZARD_INPUT_BODY = DictStateSchema(
-    {
-        "type": "object",
-        "properties": {
-            "value": {},
-        },
-        "required": ["value"],
-    }
-)
+    return build_schema_registry()
 
-WIZARD_BACKTRACK_BODY = DictStateSchema(
-    {
-        "type": "object",
-        "properties": {
-            "to_step": _STRING,
-        },
-    }
-)
+
+def _openapi_command_body(
+    command_type: type,
+    *,
+    properties: tuple[str, ...],
+) -> DictStateSchema:
+    return body_schema_for_command(
+        _cqrs_schema_registry(),
+        command_type,
+        properties=properties,
+    )
+
+
+def provide_input_body_schema() -> DictStateSchema:
+    return _openapi_command_body(ProvideInputCommand, properties=("value",))
+
+
+def wizard_input_body_schema() -> DictStateSchema:
+    return _openapi_command_body(ProvideWizardInputCommand, properties=("value",))
+
+
+def wizard_backtrack_body_schema() -> DictStateSchema:
+    return _openapi_command_body(RequestWizardBacktrackCommand, properties=("to_step",))
+
 
 LIST_JOBS_QUERY = DictStateSchema(
     {
@@ -235,9 +244,9 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "ValidateFlowBody": VALIDATE_FLOW_BODY,
     "PreparePlansBody": PREPARE_PLANS_BODY,
     "SubmitPlansBody": SUBMIT_PLANS_BODY,
-    "ProvideInputBody": PROVIDE_INPUT_BODY,
-    "WizardInputBody": WIZARD_INPUT_BODY,
-    "WizardBacktrackBody": WIZARD_BACKTRACK_BODY,
+    "ProvideInputBody": provide_input_body_schema(),
+    "WizardInputBody": wizard_input_body_schema(),
+    "WizardBacktrackBody": wizard_backtrack_body_schema(),
     "ListJobsQuery": LIST_JOBS_QUERY,
     "ListInstancesQuery": LIST_INSTANCES_QUERY,
     "ListFlowsQuery": LIST_FLOWS_QUERY,

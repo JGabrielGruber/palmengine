@@ -1,4 +1,8 @@
-"""Tests for the Palm FastMCP stdio adapter."""
+"""Tests for the Palm FastMCP stdio adapter (REST proxy / ``PalmRestClient`` path).
+
+Uses ``_FakeRestClient`` — the HTTP round-trip mode when ``PALM_MCP_IN_PROCESS=0``.
+In-process service calls are covered in ``tests/test_mcp_in_process.py``.
+"""
 
 from __future__ import annotations
 

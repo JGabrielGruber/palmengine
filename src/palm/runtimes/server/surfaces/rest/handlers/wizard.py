@@ -7,14 +7,17 @@ from typing import TYPE_CHECKING, Any
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import InstanceNotFoundServiceError
+from palm.patterns.wizard.bindings.cqrs.commands import (
+    ProvideWizardInputCommand,
+    RequestWizardBacktrackCommand,
+)
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
+from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.schemas import (
     SUBMIT_WIZARD_BODY,
-    WIZARD_BACKTRACK_BODY,
-    WIZARD_INPUT_BODY,
     submit_wizard_variant_errors,
 )
 
@@ -64,7 +67,12 @@ def provide_wizard_input(
     if auth_error is not None:
         return auth_error
 
-    body = validate_body(request, WIZARD_INPUT_BODY)
+    body_schema = body_schema_for_command(
+        ctx.schemas,
+        ProvideWizardInputCommand,
+        properties=("value",),
+    )
+    body = validate_body(request, body_schema)
     if isinstance(body, ServerResponse):
         return body
 
@@ -90,7 +98,12 @@ def backtrack_wizard(
     if auth_error is not None:
         return auth_error
 
-    body = validate_body(request, WIZARD_BACKTRACK_BODY)
+    body_schema = body_schema_for_command(
+        ctx.schemas,
+        RequestWizardBacktrackCommand,
+        properties=("to_step",),
+    )
+    body = validate_body(request, body_schema)
     if isinstance(body, ServerResponse):
         return body
 
