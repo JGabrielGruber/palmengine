@@ -17,6 +17,7 @@ from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
 from palm.definitions.resource import ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
+from palm.common.services.session import ReplSession
 from palm.runtimes.cli.shared.instances import resolve_instance_id as _resolve_instance_id
 
 if TYPE_CHECKING:
@@ -38,6 +39,7 @@ class CliContext:
     active_instance_id: str | None = None
     output_format: str = "table"
     _instance_to_job: dict[str, str] = field(default_factory=dict)
+    _repl_session: ReplSession | None = field(default=None, repr=False)
 
     @property
     def app(self) -> PalmApp:
@@ -52,6 +54,13 @@ class CliContext:
     def instance_manager(self) -> InstanceManager:
         return self.app.instance_manager
 
+    @property
+    def repl(self) -> ReplSession:
+        """Stateful REPL handle — tracks the active instance across commands."""
+        if self._repl_session is None:
+            self._repl_session = ReplSession(self.host.execution)
+        return self._repl_session
+
     def is_runtime_started(self) -> bool:
         return self.host.is_started and bool(self.host.running_runtimes())
 
@@ -62,6 +71,7 @@ class CliContext:
         self.active_instance_id = instance_id
         self._instance_to_job[instance_id] = job_id
         self.instance_manager.mark_active(instance_id)
+        self.repl.activate(instance_id)
 
     def list_instance_summaries(self) -> list[InstanceSummary]:
         views = self.host.list_instance_views(include_terminal=True)

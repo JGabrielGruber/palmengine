@@ -4,18 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.child_wait import resume_child_wait_for_instance
 from palm.common.exceptions import InstanceNotFoundError
-from palm.common.interactive_runtime import resolve_interactive_job
-from palm.common.job_context import instance_id_for_job
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import InstanceNotFoundServiceError
-from palm.core.orchestration import JobStatus
-from palm.patterns.wizard.bindings.cqrs.commands import (
-    ProvideWizardInputCommand,
-    RequestWizardBacktrackCommand,
-    SubmitWizardCommand,
-)
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
@@ -45,14 +36,14 @@ def submit_wizard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
         return body
 
     try:
-        job = ctx.execute(SubmitWizardCommand(body=body))
+        session = ctx.execution.run_wizard(body)
+        view = session.status()
     except (TypeError, ValueError, KeyError) as exc:
         return errors.bad_request(str(exc))
     except Exception as exc:
         return errors.submit_failed(str(exc))
 
-    ctx.wait_until_idle()
-    return accepted(_wizard_submission_body(job))
+    return accepted(_wizard_submission_body(view, session.instance_id))
 
 
 def get_wizard(
@@ -80,9 +71,7 @@ def provide_wizard_input(
         return body
 
     try:
-        result = ctx.execute(
-            ProvideWizardInputCommand(instance_id=instance_id, value=body["value"])
-        )
+        view = ctx.execution.on(instance_id).input(body["value"])
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -90,11 +79,7 @@ def provide_wizard_input(
     except (ValueError, RuntimeError) as exc:
         return errors.input_rejected(str(exc))
 
-    ctx.wait_until_idle()
-    view = _wizard_view_or_not_found(ctx, instance_id)
-    if isinstance(view, ServerResponse):
-        return view
-    return ok(_merge_interaction(view, slug=result.get("slug")))
+    return ok(view)
 
 
 def backtrack_wizard(
@@ -112,12 +97,7 @@ def backtrack_wizard(
         return body
 
     try:
-        result = ctx.execute(
-            RequestWizardBacktrackCommand(
-                instance_id=instance_id,
-                to_step=body.get("to_step"),
-            )
-        )
+        view = ctx.execution.on(instance_id).backtrack(body.get("to_step"))
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -125,11 +105,7 @@ def backtrack_wizard(
     except ValueError as exc:
         return errors.backtrack_rejected(str(exc))
 
-    ctx.wait_until_idle()
-    view = _wizard_view_or_not_found(ctx, instance_id)
-    if isinstance(view, ServerResponse):
-        return view
-    return ok(_merge_interaction(view, to_step=result.get("to_step")))
+    return ok(view)
 
 
 def resume_child_wait(
@@ -143,16 +119,12 @@ def resume_child_wait(
         return auth_error
 
     try:
-        resume_child_wait_for_instance(ctx.runtime, instance_id)
+        view = ctx.execution.on(instance_id).resume_child_wait()
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
 
-    ctx.wait_until_idle()
-    view = _wizard_view_or_not_found(ctx, instance_id)
-    if isinstance(view, ServerResponse):
-        return view
     return ok(view)
 
 
@@ -167,20 +139,13 @@ def resume_wizard_tick(
         return auth_error
 
     try:
-        job = resolve_interactive_job(ctx.runtime, instance_id)
-        if job.status != JobStatus.WAITING_FOR_INPUT:
-            raise RuntimeError(
-                f"Instance {instance_id!r} is not waiting for input "
-                f"(status={job.status.value})"
-            )
-        ctx.runtime.orchestration.resume_job(job.id)
+        ctx.execution.on(instance_id).resume()
+        view = _wizard_view_or_not_found(ctx, instance_id)
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
 
-    ctx.wait_until_idle()
-    view = _wizard_view_or_not_found(ctx, instance_id)
     if isinstance(view, ServerResponse):
         return view
     return ok(view)
@@ -196,24 +161,12 @@ def _wizard_view_or_not_found(
     return read_model_body(row)
 
 
-def _merge_interaction(
-    view: dict[str, Any],
-    *,
-    slug: str | None = None,
-    to_step: str | None = None,
-) -> dict[str, Any]:
-    payload = dict(view)
-    if slug is not None:
-        payload["slug"] = slug
-    if to_step is not None:
-        payload["to_step"] = to_step
-    return payload
-
-
-def _wizard_submission_body(job: Any) -> dict[str, Any]:
+def _wizard_submission_body(view: dict[str, Any], instance_id: str) -> dict[str, Any]:
     return {
-        "instance_id": instance_id_for_job(job),
-        "job_id": job.id,
-        "status": job.status.value,
-        "metadata": job.metadata,
+        "instance_id": instance_id,
+        "job_id": view.get("job_id"),
+        "status": view.get("status"),
+        "metadata": view.get("metadata") or {},
     }
+
+

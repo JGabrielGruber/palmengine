@@ -13,6 +13,7 @@ from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
 from palm.common.services.definition import DefinitionService
+from palm.common.services.execution import ExecutionService
 from palm.common.services.internal import InternalService
 
 if TYPE_CHECKING:
@@ -61,9 +62,17 @@ class ServerContext:
                 schemas=schemas,
                 repository=runtime.repository,
             )
+            self._execution = ExecutionService(
+                commands=self._command_bus,
+                queries=self._query_bus,
+                schemas=schemas,
+                internal=self._internal,
+                runtime=runtime,
+            )
         else:
             self._internal = host.internal
             self._definition = host.definition
+            self._execution = host.execution
 
     @property
     def runtime(self) -> BaseRuntime:
@@ -93,6 +102,12 @@ class ServerContext:
             return self._host.definition
         return self._definition
 
+    @property
+    def execution(self) -> ExecutionService:
+        if self._host is not None:
+            return self._host.execution
+        return self._execution
+
     def execute(self, command: Command) -> Any:
         return self._command_bus.dispatch(command)
 
@@ -109,3 +124,5 @@ class ServerContext:
         self._query_bus = host.queries
         self._internal = host.internal
         self._definition = host.definition
+        self._execution = host.execution
+        self._execution = host.execution

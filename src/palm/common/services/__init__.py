@@ -7,13 +7,18 @@ from palm.common.services.errors import (
     InstanceNotFoundServiceError,
     ServiceValidationError,
 )
+from palm.common.services.execution import ExecutionService
 from palm.common.services.internal import InternalService
+from palm.common.services.session import InstanceSession, ReplSession
 
 __all__ = [
     "BaseService",
     "DefinitionNotFoundServiceError",
     "DefinitionService",
+    "ExecutionService",
     "InstanceNotFoundServiceError",
+    "InstanceSession",
     "InternalService",
+    "ReplSession",
     "ServiceValidationError",
 ]

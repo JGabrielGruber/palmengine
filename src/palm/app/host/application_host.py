@@ -114,6 +114,7 @@ class ApplicationHost:
         self._schema_registry: Any | None = None
         self._internal: Any | None = None
         self._definition: Any | None = None
+        self._execution: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -149,6 +150,11 @@ class ApplicationHost:
     def definition(self):
         """Definition catalog service API."""
         return self._definition
+
+    @property
+    def execution(self):
+        """Instance-centric execution service API."""
+        return self._execution
 
     @property
     def router(self) -> RuntimeRouter:
@@ -452,6 +458,10 @@ class ApplicationHost:
         if callable(start_http):
             start_http(host=self.profile.server_host, port=self.profile.server_port)
 
+    def _resolve_execution_runtime(self, runtime_name: str | None = None) -> BaseRuntime:
+        resolved = self._router.route_job_runtime(runtime_name)
+        return self._app.runtime(resolved)
+
     def _wire_cqrs(self) -> None:
         import palm.patterns  # noqa: F401 — ensure pattern projection factories are registered
 
@@ -483,6 +493,7 @@ class ApplicationHost:
         )
         from palm.common.cqrs.schemas import build_schema_registry
         from palm.common.services.definition import DefinitionService
+        from palm.common.services.execution import ExecutionService
         from palm.common.services.internal import InternalService
 
         self._schema_registry = build_schema_registry()
@@ -496,6 +507,13 @@ class ApplicationHost:
             queries=self._query_bus,
             schemas=self._schema_registry,
             repository=self._app.repository(),
+        )
+        self._execution = ExecutionService(
+            commands=self._command_bus,
+            queries=self._query_bus,
+            schemas=self._schema_registry,
+            internal=self._internal,
+            runtime_resolver=self._resolve_execution_runtime,
         )
 
     def _attach_projections(self) -> None:

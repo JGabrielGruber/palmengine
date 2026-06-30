@@ -29,6 +29,7 @@ def run_repl(ctx: CliContext, *, history_path: Path | None = None) -> int:
     from prompt_toolkit.completion import Completer, Completion
 
     registry = build_registry()
+    _ = ctx.repl
     completer = build_repl_completer(
         ctx, registry, completer_cls=Completer, completion_cls=Completion
     )

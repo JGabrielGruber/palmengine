@@ -5,12 +5,10 @@ from __future__ import annotations
 import atexit
 from typing import TYPE_CHECKING, Any
 
-from palm.common.child_wait import resume_child_wait_for_instance
 from palm.common.cqrs.command import (
     CancelJobCommand,
     PreparePlansCommand,
     ProvideInputCommand,
-    SubmitFlowCommand,
     SubmitPlansCommand,
 )
 from palm.common.cqrs.query import (
@@ -19,18 +17,11 @@ from palm.common.cqrs.query import (
     ListInstanceSnapshotsQuery,
 )
 from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
-from palm.common.interactive_runtime import resolve_interactive_job
-from palm.common.job_context import instance_id_for_job
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.common.services.errors import InstanceNotFoundServiceError
-from palm.core.orchestration import JobStatus
+from palm.common.services.execution import flow_command_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns.wizard.bindings.cqrs.commands import (
-    ProvideWizardInputCommand,
-    RequestWizardBacktrackCommand,
-    SubmitWizardCommand,
-)
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.rest_client import PalmRestError
 from palm.states import BlackboardState
@@ -125,9 +116,7 @@ class PalmInProcessBackend:
 
     def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
         try:
-            result = self._ctx.execute(
-                ProvideWizardInputCommand(instance_id=instance_id, value=value)
-            )
+            return self._ctx.execution.on(instance_id).input(value)
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except TypeError as exc:
@@ -135,23 +124,13 @@ class PalmInProcessBackend:
         except (ValueError, RuntimeError) as exc:
             raise PalmRestError(400, str(exc)) from exc
 
-        self._ctx.wait_until_idle()
-        view = self.get_wizard(instance_id)
-        slug = result.get("slug") if isinstance(result, dict) else None
-        if slug is not None:
-            view = {**view, "slug": slug}
-        return view
-
     def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
         try:
-            resume_child_wait_for_instance(self._ctx.runtime, instance_id)
+            return self._ctx.execution.on(instance_id).resume_child_wait()
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except RuntimeError as exc:
             raise PalmRestError(400, str(exc)) from exc
-
-        self._ctx.wait_until_idle()
-        return self.get_wizard(instance_id)
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         try:
@@ -183,26 +162,16 @@ class PalmInProcessBackend:
 
     def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
         try:
-            job = resolve_interactive_job(self._ctx.runtime, instance_id)
-            if job.status != JobStatus.WAITING_FOR_INPUT:
-                raise RuntimeError(
-                    f"Instance {instance_id!r} is not waiting for input "
-                    f"(status={job.status.value})"
-                )
-            self._ctx.runtime.orchestration.resume_job(job.id)
+            self._ctx.execution.on(instance_id).resume()
+            return self.get_wizard(instance_id)
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except RuntimeError as exc:
             raise PalmRestError(400, str(exc)) from exc
 
-        self._ctx.wait_until_idle()
-        return self.get_wizard(instance_id)
-
     def backtrack_wizard(self, instance_id: str, *, to_step: str | None = None) -> dict[str, Any]:
         try:
-            result = self._ctx.execute(
-                RequestWizardBacktrackCommand(instance_id=instance_id, to_step=to_step)
-            )
+            return self._ctx.execution.on(instance_id).backtrack(to_step)
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except TypeError as exc:
@@ -210,43 +179,40 @@ class PalmInProcessBackend:
         except ValueError as exc:
             raise PalmRestError(400, str(exc)) from exc
 
-        self._ctx.wait_until_idle()
-        view = self.get_wizard(instance_id)
-        to_step_value = result.get("to_step") if isinstance(result, dict) else None
-        if to_step_value is not None:
-            view = {**view, "to_step": to_step_value}
-        return view
-
     def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
-            job = self._ctx.execute(SubmitWizardCommand(body=body))
+            session = self._ctx.execution.run_wizard(body)
+            view = session.status()
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
         except Exception as exc:
             raise PalmRestError(500, str(exc)) from exc
 
-        self._ctx.wait_until_idle()
         return {
-            "instance_id": instance_id_for_job(job),
-            "job_id": job.id,
-            "status": job.status.value,
-            "metadata": job.metadata,
+            "instance_id": session.instance_id,
+            "job_id": view.get("job_id"),
+            "status": view.get("status"),
+            "metadata": view.get("metadata") or {},
         }
 
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
-            job = self._ctx.execute(_flow_command_from_body(body))
+            command = flow_command_from_body(body)
+            session = self._ctx.execution.run_flow(
+                command.flow,
+                by_id=command.by_id,
+                job_id=command.job_id,
+            )
+            view = session.status()
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
         except Exception as exc:
             raise PalmRestError(500, str(exc)) from exc
 
-        self._ctx.wait_until_idle()
-        job_view = self._ctx.runtime.get_job(job.id)
         return {
-            "job_id": job_view.id,
-            "status": job_view.status.value,
-            "metadata": job_view.metadata,
+            "job_id": view.get("job_id"),
+            "status": view.get("status"),
+            "metadata": view.get("metadata") or {},
         }
 
     def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
@@ -414,32 +380,6 @@ class PalmInProcessBackend:
             resource_id=body.get("resource_id"),
         )
         return _provider_result_body(result)
-
-
-def _flow_command_from_body(body: dict[str, Any]) -> SubmitFlowCommand:
-    if "flow" in body and isinstance(body["flow"], dict):
-        payload = dict(body["flow"])
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return SubmitFlowCommand(flow=payload)
-    if "wizard" in body:
-        return SubmitFlowCommand(
-            flow={
-                "wizard": body["wizard"],
-                **({"job_id": body["job_id"]} if body.get("job_id") is not None else {}),
-            }
-        )
-    if "flow_name" in body:
-        return SubmitFlowCommand(
-            flow=str(body["flow_name"]),
-            by_id=bool(body.get("by_id", False)),
-            job_id=_optional_str(body.get("job_id")),
-        )
-    raise ValueError("expected 'flow', 'wizard', or 'flow_name' in request body")
-
-
-def _optional_str(value: object | None) -> str | None:
-    return str(value) if value is not None else None
 
 
 def _resolve_state(raw: Any) -> BlackboardState | None:
