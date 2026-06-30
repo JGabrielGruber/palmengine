@@ -98,10 +98,15 @@ def build_mcp_starlette_app(mcp_server: Any) -> Any:
     )
 
 
-def get_mcp_http_bridge(base_url: str, *, subject: str = "dev") -> McpHttpBridge | None:
+def get_mcp_http_bridge(
+    base_url: str,
+    *,
+    subject: str = "dev",
+    ctx: Any | None = None,
+) -> McpHttpBridge | None:
     """Return a started MCP HTTP bridge for ``base_url``, creating it on first use."""
     normalized = base_url.rstrip("/")
-    cache_key = f"{normalized}|{subject}"
+    cache_key = f"{normalized}|{subject}|{id(ctx) if ctx is not None else 'rest'}"
     with _lock:
         existing = _bridges.get(cache_key)
         if existing is not None:
@@ -119,8 +124,9 @@ def get_mcp_http_bridge(base_url: str, *, subject: str = "dev") -> McpHttpBridge
             base_url=normalized,
             subject=subject,
             llms_txt_path=env_config.llms_txt_path,
+            in_process=ctx is not None or env_config.in_process,
         )
-        mcp_server = create_mcp_server(config)
+        mcp_server = create_mcp_server(config, ctx=ctx)
         starlette_app = build_mcp_starlette_app(mcp_server)
         bridge = McpHttpBridge(base_url=normalized, starlette_app=starlette_app)
         bridge.start()

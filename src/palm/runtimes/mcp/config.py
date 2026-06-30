@@ -8,13 +8,21 @@ from importlib import resources
 from pathlib import Path
 
 
+def _env_flag(name: str, *, default: bool = False) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "on"}
+
+
 @dataclass(frozen=True)
 class PalmMcpConfig:
-    """Environment-driven settings for REST proxying."""
+    """Environment-driven settings for MCP operator backends."""
 
     base_url: str
     subject: str
     llms_txt_path: Path | None
+    in_process: bool = False
 
     @classmethod
     def from_env(cls) -> PalmMcpConfig:
@@ -22,7 +30,13 @@ class PalmMcpConfig:
         subject = os.environ.get("PALM_SUBJECT", "dev")
         llms_override = os.environ.get("PALM_LLMS_TXT", "").strip()
         llms_path = _resolve_llms_path(llms_override or None)
-        return cls(base_url=base_url, subject=subject, llms_txt_path=llms_path)
+        in_process = _env_flag("PALM_MCP_IN_PROCESS")
+        return cls(
+            base_url=base_url,
+            subject=subject,
+            llms_txt_path=llms_path,
+            in_process=in_process,
+        )
 
 
 def _resolve_llms_path(override: str | None) -> Path | None:

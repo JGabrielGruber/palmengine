@@ -150,6 +150,7 @@ class McpSurface(BaseSurface):
         bridge = get_mcp_http_bridge(
             base_url,
             subject=subject_from_request(request),
+            ctx=self._ctx,
         )
         if bridge is None:
             return ServerResponse(

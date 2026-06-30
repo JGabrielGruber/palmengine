@@ -1,8 +1,8 @@
-"""FastMCP server — Palm operator tools and resources over REST."""
+"""FastMCP server — Palm operator tools via in-process services or REST."""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
@@ -12,6 +12,9 @@ from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.resources import register_core_resources
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
 from palm.runtimes.mcp.tools import register_core_tools
+
+if TYPE_CHECKING:
+    from palm.common.runtimes.server.context import ServerContext
 
 try:
     from fastmcp import FastMCP
@@ -26,23 +29,39 @@ def create_mcp_server(
     config: PalmMcpConfig | None = None,
     *,
     client: Any | None = None,
+    ctx: ServerContext | None = None,
 ) -> FastMCP:
-    """Build a FastMCP server wired to a Palm REST backend."""
+    """Build a FastMCP server wired to in-process services or a REST backend."""
     resolved = config or PalmMcpConfig.from_env()
-    rest_client = client if client is not None else PalmRestClient(resolved)
+    backend = _resolve_backend(resolved, client=client, ctx=ctx)
     mcp = FastMCP("Palm Operator")
 
-    register_core_tools(mcp, rest_client)
-    register_core_resources(mcp, rest_client, config=resolved)
-    register_core_prompts(mcp, resolved, rest_client)
-    register_pattern_mcp_tools(mcp, rest_client)
-    register_app_mcp_tools(mcp, rest_client)
-    register_debug_tools(mcp, rest_client)
-    register_phase5_tools(mcp, rest_client)
+    register_core_tools(mcp, backend)
+    register_core_resources(mcp, backend, config=resolved)
+    register_core_prompts(mcp, resolved, backend)
+    register_pattern_mcp_tools(mcp, backend)
+    register_app_mcp_tools(mcp, backend)
+    register_debug_tools(mcp, backend)
+    register_phase5_tools(mcp, backend)
 
-    mcp._palm_client = rest_client  # type: ignore[attr-defined]
+    mcp._palm_client = backend  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]
     return mcp
+
+
+def _resolve_backend(
+    config: PalmMcpConfig,
+    *,
+    client: Any | None,
+    ctx: ServerContext | None,
+) -> Any:
+    if client is not None:
+        return client
+    if config.in_process or ctx is not None:
+        from palm.runtimes.mcp.in_process import create_in_process_backend
+
+        return create_in_process_backend(config, ctx=ctx)
+    return PalmRestClient(config)
 
 
 mcp = create_mcp_server()
