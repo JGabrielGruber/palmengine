@@ -9,8 +9,10 @@ from typing import TYPE_CHECKING, Any
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
 from palm.common.cqrs.query import Query
+from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
+from palm.common.services.internal import InternalService
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
@@ -46,6 +48,13 @@ class ServerContext:
                 runtime,
                 plan_registry=self.plan_registry,
             )
+            self._internal = InternalService(
+                commands=self._command_bus,
+                queries=self._query_bus,
+                schemas=build_schema_registry(),
+            )
+        else:
+            self._internal = host.internal
 
     @property
     def runtime(self) -> BaseRuntime:
@@ -63,6 +72,12 @@ class ServerContext:
     def query_bus(self) -> QueryBus:
         return self._query_bus
 
+    @property
+    def internal(self) -> InternalService:
+        if self._host is not None:
+            return self._host.internal
+        return self._internal
+
     def execute(self, command: Command) -> Any:
         return self._command_bus.dispatch(command)
 
@@ -77,3 +92,4 @@ class ServerContext:
         self._host = host
         self._command_bus = host.commands
         self._query_bus = host.queries
+        self._internal = host.internal

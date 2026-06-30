@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import CancelJobCommand, ProvideInputCommand, SubmitFlowCommand
-from palm.common.cqrs.query import GetJobContextQuery, GetJobStatusQuery, ListJobStatusQuery
+from palm.common.cqrs.query import GetJobStatusQuery
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.server.surfaces.rest import errors
@@ -32,7 +32,7 @@ def get_job(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> Serve
 
 
 def get_job_context(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:
-    result = ctx.ask(GetJobContextQuery(job_id=job_id))
+    result = ctx.internal.inspect_job(job_id)
     if isinstance(result, dict) and not result.get("found", True):
         return errors.job_not_found(job_id)
     return ok(read_model_body(result))
@@ -43,7 +43,7 @@ def list_jobs(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if isinstance(query, ServerResponse):
         return query
 
-    rows = ctx.ask(ListJobStatusQuery(status=query.get("status"), limit=None))
+    rows = ctx.internal.list_jobs(status=query.get("status"), limit=None)
     if rows and hasattr(rows[0], "to_dict"):
         rows = [row.to_dict() for row in rows]
 

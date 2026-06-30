@@ -15,7 +15,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
-
 from palm.app.host.router import RuntimeRouter
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
@@ -28,6 +27,7 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
     SubmitProcessCommand,
 )
+from palm.common.cqrs.instance_inspect import handle_inspect_instance
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
 from palm.common.cqrs.projections.resource_invocation import ResourceInvocationProjection
@@ -39,6 +39,7 @@ from palm.common.cqrs.query import (
     GetJobStatusQuery,
     GetProcessQuery,
     GetResourceInvocationsQuery,
+    InspectInstanceQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -48,10 +49,10 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
-from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
+from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns._registry import iter_cqrs_contributors
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
@@ -236,6 +237,8 @@ class HostQueryHandlers:
             return self._get_job(query)
         if isinstance(query, GetJobContextQuery):
             return self._get_job_context(query)
+        if isinstance(query, InspectInstanceQuery):
+            return handle_inspect_instance(query, self)
         if isinstance(query, ListJobStatusQuery):
             return self._job_board.list_jobs(query)
         if isinstance(query, GetResourceInvocationsQuery):
@@ -358,6 +361,7 @@ def collect_cqrs_query_types() -> tuple[type, ...]:
         GetProcessQuery,
         GetJobStatusQuery,
         GetJobContextQuery,
+        InspectInstanceQuery,
         ListJobStatusQuery,
         GetResourceInvocationsQuery,
         ListResourceInvocationsQuery,

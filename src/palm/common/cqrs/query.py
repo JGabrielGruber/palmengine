@@ -104,6 +104,13 @@ class GetProcessQuery(Query):
     process_id: str
 
 
+@dataclass(frozen=True)
+class InspectInstanceQuery(Query):
+    """Rich instance inspect view — pattern-aware via CQRS wiring."""
+
+    instance_id: str
+
+
 @runtime_checkable
 class QueryHandler(Protocol):
     """Answer a single query type."""

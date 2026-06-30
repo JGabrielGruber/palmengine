@@ -14,7 +14,6 @@ from palm.patterns._registry import (
     register_mcp_contributor,
     register_projection_factory,
 )
-from palm.patterns.wizard.bindings.mcp import register_wizard_mcp_tools
 from palm.patterns.wizard.bindings.bridges import register_wizard_bridges
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
@@ -31,6 +30,11 @@ from palm.patterns.wizard.bindings.cqrs.queries import (
     GetWizardStatusQuery,
     ListWizardProgressQuery,
 )
+from palm.patterns.wizard.bindings.cqrs.schemas import (
+    WIZARD_COMMAND_SCHEMAS,
+    WIZARD_QUERY_SCHEMAS,
+)
+from palm.patterns.wizard.bindings.mcp import register_wizard_mcp_tools
 
 
 class WizardApp(PatternApp):
@@ -77,6 +81,9 @@ class WizardApp(PatternApp):
                     GetWizardStatusQuery,
                     ListWizardProgressQuery,
                 ),
+                command_schemas=WIZARD_COMMAND_SCHEMAS,
+                query_schemas=WIZARD_QUERY_SCHEMAS,
+                instance_status_query=GetWizardStatusQuery,
                 handle_command=handle_wizard_command,
                 handle_query=handle_wizard_query,
             )

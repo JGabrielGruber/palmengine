@@ -49,6 +49,10 @@ from palm.common.cqrs.query import (
     ListJobStatusQuery,
     Query,
 )
+from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
+from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
+from palm.core.event import EventEngine
+from palm.core.storage import StorageEngine
 from palm.patterns._registry import get_projection_factory, registered_projection_factories
 from palm.patterns.wizard.bindings.cqrs.projection import (
     WizardProgressProjection,
@@ -58,10 +62,6 @@ from palm.patterns.wizard.bindings.cqrs.queries import (
     GetWizardProgressQuery,
     ListWizardProgressQuery,
 )
-from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
-from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
-from palm.core.event import EventEngine
-from palm.core.storage import StorageEngine
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -111,6 +111,8 @@ class ApplicationHost:
         self._webhook_dispatcher: WebhookDispatcher | None = None
         self._event_recorder = HostEventRecorder()
         self._last_recovery: dict[str, Any] | None = None
+        self._schema_registry: Any | None = None
+        self._internal: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -131,6 +133,16 @@ class ApplicationHost:
     @property
     def queries(self) -> QueryBus:
         return self._query_bus
+
+    @property
+    def schemas(self):
+        """CQRS schema registry for validation and introspection."""
+        return self._schema_registry
+
+    @property
+    def internal(self):
+        """Operational inspect/debug service API."""
+        return self._internal
 
     @property
     def router(self) -> RuntimeRouter:
@@ -462,6 +474,15 @@ class ApplicationHost:
             resource_invocations=self._resource_projection,
             job_board=self._job_board_projection,
             instance_manager=self._app.instance_manager,
+        )
+        from palm.common.cqrs.schemas import build_schema_registry
+        from palm.common.services.internal import InternalService
+
+        self._schema_registry = build_schema_registry()
+        self._internal = InternalService(
+            commands=self._command_bus,
+            queries=self._query_bus,
+            schemas=self._schema_registry,
         )
 
     def _attach_projections(self) -> None:

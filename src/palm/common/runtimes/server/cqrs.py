@@ -7,7 +7,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
-
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     CancelJobCommand,
@@ -19,6 +18,7 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
     SubmitProcessCommand,
 )
+from palm.common.cqrs.instance_inspect import handle_inspect_instance
 from palm.common.cqrs.query import (
     GetFlowQuery,
     GetInstanceSnapshotQuery,
@@ -26,6 +26,7 @@ from palm.common.cqrs.query import (
     GetJobContextQuery,
     GetJobStatusQuery,
     GetProcessQuery,
+    InspectInstanceQuery,
     ListFlowsQuery,
     ListInstanceSnapshotsQuery,
     ListInstancesQuery,
@@ -35,17 +36,11 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
-from palm.common.interactive_runtime import (
-    provide_interactive_input_for_instance,
-    request_interactive_backtrack_for_instance,
-)
 from palm.common.job_context import build_job_context, instance_id_for_job
-from palm.common.patterns.pattern_read_model import build_pattern_read_model
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns._registry import iter_cqrs_contributors
-
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -178,6 +173,8 @@ class StandaloneQueryHandlers:
             return self._get_job(query)
         if isinstance(query, GetJobContextQuery):
             return self._get_job_context(query)
+        if isinstance(query, InspectInstanceQuery):
+            return handle_inspect_instance(query, self)
         if isinstance(query, ListJobStatusQuery):
             return self._list_jobs(query)
         if isinstance(query, ListInstancesQuery):
@@ -379,6 +376,7 @@ def wire_standalone_buses(
     query_types = [
         GetJobStatusQuery,
         GetJobContextQuery,
+        InspectInstanceQuery,
         ListJobStatusQuery,
         ListInstancesQuery,
         GetInstanceStatusQuery,

@@ -9,13 +9,13 @@ from palm.common.exceptions import InstanceNotFoundError
 from palm.common.interactive_runtime import resolve_interactive_job
 from palm.common.job_context import instance_id_for_job
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.services.errors import InstanceNotFoundServiceError
 from palm.core.orchestration import JobStatus
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
     SubmitWizardCommand,
 )
-from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
@@ -58,8 +58,9 @@ def submit_wizard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
 def get_wizard(
     ctx: ServerContext, request: ServerRequest, *, instance_id: str
 ) -> ServerResponse:
-    row = ctx.ask(GetWizardStatusQuery(instance_id=instance_id))
-    if row is None:
+    try:
+        row = ctx.internal.inspect_instance(instance_id)
+    except InstanceNotFoundServiceError:
         return errors.wizard_not_found(instance_id)
     return ok(read_model_body(row))
 
@@ -188,8 +189,9 @@ def resume_wizard_tick(
 def _wizard_view_or_not_found(
     ctx: ServerContext, instance_id: str
 ) -> dict[str, Any] | ServerResponse:
-    row = ctx.ask(GetWizardStatusQuery(instance_id=instance_id))
-    if row is None:
+    try:
+        row = ctx.internal.inspect_instance(instance_id)
+    except InstanceNotFoundServiceError:
         return errors.wizard_not_found(instance_id)
     return read_model_body(row)
 

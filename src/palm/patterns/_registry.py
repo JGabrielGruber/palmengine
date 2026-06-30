@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from palm.core.orchestration import Job
@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from palm.common.cqrs.command import Command
     from palm.common.cqrs.projection import Projection
     from palm.common.cqrs.query import Query
-    from palm.common.patterns.app import PatternApp
     from palm.common.patterns.build_context import PatternBuildContext
     from palm.core.behavior_tree import BasePattern
     from palm.core.storage import StorageEngine
@@ -75,6 +74,9 @@ class CqrsContributor:
     pattern_name: str
     command_types: tuple[type, ...] = ()
     query_types: tuple[type, ...] = ()
+    command_schemas: dict[type, Any] = field(default_factory=dict, compare=False, hash=False)
+    query_schemas: dict[type, Any] = field(default_factory=dict, compare=False, hash=False)
+    instance_status_query: type | None = None
     handle_command: CommandHandlerFn | None = None
     handle_query: QueryHandlerFn | None = None
 
@@ -328,6 +330,19 @@ def clear_projection_factories() -> None:
     """Remove projection factory registrations (primarily for tests)."""
     with _lock:
         _projection_factories.clear()
+
+
+def snapshot_cqrs_contributors() -> dict[str, CqrsContributor]:
+    """Return a shallow copy of CQRS contributors (primarily for tests)."""
+    with _lock:
+        return dict(_cqrs_contributors)
+
+
+def restore_cqrs_contributors(saved: dict[str, CqrsContributor]) -> None:
+    """Restore CQRS contributors from :func:`snapshot_cqrs_contributors`."""
+    with _lock:
+        _cqrs_contributors.clear()
+        _cqrs_contributors.update(saved)
 
 
 def clear_cqrs_contributors() -> None:

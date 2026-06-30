@@ -16,14 +16,18 @@ from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command, CommandHandler
 from palm.common.cqrs.projection import Projection, ProjectionManager
 from palm.common.cqrs.query import Query, QueryHandler
+from palm.common.cqrs.schemas import CqrsSchemaRegistry, ValidationResult, build_schema_registry
 
 __all__ = [
     "Command",
     "CommandBus",
     "CommandHandler",
+    "CqrsSchemaRegistry",
     "Projection",
     "ProjectionManager",
     "Query",
     "QueryBus",
     "QueryHandler",
+    "ValidationResult",
+    "build_schema_registry",
 ]
