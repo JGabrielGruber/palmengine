@@ -22,7 +22,11 @@ from palm.patterns.wizard import (
     materialize_wizard_step_schemas,
     validate_collected_answers,
 )
-from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitRegistry, CommitResult
+from palm.patterns.wizard.bindings.compensation.handler import (
+    CommitContext,
+    CommitRegistry,
+    CommitResult,
+)
 from palm.states import BlackboardState
 
 

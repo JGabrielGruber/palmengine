@@ -73,7 +73,4 @@ def test_resolve_mcp_wizard_input_collection_menu_routes_add_action() -> None:
         },
         "answers": {},
     }
-    assert (
-        resolve_mcp_wizard_input(input="add", value=None, wizard_view=wizard)
-        == "Add a new item"
-    )
+    assert resolve_mcp_wizard_input(input="add", value=None, wizard_view=wizard) == "Add a new item"

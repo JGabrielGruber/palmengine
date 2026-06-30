@@ -33,8 +33,7 @@ def test_common_has_no_wizard_named_modules() -> None:
     """``palm.common`` must not ship wizard-prefixed modules."""
     common_root = Path(__file__).resolve().parents[1] / "src" / "palm" / "common"
     offenders = sorted(
-        path.relative_to(common_root.parents[1])
-        for path in common_root.rglob("wizard*.py")
+        path.relative_to(common_root.parents[1]) for path in common_root.rglob("wizard*.py")
     )
     assert not offenders, "wizard-prefixed modules in palm.common:\n" + "\n".join(
         str(path) for path in offenders

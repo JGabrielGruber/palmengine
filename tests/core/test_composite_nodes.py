@@ -381,7 +381,9 @@ def test_parallel_skips_terminal_children_on_subsequent_ticks(test_state: TestSt
     assert ticks["slow"] == 2
 
 
-def test_parallel_success_on_any_succeeds_when_one_child_eventually_wins(test_state: TestState) -> None:
+def test_parallel_success_on_any_succeeds_when_one_child_eventually_wins(
+    test_state: TestState,
+) -> None:
     ticks = {"slow": 0}
     counter = {"fast": 0}
 
@@ -453,7 +455,9 @@ def test_repeat_fixed_times_succeeds(test_state: TestState) -> None:
     counter = {"n": 0}
     node = RepeatNode(
         "repeat",
-        child=_action("body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS),
+        child=_action(
+            "body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS
+        ),
         times=3,
     )
     assert node.tick(test_state) == PatternStatus.SUCCESS
@@ -522,7 +526,9 @@ def test_repeat_reset_clears_count(test_state: TestState) -> None:
     counter = {"n": 0}
     node = RepeatNode(
         "repeat",
-        child=_action("body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS),
+        child=_action(
+            "body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS
+        ),
         times=2,
     )
     assert node.tick(test_state) == PatternStatus.SUCCESS
@@ -541,7 +547,9 @@ def test_retry_succeeds_on_first_attempt(test_state: TestState) -> None:
     counter = {"n": 0}
     node = RetryNode(
         "retry",
-        child=_action("body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS),
+        child=_action(
+            "body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.SUCCESS
+        ),
         max_attempts=3,
     )
     assert node.tick(test_state) == PatternStatus.SUCCESS
@@ -564,7 +572,9 @@ def test_retry_fails_after_max_attempts(test_state: TestState) -> None:
     counter = {"n": 0}
     node = RetryNode(
         "retry",
-        child=_action("body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.FAILURE),
+        child=_action(
+            "body", lambda _s: counter.update({"n": counter["n"] + 1}) or PatternStatus.FAILURE
+        ),
         max_attempts=3,
     )
     assert node.tick(test_state) == PatternStatus.FAILURE

@@ -70,7 +70,7 @@ class WizardPages:
             f"{flash_banners(request)}"
             f"{workspace}"
             '<section class="section muted">'
-            f'<p>Instance <code>{escape(instance_id)}</code> · '
+            f"<p>Instance <code>{escape(instance_id)}</code> · "
             f'<a href="/v1/wizards/{escape(instance_id)}">API</a></p>'
             "</section>"
         )

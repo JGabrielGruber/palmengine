@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
-
 from palm.common.exceptions import InstanceNotFoundError
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError

@@ -13,17 +13,9 @@ from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
 from palm.core.orchestration import JobStatus
 from palm.patterns._registry import get_child_wait_hooks
-from palm.patterns.wizard.bindings.resource.child_wait import (
-    child_job_id_from_wait,
-    child_wait_from_result,
-    clear_child_wait,
-    default_child_wait_prompt,
-    get_child_wait,
-    set_child_wait,
-)
-from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
-from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.state import get_answers, set_answers
+from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 from palm.patterns.wizard.bindings.events.support import (
     build_prompt_bundle,
     clear_active_prompt,
@@ -32,8 +24,16 @@ from palm.patterns.wizard.bindings.events.support import (
     leave_wizard_step,
     publish_prompt,
 )
+from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.bindings.resource.child_wait import (
+    child_job_id_from_wait,
+    child_wait_from_result,
+    clear_child_wait,
+    default_child_wait_prompt,
+    get_child_wait,
+    set_child_wait,
+)
 from palm.patterns.wizard.flow.phases._base import WizardPhaseContext, wizard_prompt_key
-from palm.patterns.wizard.bindings.context.state import get_answers, set_answers
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -214,7 +214,9 @@ class WizardResourceLeaf(LeafNode):
 
         child_wait = get_child_wait_hooks("wizard")
         child_job = (
-            child_wait.poll_child_for_parent(state, child_job_id) if child_wait is not None else None
+            child_wait.poll_child_for_parent(state, child_job_id)
+            if child_wait is not None
+            else None
         )
         if child_job is None:
             publish_prompt(
@@ -382,7 +384,9 @@ class WizardResourceLeaf(LeafNode):
         if isinstance(trace, dict) and trace.get("error"):
             return str(trace["error"])
         action = (
-            self._ctx.step.resource_action or trace.get("action") if isinstance(trace, dict) else None
+            self._ctx.step.resource_action or trace.get("action")
+            if isinstance(trace, dict)
+            else None
         )
         action_label = action or "invoke"
         return f"Resource {self._ctx.step.resource_ref!r} (action={action_label}) failed"

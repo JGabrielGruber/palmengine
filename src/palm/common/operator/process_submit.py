@@ -27,9 +27,7 @@ def process_submit_hints(process: dict[str, Any]) -> list[str]:
                     continue
                 flow = entry.get("flow")
                 if isinstance(flow, str) and flow:
-                    hints.append(
-                        f'{name}: palm_submit_wizard(flow_name="{flow}")'
-                    )
+                    hints.append(f'{name}: palm_submit_wizard(flow_name="{flow}")')
 
     entry_flow = metadata.get("entry_flow")
     if isinstance(entry_flow, str) and entry_flow:

@@ -15,7 +15,11 @@ from palm.patterns.wizard import (
     WizardPattern,
     WizardStepConfig,
 )
-from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitRegistry, CommitResult
+from palm.patterns.wizard.bindings.compensation.handler import (
+    CommitContext,
+    CommitRegistry,
+    CommitResult,
+)
 from palm.states import BlackboardState
 
 

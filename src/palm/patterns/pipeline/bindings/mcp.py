@@ -19,11 +19,7 @@ def register_pipeline_mcp_tools(mcp: Any, rest_client: Any) -> None:
         if not isinstance(pattern, dict):
             pattern = {}
 
-        flow_ref = (
-            metadata.get("flow_name")
-            or metadata.get("flow")
-            or pattern.get("flow")
-        )
+        flow_ref = metadata.get("flow_name") or metadata.get("flow") or pattern.get("flow")
         if not flow_ref:
             raise ValueError(f"job {job_id!r} has no flow reference in metadata")
 

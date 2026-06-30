@@ -10,11 +10,11 @@ from typing import Any
 from palm.core.behavior_tree import DecoratorNode, RootNode, SequenceNode
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.context import BaseState
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig
-from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.bindings.context.state import merge_compositional_state_into_answers
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig
 from palm.patterns.wizard.bindings.events.support import EventEmitter, emit_wizard_event
+from palm.patterns.wizard.bindings.events.types import WizardEventType
 
 BacktrackNotifier = Callable[[int, BaseState, str, Any], None]
 

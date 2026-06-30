@@ -57,7 +57,9 @@ class RestProvider(BaseProvider):
 
     def health(self) -> ProviderHealth:
         if not self._base_url:
-            return ProviderHealth(healthy=True, message="rest provider ready (no base_url configured)")
+            return ProviderHealth(
+                healthy=True, message="rest provider ready (no base_url configured)"
+            )
         try:
             RestInvokeParams.from_mapping({"base_url": self._base_url}).resolve_url("")
             return ProviderHealth(healthy=True, message=f"base_url configured: {self._base_url}")

@@ -122,6 +122,10 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "RUF"]
 ignore = ["E501", "B008"]
 
+[tool.ruff.lint.per-file-ignores]
+# Wizard packages use intentional import order to avoid circular imports.
+"src/palm/patterns/wizard/**" = ["I001"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["palm"]
 

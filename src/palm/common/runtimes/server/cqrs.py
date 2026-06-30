@@ -401,5 +401,3 @@ def _safe_wizard_step(runtime: BaseRuntime, job_id: str) -> str | None:
         return runtime.current_wizard_step(job_id)
     except TypeError:
         return None
-
-

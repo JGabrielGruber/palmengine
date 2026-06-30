@@ -6,6 +6,14 @@ from typing import Any
 
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.context import BaseState
+from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
+from palm.patterns.wizard.bindings.events.support import emit_wizard_event
+from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.flow.collection.phases._base import (
+    CollectionPhaseLeaf,
+    step_collection_key,
+    step_label_field,
+)
 from palm.patterns.wizard.flow.collection.state import (
     clear_collection_session,
     collection_remove_index,
@@ -14,15 +22,7 @@ from palm.patterns.wizard.flow.collection.state import (
     set_collection_items,
     set_collection_phase,
 )
-from palm.patterns.wizard.bindings.events.types import WizardEventType
-from palm.patterns.wizard.bindings.events.support import emit_wizard_event
 from palm.patterns.wizard.flow.phases._base import WizardPhaseContext, is_affirmative
-from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
-from palm.patterns.wizard.flow.collection.phases._base import (
-    CollectionPhaseLeaf,
-    step_collection_key,
-    step_label_field,
-)
 
 
 class CollectionRemovePhase(CollectionPhaseLeaf):

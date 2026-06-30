@@ -133,9 +133,7 @@ def clear_validation_feedback(state: BaseState) -> None:
     state.delete(WizardKeys.VALIDATION_ERROR)
     state.delete(WizardKeys.VALIDATION_ERRORS)
     prompt = state.get(WizardKeys.ACTIVE_PROMPT)
-    if isinstance(prompt, dict) and (
-        "validation_error" in prompt or "validation_errors" in prompt
-    ):
+    if isinstance(prompt, dict) and ("validation_error" in prompt or "validation_errors" in prompt):
         cleaned = dict(prompt)
         cleaned.pop("validation_error", None)
         cleaned.pop("validation_errors", None)

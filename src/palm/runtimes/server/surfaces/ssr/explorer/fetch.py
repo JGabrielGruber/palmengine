@@ -19,8 +19,8 @@ from palm.common.cqrs.query import (
     ListProcessesQuery,
     ListResourceInvocationsQuery,
 )
-from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
 from palm.core.registry import pattern_registry
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

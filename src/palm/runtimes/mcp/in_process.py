@@ -153,7 +153,9 @@ class PalmInProcessBackend:
         self._ctx.wait_until_idle()
         job_view = self._ctx.ask(GetJobStatusQuery(job_id=job_id))
         status = (
-            job_view.get("status") if isinstance(job_view, dict) else getattr(job_view, "status", "")
+            job_view.get("status")
+            if isinstance(job_view, dict)
+            else getattr(job_view, "status", "")
         )
         step = job_view.get("step") if isinstance(job_view, dict) else None
         return {"job_id": job_id, "slug": slug, "status": status, "step": step}
@@ -359,7 +361,6 @@ class PalmInProcessBackend:
         return snapshot_detail(index, snapshot)
 
     def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
-
         resource_ref = str(body.get("resource_ref") or "").strip()
         if not resource_ref:
             raise PalmRestError(400, "resource_ref is required")

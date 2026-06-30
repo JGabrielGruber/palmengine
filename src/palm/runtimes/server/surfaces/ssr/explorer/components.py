@@ -307,7 +307,11 @@ def wizard_prompt_card(
 
     title = prompt.get("title") or prompt.get("step") or "Current step"
     is_collection = _is_collection_prompt(prompt)
-    body = collection_form(instance_id, prompt) if is_collection else wizard_input_form(instance_id, prompt)
+    body = (
+        collection_form(instance_id, prompt)
+        if is_collection
+        else wizard_input_form(instance_id, prompt)
+    )
     phase_badge = ""
     if is_collection:
         phase = str(prompt.get("collection_phase") or "menu")
@@ -641,8 +645,7 @@ def wizard_answers_section(wizard: dict[str, Any]) -> str:
             '<p class="muted">No answers captured yet.</p></section>'
         )
     rows = [
-        [escape(str(key)), escape(_preview_value(value))]
-        for key, value in sorted(answers.items())
+        [escape(str(key)), escape(_preview_value(value))] for key, value in sorted(answers.items())
     ]
     return (
         '<section class="panel"><h3>Answers so far</h3>'
@@ -702,8 +705,7 @@ def wizard_step_timeline(wizard: dict[str, Any], *, instance_id: str) -> str:
     trace_html = ""
     if trace_items:
         trace_html = (
-            '<h4>Recent backtracks</h4><ul class="wizard-timeline">'
-            f'{"".join(trace_items)}</ul>'
+            '<h4>Recent backtracks</h4><ul class="wizard-timeline">' f'{"".join(trace_items)}</ul>'
         )
 
     return (
@@ -777,7 +779,9 @@ def wizard_workspace(
     completed_steps = progress.get("completed_steps") or []
     current = progress.get("current_step") or wizard.get("current_step_slug")
     total = total_steps or max(len(completed_steps) + (1 if current else 0), 1)
-    flow_name = wizard.get("flow_name") or wizard.get("wizard_progress", {}).get("wizard_name") or "Wizard"
+    flow_name = (
+        wizard.get("flow_name") or wizard.get("wizard_progress", {}).get("wizard_name") or "Wizard"
+    )
 
     header = (
         '<header class="wizard-header">'

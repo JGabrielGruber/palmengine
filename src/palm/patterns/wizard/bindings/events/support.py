@@ -11,9 +11,9 @@ from collections.abc import Callable
 from typing import Any
 
 from palm.core.context import BaseState, ContextEngine
-from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.bindings.context.state import enrich_prompt_bundle, enter_step, leave_step
+from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 
 EventEmitter = Callable[[str, dict[str, Any]], None]
 

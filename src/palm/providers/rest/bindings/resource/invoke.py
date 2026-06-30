@@ -6,7 +6,7 @@ from typing import Any
 
 from palm.core.resource.result import ProviderResult
 from palm.providers.rest.bindings.transport.http import http_request
-from palm.providers.rest.exceptions import RestProviderError, RestRemoteError
+from palm.providers.rest.exceptions import RestRemoteError
 from palm.providers.rest.flow.params import RestInvokeParams
 
 

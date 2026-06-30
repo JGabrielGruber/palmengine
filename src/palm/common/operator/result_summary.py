@@ -27,11 +27,7 @@ def summarize_commit_result(result: Any) -> dict[str, Any] | None:
         items = result.get(list_key)
         if not isinstance(items, list):
             continue
-        ids = [
-            str(item["id"])
-            for item in items
-            if isinstance(item, dict) and item.get("id")
-        ]
+        ids = [str(item["id"]) for item in items if isinstance(item, dict) and item.get("id")]
         if ids:
             summary["node_ids"] = ids
             break

@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from palm.core.behavior_tree import PatternStatus
-from palm.patterns.wizard import WizardConfig, WizardKeys, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitRegistry, CommitResult
-from palm.patterns.wizard.bindings.context.state import get_answers, merge_compositional_state_into_answers
+from palm.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
+from palm.patterns.wizard.bindings.compensation.handler import (
+    CommitContext,
+    CommitRegistry,
+    CommitResult,
+)
+from palm.patterns.wizard.bindings.context.state import (
+    get_answers,
+    merge_compositional_state_into_answers,
+)
 from palm.states import BlackboardState
 
 

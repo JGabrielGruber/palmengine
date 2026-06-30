@@ -28,8 +28,7 @@ def build_wizard_view(
         "status": status,
         "flow_name": instance.get("flow_name"),
         "process_name": instance.get("process_name"),
-        "current_step_slug": instance.get("current_step_slug")
-        or instance.get("wizard_step_slug"),
+        "current_step_slug": instance.get("current_step_slug") or instance.get("wizard_step_slug"),
         "wizard_progress": wizard_progress,
         "prompt": _prompt_block(pattern),
         "answers": _answers_block(pattern, wizard_progress),

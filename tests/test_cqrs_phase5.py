@@ -14,8 +14,6 @@ from palm.common.compensation import (
 )
 from palm.common.compensation.registry import CompensationRegistry
 from palm.common.cqrs.projections.instance_index import InstanceIndexProjection, InstanceReadModel
-from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
-from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.events import (
     OutboxStore,
@@ -25,6 +23,8 @@ from palm.common.events import (
 )
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.storage import StorageEngine
+from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
+from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 
 def _storage() -> StorageEngine:

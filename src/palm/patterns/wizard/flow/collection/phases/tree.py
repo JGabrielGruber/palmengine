@@ -5,7 +5,10 @@ from __future__ import annotations
 from palm.core.behavior_tree import BaseNode
 from palm.patterns.wizard.flow.collection.state import collection_phase
 from palm.patterns.wizard.flow.phases._base import WizardPhaseContext
-from palm.patterns.wizard.bindings.behavior_tree.bt import PhaseKeyedSelectorNode, PhaseTransitionLoopNode
+from palm.patterns.wizard.bindings.behavior_tree.bt import (
+    PhaseKeyedSelectorNode,
+    PhaseTransitionLoopNode,
+)
 from palm.patterns.wizard.flow.collection.phases.fields import build_fields_phase
 from palm.patterns.wizard.flow.collection.phases.menu import build_menu_phase
 from palm.patterns.wizard.flow.collection.phases.remove import build_remove_phase

@@ -20,8 +20,8 @@ from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSna
 from palm.common.managers import InstanceManager
 from palm.common.resource import resource_definition_resolver
 from palm.common.runtimes.hooks import (
-    ChildCompletionHook,
     AuthMiddleware,
+    ChildCompletionHook,
     DriveObservabilityHook,
     JobExecutionContextHook,
     authenticate_runtime,

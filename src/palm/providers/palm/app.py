@@ -11,6 +11,8 @@ from palm.providers._registry import register_runtime_accessor, register_runtime
 from palm.providers.palm.bindings.runtimes.wiring import (
     bind_palm_runtime,
     clear_palm_runtime,
+)
+from palm.providers.palm.bindings.runtimes.wiring import (
     get_bound_runtime as resolve_bound_runtime,
 )
 

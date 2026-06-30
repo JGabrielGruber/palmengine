@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
+from palm.common.operator.drive_inputs import drive_wizard_inputs
 from palm.common.operator.input_coercion import resolve_mcp_job_input, resolve_mcp_wizard_input
 from palm.common.operator.waiting_jobs import slim_waiting_job_row
-from palm.common.operator.drive_inputs import drive_wizard_inputs
 from palm.runtimes.mcp.rest_client import PalmRestError
 from palm.runtimes.mcp.submit_body import submit_body
 
@@ -32,16 +32,14 @@ def register_core_tools(mcp: Any, rest_client: Any) -> None:
             raw_rows = [
                 row
                 for row in raw_rows
-                if needle
-                in str((row.get("metadata") or {}).get("pattern", "")).lower()
+                if needle in str((row.get("metadata") or {}).get("pattern", "")).lower()
             ]
         if flow:
             needle = flow.lower()
             raw_rows = [
                 row
                 for row in raw_rows
-                if needle
-                in str((row.get("metadata") or {}).get("flow_name", "")).lower()
+                if needle in str((row.get("metadata") or {}).get("flow_name", "")).lower()
                 or needle in str((row.get("metadata") or {}).get("flow", "")).lower()
             ]
         rows = [slim_waiting_job_row(row) for row in raw_rows]

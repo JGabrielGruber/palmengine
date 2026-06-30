@@ -9,10 +9,14 @@ from typing import Any
 from palm.common.resource.compensation import resource_refs_for_compensation
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
-from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitResult
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.state import (
+    get_answers,
+    merge_compositional_state_into_answers,
+)
 from palm.patterns.wizard.bindings.events.support import emit_wizard_event, leave_wizard_step
+from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.flow.phases._base import (
     WizardPhaseContext,
     activate_prompt,
@@ -21,7 +25,6 @@ from palm.patterns.wizard.flow.phases._base import (
     enter_phase_scope,
     is_affirmative,
 )
-from palm.patterns.wizard.bindings.context.state import get_answers, merge_compositional_state_into_answers
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -154,7 +157,9 @@ class WizardCommitLeaf(InteractiveLeaf):
         return PatternStatus.FAILURE
 
 
-def build_commit_phase(ctx: WizardPhaseContext, *, hook_name: str | None = None) -> WizardCommitLeaf:
+def build_commit_phase(
+    ctx: WizardPhaseContext, *, hook_name: str | None = None
+) -> WizardCommitLeaf:
     hook = hook_name or ctx.step.commit_hook
     if not hook:
         raise ValueError(f"Commit step {ctx.step.slug!r} requires commit_hook")

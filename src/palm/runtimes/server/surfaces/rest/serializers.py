@@ -39,6 +39,3 @@ def snapshot_detail(index: int, snapshot: StateSnapshot) -> dict[str, Any]:
         "snapshot_id": str(index),
         **snapshot.to_dict(),
     }
-
-
-

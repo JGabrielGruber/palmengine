@@ -363,7 +363,7 @@ def wizard_resource_form(
     auto_trigger = ' hx-trigger="load"' if htmx else ""
     body = (
         f"{prompt_html}{validation_html}"
-        "<p class=\"muted\">Resource steps run automatically — launching the nested flow now.</p>"
+        '<p class="muted">Resource steps run automatically — launching the nested flow now.</p>'
     )
     toolbar = (
         f'<form class="resource-step-form resume-wizard-tick" action="{escape(resume_action)}" '
@@ -372,7 +372,9 @@ def wizard_resource_form(
         f"{_wizard_loading_indicator()}"
         f"</form>"
     )
-    return f'<div class="resource-step-panel" role="region" aria-live="polite">{body}{toolbar}</div>'
+    return (
+        f'<div class="resource-step-panel" role="region" aria-live="polite">{body}{toolbar}</div>'
+    )
 
 
 def wizard_input_form(
@@ -430,7 +432,7 @@ def wizard_input_form(
         f"</div>"
         f'<div class="form-actions">'
         f'<button class="btn-primary" type="submit">Submit input</button>'
-        f'{_wizard_loading_indicator()}'
+        f"{_wizard_loading_indicator()}"
         f"</div>"
         f"</form>"
     )
@@ -526,7 +528,7 @@ def collection_field_form(instance_id: str, prompt: Mapping[str, Any]) -> str:
         f"{value_field}"
         f'<div class="form-actions">'
         f'<button class="btn-primary" type="submit">Save field</button>'
-        f'{_wizard_loading_indicator()}'
+        f"{_wizard_loading_indicator()}"
         f"</div>"
         f"</form>"
         f'<div class="form-actions" style="margin-top:0.5rem">{cancel_btn}</div>'

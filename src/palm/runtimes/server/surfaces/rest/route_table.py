@@ -223,9 +223,7 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             path="/v1/wizards/{instance_id}/resume-wizard-tick",
             group="Wizards",
             summary="Resume wizard tick",
-            description=(
-                "Re-drive a waiting wizard (for example auto-run a resource step)."
-            ),
+            description=("Re-drive a waiting wizard (for example auto-run a resource step)."),
             auth_required=True,
         ),
         RouteDefinition(

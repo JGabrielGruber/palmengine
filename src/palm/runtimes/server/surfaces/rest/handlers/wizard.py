@@ -46,9 +46,7 @@ def submit_wizard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return accepted(_wizard_submission_body(view, session.instance_id))
 
 
-def get_wizard(
-    ctx: ServerContext, request: ServerRequest, *, instance_id: str
-) -> ServerResponse:
+def get_wizard(ctx: ServerContext, request: ServerRequest, *, instance_id: str) -> ServerResponse:
     try:
         row = ctx.internal.inspect_instance(instance_id)
     except InstanceNotFoundServiceError:
@@ -168,5 +166,3 @@ def _wizard_submission_body(view: dict[str, Any], instance_id: str) -> dict[str,
         "status": view.get("status"),
         "metadata": view.get("metadata") or {},
     }
-
-

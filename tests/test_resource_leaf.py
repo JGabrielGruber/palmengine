@@ -10,8 +10,8 @@ from palm.common.resource import build_resource_leaf, resource_definition_resolv
 from palm.core.behavior_tree import PatternStatus, ResourceLeaf
 from palm.core.resource import ResourceEngine
 from palm.definitions import ResourceDefinition
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
 

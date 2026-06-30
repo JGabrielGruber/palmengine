@@ -31,7 +31,9 @@ def list_resources(ctx: ServerContext, request: ServerRequest) -> ServerResponse
     return ok(list_envelope("resources", rows, params))
 
 
-def get_resource(ctx: ServerContext, request: ServerRequest, *, resource_ref: str) -> ServerResponse:
+def get_resource(
+    ctx: ServerContext, request: ServerRequest, *, resource_ref: str
+) -> ServerResponse:
     try:
         payload = ctx.definition.get_resource(resource_ref)
     except DefinitionNotFoundServiceError:
@@ -85,5 +87,3 @@ def _provider_result_body(result: ProviderResult) -> dict[str, Any]:
         "error": result.error,
         "metadata": dict(result.metadata),
     }
-
-

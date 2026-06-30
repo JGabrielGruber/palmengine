@@ -22,7 +22,11 @@ from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
 
 class _Phase5FakeClient:
     def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
-        return {"success": True, "resource_ref": body.get("resource_ref"), "action": body.get("action")}
+        return {
+            "success": True,
+            "resource_ref": body.get("resource_ref"),
+            "action": body.get("action"),
+        }
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         return {

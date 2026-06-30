@@ -27,7 +27,6 @@ from palm.patterns.wizard.bindings.cqrs.queries import (
 if TYPE_CHECKING:
     from palm.common.cqrs.command import Command
     from palm.common.cqrs.query import Query
-    from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
 
 
 def _resolve_runtime(ctx: Any, runtime_name: str | None) -> Any:
@@ -107,9 +106,7 @@ def handle_wizard_query(query: Query, ctx: Any) -> Any | None:
             return rows
         active_ids = {
             row.instance_id
-            for row in instances.list_instances(
-                ListInstancesQuery(include_terminal=False)
-            )
+            for row in instances.list_instances(ListInstancesQuery(include_terminal=False))
         }
         return [row for row in rows if row.instance_id in active_ids]
     if isinstance(query, GetWizardStatusQuery):
@@ -126,9 +123,7 @@ def get_wizard_status(query: GetWizardStatusQuery, ctx: Any) -> dict[str, Any] |
         instance_payload = instance.to_dict()
         job_id = instance.job_id
     elif hasattr(ctx, "_get_instance"):
-        instance_payload = ctx._get_instance(
-            GetInstanceStatusQuery(instance_id=query.instance_id)
-        )
+        instance_payload = ctx._get_instance(GetInstanceStatusQuery(instance_id=query.instance_id))
         if instance_payload is None:
             return None
         job_id = str(instance_payload.get("job_id") or query.instance_id)

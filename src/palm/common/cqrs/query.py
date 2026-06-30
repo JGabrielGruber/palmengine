@@ -117,6 +117,3 @@ class QueryHandler(Protocol):
 
     def ask(self, query: Query) -> object:
         """Return the read model result."""
-
-
-

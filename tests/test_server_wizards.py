@@ -186,7 +186,10 @@ def test_backtrack_wizard_returns_to_previous_step(server: ServerRuntime) -> Non
     assert isinstance(payload, dict)
     assert payload["to_step"] == "step_1"
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert payload.get("prompt", {}).get("step") == "step_1" or payload.get("current_step_slug") == "step_1"
+    assert (
+        payload.get("prompt", {}).get("step") == "step_1"
+        or payload.get("current_step_slug") == "step_1"
+    )
 
 
 def test_backtrack_wizard_rejects_first_step(server: ServerRuntime) -> None:

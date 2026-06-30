@@ -5,16 +5,14 @@ from __future__ import annotations
 import pytest
 
 import palm.providers  # noqa: F401 — register providers
+from palm.core.behavior_tree import PatternStatus
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.patterns.wizard import WizardKeys
+from palm.patterns.wizard import WizardConfig, WizardKeys, WizardPattern, WizardStepConfig
 from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
-from palm.core.behavior_tree import PatternStatus
-from palm.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
-
 
 FLOW_CAPTURE_NODE = "capture-node"
 FLOW_CAPTURE_KNOWLEDGE = "capture-knowledge"

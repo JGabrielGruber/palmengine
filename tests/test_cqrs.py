@@ -15,7 +15,6 @@ from palm.core.storage import StorageEngine
 
 
 def _storage() -> StorageEngine:
-
     engine = StorageEngine()
     engine.initialize()
     engine.select("memory")

@@ -7,8 +7,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
-from palm.patterns.wizard.flow.collection.config import CollectionFieldConfig
 from palm.patterns.wizard.bindings.definitions.kinds import PROTECTED_KINDS, WizardStepKind
+from palm.patterns.wizard.flow.collection.config import CollectionFieldConfig
 from palm.patterns.wizard.flow.validation import StepValidationRule
 
 if TYPE_CHECKING:

@@ -141,9 +141,7 @@ def test_studio_save_flow_registers_in_repository(server: ServerRuntime) -> None
             "steps": [{"slug": "one", "title": "One", "prompt": "One?"}],
         },
     }
-    status, payload = _json(
-        server.base_url, "POST", "/v1/studio/definitions/flows", body=body
-    )
+    status, payload = _json(server.base_url, "POST", "/v1/studio/definitions/flows", body=body)
     assert status == 200
     assert payload["saved"] is True
     assert payload["flow"]["name"] == "studio-saved-flow"
@@ -172,9 +170,7 @@ def test_studio_save_process_registers_in_repository(server: ServerRuntime) -> N
             }
         ],
     }
-    status, payload = _json(
-        server.base_url, "POST", "/v1/studio/definitions/processes", body=body
-    )
+    status, payload = _json(server.base_url, "POST", "/v1/studio/definitions/processes", body=body)
     assert status == 200
     assert payload["saved"] is True
     assert payload["process"]["name"] == "studio-saved-process"
@@ -191,16 +187,12 @@ def test_studio_templates_list_and_load(server: ServerRuntime) -> None:
     assert "getting-started" in payload["categories"]
 
     template_id = payload["templates"][0]["id"]
-    status, detail = _json(
-        server.base_url, "GET", f"/v1/studio/templates/{template_id}"
-    )
+    status, detail = _json(server.base_url, "GET", f"/v1/studio/templates/{template_id}")
     assert status == 200
     assert detail["template"]["flow"]["pattern"]
 
     encoded_id = "template%3Apipeline-transform"
-    status, encoded = _json(
-        server.base_url, "GET", f"/v1/studio/templates/{encoded_id}"
-    )
+    status, encoded = _json(server.base_url, "GET", f"/v1/studio/templates/{encoded_id}")
     assert status == 200
     assert encoded["template"]["id"] == "template:pipeline-transform"
 

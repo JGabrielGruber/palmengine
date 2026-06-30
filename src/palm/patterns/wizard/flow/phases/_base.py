@@ -10,9 +10,9 @@ from typing import Any
 from palm.core.behavior_tree.nodes.leaf.interactive_leaf import InteractiveLeaf
 from palm.core.context import BaseState, ContextEngine
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 from palm.patterns.wizard.bindings.events.support import (
     EventEmitter,
     build_prompt_bundle,

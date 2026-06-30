@@ -5,15 +5,14 @@ from __future__ import annotations
 import pytest
 
 import palm.providers  # noqa: F401 — register providers
+from palm.common.interactive_runtime import provide_interactive_input_for_instance
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
 from palm.patterns.wizard import WizardKeys
-from palm.common.interactive_runtime import provide_interactive_input_for_instance
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from palm.runtimes.cli.shared.job_inspect import inspect_job_json
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.server.surfaces.ssr.explorer.forms import wizard_input_form
-
 
 FLOW_CHILD = "capture-knowledge"
 FLOW_MENU = "main-menu"

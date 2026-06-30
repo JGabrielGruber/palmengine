@@ -4,18 +4,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
 from palm.common.child_wait import resume_child_wait_for_instance
+from palm.common.cqrs.command import ProvideInputCommand, SubmitFlowCommand
+from palm.common.exceptions import InstanceNotFoundError
 from palm.common.interactive_runtime import resolve_interactive_job
+from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.runtimes.server.ssr.render import html_response, redirect
 from palm.core.orchestration import JobStatus
+from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
-from palm.common.exceptions import InstanceNotFoundError
-from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.runtimes.server.ssr.render import html_response, redirect
-from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.server.surfaces.ssr.explorer.collection_input import resolve_wizard_form_input
 from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
@@ -55,9 +55,7 @@ class ExplorerActions:
         self._ctx.wait_until_idle()
         return redirect(f"/explorer/jobs/{job_id}?notice=Input+accepted")
 
-    def provide_wizard_input(
-        self, request: ServerRequest, *, instance_id: str
-    ) -> ServerResponse:
+    def provide_wizard_input(self, request: ServerRequest, *, instance_id: str) -> ServerResponse:
         wizard = self._fetch.get_wizard(instance_id)
         if wizard is None:
             return redirect(f"/explorer/instances/{instance_id}?error=Wizard+not+found")
@@ -106,18 +104,14 @@ class ExplorerActions:
                 ProvideWizardInputCommand(instance_id=instance_id, value="Edit an item")
             )
             self._ctx.wait_until_idle()
-            self._ctx.execute(
-                ProvideWizardInputCommand(instance_id=instance_id, value=selection)
-            )
+            self._ctx.execute(ProvideWizardInputCommand(instance_id=instance_id, value=selection))
             return
         if kind == "__compound_remove__":
             self._ctx.execute(
                 ProvideWizardInputCommand(instance_id=instance_id, value="Remove an item")
             )
             self._ctx.wait_until_idle()
-            self._ctx.execute(
-                ProvideWizardInputCommand(instance_id=instance_id, value=selection)
-            )
+            self._ctx.execute(ProvideWizardInputCommand(instance_id=instance_id, value=selection))
             return
         raise ValueError(f"Unsupported collection compound action: {kind}")
 

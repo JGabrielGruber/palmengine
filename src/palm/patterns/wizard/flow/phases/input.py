@@ -8,8 +8,9 @@ from typing import Any
 
 from palm.core.behavior_tree import InteractiveLeaf, PatternStatus
 from palm.core.context import BaseState
-from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.bindings.context.state import complete_step_input
 from palm.patterns.wizard.bindings.events.support import emit_wizard_event, leave_wizard_step
+from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.flow.phases._base import (
     WizardPhaseContext,
     activate_prompt,
@@ -17,7 +18,6 @@ from palm.patterns.wizard.flow.phases._base import (
     clear_phase_prompt,
     enter_phase_scope,
 )
-from palm.patterns.wizard.bindings.context.state import complete_step_input
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
     publish_validation_feedback,

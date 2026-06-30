@@ -91,4 +91,7 @@ def test_build_invoke_tree_reports_active_child(runtime: EmbeddedRuntime) -> Non
     assert tree["root"]["flow"] == "parent-wizard"
     assert tree["active_child"] is not None
     assert tree["active_child"]["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert tree["links"]["explorer"] == f"http://localhost:8002/explorer/instances/{parent_instance_id}"
+    assert (
+        tree["links"]["explorer"]
+        == f"http://localhost:8002/explorer/instances/{parent_instance_id}"
+    )

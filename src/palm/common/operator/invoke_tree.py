@@ -32,7 +32,10 @@ def build_invoke_tree(
     job = resolve_interactive_job(runtime, instance_id)
     chain = _ancestor_chain(runtime, job)
 
-    nodes = [_node_from_job(runtime, entry_job, entry_instance_id) for entry_instance_id, entry_job in chain]
+    nodes = [
+        _node_from_job(runtime, entry_job, entry_instance_id)
+        for entry_instance_id, entry_job in chain
+    ]
     root = nodes[0] if nodes else _node_from_job(runtime, job, instance_id)
     focus = nodes[-1] if nodes else root
     ancestors = nodes[:-1] if len(nodes) > 1 else []
@@ -119,7 +122,9 @@ def _child_summary(runtime: BaseRuntime, instance_id: str, job_id: str) -> dict[
         if job_id:
             try:
                 child_job = runtime.get_job(job_id)
-                summary["flow"] = child_job.metadata.get("flow_name") or child_job.metadata.get("flow")
+                summary["flow"] = child_job.metadata.get("flow_name") or child_job.metadata.get(
+                    "flow"
+                )
                 summary["status"] = child_job.status.value
             except JobNotFoundError:
                 pass

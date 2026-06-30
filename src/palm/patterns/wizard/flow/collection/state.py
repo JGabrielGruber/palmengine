@@ -7,10 +7,15 @@ from __future__ import annotations
 from typing import Any, Literal, cast
 
 from palm.core.context import BaseState
-from palm.patterns.wizard.flow.collection.config import CollectionFieldConfig
-from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.context.state import enter_step, get_answers, leave_step, set_answers
+from palm.patterns.wizard.bindings.context.state import (
+    enter_step,
+    get_answers,
+    leave_step,
+    set_answers,
+)
+from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
+from palm.patterns.wizard.flow.collection.config import CollectionFieldConfig
 
 CollectionPhase = Literal["menu", "field", "remove_confirm", "select_item"]
 

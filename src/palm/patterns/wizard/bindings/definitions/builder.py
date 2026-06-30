@@ -10,15 +10,15 @@ from palm.common.exceptions import DefinitionBuildError
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.core.behavior_tree import BasePattern
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from palm.patterns.wizard.bindings.definitions.kinds import WizardStepKind
 from palm.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
-from palm.patterns.wizard.pattern import WizardPattern
+from palm.patterns.wizard.flow.extensions.registry import default_wizard_step_registry
 from palm.patterns.wizard.flow.phases.resource import default_resource_prompt
 from palm.patterns.wizard.flow.phases.transform import default_transform_prompt
-from palm.patterns.wizard.bindings.definitions.kinds import WizardStepKind
-from palm.patterns.wizard.flow.extensions.registry import default_wizard_step_registry
 from palm.patterns.wizard.flow.validation import StepValidationRule
+from palm.patterns.wizard.pattern import WizardPattern
 
 _WIZARD_FIELD_TYPES = frozenset({"text", "choice", "confirm"})
 

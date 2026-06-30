@@ -8,8 +8,8 @@ import palm.providers  # noqa: F401 — register providers
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
 from palm.patterns.wizard import WizardKeys
-from palm.providers.palm.provider import PalmProvider
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from palm.providers.palm.provider import PalmProvider
 from palm.runtimes.embedded import EmbeddedRuntime
 
 

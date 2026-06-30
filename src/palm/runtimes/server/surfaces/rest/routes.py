@@ -59,9 +59,7 @@ def _resolve_handler(
         "provide_input": lambda req, job_id: jobs.provide_input(ctx, req, job_id=job_id),
         "cancel_job": lambda req, job_id: jobs.cancel_job(ctx, req, job_id=job_id),
         "submit_wizard": lambda req: wizard.submit_wizard(ctx, req),
-        "get_wizard": lambda req, instance_id: wizard.get_wizard(
-            ctx, req, instance_id=instance_id
-        ),
+        "get_wizard": lambda req, instance_id: wizard.get_wizard(ctx, req, instance_id=instance_id),
         "provide_wizard_input": lambda req, instance_id: wizard.provide_wizard_input(
             ctx, req, instance_id=instance_id
         ),

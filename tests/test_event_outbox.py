@@ -22,7 +22,6 @@ from tests.core.fakes.mode import TestMode
 
 
 def _memory_storage() -> StorageEngine:
-
     storage = StorageEngine()
     storage.initialize()
     storage.select("memory")

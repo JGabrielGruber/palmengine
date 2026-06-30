@@ -22,9 +22,7 @@ def test_register_and_iterate_mcp_contributors() -> None:
         def _register(_mcp: object, _client: object) -> None:
             seen.append("wizard")
 
-        register_mcp_contributor(
-            McpContributor(pattern_name="wizard", register=_register)
-        )
+        register_mcp_contributor(McpContributor(pattern_name="wizard", register=_register))
         contributors = iter_mcp_contributors()
         assert len(contributors) == 1
         assert contributors[0].pattern_name == "wizard"

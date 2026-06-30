@@ -6,6 +6,17 @@ from typing import Any
 
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.context import BaseState
+from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
+from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.context.state import get_answers, leave_step, persist_step_answer
+from palm.patterns.wizard.bindings.events.support import emit_wizard_event
+from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.flow.collection.phases._base import (
+    CollectionPhaseLeaf,
+    begin_item_session,
+    step_collection_key,
+    step_label_field,
+)
 from palm.patterns.wizard.flow.collection.selection import format_numbered_item_list
 from palm.patterns.wizard.flow.collection.state import (
     ACTION_ADD,
@@ -18,18 +29,7 @@ from palm.patterns.wizard.flow.collection.state import (
     set_collection_phase,
     set_collection_select_action,
 )
-from palm.patterns.wizard.bindings.events.types import WizardEventType
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.events.support import emit_wizard_event
 from palm.patterns.wizard.flow.phases._base import WizardPhaseContext
-from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
-from palm.patterns.wizard.flow.collection.phases._base import (
-    CollectionPhaseLeaf,
-    begin_item_session,
-    step_collection_key,
-    step_label_field,
-)
-from palm.patterns.wizard.bindings.context.state import get_answers, leave_step, persist_step_answer
 from palm.patterns.wizard.flow.validation import (
     choice_selection_error,
     clear_validation_feedback,
@@ -42,7 +42,9 @@ class CollectionMenuPhase(CollectionPhaseLeaf):
     phase_key = "menu"
 
     def _request_input(self, state: BaseState) -> PatternStatus:
-        ensure_scope(state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine)
+        ensure_scope(
+            state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine
+        )
         items = get_collection_items(state, step_collection_key(self._ctx))
         choices, actions = self._menu_choices(items)
         bundle = self._prompt_bundle(

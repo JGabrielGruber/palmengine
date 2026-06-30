@@ -76,6 +76,3 @@ class CommandHandler(Protocol):
 
     def handle(self, command: Command) -> Any:
         """Execute the command and return a result."""
-
-
-

@@ -13,10 +13,7 @@ from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.behavior_tree.nodes.leaf.transform_leaf import TransformLeaf
 from palm.core.context import BaseState
 from palm.core.transform.engine import _MISSING
-from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
-from palm.patterns.wizard.bindings.events.types import WizardEventType
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.flow.phases._base import WizardPhaseContext, wizard_prompt_key
 from palm.patterns.wizard.bindings.context.state import (
     enrich_prompt_bundle,
     enter_step,
@@ -24,6 +21,9 @@ from palm.patterns.wizard.bindings.context.state import (
     leave_step,
     set_answers,
 )
+from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
+from palm.patterns.wizard.bindings.events.types import WizardEventType
+from palm.patterns.wizard.flow.phases._base import WizardPhaseContext, wizard_prompt_key
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
     publish_validation_feedback,
@@ -136,7 +136,9 @@ class WizardTransformLeaf(LeafNode):
         state.set(WizardKeys.CURRENT_STEP, self._ctx.step.slug)
         state.set(WizardKeys.STEP_INDEX, self._ctx.step_index)
         if spec.scoped:
-            enter_step(state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine)
+            enter_step(
+                state, self._ctx.step.slug, step=self._ctx.step, context=self._ctx.context_engine
+            )
 
         self._ensure_source_from_answers(state)
         source_value = self._read_source_value(state)

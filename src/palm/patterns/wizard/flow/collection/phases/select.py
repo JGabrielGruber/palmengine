@@ -6,6 +6,13 @@ from typing import Any
 
 from palm.core.behavior_tree.base_pattern import PatternStatus
 from palm.core.context import BaseState
+from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
+from palm.patterns.wizard.flow.collection.phases._base import (
+    CollectionPhaseLeaf,
+    begin_item_session,
+    step_collection_key,
+    step_label_field,
+)
 from palm.patterns.wizard.flow.collection.selection import (
     format_item_preview,
     is_cancel_input,
@@ -21,13 +28,6 @@ from palm.patterns.wizard.flow.collection.state import (
     set_collection_select_action,
 )
 from palm.patterns.wizard.flow.phases._base import WizardPhaseContext
-from palm.patterns.wizard.bindings.behavior_tree.bt import phase_transition
-from palm.patterns.wizard.flow.collection.phases._base import (
-    CollectionPhaseLeaf,
-    begin_item_session,
-    step_collection_key,
-    step_label_field,
-)
 
 
 class CollectionSelectPhase(CollectionPhaseLeaf):

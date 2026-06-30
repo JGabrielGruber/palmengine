@@ -94,7 +94,6 @@ def test_wizard_bridge_hooks_register() -> None:
         get_child_wait_hooks,
         get_cqrs_contributor,
         get_interactive_runtime,
-        get_pattern_app,
         get_projection_factory,
         get_read_model_builder,
     )

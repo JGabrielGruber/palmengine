@@ -12,8 +12,8 @@ from palm.core.resource.exceptions import (
     ResourceResolutionError,
 )
 from palm.core.resource.invocation import (
-    ResourceWaitOptions,
     ResolvedResourceSpec,
+    ResourceWaitOptions,
     WaitMode,
     bind_resource_id,
     bind_resource_params,

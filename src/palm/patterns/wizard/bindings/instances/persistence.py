@@ -13,8 +13,11 @@ from typing import Any
 from palm.core.orchestration import Job
 from palm.instances import ProcessInstance
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.patterns.wizard.bindings.instances.resume import (
+    restore_wizard_position,
+    wizard_runtime_position,
+)
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.patterns.wizard.bindings.instances.resume import restore_wizard_position, wizard_runtime_position
 from palm.states import BlackboardState
 
 

@@ -144,8 +144,7 @@ class ResourceLeaf(LeafNode):
     def _fail(self, state: BaseState, message: str) -> PatternStatus:
         action_label = self._action or "invoke"
         detail = (
-            f"Resource {self._resolved_target()!r} "
-            f"(action={action_label}) failed: {message}"
+            f"Resource {self._resolved_target()!r} " f"(action={action_label}) failed: {message}"
         )
         if self._error_key:
             state.set(self._error_key, detail)

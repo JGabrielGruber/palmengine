@@ -11,9 +11,9 @@ from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventEngine
 from palm.core.exceptions import StateValidationError
 from palm.core.orchestration.input_capable import InputCapable, StepInspectable
+from palm.patterns.parallel.bindings.behavior_tree.tree import build_parallel_tree
 from palm.patterns.parallel.bindings.context.keys import ParallelKeys
 from palm.patterns.parallel.bindings.definitions.config import ParallelConfig
-from palm.patterns.parallel.bindings.behavior_tree.tree import build_parallel_tree
 from palm.patterns.parallel.flow.branch import BranchRunner
 from palm.patterns.parallel.flow.merge import get_branch_results, merge_branch_results
 

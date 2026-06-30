@@ -20,7 +20,9 @@ def register_studio_routes(registry: RouteRegistry, ctx: ServerContext) -> None:
     api = StudioApiHandlers(ctx)
 
     registry.register(method="GET", path="/studio", handler=pages.index, surface=_SURFACE)
-    registry.register(method="GET", path="/v1/studio/palette", handler=api.palette, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/v1/studio/palette", handler=api.palette, surface=_SURFACE
+    )
     registry.register(
         method="GET", path="/v1/studio/drafts", handler=api.list_drafts, surface=_SURFACE
     )
