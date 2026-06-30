@@ -2,12 +2,12 @@
 tmp/
 archive/
 docs/
-src/palm/runtimes/server/surfaces/ssr/
+# src/palm/runtimes/server/surfaces/ssr/
 tests/
 repomix.config.json
 
-src/palm/runtimes/cli/
-src/palm/storages/
+# src/palm/runtimes/cli/
+# src/palm/storages/
 
 README.md
 ARCHITECTURE.md
