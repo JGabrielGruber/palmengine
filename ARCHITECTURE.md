@@ -614,9 +614,55 @@ flowchart TB
     outbox --> webhook
 ```
 
+### Service layer (0.15)
+
+User-facing business API in `palm/common/services/`. Services **compose** CQRS (many commands/queries per method); runtimes stay thin.
+
+```mermaid
+flowchart TB
+    subgraph surfaces["palm.runtimes — thin adapters"]
+        rest[REST handlers]
+        mcp[MCP tools]
+        cli[CLI / ReplSession]
+    end
+
+    subgraph services["palm.common.services"]
+        internal[InternalService]
+        definition[DefinitionService]
+        execution[ExecutionService]
+        session[InstanceSession]
+    end
+
+    subgraph cqrs["palm.common.cqrs"]
+        registry[CqrsSchemaRegistry]
+        buses[CommandBus / QueryBus]
+    end
+
+    surfaces --> services
+    services --> buses
+    registry --> services
+    execution --> session
+```
+
+| Service | Access | Responsibility |
+|---------|--------|----------------|
+| `InternalService` | `host.internal`, `ctx.internal` | Inspect, doctor, job/instance lists, snapshots, cancel |
+| `DefinitionService` | `host.definition`, `ctx.definition` | Flow/process/resource catalog + `validate_flow` |
+| `ExecutionService` | `host.execution`, `ctx.execution` | `on(instance_id)`, `run_wizard`, `run_flow` |
+| `InstanceSession` | `execution.on(id)` | `input`, `backtrack`, `resume`, `resume_child_wait`, `status` |
+| `ReplSession` | `CliContext.repl` | REPL active-instance handle (metaphor C) |
+
+**Runtime adapter rule:** Handlers and MCP tools map transport args → `service.method()` → serialize view dicts. Business branching (pattern-aware inspect, interactive input) lives in services + `palm.common.interactive_runtime`, not in route tables.
+
+**MCP:** `PalmInProcessBackend` calls services on `ServerContext` when `PALM_MCP_IN_PROCESS=1` (default in `.grok/config.toml`). `PalmRestClient` remains for remote-only mode.
+
+ADR: [docs/adr/004-cqrs-schemas-service-layer.md](docs/adr/004-cqrs-schemas-service-layer.md) · Vision: [docs/VISION-0.15.md](docs/VISION-0.15.md)
+
 | Piece | Location | Role |
 |-------|----------|------|
 | Commands / queries | `palm/common/cqrs/` | Write/read routing (`SubmitFlowCommand`, `ListInstancesQuery`, …) |
+| CQRS schemas | `palm/common/cqrs/schemas.py` | `CqrsSchemaRegistry` — validate commands/queries before dispatch |
+| Services | `palm/common/services/` | User-facing API composing buses (see table above) |
 | Projections | `palm/common/cqrs/projections/` | Event-driven read models (instance index, wizard progress, job board) |
 | Rebuild policy | `palm/common/cqrs/rebuild.py` | Batch rebuild + skip-if-fresh safeguards for large instance counts |
 | Outbox | `palm/common/events/outbox.py` | Durable critical events; master drains via `OutboxBackgroundService` |

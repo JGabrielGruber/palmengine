@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** June 2026 (0.14 MCP + 0.13 architecture)
+**Last updated:** June 2026 (0.15 service layer + 0.14 MCP)
 
 ---
 
@@ -32,12 +32,15 @@ These principles are non-negotiable. They exist so that Palm can evolve for a de
 Palm follows a **layered, registry-driven** architecture with a pure core.
 
 ```
-User / CLI / Services
+User / CLI / REST / MCP
+        ↓
+palm/runtimes/             ← Thin adapters (map transport → services)
         ↓
 palm/app/                  ← ApplicationHost (primary orchestrator)
         ↓
-palm/common/               ← Shared coordination (executions, plans, hooks, cqrs,
-                            compensation, transforms, runtimes base, persistence)
+palm/common/services/      ← User-facing API (Internal, Definition, Execution)
+        ↓
+palm/common/               ← CQRS buses, schemas, hooks, persistence, runtimes base
         ↓
 palm/core/                 ← PURE foundational engines (Behavior Tree, Orchestration,
                             Context, Storage, Resource, Event, Auth, Transform)
@@ -46,7 +49,8 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 **Key layers and their roles:**
 
 - **`palm/core/`** — Pure engines and primitives. Behavior Trees are the universal control-flow model. No external Palm imports allowed.
-- **`palm/common/`** — The “middle layer” where most coordination lives. This is where execution plans, hooks, CQRS, reliable events (outbox), compensation, transforms, and shared runtime infrastructure reside.
+- **`palm/common/services/`** — User-facing business API (`InternalService`, `DefinitionService`, `ExecutionService`) composing schema-validated CQRS. Runtimes call services; services do not import runtimes.
+- **`palm/common/`** — The “middle layer” where most coordination lives. Execution plans, hooks, CQRS + `CqrsSchemaRegistry`, reliable events (outbox), compensation, transforms, and shared runtime infrastructure.
 - **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `HostProfile` roles) is the recommended entry point for most use cases. `PalmApp` is infrastructure.
 - **`palm/patterns/`, `palm/providers/`, `palm/storages/`** — Extensible “Django-style apps”. Each capability lives in its own subpackage with `registry.py`.
 - **`palm/runtimes/`** — Thin surfaces (CLI, embedded, daemon, server). Heavy lifting lives in `palm.common.runtimes`.
@@ -59,15 +63,16 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 - Job state transitions happen only through `RunResult` + `OrchestrationEngine.apply_result()`.
 - Persistence and resume are first-class (via `InstancePersistenceHook` and state snapshots).
 
-### Operating Palm via MCP (0.14)
+### Operating Palm via MCP (0.14 + 0.15 in-process)
 
 Coding agents should use the MCP operator adapter to develop and test flows — not hand-written curl or JSON blobs.
 
 | Step | Action |
 |------|--------|
 | Read first | [docs/MCP.md](docs/MCP.md) and MCP resource `palm://agent/guide` ([docs/llms.txt](docs/llms.txt)) |
-| Setup | `uv sync --extra mcp` → `just palm-server` (REST on `:8080`) → connect `palm-mcp` stdio |
-| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp` |
+| Setup (local) | `uv sync --extra mcp` → connect `palm-mcp` stdio with `PALM_MCP_IN_PROCESS=1` (default in [`.grok/config.toml`](.grok/config.toml)) — **no REST server required** |
+| Setup (remote) | `PALM_MCP_IN_PROCESS=0` → `just palm-server` (`:8080`) → `palm-mcp` proxies via `PALM_BASE_URL` |
+| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/llms.txt` |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
 **Conventions:** instance-first (`instance_id`, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; collection menu → `palm_wizard_collection_action` or choice label; collection field → `palm_wizard_input`; multi-step bursts → `palm_wizard_drive`; compositional stacks → `palm_compose_status`; interactive entry → `palm_submit_wizard` (not `palm_submit_process`); `palm_resume_child_wait` only when `waiting_for_child`.
@@ -96,6 +101,8 @@ Follow these patterns. They exist so growth remains orderly.
 | New storage backend | `palm/storages/<name>/` | Same structure. Add to `INSTALLED_STORAGES` (use optional extras when drivers are needed) |
 | New transform rule | `palm/common/transforms/rules/` | Implement `BaseTransformRule`, register with `register_transform()` or `@transform_rule` |
 | CQRS command or query | Pattern-owned: `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()`. Generic buses live in `palm/common/cqrs/` |
+| CQRS schemas | `palm/patterns/<name>/bindings/cqrs/schemas.py` | Add `command_schemas` / `query_schemas` on `CqrsContributor`; optional `instance_status_query` for inspect |
+| Service method | `palm/common/services/` | Compose CQRS in `InternalService`, `DefinitionService`, or `ExecutionService`; wire on host/context in `_wire_cqrs()` |
 | New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |

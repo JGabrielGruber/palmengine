@@ -6,7 +6,6 @@ import atexit
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import (
-    CancelJobCommand,
     PreparePlansCommand,
     ProvideInputCommand,
     SubmitPlansCommand,
@@ -18,8 +17,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
-from palm.common.services.errors import DefinitionNotFoundServiceError
-from palm.common.services.errors import InstanceNotFoundServiceError
+from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.common.services.execution import flow_command_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.mcp.config import PalmMcpConfig
@@ -361,7 +359,6 @@ class PalmInProcessBackend:
         return snapshot_detail(index, snapshot)
 
     def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
-        from palm.core.resource.result import ProviderResult
 
         resource_ref = str(body.get("resource_ref") or "").strip()
         if not resource_ref:

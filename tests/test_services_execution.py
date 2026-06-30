@@ -4,14 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from palm.app import ApplicationHost, HostProfile, PalmSettings
 from palm.common.cqrs import CommandBus
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.common.services.execution import ExecutionService
-from palm.common.services.internal import InternalService
 from palm.common.services.session import ReplSession
 from palm.core.orchestration import JobStatus
 from palm.runtimes.server import ServerRuntime
@@ -119,10 +116,13 @@ def test_run_wizard_and_input_integration() -> None:
 
 
 def test_run_flow_dispatches_submit_flow_command() -> None:
+    from dataclasses import dataclass, field
+
+    @dataclass
     class _Job:
-        id = "job-1"
-        status = type("S", (), {"value": "RUNNING"})()
-        metadata = {"instance_id": "inst-1"}
+        id: str = "job-1"
+        status: Any = field(default_factory=lambda: type("S", (), {"value": "RUNNING"})())
+        metadata: dict[str, str] = field(default_factory=lambda: {"instance_id": "inst-1"})
 
     registry = CqrsSchemaRegistry()
     commands = _CommandBusStub(job=_Job())

@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.14.13` (shipping)  
-**Last Updated:** June 26, 2026  
-**Maturity:** Wizard Experience shipped · **0.14 MCP** operator adapter shipped for coding agents.
+**Current Version:** `0.14.13` (shipping) · **0.15** service layer on master  
+**Last Updated:** June 30, 2026  
+**Maturity:** Wizard Experience shipped · **0.14 MCP** operator adapter · **0.15** CQRS schemas + service layer + in-process MCP.
 
 ## Quick Overview
 
@@ -17,7 +17,8 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
-- `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS, compensation, transforms, runtime infrastructure).
+- `palm/common/services/` — User-facing API (`InternalService`, `DefinitionService`, `ExecutionService`, `InstanceSession`, `ReplSession`).
+- `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
 - `palm/runtimes/` — Thin surfaces over the common runtime layer.
@@ -39,7 +40,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Rich CLI + REPL with live dashboard (`palm status`) and `palm resource *` commands
 - Multiple runtimes (Embedded, Daemon, Server, CLI)
 - **Palm Explorer** — SSR hub at `/explorer` (flows, jobs, instances, wizard workspace, **resources**); `GET /` redirects here
-- **MCP operator adapter (0.14)** — `palm-mcp` stdio + native HTTP `/mcp`; 26 tools, 4 prompts, 10 resources for coding agents; [docs/MCP.md](docs/MCP.md)
+- **MCP operator adapter (0.14)** — `palm-mcp` stdio + native HTTP `/mcp`; 26 tools, 4 prompts, 10 resources; [docs/MCP.md](docs/MCP.md)
+- **Service layer (0.15)** — schema-validated CQRS + `host.execution.on(instance_id)`; REST/MCP thin adapters; [docs/VISION-0.15.md](docs/VISION-0.15.md)
 
 ## 0.13 — Wizard Experience (Shipped)
 
@@ -83,6 +85,30 @@ ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-a
 | graphql, postgres | `app.py` only | ✅ Honest stubs |
 
 ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
+
+## 0.15 — CQRS Schemas + Service Layer (Shipped on master)
+
+**Vision:** [docs/VISION-0.15.md](docs/VISION-0.15.md)  
+**ADR:** [docs/adr/004-cqrs-schemas-service-layer.md](docs/adr/004-cqrs-schemas-service-layer.md)  
+**Spec:** [docs/superpowers/specs/2026-06-30-cqrs-schemas-service-layer-design.md](docs/superpowers/specs/2026-06-30-cqrs-schemas-service-layer-design.md)
+
+| Component | Status |
+|-----------|--------|
+| `CqrsSchemaRegistry` + contributor schemas | ✅ 0.15a |
+| `BaseService`, `InternalService` | ✅ 0.15b |
+| REST/MCP inspect → services | ✅ 0.15b–c |
+| `PalmInProcessBackend` (`PALM_MCP_IN_PROCESS`) | ✅ 0.15c |
+| `DefinitionService` + catalog routes | ✅ 0.15d |
+| `ExecutionService`, `InstanceSession`, `ReplSession` | ✅ 0.15e |
+| Docs + ADR 004 | ✅ 0.15f |
+
+```bash
+# Local MCP (no palm server)
+PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp
+
+# Instance-centric API
+host.execution.on(instance_id).input("yes")
+```
 
 ## 0.14 — MCP Operator (Shipped)
 
@@ -137,17 +163,20 @@ just mcp-inspector                       # MCP Inspector UI
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
 | `docs/index.html`     | Good            | v0.14.9 badge + MCP in featureList |
-| `docs/llms.txt`       | Good            | AI context + MCP operator cheat sheet (`palm://agent/guide`) |
-| `AGENTS.md`           | Good            | MCP conventions + extension table |
+| `docs/llms.txt`       | Good            | AI context + 0.15 service layer + MCP in-process (`palm://agent/guide`) |
+| `docs/VISION-0.15.md` | Good            | Service layer release vision |
+| `docs/adr/004-*.md`   | Good            | CQRS schemas + service layer ADR |
+| `AGENTS.md`           | Good            | Service layer + MCP in-process conventions |
 | `DEVELOPMENT.md`      | Good            | Contributor setup + MCP development workflow |
 | `CHANGELOG.md`        | Good            | `[0.14.9]` MCP Operator section complete |
 | `RELEASE-0.14.9.md`   | Good            | Release checklist |
 
 ## Priorities & Next Steps
 
-1. Publish `0.14.9` to PyPI (`just release-prep` → tag → publish) — see [RELEASE-0.14.9.md](RELEASE-0.14.9.md)
-2. WebSocket surface for live wizard prompts
-3. Explorer flow dry-run and definition preview
+1. Tag and publish **0.15.0** (`just release-prep` → PyPI)
+2. Definition catalog write paths via `DefinitionService` (0.16)
+3. OpenAPI from `CqrsSchemaRegistry` + service views
+4. WebSocket surface for live wizard prompts
 
 ## Useful Links
 

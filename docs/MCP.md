@@ -1,8 +1,8 @@
-# Palm MCP — Operator Adapter (0.14)
+# Palm MCP — Operator Adapter (0.14 + 0.15 in-process)
 
-**Status:** Phases 1–6 shipped · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
+**Status:** Phases 1–6 shipped · **0.15 in-process services** · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
 
-Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). It proxies to the Palm REST API — **start `palm server` first**, then connect via stdio or native HTTP.
+Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default (**0.15**) it runs **in-process** via `PalmInProcessBackend` — tools call `InternalService`, `DefinitionService`, and `ExecutionService` on a bootstrapped engine with **no HTTP round-trip**. Set `PALM_MCP_IN_PROCESS=0` to restore the 0.14 REST proxy mode (`palm server` required).
 
 | Doc | Audience |
 |-----|----------|
@@ -34,8 +34,11 @@ flowchart LR
     end
     Agent[Coding agent] --> read
     Agent --> act
-    act --> REST[Palm REST :8080]
-    REST --> Engine[Orchestration + wizards]
+    act --> Backend{Backend}
+    Backend -->|PALM_MCP_IN_PROCESS=1| Services[palm.common.services]
+    Services --> Engine[Orchestration + wizards]
+    Backend -->|PALM_MCP_IN_PROCESS=0| REST[Palm REST :8080]
+    REST --> Engine
 ```
 
 **Operator loop:** definitions → submit → inspect → input → wait on children → resume.
@@ -48,14 +51,21 @@ uv pip install -e ".[mcp]"          # from source
 # pip install "palmengine[mcp]"     # from PyPI
 ```
 
-**Terminal 1 — REST backend (required):**
+**Local in-process (default — no REST server):**
 
 ```bash
-just palm-server                    # http://127.0.0.1:8080
-# or: palm server
+uv sync --extra mcp
+PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # stdio → services
 ```
 
-**Terminal 2 — verify MCP (optional):**
+**Remote REST proxy (0.14 mode):**
+
+```bash
+just palm-server                    # terminal 1 — http://127.0.0.1:8080
+PALM_MCP_IN_PROCESS=0 palm-mcp      # terminal 2 — HTTP round-trip
+```
+
+**Verify MCP (optional):**
 
 ```bash
 just mcp-inspector                  # MCP Inspector UI
@@ -65,15 +75,16 @@ just mcp-inspector                  # MCP Inspector UI
 
 | Environment | Config |
 |-------------|--------|
-| Grok (this repo) | [`.grok/config.toml`](../.grok/config.toml) — `uv run --extra mcp palm-mcp` |
-| Cursor / Claude Desktop | Add stdio server: command `palm-mcp`, or `uv run --extra mcp palm-mcp` in repo root |
-| HTTP clients | `POST /mcp` on running server (see [Transports](#transports)) |
+| Grok (this repo) | [`.grok/config.toml`](../.grok/config.toml) — in-process default, `docs/llms.txt` for agent guide |
+| Cursor / Claude Desktop | Add stdio server: `uv run --extra mcp palm-mcp` with `PALM_MCP_IN_PROCESS=1` |
+| HTTP clients | `POST /mcp` on running server — uses hosting `ServerContext` in-process (see [Transports](#transports)) |
 
 **Env vars:**
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target for stdio adapter |
+| `PALM_MCP_IN_PROCESS` | `0` (env); `1` in `.grok/config.toml` | `1` = `PalmInProcessBackend` (services, no HTTP); `0` = `PalmRestClient` |
+| `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target when in-process is off |
 | `PALM_SUBJECT` | `dev` | `X-Palm-Subject` when auth is enforced |
 | `PALM_LLMS_TXT` | bundled `llms.txt` in package (override path optional) | `palm://agent/guide` content |
 
@@ -176,8 +187,9 @@ Use prompt `debug-wizard-block` for a structured checklist.
 
 | Transport | Entry | Notes |
 |-----------|-------|-------|
-| **stdio** | `palm-mcp` | Default for Cursor/Grok; proxies to `PALM_BASE_URL` |
-| **streamable-http** | `POST /mcp` | On running `palm server`; `Accept: application/json, text/event-stream` |
+| **stdio** | `palm-mcp` | Default for Cursor/Grok; in-process services when `PALM_MCP_IN_PROCESS=1` |
+| **stdio (remote)** | `palm-mcp` + `PALM_MCP_IN_PROCESS=0` | HTTP proxy to `PALM_BASE_URL` (0.14 behavior) |
+| **streamable-http** | `POST /mcp` | On running `palm server`; reuses server `ServerContext` (in-process) |
 | **sse** | `GET /mcp/sse`, `POST /mcp/messages` | Legacy SSE clients |
 
 Discovery: `GET /v1/surfaces/mcp` → `status: active`, transport endpoints, env hints.

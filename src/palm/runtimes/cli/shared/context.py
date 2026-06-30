@@ -11,13 +11,13 @@ from palm.app.settings import PalmSettings
 from palm.common.cqrs.adapters import read_model_to_summary
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.managers import InstanceManager, InstanceSummary
+from palm.common.services.session import ReplSession
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
 from palm.definitions.resource import ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
-from palm.common.services.session import ReplSession
 from palm.runtimes.cli.shared.instances import resolve_instance_id as _resolve_instance_id
 
 if TYPE_CHECKING:

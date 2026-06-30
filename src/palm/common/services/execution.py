@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.job_context import instance_id_for_job
 from palm.common.services.base import BaseService
-from palm.common.services.errors import InstanceNotFoundServiceError
 from palm.common.services.session import InstanceSession
 
 if TYPE_CHECKING:

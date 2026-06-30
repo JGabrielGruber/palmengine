@@ -1,12 +1,11 @@
 # Project-scoped Grok configuration for Palm development.
 # See: https://gofastmcp.com (MCP server) · palm-mcp stdio adapter
 #
-# Requires a running Palm server (default http://127.0.0.1:8080):
-#   palm server
+# Default: in-process engine (PALM_MCP_IN_PROCESS=1) — no palm server required.
+# Remote REST proxy: PALM_MCP_IN_PROCESS=0 and run `just palm-server` on :8080
 #
 # Install MCP extra once in this repo:
 #   uv sync --extra mcp
-#   uv pip install -e ".[mcp]"
 
 [mcp_servers.palm]
 command = "uv"
@@ -16,6 +15,6 @@ startup_timeout_sec = 30
 
 [mcp_servers.palm.env]
 PALM_MCP_IN_PROCESS = "${PALM_MCP_IN_PROCESS:-1}"
+PALM_LLMS_TXT = "${PALM_LLMS_TXT:-docs/llms.txt}"
 PALM_BASE_URL = "${PALM_BASE_URL:-http://127.0.0.1:8080}"
 PALM_SUBJECT = "${PALM_SUBJECT:-dev}"
-PALM_LLMS_TXT = "${PALM_LLMS_TXT:-}"

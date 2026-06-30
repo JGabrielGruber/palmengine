@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.14.13 (shipping) · **0.14 MCP** (operator adapter) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
+**Version:** 0.14.13 (shipping) · **0.15 service layer** (master) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm`
 
 ## Philosophy
 
@@ -16,7 +16,9 @@ For most applications, use **ApplicationHost** — it wires CQRS, projections, o
 from palm.app import ApplicationHost, HostProfile
 
 with ApplicationHost(profile=HostProfile.all_in_one()) as host:
-    job = host.submit_flow("onboard")
+    session = host.execution.run_flow("onboard")
+    view = session.status()
+    # or drive input: host.execution.on(view["instance_id"]).input("yes")
     views = host.list_instance_views(include_terminal=False)
 ```
 
@@ -29,11 +31,15 @@ CLI bootstrap uses the same path via `create_cli_host()` (collapsed `all_in_one`
 Layered, registry-driven model with a strictly pure core:
 
 ```
-User / CLI / Services
+REST / MCP / CLI
         ↓
-palm/app/          ApplicationHost (recommended), PalmApp (infra), PalmSettings
+palm/runtimes/     Thin adapters → services
         ↓
-palm/common/       Executions, plans, hooks, CQRS, outbox, compensation, transforms
+palm/app/          ApplicationHost (recommended), PalmApp (infra)
+        ↓
+palm/common/services/  Internal, Definition, Execution (+ InstanceSession)
+        ↓
+palm/common/       CQRS + CqrsSchemaRegistry, hooks, persistence, transforms
         ↓
 palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform
 ```
@@ -58,6 +64,8 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Wizard REST (0.13)** | `/v1/wizards` — submit, status, input, backtrack by `instance_id` |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
 | **MCP (0.14)** | 26 tools, 4 prompts, 10 resources — agent operator adapter; see `docs/MCP.md` |
+| **Service layer (0.15)** | `host.internal`, `host.definition`, `host.execution.on(instance_id)` — runtimes call services, not raw CQRS |
+| **MCP in-process (0.15)** | `PALM_MCP_IN_PROCESS=1` — tools use services without HTTP (default in `.grok/config.toml`) |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
 
@@ -86,16 +94,18 @@ curl -s -X POST http://localhost:8080/v1/wizards -H 'Content-Type: application/j
 # → open /explorer/instances/<instance_id> for wizard workspace + collection UI
 ```
 
-## Agent development with MCP (0.14)
+## Agent development with MCP (0.14 + 0.15 in-process)
 
-**Prerequisite:** `palm server` running on `:8080` before connecting MCP.
+**Local default:** in-process engine — no REST server required.
 
 ```bash
-uv sync --extra mcp && just palm-server    # terminal 1
-just mcp-inspector                         # terminal 2 (optional)
+uv sync --extra mcp
+PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp    # stdio → services
 ```
 
-Grok: `.grok/config.toml` registers `palm-mcp` (stdio). Cursor/Claude: stdio command `palm-mcp` or `uv run --extra mcp palm-mcp`.
+**Remote proxy (0.14):** `PALM_MCP_IN_PROCESS=0` + `just palm-server` on `:8080`.
+
+Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.txt`. Cursor/Claude: same env vars with `uv run --extra mcp palm-mcp`.
 
 ### Operator loop (memorize this)
 
@@ -182,6 +192,8 @@ src/palm/
 | DEVELOPMENT.md | Contributor setup + MCP development workflow |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
+| docs/VISION-0.15.md | CQRS schemas + service layer release vision |
+| docs/adr/004-cqrs-schemas-service-layer.md | ADR for services and in-process MCP |
 | docs/VISION-0.13.md | Wizard Experience release vision |
 | docs/VISION-0.12.md | Compositional Power vision and best practices |
 | examples/README.md | Runnable flow definitions |
@@ -195,6 +207,8 @@ src/palm/
 | Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
 | Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
 | CQRS handler | `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()` |
+| CQRS schemas | `palm/patterns/<name>/bindings/cqrs/schemas.py` | `command_schemas` / `query_schemas` on `CqrsContributor` |
+| Service API | `palm/common/services/` | Compose CQRS in Internal/Definition/Execution services; wire on host/context |
 
 ## Resources (0.12 — Compositional Power)
 
