@@ -2,7 +2,7 @@
 
 **Theme:** Unify Palm's user-facing API behind schema-described CQRS and instance-centric services — runtimes become thin adapters.
 
-**Status:** Shipped on **master** (June 2026) · targets **0.15.0**
+**Status:** Shipped as **0.15.4** (June 2026)
 
 ---
 

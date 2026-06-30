@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.14.13** (PyPI) with **0.15** CQRS schemas + service layer on master (MCP in-process, `host.execution.on()`).
+Guide for contributors working on Palm **0.15.4** (CQRS schemas + service layer, in-process MCP, `host.execution.on()`).
 
 ## Setup
 

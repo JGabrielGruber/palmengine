@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.common.services.views import process_summary
+from palm.definitions import FlowDefinition, ProcessDefinition
 
 
 def test_process_summary_includes_mcp_entry_hints() -> None:

@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.14.13` (shipping) · **0.15** service layer on master  
+**Current Version:** `0.15.4`  
 **Last Updated:** June 30, 2026  
-**Maturity:** Wizard Experience shipped · **0.14 MCP** operator adapter · **0.15** CQRS schemas + service layer + in-process MCP.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.15.4** CQRS schemas + service layer + in-process MCP + cleanup track complete.
 
 ## Quick Overview
 
@@ -86,7 +86,7 @@ ADR: [docs/adr/002-pattern-apps-and-common-boundaries.md](docs/adr/002-pattern-a
 
 ADR: [docs/adr/003-provider-apps.md](docs/adr/003-provider-apps.md)
 
-## 0.15 — CQRS Schemas + Service Layer (Shipped on master)
+## 0.15.4 — CQRS Schemas + Service Layer (Shipped)
 
 **Vision:** [docs/VISION-0.15.md](docs/VISION-0.15.md)  
 **ADR:** [docs/adr/004-cqrs-schemas-service-layer.md](docs/adr/004-cqrs-schemas-service-layer.md)  
@@ -162,26 +162,22 @@ just mcp-inspector                       # MCP Inspector UI
 | `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
-| `docs/index.html`     | Good            | v0.14.13 badge + MCP in featureList |
-| `docs/llms.txt`       | Good            | AI context + 0.15 service layer + MCP in-process (`palm://agent/guide`) |
-| `docs/VISION-0.15.md` | Good            | Service layer release vision |
+| `docs/index.html`     | Good            | v0.15.4 badge + MCP in featureList |
+| `docs/llms.txt`       | Good            | AI context + service layer + MCP in-process (`palm://agent/guide`) |
+| `docs/VISION-0.15.md` | Good            | 0.15.4 release vision |
 | `docs/adr/004-*.md`   | Good            | CQRS schemas + service layer ADR |
 | `AGENTS.md`           | Good            | Service layer + MCP in-process conventions |
-| `DEVELOPMENT.md`      | Good            | Contributor setup; 0.15 service layer on master |
-| `CHANGELOG.md`        | Good            | `[0.14.9]` MCP Operator section complete |
-| `RELEASE-0.14.9.md`   | Good            | Release checklist |
+| `DEVELOPMENT.md`      | Good            | Contributor setup + 0.15.4 release |
+| `CHANGELOG.md`        | Good            | `[0.15.4]` service layer release |
+| `RELEASE-0.15.4.md`   | Good            | Release checklist |
 
 ## Priorities & Next Steps
 
-Cleanup track: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)
+**0.15.4 shipped** — cleanup track complete ([spec](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)) · [RELEASE-0.15.4.md](RELEASE-0.15.4.md)
 
-1. ~~**0.15.1 hygiene**~~ — ✅ ruff fix + format (`f44d36f`); wizard `I001` exempt in `pyproject.toml`
-2. **0.15.0 release prep** (optional) — version bump, CHANGELOG, `RELEASE-0.15.0.md` — [plan](docs/superpowers/plans/2026-06-30-0.15.0-release-hygiene.md)
-3. ~~**0.15.2**~~ — ✅ REST validation → `CqrsSchemaRegistry`; serializer imports; MCP dual-backend docs — [plan](docs/superpowers/plans/2026-06-30-0.15.2-dedupe.md)
-4. ~~**0.15.3**~~ — ✅ legacy aliases + shims removed on master — [plan](docs/superpowers/plans/2026-06-30-0.15.3-legacy-cleanup.md)
-5. Definition catalog write paths via `DefinitionService` (0.16+)
-6. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
-7. WebSocket surface for live wizard prompts (0.16+)
+1. Definition catalog write paths via `DefinitionService` (0.16+)
+2. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
+3. WebSocket surface for live wizard prompts (0.16+)
 
 ## Useful Links
 
@@ -191,7 +187,7 @@ Cleanup track: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](
 - [AGENTS.md](AGENTS.md)
 - [DEVELOPMENT.md](DEVELOPMENT.md)
 - [docs/MCP.md](docs/MCP.md) — agent development with Palm MCP
-- [RELEASE-0.14.9.md](RELEASE-0.14.9.md) — release checklist
+- [RELEASE-0.15.4.md](RELEASE-0.15.4.md) — release checklist
 - Examples: `examples/README.md`
 
 ## How to Contribute

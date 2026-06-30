@@ -4,22 +4,37 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-## [0.15.3] — 2026-06-30
+## [0.15.4] — 2026-06-30
 
-**Legacy removal** — experimental Palm; no deprecation window. Cleanup track after 0.15 service layer + 0.15.2 schema dedupe.
+**Service layer release** — CQRS schemas, `palm.common.services`, in-process MCP, REST schema dedupe, and legacy cleanup. PyPI packages the full 0.15 track (internal milestones 0.15.1–0.15.3 on master).
 
-### Removed
+Vision: [docs/VISION-0.15.md](docs/VISION-0.15.md) · ADR: [docs/adr/004-cqrs-schemas-service-layer.md](docs/adr/004-cqrs-schemas-service-layer.md) · MCP: [docs/MCP.md](docs/MCP.md)
+
+### Added
+
+- **`CqrsSchemaRegistry`** — `DictStateSchema` per command/query; patterns contribute via `CqrsContributor.command_schemas` / `query_schemas`
+- **Service layer** (`palm/common/services/`) — `InternalService`, `DefinitionService`, `ExecutionService`, `InstanceSession`, `ReplSession`, `BaseService` with schema-validated dispatch
+- **Instance-centric API** — `host.execution.on(instance_id).input("yes")`; `ReplSession` for CLI REPL
+- **`PalmInProcessBackend`** — MCP tools call services on `ServerContext` when `PALM_MCP_IN_PROCESS=1` (default in `.grok/config.toml`)
+- **`rest/schema_bridge.py`** — REST input bodies projected from `CqrsSchemaRegistry`
+- **`ServerContext.schemas`** — registry exposed for REST handlers
+- **Docs** — `docs/VISION-0.15.md`, ADR 004, cleanup track specs/plans under `docs/superpowers/`
+
+### Changed
+
+- REST inspect/catalog/wizard writes delegate to services (thin handlers)
+- MCP local mode avoids HTTP round-trip when in-process
+- REST `provide_input` / wizard input validation uses registry (single source of truth)
+- Definition views imported from `palm.common.services.views` (serializer shim trimmed)
+- Ruff import hygiene across `src/` and `tests/`; wizard packages exempt from isort (`I001`) for circular-import safety
+
+### Removed (experimental — no deprecation window)
 
 - `create_cli_app()` — use `create_cli_host()`
-- `interactive_runtime` wizard aliases (`resolve_wizard_job`, `provide_wizard_input_for_instance`, `previous_wizard_step`, …)
+- `interactive_runtime` wizard aliases (`resolve_wizard_job`, `provide_wizard_input_for_instance`, …)
 - `ChildWizardCompletionHook` — use `ChildCompletionHook`
-- `serializers.py` re-exports of `services.views` helpers (snapshot serializers remain)
-- `ssr/explorer/collection_input.py` shim — import `palm.common.operator.collection_input` directly
-
-### Added (prior cleanup track commits)
-
-- `rest/schema_bridge.py` — REST input bodies derived from `CqrsSchemaRegistry` (0.15.2)
-- Ruff hygiene + wizard isort exemptions (0.15.1)
+- `serializers.py` re-exports of `views.py` helpers (snapshot serializers remain)
+- `ssr/explorer/collection_input.py` shim
 
 ## [0.14.9] — 2026-06-26
 

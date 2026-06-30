@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.14.13` (PyPI) · **0.15** service layer on master (CQRS schemas, in-process MCP) · **0.14 MCP** operator adapter · Wizard Experience: `/v1/wizards` REST, Explorer workspace · [CHANGELOG.md](CHANGELOG.md) · [docs/MCP.md](docs/MCP.md) · [docs/VISION-0.15.md](docs/VISION-0.15.md)
+**Current release:** `0.15.4` — CQRS schemas + service layer, in-process MCP, legacy cleanup · Wizard Experience: `/v1/wizards` REST, Explorer workspace · [CHANGELOG.md](CHANGELOG.md) · [docs/MCP.md](docs/MCP.md) · [docs/VISION-0.15.md](docs/VISION-0.15.md)
 
 ---
 
