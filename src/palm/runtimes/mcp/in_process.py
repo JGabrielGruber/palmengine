@@ -14,19 +14,15 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
 )
 from palm.common.cqrs.query import (
-    GetFlowQuery,
     GetInstanceSnapshotQuery,
     GetJobStatusQuery,
-    GetProcessQuery,
-    ListFlowsQuery,
     ListInstanceSnapshotsQuery,
-    ListProcessesQuery,
 )
 from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
 from palm.common.interactive_runtime import resolve_interactive_job
 from palm.common.job_context import instance_id_for_job
 from palm.common.operator.invoke_tree import build_invoke_tree
-from palm.common.resource.catalog import ResourceCatalog
+from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.common.services.errors import InstanceNotFoundServiceError
 from palm.core.orchestration import JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -255,59 +251,44 @@ class PalmInProcessBackend:
 
     def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.serializers import flow_summary
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        flows = self._ctx.ask(ListFlowsQuery(pattern=pattern))
-        rows = [flow_summary(flow) for flow in flows]
+        rows = self._ctx.definition.list_flows(pattern=pattern)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("flows", rows, params)
 
     def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.serializers import flow_detail, flow_summary
-
-        flow = self._ctx.ask(GetFlowQuery(flow_id=flow_id))
-        if flow is None:
-            raise _flow_not_found(flow_id)
-        return flow_detail(flow) if verbose else flow_summary(flow)
+        try:
+            return self._ctx.definition.get_flow(flow_id, verbose=verbose)
+        except DefinitionNotFoundServiceError as exc:
+            raise _flow_not_found(exc.ref) from exc
 
     def list_processes(self) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.serializers import process_summary
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        processes = self._ctx.ask(ListProcessesQuery())
-        rows = [process_summary(process) for process in processes]
+        rows = self._ctx.definition.list_processes()
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("processes", rows, params)
 
     def get_process(self, process_id: str) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.serializers import process_detail
-
-        process = self._ctx.ask(GetProcessQuery(process_id=process_id))
-        if process is None:
-            raise _process_not_found(process_id)
-        return process_detail(process)
+        try:
+            return self._ctx.definition.get_process(process_id)
+        except DefinitionNotFoundServiceError as exc:
+            raise _process_not_found(exc.ref) from exc
 
     def list_resources(self, *, provider: str | None = None) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.handlers.resources import _resource_summary
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        catalog = ResourceCatalog(self._ctx.runtime.repository)
-        rows = [_resource_summary(entry) for entry in catalog.entries()]
-        if provider:
-            rows = [row for row in rows if row.get("provider") == provider]
+        rows = self._ctx.definition.list_resources(provider=provider)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("resources", rows, params)
 
     def get_resource(self, resource_ref: str) -> dict[str, Any]:
-        from palm.common.exceptions import DefinitionNotFoundError
-
-        catalog = ResourceCatalog(self._ctx.runtime.repository)
         try:
-            return catalog.describe(resource_ref)
-        except DefinitionNotFoundError as exc:
+            return self._ctx.definition.get_resource(resource_ref)
+        except DefinitionNotFoundServiceError as exc:
             raise PalmRestError(
                 404,
                 {
@@ -361,11 +342,8 @@ class PalmInProcessBackend:
         return self._ctx.internal.doctor(self._ctx.runtime)
 
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
-        from palm.definitions.flow import FlowDefinition
-        from palm.runtimes.server.surfaces.rest.serializers import flow_step_slugs
-
         try:
-            plan = self._ctx.runtime.prepare_flow_from_body(body)
+            return self._ctx.definition.validate_flow(body, runtime=self._ctx.runtime)
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
         except Exception as exc:
@@ -377,19 +355,6 @@ class PalmInProcessBackend:
                     "details": [{"field": "flow", "message": str(exc), "code": "build_failed"}],
                 },
             ) from exc
-
-        pattern = plan.metadata.get("pattern") or body.get("flow", {}).get("pattern")
-        flow_name = plan.metadata.get("flow") or plan.metadata.get("flow_name")
-        step_slugs: list[str] = []
-        flow_def = plan.metadata.get("flow_definition")
-        if isinstance(flow_def, dict):
-            step_slugs = flow_step_slugs(FlowDefinition.from_dict(flow_def))
-        return {
-            "valid": True,
-            "pattern": pattern,
-            "flow": flow_name,
-            "step_slugs": step_slugs,
-        }
 
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope

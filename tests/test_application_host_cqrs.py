@@ -26,9 +26,12 @@ def test_application_host_exposes_internal_service(settings: PalmSettings) -> No
     host.start()
 
     assert host.internal is not None
+    assert host.definition is not None
     assert host.schemas is not None
     rows = host.internal.list_jobs(limit=5)
     assert isinstance(rows, list)
+    flows = host.definition.list_flows()
+    assert isinstance(flows, list)
 
     host.shutdown()
 

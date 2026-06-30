@@ -113,6 +113,7 @@ class ApplicationHost:
         self._last_recovery: dict[str, Any] | None = None
         self._schema_registry: Any | None = None
         self._internal: Any | None = None
+        self._definition: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -143,6 +144,11 @@ class ApplicationHost:
     def internal(self):
         """Operational inspect/debug service API."""
         return self._internal
+
+    @property
+    def definition(self):
+        """Definition catalog service API."""
+        return self._definition
 
     @property
     def router(self) -> RuntimeRouter:
@@ -476,6 +482,7 @@ class ApplicationHost:
             instance_manager=self._app.instance_manager,
         )
         from palm.common.cqrs.schemas import build_schema_registry
+        from palm.common.services.definition import DefinitionService
         from palm.common.services.internal import InternalService
 
         self._schema_registry = build_schema_registry()
@@ -483,6 +490,12 @@ class ApplicationHost:
             commands=self._command_bus,
             queries=self._query_bus,
             schemas=self._schema_registry,
+        )
+        self._definition = DefinitionService(
+            commands=self._command_bus,
+            queries=self._query_bus,
+            schemas=self._schema_registry,
+            repository=self._app.repository(),
         )
 
     def _attach_projections(self) -> None:

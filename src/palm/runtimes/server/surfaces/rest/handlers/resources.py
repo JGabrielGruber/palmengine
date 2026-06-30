@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.exceptions import DefinitionNotFoundError
-from palm.common.resource.catalog import ResourceCatalog
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.core.resource.result import ProviderResult
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
@@ -26,20 +25,16 @@ def list_resources(ctx: ServerContext, request: ServerRequest) -> ServerResponse
     if isinstance(query, ServerResponse):
         return query
 
-    catalog = ResourceCatalog(ctx.runtime.repository)
-    rows = [_resource_summary(entry) for entry in catalog.entries()]
-    provider = str(request.query.get("provider") or "").strip()
-    if provider:
-        rows = [row for row in rows if row.get("provider") == provider]
+    provider = str(request.query.get("provider") or "").strip() or None
+    rows = ctx.definition.list_resources(provider=provider)
     params = PaginationParams(limit=query["limit"], offset=query["offset"])
     return ok(list_envelope("resources", rows, params))
 
 
 def get_resource(ctx: ServerContext, request: ServerRequest, *, resource_ref: str) -> ServerResponse:
-    catalog = ResourceCatalog(ctx.runtime.repository)
     try:
-        payload = catalog.describe(resource_ref)
-    except DefinitionNotFoundError:
+        payload = ctx.definition.get_resource(resource_ref)
+    except DefinitionNotFoundServiceError:
         return errors.resource_not_found(resource_ref)
     return ok(payload)
 
@@ -92,15 +87,3 @@ def _provider_result_body(result: ProviderResult) -> dict[str, Any]:
     }
 
 
-def _resource_summary(entry: Any) -> dict[str, Any]:
-    return {
-        "definition_id": entry.definition_id,
-        "name": entry.name,
-        "provider": entry.provider,
-        "action": entry.action,
-        "resource_id_template": entry.resource_id,
-        "param_keys": list(entry.param_keys),
-        "has_input_schema": entry.has_input_schema,
-        "has_output_schema": entry.has_output_schema,
-        "summary": entry.summary(),
-    }

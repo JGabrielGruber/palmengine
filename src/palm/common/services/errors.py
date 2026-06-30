@@ -27,4 +27,17 @@ class InstanceNotFoundServiceError(LookupError):
         super().__init__(f"Instance not found: {instance_id}")
 
 
-__all__ = ["InstanceNotFoundServiceError", "ServiceValidationError"]
+class DefinitionNotFoundServiceError(LookupError):
+    """Raised when a flow, process, or resource definition cannot be resolved."""
+
+    def __init__(self, kind: str, ref: str) -> None:
+        self.kind = kind
+        self.ref = ref
+        super().__init__(f"{kind} not found: {ref}")
+
+
+__all__ = [
+    "DefinitionNotFoundServiceError",
+    "InstanceNotFoundServiceError",
+    "ServiceValidationError",
+]
