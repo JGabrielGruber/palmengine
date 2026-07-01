@@ -25,6 +25,7 @@ class OperatorViewContext:
     flow_id: str | None = None
     scenario_id: str | None = None
     invoke_tree: dict[str, Any] | None = None
+    handoff_ready: bool = False
     path: list[str] = field(default_factory=list)
 
 

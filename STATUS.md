@@ -234,7 +234,7 @@ just mcp-inspector                       # MCP Inspector UI
 |---------|-------|--------|
 | 0.20.0 | Design spec — assistant (compose + human) vs powertool (compact) | ✅ Shipped |
 | 0.20.1 | `view_registry.py` in common — thin format dispatch | ✅ Shipped |
-| 0.20.2 | `assist/views.py` — compose pipeline + enricher registry | Planned |
+| 0.20.2 | `assist/views.py` — compose pipeline + enricher registry | ✅ Shipped |
 | 0.20.3 | Assist session defaults; start returns first turn | Planned |
 | 0.20.4 | `palm_assist` `format=assistant` default | Planned |
 | 0.20.5 | Tests, `MIGRATION-0.20.md`, docs | Planned |
@@ -245,7 +245,7 @@ just mcp-inspector                       # MCP Inspector UI
 
 **0.19.1 shipped** — `palm_assist` compact coercion fix for in-process flow sessions.
 
-**Next:** 0.20.2 — `assist/views.py` compose + humanize pipeline per [assistant-powertool-views spec](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md).
+**Next:** 0.20.3 — assist session defaults + start returns first turn per [assistant-powertool-views spec](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md).
 
 
 ## Useful Links

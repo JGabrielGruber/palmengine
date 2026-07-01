@@ -42,6 +42,9 @@ class AssistService(BaseService):
         self._system = system
         self._runtime = runtime
         self._runtime_resolver = runtime_resolver
+        from palm.services.assist.views import ensure_assist_view_registration
+
+        ensure_assist_view_registration()
 
     @property
     def definitions(self) -> DefinitionService:

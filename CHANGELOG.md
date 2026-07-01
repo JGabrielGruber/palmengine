@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.2] — 2026-07-01
+
+**Assistant views** — compose + humanize pipeline registered from assist domain.
+
+### Added
+
+- **`palm/services/assist/views.py`** — `build_assistant_view`, compose-always pipeline, humanized envelope
+- **`register_assistant_enricher`** on assist registry — per-scenario post-humanize hooks
+- **`OperatorViewContext.handoff_ready`** — assist handoff shaping
+- **Tests** — `tests/test_assistant_view.py`
+
+### Changed
+
+- **`AssistService`** — registers `assistant` view builder at construction
+
 ## [0.20.1] — 2026-07-01
 
 **Operator view registry** — thin format dispatch in common; powertool registered by default.

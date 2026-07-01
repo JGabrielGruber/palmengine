@@ -80,9 +80,12 @@ _registry: list[CommandSpec] = [
     ),
 ]
 
+AssistantEnricherFn = Callable[..., dict[str, Any]]
+
 _lock = threading.RLock()
 _contributors: dict[str, AssistContributor] = {}
 _mcp_aliases: dict[str, tuple[str, ...]] = {}
+_assistant_enrichers: dict[str, AssistantEnricherFn] = {}
 
 
 def register_assist_contributor(contributor: AssistContributor) -> None:
@@ -158,21 +161,48 @@ def resolve_mcp_alias(
     return tuple(resolved)
 
 
+def register_assistant_enricher(scenario_id: str, fn: AssistantEnricherFn) -> None:
+    """Register a post-humanize enricher for one assist scenario."""
+    with _lock:
+        if _assistant_enrichers.get(scenario_id) is fn:
+            return
+        _assistant_enrichers[scenario_id] = fn
+
+
+def apply_assistant_enricher(
+    scenario_id: str,
+    view: dict[str, Any],
+    *,
+    context: Any,
+) -> dict[str, Any]:
+    """Apply a scenario enricher when registered."""
+    with _lock:
+        enricher = _assistant_enrichers.get(scenario_id)
+    if enricher is None:
+        return view
+    enriched = enricher(view, context=context)
+    return enriched if isinstance(enriched, dict) else view
+
+
 def clear_assist_contributors() -> None:
     """Remove assist contributor registrations (primarily for tests)."""
     with _lock:
         _contributors.clear()
         _mcp_aliases.clear()
+        _assistant_enrichers.clear()
 
 
 __all__ = [
     "AssistContributor",
     "CommandSpec",
+    "AssistantEnricherFn",
+    "apply_assistant_enricher",
     "assist_commands",
     "clear_assist_contributors",
     "list_mcp_path_aliases",
     "list_scenario_rows",
     "register_assist_contributor",
+    "register_assistant_enricher",
     "resolve_mcp_alias",
     "scenario_by_id",
 ]
