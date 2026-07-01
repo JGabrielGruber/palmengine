@@ -105,7 +105,7 @@ just mcp-inspector                  # MCP Inspector UI
 
 2. **Plain-string input** — Prefer `palm_flows_session_input(session_id, input="yes")` or `input="Ada"`. Do **not** wrap answers in JSON objects. Coercion matches Explorer (`yes` → boolean on confirm steps).
 
-3. **Compact by default** — `palm_flows_session` / `palm_system_inspect_job` return slim snapshots. Use `format="verbose"` only when debugging schema or full answers.
+3. **Two view modes (0.20)** — **Assistant** (human compose: `question`, `choices`, `hint`) on assist surfaces; **Powertool** (agent snapshot: `operator_hint`, `step_kind`) on `palm_flows_*` / `palm_system_*`. `palm_assist` defaults `format="assistant"` on assist paths; flows/system paths stay powertool. Use `format="verbose"` only when debugging full inspect dicts.
 
 4. **Read vs write** — Use **resources** for catalogs and guides; use **tools** for create, input, resume, cancel. Service REST lives under `/v1/api/…`.
 
@@ -123,24 +123,26 @@ just mcp-inspector                  # MCP Inspector UI
 
 10. **Sequential driving** — Drive one session at a time. Call `palm_flows_session_resume_child_wait` only while `waiting_for_child` is true (otherwise returns `resume_child_wait: skipped_not_waiting`).
 
-### Assist domain (0.18 REST · 0.19 MCP)
+### Assist domain (0.18 REST · 0.19 MCP · 0.20 views)
 
-**0.18** adds `palm/services/assist/` — conversational operator guidance with typed handoff. **0.19** ships stable **`palm_assist`** — one parametric MCP tool for path-shaped dispatch.
+**0.18** adds `palm/services/assist/` — conversational operator guidance with typed handoff. **0.19** ships stable **`palm_assist`**. **0.20** splits **assistant** (human compose, default on assist) vs **powertool** (agent compact, default on flows/system).
 
 | `palm_assist` | Purpose |
 |---------------|---------|
-| `path=["assist","scenarios","operator-entry","start"]` | Start operator entry |
-| `alias="operator-entry/start"` | Same via contributor alias |
+| `alias="operator-entry/start"` | Start operator entry — returns **first turn** (`question`, `choices`) |
+| `format="assistant"` | Default on assist paths (human envelope) |
+| `format="powertool"` | Opt-in 0.19 compact shape on assist |
 | `path=["assist","session",id,"input"], params={"value":"yes"}` | Plain-string input |
 | `alias="operator-entry/handoff", params={"session_id":id}` | Typed handoff payload |
-| `path=["flows","todo-builder","create"]` | Delegate to flows after handoff |
+| `path=["flows","todo-builder","create"]` | Delegate to flows — **powertool** response |
 
-Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid — migration optional. See [MIGRATION-0.19.md](../MIGRATION-0.19.md).
+Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid. See [MIGRATION-0.20.md](../MIGRATION-0.20.md) · [MIGRATION-0.19.md](../MIGRATION-0.19.md).
 
 | Assist REST | Purpose |
 |-------------|---------|
 | `GET /v1/api/assist/scenarios` | List registered scenarios |
-| `POST /v1/api/assist/scenarios/operator-entry/start` | Start operator entry wizard |
+| `POST /v1/api/assist/scenarios/operator-entry/start` | Start — assistant first turn (default) |
+| `GET /v1/api/assist/session/{id}?format=assistant` | Inspect assist session |
 | `POST /v1/api/assist/session/{session_id}/handoff` | Typed handoff payload |
 
 Assist scenarios are normal wizard flows (`palm-operator-entry`). Resource steps use existing `step_kind: resource` → `ResourceLeaf`.

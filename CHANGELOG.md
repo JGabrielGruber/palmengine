@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.5] — 2026-07-01
+
+**0.20 release complete** — migration guide, agent docs, verification.
+
+### Added
+
+- **`MIGRATION-0.20.md`** — assistant vs powertool migration for assist surfaces
+- **`RELEASE-0.20.5.md`** — release checklist and verify commands
+
+### Changed
+
+- **`docs/llms.txt`** — 0.20.5 agent rules (two view modes, typical session examples)
+- **`docs/MCP.md`** — `palm_assist` `format` param; link to `MIGRATION-0.20.md`
+- **`AGENTS.md`** — assistant/powertool conventions for MCP operators
+
 ## [0.20.4] — 2026-07-01
 
 **`palm_assist` format default** — assistant on assist paths; powertool on flows/system.

@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.19.0`  
+**Current Version:** `0.20.5`  
 **Last Updated:** July 1, 2026  
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -226,9 +226,9 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.19.0 | `palm_assist` MCP proxy + contributor aliases | ✅ Shipped |
 | 0.19.1 | Compact coercion for in-process flow session dispatch | ✅ Shipped |
 
-## 0.20 — Assistant vs Powertool Views (Planned)
+## 0.20 — Assistant vs Powertool Views (Shipped)
 
-**Design:** [docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md)
+**Migration:** [MIGRATION-0.20.md](MIGRATION-0.20.md) · **Design:** [docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md)
 
 | Release | Theme | Status |
 |---------|-------|--------|
@@ -237,15 +237,15 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.20.2 | `assist/views.py` — compose pipeline + enricher registry | ✅ Shipped |
 | 0.20.3 | Assist session defaults; start returns first turn | ✅ Shipped |
 | 0.20.4 | `palm_assist` `format=assistant` default | ✅ Shipped |
-| 0.20.5 | Tests, `MIGRATION-0.20.md`, docs | Planned |
+| 0.20.5 | `MIGRATION-0.20.md`, docs, verification | ✅ Shipped |
 
 **0.21 deferred:** CLI REPL assistant rendering, Explorer assist panel, optional flows `format=assistant`.
 
 ## Priorities & Next Steps
 
-**0.19.1 shipped** — `palm_assist` compact coercion fix for in-process flow sessions.
+**0.20.5 shipped** — assistant vs powertool operator views complete; see [MIGRATION-0.20.md](MIGRATION-0.20.md).
 
-**Next:** 0.20.5 — tests, `MIGRATION-0.20.md`, docs per [assistant-powertool-views spec](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md).
+**Next:** 0.21 — CLI REPL assistant rendering, Explorer assist panel, optional `format=assistant` on flows REST/MCP.
 
 
 ## Useful Links

@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.19.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Services are the API — REST + `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.20.5 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Assistant vs powertool operator views (0.20) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -70,6 +70,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Service layer (0.16)** | `host.system`, `host.definitions`, `host.execution.flows`, `host.execution.providers` |
 | **Assist (0.18)** | `host.assist` · REST `/v1/api/assist/…` · `palm-operator-entry` scenario · handoff → flows |
 | **palm_assist (0.19)** | Single MCP tool: `path` / `alias` / `params` dispatch · resource `palm://assist/routes` |
+| **Operator views (0.20)** | **Assistant** default on assist (`question`, `choices`, `hint`) · **Powertool** on `palm_flows_*` / flows paths (`operator_hint`) |
 | **MCP in-process (0.15+)** | `PALM_MCP_IN_PROCESS=1` — tools use services without HTTP (default in `.grok/config.toml`) |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
@@ -121,20 +122,21 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.
 
 1. **Session-first** — flow sessions use `session_id` (same durable id as `instance_id` in views). Use `job_id` only when you lack a session handle (`palm_system_inspect_job`).
 2. **Plain input** — `palm_flows_session_input(session_id, input="yes")` not JSON blobs. `yes`/`no` coerce to boolean on confirm steps.
-3. **Compact inspect** — default slim responses; `format="verbose"` only when debugging.
+3. **Two view modes (0.20)** — **Assistant** on `palm_assist` assist paths (default `format=assistant`). **Powertool** on `palm_flows_*` and flows/system `palm_assist` paths. Use `format=powertool` on assist for 0.19 compact shape; `verbose` for full inspect.
 4. **Resources = read, tools = write** — MCP read URIs (`palm://definitions/*`, `palm://agent/guide`) via FetchMcpResource; resource definitions (`knowkey.search_nodes`, `fetch-customer`) via `palm_providers_invoke`. Never pass `palm://` to invoke.
 5. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_flows_session_resume_child_wait` or inspect child.
 6. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
 7. **Interactive entry** — `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
 8. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
 
-### Typical session (0.19 — `palm_assist` or per-domain tools)
+### Typical session (0.20 — `palm_assist` or per-domain tools)
 
 ```
-palm_assist(alias="operator-entry/start")              → session_id
+palm_assist(alias="operator-entry/start")              → question + choices + session_id
 palm_assist(path=["assist","session",id,"input"], params={"value":"todo-builder"})
 palm_assist(alias="operator-entry/handoff", params={"session_id": id})
-palm_assist(path=["flows","todo-builder","create"])    → business session
+palm_assist(path=["flows","todo-builder","create"])    → powertool business session
+# Powertool opt-in on assist: format="powertool"
 # Legacy equivalent: palm_flows_create_session(flow_id="todo-builder")
 # Catalog: palm://assist/routes
 ```
@@ -197,6 +199,7 @@ src/palm/
 | docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
 | docs/MCP.md | **Agent MCP guide** — setup, workflows, full tool inventory |
+| MIGRATION-0.20.md | Assistant vs powertool operator views (0.20 assist surfaces) |
 | MIGRATION-0.16.md | Upgrade from 0.15.x REST/MCP to service-domain API |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
 | MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
