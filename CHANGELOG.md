@@ -4,6 +4,20 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.4] — 2026-07-01
+
+**`palm_assist` format default** — assistant on assist paths; powertool on flows/system.
+
+### Added
+
+- **`palm_assist` `format` param** — default `assistant`; `powertool` / `verbose` opt-in
+- **`shape_dispatch_result`** + **`resolve_dispatch_format`** in assist MCP dispatch
+
+### Changed
+
+- Flows/system paths dispatched via `palm_assist` remain **powertool** regardless of tool default
+- REST assist dispatch forwards `format` query param when set
+
 ## [0.20.3] — 2026-07-01
 
 **Assist session defaults** — assistant envelope on service + REST; start returns first turn.

@@ -137,3 +137,63 @@ async def test_palm_assist_assist_session_returns_assistant(assist_server_ctx) -
     assert payload.get("status") == "waiting"
     assert "detail" not in payload
     assert "operator_hint" not in payload
+
+
+@pytest.mark.asyncio
+async def test_palm_assist_flows_session_stays_powertool(assist_server_ctx) -> None:
+    backend = PalmInProcessBackend(assist_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        started = await client.call_tool(
+            "palm_assist",
+            {"alias": "operator-entry/start", "params": {}},
+        )
+        session_id = started.data["session_id"]
+        flow_id = started.data["refs"]["flow_id"]
+        result = await client.call_tool(
+            "palm_assist",
+            {
+                "path": ["flows", flow_id, "session", session_id],
+                "params": {},
+                "format": "assistant",
+            },
+        )
+
+    payload = result.data
+    assert payload.get("instance_id") == session_id
+    assert payload.get("step")
+    assert "question" not in payload
+
+
+@pytest.mark.asyncio
+async def test_palm_assist_assist_powertool_opt_in(assist_server_ctx) -> None:
+    backend = PalmInProcessBackend(assist_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_assist",
+            {
+                "alias": "operator-entry/start",
+                "params": {},
+                "format": "powertool",
+            },
+        )
+
+    payload = result.data
+    assert payload.get("status") == "WAITING_FOR_INPUT"
+    assert "operator_hint" in payload
+    assert "question" not in payload

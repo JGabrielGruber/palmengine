@@ -6,10 +6,16 @@ from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.common.operator.invoke_tree import build_invoke_tree
+from palm.common.operator.view_registry import (
+    OperatorViewContext,
+    build_operator_view,
+    normalize_view_format,
+)
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.runtimes.mcp.assist.routes_catalog import build_assist_routes_catalog
 from palm.runtimes.mcp.flows.views import flatten_session_view, submission_view
 from palm.services.assist.registry import resolve_mcp_alias
+from palm.services.assist.views import resolve_view_format
 
 _DELEGATED_PREFIXES = frozenset(
     {"assist", "flows", "processes", "definitions", "system", "providers"},
@@ -77,9 +83,38 @@ def _coerce_dispatch_result(result: Any) -> Any:
     return result
 
 
-def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
-    """Reduce domain results to compact operator snapshots."""
+def resolve_dispatch_format(
+    path: list[str],
+    *,
+    params: dict[str, Any] | None = None,
+    tool_format: str | None = None,
+) -> str:
+    """Resolve view format: assistant default on assist paths; powertool elsewhere."""
+    prefix = path[0] if path else ""
+    if prefix == "assist":
+        merged = dict(params or {})
+        if tool_format is not None and "format" not in merged:
+            merged["format"] = tool_format
+        return resolve_view_format(merged, default="assistant")
+    if params and params.get("format") is not None:
+        return resolve_view_format(params, default="powertool")
+    return "powertool"
+
+
+def shape_dispatch_result(
+    path: list[str],
+    result: Any,
+    *,
+    format: str | None = None,
+    params: dict[str, Any] | None = None,
+    tool_format: str | None = None,
+) -> dict[str, Any]:
+    """Shape domain dispatch results for MCP operator consumers."""
+    fmt = normalize_view_format(
+        format or resolve_dispatch_format(path, params=params, tool_format=tool_format)
+    )
     payload: dict[str, Any] = {"path": path}
+    raw = result
     result = _coerce_dispatch_result(result)
     if not isinstance(result, dict):
         payload["result"] = result
@@ -92,14 +127,18 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
     prefix = path[0] if path else ""
 
     if prefix == "assist" and "session_id" in result:
-        if result.get("question"):
+        if fmt == "assistant" or result.get("question"):
             payload.update(result)
             return payload
         if result.get("detail"):
             flat = _assist_session_flat(result)
-            compact = compact_wizard_inspect(flat)
-            payload.update(compact)
-            for key in ("operator_hint", "compose_status", "handoff_ready", "scenario_id"):
+            shaped = build_operator_view(
+                "powertool",
+                flat_view=flat,
+                context=_operator_context_from_assist(result),
+            )
+            payload.update(shaped)
+            for key in ("operator_hint", "compose_status", "handoff_ready", "scenario_id", "next_commands"):
                 if result.get(key) is not None:
                     payload[key] = result[key]
             return payload
@@ -108,8 +147,12 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
             return payload
 
     if prefix == "flows" and _looks_like_session(path, result):
-        flat = flatten_session_view(result)
-        payload.update(compact_wizard_inspect(flat))
+        flat = flatten_session_view(raw)
+        _ensure_flow_session_flat(flat, path)
+        if fmt == "verbose":
+            payload.update(flat)
+        else:
+            payload.update(compact_wizard_inspect(flat, format="compact"))
         return payload
 
     if prefix == "flows" and path[-1:] == ["create"]:
@@ -117,7 +160,13 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
         return payload
 
     if prefix == "system" and _looks_like_job_context(result):
-        payload.update(compact_job_inspect(result))
+        payload.update(
+            build_operator_view(
+                fmt,
+                flat_view=result,
+                context=OperatorViewContext(path=list(path)),
+            )
+        )
         return payload
 
     if prefix == "system" and path[-1:] == ["doctor"]:
@@ -126,6 +175,18 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
 
     payload.update(result)
     return payload
+
+
+def compact_dispatch_result(
+    path: list[str],
+    result: Any,
+    *,
+    format: str | None = None,
+    params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Alias for :func:`shape_dispatch_result` defaulting non-assist paths to powertool."""
+    resolved = format or resolve_dispatch_format(path, params=params, tool_format=None)
+    return shape_dispatch_result(path, result, format=resolved, params=params)
 
 
 def assist_routes_payload() -> dict[str, Any]:
@@ -147,6 +208,50 @@ def _looks_like_session(path: list[str], result: dict[str, Any]) -> bool:
 
 def _looks_like_job_context(result: dict[str, Any]) -> bool:
     return "job_id" in result and ("pattern" in result or "instance" in result)
+
+
+def _operator_context_from_assist(result: dict[str, Any]) -> OperatorViewContext:
+    return OperatorViewContext(
+        session_id=_optional_str(result.get("session_id")),
+        flow_id=_optional_str(result.get("flow_id")),
+        scenario_id=_optional_str(result.get("scenario_id")),
+        handoff_ready=bool(result.get("handoff_ready")),
+    )
+
+
+def _ensure_flow_session_flat(flat: dict[str, Any], path: list[str]) -> None:
+    if len(path) >= 4 and path[0] == "flows" and path[2] == "session":
+        session_id = path[3]
+        flat.setdefault("session_id", session_id)
+        if not flat.get("instance_id"):
+            flat["instance_id"] = session_id
+    if len(path) >= 2 and path[0] == "flows":
+        flat.setdefault("flow_name", path[1])
+
+
+def _operator_context_from_flow_path(path: list[str], flat: dict[str, Any]) -> OperatorViewContext:
+    session_id = flat.get("instance_id") or flat.get("session_id")
+    flow_id = flat.get("flow_name") or flat.get("flow")
+    if len(path) >= 4 and path[0] == "flows" and path[2] == "session":
+        session_id = session_id or path[3]
+        flow_id = flow_id or path[1]
+    return OperatorViewContext(
+        session_id=_optional_str(session_id),
+        flow_id=_optional_str(flow_id),
+        path=list(path),
+    )
+
+
+def _optional_str(value: object | None) -> str | None:
+    return str(value) if value is not None else None
+
+
+def _append_format_query(url_path: str, params: dict[str, Any]) -> str:
+    fmt = params.get("format")
+    if not fmt:
+        return url_path
+    separator = "&" if "?" in url_path else "?"
+    return f"{url_path}{separator}format={fmt}"
 
 
 def _dispatch_definitions(ctx: Any, path: list[str], params: dict[str, Any]) -> Any:
@@ -251,17 +356,22 @@ def map_dispatch_to_rest(
         if len(path) == 3 and path[1] == "scenarios":
             return "GET", f"/v1/api/assist/scenarios/{path[2]}", None, False
         if len(path) == 4 and path[1] == "scenarios" and path[3] == "start":
-            return "POST", f"/v1/api/assist/scenarios/{path[2]}/start", body, True
+            url = _append_format_query(f"/v1/api/assist/scenarios/{path[2]}/start", params)
+            return "POST", url, body, True
         if len(path) == 2 and path[1] == "session":
             raise ValueError("session_id required")
         if len(path) == 3 and path[1] == "session":
-            return "GET", f"/v1/api/assist/session/{path[2]}", None, False
+            url = _append_format_query(f"/v1/api/assist/session/{path[2]}", params)
+            return "GET", url, None, False
         if len(path) == 4 and path[1] == "session" and path[3] == "input":
-            return "POST", f"/v1/api/assist/session/{path[2]}/input", {"value": params.get("value", params.get("input"))}, True
+            url = _append_format_query(f"/v1/api/assist/session/{path[2]}/input", params)
+            return "POST", url, {"value": params.get("value", params.get("input"))}, True
         if len(path) == 4 and path[1] == "session" and path[3] == "backtrack":
-            return "POST", f"/v1/api/assist/session/{path[2]}/backtrack", {"to_step": params.get("to_step")}, True
+            url = _append_format_query(f"/v1/api/assist/session/{path[2]}/backtrack", params)
+            return "POST", url, {"to_step": params.get("to_step")}, True
         if len(path) == 4 and path[1] == "session" and path[3] == "resume":
-            return "POST", f"/v1/api/assist/session/{path[2]}/resume", None, True
+            url = _append_format_query(f"/v1/api/assist/session/{path[2]}/resume", params)
+            return "POST", url, None, True
         if len(path) == 4 and path[1] == "session" and path[3] == "cancel":
             return "POST", f"/v1/api/assist/session/{path[2]}/cancel", None, True
         if len(path) == 4 and path[1] == "session" and path[3] == "handoff":
@@ -306,5 +416,7 @@ __all__ = [
     "compact_dispatch_result",
     "dispatch_operator_path",
     "map_dispatch_to_rest",
+    "resolve_dispatch_format",
     "resolve_dispatch_path",
+    "shape_dispatch_result",
 ]

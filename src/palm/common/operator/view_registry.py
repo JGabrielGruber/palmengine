@@ -85,10 +85,16 @@ def _build_powertool_view(
     *,
     context: OperatorViewContext,
 ) -> dict[str, Any]:
-    del context
-    if _is_job_context(flat_view):
-        return compact_job_inspect(flat_view, format="compact")
-    return compact_wizard_inspect(flat_view, format="compact")
+    flat = dict(flat_view)
+    if context.session_id:
+        flat.setdefault("session_id", context.session_id)
+        if not flat.get("instance_id"):
+            flat["instance_id"] = context.session_id
+    if context.flow_id:
+        flat.setdefault("flow_name", context.flow_id)
+    if _is_job_context(flat):
+        return compact_job_inspect(flat, format="compact")
+    return compact_wizard_inspect(flat, format="compact")
 
 
 def _register_builtins() -> None:
