@@ -4,6 +4,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.0] — 2026-07-01
+
+**Design** — Assistant vs Powertool operator view split (implementation 0.20.1–0.20.5).
+
+### Added
+
+- **Spec** — [docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md): assistant (compose + human) default on assist surfaces; powertool (today's compact) on flows/system; thin `view_registry` in common
+
 ## [0.19.1] — 2026-07-01
 
 **Bugfix** — `palm_assist` compact shaping for in-process flow session dispatch.

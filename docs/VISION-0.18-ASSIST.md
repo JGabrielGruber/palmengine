@@ -2,9 +2,9 @@
 
 **Theme:** A fifth service domain for conversational, wizard-driven guidance — “what should I do next with Palm?” — without replacing business execution.
 
-**Status:** 0.18.0 + 0.19.0 shipped (July 2026)  
+**Status:** 0.18–0.19 shipped · **0.20** assistant/powertool view split (spec approved)  
 **Builds on:** [0.16.5 shipped](VISION-0.16.md) · [0.17 service completion](superpowers/specs/2026-07-01-0.17-service-completion-design.md) prerequisite  
-**MVP target:** 0.18.0 · **Stable agent proxy:** 0.19.0
+**MVP target:** 0.18.0 · **Stable agent proxy:** 0.19.0 · **Human-first views:** [0.20 spec](superpowers/specs/2026-07-01-assistant-powertool-views-design.md)
 
 ---
 

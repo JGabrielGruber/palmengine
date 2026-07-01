@@ -224,12 +224,28 @@ just mcp-inspector                       # MCP Inspector UI
 | Phase | Theme | Status |
 |-------|-------|--------|
 | 0.19.0 | `palm_assist` MCP proxy + contributor aliases | ✅ Shipped |
+| 0.19.1 | Compact coercion for in-process flow session dispatch | ✅ Shipped |
+
+## 0.20 — Assistant vs Powertool Views (Planned)
+
+**Design:** [docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md)
+
+| Release | Theme | Status |
+|---------|-------|--------|
+| 0.20.0 | Design spec — assistant (compose + human) vs powertool (compact) | ✅ Spec |
+| 0.20.1 | `view_registry.py` in common — thin format dispatch | Planned |
+| 0.20.2 | `assist/views.py` — compose pipeline + enricher registry | Planned |
+| 0.20.3 | Assist session defaults; start returns first turn | Planned |
+| 0.20.4 | `palm_assist` `format=assistant` default | Planned |
+| 0.20.5 | Tests, `MIGRATION-0.20.md`, docs | Planned |
+
+**0.21 deferred:** CLI REPL assistant rendering, Explorer assist panel, optional flows `format=assistant`.
 
 ## Priorities & Next Steps
 
-**0.19.0 shipped** — `palm_assist` stable MCP proxy · [RELEASE-0.19.0.md](RELEASE-0.19.0.md)
+**0.19.1 shipped** — `palm_assist` compact coercion fix for in-process flow sessions.
 
-**Next:** 0.20+ experience work (Explorer assist UI, WebSocket assist stream) — see [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md).
+**Next:** 0.20.1 — `view_registry.py` per [assistant-powertool-views spec](docs/superpowers/specs/2026-07-01-assistant-powertool-views-design.md).
 
 
 ## Useful Links
