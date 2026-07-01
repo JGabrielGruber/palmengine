@@ -239,13 +239,27 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.20.4 | `palm_assist` `format=assistant` default | ✅ Shipped |
 | 0.20.5 | `MIGRATION-0.20.md`, docs, verification | ✅ Shipped |
 
-**0.21 deferred:** CLI REPL assistant rendering, Explorer assist panel, optional flows `format=assistant`.
+## 0.21 — Assistant Expansion (Planned)
+
+**Design:** [docs/superpowers/specs/2026-07-01-assistant-expansion-design.md](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md)
+
+| Release | Theme | Status |
+|---------|-------|--------|
+| 0.21.0 | Design spec — CLI, Explorer, actions, flows opt-in | ✅ Shipped |
+| 0.21.1 | CLI `assist *` commands + `render_assistant_panel` | Planned |
+| 0.21.2 | Explorer assist catalog + `assist_workspace` | Planned |
+| 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | Planned |
+| 0.21.4 | `actions` block + production enrichers + REST catalog/flows | Planned |
+| 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | Planned |
+| 0.21.6 | `MIGRATION-0.21.md`, docs, verification | Planned |
+
+**0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.20.5 shipped** — assistant vs powertool operator views complete; see [MIGRATION-0.20.md](MIGRATION-0.20.md).
+**0.21.0 shipped** — assistant expansion design spec approved.
 
-**Next:** 0.21 — CLI REPL assistant rendering, Explorer assist panel, optional `format=assistant` on flows REST/MCP.
+**Next:** 0.21.1 — CLI REPL assistant rendering per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
 
 
 ## Useful Links

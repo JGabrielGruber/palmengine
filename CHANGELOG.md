@@ -4,6 +4,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.0] — 2026-07-01
+
+**Design** — Assistant expansion: human surfaces + envelope depth (implementation 0.21.1–0.21.6).
+
+### Added
+
+- **Spec** — [docs/superpowers/specs/2026-07-01-assistant-expansion-design.md](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md): CLI `assist *` commands, Explorer `/explorer/assist` panel, `actions` block, opt-in flows `format=assistant`
+
 ## [0.20.5] — 2026-07-01
 
 **0.20 release complete** — migration guide, agent docs, verification.

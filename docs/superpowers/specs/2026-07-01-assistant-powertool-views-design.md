@@ -1,7 +1,7 @@
 # Assistant vs Powertool Operator Views
 
 **Status:** Approved (July 1, 2026)  
-**Version target:** 0.20.0 (spec) · 0.20.1–0.20.5 (implementation) · 0.21 (deferred surfaces)  
+**Version target:** 0.20.0 (spec) · 0.20.1–0.20.5 (implementation) · [0.21 expansion spec](2026-07-01-assistant-expansion-design.md)  
 **Builds on:** [0.19.0 shipped](../../MIGRATION-0.19.md) · [Assist domain](2026-07-01-assist-domain-design.md)  
 **Vision:** [docs/VISION-0.18-ASSIST.md](../../VISION-0.18-ASSIST.md)
 
@@ -355,15 +355,9 @@ def enrich_operator_entry(view: dict, *, context: OperatorViewContext) -> dict:
 | **0.20.4** | `palm_assist` format default; dispatch shaping | `test_palm_assist_tool.py` assistant shape |
 | **0.20.5** | `MIGRATION-0.20.md`; MCP/llms/AGENTS; full test pass | `just guard-common`, `just docs-check` |
 
-### 0.21 — Deferred
+### 0.21 — See expansion spec
 
-| Item | Rationale |
-|------|-----------|
-| CLI REPL renders assistant turns | Needs TUI layer; API stable first |
-| Explorer assist panel | SSR consumer of assistant envelope |
-| `format=assistant` on flows REST/MCP | Humans use assist handoff; flows stay powertool |
-| `actions` block in assistant (command paths for agents) | Optional progressive disclosure |
-| Pattern-owned assistant enrichers | Beyond assist scenario registry |
+Deferred items from this spec are specified in [2026-07-01-assistant-expansion-design.md](2026-07-01-assistant-expansion-design.md) (0.21.0–0.21.6).
 
 ---
 
