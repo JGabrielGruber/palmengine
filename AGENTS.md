@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.19.0 shipped)
+**Last updated:** July 2026 (0.21.6 shipped)
 
 ---
 
@@ -77,7 +77,7 @@ Coding agents should use the MCP operator adapter to develop and test flows — 
 | Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/llms.txt` |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
-**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); **0.20+** assistant default on assist (`question`, `choices`, `hint`) · powertool on `palm_flows_*` / flows dispatch (`operator_hint`); resources for read, tools for write; **0.19+** stable proxy → `palm_assist(path=…)` or `alias=…` with `format=assistant|powertool` (catalog: `palm://assist/routes`); per-domain tools remain valid; collection menu → `palm_wizard_collection_action` or choice label; interactive entry → `palm_assist` / `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `resume-child-wait` only when `waiting_for_child`.
+**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); **0.20+** assistant default on assist (`question`, `choices`, `hint`, `actions`) · powertool default on `palm_flows_*` / flows dispatch (`operator_hint`); **0.21.5+** flows opt-in `format=assistant` on `palm_flows_session` and flows REST `?format=`; resources for read, tools for write; **0.19+** stable proxy → `palm_assist(path=…)` or `alias=…` with `format=assistant|powertool` (catalog: `palm://assist/routes`); per-domain tools remain valid; collection menu → `palm_wizard_collection_action` or choice label; interactive entry → `palm_assist` / `assist start` (CLI) / `/explorer/assist` (browser) / `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `resume-child-wait` only when `waiting_for_child`.
 
 **Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
 

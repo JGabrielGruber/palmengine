@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.20.5`  
+**Current Version:** `0.21.6`  
 **Last Updated:** July 1, 2026  
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -251,15 +251,15 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | ✅ Shipped |
 | 0.21.4 | `actions` block + production enrichers + REST catalog/flows | ✅ Shipped |
 | 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | ✅ Shipped |
-| 0.21.6 | `MIGRATION-0.21.md`, docs, verification | Planned |
+| 0.21.6 | `MIGRATION-0.21.md`, docs, verification | ✅ Shipped |
 
 **0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.21.5 shipped** — opt-in `format=assistant` on `palm_flows_session` and flows REST session routes; powertool default unchanged.
+**0.21.6 shipped** — `MIGRATION-0.21.md`; docs sync (`MCP.md`, `llms.txt`, `AGENTS.md`); version **0.21.6**; full verification pass.
 
-**Next:** 0.21.6 — `MIGRATION-0.21.md`, docs sync, full verification per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
+**Next:** 0.22 — deferred items from [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md) (`palm-compose-guide`, process handoff, WebSocket assist stream).
 
 
 ## Useful Links

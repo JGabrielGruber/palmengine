@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.20.5 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Assistant vs powertool operator views (0.20) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.21.6 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Assistant expansion — human surfaces + envelope depth (0.21) · assistant vs powertool views (0.20) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -122,12 +122,14 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.
 
 1. **Session-first** — flow sessions use `session_id` (same durable id as `instance_id` in views). Use `job_id` only when you lack a session handle (`palm_system_inspect_job`).
 2. **Plain input** — `palm_flows_session_input(session_id, input="yes")` not JSON blobs. `yes`/`no` coerce to boolean on confirm steps.
-3. **Two view modes (0.20)** — **Assistant** on `palm_assist` assist paths (default `format=assistant`). **Powertool** on `palm_flows_*` and flows/system `palm_assist` paths. Use `format=powertool` on assist for 0.19 compact shape; `verbose` for full inspect.
-4. **Resources = read, tools = write** — MCP read URIs (`palm://definitions/*`, `palm://agent/guide`) via FetchMcpResource; resource definitions (`knowkey.search_nodes`, `fetch-customer`) via `palm_providers_invoke`. Never pass `palm://` to invoke.
-5. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_flows_session_resume_child_wait` or inspect child.
-6. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
-7. **Interactive entry** — `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
-8. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
+3. **Two view modes (0.20–0.21)** — **Assistant** on assist paths (`question`, `choices`, `hint`, `actions`). **Powertool** default on `palm_flows_*` and flows/system `palm_assist` paths. **0.21.5 opt-in:** `palm_flows_session(format="assistant")` or flows REST `?format=assistant`. Use `format=powertool` on assist for 0.19 compact shape; `verbose` for full inspect.
+4. **Human entry (0.21)** — CLI: `assist start operator-entry`. Explorer: `/explorer/assist`. MCP/REST assist unchanged; handoff → flows create.
+5. **Resources = read, tools = write** — MCP read URIs (`palm://definitions/*`, `palm://agent/guide`) via FetchMcpResource; resource definitions (`knowkey.search_nodes`, `fetch-customer`) via `palm_providers_invoke`. Never pass `palm://` to invoke.
+6. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_flows_session_resume_child_wait` or inspect child.
+7. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
+8. **Interactive entry** — `palm_assist` / `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
+9. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
+10. **`actions` block (0.21.4)** — on assistant turns; prefer structured `path`/`alias` over parsing `hint` for next steps.
 
 ### Typical session (0.20 — `palm_assist` or per-domain tools)
 
@@ -149,7 +151,7 @@ palm_assist(path=["flows","todo-builder","create"])    → powertool business se
 | Flow catalog | `palm://definitions/flows` |
 | Start wizard | `palm_assist` path/alias or `palm_flows_create_session` |
 | Command catalog | `palm://assist/routes` |
-| Current step | `palm_flows_session` |
+| Current step | `palm_flows_session` (powertool) or `format="assistant"` opt-in |
 | Send answer | `palm_flows_session_input(input=…)` |
 | Parent/child stack | `palm://instances/{id}/tree`, `palm_flows_compose_status` |
 | Collection UI | `palm_wizard_collection_action` |

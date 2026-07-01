@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.6] — 2026-07-01
+
+**0.21 release complete** — migration guide, agent docs, verification.
+
+### Added
+
+- **`MIGRATION-0.21.md`** — CLI/Explorer entry, `actions` block, flows `format=assistant` opt-in
+- **`RELEASE-0.21.6.md`** — release checklist and verify commands
+
+### Changed
+
+- **`docs/MCP.md`**, **`docs/llms.txt`**, **`AGENTS.md`** — 0.21 human surfaces and flows opt-in documented
+- **`MIGRATION-0.20.md`** — cross-link to 0.21 shipped features
+- **Version** `0.21.6` on documentation surfaces
+
 ## [0.21.5] — 2026-07-01
 
 **Flows assistant opt-in** — human envelope on business sessions without changing defaults.

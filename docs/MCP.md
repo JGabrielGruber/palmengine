@@ -105,7 +105,7 @@ just mcp-inspector                  # MCP Inspector UI
 
 2. **Plain-string input** — Prefer `palm_flows_session_input(session_id, input="yes")` or `input="Ada"`. Do **not** wrap answers in JSON objects. Coercion matches Explorer (`yes` → boolean on confirm steps).
 
-3. **Two view modes (0.20)** — **Assistant** (human compose: `question`, `choices`, `hint`) on assist surfaces; **Powertool** (agent snapshot: `operator_hint`, `step_kind`) on `palm_flows_*` / `palm_system_*`. `palm_assist` defaults `format="assistant"` on assist paths; flows/system paths stay powertool. Use `format="verbose"` only when debugging full inspect dicts.
+3. **Two view modes (0.20–0.21)** — **Assistant** (human compose: `question`, `choices`, `hint`, `actions`) on assist surfaces; **Powertool** (agent snapshot: `operator_hint`, `step_kind`) on `palm_flows_*` / `palm_system_*` by default. `palm_assist` defaults `format="assistant"` on assist paths; flows/system paths stay powertool unless `params.format=assistant`. **0.21.5 opt-in:** `palm_flows_session(format="assistant")` and flows REST `?format=assistant` for human labels on business sessions. Use `format="verbose"` only when debugging full inspect dicts.
 
 4. **Read vs write** — Use **resources** for catalogs and guides; use **tools** for create, input, resume, cancel. Service REST lives under `/v1/api/…`.
 
@@ -136,16 +136,27 @@ just mcp-inspector                  # MCP Inspector UI
 | `alias="operator-entry/handoff", params={"session_id":id}` | Typed handoff payload |
 | `path=["flows","todo-builder","create"]` | Delegate to flows — **powertool** response |
 
-Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid. See [MIGRATION-0.20.md](../MIGRATION-0.20.md) · [MIGRATION-0.19.md](../MIGRATION-0.19.md).
+Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid. See [MIGRATION-0.21.md](../MIGRATION-0.21.md) · [MIGRATION-0.20.md](../MIGRATION-0.20.md) · [MIGRATION-0.19.md](../MIGRATION-0.19.md).
 
 | Assist REST | Purpose |
 |-------------|---------|
 | `GET /v1/api/assist/scenarios` | List registered scenarios |
 | `POST /v1/api/assist/scenarios/operator-entry/start` | Start — assistant first turn (default) |
 | `GET /v1/api/assist/session/{id}?format=assistant` | Inspect assist session |
+| `GET /v1/api/assist/catalog/flows` | Runnable flows from assist catalog |
 | `POST /v1/api/assist/session/{session_id}/handoff` | Typed handoff payload |
 
 Assist scenarios are normal wizard flows (`palm-operator-entry`). Resource steps use existing `step_kind: resource` → `ResourceLeaf`.
+
+### Human surfaces (0.21)
+
+| Surface | Entry | Notes |
+|---------|-------|-------|
+| **CLI REPL** | `assist start operator-entry` | `render_assistant_panel`; plain REPL input → `assist input` |
+| **Explorer** | `/explorer/assist` | HTMX workspace on `#assist-workspace`; handoff CTA |
+| **Flows opt-in** | `palm_flows_session(format="assistant")` | Powertool default unchanged |
+
+Assistant turns include an optional `actions` block (0.21.4) — structured next steps with `path` / `alias` for `palm_assist` dispatch.
 
 ### Daily workflows
 
@@ -177,6 +188,7 @@ Use prompt `drive-wizard-to-step` with a target step slug for guided advancement
 
 ```
 1. palm_flows_session(session_id, include=["validation", "children"])
+   — or palm_flows_session(session_id, format="assistant") for human labels (0.21.5)
 2. palm://instances/{id}/tree         # compositional parent/child stack
 3. palm_flows_compose_status(session_id)
 4. palm_system_trace_events(job_id)

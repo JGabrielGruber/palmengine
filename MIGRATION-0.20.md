@@ -67,7 +67,7 @@ Query param: `?format=assistant|powertool|verbose` (default `assistant` on assis
 
 | Surface | Default |
 |---------|---------|
-| `palm_flows_session` | Powertool (`format=compact` alias still accepted) |
+| `palm_flows_session` | Powertool (`format=powertool`; `compact` alias; `format=assistant` opt-in since 0.21.5) |
 | `palm_system_inspect_job` | Powertool |
 | `palm_assist` on `flows/*`, `system/*` paths | Powertool (even when tool `format=assistant`) |
 
@@ -93,7 +93,7 @@ Query param: `?format=assistant|powertool|verbose` (default `assistant` on assis
 | 0.20.4 | `palm_assist` `format=assistant` default |
 | 0.20.5 | Migration + docs |
 
-**0.21 deferred:** CLI REPL assistant rendering, Explorer assist panel.
+**0.21 shipped:** CLI assist commands, Explorer `/explorer/assist`, `actions` block, flows `format=assistant` opt-in — see [MIGRATION-0.21.md](MIGRATION-0.21.md).
 
 ---
 
