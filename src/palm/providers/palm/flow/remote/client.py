@@ -166,14 +166,14 @@ def submit_flow_remote(
     timeout: float = 10.0,
     retries: int = 2,
 ) -> dict[str, Any]:
-    """Submit a flow via ``POST /v1/jobs`` and return the acceptance payload."""
-    body: dict[str, Any] = {"flow_name": flow_name, "by_id": by_id}
+    """Submit a flow via ``POST /v1/api/flows/{flow_id}/create``."""
+    body: dict[str, Any] = {"by_id": by_id}
     if job_id is not None:
         body["job_id"] = job_id
     status, payload = _request_with_retry(
         base_url,
         "POST",
-        "/v1/jobs",
+        f"/v1/api/flows/{flow_name}/create",
         body=body,
         token=token,
         timeout=timeout,
@@ -192,11 +192,11 @@ def get_job_remote(
     timeout: float = 10.0,
     retries: int = 2,
 ) -> dict[str, Any]:
-    """Fetch job status via ``GET /v1/jobs/{job_id}``."""
+    """Fetch job status via ``GET /v1/api/system/jobs/{job_id}``."""
     status, payload = _request_with_retry(
         base_url,
         "GET",
-        f"/v1/jobs/{job_id}",
+        f"/v1/api/system/jobs/{job_id}",
         token=token,
         timeout=timeout,
         retries=retries,
@@ -223,7 +223,7 @@ def submit_process_remote(
     status, prepared = _request_with_retry(
         base_url,
         "POST",
-        "/v1/plans/prepare",
+        f"/v1/api/processes/{process_name}/prepare",
         body=prepare_body,
         token=token,
         timeout=timeout,
@@ -241,7 +241,7 @@ def submit_process_remote(
     status, submitted = _request_with_retry(
         base_url,
         "POST",
-        "/v1/plans/submit",
+        "/v1/api/processes/submit",
         body={"plan_ids": plan_ids},
         token=token,
         timeout=timeout,

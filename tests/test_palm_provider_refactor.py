@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from palm.providers.palm.bindings.orchestration.local import LocalPalmInvoker
+from palm.providers.palm.bindings.orchestration.payload import remote_job_payload
 from palm.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
 from palm.providers.palm.flow.coordinator import PalmInvokeCoordinator
 from palm.providers.palm.flow.params import PalmInvokeParams
@@ -88,7 +89,7 @@ def test_remote_request_retries_transient_status() -> None:
         status, payload = remote_module._request_with_retry(
             "http://localhost:8080",
             "POST",
-            "/v1/jobs",
+            "/v1/api/flows/onboard/create",
             retries=2,
         )
     assert status == 202
@@ -117,6 +118,49 @@ def test_wait_for_job_remote_raises_palm_timeout() -> None:
                 poll_interval=0.0,
                 retries=0,
             )
+
+
+@patch.object(remote_module, "_request_with_retry")
+def test_submit_flow_remote_uses_api_create(mock_request) -> None:
+    mock_request.return_value = (
+        202,
+        {"session_id": "inst-1", "job_id": "job-1", "status": "RUNNING"},
+    )
+    remote_module.submit_flow_remote("http://localhost:8080", "onboard", retries=0)
+    args = mock_request.call_args[0]
+    assert args[2] == "/v1/api/flows/onboard/create"
+
+
+@patch.object(remote_module, "_request_with_retry")
+def test_get_job_remote_uses_system_path(mock_request) -> None:
+    mock_request.return_value = (200, {"job_id": "job-1", "status": "SUCCEEDED"})
+    remote_module.get_job_remote("http://localhost:8080", "job-1", retries=0)
+    args = mock_request.call_args[0]
+    assert args[2] == "/v1/api/system/jobs/job-1"
+
+
+@patch.object(remote_module, "_request_with_retry")
+def test_submit_process_remote_uses_process_api(mock_request) -> None:
+    mock_request.side_effect = [
+        (200, {"plans": [{"plan_id": "plan-1"}]}),
+        (202, {"jobs": [{"job_id": "job-1", "status": "RUNNING"}]}),
+    ]
+    remote_module.submit_process_remote(
+        "http://localhost:8080",
+        "onboarding",
+        retries=0,
+    )
+    prepare_args = mock_request.call_args_list[0][0]
+    submit_args = mock_request.call_args_list[1][0]
+    assert prepare_args[2] == "/v1/api/processes/onboarding/prepare"
+    assert submit_args[2] == "/v1/api/processes/submit"
+
+
+def test_remote_job_payload_maps_session_id_to_instance_id() -> None:
+    payload = remote_job_payload(
+        {"job_id": "job-1", "session_id": "inst-1", "status": "RUNNING"},
+    )
+    assert payload["instance_id"] == "inst-1"
 
 
 def test_coordinator_exposes_invoker_strategies() -> None:

@@ -120,7 +120,18 @@ Future hooks (reserved): compensation handlers, CQRS projections for resource in
 | `bindings/orchestration` | `core.orchestration` | Child job payloads, local wait |
 | `bindings/runtimes` | `common.runtimes` | `bind_palm_runtime()` for embedded mode |
 | `bindings/recursion` | `core.utils.recursion` | Depth and cycle guardrails |
-| `flow/remote` | `runtimes.server` HTTP | Out-of-process Palm via `/v1/jobs`, `/v1/resources/invoke` |
+| `flow/remote` | `runtimes.server` HTTP | Out-of-process Palm via service-domain REST (0.17.2+) |
+
+**Remote HTTP paths** (`flow/remote/client.py`):
+
+| Action | Method | Path |
+|--------|--------|------|
+| `submit_flow` | `POST` | `/v1/api/flows/{flow_id}/create` |
+| `submit_process` | `POST` | `/v1/api/processes/{process_id}/prepare` then `/v1/api/processes/submit` |
+| `fetch` (job status) | `GET` | `/v1/api/system/jobs/{job_id}` |
+| `invoke_resource` | `POST` | `/v1/api/providers/{provider}/{resource}/invoke` |
+
+Create responses may return `session_id`; `remote_job_payload` maps it to `instance_id` for wait metadata.
 
 Actions: `submit_flow`, `submit_process`, `invoke_resource`, `fetch`.
 

@@ -85,12 +85,32 @@ host.execution.processes.dispatch(["processes", process_id, "run"], {"body": {..
 
 ---
 
+## 0.17.2 — Palm provider remote alignment
+
+The compositional **palm provider** remote client (`providers/palm/flow/remote/client.py`) now uses service-domain paths only.
+
+### Client URL changes
+
+| Function | Legacy | Replacement |
+|----------|--------|-------------|
+| `submit_flow_remote` | `POST /v1/jobs` | `POST /v1/api/flows/{flow_id}/create` |
+| `get_job_remote` | `GET /v1/jobs/{job_id}` | `GET /v1/api/system/jobs/{job_id}` |
+| `submit_process_remote` | `POST /v1/plans/prepare` + `/submit` | `POST /v1/api/processes/{process_id}/prepare` + `/submit` |
+
+`invoke_resource_remote` already used `/v1/api/providers/…/invoke` (unchanged).
+
+### Response normalization
+
+`remote_job_payload` accepts `session_id` from flows create responses and maps it to `instance_id` for child-wait correlation.
+
+---
+
 ## Later 0.17 phases (preview)
 
 | Release | Theme |
 |---------|-------|
 | **0.17.1** | ✅ `POST /v1/api/processes/…` replaces `/v1/plans/*` |
-| **0.17.2** | Palm provider remote client alignment |
+| **0.17.2** | ✅ Palm provider remote client alignment |
 | **0.17.3** | OpenAPI from per-service registries |
 
 See [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md).

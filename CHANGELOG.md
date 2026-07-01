@@ -4,6 +4,23 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.17.2] — 2026-07-01
+
+**Palm provider remote alignment** — compositional remote client uses `/v1/api/…` only.
+
+Migration: [MIGRATION-0.17.md](MIGRATION-0.17.md)
+
+### Changed
+
+- **`submit_flow_remote`** → `POST /v1/api/flows/{flow_id}/create`
+- **`get_job_remote`** → `GET /v1/api/system/jobs/{job_id}`
+- **`submit_process_remote`** → `/v1/api/processes/{process_id}/prepare` + `/submit`
+- **`remote_job_payload`** — maps `session_id` to `instance_id`
+
+### Documentation
+
+- **`docs/PROVIDER-APPS.md`** — remote binding path table
+
 ## [0.17.1] — 2026-07-01
 
 **Process execution service** — multi-flow runs under `/v1/api/processes/…`; legacy `/v1/plans` removed.
@@ -47,11 +64,6 @@ Migration: [MIGRATION-0.17.md](MIGRATION-0.17.md) · Plan: [docs/superpowers/pla
 
 - **`GET/POST /v1/jobs`** monolith routes (submit → `/v1/api/flows/{flow_id}/create`; input → flows session)
 - **`/v1/instances`**, **`/v1/snapshots`** monolith routes
-
-### Transitional
-
-- `/v1/plans/prepare`, `/v1/plans/submit` remain until **0.17.1**
-- Palm provider remote client (`providers/palm/flow/remote/`) — **0.17.2**
 
 ## [0.16.5] — 2026-07-01
 

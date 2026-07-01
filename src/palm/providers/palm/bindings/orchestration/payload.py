@@ -28,7 +28,7 @@ def remote_job_payload(payload: dict[str, Any]) -> dict[str, Any]:
             return remote_job_payload(first)
     return {
         "job_id": payload.get("job_id"),
-        "instance_id": payload.get("instance_id"),
+        "instance_id": payload.get("instance_id") or payload.get("session_id"),
         "status": payload.get("status"),
         "result": payload.get("result"),
         "metadata": dict(payload.get("metadata") or {}),
