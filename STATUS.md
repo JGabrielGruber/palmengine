@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.15.4`  
+**Current Version:** `0.16.5`  
 **Last Updated:** June 30, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.15.4** CQRS schemas + service layer + in-process MCP + cleanup track complete.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.16.5** services are the API — `/v1/api/…` REST + per-domain MCP shipped.
 
 ## Quick Overview
 
@@ -17,7 +17,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
-- `palm/common/services/` — Service primitives (`BaseService`, views); **0.16** moves domain API to `palm/services/`.
+- `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`); `palm/common/services/` retains primitives only.
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
@@ -30,7 +30,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Behavior Tree execution engine
 - **Resource system (0.12)** — `ResourceDefinition`, `ResourceEngine`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider
 - Powerful Wizard pattern (validation, collection, transform, **resource** steps, parallel branches, backtracking, summary + commit)
-- **Wizard REST + Explorer (0.13)** — `/v1/wizards`, HTMX workspace, collection editor
+- **Flow REST + Explorer (0.16)** — `/v1/api/flows/…` session REPL; Explorer SSR workspace; collection editor
 - 22 built-in transform rules + extensible `TransformEngine` (`enrich_resource` with `resource_ref`)
 - Layered state schemas + scoped execution state
 - Durable process instances with resume across restarts
@@ -52,7 +52,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 
 | Component | Status |
 |-----------|--------|
-| `/v1/wizards` REST surface | ✅ Shipped |
+| `/v1/api/flows` session REST | ✅ Shipped (0.16) |
 | `build_wizard_view()` read model | ✅ Shipped |
 | Explorer wizard workspace (HTMX) | ✅ Shipped |
 | Collection overview + add/edit/remove UI | ✅ Shipped |
@@ -162,40 +162,41 @@ just mcp-inspector                       # MCP Inspector UI
 | `docs/adr/003-*.md`   | Good            | Provider app layout ADR |
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
-| `docs/index.html`     | Good            | v0.15.4 badge + MCP in featureList |
-| `docs/llms.txt`       | Good            | AI context + service layer + MCP in-process (`palm://agent/guide`) |
-| `docs/VISION-0.15.md` | Good            | 0.15.4 release vision |
-| `docs/adr/004-*.md`   | Good            | CQRS schemas + service layer ADR |
-| `AGENTS.md`           | Good            | Service layer + MCP in-process conventions |
-| `DEVELOPMENT.md`      | Good            | Contributor setup + 0.15.4 release |
-| `CHANGELOG.md`        | Good            | `[0.15.4]` service layer release |
-| `RELEASE-0.15.4.md`   | Good            | Release checklist |
+| `docs/index.html`     | Good            | v0.16.5 badge + service API in featureList |
+| `docs/llms.txt`       | Good            | AI context + 0.16 MCP conventions (`palm://agent/guide`) |
+| `docs/VISION-0.16.md` | Good            | 0.16 release vision |
+| `docs/adr/005-*.md`   | Good            | Service-domain API ADR |
+| `AGENTS.md`           | Good            | 0.16 service layer + MCP conventions |
+| `DEVELOPMENT.md`      | Good            | Contributor setup + 0.16.5 release |
+| `CHANGELOG.md`        | Good            | `[0.16.5]` service-domain API release |
+| `RELEASE-0.16.5.md`   | Good            | Release checklist |
+| `MIGRATION-0.16.md`   | Good            | Integrator upgrade guide |
 
-## 0.16 — Services Are the API (Planned)
+## 0.16.5 — Services Are the API (Shipped)
 
 **Vision:** [docs/VISION-0.16.md](docs/VISION-0.16.md)  
 **ADR:** [docs/adr/005-service-domain-api.md](docs/adr/005-service-domain-api.md)  
-**Spec:** [docs/superpowers/specs/2026-06-30-service-registry-dynamic-rest-design.md](docs/superpowers/specs/2026-06-30-service-registry-dynamic-rest-design.md)  
-**Plan:** [docs/superpowers/plans/2026-06-30-service-registry-dynamic-rest.md](docs/superpowers/plans/2026-06-30-service-registry-dynamic-rest.md)  
-**Migration:** [MIGRATION-0.16.md](MIGRATION-0.16.md)
+**Migration:** [MIGRATION-0.16.md](MIGRATION-0.16.md)  
+**Release checklist:** [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
 | Component | Status |
 |-----------|--------|
-| `palm/services/` domain extraction | 🔲 Planned |
-| Per-service registries (definitions, flows, providers, system) | 🔲 Planned |
-| REST `/v1/api/…` per-domain handlers | 🔲 Planned |
-| MCP remount by service (breaking tool names) | 🔲 Planned |
-| Delete legacy `rest/handlers/*` | 🔲 Planned |
-| `execution/flows` ≠ `execution/providers` | 🔲 Planned |
-| Definition catalog CRUD on new surface | 🔲 Planned |
+| `palm/services/` domain extraction | ✅ Shipped |
+| Per-service registries (definitions, flows, providers, system) | ✅ Shipped |
+| REST `/v1/api/…` per-domain handlers | ✅ Shipped |
+| MCP remount by service (breaking tool names) | ✅ Shipped |
+| Delete legacy wizard/catalog handlers | ✅ Shipped |
+| `execution/flows` ≠ `execution/providers` | ✅ Shipped |
+| Definition catalog CRUD on new surface | ✅ Shipped |
+| Provider invoke on `/v1/api/providers/…` | ✅ Shipped |
 
-**Breaking release.** Experimental Palm — no deprecation window for REST/MCP. Prior incremental 0.16 items (OpenAPI-only milestone, WebSocket-first, catalog writes on old handlers) are **skipped and redone** on this architecture.
+**Transitional:** `/v1/jobs`, `/v1/instances`, `/v1/plans` remain on legacy monolith route table until migrated to `/v1/api/system`.
 
 ## Priorities & Next Steps
 
-**0.15.4 shipped** — cleanup track complete ([spec](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)) · [RELEASE-0.15.4.md](RELEASE-0.15.4.md)
+**0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
-**Next:** 0.16 implementation per plan — scaffold `palm/services/`, per-domain REST/MCP, delete legacy handlers.
+**Next:** migrate remaining legacy monolith routes (`/v1/jobs`, `/v1/instances`) to `/v1/api/system`; OpenAPI from per-service registries; WebSocket surface on `execution/flows`.
 
 
 ## Useful Links
@@ -206,7 +207,8 @@ just mcp-inspector                       # MCP Inspector UI
 - [AGENTS.md](AGENTS.md)
 - [DEVELOPMENT.md](DEVELOPMENT.md)
 - [docs/MCP.md](docs/MCP.md) — agent development with Palm MCP
-- [RELEASE-0.15.4.md](RELEASE-0.15.4.md) — release checklist
+- [RELEASE-0.16.5.md](RELEASE-0.16.5.md) — release checklist
+- [MIGRATION-0.16.md](MIGRATION-0.16.md) — upgrade from 0.15.x
 - Examples: `examples/README.md`
 
 ## How to Contribute

@@ -1,6 +1,6 @@
 # DEVELOPMENT.md
 
-Guide for contributors working on Palm **0.15.4** (CQRS schemas + service layer, in-process MCP, `host.execution.on()`).
+Guide for contributors working on Palm **0.16.5** (services are the API, `/v1/api/…` REST, per-domain MCP, `host.execution.flows`).
 
 ## Setup
 
@@ -37,7 +37,7 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 | MCP Inspector | `just mcp-inspector` |
 | MCP extra sync | `just mcp-sync` |
 
-## Agent development with MCP (0.14)
+## Agent development with MCP (0.16)
 
 When developing or testing Palm flows as a coding agent, use the MCP operator adapter instead of hand-written curl. Full guide: [docs/MCP.md](docs/MCP.md).
 
@@ -46,46 +46,46 @@ When developing or testing Palm flows as a coding agent, use the MCP operator ad
 ```bash
 uv sync --extra mcp
 just mcp-sync                     # reinstall palm-mcp + fastmcp
-just palm-server                  # terminal 1 — required REST backend
-just mcp-inspector                # terminal 2 — optional UI
+PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # local default — no REST server
+# Remote: just palm-server + PALM_MCP_IN_PROCESS=0
 ```
 
 **Grok:** [`.grok/config.toml`](.grok/config.toml) registers `palm-mcp` via `uv run --extra mcp palm-mcp`.
 
-**Env:** `PALM_BASE_URL` (default `http://127.0.0.1:8080`), `PALM_SUBJECT` (`dev`), `PALM_LLMS_TXT` (optional path to `docs/llms.txt`).
+**Env:** `PALM_MCP_IN_PROCESS` (`1` = services, no HTTP), `PALM_BASE_URL`, `PALM_SUBJECT`, `PALM_LLMS_TXT`.
 
 ### Operator loop
 
 ```
-definitions → submit → inspect → input → wait on children → resume
+definitions → create session → inspect → input → wait on children → resume
 ```
 
 1. Read `palm://agent/guide` (MCP resource → `docs/llms.txt`)
-2. `palm_doctor` — confirm registries and storage
+2. `palm_system_doctor` — confirm registries and storage
 3. `palm://definitions/flows` — pick a flow
-4. `palm_submit_wizard(flow_name=…)` → `instance_id`
-5. `palm_inspect_instance(instance_id)` → step, prompt, choices
-6. `palm_wizard_input(instance_id, input="…")` — **plain strings**, not JSON
-7. Compositional parent: `palm_resume_child_wait` when `waiting_for_child`
+4. `palm_flows_create_session(flow_id=…)` → `session_id`
+5. `palm_flows_session(session_id)` → step, prompt, choices
+6. `palm_flows_session_input(session_id, input="…")` — **plain strings**, not JSON
+7. Compositional parent: `palm_flows_session_resume_child_wait` when `waiting_for_child`
 
 ### Conventions (do not skip)
 
 | Rule | Why |
 |------|-----|
-| **Instance-first** | Wizards use `instance_id`; `job_id` is ephemeral |
+| **Session-first** | Flow sessions use `session_id`; `job_id` is ephemeral |
 | **Plain `input`** | `input="yes"` coerces to boolean on confirm steps |
 | **Compact inspect** | Default slim view; `format="verbose"` only when debugging |
 | **Resources = read** | Catalogs via `palm://definitions/*` |
-| **Tools = write** | Submit, input, resume, cancel via MCP tools |
+| **Tools = write** | Create, input, resume, cancel via MCP tools |
 | **Collection steps** | `palm_wizard_collection_action`, not raw strings |
 
 ### Debugging stuck wizards
 
 ```
-palm_inspect_instance(instance_id)
+palm_flows_session(session_id)
 palm://instances/{id}/tree
-palm_compose_status(instance_id)
-palm_trace_events(job_id)
+palm_flows_compose_status(session_id)
+palm_system_trace_events(job_id)
 ```
 
 MCP prompt `debug-wizard-block` provides a structured checklist.
@@ -94,7 +94,7 @@ MCP prompt `debug-wizard-block` provides a structured checklist.
 
 | Area | Location |
 |------|----------|
-| Tool registration | `src/palm/runtimes/mcp/tools.py`, `debug_tools.py`, `phase5_tools.py` |
+| Tool registration | `src/palm/runtimes/mcp/flows/`, `system/`, `definitions/`, `providers/` |
 | Resources | `src/palm/runtimes/mcp/resources.py` |
 | Pattern tools | `register_mcp_contributor()` in pattern `app.py` |
 | App tools | `register_app_mcp_contributor()` in `palm/app/mcp_registry.py` |

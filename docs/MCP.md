@@ -1,8 +1,10 @@
-# Palm MCP — Operator Adapter (0.14 + 0.15 in-process)
+# Palm MCP — Operator Adapter (0.16 per-domain tools)
 
-**Status:** Phases 1–6 shipped · **0.15 in-process services** · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
+**Status:** 0.16 shipped · **per-domain service tools** · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
 
-Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default (**0.15**) it runs **in-process** via `PalmInProcessBackend` — tools call `InternalService`, `DefinitionService`, and `ExecutionService` on a bootstrapped engine with **no HTTP round-trip**. Set `PALM_MCP_IN_PROCESS=0` to restore the 0.14 REST proxy mode (`palm server` required).
+Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default it runs **in-process** via `PalmInProcessBackend` — tools call `palm/services/` (`definitions`, `execution/flows`, `execution/providers`, `system`) on a bootstrapped engine with **no HTTP round-trip**. Set `PALM_MCP_IN_PROCESS=0` for REST proxy mode (`palm server` required).
+
+Migration from 0.15 tool names: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
 
 | Doc | Audience |
 |-----|----------|
@@ -27,27 +29,27 @@ flowchart LR
         Tree[palm://instances/id/tree]
     end
     subgraph act [Act — MCP tools]
-        Submit[palm_submit_*]
-        Inspect[palm_inspect_*]
-        Input[palm_wizard_input]
-        Resume[palm_resume_*]
+        Flows[palm_flows_*]
+        System[palm_system_*]
+        Defs[palm_definitions_*]
+        Prov[palm_providers_invoke]
     end
     Agent[Coding agent] --> read
     Agent --> act
     act --> Backend{Backend}
-    Backend -->|PALM_MCP_IN_PROCESS=1| Services[palm.common.services]
+    Backend -->|PALM_MCP_IN_PROCESS=1| Services[palm.services]
     Services --> Engine[Orchestration + wizards]
     Backend -->|PALM_MCP_IN_PROCESS=0| REST[Palm REST :8080]
     REST --> Engine
 ```
 
-**Operator loop:** definitions → submit → inspect → input → wait on children → resume.
+**Operator loop:** definitions → create session → inspect → input → wait on children → resume.
 
 ### Dual backend
 
 | Mode | Env | Backend | When to use |
 |------|-----|---------|-------------|
-| **In-process** (default) | `PALM_MCP_IN_PROCESS=1` | `PalmInProcessBackend` → `palm.common.services` | Local agent dev; no `palm server` required |
+| **In-process** (default) | `PALM_MCP_IN_PROCESS=1` | `PalmInProcessBackend` → `palm.services` | Local agent dev; no `palm server` required |
 | **REST proxy** | `PALM_MCP_IN_PROCESS=0` + `PALM_BASE_URL` | `PalmRestClient` → HTTP `:8080` | Remote Palm, cross-process, CI against live server |
 
 Tests: `tests/test_mcp_in_process.py` (in-process) · `tests/test_mcp_tools.py` (REST client mocks).
@@ -99,51 +101,50 @@ just mcp-inspector                  # MCP Inspector UI
 
 ### Conventions agents must follow
 
-1. **Instance-first** — Wizards are keyed by `instance_id`. Use `job_id` only when you lack an instance handle (`palm_inspect_job`, `palm_provide_job_input`). `palm_list_waiting` returns real `instance_id` values (never aliases `job_id`).
+1. **Session-first** — Flow sessions use `session_id` (same durable id as `instance_id` in views). Use `job_id` only when you lack a session handle (`palm_system_inspect_job`, `palm_system_job_input`). `palm_system_list_waiting` returns real `instance_id` values (never aliases `job_id`).
 
-2. **Plain-string input** — Prefer `palm_wizard_input(instance_id, input="yes")` or `input="Ada"` or `input="capture_knowledge"`. Do **not** wrap answers in JSON objects. Coercion matches Explorer (`yes` → boolean on confirm steps).
+2. **Plain-string input** — Prefer `palm_flows_session_input(session_id, input="yes")` or `input="Ada"`. Do **not** wrap answers in JSON objects. Coercion matches Explorer (`yes` → boolean on confirm steps).
 
-3. **Compact by default** — `palm_inspect_instance` / `palm_inspect_job` return slim snapshots. Use `format="verbose"` only when debugging schema or full answers.
+3. **Compact by default** — `palm_flows_session` / `palm_system_inspect_job` return slim snapshots. Use `format="verbose"` only when debugging schema or full answers.
 
-4. **Read vs write** — Use **resources** for catalogs and guides; use **tools** for submit, input, resume, cancel. Read `palm://openapi` before inventing REST paths.
+4. **Read vs write** — Use **resources** for catalogs and guides; use **tools** for create, input, resume, cancel. Service REST lives under `/v1/api/…`.
 
-5. **Compositional nesting** — Parent wizards waiting on child flows are normal. Check `waiting_for_child` in inspect, read `palm://instances/{id}/tree`, then `palm_resume_child_wait` or inspect the child instance.
+5. **Compositional nesting** — Parent wizards waiting on child flows are normal. Check `waiting_for_child` in inspect, read `palm://instances/{id}/tree`, then `palm_flows_session_resume_child_wait` or inspect the child session.
 
 6. **Collection steps** — Branch on `collection_phase` from inspect (or `operator_hint` on compact responses):
-   - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) **or** `palm_wizard_input` with choice label/number (`Continue to summary`, `3`, …)
-   - `field` / `select_item` / `remove_confirm` → `palm_wizard_input(instance_id, input="…")` (plain string)
-   - Never pass `value` with `action="add"` — `add` is menu-only; field text via `palm_wizard_input`.
+   - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) **or** `palm_flows_session_input` with choice label/number
+   - `field` / `select_item` / `remove_confirm` → `palm_flows_session_input(session_id, input="…")` (plain string)
 
-7. **Submit entry** — Use `palm_submit_wizard(flow_name=…)` for interactive operator-driven flows. `palm_submit_process` submits **one job per flow**; it is **rejected** when the process declares `entry_flow` or `metadata.mcp.entries` (catalog processes). Read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`. Pass `mode='all_flows'` only for true pipelines.
+7. **Submit entry** — Use `palm_flows_create_session(flow_id=…)` for interactive operator-driven flows. `palm_processes_submit` submits **one job per flow**; it is **rejected** when the process declares `entry_flow` or `metadata.mcp.entries`. Read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
 
-8. **Batch stepping** — Use `palm_wizard_drive(instance_id, inputs=[…])` to apply multiple answers in one MCP call (stops on `waiting_for_child`, terminal status, or input exhaustion). Prefer batch flows at the app layer (e.g. KnowKey `knowkey_capture_knowledge_batch`) when available.
+8. **Batch stepping** — Use `palm_flows_session_drive(session_id, inputs=[…])` to apply multiple answers in one MCP call.
 
-9. **Session map** — Prefer `palm_compose_status(instance_id)` over repeated `palm_inspect_instance` when navigating compositional stacks; includes `operator_hint`, `collection_phase`, and invoke tree.
+9. **Session map** — Prefer `palm_flows_compose_status(session_id)` when navigating compositional stacks.
 
-10. **Sequential driving** — Drive one instance at a time; parallel `palm_wizard_input` calls on the same `instance_id` race. Call `palm_resume_child_wait` only while `waiting_for_child` is true (otherwise it returns current state with `resume_child_wait: skipped_not_waiting`).
+10. **Sequential driving** — Drive one session at a time. Call `palm_flows_session_resume_child_wait` only while `waiting_for_child` is true (otherwise returns `resume_child_wait: skipped_not_waiting`).
 
 ### Daily workflows
 
 #### Bootstrapping a session
 
 ```
-1. palm_doctor                          # registries, storage, job counts
+1. palm_system_doctor                   # registries, storage, job counts
 2. Read palm://agent/guide              # project context
-3. palm://definitions/flows           # what can be submitted
+3. palm://definitions/flows             # what can be submitted
 ```
 
 #### Driving a wizard to completion
 
 ```
-1. palm_submit_wizard(flow_name="todo-builder")
-   → note instance_id + job_id
-2. palm_compose_status(instance_id)      # invoke stack + operator_hint (or inspect_instance)
-3. palm_wizard_input(instance_id, input="<plain answer>")
-   — or palm_wizard_drive(instance_id, inputs=["yes", "value", …]) for multi-step bursts
+1. palm_flows_create_session(flow_id="todo-builder")
+   → note session_id + job_id
+2. palm_flows_compose_status(session_id)  # invoke stack + operator_hint
+3. palm_flows_session_input(session_id, input="<plain answer>")
+   — or palm_flows_session_drive(session_id, inputs=["yes", "value", …]) for multi-step bursts
 4. Repeat 2–3 until status is terminal or waiting_for_child
 5. If waiting_for_child:
-     palm_resume_child_wait(instance_id)
-     or palm_inspect_instance(child.instance_id)
+     palm_flows_session_resume_child_wait(session_id)
+     or palm_flows_session(child.instance_id)
 ```
 
 Use prompt `drive-wizard-to-step` with a target step slug for guided advancement.
@@ -151,11 +152,11 @@ Use prompt `drive-wizard-to-step` with a target step slug for guided advancement
 #### Debugging a stuck wizard
 
 ```
-1. palm_inspect_instance(instance_id, include=["validation", "children"])
+1. palm_flows_session(session_id, include=["validation", "children"])
 2. palm://instances/{id}/tree         # compositional parent/child stack
-3. palm_compose_status(instance_id)    # invoke tree + answers_keys in one call
-4. palm_trace_events(job_id)           # recent events
-5. palm_explain_step(flow_id, step_slug)
+3. palm_flows_compose_status(session_id)
+4. palm_system_trace_events(job_id)
+5. palm_definitions_explain_step(flow_id, step_slug)
 ```
 
 Use prompt `debug-wizard-block` for a structured checklist.
@@ -164,9 +165,9 @@ Use prompt `debug-wizard-block` for a structured checklist.
 
 ```
 1. palm://definitions/flows           # existing catalog
-2. palm_validate_flow(flow_name=…)     # dry-run build without submit
-3. palm_submit_flow(flow_name=…)      # run it
-4. palm_diff_snapshots(instance_id, from_snapshot, to_snapshot)  # state changes
+2. palm_definitions_validate_flow(flow_name=…)  # dry-run build without submit
+3. palm_flows_create_session(flow_id=…)         # run it
+4. palm_system_diff_snapshots(session_id, from_snapshot, to_snapshot)
 ```
 
 #### Reading vs invoking resources
@@ -174,7 +175,7 @@ Use prompt `debug-wizard-block` for a structured checklist.
 | Kind | Examples | Access |
 |------|----------|--------|
 | MCP read resources | `palm://definitions/flows`, `palm://agent/guide` | `FetchMcpResource` / `read_resource` |
-| REST resource definitions | `knowkey.search_nodes`, `fetch-customer` | `palm_invoke_resource` or `POST /v1/resources/invoke` |
+| REST resource definitions | `knowkey.search_nodes`, `fetch-customer` | `palm_providers_invoke` or `POST /v1/api/providers/{provider}/{resource_ref}/invoke` |
 
 ```
 1. palm://definitions/resources/{ref}  # params schema (read)
@@ -185,9 +186,9 @@ Use prompt `debug-wizard-block` for a structured checklist.
 
 | Tier | Tools | When |
 |------|-------|------|
-| **1 — Operator loop** | `palm_list_waiting`, `palm_inspect_instance`, `palm_wizard_input`, `palm_wizard_drive`, `palm_resume_child_wait`, `palm_resume_wizard_tick`, `palm_wizard_backtrack` | Daily wizard driving |
-| **2 — Lifecycle** | `palm_submit_flow`, `palm_submit_wizard`, `palm_submit_process`, `palm_provide_job_input`, `palm_cancel_job`, `palm_invoke_resource` | Start/stop work |
-| **3 — Debug** | `palm_trace_events`, `palm_diff_snapshots`, `palm_explain_step`, `palm_validate_flow`, `palm_doctor`, `palm_fetch_job`, `palm_compose_status` | Investigation |
+| **1 — Operator loop** | `palm_system_list_waiting`, `palm_flows_session`, `palm_flows_session_input`, `palm_flows_session_drive`, `palm_flows_session_resume_child_wait`, `palm_flows_session_resume`, `palm_flows_session_backtrack` | Daily wizard driving |
+| **2 — Lifecycle** | `palm_flows_create_session`, `palm_processes_submit`, `palm_system_job_input`, `palm_system_cancel_job`, `palm_providers_invoke` | Start/stop work |
+| **3 — Debug** | `palm_system_trace_events`, `palm_system_diff_snapshots`, `palm_definitions_explain_step`, `palm_definitions_validate_flow`, `palm_system_doctor`, `palm_system_fetch_job`, `palm_flows_compose_status` | Investigation |
 | **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` | Pattern-specific steps |
 
 **Prompts:** `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
@@ -207,7 +208,21 @@ Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`
 
 ---
 
-## Phase history
+## 0.16 tool inventory (current)
+
+| Domain | Tools |
+|--------|-------|
+| **Flows** | `palm_flows_list`, `palm_flows_describe`, `palm_flows_create_session`, `palm_flows_session`, `palm_flows_session_input`, `palm_flows_session_drive`, `palm_flows_session_resume`, `palm_flows_session_resume_child_wait`, `palm_flows_session_backtrack`, `palm_flows_compose_status` |
+| **System** | `palm_system_list_waiting`, `palm_system_inspect_job`, `palm_system_job_input`, `palm_system_doctor`, `palm_system_cancel_job`, `palm_system_fetch_job`, `palm_system_trace_events`, `palm_system_diff_snapshots`, `palm_processes_submit` |
+| **Definitions** | `palm_definitions_validate_flow`, `palm_definitions_explain_step` |
+| **Providers** | `palm_providers_invoke` |
+| **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` |
+
+---
+
+## Phase history (0.14–0.15 — superseded by 0.16 tool names)
+
+> Historical reference. Use [MIGRATION-0.16.md](../MIGRATION-0.16.md) for the mapping to current tools.
 
 ### Phase 1 — Shipped
 

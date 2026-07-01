@@ -2,7 +2,7 @@
 
 **Theme:** Break legacy REST/MCP. Extract domain services to `palm/services/`. Runtimes mount per service — handlers per domain, not per resource file.
 
-**Status:** Approved (June 2026)  
+**Status:** Shipped (0.16.5 — July 2026)  
 **Builds on:** [0.15.4](VISION-0.15.md) — CQRS schemas, service layer proof, in-process MCP
 
 ---

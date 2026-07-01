@@ -118,11 +118,11 @@
       "alternateName": "Palm 🌴",
       "url": "https://palmengine.org",
       "description": "Lightweight Python-first orchestration engine built on Behavior Trees. Perfect for rich interactive wizards, durable process instances, and transactional workflows that feel human.",
-      "version": "0.15.4",
+      "version": "0.16.5",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Workflow Engine, Orchestration Library",
       "operatingSystem": "Any (Python)",
-      "softwareVersion": "0.15.4",
+      "softwareVersion": "0.16.5",
       "programmingLanguage": "Python",
       "license": "https://opensource.org/licenses/MIT",
       "sameAs": "https://github.com/JGabrielGruber/palmengine",
@@ -146,7 +146,7 @@
         "Parallel wizard branches with isolated scopes",
         "Compositional Power — ResourceDefinition, ResourceLeaf, palm provider",
         "Palm Explorer — wizard workspace with collection UI, flows, jobs, instances, and resources",
-        "Wizard REST API at /v1/wizards — instance-keyed submit, input, and backtrack",
+        "Service-domain REST at /v1/api — flow sessions, definitions CRUD, provider invoke",
         "MCP operator adapter (palm-mcp) — 26 tools, 4 prompts, 10 resources for coding agents",
         "Modern CLI, live status dashboard, and REPL",
         "Extensible via registry-based patterns, providers, and storages"
@@ -201,7 +201,7 @@
     <div class="max-w-5xl mx-auto px-6 z-10">
       <div class="inline-flex items-center gap-x-2 bg-zinc-950/60 border border-zinc-300/30 rounded-3xl px-6 py-2 mb-8 backdrop-blur-sm">
         <span class="text-orange-200">🌴</span>
-        <span class="text-sm font-medium tracking-widest">v0.15.4 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
+        <span class="text-sm font-medium tracking-widest">v0.16.5 — <code class="bg-black/50 px-1.5 py-0.5 rounded">pip install palmengine[cli]</code></span>
       </div>
       <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-6">
         Orchestration that<br>feels <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-rose-400 to-orange-300">alive</span>
@@ -416,7 +416,7 @@
           <h3 class="font-semibold text-teal-400 mb-2">Explorer Wizards (0.13)</h3>
           <p class="text-zinc-400 text-sm">
             Instance workspace at <code class="bg-zinc-900 px-1 rounded text-teal-300">/explorer/instances/{id}</code>,
-            collection UI, and <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/wizards</code> REST.
+            collection UI, and <code class="bg-zinc-900 px-1 rounded text-teal-300">/v1/api/flows</code> session REST.
             See <strong>EXPLORER-WIZARD.md</strong>.
           </p>
         </a>

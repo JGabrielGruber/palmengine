@@ -1,7 +1,6 @@
-"""REST resource handlers."""
+"""REST resource handlers (legacy monolith routes)."""
 
 from palm.runtimes.server.surfaces.rest.handlers import (
-    catalog,
     instances,
     jobs,
     meta,
@@ -10,7 +9,6 @@ from palm.runtimes.server.surfaces.rest.handlers import (
 )
 
 __all__ = [
-    "catalog",
     "instances",
     "jobs",
     "meta",

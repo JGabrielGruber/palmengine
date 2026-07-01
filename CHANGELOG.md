@@ -4,6 +4,40 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.16.5] — 2026-07-01
+
+**Services are the API** — domain services in `palm/services/`, per-service REST under `/v1/api/…`, MCP remounted by service domain. Breaking release for integrators on legacy `/v1/wizards` and monolithic MCP tool names.
+
+Vision: [docs/VISION-0.16.md](docs/VISION-0.16.md) · ADR: [docs/adr/005-service-domain-api.md](docs/adr/005-service-domain-api.md) · Migration: [MIGRATION-0.16.md](MIGRATION-0.16.md) · MCP: [docs/MCP.md](docs/MCP.md)
+
+### Added
+
+- **`palm/services/`** — `definitions`, `execution/flows`, `execution/providers`, `system` with per-domain `registry.py` and `dispatch()` command-path grammar
+- **REST `/v1/api/…`** — definitions catalog + CRUD, flow session REPL, provider invoke, system doctor/jobs
+- **MCP per-domain tools** — `palm_flows_*`, `palm_system_*`, `palm_definitions_*`, `palm_providers_invoke` (26 tools total with pattern contributors)
+- **`ProviderExecutionService`** — `host.execution.providers.invoke()` with provider validation
+- **Definitions CRUD** — `POST/PUT/DELETE` on `/v1/api/definitions/{flows,processes,resources}/…`
+- **`FlowSession` / `SessionContext`** — service-layer session handles; `session_id` terminology at API boundary
+
+### Changed
+
+- **`host.internal`** → **`host.system`** (`SystemService`)
+- **`host.execution.on(id)`** → **`host.execution.flows`** session API (`dispatch`, `FlowSession`)
+- Explorer SSR and operator hints updated to `/v1/api/flows/…` and `palm_flows_*` tool names
+- MCP prompts and `docs/llms.txt` agent guide rewritten for 0.16 conventions
+
+### Removed (breaking — no deprecation window)
+
+- **`/v1/wizards`** REST surface and `handlers/wizard.py`
+- Legacy catalog routes (`/v1/flows`, `/v1/processes`, `/v1/resources`, `/v1/doctor`, `/v1/flows/validate`)
+- **`POST /v1/resources/invoke`** — replaced by `/v1/api/providers/{provider}/{resource_ref}/invoke`
+- Orphaned monolith handlers `handlers/catalog.py`, `handlers/resources.py`
+- Monolithic MCP tools (`palm_submit_wizard`, `palm_inspect_instance`, `palm_wizard_input`, `palm_doctor`, …)
+
+### Transitional (still mounted)
+
+- `/v1/jobs`, `/v1/instances`, `/v1/plans`, `/v1/snapshots` on legacy monolith route table (not yet migrated to `/v1/api/system`)
+
 ## [0.15.4] — 2026-06-30
 
 **Service layer release** — CQRS schemas, `palm.common.services`, in-process MCP, REST schema dedupe, and legacy cleanup. PyPI packages the full 0.15 track (internal milestones 0.15.1–0.15.3 on master).

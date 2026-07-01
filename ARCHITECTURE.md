@@ -455,18 +455,18 @@ Configuration: `collection_key`, `item_fields`, `min_items`, optional `label_fie
 
 Reference flow: `todo-builder` (`examples/definitions/todo_builder.py`).
 
-### Wizard REST + Explorer (0.13)
+### Flow session REST + Explorer (0.16)
 
-Interactive wizards are addressable by **durable instance id** — not only by ephemeral `job_id`:
+Interactive wizards are addressable by **durable session id** (same as `instance_id` in views) — not only by ephemeral `job_id`:
 
 | Surface | Path | Role |
 |---------|------|------|
-| REST submit | `POST /v1/wizards` | Start wizard (`wizard`, `flow`, or `flow_name` body variants) |
-| REST status | `GET /v1/wizards/{instance_id}` | Rich view: `prompt`, `answers`, `wizard_progress`, `next_actions` |
-| REST input | `POST /v1/wizards/{instance_id}/input` | Deliver operator input (`{"value": ...}`) |
-| REST backtrack | `POST /v1/wizards/{instance_id}/backtrack` | Return to prior step (`to_step` optional) |
-| Explorer workspace | `GET /explorer/instances/{instance_id}` | Full SSR wizard detail page |
-| Explorer HTMX | `POST /explorer/instances/{instance_id}/input` | Partial workspace refresh (`HX-Request: true`) |
+| REST create | `POST /v1/api/flows/{flow_id}/create` | Start flow session (`wizard`, `flow`, or `flow_name` body variants) |
+| REST status | `GET /v1/api/flows/{flow_id}/session/{session_id}` | Rich view: `prompt`, `answers`, `wizard_progress`, `next_actions` |
+| REST input | `POST /v1/api/flows/{flow_id}/session/{session_id}/input` | Deliver operator input (`{"value": ...}`) |
+| REST backtrack | `POST /v1/api/flows/{flow_id}/session/{session_id}/backtrack` | Return to prior step (`to_step` optional) |
+| Explorer workspace | `GET /explorer/instances/{session_id}` | Full SSR wizard detail page |
+| Explorer HTMX | `POST /explorer/instances/{session_id}/input` | Partial workspace refresh (`HX-Request: true`) |
 
 Read model assembly lives in `palm/patterns/wizard/bindings/read_model.py` (`build_wizard_view`), dispatched via `palm/common/patterns/pattern_read_model.py` (`build_pattern_read_model`). Live prompt metadata comes from `inspect_job_json()` via `GetWizardStatusQuery` (wizard CQRS bindings).
 
@@ -646,10 +646,11 @@ flowchart TB
 
 | Service | Access | Responsibility |
 |---------|--------|----------------|
-| `InternalService` | `host.internal`, `ctx.internal` | Inspect, doctor, job/instance lists, snapshots, cancel |
-| `DefinitionService` | `host.definition`, `ctx.definition` | Flow/process/resource catalog + `validate_flow` |
-| `ExecutionService` | `host.execution`, `ctx.execution` | `on(instance_id)`, `run_wizard`, `run_flow` |
-| `InstanceSession` | `execution.on(id)` | `input`, `backtrack`, `resume`, `resume_child_wait`, `status` |
+| `SystemService` | `host.system`, `ctx.system` | Inspect, doctor, job/instance lists, snapshots, cancel |
+| `DefinitionService` | `host.definitions`, `ctx.definitions` | Flow/process/resource catalog + CRUD + `validate_flow` |
+| `FlowExecutionService` | `host.execution.flows` | `dispatch()`, `FlowSession`, session REPL |
+| `ProviderExecutionService` | `host.execution.providers` | `invoke(provider, resource_ref, params)` |
+| `FlowSession` | `execution.flows` session handle | `input`, `backtrack`, `resume`, `resume_child_wait`, `status` |
 | `ReplSession` | `CliContext.repl` | REPL active-instance handle (metaphor C) |
 
 **Runtime adapter rule:** Handlers and MCP tools map transport args → `service.method()` → serialize view dicts. Business branching (pattern-aware inspect, interactive input) lives in services + `palm.common.interactive_runtime`, not in route tables.
@@ -662,7 +663,7 @@ ADR: [docs/adr/004-cqrs-schemas-service-layer.md](docs/adr/004-cqrs-schemas-serv
 |-------|----------|------|
 | Commands / queries | `palm/common/cqrs/` | Write/read routing (`SubmitFlowCommand`, `ListInstancesQuery`, …) |
 | CQRS schemas | `palm/common/cqrs/schemas.py` | `CqrsSchemaRegistry` — validate commands/queries before dispatch |
-| Services | `palm/common/services/` | User-facing API composing buses (see table above) |
+| Services | `palm/services/` | User-facing API composing buses (see table above) |
 | Projections | `palm/common/cqrs/projections/` | Event-driven read models (instance index, wizard progress, job board) |
 | Rebuild policy | `palm/common/cqrs/rebuild.py` | Batch rebuild + skip-if-fresh safeguards for large instance counts |
 | Outbox | `palm/common/events/outbox.py` | Durable critical events; master drains via `OutboxBackgroundService` |
@@ -817,8 +818,8 @@ palm/runtimes/            # concrete surfaces (thin packages)
 | **DaemonRuntime** | Shipped | Queued scheduler; long-lived background process |
 | **ServerRuntime** | Shipped | Queued scheduler + registry-driven surfaces + pluggable transport |
 | **CLI / REPL** | Shipped | Operator UX, `palm doctor`, examples auto-load |
-| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; wizard workspace + collection UI; `/v1/wizards` REST; `GET /` → `/explorer` |
-| **MCP (stdio)** | Shipped (0.14) | `palm-mcp` FastMCP adapter over REST; see [docs/MCP.md](docs/MCP.md) |
+| **Palm Explorer** | Shipped | `surfaces/ssr/explorer/`; `/explorer` hub; wizard workspace + collection UI; `/v1/api/flows` session REST; `GET /` → `/explorer` |
+| **MCP (stdio)** | Shipped (0.16) | `palm-mcp` per-domain tools (`palm_flows_*`, `palm_system_*`, …); see [docs/MCP.md](docs/MCP.md) |
 | **MCP (native HTTP)** | Shipped (0.14) | Streamable HTTP on `McpSurface` at `/mcp` when `mcp` extra installed |
 | **WebSocket** | Planned | `runtimes/server/surfaces/websocket/`; live job/wizard events |
 

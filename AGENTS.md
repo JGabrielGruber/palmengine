@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** June 2026 (0.16 direction; 0.15.4 shipped)
+**Last updated:** July 2026 (0.16.5 shipped)
 
 ---
 
@@ -46,7 +46,7 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
                             Context, Storage, Resource, Event, Auth, Transform)
 ```
 
-> **0.15.4 code** still lives in `palm/common/services/` until 0.16 ships. Target layout: [docs/VISION-0.16.md](docs/VISION-0.16.md).
+> **0.16** domain API lives in `palm/services/`; `palm/common/services/` retains `BaseService`, `errors`, `views` only. Vision: [docs/VISION-0.16.md](docs/VISION-0.16.md).
 
 **Key layers and their roles:**
 
@@ -77,7 +77,7 @@ Coding agents should use the MCP operator adapter to develop and test flows — 
 | Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/llms.txt` |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
-**Conventions:** instance-first (`instance_id`, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; collection menu → `palm_wizard_collection_action` or choice label; collection field → `palm_wizard_input`; multi-step bursts → `palm_wizard_drive`; compositional stacks → `palm_compose_status`; interactive entry → `palm_submit_wizard` (not `palm_submit_process`); `palm_resume_child_wait` only when `waiting_for_child`.
+**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; collection menu → `palm_wizard_collection_action` or choice label; collection field → `palm_flows_session_input`; multi-step bursts → `palm_flows_session_drive`; compositional stacks → `palm_flows_compose_status`; interactive entry → `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `palm_flows_session_resume_child_wait` only when `waiting_for_child`.
 
 **Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
 

@@ -111,55 +111,55 @@ Tools are grouped by service domain. Exact names ship with 0.16; plan below.
 
 ### Execution — flows
 
-| 0.15.4 | 0.16 (planned) |
-|--------|----------------|
-| `palm_submit_wizard` | `palm_flows_create` |
-| `palm_submit_flow` | `palm_flows_create` |
-| `palm_inspect_instance` | `palm_flows_inspect` |
-| `palm_wizard_input` | `palm_flows_input` |
-| `palm_wizard_drive` | `palm_flows_drive` |
-| `palm_wizard_backtrack` | `palm_flows_backtrack` |
-| `palm_resume_child_wait` | `palm_flows_resume_child_wait` |
-| `palm_resume_wizard_tick` | `palm_flows_resume_tick` |
-| `palm_wizard_collection_action` | `palm_flows_collection_action` |
-| `palm_wizard_commit_preview` | `palm_flows_commit_preview` |
+| 0.15.4 | 0.16 |
+|--------|------|
+| `palm_submit_wizard` | `palm_flows_create_session` |
+| `palm_submit_flow` | `palm_flows_create_session` |
+| `palm_inspect_instance` | `palm_flows_session` |
+| `palm_wizard_input` | `palm_flows_session_input` |
+| `palm_wizard_drive` | `palm_flows_session_drive` |
+| `palm_wizard_backtrack` | `palm_flows_session_backtrack` |
+| `palm_resume_child_wait` | `palm_flows_session_resume_child_wait` |
+| `palm_resume_wizard_tick` | `palm_flows_session_resume` |
+| `palm_wizard_collection_action` | `palm_wizard_collection_action` (pattern tool, unchanged) |
+| `palm_wizard_commit_preview` | `palm_wizard_commit_preview` (pattern tool, unchanged) |
 | `palm_compose_status` | `palm_flows_compose_status` |
-| `palm_inspect_job` | `palm_flows_inspect` (instance_id) |
-| `palm_provide_job_input` | `palm_flows_input` |
+| `palm_inspect_job` | `palm_system_inspect_job` (job_id) or `palm_flows_session` (session_id) |
+| `palm_provide_job_input` | `palm_flows_session_input` or `palm_system_job_input` |
 
 ### Execution — providers
 
-| 0.15.4 | 0.16 (planned) |
-|--------|----------------|
+| 0.15.4 | 0.16 |
+|--------|------|
 | `palm_invoke_resource` | `palm_providers_invoke` |
 
 ### Definitions
 
-| 0.15.4 | 0.16 (planned) |
-|--------|----------------|
-| MCP resources (`palm://definitions/…`) | `palm_definitions_*` tools + updated resource URIs |
+| 0.15.4 | 0.16 |
+|--------|------|
+| MCP resources (`palm://definitions/…`) | Unchanged URIs; add `palm_definitions_*` tools |
 | `palm_validate_flow` | `palm_definitions_validate_flow` |
 | `palm_explain_step` | `palm_definitions_explain_step` |
 
 ### System
 
-| 0.15.4 | 0.16 (planned) |
-|--------|----------------|
+| 0.15.4 | 0.16 |
+|--------|------|
 | `palm_doctor` | `palm_system_doctor` |
 | `palm_list_waiting` | `palm_system_list_waiting` |
-| `palm_cancel_job` | `palm_system_cancel_instance` |
-| `palm_fetch_job` | `palm_system_fetch_instance` |
+| `palm_cancel_job` | `palm_system_cancel_job` |
+| `palm_fetch_job` | `palm_system_fetch_job` |
 | `palm_trace_events` | `palm_system_trace_events` |
 | `palm_diff_snapshots` | `palm_system_diff_snapshots` |
 
-### Processes / debug (TBD in 0.16)
+### Processes
 
-| 0.15.4 | 0.16 (planned) |
-|--------|----------------|
+| 0.15.4 | 0.16 |
+|--------|------|
 | `palm_submit_process` | `palm_processes_submit` |
-| Pattern tools (`palm_parallel_branch_status`, …) | Remain pattern-contributed; may gain `flows_` prefix |
+| Pattern tools (`palm_parallel_branch_status`, …) | Remain pattern-contributed (unchanged names) |
 
-Update agent prompts in `docs/MCP.md` and `docs/llms.txt` after release.
+Agent prompts updated in `docs/MCP.md` and `docs/llms.txt` (shipped 0.16.5).
 
 ---
 
