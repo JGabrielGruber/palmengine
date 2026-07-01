@@ -99,6 +99,26 @@ def _request_with_retry(
     raise PalmRemoteError(f"Remote request failed for {method} {path}")
 
 
+def _resolve_provider_name(
+    base_url: str,
+    resource_ref: str,
+    *,
+    token: str | None = None,
+) -> str:
+    status, payload = _request(
+        base_url,
+        "GET",
+        f"/v1/api/definitions/resources/{resource_ref}",
+        token=token,
+    )
+    if status != 200 or not isinstance(payload, dict):
+        raise _remote_error("Could not resolve resource provider", status, payload)
+    provider = payload.get("provider")
+    if not provider:
+        raise PalmRemoteError(f"Resource {resource_ref!r} has no provider")
+    return str(provider)
+
+
 def invoke_resource_remote(
     base_url: str,
     resource_ref: str,
@@ -111,21 +131,22 @@ def invoke_resource_remote(
     timeout: float = 10.0,
     retries: int = 2,
 ) -> dict[str, Any]:
-    """Invoke a resource via ``POST /v1/resources/invoke``."""
-    body: dict[str, Any] = {"resource_ref": resource_ref}
+    """Invoke a resource via ``POST /v1/api/providers/{provider}/{resource}/invoke``."""
+    provider_name = _resolve_provider_name(base_url, resource_ref, token=token)
+    invoke_body: dict[str, Any] = {}
     if action is not None:
-        body["action"] = action
+        invoke_body["action"] = action
     if params is not None:
-        body["params"] = params
+        invoke_body["params"] = params
     if resource_id is not None:
-        body["resource_id"] = resource_id
+        invoke_body["resource_id"] = resource_id
     if state is not None:
-        body["state"] = state
+        invoke_body["state"] = state
     status, payload = _request_with_retry(
         base_url,
         "POST",
-        "/v1/resources/invoke",
-        body=body,
+        f"/v1/api/providers/{provider_name}/{resource_ref}/invoke",
+        body=invoke_body,
         token=token,
         timeout=timeout,
         retries=retries,

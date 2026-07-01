@@ -13,6 +13,7 @@ from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.definitions.flow import FlowDefinition
 from palm.patterns.wizard.bindings.catalog import flow_step_slugs
 from palm.services.definitions.flows import flow_catalog_row
+from palm.services.definitions.parsers import parse_flow, parse_process, parse_resource
 from palm.services.definitions.processes import process_catalog_row
 from palm.services.definitions.resources import resource_catalog_row
 
@@ -84,6 +85,64 @@ class DefinitionService(BaseService):
             return catalog.describe(resource_ref)
         except DefinitionNotFoundError as exc:
             raise DefinitionNotFoundServiceError("resource", resource_ref) from exc
+
+    def create_flow(self, body: dict[str, Any]) -> dict[str, Any]:
+        flow = parse_flow(body)
+        self._repository.register_flow(flow)
+        return flow.to_dict()
+
+    def update_flow(self, flow_id: str, body: dict[str, Any]) -> dict[str, Any]:
+        self.get_flow(flow_id)
+        flow = parse_flow(body)
+        self._repository.register_flow(flow)
+        return flow.to_dict()
+
+    def delete_flow(self, flow_id: str) -> bool:
+        flow = self.ask(GetFlowQuery(flow_id=flow_id))
+        if flow is None:
+            raise DefinitionNotFoundServiceError("flow", flow_id)
+        return self._repository.delete_flow(flow.definition_id, by_id=True)
+
+    def create_process(self, body: dict[str, Any]) -> dict[str, Any]:
+        process = parse_process(body)
+        self._repository.register_process(process)
+        for flow in process.flows:
+            self._repository.register_flow(flow)
+        return process.to_dict()
+
+    def update_process(self, process_id: str, body: dict[str, Any]) -> dict[str, Any]:
+        self.get_process(process_id)
+        process = parse_process(body)
+        self._repository.register_process(process)
+        for flow in process.flows:
+            self._repository.register_flow(flow)
+        return process.to_dict()
+
+    def delete_process(self, process_id: str) -> bool:
+        process = self.ask(GetProcessQuery(process_id=process_id))
+        if process is None:
+            raise DefinitionNotFoundServiceError("process", process_id)
+        return self._repository.delete_process(process.definition_id, by_id=True)
+
+    def create_resource(self, body: dict[str, Any]) -> dict[str, Any]:
+        resource = parse_resource(body)
+        self._repository.register_resource(resource)
+        return resource.to_dict()
+
+    def update_resource(self, resource_ref: str, body: dict[str, Any]) -> dict[str, Any]:
+        self.get_resource(resource_ref)
+        resource = parse_resource(body)
+        self._repository.register_resource(resource)
+        return resource.to_dict()
+
+    def delete_resource(self, resource_ref: str) -> bool:
+        catalog = ResourceCatalog(self._repository)
+        try:
+            described = catalog.describe(resource_ref)
+        except DefinitionNotFoundError as exc:
+            raise DefinitionNotFoundServiceError("resource", resource_ref) from exc
+        definition_id = str(described.get("definition_id") or described.get("name") or resource_ref)
+        return self._repository.delete_resource(definition_id, by_id=True)
 
 
 __all__ = ["DefinitionService"]

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from palm.runtimes.server.surfaces.rest.definitions.routes import register_definitions_routes
 from palm.runtimes.server.surfaces.rest.execution.flows.routes import register_flow_routes
+from palm.runtimes.server.surfaces.rest.execution.providers.routes import register_provider_routes
 from palm.runtimes.server.surfaces.rest.system.routes import register_system_routes
 
 if TYPE_CHECKING:
@@ -22,6 +23,7 @@ def register_service_routes(
     """Register definitions, flows, and system routes from runtime-owned tables."""
     register_definitions_routes(registry, ctx, surface=surface)
     register_flow_routes(registry, ctx, surface=surface)
+    register_provider_routes(registry, ctx, surface=surface)
     register_system_routes(registry, ctx, surface=surface)
 
 

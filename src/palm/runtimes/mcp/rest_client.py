@@ -260,7 +260,26 @@ class PalmRestClient:
         )
 
     def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", "/v1/resources/invoke", body=body, auth=True)
+        resource_ref = str(body.get("resource_ref") or "").strip()
+        if not resource_ref:
+            raise PalmRestError(400, "resource_ref is required")
+        provider = body.get("provider")
+        if not provider:
+            described = self.get_resource(resource_ref)
+            provider = described.get("provider")
+        if not provider:
+            raise PalmRestError(400, f"could not resolve provider for resource {resource_ref!r}")
+        invoke_body = {
+            key: body[key]
+            for key in ("action", "params", "resource_id", "state")
+            if key in body
+        }
+        return self._request(
+            "POST",
+            f"/v1/api/providers/{provider}/{resource_ref}/invoke",
+            body=invoke_body,
+            auth=True,
+        )
 
     def _request(
         self,

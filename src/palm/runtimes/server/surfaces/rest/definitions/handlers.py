@@ -2,38 +2,315 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from palm.runtimes.server.surfaces.rest.handlers import catalog, resources
+from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.services.errors import DefinitionNotFoundServiceError
+from palm.runtimes.server.surfaces.rest import errors
+from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
+from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+from palm.runtimes.server.surfaces.rest.responses import created, ok
+from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
+from palm.runtimes.server.surfaces.rest.schemas import VALIDATE_FLOW_BODY
+from palm.runtimes.server.surfaces.rest.validation import PaginationParams, parse_list_flows_query
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
-    from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 
 
 def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
-    return catalog.list_flows(ctx, request)
+    query = parse_list_flows_query(request)
+    if isinstance(query, ServerResponse):
+        return query
+
+    rows = ctx.definitions.list_flows(pattern=query.get("pattern"))
+    params = PaginationParams(limit=query["limit"], offset=query["offset"])
+    return ok(list_envelope("flows", rows, params))
 
 
 def get_flow(ctx: ServerContext, request: ServerRequest, *, flow_id: str) -> ServerResponse:
-    return catalog.get_flow(ctx, request, flow_id=flow_id)
+    try:
+        payload = ctx.definitions.get_flow(flow_id, verbose=_verbose_query(request))
+    except DefinitionNotFoundServiceError:
+        return errors.flow_not_found(flow_id)
+    return ok(payload)
+
+
+def create_flow(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.create_flow(body)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return created({"saved": True, "kind": "flow", "flow": payload})
+
+
+def update_flow(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    flow_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.update_flow(flow_id, body)
+    except DefinitionNotFoundServiceError:
+        return errors.flow_not_found(flow_id)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return ok({"saved": True, "kind": "flow", "flow": payload})
+
+
+def delete_flow(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    flow_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        deleted = ctx.definitions.delete_flow(flow_id)
+    except DefinitionNotFoundServiceError:
+        return errors.flow_not_found(flow_id)
+
+    return ok({"deleted": deleted, "kind": "flow", "flow_id": flow_id})
 
 
 def validate_flow(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
-    return catalog.validate_flow(ctx, request)
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    from palm.runtimes.server.surfaces.rest.schemas import validate_flow_variant_errors
+
+    body = validate_body(
+        request,
+        VALIDATE_FLOW_BODY,
+        extra_errors=validate_flow_variant_errors(request.body or {}),
+    )
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        result = ctx.definitions.validate_flow(body, runtime=ctx.runtime)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+    except Exception as exc:
+        return errors.validation_failed(
+            [{"field": "flow", "message": str(exc), "code": "build_failed"}]
+        )
+
+    return ok(result)
 
 
 def list_processes(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
-    return catalog.list_processes(ctx, request)
+    query = parse_list_flows_query(request)
+    if isinstance(query, ServerResponse):
+        return query
+
+    rows = ctx.definitions.list_processes()
+    params = PaginationParams(limit=query["limit"], offset=query["offset"])
+    return ok(list_envelope("processes", rows, params))
 
 
 def get_process(ctx: ServerContext, request: ServerRequest, *, process_id: str) -> ServerResponse:
-    return catalog.get_process(ctx, request, process_id=process_id)
+    try:
+        payload = ctx.definitions.get_process(process_id)
+    except DefinitionNotFoundServiceError:
+        return errors.process_not_found(process_id)
+    return ok(payload)
+
+
+def create_process(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.create_process(body)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return created({"saved": True, "kind": "process", "process": payload})
+
+
+def update_process(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    process_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.update_process(process_id, body)
+    except DefinitionNotFoundServiceError:
+        return errors.process_not_found(process_id)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return ok({"saved": True, "kind": "process", "process": payload})
+
+
+def delete_process(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    process_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        deleted = ctx.definitions.delete_process(process_id)
+    except DefinitionNotFoundServiceError:
+        return errors.process_not_found(process_id)
+
+    return ok({"deleted": deleted, "kind": "process", "process_id": process_id})
 
 
 def list_resources(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
-    return resources.list_resources(ctx, request)
+    query = parse_list_flows_query(request)
+    if isinstance(query, ServerResponse):
+        return query
+
+    provider = str(request.query.get("provider") or "").strip() or None
+    rows = ctx.definitions.list_resources(provider=provider)
+    params = PaginationParams(limit=query["limit"], offset=query["offset"])
+    return ok(list_envelope("resources", rows, params))
 
 
-def get_resource(ctx: ServerContext, request: ServerRequest, *, resource_ref: str) -> ServerResponse:
-    return resources.get_resource(ctx, request, resource_ref=resource_ref)
+def get_resource(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    resource_ref: str,
+) -> ServerResponse:
+    try:
+        payload = ctx.definitions.get_resource(resource_ref)
+    except DefinitionNotFoundServiceError:
+        return errors.resource_not_found(resource_ref)
+    return ok(payload)
+
+
+def create_resource(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.create_resource(body)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return created({"saved": True, "kind": "resource", "resource": payload})
+
+
+def update_resource(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    resource_ref: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    try:
+        payload = ctx.definitions.update_resource(resource_ref, body)
+    except DefinitionNotFoundServiceError:
+        return errors.resource_not_found(resource_ref)
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+
+    return ok({"saved": True, "kind": "resource", "resource": payload})
+
+
+def delete_resource(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    resource_ref: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        deleted = ctx.definitions.delete_resource(resource_ref)
+    except DefinitionNotFoundServiceError:
+        return errors.resource_not_found(resource_ref)
+
+    return ok({"deleted": deleted, "kind": "resource", "resource_ref": resource_ref})
+
+
+def _verbose_query(request: ServerRequest) -> bool:
+    raw = request.query.get("verbose")
+    if raw is None:
+        return True
+    return str(raw).strip().lower() not in {"0", "false", "no"}
+
+
+def _json_object(request: ServerRequest) -> dict[str, Any] | ServerResponse:
+    body = request.body
+    if not isinstance(body, dict):
+        return errors.bad_request("JSON object body required")
+    return body
+
+
+__all__ = [
+    "create_flow",
+    "create_process",
+    "create_resource",
+    "delete_flow",
+    "delete_process",
+    "delete_resource",
+    "get_flow",
+    "get_process",
+    "get_resource",
+    "list_flows",
+    "list_processes",
+    "list_resources",
+    "update_flow",
+    "update_process",
+    "update_resource",
+    "validate_flow",
+]

@@ -18,6 +18,8 @@ def test_definitions_registry_has_catalog_verbs() -> None:
     ids = {verb.verb_id for verb in verbs}
     assert "list_flows" in ids
     assert "validate_flow" in ids
+    assert "create_flow" in ids
+    assert "delete_resource" in ids
 
 
 def test_flow_registry_has_command_specs() -> None:

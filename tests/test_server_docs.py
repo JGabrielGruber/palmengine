@@ -82,7 +82,7 @@ def test_featured_examples_cover_key_endpoints() -> None:
     titles = {item[0] for item in featured_curl_examples()}
     assert "Health check" in titles
     assert "List snapshots" in titles
-    assert "Invoke resource" in titles
+    assert "List instances" in titles
 
 
 def test_docs_endpoint_serves_rich_html(server: ServerRuntime) -> None:

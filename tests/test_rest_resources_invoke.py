@@ -1,4 +1,4 @@
-"""Tests for POST /v1/resources/invoke REST endpoint."""
+"""Tests for POST /v1/api/providers/{provider}/{resource}/invoke REST endpoint."""
 
 from __future__ import annotations
 
@@ -67,8 +67,8 @@ def test_invoke_resource_rest_endpoint(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/resources/invoke",
-        body={"resource_ref": "rest-echo"},
+        "/v1/api/providers/rest/rest-echo/invoke",
+        body={},
     )
     assert status == 200
     assert isinstance(payload, dict)
@@ -76,11 +76,11 @@ def test_invoke_resource_rest_endpoint(server: ServerRuntime) -> None:
     assert payload["data"]["body"]["ok"] is True
 
 
-def test_invoke_resource_missing_ref(server: ServerRuntime) -> None:
+def test_invoke_resource_provider_mismatch(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/resources/invoke",
+        "/v1/api/providers/palm/rest-echo/invoke",
         body={},
     )
     assert status == 400

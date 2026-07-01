@@ -65,9 +65,14 @@ class ServerContext:
                 repository=runtime.repository,
             )
             flows = FlowExecutionService(**bus_kw, system=self._system, runtime=runtime)
+            definitions = self._definitions
             self._execution = ExecutionService(
                 flows=flows,
-                providers=ProviderExecutionService(**bus_kw),
+                providers=ProviderExecutionService(
+                    **bus_kw,
+                    runtime=runtime,
+                    definitions=definitions,
+                ),
                 processes=ProcessExecutionService(**bus_kw),
             )
         else:

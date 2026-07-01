@@ -30,7 +30,6 @@ RouteId = Literal[
     "resume_instance",
     "list_snapshots",
     "get_snapshot",
-    "invoke_resource",
 ]
 
 
@@ -211,16 +210,5 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Snapshots",
             summary="Get snapshot",
             description="Fetch a single state snapshot by zero-based index or recorded_at timestamp.",
-        ),
-        RouteDefinition(
-            route_id="invoke_resource",
-            method="POST",
-            path="/v1/resources/invoke",
-            group="Resources",
-            summary="Invoke resource",
-            description="Invoke a registered resource definition via ResourceEngine.",
-            auth_required=True,
-            request_schema="InvokeResourceBody",
-            response_status=200,
         ),
     )

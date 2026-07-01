@@ -133,7 +133,6 @@ GROUP_DESCRIPTIONS: dict[str, str] = {
     "Plans": "Deferred plan staging and batch submission.",
     "Instances": "Durable process instance queries and resume.",
     "Snapshots": "Point-in-time blackboard captures for audit and replay.",
-    "Resources": "One-shot resource invocation (providers API ships under /v1/api/providers).",
 }
 
 RESPONSE_EXAMPLES: dict[str, Any] = {
@@ -547,7 +546,6 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
         "provide_input",
         "list_instances",
         "list_snapshots",
-        "invoke_resource",
     )
     routes_by_id = {route.route_id: route for route in rest_routes()}
     examples: list[tuple[str, str, str]] = []

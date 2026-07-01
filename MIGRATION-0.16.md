@@ -36,6 +36,8 @@ Base prefix: **`/v1/api`**
 | `GET /v1/flows` | `GET /v1/api/definitions/flows` |
 | `GET /v1/flows/{flow_id}` | `GET /v1/api/definitions/flows/{flow_id}` |
 | `POST /v1/flows` (if present) | `POST /v1/api/definitions/flows` |
+| `PUT /v1/flows/{flow_id}` | `PUT /v1/api/definitions/flows/{flow_id}` |
+| `DELETE /v1/flows/{flow_id}` | `DELETE /v1/api/definitions/flows/{flow_id}` |
 | `GET /v1/processes` | `GET /v1/api/definitions/processes` |
 | `GET /v1/processes/{process_id}` | `GET /v1/api/definitions/processes/{process_id}` |
 | `GET /v1/resources` | `GET /v1/api/definitions/resources` |

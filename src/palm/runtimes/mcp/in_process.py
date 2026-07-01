@@ -469,19 +469,22 @@ class PalmInProcessBackend:
         if not resource_ref:
             raise PalmRestError(400, "resource_ref is required")
 
-        engine = self._ctx.runtime.resource
-        if not engine.is_initialized:
-            engine.initialize()
+        provider = body.get("provider")
+        if not provider:
+            try:
+                described = self._ctx.definitions.get_resource(resource_ref)
+            except Exception:
+                described = {}
+            provider = described.get("provider")
 
-        state = _resolve_state(body.get("state"))
-        result = engine.invoke(
+        return self._ctx.execution.providers.invoke(
             resource_ref,
+            provider=str(provider) if provider else None,
             action=body.get("action"),
             params=body.get("params"),
-            state=state,
+            state=body.get("state"),
             resource_id=body.get("resource_id"),
         )
-        return _provider_result_body(result)
 
 
 def _resolve_state(raw: Any) -> BlackboardState | None:

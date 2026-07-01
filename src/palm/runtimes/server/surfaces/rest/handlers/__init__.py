@@ -6,7 +6,6 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     jobs,
     meta,
     plans,
-    resources,
     snapshots,
 )
 
@@ -16,6 +15,5 @@ __all__ = [
     "jobs",
     "meta",
     "plans",
-    "resources",
     "snapshots",
 ]

@@ -523,7 +523,11 @@ class ApplicationHost:
         )
         self._execution = ExecutionService(
             flows=flows,
-            providers=ProviderExecutionService(**bus_kw),
+            providers=ProviderExecutionService(
+                **bus_kw,
+                runtime_resolver=self._resolve_execution_runtime,
+                definitions=self._definitions,
+            ),
             processes=ProcessExecutionService(**bus_kw),
         )
 

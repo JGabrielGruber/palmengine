@@ -12,7 +12,6 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     jobs,
     meta,
     plans,
-    resources,
     snapshots,
 )
 from palm.runtimes.server.surfaces.rest.service_routes import register_service_routes
@@ -75,6 +74,5 @@ def _resolve_handler(
         "get_snapshot": lambda req, instance_id, snapshot_id: snapshots.get_snapshot(
             ctx, req, instance_id=instance_id, snapshot_id=snapshot_id
         ),
-        "invoke_resource": lambda req: resources.invoke_resource(ctx, req),
     }
     return builders[route.route_id]
