@@ -149,6 +149,21 @@ palm-demo-approval:
 palm-server *ARGS='':
     uv run --extra cli palm host server {{ARGS}}
 
+# -----------------------------------------------------------------------------
+# 6a. Docker — Palm host server with filesystem storage
+# -----------------------------------------------------------------------------
+docker-build:
+    docker compose build
+
+docker-up *ARGS='':
+    docker compose up -d {{ARGS}}
+
+docker-down:
+    docker compose down
+
+docker-logs *ARGS='':
+    docker compose logs -f {{ARGS}}
+
 demo-full:
     uv run python examples/full_demo.py
 
@@ -247,6 +262,7 @@ help:
     @echo "   just demo-full        → examples/full_demo.py"
     @echo "   just mcp-inspector    → MCP Inspector UI for palm-mcp"
     @echo "   just palm-server      → Palm HTTP API (REST backend for MCP)"
+    @echo "   just docker-up        → Palm host server in Docker (./data + ./logs)"
     @echo "   just clean            → Remove data/ + tool caches"
     @echo "   just palm --help      → CLI command list"
     @echo "Run 'just --list' for full list"
