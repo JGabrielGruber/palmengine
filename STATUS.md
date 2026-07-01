@@ -17,7 +17,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
-- `palm/common/services/` — User-facing API (`InternalService`, `DefinitionService`, `ExecutionService`, `InstanceSession`, `ReplSession`).
+- `palm/common/services/` — Service primitives (`BaseService`, views); **0.16** moves domain API to `palm/services/`.
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
@@ -171,13 +171,32 @@ just mcp-inspector                       # MCP Inspector UI
 | `CHANGELOG.md`        | Good            | `[0.15.4]` service layer release |
 | `RELEASE-0.15.4.md`   | Good            | Release checklist |
 
+## 0.16 — Services Are the API (Planned)
+
+**Vision:** [docs/VISION-0.16.md](docs/VISION-0.16.md)  
+**ADR:** [docs/adr/005-service-domain-api.md](docs/adr/005-service-domain-api.md)  
+**Spec:** [docs/superpowers/specs/2026-06-30-service-registry-dynamic-rest-design.md](docs/superpowers/specs/2026-06-30-service-registry-dynamic-rest-design.md)  
+**Plan:** [docs/superpowers/plans/2026-06-30-service-registry-dynamic-rest.md](docs/superpowers/plans/2026-06-30-service-registry-dynamic-rest.md)  
+**Migration:** [MIGRATION-0.16.md](MIGRATION-0.16.md)
+
+| Component | Status |
+|-----------|--------|
+| `palm/services/` domain extraction | 🔲 Planned |
+| Per-service registries (definitions, flows, providers, system) | 🔲 Planned |
+| REST `/v1/api/…` per-domain handlers | 🔲 Planned |
+| MCP remount by service (breaking tool names) | 🔲 Planned |
+| Delete legacy `rest/handlers/*` | 🔲 Planned |
+| `execution/flows` ≠ `execution/providers` | 🔲 Planned |
+| Definition catalog CRUD on new surface | 🔲 Planned |
+
+**Breaking release.** Experimental Palm — no deprecation window for REST/MCP. Prior incremental 0.16 items (OpenAPI-only milestone, WebSocket-first, catalog writes on old handlers) are **skipped and redone** on this architecture.
+
 ## Priorities & Next Steps
 
 **0.15.4 shipped** — cleanup track complete ([spec](docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md)) · [RELEASE-0.15.4.md](RELEASE-0.15.4.md)
 
-1. Definition catalog write paths via `DefinitionService` (0.16+)
-2. Full OpenAPI from `CqrsSchemaRegistry` + service views (0.16+)
-3. WebSocket surface for live wizard prompts (0.16+)
+**Next:** 0.16 implementation per plan — scaffold `palm/services/`, per-domain REST/MCP, delete legacy handlers.
+
 
 ## Useful Links
 

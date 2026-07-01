@@ -121,9 +121,18 @@ Master spec: [docs/superpowers/specs/2026-06-30-0.15-cleanup-track-design.md](su
 - Delete `create_cli_app`, `interactive_runtime` wizard aliases, `ChildWizardCompletionHook`, remaining shims
 - Spec: [docs/superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md](superpowers/specs/2026-06-30-0.15.3-legacy-cleanup-design.md)
 
-### 0.16+ — new capabilities
+### 0.16 — Services Are the API (supersedes incremental bullets below)
 
-- Definition catalog write service methods + Studio integration
-- Full OpenAPI generation from `CqrsSchemaRegistry` + service view types
-- WebSocket surface streaming instance events
-- Optional `ServiceContributor` when patterns need custom business APIs
+**Authoritative direction:** [docs/VISION-0.16.md](VISION-0.16.md)
+
+- Extract services to `palm/services/` (definitions, execution, system) with per-domain registries
+- Delete legacy REST handlers; break REST (`/v1/api/…`) and MCP (per-service tools) intentionally
+- Runtimes mirror services — handlers per domain, not per resource file
+- `execution/flows` vs `execution/providers` — distinct behavior
+- Migration: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
+
+**Deferred and redone on new API (not separate 0.16 milestones):**
+
+- Definition catalog writes → `definitions` service CRUD
+- OpenAPI generation → per-domain route registries
+- WebSocket streaming → post-0.16, binds to `execution/flows`

@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** June 2026 (0.15 service layer + 0.14 MCP)
+**Last updated:** June 2026 (0.16 direction; 0.15.4 shipped)
 
 ---
 
@@ -34,22 +34,24 @@ Palm follows a **layered, registry-driven** architecture with a pure core.
 ```
 User / CLI / REST / MCP
         ↓
-palm/runtimes/             ← Thin adapters (map transport → services)
+palm/runtimes/             ← Thin adapters per service domain (map transport → services)
         ↓
 palm/app/                  ← ApplicationHost (primary orchestrator)
         ↓
-palm/common/services/      ← User-facing API (Internal, Definition, Execution)
+palm/services/             ← User-facing API (definitions, execution, system)
         ↓
-palm/common/               ← CQRS buses, schemas, hooks, persistence, runtimes base
+palm/common/               ← CQRS buses, schemas, hooks, persistence, service primitives
         ↓
 palm/core/                 ← PURE foundational engines (Behavior Tree, Orchestration,
                             Context, Storage, Resource, Event, Auth, Transform)
 ```
 
+> **0.15.4 code** still lives in `palm/common/services/` until 0.16 ships. Target layout: [docs/VISION-0.16.md](docs/VISION-0.16.md).
+
 **Key layers and their roles:**
 
 - **`palm/core/`** — Pure engines and primitives. Behavior Trees are the universal control-flow model. No external Palm imports allowed.
-- **`palm/common/services/`** — User-facing business API (`InternalService`, `DefinitionService`, `ExecutionService`) composing schema-validated CQRS. Runtimes call services; services do not import runtimes.
+- **`palm/services/`** — User-facing business API (`DefinitionService`, `ExecutionService`, `SystemService`) composing schema-validated CQRS. Domain modules own `registry.py`. Runtimes call services; services do not import runtimes. Shared `BaseService` / views remain in `palm/common/services/`.
 - **`palm/common/`** — The “middle layer” where most coordination lives. Execution plans, hooks, CQRS + `CqrsSchemaRegistry`, reliable events (outbox), compensation, transforms, and shared runtime infrastructure.
 - **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `HostProfile` roles) is the recommended entry point for most use cases. `PalmApp` is infrastructure.
 - **`palm/patterns/`, `palm/providers/`, `palm/storages/`** — Extensible “Django-style apps”. Each capability lives in its own subpackage with `registry.py`.
@@ -102,7 +104,8 @@ Follow these patterns. They exist so growth remains orderly.
 | New transform rule | `palm/common/transforms/rules/` | Implement `BaseTransformRule`, register with `register_transform()` or `@transform_rule` |
 | CQRS command or query | Pattern-owned: `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()`. Generic buses live in `palm/common/cqrs/` |
 | CQRS schemas | `palm/patterns/<name>/bindings/cqrs/schemas.py` | Add `command_schemas` / `query_schemas` on `CqrsContributor`; optional `instance_status_query` for inspect |
-| Service method | `palm/common/services/` | Compose CQRS in `InternalService`, `DefinitionService`, or `ExecutionService`; wire on host/context in `_wire_cqrs()` |
+| Service method | `palm/services/<domain>/` | Compose CQRS in domain `service.py`; register REST/MCP in domain `registry.py`; wire on host/context in `_wire_cqrs()` |
+| MCP tool (0.16+) | `palm/runtimes/mcp/<domain>/` | Group tools by service domain (`flows`, `providers`, `definitions`, `system`); pattern contributors stay in pattern `bindings/mcp.py` |
 | New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |
