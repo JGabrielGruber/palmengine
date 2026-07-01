@@ -4,6 +4,22 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.9] — 2026-07-01
+
+**Assistant envelope on flows mutations** — opt-in human view after session input.
+
+### Added
+
+- **`palm_flows_session_input(format="assistant")`** — returns `question`, `choices`, `hint` after input.
+- **`palm_wizard_collection_action(format="assistant")`** — same opt-in on collection mutations.
+- **Collection `actions` block** — `build_collection_assistant_actions` on menu-phase assistant turns.
+- **Flows REST** `POST …/input?format=assistant` — parity with GET session (already wired via `_session_body`).
+
+### Changed
+
+- **`build_assistant_view`** — merges collection menu `actions` when `flow_id` is set.
+- **Version** `0.21.9` on documentation surfaces.
+
 ## [0.21.8] — 2026-07-01
 
 **Collection one-shot add** — weak LLMs can add a titled item in one MCP call.

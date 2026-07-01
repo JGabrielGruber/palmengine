@@ -23,6 +23,30 @@ from palm.runtimes.mcp.submit_body import submit_body
 def register_flow_tools(mcp: Any, backend: Any) -> None:
     """Register flow session MCP tools (0.16 command-path vocabulary)."""
 
+    def _format_session_payload(
+        flat: dict[str, Any],
+        *,
+        session_id: str,
+        flow_id: str | None,
+        format: str = "powertool",
+    ) -> dict[str, Any]:
+        invoke_tree = None
+        if normalize_view_format(format) == "assistant":
+            invoke_tree = backend.get_instance_tree(session_id)
+        fid = flow_id or flat.get("flow_name") or flat.get("flow")
+        return shape_flow_session_view(
+            flat,
+            format=format,
+            session_id=session_id,
+            flow_id=str(fid) if fid is not None else None,
+            path=(
+                ["flows", str(fid), "session", session_id]
+                if fid is not None
+                else ["flows", "session", session_id]
+            ),
+            invoke_tree=invoke_tree,
+        )
+
     @mcp.tool
     def palm_flows_list() -> dict[str, Any]:
         """List runnable flows from the execution flows catalog."""
@@ -74,6 +98,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         input: str | None = None,
         value: str | int | float | bool | None = None,
         flow_id: str | None = None,
+        format: str = "powertool",
     ) -> dict[str, Any]:
         """Deliver interactive input. Use plain ``input`` strings—not JSON."""
         inspect = flatten_session_view(backend.flows_get_session(flow_id, session_id))
@@ -89,14 +114,24 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
                 raw_view = backend.flows_session_input(fid, session_id, field_value)
                 return flatten_session_view(raw_view)
 
-            view = drive_collection_add(
+            flat = drive_collection_add(
                 provide,
                 value=resolved[1],
                 wizard_view=inspect,
             )
-            return compact_wizard_inspect(view)
+            return _format_session_payload(
+                flat,
+                session_id=session_id,
+                flow_id=fid,
+                format=format,
+            )
         view = backend.flows_session_input(fid, session_id, resolved)
-        return compact_wizard_inspect(flatten_session_view(view))
+        return _format_session_payload(
+            flatten_session_view(view),
+            session_id=session_id,
+            flow_id=fid,
+            format=format,
+        )
 
     @mcp.tool
     def palm_flows_session_resume_child_wait(

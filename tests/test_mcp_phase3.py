@@ -103,6 +103,19 @@ def phase3_server():
 
 
 @pytest.mark.asyncio
+async def test_palm_wizard_collection_action_assistant_format(phase3_server) -> None:
+    server, fake = phase3_server
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_wizard_collection_action",
+            {"instance_id": "inst-1", "action": "add", "format": "assistant"},
+        )
+    assert result.data.get("status") == "waiting"
+    assert result.data.get("hint") == "Enter text for this item."
+    assert "operator_hint" not in result.data
+
+
+@pytest.mark.asyncio
 async def test_palm_wizard_collection_action_add_with_value_one_shot(phase3_server) -> None:
     server, fake = phase3_server
     async with Client(server) as client:

@@ -73,6 +73,26 @@ def test_shape_flow_session_view_assistant_opt_in() -> None:
     assert payload.get("scenario_id") is None
 
 
+def test_shape_dispatch_result_flows_input_assistant_from_params() -> None:
+    _setup_assistant_registry()
+    ctx = SessionContext(
+        session_id="inst-1",
+        flow_id="onboard",
+        job_id="job-1",
+        status="WAITING_FOR_INPUT",
+        pattern="wizard",
+        waiting_for_input=True,
+        detail=_onboard_flat(),
+    )
+    payload = shape_dispatch_result(
+        ["flows", "onboard", "session", "inst-1", "input"],
+        ctx,
+        params={"format": "assistant"},
+    )
+    assert payload["question"] == "What is your name?"
+    assert "operator_hint" not in payload
+
+
 def test_shape_dispatch_result_flows_assistant_from_params() -> None:
     _setup_assistant_registry()
     ctx = SessionContext(
@@ -215,6 +235,61 @@ def test_flows_rest_session_assistant_opt_in(server: ServerRuntime) -> None:
         server.base_url,
         "GET",
         f"/v1/api/flows/onboard/session/{session_id}?format=assistant",
+    )
+    assert status == 200
+    assert payload.get("question")
+    assert payload.get("status") == "waiting"
+    assert "operator_hint" not in payload
+
+
+@pytest.mark.asyncio
+async def test_palm_flows_session_input_assistant_format(flows_server_ctx) -> None:
+    backend = PalmInProcessBackend(flows_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        started = await client.call_tool(
+            "palm_flows_create_session",
+            {"flow_id": "onboard"},
+        )
+        session_id = started.data["session_id"]
+        result = await client.call_tool(
+            "palm_flows_session_input",
+            {
+                "session_id": session_id,
+                "flow_id": "onboard",
+                "input": "Ada",
+                "format": "assistant",
+            },
+        )
+
+    payload = result.data
+    assert payload.get("question")
+    assert payload.get("status") == "waiting"
+    assert "operator_hint" not in payload
+
+
+def test_flows_rest_session_input_assistant_opt_in(server: ServerRuntime) -> None:
+    status, created = _request(
+        server.base_url,
+        "POST",
+        "/v1/api/flows/onboard/create",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    assert status in {200, 202}
+    session_id = created["session_id"]
+
+    status, payload = _request(
+        server.base_url,
+        "POST",
+        f"/v1/api/flows/onboard/session/{session_id}/input?format=assistant",
+        body={"value": "Ada"},
     )
     assert status == 200
     assert payload.get("question")

@@ -114,6 +114,7 @@ just mcp-inspector                  # MCP Inspector UI
 6. **Collection steps** — Branch on `collection_phase` from inspect (or `operator_hint` on compact responses):
    - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) **or** `palm_flows_session_input` with choice label/number
    - **0.21.8 one-shot:** `palm_wizard_collection_action(action=add, value="title")` or `palm_flows_session_input(input="add", value="title")` at menu phase
+   - **0.21.9 assistant:** pass `format="assistant"` on `palm_flows_session_input` / `palm_wizard_collection_action` for `question` + `actions` on mutations
    - `field` / `select_item` / `remove_confirm` → `palm_flows_session_input(session_id, input="…")` (plain string)
 
 7. **Submit entry** — Use `palm_flows_create_session(flow_id=…)` for interactive operator-driven flows. `palm_processes_submit` submits **one job per flow**; it is **rejected** when the process declares `entry_flow` or `metadata.mcp.entries`. Read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.

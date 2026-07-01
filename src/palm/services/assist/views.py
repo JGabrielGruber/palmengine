@@ -42,6 +42,21 @@ def build_assistant_view(
     scenario_id = context.scenario_id
     if scenario_id:
         payload = apply_assistant_enricher(scenario_id, payload, context=context)
+    from palm.common.operator.collection_actions import build_collection_assistant_actions
+
+    session_id = str(
+        context.session_id
+        or payload.get("session_id")
+        or composed.get("instance_id")
+        or ""
+    )
+    collection_actions = build_collection_assistant_actions(
+        composed,
+        session_id=session_id,
+        flow_id=context.flow_id,
+    )
+    if collection_actions:
+        payload["actions"] = collection_actions
     return payload
 
 

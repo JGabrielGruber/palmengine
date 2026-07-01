@@ -112,6 +112,29 @@ def test_assistant_view_collection_menu_hint() -> None:
     assert payload["hint"] == "Say add, edit, remove, or done."
 
 
+def test_assistant_view_collection_menu_actions() -> None:
+    _setup()
+    flat = {
+        "instance_id": "inst-1",
+        "flow_name": "todo-builder",
+        "status": "WAITING_FOR_INPUT",
+        "prompt": {
+            "text": "Manage your todos",
+            "collection_phase": "menu",
+            "field_type": "choice",
+            "step_kind": "collection",
+            "choices": ["Add a new item", "Continue to summary"],
+        },
+    }
+    payload = build_assistant_view(
+        flat,
+        context=OperatorViewContext(session_id="inst-1", flow_id="todo-builder"),
+    )
+    labels = [entry["label"] for entry in payload.get("actions") or []]
+    assert "Add item" in labels
+    assert "Add titled item" in labels
+
+
 def test_assistant_view_handoff_ready_hint() -> None:
     _setup()
     payload = build_assistant_view(

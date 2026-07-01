@@ -155,7 +155,24 @@ Weak LLMs often call `palm_wizard_collection_action(action=add, value="Title")` 
 
 Powertool response shape unchanged. Menu-only `action=add` (no value) still opens the field phase for multi-field schemas.
 
-**Next (0.21.9+):** assistant envelope on flows mutations — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+---
+
+## 0.21.9 — Assistant envelope on flows mutations
+
+0.21.5 added `format=assistant` on session **inspect**. **0.21.9** extends opt-in shaping to **mutations** (input, collection actions).
+
+| Surface | Opt-in call |
+|---------|-------------|
+| MCP `palm_flows_session_input` | `format="assistant"` |
+| MCP `palm_wizard_collection_action` | `format="assistant"` |
+| REST | `POST /v1/api/flows/{flow}/session/{id}/input?format=assistant` |
+| `palm_assist` flows input | `params={"format": "assistant"}` on `…/input` path |
+
+Collection menu assistant turns include an `actions` block (`Add item`, `Add titled item`) with `path` + `params` for `palm_assist` dispatch.
+
+Powertool default unchanged when `format` is omitted.
+
+**Next (0.21.10+):** unified `palm_assist` flows driving — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
 
 ---
 
@@ -172,7 +189,8 @@ Powertool response shape unchanged. Menu-only `action=add` (no value) still open
 | 0.21.6 | Migration + docs + verification |
 | 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) |
 | 0.21.8 | Collection `add` + `value` one-shot |
-| 0.21.9+ | Assistant mutations, unified assist, replay harness — planned |
+| 0.21.9 | Assistant envelope on flows mutations |
+| 0.21.10+ | Unified assist, edit shortcuts, replay harness — planned |
 
 ---
 
