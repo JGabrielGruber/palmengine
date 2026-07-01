@@ -8,6 +8,7 @@ RUN apt-get update \
 
 COPY pyproject.toml README.md ./
 COPY src ./src
+COPY examples/definitions ./examples/definitions
 
 RUN pip install --no-cache-dir ".[cli]"
 RUN pip install --no-cache-dir ".[mcp]"

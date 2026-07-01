@@ -10,6 +10,8 @@ build
 *.egg-info
 logs
 data/palm/instances
+examples/**/__pycache__
+examples/**/*.pyc
 repomix-output.xml
 .coverage
 htmlcov
