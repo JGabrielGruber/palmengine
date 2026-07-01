@@ -130,9 +130,11 @@ def test_assistant_view_collection_menu_actions() -> None:
         flat,
         context=OperatorViewContext(session_id="inst-1", flow_id="todo-builder"),
     )
-    labels = [entry["label"] for entry in payload.get("actions") or []]
+    actions = payload.get("actions") or []
+    labels = [entry["label"] for entry in actions]
     assert "Add item" in labels
     assert "Add titled item" in labels
+    assert actions[0].get("alias") == "flows/session-input"
 
 
 def test_assistant_view_handoff_ready_hint() -> None:

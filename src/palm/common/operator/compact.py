@@ -119,8 +119,8 @@ def _operator_input_hint(payload: dict[str, Any]) -> str | None:
     phase = payload.get("collection_phase")
     if phase == "menu":
         return (
-            "collection menu: palm_wizard_collection_action(action=add|done|edit|remove) "
-            "or palm_flows_session_input with choice label/number"
+            "collection menu: palm_assist(params={session_id, flow_id, input|collection_action}) "
+            "or palm_wizard_collection_action(action=add|done|edit|remove)"
         )
     if phase == "field":
         return "collection field: palm_flows_session_input(input=plain text)"
@@ -133,6 +133,13 @@ def _operator_input_hint(payload: dict[str, Any]) -> str | None:
     if field_type == "choice":
         return "palm_flows_session_input(input=choice slug or number)"
     if payload.get("status") == "WAITING_FOR_INPUT":
+        flow_id = payload.get("flow") or payload.get("flow_name")
+        session_id = payload.get("instance_id") or payload.get("session_id")
+        if flow_id and session_id:
+            return (
+                f"palm_assist(params={{session_id: {session_id!r}, flow_id: {flow_id!r}, value: …}}) "
+                "or palm_flows_session_input(input=plain text)"
+            )
         return "palm_flows_session_input(input=plain text)"
     if payload.get("status") in {"SUCCESS", "SUCCEEDED"} and payload.get("result") is not None:
         return "Job complete; see result or palm_system_fetch_instance(job_id)"

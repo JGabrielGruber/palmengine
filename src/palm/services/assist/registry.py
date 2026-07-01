@@ -83,9 +83,14 @@ _registry: list[CommandSpec] = [
     ),
 ]
 
+_BUILTIN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
+    "flows/session-input": ("flows", "{flow_id}", "session", "{session_id}", "input"),
+    "flows/session": ("flows", "{flow_id}", "session", "{session_id}"),
+}
+
 _lock = threading.RLock()
 _contributors: dict[str, AssistContributor] = {}
-_mcp_aliases: dict[str, tuple[str, ...]] = {}
+_mcp_aliases: dict[str, tuple[str, ...]] = dict(_BUILTIN_MCP_ALIASES)
 _assistant_enrichers: dict[str, AssistantEnricherFn] = {}
 
 
@@ -192,6 +197,7 @@ def clear_assist_contributors() -> None:
     with _lock:
         _contributors.clear()
         _mcp_aliases.clear()
+        _mcp_aliases.update(_BUILTIN_MCP_ALIASES)
         _assistant_enrichers.clear()
 
 

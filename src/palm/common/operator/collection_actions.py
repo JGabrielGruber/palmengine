@@ -17,17 +17,17 @@ def build_collection_assistant_actions(
     if not flow_id:
         return []
 
-    input_path = ["flows", flow_id, "session", session_id, "input"]
+    base_params = {"session_id": session_id, "flow_id": flow_id}
     return [
         {
             "label": "Add item",
-            "path": list(input_path),
-            "params": {"input": "add"},
+            "alias": "flows/session-input",
+            "params": {**base_params, "input": "add"},
         },
         {
             "label": "Add titled item",
-            "path": list(input_path),
-            "params": {"input": "add", "value": "…"},
+            "alias": "flows/session-input",
+            "params": {**base_params, "input": "add", "value": "…"},
         },
     ]
 

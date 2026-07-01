@@ -61,9 +61,18 @@ def normalize_assist_dispatch_args(
         session_id = _clean_dispatch_str(params.get("session_id")) or _clean_dispatch_str(
             params.get("instance_id")
         )
+        flow_id = _clean_dispatch_str(params.get("flow_id"))
         has_value = "value" in params or "input" in params
-        if session_id and has_value:
+        collection_action = params.get("collection_action")
+        if session_id and flow_id and (has_value or collection_action is not None):
+            path = ["flows", flow_id, "session", session_id, "input"]
+            if collection_action is not None and "input" not in params:
+                action_text = _clean_dispatch_str(collection_action) or str(collection_action)
+                params["input"] = action_text
+        elif session_id and has_value:
             path = ["assist", "session", session_id, "input"]
+        elif session_id and flow_id:
+            path = ["flows", flow_id, "session", session_id]
         elif session_id:
             path = ["assist", "session", session_id]
         else:

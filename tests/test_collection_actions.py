@@ -17,13 +17,12 @@ def test_build_collection_assistant_actions_menu_phase() -> None:
     labels = [entry["label"] for entry in actions]
     assert "Add item" in labels
     assert "Add titled item" in labels
-    assert actions[0]["path"] == [
-        "flows",
-        "todo-builder",
-        "session",
-        "inst-1",
-        "input",
-    ]
+    assert actions[0]["alias"] == "flows/session-input"
+    assert actions[0]["params"] == {
+        "session_id": "inst-1",
+        "flow_id": "todo-builder",
+        "input": "add",
+    }
 
 
 def test_build_collection_assistant_actions_skips_non_menu() -> None:

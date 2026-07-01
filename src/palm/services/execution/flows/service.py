@@ -84,8 +84,13 @@ class FlowExecutionService(BaseService):
             assert parsed.verb is not None
             handle = self.session(parsed.flow_id, parsed.session_id)
             if parsed.verb == "input":
-                value = params.get("value", params.get("input"))
-                return handle.input(value)
+                from palm.common.operator.flows_session_input import apply_flows_session_input
+
+                return apply_flows_session_input(
+                    get_context=handle.context,
+                    provide_input=handle.input,
+                    params=params,
+                )
             if parsed.verb == "backtrack":
                 return handle.backtrack(params.get("to_step"))
             if parsed.verb == "resume":
