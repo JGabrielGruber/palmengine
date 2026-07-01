@@ -2,6 +2,9 @@
 REST route metadata — declarative table without handler imports.
 
 Shared by route registration, OpenAPI generation, and HTML docs.
+
+Legacy catalog, wizard, and doctor routes were removed in 0.16.3 — use
+``/v1/api/definitions``, ``/v1/api/flows``, and ``/v1/api/system`` instead.
 """
 
 from __future__ import annotations
@@ -11,7 +14,6 @@ from typing import Literal
 
 RouteId = Literal[
     "health",
-    "doctor",
     "openapi",
     "docs",
     "list_jobs",
@@ -20,12 +22,6 @@ RouteId = Literal[
     "submit_job",
     "cancel_job",
     "provide_input",
-    "submit_wizard",
-    "get_wizard",
-    "provide_wizard_input",
-    "backtrack_wizard",
-    "resume_child_wait",
-    "resume_wizard_tick",
     "prepare_plans",
     "submit_plans",
     "list_instances",
@@ -34,13 +30,6 @@ RouteId = Literal[
     "resume_instance",
     "list_snapshots",
     "get_snapshot",
-    "validate_flow",
-    "list_flows",
-    "get_flow",
-    "list_processes",
-    "get_process",
-    "list_resources",
-    "get_resource",
     "invoke_resource",
 ]
 
@@ -71,14 +60,6 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Meta",
             summary="Health check",
             description="Runtime status, mounted surfaces, and documentation links.",
-        ),
-        RouteDefinition(
-            route_id="doctor",
-            method="GET",
-            path="/v1/doctor",
-            group="Meta",
-            summary="Engine doctor",
-            description="Registry health, storage status, and job counts for operators.",
         ),
         RouteDefinition(
             route_id="openapi",
@@ -152,78 +133,6 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Jobs",
             summary="Cancel job",
             description="Cancel a non-terminal orchestration job.",
-            auth_required=True,
-        ),
-        RouteDefinition(
-            route_id="submit_wizard",
-            method="POST",
-            path="/v1/wizards",
-            group="Wizards",
-            summary="Submit wizard",
-            description=(
-                "Start an interactive wizard flow. Equivalent to submitting a flow with "
-                "``pattern='wizard'``; returns the durable ``instance_id``."
-            ),
-            auth_required=True,
-            request_schema="SubmitWizardBody",
-            response_status=202,
-        ),
-        RouteDefinition(
-            route_id="get_wizard",
-            method="GET",
-            path="/v1/wizards/{instance_id}",
-            group="Wizards",
-            summary="Get wizard",
-            description=(
-                "Rich wizard view: instance status, step progress, current prompt, "
-                "answers, and suggested next actions."
-            ),
-        ),
-        RouteDefinition(
-            route_id="provide_wizard_input",
-            method="POST",
-            path="/v1/wizards/{instance_id}/input",
-            group="Wizards",
-            summary="Provide wizard input",
-            description=(
-                "Deliver interactive input to a waiting wizard step. "
-                "Accepts scalars or structured values for collection steps."
-            ),
-            auth_required=True,
-            request_schema="WizardInputBody",
-        ),
-        RouteDefinition(
-            route_id="backtrack_wizard",
-            method="POST",
-            path="/v1/wizards/{instance_id}/backtrack",
-            group="Wizards",
-            summary="Backtrack wizard",
-            description=(
-                "Backtrack to a prior step. Omit ``to_step`` to return to the "
-                "immediately preceding step."
-            ),
-            auth_required=True,
-            request_schema="WizardBacktrackBody",
-        ),
-        RouteDefinition(
-            route_id="resume_child_wait",
-            method="POST",
-            path="/v1/wizards/{instance_id}/resume-child-wait",
-            group="Wizards",
-            summary="Resume child wait",
-            description=(
-                "Re-check a nested child wizard and advance the parent resource step "
-                "when the child reaches a terminal state."
-            ),
-            auth_required=True,
-        ),
-        RouteDefinition(
-            route_id="resume_wizard_tick",
-            method="POST",
-            path="/v1/wizards/{instance_id}/resume-wizard-tick",
-            group="Wizards",
-            summary="Resume wizard tick",
-            description=("Re-drive a waiting wizard (for example auto-run a resource step)."),
             auth_required=True,
         ),
         RouteDefinition(
@@ -302,67 +211,6 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Snapshots",
             summary="Get snapshot",
             description="Fetch a single state snapshot by zero-based index or recorded_at timestamp.",
-        ),
-        RouteDefinition(
-            route_id="validate_flow",
-            method="POST",
-            path="/v1/flows/validate",
-            group="Catalog",
-            summary="Validate flow",
-            description="Dry-run flow definition build without submitting a job.",
-            auth_required=True,
-            request_schema="ValidateFlowBody",
-        ),
-        RouteDefinition(
-            route_id="list_flows",
-            method="GET",
-            path="/v1/flows",
-            group="Catalog",
-            description="Paginated registered flow definitions from the repository.",
-            summary="List flows",
-            query_schema="ListFlowsQuery",
-        ),
-        RouteDefinition(
-            route_id="get_flow",
-            method="GET",
-            path="/v1/flows/{flow_id}",
-            group="Catalog",
-            summary="Get flow",
-            description="Fetch a full flow definition by id or name.",
-        ),
-        RouteDefinition(
-            route_id="list_processes",
-            method="GET",
-            path="/v1/processes",
-            group="Catalog",
-            summary="List processes",
-            description="Paginated registered process definitions from the repository.",
-            query_schema="ListFlowsQuery",
-        ),
-        RouteDefinition(
-            route_id="get_process",
-            method="GET",
-            path="/v1/processes/{process_id}",
-            group="Catalog",
-            summary="Get process",
-            description="Fetch a full process definition by id or name.",
-        ),
-        RouteDefinition(
-            route_id="list_resources",
-            method="GET",
-            path="/v1/resources",
-            group="Resources",
-            summary="List resources",
-            description="Paginated resource definition catalog with provider and param metadata.",
-            query_schema="ListFlowsQuery",
-        ),
-        RouteDefinition(
-            route_id="get_resource",
-            method="GET",
-            path="/v1/resources/{resource_ref}",
-            group="Resources",
-            summary="Get resource",
-            description="Describe a resource definition by name or id (params schema, provider, action).",
         ),
         RouteDefinition(
             route_id="invoke_resource",

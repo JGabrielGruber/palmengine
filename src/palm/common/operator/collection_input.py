@@ -39,7 +39,7 @@ def resolve_wizard_collection_action(
         if value is not None:
             raise ValueError(
                 "'add' is a menu-phase collection action; "
-                "provide field values via palm_wizard_input(input=…)"
+                "provide field values via palm_flows_session_input(input=…)"
             )
         return "Add a new item"
     if normalized == "done":

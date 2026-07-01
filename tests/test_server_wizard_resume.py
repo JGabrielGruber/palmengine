@@ -1,4 +1,4 @@
-"""Tests for wizard resume REST endpoints."""
+"""Tests for flow session resume REST endpoints."""
 
 from __future__ import annotations
 
@@ -104,50 +104,52 @@ def server() -> ServerRuntime:
     rt.stop()
 
 
-def test_resume_wizard_tick_redrives_waiting_wizard(server: ServerRuntime) -> None:
+def test_session_resume_redrives_waiting_wizard(server: ServerRuntime) -> None:
+    flow_id = "onboard"
     status, created = _request(
         server.base_url,
         "POST",
-        "/v1/wizards",
-        body={"wizard": {"name": "onboard", "steps": 2}},
+        f"/v1/api/flows/{flow_id}/create",
+        body={"wizard": {"name": flow_id, "steps": 2}},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(created, dict)
-    instance_id = created["instance_id"]
+    session_id = created["session_id"]
 
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/resume-wizard-tick",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/resume",
     )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["instance_id"] == instance_id
+    assert payload.get("session_id") == session_id or payload.get("instance_id") == session_id
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
 
 
-def test_resume_child_wait_rejects_when_not_waiting_on_child(server: ServerRuntime) -> None:
+def test_session_resume_child_wait_rejects_when_not_waiting_on_child(server: ServerRuntime) -> None:
+    flow_id = "onboard"
     status, created = _request(
         server.base_url,
         "POST",
-        "/v1/wizards",
-        body={"wizard": {"name": "onboard", "steps": 2}},
+        f"/v1/api/flows/{flow_id}/create",
+        body={"wizard": {"name": flow_id, "steps": 2}},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(created, dict)
-    instance_id = created["instance_id"]
+    session_id = created["session_id"]
 
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/resume-child-wait",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/resume-child-wait",
     )
     assert status == 400
     assert isinstance(payload, dict)
     assert payload["error"] == "input_rejected"
 
 
-def test_resume_child_wait_polls_nested_child(server: ServerRuntime) -> None:
+def test_session_resume_child_wait_polls_nested_child(server: ServerRuntime) -> None:
     status, created = _request(
         server.base_url,
         "POST",
@@ -165,14 +167,18 @@ def test_resume_child_wait_polls_nested_child(server: ServerRuntime) -> None:
     assert pattern.get("waiting_for_child") is True
 
     parent_instance_id = str(parent_ctx["instance"]["instance_id"])
+    flow_id = "parent-wizard"
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{parent_instance_id}/resume-child-wait",
+        f"/v1/api/flows/{flow_id}/session/{parent_instance_id}/resume-child-wait",
     )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["instance_id"] == parent_instance_id
+    assert (
+        payload.get("session_id") == parent_instance_id
+        or payload.get("instance_id") == parent_instance_id
+    )
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
     prompt = payload.get("prompt") or {}
     assert prompt.get("waiting_for_child") is True

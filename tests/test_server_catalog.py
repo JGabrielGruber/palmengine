@@ -104,7 +104,7 @@ def _seed_instance(server: ServerRuntime, *, instance_id: str = "inst-api") -> N
 def test_list_and_get_flows(server: ServerRuntime) -> None:
     server.repository.register_flow(_sample_flow())
 
-    status, payload = _request(server.base_url, "GET", "/v1/flows")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/flows")
     assert status == 200
     assert isinstance(payload, dict)
     assert len(payload["flows"]) == 1
@@ -113,19 +113,19 @@ def test_list_and_get_flows(server: ServerRuntime) -> None:
     assert payload["flows"][0]["step_slugs"] == ["one"]
     assert "pagination" in payload
 
-    status, payload = _request(server.base_url, "GET", "/v1/flows/flow-api-1")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/flows/flow-api-1")
     assert status == 200
     assert isinstance(payload, dict)
     assert payload["name"] == "api-flow"
     assert payload["pattern"] == "wizard"
 
-    status, slim = _request(server.base_url, "GET", "/v1/flows/flow-api-1?verbose=0")
+    status, slim = _request(server.base_url, "GET", "/v1/api/definitions/flows/flow-api-1?verbose=0")
     assert status == 200
     assert isinstance(slim, dict)
     assert slim["step_slugs"] == ["one"]
     assert "options" not in slim
 
-    status, payload = _request(server.base_url, "GET", "/v1/flows/missing")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/flows/missing")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "flow_not_found"
@@ -135,7 +135,7 @@ def test_list_flows_filters_by_pattern(server: ServerRuntime) -> None:
     server.repository.register_flow(_sample_flow())
     server.repository.register_flow(FlowDefinition(name="dag-flow", pattern="dag", options={}))
 
-    status, payload = _request(server.base_url, "GET", "/v1/flows?pattern=wizard")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/flows?pattern=wizard")
     assert status == 200
     assert isinstance(payload, dict)
     assert len(payload["flows"]) == 1
@@ -145,20 +145,20 @@ def test_list_flows_filters_by_pattern(server: ServerRuntime) -> None:
 def test_list_and_get_processes(server: ServerRuntime) -> None:
     server.repository.register_process(_sample_process())
 
-    status, payload = _request(server.base_url, "GET", "/v1/processes")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/processes")
     assert status == 200
     assert isinstance(payload, dict)
     assert len(payload["processes"]) == 1
     assert payload["processes"][0]["process_id"] == "proc-api-1"
     assert payload["processes"][0]["flow_count"] == 1
 
-    status, payload = _request(server.base_url, "GET", "/v1/processes/proc-api-1")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/processes/proc-api-1")
     assert status == 200
     assert isinstance(payload, dict)
     assert payload["name"] == "api-process"
     assert len(payload["flows"]) == 1
 
-    status, payload = _request(server.base_url, "GET", "/v1/processes/missing")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/processes/missing")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "process_not_found"
@@ -216,20 +216,20 @@ def test_list_and_get_resources(server: ServerRuntime) -> None:
         )
     )
 
-    status, payload = _request(server.base_url, "GET", "/v1/resources")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/resources")
     assert status == 200
     assert isinstance(payload, dict)
     assert len(payload["resources"]) == 1
     assert payload["resources"][0]["name"] == "api-resource"
     assert payload["resources"][0]["provider"] == "rest"
 
-    status, payload = _request(server.base_url, "GET", "/v1/resources/api-resource")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/resources/api-resource")
     assert status == 200
     assert isinstance(payload, dict)
     assert payload["name"] == "api-resource"
     assert "param_keys" in payload
 
-    status, payload = _request(server.base_url, "GET", "/v1/resources/missing")
+    status, payload = _request(server.base_url, "GET", "/v1/api/definitions/resources/missing")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "resource_not_found"
@@ -240,15 +240,12 @@ def test_openapi_and_docs_include_catalog_and_snapshots(server: ServerRuntime) -
     assert status == 200
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
-    assert {"Catalog", "Snapshots"}.issubset(tag_names)
-    assert "/v1/flows" in payload["paths"]
-    assert "/v1/processes" in payload["paths"]
-    assert "/v1/resources" in payload["paths"]
+    assert {"Snapshots", "Jobs"}.issubset(tag_names)
     assert "/v1/instances/{instance_id}/snapshots" in payload["paths"]
+    assert "/v1/jobs" in payload["paths"]
 
     status, payload = _request(server.base_url, "GET", "/v1/docs")
     assert status == 200
     assert isinstance(payload, str)
-    assert "Catalog" in payload
     assert "Snapshots" in payload
-    assert "/v1/flows" in payload
+    assert "/v1/jobs" in payload

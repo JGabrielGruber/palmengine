@@ -21,12 +21,15 @@ def build_wizard_view(
     instance_id = str(instance["instance_id"])
     job_id = str(instance.get("job_id") or instance_id)
     status = job_status or instance.get("status")
+    flow_id = str(instance.get("flow_name") or instance.get("flow_id") or "flow")
+    session_base = f"/v1/api/flows/{flow_id}/session/{instance_id}"
 
     payload: dict[str, Any] = {
         "instance_id": instance_id,
         "job_id": job_id,
         "status": status,
         "flow_name": instance.get("flow_name"),
+        "flow_id": flow_id,
         "process_name": instance.get("process_name"),
         "current_step_slug": instance.get("current_step_slug") or instance.get("wizard_step_slug"),
         "wizard_progress": wizard_progress,
@@ -34,13 +37,14 @@ def build_wizard_view(
         "answers": _answers_block(pattern, wizard_progress),
         "committed": _is_committed(pattern, wizard_progress),
         "links": {
-            "self": f"/v1/wizards/{instance_id}",
+            "self": session_base,
             "instance": f"/v1/instances/{instance_id}",
             "job": f"/v1/jobs/{job_id}",
         },
         "next_actions": derive_wizard_next_actions(
             instance_id=instance_id,
             job_id=job_id,
+            flow_id=flow_id,
             status=status,
         ),
     }
@@ -55,25 +59,27 @@ def derive_wizard_next_actions(
     *,
     instance_id: str,
     job_id: str,
+    flow_id: str,
     status: str | None,
 ) -> list[dict[str, Any]]:
     """Suggest REST actions available for a wizard instance."""
     actions: list[dict[str, Any]] = []
+    session_base = f"/v1/api/flows/{flow_id}/session/{instance_id}"
 
     if status == JobStatus.WAITING_FOR_INPUT.value:
         actions.append(
             {
                 "action": "resume_child_wait",
                 "method": "POST",
-                "path": f"/v1/wizards/{instance_id}/resume-child-wait",
+                "path": f"{session_base}/resume-child-wait",
                 "description": "Re-check nested child wizard and advance when complete",
             }
         )
         actions.append(
             {
-                "action": "provide_wizard_input",
+                "action": "session_input",
                 "method": "POST",
-                "path": f"/v1/wizards/{instance_id}/input",
+                "path": f"{session_base}/input",
                 "description": "Deliver interactive wizard input",
             }
         )
@@ -81,16 +87,16 @@ def derive_wizard_next_actions(
             {
                 "action": "request_backtrack",
                 "method": "POST",
-                "path": f"/v1/wizards/{instance_id}/backtrack",
+                "path": f"{session_base}/backtrack",
                 "description": "Backtrack to a prior wizard step",
             }
         )
 
     actions.append(
         {
-            "action": "get_wizard",
+            "action": "get_session",
             "method": "GET",
-            "path": f"/v1/wizards/{instance_id}",
+            "path": session_base,
             "description": "Refresh wizard status and current prompt",
         }
     )

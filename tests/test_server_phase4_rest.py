@@ -61,7 +61,7 @@ def _wizard_flow() -> FlowDefinition:
 
 
 def test_doctor_endpoint(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "GET", "/v1/doctor")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/doctor")
     assert status == 200
     assert payload["status"] in {"ok", "degraded"}
     assert "patterns" in payload["registries"]
@@ -72,7 +72,7 @@ def test_validate_flow_endpoint(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/flows/validate",
+        "/v1/api/definitions/flows/validate",
         body={"flow_name": "phase4-wizard"},
     )
     assert status == 200

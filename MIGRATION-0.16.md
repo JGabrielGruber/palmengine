@@ -49,12 +49,12 @@ Catalog CRUD writes (deferred in 0.15) land here in 0.16 — not on legacy catal
 | 0.15.4 | 0.16 |
 |--------|------|
 | `GET /v1/wizards` | `GET /v1/api/flows` |
-| `POST /v1/wizards` | `POST /v1/api/flows/{flow_id}/instances` |
-| `GET /v1/wizards/{instance_id}` | `GET /v1/api/flows/instances/{instance_id}` |
-| `POST /v1/wizards/{instance_id}/input` | `POST /v1/api/flows/instances/{instance_id}/input` |
-| `POST /v1/wizards/{instance_id}/backtrack` | `POST /v1/api/flows/instances/{instance_id}/backtrack` |
-| `POST /v1/wizards/{instance_id}/resume-child-wait` | `POST /v1/api/flows/instances/{instance_id}/resume-child-wait` |
-| `POST /v1/wizards/{instance_id}/resume-wizard-tick` | `POST /v1/api/flows/instances/{instance_id}/resume-tick` |
+| `POST /v1/wizards` | `POST /v1/api/flows/{flow_id}/create` |
+| `GET /v1/wizards/{instance_id}` | `GET /v1/api/flows/{flow_id}/session/{session_id}` |
+| `POST /v1/wizards/{instance_id}/input` | `POST /v1/api/flows/{flow_id}/session/{session_id}/input` |
+| `POST /v1/wizards/{instance_id}/backtrack` | `POST /v1/api/flows/{flow_id}/session/{session_id}/backtrack` |
+| `POST /v1/wizards/{instance_id}/resume-child-wait` | `POST /v1/api/flows/{flow_id}/session/{session_id}/resume-child-wait` |
+| `POST /v1/wizards/{instance_id}/resume-wizard-tick` | `POST /v1/api/flows/{flow_id}/session/{session_id}/resume` |
 
 Job-oriented paths (non-wizard REPL) move under flows or processes depending on pattern; wizard paths use **flow-centric** URLs above.
 

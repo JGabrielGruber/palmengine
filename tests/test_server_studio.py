@@ -146,7 +146,7 @@ def test_studio_save_flow_registers_in_repository(server: ServerRuntime) -> None
     assert payload["saved"] is True
     assert payload["flow"]["name"] == "studio-saved-flow"
 
-    status, listed = _json(server.base_url, "GET", "/v1/flows")
+    status, listed = _json(server.base_url, "GET", "/v1/api/definitions/flows")
     assert status == 200
     assert any(row["flow_id"] == "studio-saved-flow" for row in listed["flows"])
 

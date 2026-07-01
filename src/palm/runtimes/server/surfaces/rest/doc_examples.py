@@ -130,11 +130,10 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
 GROUP_DESCRIPTIONS: dict[str, str] = {
     "Meta": "Health, discovery, and API documentation.",
     "Jobs": "Orchestration job submission and interactive input.",
-    "Wizards": "Interactive wizard flows keyed by durable instance id.",
     "Plans": "Deferred plan staging and batch submission.",
     "Instances": "Durable process instance queries and resume.",
     "Snapshots": "Point-in-time blackboard captures for audit and replay.",
-    "Catalog": "Registered flow and process definitions from the repository.",
+    "Resources": "One-shot resource invocation (providers API ships under /v1/api/providers).",
 }
 
 RESPONSE_EXAMPLES: dict[str, Any] = {
@@ -373,7 +372,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         },
         "links": {
             "explorer": "http://localhost:8080/explorer/instances/inst-abc123",
-            "wizard": "/v1/wizards/inst-abc123",
+            "session": "/v1/api/flows/parent-wizard/session/inst-abc123",
         },
     },
     "resume_instance": {
@@ -545,15 +544,10 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
         "list_jobs",
         "get_job_context",
         "submit_job",
-        "submit_wizard",
-        "get_wizard",
-        "provide_wizard_input",
-        "backtrack_wizard",
         "provide_input",
         "list_instances",
         "list_snapshots",
-        "list_flows",
-        "get_flow",
+        "invoke_resource",
     )
     routes_by_id = {route.route_id: route for route in rest_routes()}
     examples: list[tuple[str, str, str]] = []

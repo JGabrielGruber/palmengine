@@ -21,7 +21,7 @@ def test_validate_process_submit_rejects_catalog_without_all_flows() -> None:
                     "fast": {
                         "flow": "knowkey_capture_knowledge_batch",
                         "submit": (
-                            'palm_submit_wizard(flow_name="knowkey_capture_knowledge_batch")'
+                            'palm_flows_create_session(flow_name="knowkey_capture_knowledge_batch")'
                         ),
                     }
                 }
@@ -43,7 +43,7 @@ def test_process_submit_hints_includes_fast_entry() -> None:
                     "fast": {
                         "flow": "knowkey_capture_knowledge_batch",
                         "submit": (
-                            'palm_submit_wizard(flow_name="knowkey_capture_knowledge_batch")'
+                            'palm_flows_create_session(flow_name="knowkey_capture_knowledge_batch")'
                         ),
                     }
                 }

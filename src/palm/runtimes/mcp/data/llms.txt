@@ -61,7 +61,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Reliability** | Transactional outbox, compensation handlers, optional webhook dispatch |
 | **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
-| **Wizard REST (0.13)** | `/v1/wizards` — submit, status, input, backtrack by `instance_id` |
+| **Flow sessions (0.16)** | `/v1/api/flows/{flow_id}/session/{session_id}` — inspect, input, backtrack |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
 | **MCP (0.14)** | 26 tools, 4 prompts, 10 resources — agent operator adapter; see `docs/MCP.md` |
 | **Service layer (0.15)** | `host.internal`, `host.definition`, `host.execution.on(instance_id)` — runtimes call services, not raw CQRS |
@@ -90,7 +90,7 @@ Server + Explorer:
 ```bash
 python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
 # → http://localhost:8080/explorer (root / redirects here)
-curl -s -X POST http://localhost:8080/v1/wizards -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'
+curl -s -X POST http://localhost:8080/v1/api/flows/todo-builder/create -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'
 # → open /explorer/instances/<instance_id> for wizard workspace + collection UI
 ```
 

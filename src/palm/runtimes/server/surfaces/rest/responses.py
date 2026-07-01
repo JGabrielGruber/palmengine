@@ -41,8 +41,8 @@ def session_context_body(ctx: Any) -> dict[str, Any]:
     return {"value": ctx}
 
 
-def legacy_instance_view(ctx: Any) -> dict[str, Any]:
-    """Flatten session context for legacy ``/v1/wizards`` consumers until Phase 4 removal."""
+def flatten_session_context(ctx: Any) -> dict[str, Any]:
+    """Merge ``SessionContext.detail`` for REST/MCP operator ergonomics."""
     payload = session_context_body(ctx)
     detail = payload.get("detail")
     if isinstance(detail, dict):

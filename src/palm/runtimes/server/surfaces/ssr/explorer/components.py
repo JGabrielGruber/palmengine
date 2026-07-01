@@ -7,6 +7,11 @@ from typing import Any
 from palm.common.runtimes.server.ssr.render import escape, pretty_json
 
 
+def _session_api_href(wizard: dict[str, Any], instance_id: str) -> str:
+    flow_id = wizard.get("flow_name") or wizard.get("flow_id") or "flow"
+    return f"/v1/api/flows/{escape(str(flow_id))}/session/{escape(instance_id)}"
+
+
 def stat_card(label: str, value: str | int, *, hint: str = "") -> str:
     hint_html = f'<div class="stat-hint">{escape(hint)}</div>' if hint else ""
     return (
@@ -293,7 +298,7 @@ def wizard_prompt_card(
             f'<section class="wizard-prompt-card" id="wizard-prompt-panel">'
             f"{banner}"
             f'<p class="muted">{escape(message)}</p>'
-            f'<p><a href="/v1/wizards/{escape(instance_id)}">REST status</a></p>'
+            f'<p><a href="{_session_api_href(wizard, instance_id)}">REST status</a></p>'
             "</section>"
         )
 
@@ -801,7 +806,7 @@ def wizard_workspace(
     backtrack = wizard_backtrack_controls(instance_id, wizard)
     links = (
         '<section class="panel"><h3>Links</h3>'
-        f'<p><a href="/v1/wizards/{escape(instance_id)}">REST wizard API</a> · '
+        f'<p><a href="{_session_api_href(wizard, instance_id)}">REST session API</a> · '
         f'<a href="/explorer/instances/{escape(instance_id)}/snapshots">Snapshots</a>'
     )
     job_id = wizard.get("job_id")

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.runtimes.server.surfaces.rest.responses import legacy_instance_view, session_context_body
+from palm.runtimes.server.surfaces.rest.responses import flatten_session_context, session_context_body
 
 
 def flatten_session_view(ctx: Any) -> dict[str, Any]:
     """Flatten :class:`SessionContext` for compact wizard inspect."""
-    return legacy_instance_view(ctx)
+    return flatten_session_context(ctx)
 
 
 def submission_view(result: dict[str, Any]) -> dict[str, Any]:

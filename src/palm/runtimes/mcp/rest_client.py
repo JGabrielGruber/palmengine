@@ -177,29 +177,29 @@ class PalmRestClient:
         return self._request("POST", "/v1/jobs", body=body, auth=True)
 
     def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
-        path = "/v1/flows"
+        path = "/v1/api/definitions/flows"
         if pattern:
             path = f"{path}?pattern={pattern}"
         return self._request("GET", path)
 
     def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
         suffix = "" if verbose else "?verbose=0"
-        return self._request("GET", f"/v1/flows/{flow_id}{suffix}")
+        return self._request("GET", f"/v1/api/definitions/flows/{flow_id}{suffix}")
 
     def list_processes(self) -> dict[str, Any]:
-        return self._request("GET", "/v1/processes")
+        return self._request("GET", "/v1/api/definitions/processes")
 
     def get_process(self, process_id: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/processes/{process_id}")
+        return self._request("GET", f"/v1/api/definitions/processes/{process_id}")
 
     def list_resources(self, *, provider: str | None = None) -> dict[str, Any]:
-        path = "/v1/resources"
+        path = "/v1/api/definitions/resources"
         if provider:
             path = f"{path}?provider={provider}"
         return self._request("GET", path)
 
     def get_resource(self, resource_ref: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/resources/{resource_ref}")
+        return self._request("GET", f"/v1/api/definitions/resources/{resource_ref}")
 
     def get_openapi(self) -> dict[str, Any]:
         return self._request("GET", "/v1/openapi.json")
@@ -229,13 +229,26 @@ class PalmRestClient:
         return self._request("POST", "/v1/api/definitions/flows/validate", body=body, auth=True)
 
     def _resolve_flow_id(self, session_id: str) -> str:
-        from palm.runtimes.mcp.flows.views import resolve_flow_id_from_inspect
+        from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
 
-        view = self._request("GET", f"/v1/wizards/{session_id}")
-        flow_id = resolve_flow_id_from_inspect(view)
-        if not flow_id:
-            raise PalmRestError(404, f"could not resolve flow_id for session {session_id!r}")
-        return flow_id
+        rows = self.flows_list().get("flows") or []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            flow_id = row.get("flow_id") or row.get("name")
+            if not flow_id:
+                continue
+            try:
+                view = flatten_session_view(self.flows_get_session(str(flow_id), session_id))
+            except PalmRestError as exc:
+                if exc.status == 404:
+                    continue
+                raise
+            resolved = resolve_flow_id_from_inspect(view)
+            if resolved:
+                return resolved
+            return str(flow_id)
+        raise PalmRestError(404, f"could not resolve flow_id for session {session_id!r}")
 
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
         return self._request("GET", f"/v1/instances/{instance_id}/snapshots")

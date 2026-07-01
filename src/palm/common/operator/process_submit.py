@@ -27,11 +27,11 @@ def process_submit_hints(process: dict[str, Any]) -> list[str]:
                     continue
                 flow = entry.get("flow")
                 if isinstance(flow, str) and flow:
-                    hints.append(f'{name}: palm_submit_wizard(flow_name="{flow}")')
+                    hints.append(f'{name}: palm_flows_create_session(flow_id="{flow}")')
 
     entry_flow = metadata.get("entry_flow")
     if isinstance(entry_flow, str) and entry_flow:
-        hint = f'palm_submit_wizard(flow_name="{entry_flow}")'
+        hint = f'palm_flows_create_session(flow_id="{entry_flow}")'
         if hint not in hints:
             hints.append(hint)
 
@@ -60,10 +60,10 @@ def validate_process_submit(process: dict[str, Any], *, mode: str = "default") -
     flows = process.get("flows")
     flow_count = len(flows) if isinstance(flows, list) else 0
     hints = process_submit_hints(process)
-    hint_text = "; ".join(hints) if hints else "palm_submit_wizard(flow_name=entry_flow)"
+    hint_text = "; ".join(hints) if hints else "palm_flows_create_session(flow_id=entry_flow)"
     raise ValueError(
         f"Process {name!r} is an interactive catalog ({flow_count} flows), "
-        "not a single entry point. Use palm_submit_wizard instead of "
+        "not a single entry point. Use palm_flows_create_session instead of "
         f"palm_submit_process. Suggested: {hint_text}. "
         "Pass mode='all_flows' only for true multi-flow pipelines."
     )

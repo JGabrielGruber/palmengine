@@ -8,7 +8,6 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     plans,
     resources,
     snapshots,
-    wizard,
 )
 
 __all__ = [
@@ -19,5 +18,4 @@ __all__ = [
     "plans",
     "resources",
     "snapshots",
-    "wizard",
 ]

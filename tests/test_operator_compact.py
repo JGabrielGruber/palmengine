@@ -29,7 +29,7 @@ def _sample_view() -> dict:
             {
                 "action": "resume_child_wait",
                 "method": "POST",
-                "path": "/v1/wizards/inst-1/resume-child-wait",
+                "path": "/v1/api/flows/capture/session/inst-1/resume-child-wait",
             }
         ],
     }

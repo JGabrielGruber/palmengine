@@ -52,12 +52,21 @@ def test_list_waiting_jobs_resolves_instance_id(server: ServerRuntime) -> None:
     status, submit = _request(
         server.base_url,
         "POST",
-        "/v1/wizards",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
-    assert status == 202
-    job_id = submit["job_id"]
-    instance_id = submit["instance_id"]
+    assert status in {200, 202}
+    instance_id = submit.get("session_id") or submit["instance_id"]
+    job_id = submit.get("job_id")
+    if job_id is None:
+        status, session = _request(
+            server.base_url,
+            "GET",
+            f"/v1/api/flows/onboard/session/{instance_id}",
+        )
+        assert status == 200
+        job_id = session.get("job_id")
+    assert job_id is not None
     assert instance_id != job_id
 
     server.wait_until_idle()

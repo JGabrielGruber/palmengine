@@ -109,30 +109,33 @@ def _operator_input_hint(payload: dict[str, Any]) -> str | None:
         if isinstance(child, dict) and child.get("instance_id"):
             return (
                 f"drive child {child['instance_id']}; "
-                "palm_resume_child_wait only while waiting_for_child"
+                "palm_flows_session_resume_child_wait only while waiting_for_child"
             )
-        return "inspect child instance; palm_resume_child_wait only while waiting_for_child"
+        return (
+            "inspect child session; palm_flows_session_resume_child_wait only while "
+            "waiting_for_child"
+        )
 
     phase = payload.get("collection_phase")
     if phase == "menu":
         return (
             "collection menu: palm_wizard_collection_action(action=add|done|edit|remove) "
-            "or palm_wizard_input with choice label/number"
+            "or palm_flows_session_input with choice label/number"
         )
     if phase == "field":
-        return "collection field: palm_wizard_input(input=plain text)"
+        return "collection field: palm_flows_session_input(input=plain text)"
     if phase in ("select_item", "remove_confirm"):
-        return "palm_wizard_input(input=item number or label)"
+        return "palm_flows_session_input(input=item number or label)"
 
     field_type = payload.get("field_type")
     if field_type == "confirm":
-        return "palm_wizard_input(input=yes|no)"
+        return "palm_flows_session_input(input=yes|no)"
     if field_type == "choice":
-        return "palm_wizard_input(input=choice slug or number)"
+        return "palm_flows_session_input(input=choice slug or number)"
     if payload.get("status") == "WAITING_FOR_INPUT":
-        return "palm_wizard_input(input=plain text)"
+        return "palm_flows_session_input(input=plain text)"
     if payload.get("status") in {"SUCCESS", "SUCCEEDED"} and payload.get("result") is not None:
-        return "Job complete; see result or palm_fetch_job(job_id)"
+        return "Job complete; see result or palm_system_fetch_instance(job_id)"
     return None
 
 

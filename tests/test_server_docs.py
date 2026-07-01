@@ -49,7 +49,7 @@ def test_build_docs_html_includes_rich_structure() -> None:
     assert "endpoint-card" in html
     assert "REST API Reference" in html
     assert 'href="/v1/openapi.json"' in html
-    assert 'id="catalog"' in html
+    assert 'id="jobs"' in html
     assert 'id="snapshots"' in html
     assert "copyExample" in html
     assert "Sample response" in html
@@ -82,14 +82,14 @@ def test_featured_examples_cover_key_endpoints() -> None:
     titles = {item[0] for item in featured_curl_examples()}
     assert "Health check" in titles
     assert "List snapshots" in titles
-    assert "List flows" in titles
+    assert "Invoke resource" in titles
 
 
 def test_docs_endpoint_serves_rich_html(server: ServerRuntime) -> None:
     status, html = _get_html(server.base_url, "/v1/docs")
     assert status == 200
     assert "endpoint-card" in html
-    assert "/v1/flows" in html
+    assert "/v1/jobs" in html
     assert "/v1/instances/{instance_id}/snapshots" in html
     assert "OpenAPI JSON" in html
 

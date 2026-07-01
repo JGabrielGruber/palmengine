@@ -14,7 +14,7 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-from palm.runtimes.server.surfaces.rest.responses import accepted, ok, session_context_body
+from palm.runtimes.server.surfaces.rest.responses import accepted, flatten_session_context, ok
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.validation import PaginationParams
@@ -220,7 +220,7 @@ def session_cancel(
 
 
 def _session_body(ctx_obj: Any) -> dict[str, Any]:
-    return session_context_body(ctx_obj)
+    return flatten_session_context(ctx_obj)
 
 
 def _create_body(result: Any) -> dict[str, Any]:

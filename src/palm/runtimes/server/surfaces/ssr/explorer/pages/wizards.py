@@ -71,7 +71,8 @@ class WizardPages:
             f"{workspace}"
             '<section class="section muted">'
             f"<p>Instance <code>{escape(instance_id)}</code> · "
-            f'<a href="/v1/wizards/{escape(instance_id)}">API</a></p>'
+            f'<a href="/v1/api/flows/{escape(str(wizard.get("flow_name") or "flow"))}'
+            f'/session/{escape(instance_id)}">API</a></p>'
             "</section>"
         )
         flow_name = wizard.get("flow_name") or "Wizard"

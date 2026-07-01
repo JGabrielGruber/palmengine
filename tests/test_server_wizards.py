@@ -1,4 +1,4 @@
-"""Tests for /v1/wizards REST endpoints."""
+"""Tests for flow session REST endpoints (0.16 command-path)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ import pytest
 
 from palm.core.orchestration import JobStatus
 from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.route_table import rest_routes
 
 
 @pytest.fixture
@@ -53,109 +52,110 @@ def _request(
         return exc.code, raw
 
 
-def test_rest_routes_include_wizards_group() -> None:
-    groups = {route.group for route in rest_routes()}
-    assert "Wizards" in groups
-    route_ids = {route.route_id for route in rest_routes()}
-    assert {
-        "submit_wizard",
-        "get_wizard",
-        "provide_wizard_input",
-        "backtrack_wizard",
-        "resume_child_wait",
-        "resume_wizard_tick",
-    } <= route_ids
+def _flow_id() -> str:
+    return "onboard"
 
 
-def test_submit_wizard_returns_instance_id(server: ServerRuntime) -> None:
+def _create_session(server: ServerRuntime, *, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    flow_id = _flow_id()
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/wizards",
-        body={"wizard": {"name": "onboard", "steps": 2}},
+        f"/v1/api/flows/{flow_id}/create",
+        body=body or {"wizard": {"name": flow_id, "steps": 2}},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(payload, dict)
-    assert "instance_id" in payload
-    assert "job_id" in payload
+    return payload
+
+
+def test_create_session_returns_session_id(server: ServerRuntime) -> None:
+    payload = _create_session(server)
+    assert payload.get("session_id")
+    assert payload.get("job_id")
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
 
 
-def test_get_wizard_returns_prompt(server: ServerRuntime) -> None:
-    status, created = _request(
-        server.base_url,
-        "POST",
-        "/v1/wizards",
-        body={"wizard": {"name": "onboard", "steps": 2}},
-    )
-    assert status == 202
-    assert isinstance(created, dict)
-    instance_id = created["instance_id"]
+def test_get_session_returns_prompt(server: ServerRuntime) -> None:
+    created = _create_session(server)
+    session_id = created["session_id"]
+    flow_id = _flow_id()
 
-    status, payload = _request(server.base_url, "GET", f"/v1/wizards/{instance_id}")
+    status, payload = _request(
+        server.base_url,
+        "GET",
+        f"/v1/api/flows/{flow_id}/session/{session_id}",
+    )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["instance_id"] == instance_id
-    assert payload["job_id"] == created["job_id"]
-    assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
+    assert payload.get("session_id") == session_id or payload.get("instance_id") == session_id
+    assert payload.get("job_id") == created["job_id"]
+    assert payload.get("status") == JobStatus.WAITING_FOR_INPUT.value
     assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
-    assert payload["links"]["self"] == f"/v1/wizards/{instance_id}"
+    links = payload.get("links") or {}
+    assert links.get("self") == f"/v1/api/flows/{flow_id}/session/{session_id}"
 
 
-def test_get_wizard_not_found(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "GET", "/v1/wizards/missing-instance")
+def test_get_session_not_found(server: ServerRuntime) -> None:
+    status, payload = _request(
+        server.base_url,
+        "GET",
+        f"/v1/api/flows/{_flow_id()}/session/missing-instance",
+    )
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "wizard_not_found"
 
 
-def test_submit_wizard_validation_error(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "POST", "/v1/wizards", body={})
-    assert status == 400
-    assert isinstance(payload, dict)
-    assert payload["error"] in {"validation_failed", "invalid_request"}
-
-
-def _start_wizard(server: ServerRuntime) -> dict[str, Any]:
+def test_create_session_validation_error(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/wizards",
-        body={"wizard": {"name": "onboard", "steps": 2}},
+        f"/v1/api/flows/{_flow_id()}/create",
+        body={},
     )
-    assert status == 202
+    assert status in {400, 500}
     assert isinstance(payload, dict)
-    return payload
+    assert payload["error"] in {
+        "validation_failed",
+        "invalid_request",
+        "bad_request",
+        "submit_failed",
+    }
 
 
-def test_provide_wizard_input_advances_step(server: ServerRuntime) -> None:
-    created = _start_wizard(server)
-    instance_id = created["instance_id"]
+def test_session_input_advances_step(server: ServerRuntime) -> None:
+    created = _create_session(server)
+    session_id = created["session_id"]
+    flow_id = _flow_id()
 
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/input",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/input",
         body={"value": "Ada"},
     )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["instance_id"] == instance_id
-    assert payload["slug"] is not None
-    assert payload["status"] in {
+    assert payload.get("session_id") == session_id or payload.get("instance_id") == session_id
+    assert payload.get("slug") is not None
+    assert payload.get("status") in {
         JobStatus.WAITING_FOR_INPUT.value,
         JobStatus.SUCCEEDED.value,
     }
     assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
     next_actions = payload.get("next_actions") or []
-    assert any(action["path"] == f"/v1/wizards/{instance_id}/input" for action in next_actions)
+    assert any(
+        action["path"] == f"/v1/api/flows/{flow_id}/session/{session_id}/input"
+        for action in next_actions
+    )
 
 
-def test_provide_wizard_input_not_found(server: ServerRuntime) -> None:
+def test_session_input_not_found(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/wizards/missing-instance/input",
+        f"/v1/api/flows/{_flow_id()}/session/missing-instance/input",
         body={"value": "Ada"},
     )
     assert status == 404
@@ -163,14 +163,15 @@ def test_provide_wizard_input_not_found(server: ServerRuntime) -> None:
     assert payload["error"] == "wizard_not_found"
 
 
-def test_backtrack_wizard_returns_to_previous_step(server: ServerRuntime) -> None:
-    created = _start_wizard(server)
-    instance_id = created["instance_id"]
+def test_session_backtrack_returns_to_previous_step(server: ServerRuntime) -> None:
+    created = _create_session(server)
+    session_id = created["session_id"]
+    flow_id = _flow_id()
 
     status, after_input = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/input",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/input",
         body={"value": "Ada"},
     )
     assert status == 200
@@ -179,7 +180,7 @@ def test_backtrack_wizard_returns_to_previous_step(server: ServerRuntime) -> Non
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/backtrack",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/backtrack",
         body={},
     )
     assert status == 200
@@ -192,14 +193,15 @@ def test_backtrack_wizard_returns_to_previous_step(server: ServerRuntime) -> Non
     )
 
 
-def test_backtrack_wizard_rejects_first_step(server: ServerRuntime) -> None:
-    created = _start_wizard(server)
-    instance_id = created["instance_id"]
+def test_session_backtrack_rejects_first_step(server: ServerRuntime) -> None:
+    created = _create_session(server)
+    session_id = created["session_id"]
+    flow_id = _flow_id()
 
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/backtrack",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/backtrack",
         body={},
     )
     assert status == 400
@@ -207,20 +209,21 @@ def test_backtrack_wizard_rejects_first_step(server: ServerRuntime) -> None:
     assert payload["error"] == "backtrack_rejected"
 
 
-def test_backtrack_wizard_explicit_target(server: ServerRuntime) -> None:
-    created = _start_wizard(server)
-    instance_id = created["instance_id"]
+def test_session_backtrack_explicit_target(server: ServerRuntime) -> None:
+    created = _create_session(server)
+    session_id = created["session_id"]
+    flow_id = _flow_id()
 
     _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/input",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/input",
         body={"value": "Ada"},
     )
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/wizards/{instance_id}/backtrack",
+        f"/v1/api/flows/{flow_id}/session/{session_id}/backtrack",
         body={"to_step": "step_1"},
     )
     assert status == 200

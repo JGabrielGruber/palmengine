@@ -21,7 +21,7 @@ def test_process_catalog_row_includes_entry_flow() -> None:
                     "fast": {
                         "flow": "knowkey_capture_knowledge_batch",
                         "submit": (
-                            'palm_submit_wizard(flow_name="knowkey_capture_knowledge_batch")'
+                            'palm_flows_create_session(flow_name="knowkey_capture_knowledge_batch")'
                         ),
                     }
                 }

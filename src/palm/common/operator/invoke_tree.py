@@ -63,7 +63,7 @@ def build_invoke_tree(
         "focus": focus,
         "ancestors": ancestors,
         "active_child": active_child,
-        "links": _links(instance_id, base_url=base_url),
+        "links": _links(instance_id, flow_id=focus.get("flow"), base_url=base_url),
     }
     return payload
 
@@ -131,11 +131,17 @@ def _child_summary(runtime: BaseRuntime, instance_id: str, job_id: str) -> dict[
     return summary
 
 
-def _links(instance_id: str, *, base_url: str | None) -> dict[str, str]:
+def _links(
+    instance_id: str,
+    *,
+    flow_id: str | None,
+    base_url: str | None,
+) -> dict[str, str]:
     links: dict[str, str] = {
         "instance": f"/v1/instances/{instance_id}",
-        "wizard": f"/v1/wizards/{instance_id}",
     }
+    if flow_id:
+        links["session"] = f"/v1/api/flows/{flow_id}/session/{instance_id}"
     if base_url:
         base = base_url.rstrip("/")
         links["explorer"] = f"{base}/explorer/instances/{instance_id}"

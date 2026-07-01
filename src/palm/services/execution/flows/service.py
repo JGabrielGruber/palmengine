@@ -65,7 +65,13 @@ class FlowExecutionService(BaseService):
             if "flow" not in body and "wizard" not in body and "flow_name" not in body:
                 body["flow_name"] = parsed.flow_id
             session = self.run_wizard(body)
-            return {"session_id": session.session_id, "flow_id": session.flow_id}
+            ctx = session.context()
+            return {
+                "session_id": session.session_id,
+                "flow_id": session.flow_id,
+                "job_id": ctx.job_id,
+                "status": ctx.status,
+            }
 
         if parsed.kind == FlowCommandKind.SESSION:
             assert parsed.flow_id is not None
