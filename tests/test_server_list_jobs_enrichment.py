@@ -74,7 +74,7 @@ def test_list_waiting_jobs_resolves_instance_id(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "GET",
-        "/v1/jobs?status=WAITING_FOR_INPUT&limit=10",
+        "/v1/api/system/jobs?status=WAITING_FOR_INPUT&limit=10",
     )
     assert status == 200
     rows = [row for row in payload["jobs"] if row.get("job_id") == job_id]

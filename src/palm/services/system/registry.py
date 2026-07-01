@@ -12,7 +12,10 @@ ObserveOperation = Literal[
     "inspect_job",
     "list_instances",
     "inspect_instance",
+    "instance_tree",
     "list_snapshots",
+    "get_snapshot",
+    "resume_instance",
     "cancel_job",
 ]
 
@@ -34,6 +37,9 @@ _registry: list[ObserveVerb] = [
     ObserveVerb("list_instances", "list_instances", "List durable instances"),
     ObserveVerb("inspect_instance", "inspect_instance", "Pattern-aware instance inspect"),
     ObserveVerb("list_snapshots", "list_snapshots", "List instance snapshots"),
+    ObserveVerb("get_snapshot", "get_snapshot", "Get one instance snapshot"),
+    ObserveVerb("instance_tree", "instance_tree", "Compositional invoke tree"),
+    ObserveVerb("resume_instance", "resume_instance", "Resume persisted instance"),
     ObserveVerb("cancel_job", "cancel_job", "Cancel a job"),
 ]
 

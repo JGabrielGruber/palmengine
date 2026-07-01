@@ -86,16 +86,16 @@ def test_cancel_job_endpoint(server: ServerRuntime) -> None:
     submit_status, submit_payload = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
+        "/v1/api/flows/phase4-wizard/create",
         body={"flow_name": "phase4-wizard"},
     )
-    assert submit_status == 202
+    assert submit_status in {200, 202}
     job_id = str(submit_payload["job_id"])
 
     status, payload = _request(
         server.base_url,
         "POST",
-        f"/v1/jobs/{job_id}/cancel",
+        f"/v1/api/system/jobs/{job_id}/cancel",
     )
     assert status == 200
     assert payload["cancelled"] is True

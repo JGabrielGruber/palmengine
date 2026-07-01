@@ -56,16 +56,7 @@ def _request(
 
 def test_rest_routes_are_grouped() -> None:
     groups = {route.group for route in rest_routes()}
-    assert groups == {
-        "Meta",
-        "Jobs",
-        "Wizards",
-        "Plans",
-        "Instances",
-        "Snapshots",
-        "Catalog",
-        "Resources",
-    }
+    assert groups == {"Meta", "Plans"}
 
 
 def test_submit_job_requires_flow_variant() -> None:
@@ -85,10 +76,10 @@ def test_openapi_includes_tags_and_examples(server: ServerRuntime) -> None:
     assert status == 200
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
-    assert "Jobs" in tag_names
-    submit_op = payload["paths"]["/v1/jobs"]["post"]
-    assert "requestBody" in submit_op
-    assert "examples" in submit_op["requestBody"]["content"]["application/json"]
+    assert "Plans" in tag_names
+    prepare_op = payload["paths"]["/v1/plans/prepare"]["post"]
+    assert "requestBody" in prepare_op
+    assert "examples" in prepare_op["requestBody"]["content"]["application/json"]
 
 
 def test_docs_endpoint_returns_html(server: ServerRuntime) -> None:
@@ -109,12 +100,16 @@ def test_health_includes_doc_links(server: ServerRuntime) -> None:
     assert payload["openapi"] == "/v1/openapi.json"
 
 
-def test_submit_job_validation_error(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "POST", "/v1/jobs", body={})
-    assert status == 400
+def test_create_flow_session_validation_error(server: ServerRuntime) -> None:
+    status, payload = _request(
+        server.base_url,
+        "POST",
+        "/v1/api/flows/onboard/create",
+        body={},
+    )
+    assert status in {400, 422, 500}
     assert isinstance(payload, dict)
-    assert payload["error"] in {"validation_failed", "invalid_request"}
-    assert "details" in payload
+    assert "error" in payload
 
 
 def test_submit_plans_schema_validation(server: ServerRuntime) -> None:

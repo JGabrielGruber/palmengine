@@ -55,8 +55,8 @@ def test_http_requires_auth_when_enforced(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
-        body={"wizard": {"steps": 1}},
+        "/v1/plans/prepare",
+        body={"process_name": "pipeline"},
         subject=None,
     )
     assert status == 401

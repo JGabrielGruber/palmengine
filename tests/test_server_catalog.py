@@ -167,7 +167,7 @@ def test_list_and_get_processes(server: ServerRuntime) -> None:
 def test_list_and_get_snapshots(server: ServerRuntime) -> None:
     _seed_instance(server)
 
-    status, payload = _request(server.base_url, "GET", "/v1/instances/inst-api/snapshots")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/instances/inst-api/snapshots")
     assert status == 200
     assert isinstance(payload, dict)
     assert len(payload["snapshots"]) == 2
@@ -175,7 +175,7 @@ def test_list_and_get_snapshots(server: ServerRuntime) -> None:
     assert payload["snapshots"][1]["snapshot_id"] == "1"
     assert payload["snapshots"][0]["recorded_at"] == "2026-06-17T12:00:00+00:00"
 
-    status, payload = _request(server.base_url, "GET", "/v1/instances/inst-api/snapshots/1")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/instances/inst-api/snapshots/1")
     assert status == 200
     assert isinstance(payload, dict)
     assert payload["snapshot_id"] == "1"
@@ -185,18 +185,18 @@ def test_list_and_get_snapshots(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "GET",
-        "/v1/instances/inst-api/snapshots/2026-06-17T12:00:00+00:00",
+        "/v1/api/system/instances/inst-api/snapshots/2026-06-17T12:00:00+00:00",
     )
     assert status == 200
     assert isinstance(payload, dict)
     assert payload["snapshot_id"] == "0"
 
-    status, payload = _request(server.base_url, "GET", "/v1/instances/inst-api/snapshots/missing")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/instances/inst-api/snapshots/missing")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "snapshot_not_found"
 
-    status, payload = _request(server.base_url, "GET", "/v1/instances/unknown/snapshots")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/instances/unknown/snapshots")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "instance_not_found"
@@ -240,12 +240,11 @@ def test_openapi_and_docs_include_catalog_and_snapshots(server: ServerRuntime) -
     assert status == 200
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
-    assert {"Snapshots", "Jobs"}.issubset(tag_names)
-    assert "/v1/instances/{instance_id}/snapshots" in payload["paths"]
-    assert "/v1/jobs" in payload["paths"]
+    assert "Plans" in tag_names
+    assert "/v1/plans/prepare" in payload["paths"]
 
     status, payload = _request(server.base_url, "GET", "/v1/docs")
     assert status == 200
     assert isinstance(payload, str)
-    assert "Snapshots" in payload
-    assert "/v1/jobs" in payload
+    assert "Plans" in payload
+    assert "/v1/plans/prepare" in payload

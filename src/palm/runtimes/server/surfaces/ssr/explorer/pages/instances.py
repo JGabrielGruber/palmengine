@@ -132,7 +132,7 @@ class InstancePages:
             '<section class="section"><div class="panel">'
             f'<p><a href="/explorer/instances/{escape(instance_id)}/snapshots">View snapshots</a>'
             f'{f" · <a href=\"/explorer/jobs/{escape(job_id)}\">View job</a>" if job_id else ""}'
-            f' · <a href="/v1/instances/{escape(instance_id)}">REST</a></p>'
+            f' · <a href="/v1/api/system/instances/{escape(instance_id)}">REST</a></p>'
             f"{code_block(instance)}"
             "</div></section>"
         )
@@ -164,7 +164,7 @@ class InstancePages:
             f'<section class="section"><p>'
             f'<a href="/explorer/instances/{escape(instance_id)}">← instance</a> · '
             f'<a href="/explorer/jobs">Jobs</a> · '
-            f'<a href="/v1/instances/{escape(instance_id)}/snapshots">REST</a></p>'
+            f'<a href="/v1/api/system/instances/{escape(instance_id)}/snapshots">REST</a></p>'
             f"{data_table(['#', 'Status', 'Recorded', 'Step'], rows) if rows else '<p class=\"muted\">No snapshots captured.</p>'}"
             "</section>"
         )

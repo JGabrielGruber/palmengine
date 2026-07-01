@@ -27,12 +27,65 @@ ROUTES: tuple[RouteEntry, ...] = (
     RouteEntry("doctor", "GET", f"{API_PREFIX}/system/doctor", "doctor"),
     RouteEntry("list_jobs", "GET", f"{API_PREFIX}/system/jobs", "list_jobs"),
     RouteEntry("get_job", "GET", f"{API_PREFIX}/system/jobs/{{job_id}}", "get_job"),
+    RouteEntry(
+        "inspect_job",
+        "GET",
+        f"{API_PREFIX}/system/jobs/{{job_id}}/context",
+        "inspect_job",
+    ),
+    RouteEntry(
+        "cancel_job",
+        "POST",
+        f"{API_PREFIX}/system/jobs/{{job_id}}/cancel",
+        "cancel_job",
+        auth_required=True,
+    ),
+    RouteEntry("list_instances", "GET", f"{API_PREFIX}/system/instances", "list_instances"),
+    RouteEntry(
+        "inspect_instance",
+        "GET",
+        f"{API_PREFIX}/system/instances/{{instance_id}}",
+        "inspect_instance",
+    ),
+    RouteEntry(
+        "instance_tree",
+        "GET",
+        f"{API_PREFIX}/system/instances/{{instance_id}}/tree",
+        "instance_tree",
+    ),
+    RouteEntry(
+        "list_snapshots",
+        "GET",
+        f"{API_PREFIX}/system/instances/{{instance_id}}/snapshots",
+        "list_snapshots",
+    ),
+    RouteEntry(
+        "get_snapshot",
+        "GET",
+        f"{API_PREFIX}/system/instances/{{instance_id}}/snapshots/{{snapshot_id}}",
+        "get_snapshot",
+    ),
+    RouteEntry(
+        "resume_instance",
+        "POST",
+        f"{API_PREFIX}/system/instances/{{instance_id}}/resume",
+        "resume_instance",
+        auth_required=True,
+    ),
 )
 
 _HANDLERS = {
     "doctor": handlers.doctor,
     "list_jobs": handlers.list_jobs,
     "get_job": handlers.get_job,
+    "inspect_job": handlers.inspect_job,
+    "cancel_job": handlers.cancel_job,
+    "list_instances": handlers.list_instances,
+    "inspect_instance": handlers.inspect_instance,
+    "instance_tree": handlers.instance_tree,
+    "list_snapshots": handlers.list_snapshots,
+    "get_snapshot": handlers.get_snapshot,
+    "resume_instance": handlers.resume_instance,
 }
 
 

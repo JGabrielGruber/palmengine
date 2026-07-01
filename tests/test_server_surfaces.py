@@ -96,12 +96,12 @@ def test_openapi_document(server: ServerRuntime) -> None:
     status, payload = _request(server.base_url, "GET", "/v1/openapi.json")
     assert status == 200
     assert payload["openapi"] == "3.0.3"
-    assert "/v1/jobs" in payload["paths"]
-    assert any(tag["name"] == "Jobs" for tag in payload["tags"])
+    assert "/v1/plans/prepare" in payload["paths"]
+    assert any(tag["name"] == "Plans" for tag in payload["tags"])
 
 
 def test_list_jobs_pagination_envelope(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "GET", "/v1/jobs?limit=10&offset=0")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/jobs?limit=10&offset=0")
     assert status == 200
     assert "jobs" in payload
     assert payload["pagination"]["limit"] == 10
@@ -109,7 +109,7 @@ def test_list_jobs_pagination_envelope(server: ServerRuntime) -> None:
 
 
 def test_invalid_pagination_returns_structured_error(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "GET", "/v1/jobs?limit=not-a-number")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/jobs?limit=not-a-number")
     assert status == 400
     assert payload["error"] == "invalid_request"
     assert payload["message"] == payload["detail"]
@@ -135,8 +135,8 @@ def test_route_registry_registers_custom_surface() -> None:
     rest = RestSurface(ctx, surface_names=["rest"])
     surfaces.register(rest)
     rest.register(registry)
-    assert registry.match("GET", "/v1/jobs") is not None
-    assert registry.match("GET", "/v1/instances") is not None
+    assert registry.match("GET", "/v1/api/system/jobs") is not None
+    assert registry.match("GET", "/v1/api/system/instances") is not None
 
 
 def test_create_server_app_with_explicit_rest_surface(server: ServerRuntime) -> None:

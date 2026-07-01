@@ -39,7 +39,7 @@ class JobPages:
         content = (
             '<section class="section">'
             f'<p class="btn-row">{action_button("/explorer/flows/submit", "Submit a flow")}</p>'
-            f"{data_table(['Job', 'Status', 'Instance'], rows) if rows else '<p class=\"muted\">No jobs yet. Submit via the form or POST /v1/jobs.</p>'}"
+            f"{data_table(['Job', 'Status', 'Instance'], rows) if rows else '<p class=\"muted\">No jobs yet. Submit via the form or POST /v1/api/flows/{flow_id}/create.</p>'}"
             "</section>"
         )
         return html_response(
@@ -121,7 +121,7 @@ class JobPages:
             "</div>"
             "</div></section>"
             '<section class="section"><div class="panel"><h3>Full context payload</h3>'
-            f'<p class="muted">Backed by <code>GET /v1/jobs/{escape(job_id)}/context</code></p>'
+            f'<p class="muted">Backed by <code>GET /v1/api/system/jobs/{escape(job_id)}/context</code></p>'
             f"{code_block(context)}"
             "</div></section>"
         )

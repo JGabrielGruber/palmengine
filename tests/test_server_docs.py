@@ -49,8 +49,8 @@ def test_build_docs_html_includes_rich_structure() -> None:
     assert "endpoint-card" in html
     assert "REST API Reference" in html
     assert 'href="/v1/openapi.json"' in html
-    assert 'id="jobs"' in html
-    assert 'id="snapshots"' in html
+    assert 'id="plans"' in html
+    assert 'id="meta"' in html
     assert "copyExample" in html
     assert "Sample response" in html
     assert "Try it" in html
@@ -72,10 +72,10 @@ def test_every_route_has_curl_and_response_example() -> None:
 
 def test_curl_paths_use_resolved_parameters() -> None:
     routes_by_id = {route.route_id: route for route in rest_routes()}
-    curl = build_curl(routes_by_id["get_job"])
-    assert "/v1/jobs/job-abc123" in curl
-    curl = build_curl(routes_by_id["list_snapshots"])
-    assert "/v1/instances/inst-abc123/snapshots" in curl
+    curl = build_curl(routes_by_id["prepare_plans"])
+    assert "/v1/plans/prepare" in curl
+    curl = build_curl(routes_by_id["health"])
+    assert "/health" in curl
 
 
 def test_featured_examples_cover_key_endpoints() -> None:
@@ -89,8 +89,8 @@ def test_docs_endpoint_serves_rich_html(server: ServerRuntime) -> None:
     status, html = _get_html(server.base_url, "/v1/docs")
     assert status == 200
     assert "endpoint-card" in html
-    assert "/v1/jobs" in html
-    assert "/v1/instances/{instance_id}/snapshots" in html
+    assert "/v1/plans/prepare" in html
+    assert "/health" in html
     assert "OpenAPI JSON" in html
 
 

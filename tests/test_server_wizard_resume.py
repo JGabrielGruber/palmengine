@@ -153,14 +153,18 @@ def test_session_resume_child_wait_polls_nested_child(server: ServerRuntime) -> 
     status, created = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
+        "/v1/api/flows/parent-wizard/create",
         body={"flow_name": "parent-wizard"},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(created, dict)
     parent_job_id = created["job_id"]
 
-    status, parent_ctx = _request(server.base_url, "GET", f"/v1/jobs/{parent_job_id}/context")
+    status, parent_ctx = _request(
+        server.base_url,
+        "GET",
+        f"/v1/api/system/jobs/{parent_job_id}/context",
+    )
     assert status == 200
     assert isinstance(parent_ctx, dict)
     pattern = parent_ctx.get("pattern") or {}

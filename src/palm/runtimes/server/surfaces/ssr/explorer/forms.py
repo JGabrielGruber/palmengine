@@ -131,7 +131,7 @@ def flow_submit_form(
         f'<details class="advanced-panel">'
         f"<summary>Advanced: quick test wizard (no registered definition)</summary>"
         f'<p class="muted">For operator experiments only — starts a minimal inline wizard. '
-        f"Prefer registered flows above, or use <code>POST /v1/jobs</code> for full payloads.</p>"
+        f"Prefer registered flows above, or use <code>POST /v1/api/flows/{{flow_id}}/create</code> for full payloads.</p>"
         f"{advanced_form}"
         f"</details>"
         f"</div>"

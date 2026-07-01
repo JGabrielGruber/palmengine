@@ -4,6 +4,34 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-07-01
+
+**System REST parity** — observe/lifecycle HTTP under `/v1/api/system/…`; legacy monolith job/instance/snapshot routes removed.
+
+Migration: [MIGRATION-0.17.md](MIGRATION-0.17.md) · Plan: [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md)
+
+### Added
+
+- **System REST** — `inspect_job`, `cancel_job`, `list_instances`, `inspect_instance`, `instance_tree`, snapshots, `resume_instance` on `/v1/api/system/…`
+- **`tests/test_system_service_routes.py`**, **`tests/test_rest_system_routes.py`**
+
+### Changed
+
+- **`PalmRestClient`** — waiting jobs, job context, cancel, tree, snapshots → `/v1/api/system/…`; `provide_job_input` delegates to flows session input
+- **`job_context.next_actions`** — flows session input + system instance/job paths
+- Wizard read model and invoke tree links → system service paths
+- Explorer SSR copy and doc examples updated
+
+### Removed (breaking)
+
+- **`GET/POST /v1/jobs`** monolith routes (submit → `/v1/api/flows/{flow_id}/create`; input → flows session)
+- **`/v1/instances`**, **`/v1/snapshots`** monolith routes
+
+### Transitional
+
+- `/v1/plans/prepare`, `/v1/plans/submit` remain until **0.17.1**
+- Palm provider remote client (`providers/palm/flow/remote/`) — **0.17.2**
+
 ## [0.16.5] — 2026-07-01
 
 **Services are the API** — domain services in `palm/services/`, per-service REST under `/v1/api/…`, MCP remounted by service domain. Breaking release for integrators on legacy `/v1/wizards` and monolithic MCP tool names.
@@ -34,9 +62,10 @@ Vision: [docs/VISION-0.16.md](docs/VISION-0.16.md) · ADR: [docs/adr/005-service
 - Orphaned monolith handlers `handlers/catalog.py`, `handlers/resources.py`
 - Monolithic MCP tools (`palm_submit_wizard`, `palm_inspect_instance`, `palm_wizard_input`, `palm_doctor`, …)
 
-### Transitional (still mounted)
+### Transitional (at 0.16.5 ship; removed in 0.17.0)
 
-- `/v1/jobs`, `/v1/instances`, `/v1/plans`, `/v1/snapshots` on legacy monolith route table (not yet migrated to `/v1/api/system`)
+- `/v1/jobs`, `/v1/instances`, `/v1/snapshots` — migrated to `/v1/api/system` in **0.17.0**
+- `/v1/plans` — remains until **0.17.1**
 
 ## [0.15.4] — 2026-06-30
 

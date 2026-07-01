@@ -108,14 +108,18 @@ def test_get_instance_tree_reports_nested_child(server: ServerRuntime) -> None:
     status, created = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
+        "/v1/api/flows/parent-wizard/create",
         body={"flow_name": "parent-wizard"},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(created, dict)
     parent_job_id = created["job_id"]
 
-    status, parent_ctx = _request(server.base_url, "GET", f"/v1/jobs/{parent_job_id}/context")
+    status, parent_ctx = _request(
+        server.base_url,
+        "GET",
+        f"/v1/api/system/jobs/{parent_job_id}/context",
+    )
     assert status == 200
     assert isinstance(parent_ctx, dict)
     parent_instance_id = str(parent_ctx["instance"]["instance_id"])
@@ -123,7 +127,7 @@ def test_get_instance_tree_reports_nested_child(server: ServerRuntime) -> None:
     status, tree = _request(
         server.base_url,
         "GET",
-        f"/v1/instances/{parent_instance_id}/tree",
+        f"/v1/api/system/instances/{parent_instance_id}/tree",
     )
     assert status == 200
     assert isinstance(tree, dict)

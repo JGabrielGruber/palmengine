@@ -16,8 +16,7 @@ from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from palm.runtimes.cli.shared.job_inspect import inspect_job_json
 from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.doc_examples import build_curl, response_example
-from palm.runtimes.server.surfaces.rest.route_table import rest_routes
+
 from palm.states import BlackboardState
 
 
@@ -123,7 +122,7 @@ def test_build_job_context_includes_pattern_and_actions() -> None:
     assert payload["found"] is True
     assert payload["pattern"]["pattern"] == "wizard"
     assert payload["pattern"]["step"] == "name"
-    assert payload["instance"]["link"] == "/v1/instances/inst-ctx"
+    assert payload["instance"]["link"] == "/v1/api/system/instances/inst-ctx"
     assert payload["blackboard_snapshot"]["snapshot_id"] == "0"
     assert any(event["type"] == "instance.status" for event in payload["recent_events"])
     actions = {item["action"] for item in payload["next_actions"]}
@@ -154,20 +153,20 @@ def test_get_job_context_after_submit(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
-    assert status == 202
+    assert status in {200, 202}
     assert isinstance(payload, dict)
     job_id = payload["job_id"]
 
-    status, slim = _request(server.base_url, "GET", f"/v1/jobs/{job_id}")
+    status, slim = _request(server.base_url, "GET", f"/v1/api/system/jobs/{job_id}")
     assert status == 200
     assert isinstance(slim, dict)
     assert "pattern" not in slim
     assert "next_actions" not in slim
 
-    status, context = _request(server.base_url, "GET", f"/v1/jobs/{job_id}/context")
+    status, context = _request(server.base_url, "GET", f"/v1/api/system/jobs/{job_id}/context")
     assert status == 200
     assert isinstance(context, dict)
     assert context["found"] is True
@@ -175,22 +174,24 @@ def test_get_job_context_after_submit(server: ServerRuntime) -> None:
     assert context["status"] == JobStatus.WAITING_FOR_INPUT.value
     assert "pattern" in context
     assert "instance" in context
-    assert context["instance"]["link"].startswith("/v1/instances/")
+    assert context["instance"]["link"].startswith("/v1/api/system/instances/")
     assert "next_actions" in context
     assert any(item["action"] == "provide_input" for item in context["next_actions"])
 
 
 def test_get_job_context_not_found(server: ServerRuntime) -> None:
-    status, payload = _request(server.base_url, "GET", "/v1/jobs/missing-job/context")
+    status, payload = _request(server.base_url, "GET", "/v1/api/system/jobs/missing-job/context")
     assert status == 404
     assert isinstance(payload, dict)
     assert payload["error"] == "job_not_found"
 
 
 def test_docs_include_job_context_route() -> None:
-    routes = {route.route_id: route for route in rest_routes()}
-    route = routes["get_job_context"]
-    assert route.path == "/v1/jobs/{job_id}/context"
-    curl = build_curl(route)
-    assert "/v1/jobs/job-abc123/context" in curl
-    assert response_example(route)
+    from palm.runtimes.server.surfaces.rest.system.routes import ROUTES
+
+    routes = {entry.route_id: entry for entry in ROUTES}
+    route = routes["inspect_job"]
+    assert route.path == "/v1/api/system/jobs/{job_id}/context"
+    from palm.runtimes.server.surfaces.rest.doc_examples import RESPONSE_EXAMPLES
+
+    assert "get_job_context" in RESPONSE_EXAMPLES

@@ -38,8 +38,8 @@ def build_wizard_view(
         "committed": _is_committed(pattern, wizard_progress),
         "links": {
             "self": session_base,
-            "instance": f"/v1/instances/{instance_id}",
-            "job": f"/v1/jobs/{job_id}",
+            "instance": f"/v1/api/system/instances/{instance_id}",
+            "job": f"/v1/api/system/jobs/{job_id}",
         },
         "next_actions": derive_wizard_next_actions(
             instance_id=instance_id,
@@ -104,7 +104,7 @@ def derive_wizard_next_actions(
         {
             "action": "get_instance",
             "method": "GET",
-            "path": f"/v1/instances/{instance_id}",
+            "path": f"/v1/api/system/instances/{instance_id}",
             "description": "Inspect durable process instance",
         }
     )
@@ -112,7 +112,7 @@ def derive_wizard_next_actions(
         {
             "action": "get_job",
             "method": "GET",
-            "path": f"/v1/jobs/{job_id}",
+            "path": f"/v1/api/system/jobs/{job_id}",
             "description": "Slim job status",
         }
     )

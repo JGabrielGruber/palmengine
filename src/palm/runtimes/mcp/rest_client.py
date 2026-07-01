@@ -35,7 +35,10 @@ class PalmRestClient:
         return self._request("GET", "/health")
 
     def list_waiting_jobs(self, *, limit: int = 50) -> dict[str, Any]:
-        return self._request("GET", f"/v1/jobs?status=WAITING_FOR_INPUT&limit={limit}")
+        return self._request(
+            "GET",
+            f"/v1/api/system/jobs?status=WAITING_FOR_INPUT&limit={limit}",
+        )
 
     def flows_list(self) -> dict[str, Any]:
         return self._request("GET", "/v1/api/flows")
@@ -137,18 +140,28 @@ class PalmRestClient:
         return flatten_session_view(view)
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/instances/{instance_id}/tree")
+        return self._request("GET", f"/v1/api/system/instances/{instance_id}/tree")
 
     def get_job_context(self, job_id: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/jobs/{job_id}/context")
+        return self._request("GET", f"/v1/api/system/jobs/{job_id}/context")
 
     def provide_job_input(self, job_id: str, value: Any) -> dict[str, Any]:
-        return self._request(
-            "POST",
-            f"/v1/jobs/{job_id}/input",
-            body={"value": value},
-            auth=True,
-        )
+        from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
+
+        context = self.get_job_context(job_id)
+        instance = context.get("instance")
+        instance_id = (
+            instance.get("instance_id")
+            if isinstance(instance, dict)
+            else None
+        ) or (context.get("metadata") or {}).get("instance_id")
+        if not instance_id:
+            raise PalmRestError(400, f"could not resolve instance_id for job {job_id!r}")
+        flow_id = resolve_flow_id_from_inspect(context)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for job {job_id!r}")
+        view = self.flows_session_input(str(flow_id), str(instance_id), value)
+        return flatten_session_view(view)
 
     def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
         from palm.runtimes.mcp.flows.views import resolve_flow_id_from_inspect
@@ -174,7 +187,12 @@ class PalmRestClient:
         return self.flows_create_session(flow_id, body)
 
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", "/v1/jobs", body=body, auth=True)
+        flow_id = str(
+            body.get("flow_name")
+            or _flow_id_from_submit_body(body)
+            or "flow"
+        )
+        return self.flows_create_session(flow_id, body)
 
     def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
         path = "/v1/api/definitions/flows"
@@ -207,7 +225,7 @@ class PalmRestClient:
     def cancel_job(self, job_id: str) -> dict[str, Any]:
         return self._request(
             "POST",
-            f"/v1/jobs/{job_id}/cancel",
+            f"/v1/api/system/jobs/{job_id}/cancel",
             auth=True,
         )
 
@@ -251,12 +269,12 @@ class PalmRestClient:
         raise PalmRestError(404, f"could not resolve flow_id for session {session_id!r}")
 
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/instances/{instance_id}/snapshots")
+        return self._request("GET", f"/v1/api/system/instances/{instance_id}/snapshots")
 
     def get_snapshot(self, instance_id: str, snapshot_id: str) -> dict[str, Any]:
         return self._request(
             "GET",
-            f"/v1/instances/{instance_id}/snapshots/{snapshot_id}",
+            f"/v1/api/system/instances/{instance_id}/snapshots/{snapshot_id}",
         )
 
     def invoke_resource(self, body: dict[str, Any]) -> dict[str, Any]:

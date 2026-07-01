@@ -193,7 +193,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         },
         "instance": {
             "instance_id": "inst-abc123",
-            "link": "/v1/instances/inst-abc123",
+            "link": "/v1/api/system/instances/inst-abc123",
             "status": "WAITING_FOR_INPUT",
         },
         "wizard_progress": {
@@ -206,7 +206,7 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
             {
                 "action": "provide_input",
                 "method": "POST",
-                "path": "/v1/jobs/job-abc123/input",
+                "path": "/v1/api/flows/onboard/session/inst-abc123/input",
             }
         ],
     },
@@ -386,15 +386,7 @@ def schema_fields(schema_name: str) -> list[str]:
 
 def featured_curl_examples() -> list[tuple[str, str, str]]:
     """Return (title, description, curl) tuples for static site and quick reference."""
-    featured_ids = (
-        "health",
-        "list_jobs",
-        "get_job_context",
-        "submit_job",
-        "provide_input",
-        "list_instances",
-        "list_snapshots",
-    )
+    featured_ids = ("health", "prepare_plans", "submit_plans")
     routes_by_id = {route.route_id: route for route in rest_routes()}
     examples: list[tuple[str, str, str]] = []
     for route_id in featured_ids:
@@ -402,4 +394,42 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
         if route is None:
             continue
         examples.append((route.summary, route.description, build_curl(route)))
+
+    base = DEFAULT_BASE_URL
+    examples.extend(
+        [
+            (
+                "List jobs",
+                "Paginated orchestration job board under the system service.",
+                f"curl -s -X GET '{base}/v1/api/system/jobs?limit=10&offset=0' \\\n"
+                "  -H 'Accept: application/json'",
+            ),
+            (
+                "Get job context",
+                "Rich job view with pattern state, wizard progress, and next actions.",
+                f"curl -s -X GET '{base}/v1/api/system/jobs/job-abc123/context' \\\n"
+                "  -H 'Accept: application/json'",
+            ),
+            (
+                "Create flow session",
+                "Start an interactive wizard session via the flows service.",
+                f"curl -s -X POST '{base}/v1/api/flows/onboard/create' \\\n"
+                "  -H 'Accept: application/json' \\\n"
+                "  -H 'Content-Type: application/json' \\\n"
+                "  -d '{{\"wizard\":{{\"name\":\"onboard\",\"steps\":3}}}}'",
+            ),
+            (
+                "List instances",
+                "Durable process instance index under the system service.",
+                f"curl -s -X GET '{base}/v1/api/system/instances?limit=10&offset=0' \\\n"
+                "  -H 'Accept: application/json'",
+            ),
+            (
+                "List snapshots",
+                "Point-in-time state snapshots for a durable instance.",
+                f"curl -s -X GET '{base}/v1/api/system/instances/inst-abc123/snapshots?limit=10' \\\n"
+                "  -H 'Accept: application/json'",
+            ),
+        ]
+    )
     return examples

@@ -138,7 +138,7 @@ def _links(
     base_url: str | None,
 ) -> dict[str, str]:
     links: dict[str, str] = {
-        "instance": f"/v1/instances/{instance_id}",
+        "instance": f"/v1/api/system/instances/{instance_id}",
     }
     if flow_id:
         links["session"] = f"/v1/api/flows/{flow_id}/session/{instance_id}"

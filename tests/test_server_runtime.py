@@ -70,21 +70,22 @@ def test_submit_wizard_and_provide_input(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/jobs",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
-    assert status == 202
+    assert status in {200, 202}
     job_id = payload["job_id"]
+    session_id = payload["session_id"]
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
 
-    status, job_payload = _request(server.base_url, "GET", f"/v1/jobs/{job_id}")
+    status, job_payload = _request(server.base_url, "GET", f"/v1/api/system/jobs/{job_id}")
     assert status == 200
     assert job_payload["status"] == JobStatus.WAITING_FOR_INPUT.value
 
     status, input_payload = _request(
         server.base_url,
         "POST",
-        f"/v1/jobs/{job_id}/input",
+        f"/v1/api/flows/onboard/session/{session_id}/input",
         body={"value": "Ada"},
     )
     assert status == 200

@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.16.5`  
-**Last Updated:** June 30, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.16.5** services are the API — `/v1/api/…` REST + per-domain MCP shipped.
+**Current Version:** `0.17.0`  
+**Last Updated:** July 1, 2026  
+**Maturity:** Wizard Experience · MCP operator adapter · **0.17.0** system REST parity — `/v1/api/system/…` complete; legacy `/v1/jobs` and `/v1/instances` removed.
 
 ## Quick Overview
 
@@ -165,7 +165,9 @@ just mcp-inspector                       # MCP Inspector UI
 | `docs/index.html`     | Good            | v0.16.5 badge + service API in featureList |
 | `docs/llms.txt`       | Good            | AI context + 0.16 MCP conventions (`palm://agent/guide`) |
 | `docs/VISION-0.16.md` | Good            | 0.16 release vision |
+| `docs/VISION-0.18-ASSIST.md` | Good     | Assist domain vision (planned) |
 | `docs/adr/005-*.md`   | Good            | Service-domain API ADR |
+| `docs/adr/006-*.md`   | Good            | Assist domain ADR (proposed) |
 | `AGENTS.md`           | Good            | 0.16 service layer + MCP conventions |
 | `DEVELOPMENT.md`      | Good            | Contributor setup + 0.16.5 release |
 | `CHANGELOG.md`        | Good            | `[0.16.5]` service-domain API release |
@@ -192,11 +194,38 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Transitional:** `/v1/jobs`, `/v1/instances`, `/v1/plans` remain on legacy monolith route table until migrated to `/v1/api/system`.
 
+## 0.17 — Service Completion (In progress)
+
+**Design:** [docs/superpowers/specs/2026-07-01-0.17-service-completion-design.md](docs/superpowers/specs/2026-07-01-0.17-service-completion-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md)  
+**Migration:** [MIGRATION-0.17.md](MIGRATION-0.17.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.17.0 | System REST parity — delete `/v1/jobs`, `/v1/instances` monolith | ✅ Shipped |
+| 0.17.1 | `ProcessExecutionService` + `/v1/api/processes` | Planned |
+| 0.17.2 | Palm provider remote alignment | Planned |
+| 0.17.3 | OpenAPI from per-service registries | Planned |
+
+## 0.18–0.19 — Assist Domain (Planned)
+
+**Vision:** [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md)  
+**Design:** [docs/superpowers/specs/2026-07-01-assist-domain-design.md](docs/superpowers/specs/2026-07-01-assist-domain-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-01-assist-domain.md](docs/superpowers/plans/2026-07-01-assist-domain.md)  
+**ADR:** [docs/adr/006-assist-domain.md](docs/adr/006-assist-domain.md)
+
+Fifth service domain — conversational operator guidance (`palm/services/assist/`), `palm-operator-entry` wizard, handoff to business flows. **Prerequisite:** 0.17 shipped.
+
+| Release | Deliverable |
+|---------|-------------|
+| **0.18.0** | Assist MVP — REST `/v1/api/assist/…`, `host.assist`, catalog scenario |
+| **0.19.0** | Stable `palm_assist` MCP proxy + contributor path aliases |
+
 ## Priorities & Next Steps
 
 **0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
-**Next:** [0.17 service completion plan](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) — system REST parity, process execution, palm provider remote, OpenAPI merge; WebSocket in 0.18.
+**Next:** [0.17.1 process execution](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) → Assist domain (0.18 MVP) after 0.17 completes.
 
 
 ## Useful Links

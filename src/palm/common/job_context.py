@@ -65,13 +65,14 @@ def derive_next_actions(
 ) -> list[dict[str, Any]]:
     """Suggest REST actions available from the current job state."""
     actions: list[dict[str, Any]] = []
+    flow_id = _flow_id_for_instance(instance)
 
-    if status == JobStatus.WAITING_FOR_INPUT:
+    if status == JobStatus.WAITING_FOR_INPUT and flow_id is not None:
         actions.append(
             {
                 "action": "provide_input",
                 "method": "POST",
-                "path": f"/v1/jobs/{job_id}/input",
+                "path": f"/v1/api/flows/{flow_id}/session/{instance_id}/input",
                 "description": "Deliver interactive wizard input",
             }
         )
@@ -81,7 +82,7 @@ def derive_next_actions(
             {
                 "action": "get_instance",
                 "method": "GET",
-                "path": f"/v1/instances/{instance_id}",
+                "path": f"/v1/api/system/instances/{instance_id}",
                 "description": "Inspect durable process instance",
             }
         )
@@ -89,7 +90,7 @@ def derive_next_actions(
             {
                 "action": "list_snapshots",
                 "method": "GET",
-                "path": f"/v1/instances/{instance_id}/snapshots",
+                "path": f"/v1/api/system/instances/{instance_id}/snapshots",
                 "description": "List point-in-time state snapshots",
             }
         )
@@ -98,7 +99,7 @@ def derive_next_actions(
                 {
                     "action": "resume_instance",
                     "method": "POST",
-                    "path": f"/v1/instances/{instance_id}/resume",
+                    "path": f"/v1/api/system/instances/{instance_id}/resume",
                     "description": "Resume persisted process instance",
                 }
             )
@@ -107,17 +108,41 @@ def derive_next_actions(
         {
             "action": "get_job",
             "method": "GET",
-            "path": f"/v1/jobs/{job_id}",
+            "path": f"/v1/api/system/jobs/{job_id}",
             "description": "Slim job status",
+        }
+    )
+    actions.append(
+        {
+            "action": "inspect_job",
+            "method": "GET",
+            "path": f"/v1/api/system/jobs/{job_id}/context",
+            "description": "Rich job context with pattern state and next actions",
         }
     )
     return actions
 
 
+def _flow_id_for_instance(instance: ProcessInstance | None) -> str | None:
+    if instance is None:
+        return None
+    if instance.flow_id:
+        return str(instance.flow_id)
+    if instance.flow_name:
+        return str(instance.flow_name)
+    flow_def = instance.flow_definition
+    if isinstance(flow_def, dict):
+        for key in ("id", "name", "flow_id"):
+            value = flow_def.get(key)
+            if value is not None:
+                return str(value)
+    return None
+
+
 def _instance_block(instance_id: str, instance: ProcessInstance | None) -> dict[str, Any]:
     block: dict[str, Any] = {
         "instance_id": instance_id,
-        "link": f"/v1/instances/{instance_id}",
+        "link": f"/v1/api/system/instances/{instance_id}",
     }
     if instance is not None:
         block["status"] = instance.status

@@ -225,7 +225,7 @@ def test_process_and_pattern_pages(server: ServerRuntime) -> None:
 def test_job_context_viewer(server: ServerRuntime) -> None:
     _, payload = _post_json(
         server.base_url,
-        "/v1/jobs",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
     job_id = payload["job_id"]
@@ -236,7 +236,7 @@ def test_job_context_viewer(server: ServerRuntime) -> None:
     assert "Next actions" in html
     assert "provide_input" in html
     assert "Provide input" in html
-    assert "/v1/jobs/" in html
+    assert "/v1/api/system/jobs/" in html
 
 
 def test_job_input_form_post(server: ServerRuntime) -> None:
@@ -245,7 +245,7 @@ def test_job_input_form_post(server: ServerRuntime) -> None:
 
     _, payload = _post_json(
         server.base_url,
-        "/v1/jobs",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
     job_id = payload["job_id"]
@@ -270,7 +270,7 @@ def test_job_input_form_post(server: ServerRuntime) -> None:
 def test_instance_browser_page(server: ServerRuntime) -> None:
     _, payload = _post_json(
         server.base_url,
-        "/v1/jobs",
+        "/v1/api/flows/onboard/create",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
     job_id = payload["job_id"]

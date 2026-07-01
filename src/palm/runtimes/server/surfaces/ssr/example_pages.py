@@ -59,8 +59,8 @@ class ExamplePages:
             "<h3>Wizard preview (stub)</h3>"
             "<p class=\"muted\">A future implementation would render the active prompt, "
             "choices, and validation from <code>GetJobContextQuery</code>, posting input "
-            "via the Explorer job input form or <code>POST /v1/jobs/{id}/input</code>.</p>"
-            f"{code_block({'next': 'explorer/jobs/{{job_id}}', 'data_source': '/v1/jobs/{{job_id}}/context'})}"
+            "via the Explorer job input form or <code>POST /v1/api/flows/{flow_id}/session/{session_id}/input</code>.</p>"
+            f"{code_block({'next': 'explorer/jobs/{{job_id}}', 'data_source': '/v1/api/system/jobs/{{job_id}}/context'})}"
             "</div></section>"
         )
         return html_response(

@@ -3,8 +3,8 @@ REST route metadata — declarative table without handler imports.
 
 Shared by route registration, OpenAPI generation, and HTML docs.
 
-Legacy catalog, wizard, and doctor routes were removed in 0.16.3 — use
-``/v1/api/definitions``, ``/v1/api/flows``, and ``/v1/api/system`` instead.
+Legacy job/instance/snapshot monolith routes were removed in 0.17.0 — use
+``/v1/api/system``, ``/v1/api/flows``, and ``/v1/api/definitions`` instead.
 """
 
 from __future__ import annotations
@@ -16,20 +16,8 @@ RouteId = Literal[
     "health",
     "openapi",
     "docs",
-    "list_jobs",
-    "get_job",
-    "get_job_context",
-    "submit_job",
-    "cancel_job",
-    "provide_input",
     "prepare_plans",
     "submit_plans",
-    "list_instances",
-    "get_instance",
-    "get_instance_tree",
-    "resume_instance",
-    "list_snapshots",
-    "get_snapshot",
 ]
 
 
@@ -77,64 +65,6 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             description="Human-readable HTML overview with endpoint groups.",
         ),
         RouteDefinition(
-            route_id="list_jobs",
-            method="GET",
-            path="/v1/jobs",
-            group="Jobs",
-            summary="List jobs",
-            description="Paginated orchestration job status board.",
-            query_schema="ListJobsQuery",
-        ),
-        RouteDefinition(
-            route_id="get_job",
-            method="GET",
-            path="/v1/jobs/{job_id}",
-            group="Jobs",
-            summary="Get job",
-            description="Fetch a single job by id.",
-        ),
-        RouteDefinition(
-            route_id="get_job_context",
-            method="GET",
-            path="/v1/jobs/{job_id}/context",
-            group="Jobs",
-            summary="Get job context",
-            description=(
-                "Rich job view with pattern state, wizard progress, blackboard snapshot, "
-                "recent events, next actions, and related instance link."
-            ),
-        ),
-        RouteDefinition(
-            route_id="submit_job",
-            method="POST",
-            path="/v1/jobs",
-            group="Jobs",
-            summary="Submit job",
-            description="Submit a flow, wizard, or named flow as an orchestration job.",
-            auth_required=True,
-            request_schema="SubmitJobBody",
-            response_status=202,
-        ),
-        RouteDefinition(
-            route_id="provide_input",
-            method="POST",
-            path="/v1/jobs/{job_id}/input",
-            group="Jobs",
-            summary="Provide input",
-            description="Deliver interactive input to a waiting job.",
-            auth_required=True,
-            request_schema="ProvideInputBody",
-        ),
-        RouteDefinition(
-            route_id="cancel_job",
-            method="POST",
-            path="/v1/jobs/{job_id}/cancel",
-            group="Jobs",
-            summary="Cancel job",
-            description="Cancel a non-terminal orchestration job.",
-            auth_required=True,
-        ),
-        RouteDefinition(
             route_id="prepare_plans",
             method="POST",
             path="/v1/plans/prepare",
@@ -155,60 +85,5 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             auth_required=True,
             request_schema="SubmitPlansBody",
             response_status=202,
-        ),
-        RouteDefinition(
-            route_id="list_instances",
-            method="GET",
-            path="/v1/instances",
-            group="Instances",
-            summary="List instances",
-            description="Paginated durable process instance index.",
-            query_schema="ListInstancesQuery",
-        ),
-        RouteDefinition(
-            route_id="get_instance",
-            method="GET",
-            path="/v1/instances/{instance_id}",
-            group="Instances",
-            summary="Get instance",
-            description="Fetch a single process instance by id.",
-        ),
-        RouteDefinition(
-            route_id="get_instance_tree",
-            method="GET",
-            path="/v1/instances/{instance_id}/tree",
-            group="Instances",
-            summary="Get instance invoke tree",
-            description=(
-                "Compositional invoke stack: root, ancestors, active child, and "
-                "operator links for nested wizard flows."
-            ),
-        ),
-        RouteDefinition(
-            route_id="resume_instance",
-            method="POST",
-            path="/v1/instances/{instance_id}/resume",
-            group="Instances",
-            summary="Resume instance",
-            description="Resume a persisted process instance.",
-            auth_required=True,
-            response_status=202,
-        ),
-        RouteDefinition(
-            route_id="list_snapshots",
-            method="GET",
-            path="/v1/instances/{instance_id}/snapshots",
-            group="Snapshots",
-            summary="List snapshots",
-            description="Paginated state snapshots for a durable process instance.",
-            query_schema="ListSnapshotsQuery",
-        ),
-        RouteDefinition(
-            route_id="get_snapshot",
-            method="GET",
-            path="/v1/instances/{instance_id}/snapshots/{snapshot_id}",
-            group="Snapshots",
-            summary="Get snapshot",
-            description="Fetch a single state snapshot by zero-based index or recorded_at timestamp.",
         ),
     )
