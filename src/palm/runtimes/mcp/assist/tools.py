@@ -6,6 +6,7 @@ from typing import Any
 
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.runtimes.mcp.assist.dispatch import (
+    normalize_assist_dispatch_args,
     resolve_dispatch_format,
     resolve_dispatch_path,
     shape_dispatch_result,
@@ -26,12 +27,16 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
     ) -> dict[str, Any]:
         """Dispatch a service command path (assist, flows, processes, …).
 
-        Prefer ``path`` or ``alias`` with optional ``params``. Assist paths default
-        to ``format=assistant`` (human compose view); flows/system default to
-        powertool. Example::
+        ``path`` or ``alias`` are optional — a bare ``palm_assist()`` starts
+        ``operator-entry`` for human-first onboarding. ``params`` may include
+        ``session_id`` + ``value``/``input`` to continue a session. Assist paths
+        default to ``format=assistant``; flows/system default to powertool.
 
-            palm_assist(path=["assist", "scenarios", "operator-entry", "start"])
-            palm_assist(alias="operator-entry/start", format="assistant")
+        Examples::
+
+            palm_assist()
+            palm_assist(alias="operator-entry/start")
+            palm_assist(params={"session_id": "inst-1", "value": "yes"})
             palm_assist(path=["flows", "onboard", "session", "inst-1"], format="powertool")
         """
         resolved_action = action or "dispatch"
@@ -39,8 +44,14 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
         if resolved_action != "dispatch":
             raise ValueError(f"unsupported palm_assist action: {resolved_action!r}")
         try:
-            resolved = resolve_dispatch_path(path=path, alias=alias, params=params)
-            dispatch_params = dict(params or {})
+            norm_path, norm_alias, dispatch_params, used_default_entry = (
+                normalize_assist_dispatch_args(path=path, alias=alias, params=params)
+            )
+            resolved = resolve_dispatch_path(
+                path=norm_path,
+                alias=norm_alias,
+                params=dispatch_params,
+            )
             view_format = resolve_dispatch_format(
                 resolved,
                 params=dispatch_params,
@@ -62,13 +73,19 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
         ):
             invoke_tree = backend.get_instance_tree(resolved[3])
 
-        return shape_dispatch_result(
+        payload = shape_dispatch_result(
             resolved,
             result,
             format=view_format,
             params=dispatch_params,
             invoke_tree=invoke_tree,
         )
+        if used_default_entry:
+            payload["dispatch_default"] = "operator-entry/start"
+            hint = payload.get("hint") or ""
+            suffix = " Started default operator entry (pass alias or path to target elsewhere)."
+            payload["hint"] = f"{hint}{suffix}".strip()
+        return payload
 
 
 __all__ = ["register_assist_tools"]

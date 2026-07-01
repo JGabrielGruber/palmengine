@@ -21,6 +21,62 @@ _DELEGATED_PREFIXES = frozenset(
     {"assist", "flows", "processes", "definitions", "system", "providers"},
 )
 
+_DEFAULT_ASSIST_ALIAS = "operator-entry/start"
+
+
+def _clean_dispatch_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def normalize_assist_dispatch_args(
+    *,
+    path: list[str] | None = None,
+    alias: str | None = None,
+    params: dict[str, Any] | None = None,
+) -> tuple[list[str] | None, str | None, dict[str, Any], bool]:
+    """Coerce weak-LLM tool payloads and apply human-first defaults.
+
+    Returns ``(path, alias, params, used_default_entry)``.
+    """
+    params = dict(params or {})
+    used_default_entry = False
+
+    alias = _clean_dispatch_str(alias)
+    if alias is None:
+        alias = _clean_dispatch_str(params.pop("alias", None))
+
+    if path is not None:
+        cleaned = [_clean_dispatch_str(segment) for segment in path]
+        path = [segment for segment in cleaned if segment] or None
+    if path is None:
+        nested = params.pop("path", None)
+        if isinstance(nested, list):
+            cleaned = [_clean_dispatch_str(segment) for segment in nested]
+            path = [segment for segment in cleaned if segment] or None
+
+    if not alias and not path:
+        session_id = _clean_dispatch_str(params.get("session_id")) or _clean_dispatch_str(
+            params.get("instance_id")
+        )
+        has_value = "value" in params or "input" in params
+        if session_id and has_value:
+            path = ["assist", "session", session_id, "input"]
+        elif session_id:
+            path = ["assist", "session", session_id]
+        else:
+            scenario_id = _clean_dispatch_str(params.get("scenario_id"))
+            if scenario_id:
+                alias = f"{scenario_id}/start"
+
+    if not alias and not path:
+        alias = _DEFAULT_ASSIST_ALIAS
+        used_default_entry = True
+
+    return path, alias, params, used_default_entry
+
 
 def resolve_dispatch_path(
     *,
@@ -29,15 +85,21 @@ def resolve_dispatch_path(
     params: dict[str, Any] | None = None,
 ) -> list[str]:
     """Resolve alias or explicit path into a concrete command path."""
-    params = params or {}
+    path, alias, params, _ = normalize_assist_dispatch_args(
+        path=path,
+        alias=alias,
+        params=params,
+    )
     if alias:
         resolved = resolve_mcp_alias(alias, params=params)
         if resolved is None:
+            if alias == _DEFAULT_ASSIST_ALIAS:
+                return ["assist", "scenarios"]
             raise ValueError(f"unknown assist MCP alias: {alias!r}")
         return list(resolved)
-    if not path:
-        raise ValueError("path or alias is required for palm_assist dispatch")
-    return [str(segment) for segment in path]
+    if path:
+        return [str(segment) for segment in path]
+    return ["assist", "scenarios"]
 
 
 def dispatch_operator_path(
@@ -440,6 +502,7 @@ __all__ = [
     "compact_dispatch_result",
     "dispatch_operator_path",
     "map_dispatch_to_rest",
+    "normalize_assist_dispatch_args",
     "resolve_dispatch_format",
     "resolve_dispatch_path",
     "shape_dispatch_result",

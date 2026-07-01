@@ -10,6 +10,7 @@ from fastmcp import Client  # noqa: E402
 from palm.app.settings import PalmSettings  # noqa: E402
 from palm.runtimes.mcp.assist.dispatch import (  # noqa: E402
     assist_routes_payload,
+    normalize_assist_dispatch_args,
     resolve_dispatch_path,
 )
 from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
@@ -47,6 +48,31 @@ def test_resolve_operator_entry_start_alias() -> None:
     _register_operator_entry_contributor()
     path = resolve_dispatch_path(alias="operator-entry/start")
     assert path == ["assist", "scenarios", "operator-entry", "start"]
+
+
+def test_resolve_dispatch_path_defaults_without_target() -> None:
+    _register_operator_entry_contributor()
+    path = resolve_dispatch_path()
+    assert path == ["assist", "scenarios", "operator-entry", "start"]
+
+
+def test_normalize_assist_dispatch_args_infers_session_input() -> None:
+    path, alias, params, used_default = normalize_assist_dispatch_args(
+        params={"session_id": "inst-9", "value": "yes"},
+    )
+    assert path == ["assist", "session", "inst-9", "input"]
+    assert alias is None
+    assert params["value"] == "yes"
+    assert used_default is False
+
+
+def test_normalize_assist_dispatch_args_reads_nested_alias() -> None:
+    path, alias, params, used_default = normalize_assist_dispatch_args(
+        params={"alias": "operator-entry/start"},
+    )
+    assert alias == "operator-entry/start"
+    assert "alias" not in params
+    assert used_default is False
 
 
 def test_assist_routes_resource_includes_aliases() -> None:
@@ -170,6 +196,26 @@ async def test_palm_assist_flows_session_stays_powertool(assist_server_ctx) -> N
     assert payload.get("instance_id") == session_id
     assert payload.get("step")
     assert "question" not in payload
+
+
+@pytest.mark.asyncio
+async def test_palm_assist_empty_call_starts_operator_entry(assist_server_ctx) -> None:
+    backend = PalmInProcessBackend(assist_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        result = await client.call_tool("palm_assist", {})
+
+    payload = result.data
+    assert payload.get("session_id")
+    assert payload.get("question")
+    assert payload.get("dispatch_default") == "operator-entry/start"
 
 
 @pytest.mark.asyncio
