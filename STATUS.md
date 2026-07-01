@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.17.3`  
+**Current Version:** `0.18.0`  
 **Last Updated:** July 1, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.17.3** service completion — OpenAPI/docs cover full `/v1/api/…`.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.18.0** Assist domain MVP — operator guidance + handoff.
 
 ## Quick Overview
 
@@ -17,7 +17,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
-- `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`); `palm/common/services/` retains primitives only.
+- `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`); `palm/common/services/` retains primitives only.
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
@@ -205,25 +205,29 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.17.2 | Palm provider remote alignment | ✅ Shipped |
 | 0.17.3 | OpenAPI from per-service registries | ✅ Shipped |
 
-## 0.18–0.19 — Assist Domain (Planned)
+## 0.18 — Assist Domain (Shipped)
 
 **Vision:** [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md)  
 **Design:** [docs/superpowers/specs/2026-07-01-assist-domain-design.md](docs/superpowers/specs/2026-07-01-assist-domain-design.md)  
 **Plan:** [docs/superpowers/plans/2026-07-01-assist-domain.md](docs/superpowers/plans/2026-07-01-assist-domain.md)  
-**ADR:** [docs/adr/006-assist-domain.md](docs/adr/006-assist-domain.md)
+**ADR:** [docs/adr/006-assist-domain.md](docs/adr/006-assist-domain.md)  
+**Migration:** [MIGRATION-0.18.md](MIGRATION-0.18.md) · **Release:** [RELEASE-0.18.0.md](RELEASE-0.18.0.md)
 
-Fifth service domain — conversational operator guidance (`palm/services/assist/`), `palm-operator-entry` wizard, handoff to business flows. **Prerequisite:** 0.17 shipped.
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.18.0 | Assist MVP — REST `/v1/api/assist/…`, `host.assist`, `palm-operator-entry` | ✅ Shipped |
+
+## 0.19 — Stable MCP proxy (Planned)
 
 | Release | Deliverable |
 |---------|-------------|
-| **0.18.0** | Assist MVP — REST `/v1/api/assist/…`, `host.assist`, catalog scenario |
 | **0.19.0** | Stable `palm_assist` MCP proxy + contributor path aliases |
 
 ## Priorities & Next Steps
 
-**0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
+**0.18.0 shipped** — Assist domain MVP · [RELEASE-0.18.0.md](RELEASE-0.18.0.md)
 
-**Next:** [Assist domain 0.18 MVP](docs/VISION-0.18-ASSIST.md) — conversational operator guidance (`palm/services/assist/`).
+**Next:** [Stable `palm_assist` MCP proxy (0.19)](docs/VISION-0.18-ASSIST.md) — single parametric agent tool.
 
 
 ## Useful Links

@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.17.3 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Services are the API — `/v1/api/…` REST + per-domain MCP
+**Version:** 0.18.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Services are the API — `/v1/api/…` REST + per-domain MCP + Assist (0.18)
 
 ## Philosophy
 
@@ -38,7 +38,7 @@ palm/runtimes/     Thin adapters → services (per-domain routes + MCP)
         ↓
 palm/app/          ApplicationHost (recommended), PalmApp (infra)
         ↓
-palm/services/     USER API — definitions, execution/flows, execution/providers, system
+palm/services/     USER API — definitions, execution/*, system, assist (0.18)
         ↓
 palm/common/       CQRS + CqrsSchemaRegistry, hooks, persistence, transforms
         ↓
@@ -68,6 +68,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
 | **MCP (0.16)** | Per-domain tools (`palm_flows_*`, `palm_system_*`, `palm_definitions_*`, `palm_providers_invoke`); see `docs/MCP.md` |
 | **Service layer (0.16)** | `host.system`, `host.definitions`, `host.execution.flows`, `host.execution.providers` |
+| **Assist (0.18)** | `host.assist` · REST `/v1/api/assist/…` · `palm-operator-entry` scenario · handoff → flows |
 | **MCP in-process (0.15+)** | `PALM_MCP_IN_PROCESS=1` — tools use services without HTTP (default in `.grok/config.toml`) |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |

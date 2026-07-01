@@ -4,6 +4,33 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-07-01
+
+**Assist domain MVP** — fifth service for conversational operator guidance and handoff.
+
+Migration: [MIGRATION-0.18.md](MIGRATION-0.18.md) · Vision: [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md)
+
+### Added
+
+- **`palm/services/assist/`** — `AssistService`, `AssistSession`, command registry, grammar
+- **`host.assist`** — wired on `ApplicationHost` and `ServerContext`
+- **REST `/v1/api/assist/…`** — scenarios, session verbs, doctor shortcut, handoff
+- **`palm-operator-entry`** — assist catalog scenario (`examples/definitions/operator_entry.py`)
+- **`palm/app/assist_registry.py`** — app-level assist contributor registry
+- **OpenAPI Assist group** — `openapi_registry.py` aggregates assist routes
+- **Tests** — `test_assist_*`, `test_operator_entry_flow.py`
+
+### Changed
+
+- **`INSTALLED_SERVICES`** — includes `"assist"`
+- **`STATUS.md`**, **`docs/MCP.md`**, **`docs/llms.txt`**, **`AGENTS.md`** — assist surface documented
+- **ADR-006** — status Accepted
+
+### Notes
+
+- MCP unchanged in 0.18; stable `palm_assist` proxy deferred to 0.19
+- Assist wizards support existing `step_kind: resource` compositional steps
+
 ## [0.17.3] — 2026-07-01
 
 **OpenAPI from service registries** — `/v1/openapi.json` and `/v1/docs` document the full `/v1/api/…` surface.

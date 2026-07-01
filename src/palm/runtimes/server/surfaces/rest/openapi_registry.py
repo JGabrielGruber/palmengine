@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from palm.runtimes.server.surfaces.rest.assist import routes as assist_routes
 from palm.runtimes.server.surfaces.rest.definitions import routes as definitions_routes
 from palm.runtimes.server.surfaces.rest.execution.flows import routes as flows_routes
 from palm.runtimes.server.surfaces.rest.execution.processes import routes as processes_routes
 from palm.runtimes.server.surfaces.rest.execution.providers import routes as providers_routes
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition
 from palm.runtimes.server.surfaces.rest.system import routes as system_routes
+from palm.services.assist.registry import assist_commands
 from palm.services.definitions.registry import catalog_verbs
 from palm.services.execution.flows.registry import flow_commands
 from palm.services.execution.processes.registry import process_commands
@@ -17,6 +19,7 @@ from palm.services.execution.providers.registry import invoke_verbs
 from palm.services.system.registry import observe_verbs
 
 _SERVICE_GROUPS = {
+    "assist": "Assist",
     "definitions": "Definitions",
     "flows": "Flows",
     "processes": "Processes",
@@ -32,6 +35,12 @@ _PROCESS_COMMAND_IDS = {
 
 _FLOW_COMMAND_IDS = {
     "get_session": "session_context",
+}
+
+_ASSIST_COMMAND_IDS = {
+    "get_session": "session_context",
+    "start_scenario": "start_scenario",
+    "session_handoff": "session_handoff",
 }
 
 
@@ -54,6 +63,8 @@ def _summary_index() -> dict[str, str]:
         summaries[verb.verb_id] = verb.summary
     for command in flow_commands():
         summaries[command.command_id] = command.summary
+    for command in assist_commands():
+        summaries[command.command_id] = command.summary
     for command in process_commands():
         summaries[command.command_id] = command.summary
     for verb in invoke_verbs():
@@ -68,6 +79,8 @@ def _resolve_summary(route_id: str, summaries: dict[str, str]) -> str:
         return summaries.get(_PROCESS_COMMAND_IDS[route_id], route_id.replace("_", " ").title())
     if route_id in _FLOW_COMMAND_IDS:
         return summaries.get(_FLOW_COMMAND_IDS[route_id], route_id.replace("_", " ").title())
+    if route_id in _ASSIST_COMMAND_IDS:
+        return summaries.get(_ASSIST_COMMAND_IDS[route_id], route_id.replace("_", " ").title())
     return route_id.replace("_", " ").title()
 
 
@@ -103,11 +116,16 @@ _DESCRIPTIONS: dict[str, str] = {
     "submit_process": "Consume staged plan ids and submit orchestration jobs.",
     "run_process": "Prepare and submit a process in one call.",
     "invoke_provider": "Invoke a provider resource action.",
+    "list_scenarios": "List registered assist scenarios for operator entry.",
+    "describe_scenario": "Describe one assist scenario and its catalog flow.",
+    "start_scenario": "Start an assist scenario session (wizard REPL entry).",
+    "session_handoff": "Emit typed handoff payload for business flow entry.",
 }
 
 _REQUEST_SCHEMAS: dict[str, str] = {
     "create_session": "SubmitWizardBody",
     "session_input": "WizardInputBody",
+    "start_scenario": "SubmitWizardBody",
     "session_backtrack": "WizardBacktrackBody",
     "prepare_process": "PreparePlansBody",
     "submit_process": "SubmitPlansBody",
@@ -125,6 +143,7 @@ _QUERY_SCHEMAS: dict[str, str] = {
 
 _RESPONSE_STATUS: dict[str, int] = {
     "create_session": 202,
+    "start_scenario": 202,
     "prepare_process": 201,
     "submit_process": 202,
     "run_process": 202,
@@ -208,6 +227,7 @@ def collect_service_routes() -> tuple[RouteDefinition, ...]:
     """Project per-service ``ROUTES`` tuples into OpenAPI-oriented definitions."""
     summaries = _summary_index()
     sources: tuple[tuple[str, tuple[definitions_routes.RouteEntry, ...]], ...] = (
+        ("assist", assist_routes.ROUTES),
         ("definitions", definitions_routes.ROUTES),
         ("flows", flows_routes.ROUTES),
         ("processes", processes_routes.ROUTES),

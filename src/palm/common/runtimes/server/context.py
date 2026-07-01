@@ -12,6 +12,7 @@ from palm.common.cqrs.query import Query
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
+from palm.services.assist import AssistService
 from palm.services.definitions import DefinitionService
 from palm.services.execution import ExecutionService
 from palm.services.execution.flows import FlowExecutionService
@@ -75,10 +76,18 @@ class ServerContext:
                 ),
                 processes=ProcessExecutionService(**bus_kw, runtime=runtime),
             )
+            self._assist = AssistService(
+                **bus_kw,
+                definitions=definitions,
+                execution=self._execution,
+                system=self._system,
+                runtime=runtime,
+            )
         else:
             self._system = host.system
             self._definitions = host.definitions
             self._execution = host.execution
+            self._assist = host.assist
 
     @property
     def runtime(self) -> BaseRuntime:
@@ -120,6 +129,12 @@ class ServerContext:
             return self._host.execution
         return self._execution
 
+    @property
+    def assist(self) -> AssistService:
+        if self._host is not None:
+            return self._host.assist
+        return self._assist
+
     def execute(self, command: Command) -> Any:
         return self._command_bus.dispatch(command)
 
@@ -137,3 +152,4 @@ class ServerContext:
         self._system = host.system
         self._definitions = host.definitions
         self._execution = host.execution
+        self._assist = host.assist

@@ -123,6 +123,21 @@ just mcp-inspector                  # MCP Inspector UI
 
 10. **Sequential driving** — Drive one session at a time. Call `palm_flows_session_resume_child_wait` only while `waiting_for_child` is true (otherwise returns `resume_child_wait: skipped_not_waiting`).
 
+### Assist domain (0.18 REST · 0.19 MCP)
+
+**0.18** adds `palm/services/assist/` — conversational operator guidance with typed handoff to business flows. MCP tools are **unchanged** in 0.18; use REST or `host.assist` in library code. **0.19** ships stable `palm_assist` dispatch proxy.
+
+| Assist REST | Purpose |
+|-------------|---------|
+| `GET /v1/api/assist/scenarios` | List registered scenarios |
+| `POST /v1/api/assist/scenarios/operator-entry/start` | Start operator entry wizard |
+| `POST /v1/api/assist/session/{session_id}/input` | Plain-string input (same coercion as flows) |
+| `POST /v1/api/assist/session/{session_id}/handoff` | Typed `{ kind, flow_id, operator_hint }` payload |
+
+**Operator loop (0.18):** assist start → input loop → handoff → `palm_flows_create_session` on `flow_id`. See [MIGRATION-0.18.md](../MIGRATION-0.18.md).
+
+Assist scenarios are normal wizard flows (`palm-operator-entry`). Resource steps inside assist wizards use existing `step_kind: resource` → `ResourceLeaf` (no assist-specific resource engine).
+
 ### Daily workflows
 
 #### Bootstrapping a session

@@ -95,6 +95,15 @@ def snapshot_not_found(instance_id: str, snapshot_id: str) -> ServerResponse:
     )
 
 
+def scenario_not_found(scenario_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "scenario_not_found",
+        f"Assist scenario not found: {scenario_id}",
+        extra={"scenario_id": scenario_id},
+    )
+
+
 def flow_not_found(flow_id: str) -> ServerResponse:
     return error_response(
         404,

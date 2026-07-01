@@ -17,6 +17,7 @@ def test_collect_service_routes_includes_system_and_flows() -> None:
     assert ("GET", "/v1/api/system/jobs/{job_id}/context") in paths
     assert ("POST", "/v1/api/flows/{flow_id}/create") in paths
     assert ("POST", "/v1/api/processes/{process_id}/prepare") in paths
+    assert ("POST", "/v1/api/assist/scenarios/{scenario_id}/start") in paths
 
 
 def test_rest_routes_merges_meta_and_service() -> None:
@@ -36,4 +37,4 @@ def test_openapi_includes_flows_create_and_system_context() -> None:
 def test_openapi_tags_cover_service_domains() -> None:
     doc = build_openapi_spec(version=__version__)
     tag_names = {tag["name"] for tag in doc["tags"]}
-    assert {"Meta", "System", "Flows", "Definitions", "Processes", "Providers"} <= tag_names
+    assert {"Meta", "Assist", "System", "Flows", "Definitions", "Processes", "Providers"} <= tag_names

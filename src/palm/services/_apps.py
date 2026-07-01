@@ -10,6 +10,7 @@ INSTALLED_SERVICES: tuple[str, ...] = (
     "definitions",
     "execution",
     "system",
+    "assist",
 )
 
 

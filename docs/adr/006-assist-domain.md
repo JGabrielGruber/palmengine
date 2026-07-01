@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed** — July 2026 (Palm 0.18.0 MVP · 0.19.0 stable MCP)
+**Accepted** — July 2026 (Palm 0.18.0 MVP shipped · 0.19.0 stable MCP planned)
 
 ## Context
 

@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.16.5 shipped)
+**Last updated:** July 2026 (0.18.0 shipped)
 
 ---
 
@@ -38,7 +38,7 @@ palm/runtimes/             ← Thin adapters per service domain (map transport �
         ↓
 palm/app/                  ← ApplicationHost (primary orchestrator)
         ↓
-palm/services/             ← User-facing API (definitions, execution, system)
+palm/services/             ← User-facing API (definitions, execution, system, assist)
         ↓
 palm/common/               ← CQRS buses, schemas, hooks, persistence, service primitives
         ↓

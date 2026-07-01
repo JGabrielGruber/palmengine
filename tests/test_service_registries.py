@@ -5,6 +5,8 @@ from __future__ import annotations
 import ast
 import pathlib
 
+from palm.services.assist.registry import CommandSpec as AssistCommandSpec
+from palm.services.assist.registry import assist_commands
 from palm.services.definitions.registry import CatalogVerb, catalog_verbs
 from palm.services.execution.flows.registry import CommandSpec, flow_commands
 from palm.services.execution.processes.registry import CommandSpec as ProcessCommandSpec
@@ -22,6 +24,15 @@ def test_definitions_registry_has_catalog_verbs() -> None:
     assert "validate_flow" in ids
     assert "create_flow" in ids
     assert "delete_resource" in ids
+
+
+def test_assist_registry_has_command_specs() -> None:
+    commands = assist_commands()
+    assert commands
+    assert all(isinstance(spec, AssistCommandSpec) for spec in commands)
+    ids = {spec.command_id for spec in commands}
+    assert "start_scenario" in ids
+    assert "session_handoff" in ids
 
 
 def test_flow_registry_has_command_specs() -> None:
