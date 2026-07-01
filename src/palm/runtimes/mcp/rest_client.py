@@ -249,6 +249,16 @@ class PalmRestClient:
     def get_doctor(self) -> dict[str, Any]:
         return self._request("GET", "/v1/api/system/doctor")
 
+    def assist_dispatch(
+        self,
+        path: list[str],
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        from palm.runtimes.mcp.assist.dispatch import map_dispatch_to_rest
+
+        method, url_path, body, auth = map_dispatch_to_rest(path, params)
+        return self._request(method, url_path, body=body, auth=auth)
+
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         return self._request("POST", "/v1/api/definitions/flows/validate", body=body, auth=True)
 

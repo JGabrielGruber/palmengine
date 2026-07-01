@@ -406,6 +406,31 @@ class PalmInProcessBackend:
     def get_doctor(self) -> dict[str, Any]:
         return self._ctx.system.doctor(self._ctx.runtime)
 
+    def assist_dispatch(
+        self,
+        path: list[str],
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        from palm.runtimes.mcp.assist.dispatch import dispatch_operator_path
+
+        try:
+            return dispatch_operator_path(self._ctx, path, params)
+        except DefinitionNotFoundServiceError as exc:
+            if exc.kind == "flow":
+                raise _flow_not_found(exc.ref) from exc
+            if exc.kind == "process":
+                raise _process_not_found(exc.ref) from exc
+            raise PalmRestError(
+                404,
+                {"error": f"{exc.kind}_not_found", "message": str(exc), "ref": exc.ref},
+            ) from exc
+        except InstanceNotFoundServiceError as exc:
+            raise _instance_not_found(exc.instance_id) from exc
+        except InstanceNotFoundError as exc:
+            raise _instance_not_found(str(exc)) from exc
+        except (TypeError, ValueError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
             return self._ctx.definitions.validate_flow(body, runtime=self._ctx.runtime)

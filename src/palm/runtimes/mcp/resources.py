@@ -7,6 +7,7 @@ from typing import Any
 
 
 def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
+    from palm.runtimes.mcp.assist.dispatch import assist_routes_payload
     """Register Phase 1-2b MCP resources."""
 
     @mcp.resource(
@@ -104,6 +105,15 @@ def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
     def openapi_document() -> str:
         """Mirror GET /v1/openapi.json."""
         return json.dumps(rest_client.get_openapi())
+
+    @mcp.resource(
+        "palm://assist/routes",
+        mime_type="application/json",
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+    )
+    def assist_routes() -> str:
+        """Command-path catalog for ``palm_assist`` dispatch and contributor aliases."""
+        return json.dumps(assist_routes_payload())
 
 
 __all__ = ["register_core_resources"]

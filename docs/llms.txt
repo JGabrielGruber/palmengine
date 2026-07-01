@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.18.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Services are the API — `/v1/api/…` REST + per-domain MCP + Assist (0.18)
+**Version:** 0.19.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Services are the API — REST + `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -69,6 +69,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **MCP (0.16)** | Per-domain tools (`palm_flows_*`, `palm_system_*`, `palm_definitions_*`, `palm_providers_invoke`); see `docs/MCP.md` |
 | **Service layer (0.16)** | `host.system`, `host.definitions`, `host.execution.flows`, `host.execution.providers` |
 | **Assist (0.18)** | `host.assist` · REST `/v1/api/assist/…` · `palm-operator-entry` scenario · handoff → flows |
+| **palm_assist (0.19)** | Single MCP tool: `path` / `alias` / `params` dispatch · resource `palm://assist/routes` |
 | **MCP in-process (0.15+)** | `PALM_MCP_IN_PROCESS=1` — tools use services without HTTP (default in `.grok/config.toml`) |
 | **Dashboard** | `palm status` — projection-backed Rich overview |
 | **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
@@ -127,15 +128,15 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.
 7. **Interactive entry** — `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
 8. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
 
-### Typical session
+### Typical session (0.19 — `palm_assist` or per-domain tools)
 
 ```
-palm_system_doctor
-palm_flows_create_session(flow_id="todo-builder")     → session_id
-palm_flows_session(session_id)                         → step, prompt, choices
-palm_flows_session_input(session_id, input="…")        → plain string
-# child-wait: palm_flows_session_resume_child_wait(session_id)
-# stuck: prompt debug-wizard-block + palm_flows_compose_status(session_id)
+palm_assist(alias="operator-entry/start")              → session_id
+palm_assist(path=["assist","session",id,"input"], params={"value":"todo-builder"})
+palm_assist(alias="operator-entry/handoff", params={"session_id": id})
+palm_assist(path=["flows","todo-builder","create"])    → business session
+# Legacy equivalent: palm_flows_create_session(flow_id="todo-builder")
+# Catalog: palm://assist/routes
 ```
 
 ### Tool cheat sheet
@@ -144,7 +145,8 @@ palm_flows_session_input(session_id, input="…")        → plain string
 |------|-----------------|
 | Project context | `palm://agent/guide` (this file) |
 | Flow catalog | `palm://definitions/flows` |
-| Start wizard | `palm_flows_create_session` |
+| Start wizard | `palm_assist` path/alias or `palm_flows_create_session` |
+| Command catalog | `palm://assist/routes` |
 | Current step | `palm_flows_session` |
 | Send answer | `palm_flows_session_input(input=…)` |
 | Parent/child stack | `palm://instances/{id}/tree`, `palm_flows_compose_status` |

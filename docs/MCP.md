@@ -125,18 +125,25 @@ just mcp-inspector                  # MCP Inspector UI
 
 ### Assist domain (0.18 REST · 0.19 MCP)
 
-**0.18** adds `palm/services/assist/` — conversational operator guidance with typed handoff to business flows. MCP tools are **unchanged** in 0.18; use REST or `host.assist` in library code. **0.19** ships stable `palm_assist` dispatch proxy.
+**0.18** adds `palm/services/assist/` — conversational operator guidance with typed handoff. **0.19** ships stable **`palm_assist`** — one parametric MCP tool for path-shaped dispatch.
+
+| `palm_assist` | Purpose |
+|---------------|---------|
+| `path=["assist","scenarios","operator-entry","start"]` | Start operator entry |
+| `alias="operator-entry/start"` | Same via contributor alias |
+| `path=["assist","session",id,"input"], params={"value":"yes"}` | Plain-string input |
+| `alias="operator-entry/handoff", params={"session_id":id}` | Typed handoff payload |
+| `path=["flows","todo-builder","create"]` | Delegate to flows after handoff |
+
+Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid — migration optional. See [MIGRATION-0.19.md](../MIGRATION-0.19.md).
 
 | Assist REST | Purpose |
 |-------------|---------|
 | `GET /v1/api/assist/scenarios` | List registered scenarios |
 | `POST /v1/api/assist/scenarios/operator-entry/start` | Start operator entry wizard |
-| `POST /v1/api/assist/session/{session_id}/input` | Plain-string input (same coercion as flows) |
-| `POST /v1/api/assist/session/{session_id}/handoff` | Typed `{ kind, flow_id, operator_hint }` payload |
+| `POST /v1/api/assist/session/{session_id}/handoff` | Typed handoff payload |
 
-**Operator loop (0.18):** assist start → input loop → handoff → `palm_flows_create_session` on `flow_id`. See [MIGRATION-0.18.md](../MIGRATION-0.18.md).
-
-Assist scenarios are normal wizard flows (`palm-operator-entry`). Resource steps inside assist wizards use existing `step_kind: resource` → `ResourceLeaf` (no assist-specific resource engine).
+Assist scenarios are normal wizard flows (`palm-operator-entry`). Resource steps use existing `step_kind: resource` → `ResourceLeaf`.
 
 ### Daily workflows
 

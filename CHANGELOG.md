@@ -4,6 +4,25 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.19.0] — 2026-07-01
+
+**Stable MCP proxy** — single `palm_assist` dispatch tool for agent config stability.
+
+Migration: [MIGRATION-0.19.md](MIGRATION-0.19.md) · Vision: [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md)
+
+### Added
+
+- **`palm_assist`** MCP tool — parametric `path` / `alias` / `params` dispatch
+- **`palm://assist/routes`** — generated command-path catalog + contributor aliases
+- **`mcp_aliases`** on `AssistContributor` — stable alias map (`operator-entry/start`, etc.)
+- **`assist_dispatch`** on in-process and REST MCP backends
+- **Tests** — `test_palm_assist_tool.py`, `test_assist_mcp_aliases.py`
+
+### Changed
+
+- **`docs/MCP.md`**, **`docs/llms.txt`** — document `palm_assist` operator loop
+- Per-domain MCP tools (`palm_flows_*`, …) **unchanged** — migration optional
+
 ## [0.18.0] — 2026-07-01
 
 **Assist domain MVP** — fifth service for conversational operator guidance and handoff.

@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.18.0`  
+**Current Version:** `0.19.0`  
 **Last Updated:** July 1, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.18.0** Assist domain MVP — operator guidance + handoff.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
 ## Quick Overview
 
@@ -217,17 +217,19 @@ just mcp-inspector                       # MCP Inspector UI
 |-------|-------|--------|
 | 0.18.0 | Assist MVP — REST `/v1/api/assist/…`, `host.assist`, `palm-operator-entry` | ✅ Shipped |
 
-## 0.19 — Stable MCP proxy (Planned)
+## 0.19 — Stable MCP proxy (Shipped)
 
-| Release | Deliverable |
-|---------|-------------|
-| **0.19.0** | Stable `palm_assist` MCP proxy + contributor path aliases |
+**Migration:** [MIGRATION-0.19.md](MIGRATION-0.19.md) · **Release:** [RELEASE-0.19.0.md](RELEASE-0.19.0.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.19.0 | `palm_assist` MCP proxy + contributor aliases | ✅ Shipped |
 
 ## Priorities & Next Steps
 
-**0.18.0 shipped** — Assist domain MVP · [RELEASE-0.18.0.md](RELEASE-0.18.0.md)
+**0.19.0 shipped** — `palm_assist` stable MCP proxy · [RELEASE-0.19.0.md](RELEASE-0.19.0.md)
 
-**Next:** [Stable `palm_assist` MCP proxy (0.19)](docs/VISION-0.18-ASSIST.md) — single parametric agent tool.
+**Next:** 0.20+ experience work (Explorer assist UI, WebSocket assist stream) — see [docs/VISION-0.18-ASSIST.md](docs/VISION-0.18-ASSIST.md).
 
 
 ## Useful Links

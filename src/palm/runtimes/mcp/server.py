@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.runtimes.mcp.config import PalmMcpConfig
+from palm.runtimes.mcp.assist import register_assist_tools
 from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
 from palm.runtimes.mcp.definitions import register_definitions_tools
 from palm.runtimes.mcp.flows import register_flow_tools
@@ -37,6 +38,7 @@ def create_mcp_server(
     backend = _resolve_backend(resolved, client=client, ctx=ctx)
     mcp = FastMCP("Palm Operator")
 
+    register_assist_tools(mcp, backend)
     register_flow_tools(mcp, backend)
     register_definitions_tools(mcp, backend)
     register_system_tools(mcp, backend)

@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.18.0 shipped)
+**Last updated:** July 2026 (0.19.0 shipped)
 
 ---
 
@@ -77,7 +77,7 @@ Coding agents should use the MCP operator adapter to develop and test flows — 
 | Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/llms.txt` |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
-**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; collection menu → `palm_wizard_collection_action` or choice label; collection field → `palm_flows_session_input`; multi-step bursts → `palm_flows_session_drive`; compositional stacks → `palm_flows_compose_status`; interactive entry → `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `palm_flows_session_resume_child_wait` only when `waiting_for_child`.
+**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); compact inspect by default; resources for read, tools for write; **0.19+** stable proxy → `palm_assist(path=…)` or `alias=…` (catalog: `palm://assist/routes`); per-domain tools (`palm_flows_*`, …) remain valid; collection menu → `palm_wizard_collection_action` or choice label; interactive entry → `palm_assist` / `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `resume-child-wait` only when `waiting_for_child`.
 
 **Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
 

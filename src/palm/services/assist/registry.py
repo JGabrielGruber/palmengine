@@ -25,8 +25,9 @@ class AssistContributor:
     scenario_id: str
     flow_id: str
     summary: str = ""
+    mcp_aliases: tuple[tuple[str, tuple[str, ...]], ...] = ()
     register_routes: Callable[[list[CommandSpec]], None] | None = None
-    register_mcp_paths: Callable[[dict[str, str]], None] | None = None
+    register_mcp_paths: Callable[[dict[str, tuple[str, ...]]], None] | None = None
 
 
 _registry: list[CommandSpec] = [
@@ -81,6 +82,7 @@ _registry: list[CommandSpec] = [
 
 _lock = threading.RLock()
 _contributors: dict[str, AssistContributor] = {}
+_mcp_aliases: dict[str, tuple[str, ...]] = {}
 
 
 def register_assist_contributor(contributor: AssistContributor) -> None:
@@ -90,6 +92,12 @@ def register_assist_contributor(contributor: AssistContributor) -> None:
         if existing is contributor:
             return
         _contributors[contributor.scenario_id] = contributor
+        for alias, target in contributor.mcp_aliases:
+            _mcp_aliases[alias] = target
+        if contributor.register_mcp_paths is not None:
+            extra: dict[str, tuple[str, ...]] = {}
+            contributor.register_mcp_paths(extra)
+            _mcp_aliases.update(extra)
 
 
 def assist_commands() -> tuple[CommandSpec, ...]:
@@ -116,10 +124,45 @@ def scenario_by_id(scenario_id: str) -> AssistContributor | None:
         return _contributors.get(scenario_id)
 
 
+def list_mcp_path_aliases() -> list[dict[str, Any]]:
+    """Return registered MCP path aliases in stable order."""
+    with _lock:
+        return [
+            {"alias": alias, "path": list(path)}
+            for alias, path in sorted(_mcp_aliases.items())
+        ]
+
+
+def resolve_mcp_alias(
+    alias: str,
+    *,
+    params: dict[str, Any] | None = None,
+) -> tuple[str, ...] | None:
+    """Resolve an alias to a concrete command path, substituting ``params`` tokens."""
+    params = params or {}
+    with _lock:
+        pattern = _mcp_aliases.get(alias)
+    if pattern is None:
+        return None
+    resolved: list[str] = []
+    for segment in pattern:
+        text = str(segment)
+        if text.startswith("{") and text.endswith("}"):
+            key = text[1:-1]
+            value = params.get(key)
+            if value is None:
+                raise ValueError(f"alias {alias!r} requires param {key!r}")
+            resolved.append(str(value))
+        else:
+            resolved.append(text)
+    return tuple(resolved)
+
+
 def clear_assist_contributors() -> None:
     """Remove assist contributor registrations (primarily for tests)."""
     with _lock:
         _contributors.clear()
+        _mcp_aliases.clear()
 
 
 __all__ = [
@@ -127,7 +170,9 @@ __all__ = [
     "CommandSpec",
     "assist_commands",
     "clear_assist_contributors",
+    "list_mcp_path_aliases",
     "list_scenario_rows",
     "register_assist_contributor",
+    "resolve_mcp_alias",
     "scenario_by_id",
 ]

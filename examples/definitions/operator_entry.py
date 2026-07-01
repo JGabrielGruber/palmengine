@@ -62,6 +62,13 @@ def register_definitions(repository: object) -> None:
             scenario_id="operator-entry",
             flow_id="flow-palm-operator-entry",
             summary="Palm operator entry — triage intent and hand off to business flows",
+            mcp_aliases=(
+                ("operator-entry/start", ("assist", "scenarios", "operator-entry", "start")),
+                (
+                    "operator-entry/handoff",
+                    ("assist", "session", "{session_id}", "handoff"),
+                ),
+            ),
         )
     )
     save_flow = getattr(repository, "save_flow", None)
