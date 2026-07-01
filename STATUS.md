@@ -246,7 +246,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Release | Theme | Status |
 |---------|-------|--------|
 | 0.21.0 | Design spec — CLI, Explorer, actions, flows opt-in | ✅ Shipped |
-| 0.21.1 | CLI `assist *` commands + `render_assistant_panel` | Planned |
+| 0.21.1 | CLI `assist *` commands + `render_assistant_panel` | ✅ Shipped |
 | 0.21.2 | Explorer assist catalog + `assist_workspace` | Planned |
 | 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | Planned |
 | 0.21.4 | `actions` block + production enrichers + REST catalog/flows | Planned |
@@ -257,9 +257,9 @@ just mcp-inspector                       # MCP Inspector UI
 
 ## Priorities & Next Steps
 
-**0.21.0 shipped** — assistant expansion design spec approved.
+**0.21.1 shipped** — CLI `assist *` commands consume assistant envelope via `render_assistant_panel`.
 
-**Next:** 0.21.1 — CLI REPL assistant rendering per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
+**Next:** 0.21.2 — Explorer assist catalog + `assist_workspace` per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
 
 
 ## Useful Links

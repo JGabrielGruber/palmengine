@@ -20,9 +20,17 @@ def cmd_help(ctx: CliContext, _args: list[str]) -> int:
   doctor                    Full engine health report
   doctor --dashboard        Dashboard (supports --full / -r)
 
+[bold]Assist[/] [dim](conversational operator guidance — 0.21)[/]
+  assist list               Registered assist scenarios
+  assist start <scenario>   Start guided session [green](try operator-entry)[/]
+  assist input <value>      Answer the current assist prompt
+  assist handoff            Hand off to a business flow
+  assist status [--format]  Inspect active assist session
+  assist cancel             Cancel active assist session
+
 [bold]Flows[/] [dim](writes via host.submit_flow)[/]
   flow list                 All registered flows
-  flow start <ref>          Start a flow [green](recommended)[/]
+  flow start <ref>          Start a flow
   start <ref>               Alias for flow start
 
 [bold]Processes[/] [dim](multi-flow definitions)[/]

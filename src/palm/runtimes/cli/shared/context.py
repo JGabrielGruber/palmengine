@@ -37,6 +37,8 @@ class CliContext:
     host: ApplicationHost
     console: Any
     active_instance_id: str | None = None
+    active_assist_session_id: str | None = None
+    active_assist_scenario_id: str | None = None
     output_format: str = "table"
     _instance_to_job: dict[str, str] = field(default_factory=dict)
     _repl_session: ReplSession | None = field(default=None, repr=False)
@@ -68,10 +70,32 @@ class CliContext:
         return self.host.running_runtimes()
 
     def set_active(self, instance_id: str, job_id: str) -> None:
+        self.clear_active_assist()
         self.active_instance_id = instance_id
         self._instance_to_job[instance_id] = job_id
         self.instance_manager.mark_active(instance_id)
         self.repl.activate(instance_id)
+
+    def set_active_assist(self, view: dict[str, Any]) -> None:
+        """Track the active assist session from an assistant envelope."""
+        session_id = view.get("session_id")
+        if not session_id:
+            return
+        session_id = str(session_id)
+        self.active_assist_session_id = session_id
+        scenario_id = view.get("scenario_id")
+        self.active_assist_scenario_id = str(scenario_id) if scenario_id else None
+        refs = view.get("refs") if isinstance(view.get("refs"), dict) else {}
+        job_id = refs.get("job_id")
+        self.active_instance_id = session_id
+        if job_id:
+            self._instance_to_job[session_id] = str(job_id)
+        self.instance_manager.mark_active(session_id)
+        self.repl.activate(session_id)
+
+    def clear_active_assist(self) -> None:
+        self.active_assist_session_id = None
+        self.active_assist_scenario_id = None
 
     def list_instance_summaries(self) -> list[InstanceSummary]:
         views = self.host.list_instance_views(include_terminal=True)

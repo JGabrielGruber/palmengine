@@ -10,6 +10,11 @@ from palm.runtimes.cli.shared.job_inspect import inspect_job
 
 def build_repl_prompt(ctx: CliContext) -> str:
     """Build the interactive prompt with flow, step, scope, and validation hints."""
+    if ctx.active_assist_session_id:
+        short = ctx.active_assist_session_id[:8]
+        scenario = ctx.active_assist_scenario_id or "assist"
+        return f"palm:{short} assist:{scenario} ●> "
+
     if not ctx.active_instance_id:
         return "palm> "
 

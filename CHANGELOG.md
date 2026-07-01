@@ -4,6 +4,23 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.1] — 2026-07-01
+
+**CLI assist commands** — REPL consumes 0.20 assistant envelope.
+
+### Added
+
+- **`assist list|start|input|handoff|status|cancel`** — CLI commands via `host.assist`
+- **`render_assistant_panel`** — Rich panel for `question`, `choices`, `hint`, `handoff_ready`
+- **`dispatch_repl_line`** — plain REPL input routes to assist when session active
+- **`CliContext.active_assist_session_id`** — assist session tracking
+- **Tests** — `tests/test_cli_assist.py`
+
+### Changed
+
+- **REPL welcome** — recommends `assist start operator-entry`
+- **`help`** — assist command section
+
 ## [0.21.0] — 2026-07-01
 
 **Design** — Assistant expansion: human surfaces + envelope depth (implementation 0.21.1–0.21.6).

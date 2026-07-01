@@ -141,3 +141,62 @@ def render_wizard_panel(
 ) -> None:
     """Backward-compatible alias for :func:`render_job_panel`."""
     render_job_panel(console, job, instance_id=instance_id)
+
+
+def render_assistant_panel(console: Any, view: dict[str, Any]) -> None:
+    """Render a 0.20 assistant envelope turn in the REPL."""
+    from rich.panel import Panel
+
+    session_id = str(view.get("session_id") or "")
+    status = str(view.get("status") or "running")
+    scenario_id = view.get("scenario_id")
+    body = ""
+
+    question = view.get("question")
+    if question:
+        body = f"[bold]{question}[/]\n"
+
+    choices = view.get("choices")
+    if isinstance(choices, list) and choices:
+        body += "\n[bold]Options:[/]\n"
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            number = choice.get("n", "?")
+            label = choice.get("label") or choice.get("value") or ""
+            body += f"  [cyan]{number}.[/] [green]{label}[/]\n"
+
+    compose = view.get("compose")
+    if isinstance(compose, dict):
+        active_child = compose.get("active_child")
+        if isinstance(active_child, dict) and active_child.get("instance_id"):
+            child_id = active_child["instance_id"]
+            child_status = active_child.get("status", "waiting")
+            body += (
+                f"\n[yellow]→[/] Waiting for nested flow "
+                f"[dim]({child_id[:12]}…, {child_status})[/].\n"
+            )
+
+    validation_error = view.get("validation_error")
+    if validation_error:
+        body += f"\n[red]Validation:[/] {validation_error}\n"
+
+    hint = view.get("hint")
+    if hint:
+        body += f"\n[dim]{hint}[/]"
+
+    if view.get("handoff_ready"):
+        body += "\n[yellow]→[/] [bold]Ready to hand off[/] — run [cyan]assist handoff[/]."
+
+    title = "Assist"
+    if scenario_id:
+        title = f"Assist — {scenario_id}"
+    subtitle_parts = [f"session {session_id[:12]}…"] if session_id else []
+    subtitle_parts.append(status)
+    panel = Panel(
+        body.strip() or "[dim]No prompt available.[/]",
+        title=f"[bold]{title}[/]",
+        subtitle="  |  ".join(subtitle_parts),
+        border_style="cyan",
+    )
+    console.print(panel)

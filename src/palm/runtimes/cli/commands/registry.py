@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from palm.runtimes.cli.commands import (
+    assist,
     diagnostics,
     flow,
     instance,
@@ -55,6 +56,18 @@ class CommandRegistry:
         ctx.console.print(f"[yellow]Unknown command:[/] {parts[0]}. Type [bold]help[/].")
         return 1
 
+    def matches_command(self, line: str) -> bool:
+        """Return True when ``line`` begins with a registered command phrase."""
+        import shlex
+
+        parts = shlex.split(line.strip())
+        if not parts:
+            return False
+        for width in range(min(3, len(parts)), 0, -1):
+            if " ".join(parts[:width]) in self.handlers:
+                return True
+        return False
+
 
 def build_registry() -> CommandRegistry:
     reg = CommandRegistry()
@@ -69,6 +82,14 @@ def build_registry() -> CommandRegistry:
     # Host diagnostics (CQRS read models + dashboard)
     reg.register("status", diagnostics.cmd_status)
     reg.register("doctor", diagnostics.cmd_doctor)
+
+    # Assist (host.assist — conversational operator guidance)
+    reg.register("assist list", assist.cmd_assist_list)
+    reg.register("assist start", assist.cmd_assist_start)
+    reg.register("assist input", assist.cmd_assist_input)
+    reg.register("assist handoff", assist.cmd_assist_handoff)
+    reg.register("assist status", assist.cmd_assist_status)
+    reg.register("assist cancel", assist.cmd_assist_cancel)
 
     # Flows (host.submit_flow)
     reg.register("flow list", flow.cmd_flow_list)
