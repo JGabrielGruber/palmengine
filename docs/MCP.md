@@ -115,6 +115,8 @@ just mcp-inspector                  # MCP Inspector UI
    - `menu` → `palm_wizard_collection_action` (`add`, `edit`, `remove`, `done`, …) **or** `palm_flows_session_input` with choice label/number
    - **0.21.8 one-shot:** `palm_wizard_collection_action(action=add, value="title")` or `palm_flows_session_input(input="add", value="title")` at menu phase
    - **0.21.9 assistant:** pass `format="assistant"` on `palm_flows_session_input` / `palm_wizard_collection_action` for `question` + `actions` on mutations
+   - **0.21.10 unified assist:** `palm_assist(params={session_id, flow_id, value})` drives flows input without explicit `path`; aliases `flows/session-input`, `flows/session`
+   - **0.21.11 edit shortcut:** `palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}})` chains menu → select → fields; fuzzy menu tokens (`add`/`edit`/`done`/`continue`) coerce to choice labels
    - `field` / `select_item` / `remove_confirm` → `palm_flows_session_input(session_id, input="…")` (plain string)
 
 7. **Submit entry** — Use `palm_flows_create_session(flow_id=…)` for interactive operator-driven flows. `palm_processes_submit` submits **one job per flow**; it is **rejected** when the process declares `entry_flow` or `metadata.mcp.entries`. Read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
@@ -139,6 +141,10 @@ just mcp-inspector                  # MCP Inspector UI
 | `path=["assist","session",id,"input"], params={"value":"yes"}` | Plain-string input |
 | `alias="operator-entry/handoff", params={"session_id":id}` | Typed handoff payload |
 | `path=["flows","todo-builder","create"]` | Delegate to flows — **powertool** response |
+| `params={session_id, flow_id, value}` | **0.21.10** — inferred `flows/…/session/…/input` |
+| `params={session_id, flow_id, collection_action: "add", value: "title"}` | **0.21.10** — collection one-shot via assist |
+| `params={session_id, flow_id, edit: {item_index: 0, …}}` | **0.21.11** — collection field edit shortcut |
+| `alias="flows/session-input"` | **0.21.10** — registered flows input alias (`flow_id` + `session_id` in `params`) |
 
 Read `palm://assist/routes` for the full command-path catalog and aliases. Per-domain tools (`palm_flows_*`, …) remain valid. See [MIGRATION-0.21.md](../MIGRATION-0.21.md) · [MIGRATION-0.20.md](../MIGRATION-0.20.md) · [MIGRATION-0.19.md](../MIGRATION-0.19.md).
 

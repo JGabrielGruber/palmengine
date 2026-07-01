@@ -172,7 +172,26 @@ Collection menu assistant turns include an `actions` block (`Add item`, `Add tit
 
 Powertool default unchanged when `format` is omitted.
 
-**Next (0.21.10+):** unified `palm_assist` flows driving — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+---
+
+## 0.21.10–0.21.12 — Weak-LLM MCP playbook
+
+Bundled micro-releases for coding agents with sparse tool arguments. Reference trace: [docs/conversations/019f1e9c-43b6-76d1-92dd-54b56ca73ee5](docs/conversations/019f1e9c-43b6-76d1-92dd-54b56ca73ee5/).
+
+| Goal | `palm_assist` call |
+|------|-------------------|
+| Start | `palm_assist()` |
+| Continue assist | `palm_assist(params={session_id, value})` |
+| Hand off | `palm_assist(alias="operator-entry/handoff", params={session_id})` |
+| Create flow | `palm_assist(path=["flows","todo-builder","create"])` |
+| Drive flow input | `palm_assist(params={session_id, flow_id, value})` |
+| Add collection item (title) | `palm_assist(params={session_id, flow_id, collection_action: "add", value: "title"})` |
+| Edit item fields | `palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}})` |
+| Human labels on mutation | `params.format=assistant` on flows input paths |
+
+**MCP aliases:** `flows/session-input`, `flows/session` (require `flow_id` + `session_id` in `params`).
+
+**Replay test:** `tests/test_conversation_replay_019f1e9c.py` — todo-builder path via `palm_assist` only, ≤18 tool calls, `SUCCEEDED`.
 
 ---
 
@@ -190,7 +209,9 @@ Powertool default unchanged when `format` is omitted.
 | 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) |
 | 0.21.8 | Collection `add` + `value` one-shot |
 | 0.21.9 | Assistant envelope on flows mutations |
-| 0.21.10+ | Unified assist, edit shortcuts, replay harness — planned |
+| 0.21.10 | Unified `palm_assist` flows path inference + aliases |
+| 0.21.11 | Edit shortcuts, fuzzy menu, priority intent |
+| 0.21.12 | Weak-LLM playbook + conversation replay harness |
 
 ---
 

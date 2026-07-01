@@ -26,7 +26,10 @@ def drive_collection_edit(
     slugs = _collection_field_slugs(view) or list(merged.keys())
     for slug in slugs:
         if slug not in merged:
-            raise ValueError(f"edit missing value for field {slug!r}")
+            if _field_is_optional(view, slug):
+                merged[slug] = ""
+            else:
+                raise ValueError(f"edit missing value for field {slug!r}")
         coerced = coerce_collection_field_input(merged[slug], view)
         view = provide_input(coerced)
     return view
@@ -56,6 +59,14 @@ def _collection_item_at(wizard_view: Mapping[str, Any], item_index: int) -> dict
             if isinstance(entry, dict):
                 return dict(entry)
     return {}
+
+
+def _field_is_optional(wizard_view: Mapping[str, Any], slug: str) -> bool:
+    prompt = wizard_view.get("prompt") or {}
+    for field in prompt.get("item_fields") or []:
+        if isinstance(field, dict) and str(field.get("slug")) == slug:
+            return not bool(field.get("required", True))
+    return False
 
 
 def _collection_field_slugs(wizard_view: Mapping[str, Any]) -> list[str]:

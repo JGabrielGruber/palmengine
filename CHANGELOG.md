@@ -4,6 +4,26 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.12] — 2026-07-01
+
+**Weak-LLM MCP ergonomics (0.21.10–0.21.12 bundle)** — unified `palm_assist` flows driving, edit shortcuts, replay harness.
+
+### Added
+
+- **Flows path inference** — `palm_assist(params={session_id, flow_id, value})` without explicit `path`.
+- **MCP aliases** — `flows/session-input`, `flows/session`.
+- **`apply_flows_session_input`** — shared coercion + collection one-shot/edit in flows service dispatch.
+- **Collection edit shortcut** — `params.edit={item_index, …fields}` chains menu → select → fields.
+- **Fuzzy menu coercion** — `add`/`edit`/`done`/`continue` tokens map to menu choice labels.
+- **Priority intent** — `"high priority"` → `"high"` on collection priority fields.
+- **Replay harness** — `tests/test_conversation_replay_019f1e9c.py` (todo-builder weak-LLM path).
+
+### Changed
+
+- **Collection `actions`** — use `flows/session-input` alias with `flow_id` + `session_id`.
+- **`operator_hint`** — recommends `palm_assist(params={…})` for waiting sessions.
+- **Version** `0.21.12` on documentation surfaces.
+
 ## [0.21.9] — 2026-07-01
 
 **Assistant envelope on flows mutations** — opt-in human view after session input.

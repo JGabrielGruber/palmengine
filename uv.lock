@@ -985,7 +985,7 @@ wheels = [
 
 [[package]]
 name = "palmengine"
-version = "0.21.9"
+version = "0.21.12"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },

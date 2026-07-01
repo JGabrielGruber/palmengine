@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.21.9`
+**Current Version:** `0.21.12`
 **Last Updated:** July 1, 2026  
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -254,7 +254,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.6 | `MIGRATION-0.21.md`, docs, verification | ✅ Shipped |
 | 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) | ✅ Shipped |
 
-## 0.21.7+ — Weak-LLM MCP (In progress)
+## 0.21.7+ — Weak-LLM MCP (Shipped)
 
 **Design:** [docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md)  
 **Plan:** [docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md)
@@ -264,17 +264,17 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.7 | Hotfixes: MCP boot, null params, bare `palm_assist` | ✅ Shipped |
 | 0.21.8 | Collection `add` + `value` one-shot | ✅ Shipped |
 | 0.21.9 | `format=assistant` on flows mutations + collection `actions` | ✅ Shipped |
-| 0.21.10 | Unified `palm_assist` for flows driving | Planned |
-| 0.21.11 | Edit shortcuts, fuzzy menu, priority intent | Planned |
-| 0.21.12 | Docs addendum + conversation replay harness | Planned |
+| 0.21.10 | Unified `palm_assist` for flows driving | ✅ Shipped |
+| 0.21.11 | Edit shortcuts, fuzzy menu, priority intent | ✅ Shipped |
+| 0.21.12 | Weak-LLM playbook + conversation replay harness | ✅ Shipped |
 
 **0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.21.9 shipped** — assistant envelope on flows mutations; collection menu `actions` block.
+**0.21.12 shipped** — weak-LLM MCP playbook (0.21.10–0.21.12 bundle): unified `palm_assist` flows driving, edit shortcuts, fuzzy menu, priority intent, conversation replay harness.
 
-**Next:** 0.21.10 — unified `palm_assist` for flows driving per [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+**Next:** 0.22 deferred items per [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 
 ## Useful Links

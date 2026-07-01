@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.21.9 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.21.12 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -126,7 +126,7 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.
 4. **Human entry (0.21)** — CLI: `assist start operator-entry`. Explorer: `/explorer/assist`. MCP/REST assist unchanged; handoff → flows create.
 5. **Resources = read, tools = write** — MCP read URIs (`palm://definitions/*`, `palm://agent/guide`) via FetchMcpResource; resource definitions (`knowkey.search_nodes`, `fetch-customer`) via `palm_providers_invoke`. Never pass `palm://` to invoke.
 6. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_flows_session_resume_child_wait` or inspect child.
-7. **Collection steps** — use `palm_wizard_collection_action`, not guessed strings.
+7. **Collection steps** — `palm_wizard_collection_action` or **0.21.10+** `palm_assist(params={session_id, flow_id, collection_action, value})`; **0.21.11+** `params.edit={item_index, …}` for field edits; fuzzy menu tokens (`add`/`edit`/`done`/`continue`) coerce to labels.
 8. **Interactive entry** — `palm_assist` / `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
 9. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
 10. **`actions` block (0.21.4)** — on assistant turns; prefer structured `path`/`alias` over parsing `hint` for next steps.
@@ -140,9 +140,12 @@ palm_assist(alias="operator-entry/start")              → question + choices + 
 palm_assist(path=["assist","session",id,"input"], params={"value":"todo-builder"})
 palm_assist(alias="operator-entry/handoff", params={"session_id": id})
 palm_assist(path=["flows","todo-builder","create"])    → powertool business session
+palm_assist(params={session_id, flow_id, value})       → flows input (0.21.10 inference)
+palm_assist(params={session_id, flow_id, collection_action: "add", value: "title"})
+palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}})
 # Powertool opt-in on assist: format="powertool"
 # Legacy equivalent: palm_flows_create_session(flow_id="todo-builder")
-# Catalog: palm://assist/routes
+# Catalog: palm://assist/routes · aliases: flows/session-input, flows/session
 ```
 
 ### Tool cheat sheet
