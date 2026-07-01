@@ -56,8 +56,12 @@ def _bootstrap_server_context() -> ServerContext:
     if _runtime_holder is not None and _runtime_holder.is_started:
         return build_server_context(_runtime_holder)
 
+    from palm.app.bootstrap import load_definitions_for_repository
+    from palm.app.settings import PalmSettings
+
     runtime = ServerRuntime(host="127.0.0.1", port=0)
     runtime.start(http=False)
+    load_definitions_for_repository(runtime.repository, PalmSettings())
     _runtime_holder = runtime
     atexit.register(shutdown_in_process_runtime)
     return build_server_context(runtime)
