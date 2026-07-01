@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 
+from .assist import AssistPages
 from .base import PageContext
 from .flows import FlowPages
 from .instances import InstancePages
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
 
 __all__ = [
+    "AssistPages",
     "ExplorerPages",
     "FlowPages",
     "InstancePages",
@@ -46,6 +48,7 @@ class ExplorerPages:
         self._schemas = SchemaPages(page_ctx)
         self._jobs = JobPages(page_ctx)
         self._instances = InstancePages(page_ctx)
+        self._assist = AssistPages(page_ctx)
 
     def overview(self, request: ServerRequest) -> ServerResponse:
         return self._overview.overview(request)
@@ -110,3 +113,22 @@ class ExplorerPages:
             instance_id=instance_id,
             snapshot_id=snapshot_id,
         )
+
+    def assist_catalog(self, request: ServerRequest) -> ServerResponse:
+        return self._assist.catalog(request)
+
+    def assist_scenario_detail(
+        self,
+        request: ServerRequest,
+        *,
+        scenario_id: str,
+    ) -> ServerResponse:
+        return self._assist.scenario_detail(request, scenario_id=scenario_id)
+
+    def assist_session(
+        self,
+        request: ServerRequest,
+        *,
+        session_id: str,
+    ) -> ServerResponse:
+        return self._assist.session(request, session_id=session_id)

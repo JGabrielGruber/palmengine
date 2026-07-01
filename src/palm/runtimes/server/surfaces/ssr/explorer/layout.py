@@ -6,6 +6,7 @@ from palm.common.runtimes.server.ssr.layout import page_shell
 
 _EXPLORER_NAV = (
     ("Home", "/explorer"),
+    ("Assist", "/explorer/assist"),
     ("Flows", "/explorer/flows"),
     ("Processes", "/explorer/processes"),
     ("Resources", "/explorer/resources"),

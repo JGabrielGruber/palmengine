@@ -31,6 +31,7 @@ class OverviewPages:
             f"{stat_card('Instances', len(instances), hint='Durable process state')}"
             "</div></section>"
             '<section class="section"><h2>Explore</h2><div class="grid-2">'
+            f'{link_card("/explorer/assist", "Assist", "Guided operator entry with assistant-shaped turns.")}'
             f'{link_card("/explorer/flows", "Flow catalog", "Browse wizard, DAG, and pipeline definitions.")}'
             f'{link_card("/explorer/resources", "Resource catalog", "Declarative contracts, invoke, and timelines.")}'
             f'{link_card("/explorer/flows/submit", "Submit flow", "Start a job with a schema-driven form.")}'

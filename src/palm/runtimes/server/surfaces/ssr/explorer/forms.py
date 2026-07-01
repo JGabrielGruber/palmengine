@@ -19,6 +19,18 @@ def alert(message: str, *, tone: str = "success") -> str:
     return f'<div class="alert alert-{escape(tone)}">{escape(message)}</div>'
 
 
+def assist_start_form(scenario_id: str) -> str:
+    """POST form to start an assist scenario session."""
+    action = f"/explorer/assist/scenarios/{escape(scenario_id)}/start"
+    return (
+        f'<form class="schema-form" action="{action}" method="POST">'
+        '<p class="muted">Starts a new assist session and opens the assistant workspace.</p>'
+        '<div class="form-actions">'
+        '<button class="btn-primary" type="submit">Start assist session</button>'
+        "</div></form>"
+    )
+
+
 def schema_form(
     schema: DictStateSchema,
     *,

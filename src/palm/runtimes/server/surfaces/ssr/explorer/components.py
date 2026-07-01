@@ -769,6 +769,138 @@ def wizard_backtrack_controls(instance_id: str, wizard: dict[str, Any]) -> str:
     )
 
 
+def assist_status_badge(status: str) -> str:
+    tone = "default"
+    if status == "waiting":
+        tone = "waiting"
+    elif status == "complete":
+        tone = "success"
+    elif status == "failed":
+        tone = "error"
+    elif status == "running":
+        tone = "default"
+    return badge(status or "—", tone=tone)
+
+
+def assist_workspace(
+    session_id: str,
+    view: dict[str, Any],
+    *,
+    notice_html: str = "",
+    error_html: str = "",
+) -> str:
+    """Composable assist session workspace (assistant envelope consumer)."""
+    scenario_id = str(view.get("scenario_id") or "assist")
+    status = str(view.get("status") or "running")
+    question = str(view.get("question") or "")
+    hint = str(view.get("hint") or "")
+
+    header = (
+        '<header class="wizard-header">'
+        f"<div><h2>{escape(scenario_id)}</h2>"
+        f'<div class="wizard-meta">{badge("assist", tone="default")} '
+        f"{assist_status_badge(status)}</div></div>"
+        f'<div class="wizard-meta"><span class="muted">session {escape(session_id[:16])}…</span></div>'
+        "</header>"
+    )
+
+    choices_html = ""
+    choices = view.get("choices")
+    if isinstance(choices, list) and choices:
+        buttons = []
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            number = choice.get("n", "?")
+            label = choice.get("label") or choice.get("value") or ""
+            buttons.append(
+                f'<span class="wizard-choice-btn" aria-disabled="true">'
+                f"{escape(str(number))}. {escape(str(label))}</span>"
+            )
+        choices_html = f'<div class="wizard-choice-grid">{"".join(buttons)}</div>'
+
+    validation_html = ""
+    if error_html:
+        validation_html = error_html
+    elif view.get("validation_error"):
+        validation_html = (
+            f'<p class="wizard-validation">{escape(str(view["validation_error"]))}</p>'
+        )
+
+    handoff_html = ""
+    if view.get("handoff_ready"):
+        handoff_html = (
+            '<p class="alert alert-success">Ready to hand off — '
+            "interactive handoff control arrives in the next Explorer release.</p>"
+        )
+
+    prompt_panel = (
+        '<section class="wizard-prompt-card" id="assist-prompt">'
+        f"{notice_html}"
+        f'<h3>Current turn</h3>'
+        f'<p class="wizard-prompt-text">{escape(question) or "—"}</p>'
+        f"{validation_html}"
+        f"{choices_html}"
+        f'<p class="muted">{escape(hint)}</p>'
+        f"{handoff_html}"
+        '<p class="muted">Use <code>assist input</code> in the CLI or REST '
+        f'<a href="/v1/api/assist/session/{escape(session_id)}">assist session API</a> '
+        "to reply. HTMX input arrives in 0.21.3.</p>"
+        "</section>"
+    )
+
+    compose = view.get("compose") if isinstance(view.get("compose"), dict) else {}
+    compose_lines = []
+    if compose.get("step"):
+        compose_lines.append(f"<li><span class=\"step-label\">Step</span> {escape(str(compose['step']))}</li>")
+    active_child = compose.get("active_child")
+    if isinstance(active_child, dict) and active_child.get("instance_id"):
+        child_id = str(active_child["instance_id"])
+        child_status = str(active_child.get("status") or "waiting")
+        compose_lines.append(
+            "<li><span class=\"step-label\">Active child</span> "
+            f'<a href="/explorer/instances/{escape(child_id)}">{escape(child_id[:16])}…</a> '
+            f"({escape(child_status)})</li>"
+        )
+    if compose.get("ancestor_count"):
+        compose_lines.append(
+            f"<li><span class=\"step-label\">Ancestors</span> {escape(str(compose['ancestor_count']))}</li>"
+        )
+
+    compose_html = ""
+    if compose_lines:
+        compose_html = (
+            '<section class="panel"><h3>Compose</h3>'
+            f'<ul class="wizard-timeline">{"".join(compose_lines)}</ul></section>'
+        )
+
+    refs = view.get("refs") if isinstance(view.get("refs"), dict) else {}
+    refs_rows = []
+    for key in ("job_id", "flow_id"):
+        if refs.get(key):
+            refs_rows.append(f"<tr><td>{escape(key)}</td><td><code>{escape(str(refs[key]))}</code></td></tr>")
+    refs_html = ""
+    if refs_rows:
+        refs_html = (
+            '<section class="panel"><h3>References</h3>'
+            f'<table class="wizard-answers-table"><tbody>{"".join(refs_rows)}</tbody></table></section>'
+        )
+
+    links = (
+        '<section class="panel"><h3>Links</h3>'
+        f'<p><a href="/v1/api/assist/session/{escape(session_id)}?format=assistant">REST assist API</a>'
+        f' · <a href="/explorer/instances/{escape(session_id)}">Instance (flows view)</a></p></section>'
+    )
+
+    return (
+        f'<div id="assist-workspace" class="assist-workspace wizard-workspace" aria-live="polite">'
+        f"{header}"
+        f'<div class="grid-2">{prompt_panel}{compose_html + refs_html}</div>'
+        f"{links}"
+        "</div>"
+    )
+
+
 def wizard_workspace(
     instance_id: str,
     wizard: dict[str, Any],

@@ -101,6 +101,27 @@ class ExplorerFetcher:
             return result.to_dict()
         return dict(result)
 
+    def list_assist_scenarios(self) -> list[dict[str, Any]]:
+        rows = self._ctx.assist.dispatch(["assist", "scenarios"])
+        return list(rows) if isinstance(rows, list) else []
+
+    def describe_assist_scenario(self, scenario_id: str) -> dict[str, Any]:
+        return self._ctx.assist.dispatch(["assist", "scenarios", scenario_id])
+
+    def start_assist_scenario(
+        self,
+        scenario_id: str,
+        body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        return self._ctx.assist.start_scenario(scenario_id, body or {}, view_format="assistant")
+
+    def get_assist_session(self, session_id: str) -> dict[str, Any]:
+        return (
+            self._ctx.assist.session(session_id)
+            .context(view_format="assistant")
+            .to_dict(view_format="assistant")
+        )
+
     def get_wizard(self, instance_id: str) -> dict[str, Any] | None:
         """Rich wizard view keyed by durable instance id."""
         result = self._ctx.ask(GetWizardStatusQuery(instance_id=instance_id))

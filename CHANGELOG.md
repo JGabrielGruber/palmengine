@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.2] — 2026-07-01
+
+**Explorer assist panel** — catalog, start, and assistant workspace.
+
+### Added
+
+- **`/explorer/assist`** — scenario catalog and detail pages
+- **`assist_workspace`** — SSR consumer of assistant envelope (`question`, `choices`, `compose`)
+- **`ExplorerFetcher`** assist methods — `list_assist_scenarios`, `start_assist_scenario`, `get_assist_session`
+- **Tests** — `tests/test_explorer_assist_ssr.py`
+
+### Changed
+
+- **Explorer nav** — Assist entry in sidebar and overview link card
+
 ## [0.21.1] — 2026-07-01
 
 **CLI assist commands** — REPL consumes 0.20 assistant envelope.

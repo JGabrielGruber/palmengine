@@ -33,6 +33,27 @@ def register_explorer_routes(registry: RouteRegistry, ctx: ServerContext) -> Non
     examples = ExamplePages(ctx)
 
     registry.register(method="GET", path="/explorer", handler=pages.overview, surface=_SURFACE)
+    registry.register(
+        method="GET", path="/explorer/assist", handler=pages.assist_catalog, surface=_SURFACE
+    )
+    registry.register(
+        method="GET",
+        path="/explorer/assist/scenarios/{scenario_id}",
+        handler=pages.assist_scenario_detail,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="POST",
+        path="/explorer/assist/scenarios/{scenario_id}/start",
+        handler=actions.start_assist_scenario,
+        surface=_SURFACE,
+    )
+    registry.register(
+        method="GET",
+        path="/explorer/assist/session/{session_id}",
+        handler=pages.assist_session,
+        surface=_SURFACE,
+    )
     registry.register(method="GET", path="/explorer/flows", handler=pages.flows, surface=_SURFACE)
     registry.register(
         method="GET", path="/explorer/flows/submit", handler=pages.flow_submit, surface=_SURFACE

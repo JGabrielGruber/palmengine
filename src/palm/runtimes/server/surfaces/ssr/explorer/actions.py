@@ -215,6 +215,25 @@ class ExplorerActions:
             return redirect(f"/explorer/instances/{instance_id}?error={_quote(error)}")
         return redirect(f"/explorer/instances/{instance_id}?notice={_quote(notice)}")
 
+    def start_assist_scenario(
+        self,
+        request: ServerRequest,
+        *,
+        scenario_id: str,
+    ) -> ServerResponse:
+        try:
+            view = self._fetch.start_assist_scenario(scenario_id)
+        except Exception as exc:
+            return redirect(
+                f"/explorer/assist/scenarios/{_quote(scenario_id)}?error={_quote(str(exc))}"
+            )
+
+        self._ctx.wait_until_idle()
+        session_id = view.get("session_id")
+        if not session_id:
+            return redirect(f"/explorer/assist?error={_quote('Assist start returned no session_id')}")
+        return redirect(f"/explorer/assist/session/{session_id}")
+
     def submit_flow(self, request: ServerRequest) -> ServerResponse:
         flows = self._fetch.list_flows()
         schema = build_flow_submit_schema(flows)
