@@ -8,11 +8,11 @@ from palm.common.operator.compact import compact_wizard_inspect
 from palm.common.operator.drive_inputs import drive_wizard_inputs
 from palm.common.operator.input_coercion import resolve_mcp_wizard_input
 from palm.common.operator.compose_status import build_compose_status
+from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.common.operator.view_registry import normalize_view_format
 from palm.runtimes.mcp.flows.views import (
     ensure_flow_id,
     flatten_session_view,
-    shape_flow_session_view,
     submission_view,
 )
 from palm.runtimes.mcp.rest_client import PalmRestError

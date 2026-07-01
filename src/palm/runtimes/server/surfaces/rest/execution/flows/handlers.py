@@ -14,8 +14,8 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.common.operator.invoke_tree import build_invoke_tree
-from palm.runtimes.mcp.flows.views import shape_flow_session_view
 from palm.runtimes.server.surfaces.rest.responses import accepted, flatten_session_context, ok
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body

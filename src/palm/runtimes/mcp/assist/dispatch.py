@@ -12,7 +12,8 @@ from palm.common.operator.view_registry import (
 )
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.runtimes.mcp.assist.routes_catalog import build_assist_routes_catalog
-from palm.runtimes.mcp.flows.views import flatten_session_view, shape_flow_session_view, submission_view
+from palm.common.operator.flow_session_view import shape_flow_session_view
+from palm.runtimes.mcp.flows.views import flatten_session_view, submission_view
 from palm.services.assist.registry import resolve_mcp_alias
 from palm.services.assist.views import resolve_view_format
 

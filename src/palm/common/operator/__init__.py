@@ -2,6 +2,7 @@
 
 from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.common.operator.invoke_tree import build_invoke_tree
+from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.common.operator.view_registry import (
     OperatorViewContext,
     allowed_view_formats,
@@ -19,4 +20,5 @@ __all__ = [
     "compact_wizard_inspect",
     "normalize_view_format",
     "register_operator_view_builder",
+    "shape_flow_session_view",
 ]
