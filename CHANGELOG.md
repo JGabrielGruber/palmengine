@@ -4,6 +4,15 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.1] — 2026-07-01
+
+**Operator view registry** — thin format dispatch in common; powertool registered by default.
+
+### Added
+
+- **`palm/common/operator/view_registry.py`** — `OperatorViewContext`, `register_operator_view_builder`, `build_operator_view`, `compact` → `powertool` alias
+- **Tests** — `tests/test_operator_view_registry.py`
+
 ## [0.20.0] — 2026-07-01
 
 **Design** — Assistant vs Powertool operator view split (implementation 0.20.1–0.20.5).
