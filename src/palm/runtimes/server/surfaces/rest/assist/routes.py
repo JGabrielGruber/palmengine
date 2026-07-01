@@ -79,6 +79,12 @@ ROUTES: tuple[RouteEntry, ...] = (
         "session_handoff",
     ),
     RouteEntry("doctor", "GET", f"{API_PREFIX}/assist/doctor", "doctor"),
+    RouteEntry(
+        "catalog_flows",
+        "GET",
+        f"{API_PREFIX}/assist/catalog/flows",
+        "catalog_flows",
+    ),
 )
 
 _HANDLERS = {
@@ -92,6 +98,7 @@ _HANDLERS = {
     "session_cancel": handlers.session_cancel,
     "session_handoff": handlers.session_handoff,
     "doctor": handlers.doctor,
+    "catalog_flows": handlers.catalog_flows,
 }
 
 

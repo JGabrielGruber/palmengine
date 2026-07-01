@@ -65,6 +65,34 @@ def test_assist_doctor_returns_report(assist_host: ApplicationHost) -> None:
     assert "storage" in report or "runtimes" in report or "version" in report
 
 
+def test_assist_session_includes_actions_block(assist_host: ApplicationHost) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    assert "actions" in started
+    assert any(action.get("label") == "Send answer" for action in started["actions"])
+
+
+def test_operator_entry_enricher_handoff_cta(assist_host: ApplicationHost) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder"},
+    )
+    updated = assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "yes"},
+    )
+    if updated.get("handoff_ready"):
+        assert "handoff to start your flow" in updated.get("hint", "").lower()
+
+
+def test_assist_catalog_flows_dispatch(assist_host: ApplicationHost) -> None:
+    rows = assist_host.assist.dispatch(["assist", "catalog", "flows"])
+    assert isinstance(rows, list)
+    assert rows
+
+
 def test_assist_session_input_and_context(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]

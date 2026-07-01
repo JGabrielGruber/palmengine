@@ -11,7 +11,12 @@ from palm.services.assist.registry import (
     clear_assist_contributors,
     register_assistant_enricher,
 )
-from palm.services.assist.views import build_assistant_view, ensure_assist_view_registration
+from palm.services.assist.schemas import build_assist_session_context
+from palm.services.assist.views import (
+    build_assistant_actions,
+    build_assistant_view,
+    ensure_assist_view_registration,
+)
 
 
 def _operator_entry_flat() -> dict:
@@ -145,6 +150,65 @@ def test_build_operator_view_assistant_format() -> None:
     )
     assert payload["question"] == "What would you like to do with Palm?"
     assert payload["choices"][0]["n"] == 1
+
+
+def test_assistant_actions_from_next_commands() -> None:
+    _setup()
+    ctx = build_assist_session_context(
+        session_id="inst-1",
+        flow_id="flow-palm-operator-entry",
+        view=_operator_entry_flat(),
+        scenario_id="operator-entry",
+        handoff_ready=False,
+    )
+    actions = build_assistant_actions(ctx)
+    labels = [action["label"] for action in actions]
+    assert "Inspect session" in labels
+    assert "Send answer" in labels
+    assert "Go back" in labels
+    assert "Cancel session" in labels
+    assert all("operator_hint" not in action for action in actions)
+
+
+def test_assistant_to_dict_includes_actions() -> None:
+    _setup()
+    ctx = build_assist_session_context(
+        session_id="inst-1",
+        flow_id="flow-palm-operator-entry",
+        view=_operator_entry_flat(),
+        scenario_id="operator-entry",
+    )
+    payload = ctx.to_dict(view_format="assistant")
+    assert "actions" in payload
+    assert payload["actions"][0]["path"][0] == "assist"
+
+
+def test_assistant_handoff_action_uses_alias() -> None:
+    _setup()
+    from palm.services.assist.registry import AssistContributor, register_assist_contributor
+
+    register_assist_contributor(
+        AssistContributor(
+            contributor_id="test",
+            scenario_id="operator-entry",
+            flow_id="flow-palm-operator-entry",
+            mcp_aliases=(
+                ("operator-entry/handoff", ("assist", "session", "{session_id}", "handoff")),
+            ),
+        )
+    )
+    ctx = build_assist_session_context(
+        session_id="inst-1",
+        flow_id="flow-palm-operator-entry",
+        view={**_operator_entry_flat(), "status": "SUCCEEDED"},
+        scenario_id="operator-entry",
+        handoff_ready=True,
+    )
+    actions = build_assistant_actions(ctx)
+    handoff_actions = [a for a in actions if "hand" in a["label"].lower()]
+    assert handoff_actions
+    assert handoff_actions[0].get("alias") == "operator-entry/handoff"
+    assert handoff_actions[0]["params"] == {"session_id": "inst-1"}
 
 
 def test_assist_service_registers_assistant_format() -> None:

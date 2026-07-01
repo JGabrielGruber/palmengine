@@ -213,6 +213,14 @@ def doctor(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ok(ctx.assist.dispatch(["assist", "doctor"]))
 
 
+def catalog_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    rows = ctx.assist.dispatch(["assist", "catalog", "flows"])
+    if not isinstance(rows, list):
+        rows = list(rows) if rows else []
+    params = PaginationParams(limit=len(rows), offset=0)
+    return ok(list_envelope("flows", rows, params))
+
+
 def _view_format(request: ServerRequest) -> str:
     query = dict(request.query) if request.query else {}
     return resolve_view_format(query)
@@ -225,6 +233,7 @@ def _start_body(result: Any) -> dict[str, Any]:
 
 
 __all__ = [
+    "catalog_flows",
     "describe_scenario",
     "doctor",
     "get_session",

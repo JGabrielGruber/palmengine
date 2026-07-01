@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+AssistantEnricherFn = Callable[..., dict[str, Any]]
+
 
 @dataclass(frozen=True)
 class CommandSpec:
@@ -26,6 +28,7 @@ class AssistContributor:
     flow_id: str
     summary: str = ""
     mcp_aliases: tuple[tuple[str, tuple[str, ...]], ...] = ()
+    assistant_enricher: AssistantEnricherFn | None = None
     register_routes: Callable[[list[CommandSpec]], None] | None = None
     register_mcp_paths: Callable[[dict[str, tuple[str, ...]]], None] | None = None
 
@@ -80,8 +83,6 @@ _registry: list[CommandSpec] = [
     ),
 ]
 
-AssistantEnricherFn = Callable[..., dict[str, Any]]
-
 _lock = threading.RLock()
 _contributors: dict[str, AssistContributor] = {}
 _mcp_aliases: dict[str, tuple[str, ...]] = {}
@@ -101,6 +102,8 @@ def register_assist_contributor(contributor: AssistContributor) -> None:
             extra: dict[str, tuple[str, ...]] = {}
             contributor.register_mcp_paths(extra)
             _mcp_aliases.update(extra)
+        if contributor.assistant_enricher is not None:
+            register_assistant_enricher(contributor.scenario_id, contributor.assistant_enricher)
 
 
 def assist_commands() -> tuple[CommandSpec, ...]:

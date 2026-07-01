@@ -50,6 +50,12 @@ class AssistSessionContext:
             handoff_ready=self.handoff_ready,
         )
         payload = build_operator_view(fmt, flat_view=flat, context=context)
+        if fmt == "assistant":
+            from palm.services.assist.views import build_assistant_actions
+
+            actions = build_assistant_actions(self)
+            if actions:
+                payload["actions"] = actions
         if fmt == "powertool":
             payload = self._merge_powertool_fields(payload)
         return payload

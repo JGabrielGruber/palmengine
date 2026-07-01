@@ -11,8 +11,21 @@ Try via assist REST::
 
 from __future__ import annotations
 
+from typing import Any
+
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.services.assist.registry import AssistContributor, register_assist_contributor
+
+
+def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]:
+    """Post-humanize CTA when the operator-entry scenario is ready to hand off."""
+    payload = dict(view)
+    if payload.get("handoff_ready"):
+        extra = "Say handoff to start your flow."
+        hint = str(payload.get("hint") or "")
+        if extra.lower() not in hint.lower():
+            payload["hint"] = f"{hint} {extra}".strip() if hint else extra
+    return payload
 
 OPERATOR_ENTRY_FLOW = FlowDefinition(
     id="flow-palm-operator-entry",
@@ -69,6 +82,7 @@ def register_definitions(repository: object) -> None:
                     ("assist", "session", "{session_id}", "handoff"),
                 ),
             ),
+            assistant_enricher=enrich_operator_entry,
         )
     )
     save_flow = getattr(repository, "save_flow", None)

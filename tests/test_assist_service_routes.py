@@ -11,3 +11,4 @@ def test_assist_routes_include_start_and_handoff() -> None:
     assert ("POST", "/v1/api/assist/session/{session_id}/handoff") in paths
     assert ("GET", "/v1/api/assist/scenarios") in paths
     assert ("GET", "/v1/api/assist/doctor") in paths
+    assert ("GET", "/v1/api/assist/catalog/flows") in paths

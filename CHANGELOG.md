@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.4] — 2026-07-01
+
+**Assistant envelope depth** — `actions` block and production enrichers.
+
+### Added
+
+- **`actions` block** — progressive disclosure from `next_commands` (`label`, `path`, `alias`)
+- **`AssistContributor.assistant_enricher`** — auto-registers on `register_assist_contributor`
+- **Operator-entry enricher** — handoff CTA in `examples/definitions/operator_entry.py`
+- **REST** `GET /v1/api/assist/catalog/flows` — parity with assist dispatch command
+
+### Changed
+
+- **`AssistSessionContext.to_dict`** — includes `actions` on `format=assistant`
+
 ## [0.21.3] — 2026-07-01
 
 **Explorer assist HTMX** — interactive session verbs in the browser.

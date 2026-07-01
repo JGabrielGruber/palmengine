@@ -251,7 +251,70 @@ def _append_handoff_hint(hint: str) -> str:
     return suffix
 
 
+_VERB_ACTION_LABELS: dict[str, str] = {
+    "input": "Send answer",
+    "backtrack": "Go back",
+    "resume": "Resume session",
+    "handoff": "Hand off to business flow",
+    "cancel": "Cancel session",
+}
+
+
+def build_assistant_actions(session_ctx: Any) -> list[dict[str, Any]]:
+    """Map ``next_commands`` to human-readable progressive-disclosure actions."""
+    from palm.services.assist.registry import scenario_by_id
+
+    session_id = str(session_ctx.session_id)
+    scenario_id = session_ctx.scenario_id
+    handoff_alias: str | None = None
+    if scenario_id:
+        contributor = scenario_by_id(scenario_id)
+        if contributor:
+            for alias, target in contributor.mcp_aliases:
+                if target and target[-1] == "handoff":
+                    handoff_alias = alias
+                    break
+
+    actions: list[dict[str, Any]] = []
+    for path in session_ctx.next_commands:
+        if not path or path[0] != "assist" or len(path) < 3 or path[1] != "session":
+            continue
+        verb = path[-1] if len(path) > 3 else None
+        if verb == "handoff" and handoff_alias:
+            actions.append(
+                {
+                    "label": _VERB_ACTION_LABELS["handoff"],
+                    "alias": handoff_alias,
+                    "params": {"session_id": session_id},
+                }
+            )
+            continue
+        if verb in _VERB_ACTION_LABELS:
+            label = _VERB_ACTION_LABELS[verb]
+        elif len(path) == 3 and path[1] == "session":
+            label = "Inspect session"
+        else:
+            label = verb.replace("_", " ").title() if verb else "Continue"
+        actions.append({"label": label, "path": list(path)})
+
+    invoke_tree = session_ctx.invoke_tree
+    if isinstance(invoke_tree, dict):
+        active_child = invoke_tree.get("active_child")
+        if isinstance(active_child, dict):
+            child_id = active_child.get("instance_id")
+            if child_id:
+                actions.append(
+                    {
+                        "label": "Open child session",
+                        "path": ["flows", "session", str(child_id)],
+                    }
+                )
+
+    return actions
+
+
 __all__ = [
+    "build_assistant_actions",
     "build_assistant_view",
     "ensure_assist_view_registration",
     "resolve_view_format",
