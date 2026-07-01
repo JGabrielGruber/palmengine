@@ -18,9 +18,12 @@ DEFAULT_BASE_URL = "http://localhost:8080"
 PATH_PARAM_SAMPLES: dict[str, str] = {
     "job_id": "job-abc123",
     "instance_id": "inst-abc123",
+    "session_id": "inst-abc123",
     "snapshot_id": "0",
     "flow_id": "onboard",
     "process_id": "onboarding",
+    "provider": "rest",
+    "resource_ref": "health/check",
 }
 
 REQUEST_BODIES: dict[str, dict[str, Any]] = {
@@ -129,10 +132,11 @@ OPENAPI_REQUEST_EXAMPLES: dict[str, dict[str, dict[str, Any]]] = {
 
 GROUP_DESCRIPTIONS: dict[str, str] = {
     "Meta": "Health, discovery, and API documentation.",
-    "Jobs": "Orchestration job submission and interactive input.",
-    "Plans": "Deferred plan staging and batch submission.",
-    "Instances": "Durable process instance queries and resume.",
-    "Snapshots": "Point-in-time blackboard captures for audit and replay.",
+    "System": "Observe, diagnose, and lifecycle orchestration state.",
+    "Flows": "Interactive flow sessions — create, input, backtrack, resume.",
+    "Processes": "Multi-flow process staging and submission.",
+    "Providers": "Provider resource invocation.",
+    "Definitions": "Flow, process, and resource definition catalog.",
 }
 
 RESPONSE_EXAMPLES: dict[str, Any] = {
@@ -179,6 +183,36 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "status": "WAITING_FOR_INPUT",
         "metadata": {"pattern": "wizard"},
         "step": "name",
+    },
+    "inspect_job": {
+        "found": True,
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "metadata": {"pattern": "wizard"},
+        "pattern": {
+            "pattern": "wizard",
+            "step": "name",
+            "prompt": "Your name?",
+            "answers": {},
+        },
+        "instance": {
+            "instance_id": "inst-abc123",
+            "link": "/v1/api/system/instances/inst-abc123",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "wizard_progress": {
+            "current_step": "name",
+            "completed_steps": [],
+        },
+        "blackboard_snapshot": None,
+        "recent_events": [],
+        "next_actions": [
+            {
+                "action": "provide_input",
+                "method": "POST",
+                "path": "/v1/api/flows/onboard/session/inst-abc123/input",
+            }
+        ],
     },
     "get_job_context": {
         "found": True,
@@ -260,11 +294,32 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         ],
         "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
     },
+    "inspect_instance": {
+        "instance_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "flow_name": "onboard",
+    },
     "get_instance": {
         "instance_id": "inst-abc123",
         "job_id": "job-abc123",
         "status": "WAITING_FOR_INPUT",
         "flow_name": "onboard",
+    },
+    "instance_tree": {
+        "instance_id": "inst-abc123",
+        "root": {
+            "instance_id": "inst-abc123",
+            "job_id": "job-abc123",
+            "flow": "parent-wizard",
+            "status": "WAITING_FOR_INPUT",
+        },
+        "ancestors": [],
+        "active_child": None,
+        "links": {
+            "explorer": "http://localhost:8080/explorer/instances/inst-abc123",
+            "session": "/v1/api/flows/parent-wizard/session/inst-abc123",
+        },
     },
     "get_instance_tree": {
         "instance_id": "inst-abc123",
@@ -310,6 +365,110 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "job_id": "job-abc123",
         "state_snapshot": {"answers": {"name": "Ada"}},
     },
+    "list_flows": {
+        "flows": [{"flow_id": "onboard", "pattern": "wizard"}],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "definitions_list_flows": {
+        "flows": [{"flow_id": "onboard", "pattern": "wizard"}],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "describe_flow": {"flow_id": "onboard", "pattern": "wizard", "steps": 3},
+    "create_session": {
+        "session_id": "inst-abc123",
+        "job_id": "job-abc123",
+        "status": "RUNNING",
+    },
+    "get_session": {
+        "session_id": "inst-abc123",
+        "flow_id": "onboard",
+        "status": "WAITING_FOR_INPUT",
+        "step": "name",
+    },
+    "session_input": {
+        "session_id": "inst-abc123",
+        "status": "RUNNING",
+        "step": "email",
+    },
+    "session_backtrack": {
+        "session_id": "inst-abc123",
+        "status": "WAITING_FOR_INPUT",
+        "step": "name",
+    },
+    "session_resume": {
+        "session_id": "inst-abc123",
+        "status": "RUNNING",
+    },
+    "session_resume_child_wait": {
+        "session_id": "inst-abc123",
+        "status": "RUNNING",
+        "waiting_for_child": False,
+    },
+    "session_cancel": {
+        "session_id": "inst-abc123",
+        "status": "CANCELLED",
+    },
+    "prepare_process": {
+        "plans": [
+            {
+                "plan_id": "plan-abc123",
+                "kind": "flow",
+                "flow_name": "onboard",
+                "expires_at": "2026-06-17T13:00:00+00:00",
+            }
+        ]
+    },
+    "submit_process": {
+        "jobs": [{"job_id": "job-abc123", "status": "RUNNING", "metadata": {}}],
+    },
+    "run_process": {
+        "jobs": [{"job_id": "job-abc123", "status": "RUNNING", "metadata": {}}],
+    },
+    "invoke_provider": {
+        "success": True,
+        "data": {"ok": True},
+        "error": None,
+        "metadata": {"action": "fetch", "provider": "rest"},
+    },
+    "get_flow": {"flow_id": "onboard", "pattern": "wizard"},
+    "create_flow": {"saved": True, "kind": "flow", "flow": {"flow_id": "onboard"}},
+    "update_flow": {"saved": True, "kind": "flow", "flow": {"flow_id": "onboard"}},
+    "delete_flow": {"deleted": True, "kind": "flow", "flow_id": "onboard"},
+    "validate_flow": {"valid": True, "flow_id": "onboard"},
+    "list_processes": {
+        "processes": [{"process_id": "pipeline"}],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "get_process": {"process_id": "pipeline", "flows": ["extract", "graph"]},
+    "create_process": {"saved": True, "kind": "process", "process": {"process_id": "pipeline"}},
+    "update_process": {"saved": True, "kind": "process", "process": {"process_id": "pipeline"}},
+    "delete_process": {"deleted": True, "kind": "process", "process_id": "pipeline"},
+    "list_resources": {
+        "resources": [{"resource_ref": "health/check", "provider": "rest"}],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "get_resource": {"resource_ref": "health/check", "provider": "rest"},
+    "create_resource": {
+        "saved": True,
+        "kind": "resource",
+        "resource": {"resource_ref": "health/check"},
+    },
+    "update_resource": {
+        "saved": True,
+        "kind": "resource",
+        "resource": {"resource_ref": "health/check"},
+    },
+    "delete_resource": {"deleted": True, "kind": "resource", "resource_ref": "health/check"},
+}
+
+_RESPONSE_ALIASES: dict[str, str] = {
+    "get_job_context": "inspect_job",
+    "get_instance": "inspect_instance",
+    "prepare_plans": "prepare_process",
+    "submit_plans": "submit_process",
+    "submit_job": "create_session",
+    "provide_input": "session_input",
+    "invoke_resource": "invoke_provider",
 }
 
 QUERY_HINTS: dict[str, str] = {
@@ -337,7 +496,7 @@ def build_curl(
     url = f"{base_url}{resolve_path(route.path)}"
     if route.query_schema and route.method == "GET":
         url = f"{url}?limit=10&offset=0"
-        if route.route_id == "list_flows":
+        if route.route_id in ("list_flows", "definitions_list_flows"):
             url = f"{url}&pattern=wizard"
         if route.route_id == "list_instances":
             url = f"{url}&include_terminal=true"
@@ -360,6 +519,8 @@ def build_curl(
 def response_example(route: RouteDefinition) -> str:
     """Pretty-printed sample response for documentation."""
     sample = RESPONSE_EXAMPLES.get(route.route_id)
+    if sample is None:
+        sample = RESPONSE_EXAMPLES.get(_RESPONSE_ALIASES.get(route.route_id, ""))
     if sample is None:
         return ""
     if isinstance(sample, str):

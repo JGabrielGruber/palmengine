@@ -4,6 +4,27 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.17.3] — 2026-07-01
+
+**OpenAPI from service registries** — `/v1/openapi.json` and `/v1/docs` document the full `/v1/api/…` surface.
+
+Migration: [MIGRATION-0.17.md](MIGRATION-0.17.md) · Plan: [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md)
+
+### Added
+
+- **`openapi_registry.py`** — aggregates per-service `ROUTES` into `RouteDefinition` metadata
+- **`tests/test_openapi_registry.py`**
+
+### Changed
+
+- **`openapi.py`**, **`docs.py`**, **`doc_examples.py`** — full service-domain route catalog
+- **`routes.py`** — registers meta routes only; service routes remain on `service_routes.py`
+- **`ARCHITECTURE.md`** — REST/OpenAPI layout note
+
+### Fixed
+
+- OpenAPI/HTML docs no longer meta-only after 0.17 monolith route removal
+
 ## [0.17.2] — 2026-07-01
 
 **Palm provider remote alignment** — compositional remote client uses `/v1/api/…` only.

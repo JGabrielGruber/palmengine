@@ -241,6 +241,8 @@ def test_openapi_and_docs_include_catalog_and_snapshots(server: ServerRuntime) -
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
     assert "/health" in payload["paths"]
+    assert "/v1/api/definitions/flows" in payload["paths"]
+    assert "Definitions" in tag_names
 
     status, payload = _request(server.base_url, "GET", "/v1/docs")
     assert status == 200

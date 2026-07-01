@@ -11,20 +11,15 @@ Legacy job/instance/plan monolith routes were removed in 0.17 — use
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
-RouteId = Literal[
-    "health",
-    "openapi",
-    "docs",
-]
+RouteId = str
 
 
 @dataclass(frozen=True)
 class RouteDefinition:
     """Declarative route with OpenAPI-oriented metadata."""
 
-    route_id: RouteId
+    route_id: str
     method: str
     path: str
     group: str
@@ -38,29 +33,6 @@ class RouteDefinition:
 
 def rest_routes() -> tuple[RouteDefinition, ...]:
     """Return the full REST route table grouped by resource."""
-    return (
-        RouteDefinition(
-            route_id="health",
-            method="GET",
-            path="/health",
-            group="Meta",
-            summary="Health check",
-            description="Runtime status, mounted surfaces, and documentation links.",
-        ),
-        RouteDefinition(
-            route_id="openapi",
-            method="GET",
-            path="/v1/openapi.json",
-            group="Meta",
-            summary="OpenAPI document",
-            description="Machine-readable API specification (OpenAPI 3.0).",
-        ),
-        RouteDefinition(
-            route_id="docs",
-            method="GET",
-            path="/v1/docs",
-            group="Meta",
-            summary="API documentation",
-            description="Human-readable HTML overview with endpoint groups.",
-        ),
-    )
+    from palm.runtimes.server.surfaces.rest.openapi_registry import rest_routes as _all_routes
+
+    return _all_routes()

@@ -787,11 +787,14 @@ palm/runtimes/            # concrete surfaces (thin packages)
 │   ├── factory.py        # create_app — mounts default surfaces
 │   ├── surfaces/
 │   │   ├── rest/         # CQRS JSON API
-│   │   │   ├── routes.py       # central route table (Meta, Jobs, Plans, Instances, Snapshots, Catalog)
+│   │   │   ├── routes.py       # meta route registration (/health, /v1/docs, /v1/openapi.json)
+│   │   │   ├── service_routes.py # per-service REST mount (definitions, flows, processes, …)
+│   │   │   ├── openapi_registry.py # aggregates per-service ROUTES for OpenAPI/HTML docs
+│   │   │   ├── route_table.py  # RouteDefinition type; rest_routes() via openapi_registry
 │   │   │   ├── schemas.py      # DictStateSchema request/query definitions
-│   │   │   ├── handlers/       # meta, jobs, plans, instances, snapshots, catalog
+│   │   │   ├── handlers/       # meta + legacy job/instance helpers used by system handlers
 │   │   │   ├── doc_examples.py # curl + sample payloads (docs + OpenAPI)
-│   │   │   ├── openapi.py      # spec generated from routes + schemas
+│   │   │   ├── openapi.py      # OpenAPI 3.0 spec from openapi_registry + schemas
 │   │   │   └── docs.py         # rich HTML hub at GET /v1/docs
 │   │   ├── websocket/    # extension point (planned)
 │   │   ├── mcp/          # extension point (planned)

@@ -214,9 +214,9 @@ def build_docs_html(*, version: str) -> str:
     <main>
       <div class="hero">
         <h2>REST API Reference</h2>
-        <p>Registry-driven orchestration surface. Submit flows, stage plans, inspect jobs
-           and instances, browse the definition catalog, and inspect state snapshots.
-           All list endpoints return a resource key plus a <code>pagination</code> block.</p>
+        <p>Service-domain orchestration surface under <code>/v1/api/…</code>. Flow sessions,
+           process execution, system observe/lifecycle, definition catalog, and provider invoke.
+           List endpoints return a resource key plus a <code>pagination</code> block.</p>
         <div class="pill-row">
           <span class="pill">Base URL: <code>http://host:port</code></span>
           <span class="pill">Auth header: <code>X-Palm-Subject</code> (when enforced)</span>

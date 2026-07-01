@@ -32,10 +32,9 @@ def build_openapi_spec(*, version: str) -> dict[str, Any]:
             "title": "Palm Engine API",
             "version": version,
             "description": (
-                "Registry-driven REST surface for Palm orchestration. "
-                "Submit flows, stage plans, inspect jobs and instances, "
-                "browse the definition catalog, inspect state snapshots, "
-                "and provide interactive wizard input."
+                "Service-domain REST surface for Palm orchestration. "
+                "Flows sessions, process execution, system observe/lifecycle, "
+                "definition catalog, and provider invocation under /v1/api/…."
             ),
         },
         "tags": [

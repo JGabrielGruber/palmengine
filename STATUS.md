@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.17.2`  
+**Current Version:** `0.17.3`  
 **Last Updated:** July 1, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.17.2** palm provider remote on `/v1/api/…` only.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.17.3** service completion — OpenAPI/docs cover full `/v1/api/…`.
 
 ## Quick Overview
 
@@ -192,9 +192,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Definition catalog CRUD on new surface | ✅ Shipped |
 | Provider invoke on `/v1/api/providers/…` | ✅ Shipped |
 
-**Transitional:** `/v1/jobs`, `/v1/instances`, `/v1/plans` remain on legacy monolith route table until migrated to `/v1/api/system`.
-
-## 0.17 — Service Completion (In progress)
+## 0.17 — Service Completion (Shipped)
 
 **Design:** [docs/superpowers/specs/2026-07-01-0.17-service-completion-design.md](docs/superpowers/specs/2026-07-01-0.17-service-completion-design.md)  
 **Plan:** [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md)  
@@ -205,7 +203,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.17.0 | System REST parity — delete `/v1/jobs`, `/v1/instances` monolith | ✅ Shipped |
 | 0.17.1 | `ProcessExecutionService` + `/v1/api/processes` | ✅ Shipped |
 | 0.17.2 | Palm provider remote alignment | ✅ Shipped |
-| 0.17.3 | OpenAPI from per-service registries | Planned |
+| 0.17.3 | OpenAPI from per-service registries | ✅ Shipped |
 
 ## 0.18–0.19 — Assist Domain (Planned)
 
@@ -225,7 +223,7 @@ Fifth service domain — conversational operator guidance (`palm/services/assist
 
 **0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
-**Next:** [0.17.3 OpenAPI from service registries](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) → Assist domain (0.18 MVP) after 0.17 completes.
+**Next:** [Assist domain 0.18 MVP](docs/VISION-0.18-ASSIST.md) — conversational operator guidance (`palm/services/assist/`).
 
 
 ## Useful Links

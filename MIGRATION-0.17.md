@@ -105,12 +105,29 @@ The compositional **palm provider** remote client (`providers/palm/flow/remote/c
 
 ---
 
-## Later 0.17 phases (preview)
+## 0.17.3 — OpenAPI from service registries
+
+`/v1/openapi.json` and `/v1/docs` now document the full `/v1/api/…` surface.
+
+### What changed
+
+- **`openapi_registry.py`** aggregates `ROUTES` from definitions, flows, processes, providers, and system REST modules
+- **`route_table.py`** is meta-oriented; `rest_routes()` merges meta + service routes for docs/OpenAPI only
+- **Runtime registration** unchanged — meta routes via `routes.py`; service routes via `service_routes.py`
+
+### Integrator note
+
+OpenAPI paths match mounted service REST. Legacy monolith paths (`/v1/jobs`, `/v1/instances`, `/v1/plans`) are not listed.
+
+---
+
+## 0.17 complete
 
 | Release | Theme |
 |---------|-------|
-| **0.17.1** | ✅ `POST /v1/api/processes/…` replaces `/v1/plans/*` |
-| **0.17.2** | ✅ Palm provider remote client alignment |
-| **0.17.3** | OpenAPI from per-service registries |
+| **0.17.0** | ✅ System REST parity |
+| **0.17.1** | ✅ Process execution service |
+| **0.17.2** | ✅ Palm provider remote alignment |
+| **0.17.3** | ✅ OpenAPI from per-service registries |
 
-See [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md).
+Next cycle: Assist domain (0.18). See [docs/superpowers/plans/2026-07-01-0.17-service-completion.md](docs/superpowers/plans/2026-07-01-0.17-service-completion.md).

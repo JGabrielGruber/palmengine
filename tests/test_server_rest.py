@@ -56,7 +56,14 @@ def _request(
 
 def test_rest_routes_are_grouped() -> None:
     groups = {route.group for route in rest_routes()}
-    assert groups == {"Meta"}
+    assert groups >= {
+        "Meta",
+        "System",
+        "Flows",
+        "Definitions",
+        "Processes",
+        "Providers",
+    }
 
 
 def test_submit_job_requires_flow_variant() -> None:
@@ -77,6 +84,10 @@ def test_openapi_includes_tags_and_examples(server: ServerRuntime) -> None:
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
     assert "/health" in payload["paths"]
+    assert "/v1/api/flows/{flow_id}/create" in payload["paths"]
+    assert "/v1/api/system/jobs/{job_id}/context" in payload["paths"]
+    assert "Flows" in tag_names
+    assert "System" in tag_names
 
 
 def test_docs_endpoint_returns_html(server: ServerRuntime) -> None:

@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING
 from palm.common.runtimes.server.protocol import RouteHandler
 from palm.runtimes.server.surfaces.rest.handlers import meta
 from palm.runtimes.server.surfaces.rest.service_routes import register_service_routes
-from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, RouteId, rest_routes
+from palm.runtimes.server.surfaces.rest.openapi_registry import meta_routes
+from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, RouteId
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -24,7 +25,7 @@ def register_routes(
     surface_names: list[str],
 ) -> None:
     """Mount all REST routes on the shared registry."""
-    for route in rest_routes():
+    for route in meta_routes():
         registry.register(
             method=route.method,
             path=route.path,
