@@ -32,6 +32,29 @@ def job_accepted(job: Job) -> ServerResponse:
     return accepted(job_snapshot(job))
 
 
+def session_context_body(ctx: Any) -> dict[str, Any]:
+    """Normalize a :class:`~palm.services.execution.flows.schemas.SessionContext` payload."""
+    if hasattr(ctx, "to_dict"):
+        return ctx.to_dict()
+    if isinstance(ctx, dict):
+        return ctx
+    return {"value": ctx}
+
+
+def legacy_instance_view(ctx: Any) -> dict[str, Any]:
+    """Flatten session context for legacy ``/v1/wizards`` consumers until Phase 4 removal."""
+    payload = session_context_body(ctx)
+    detail = payload.get("detail")
+    if isinstance(detail, dict):
+        merged = {**detail, **{k: v for k, v in payload.items() if k != "detail"}}
+    else:
+        merged = dict(payload)
+    session_id = merged.get("session_id")
+    if session_id is not None:
+        merged["instance_id"] = session_id
+    return merged
+
+
 def read_model_body(row: Any) -> dict[str, Any]:
     if hasattr(row, "to_dict"):
         return row.to_dict()

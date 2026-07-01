@@ -13,7 +13,7 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
 )
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
-from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
+from palm.runtimes.server.surfaces.rest.responses import accepted, legacy_instance_view, ok, read_model_body
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.schemas import (
@@ -78,7 +78,7 @@ def provide_wizard_input(
 
     try:
         ctx_view = ctx.execution.flows.session(None, instance_id).input(body["value"])
-        view = ctx_view.to_dict()
+        view = legacy_instance_view(ctx_view)
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -110,7 +110,7 @@ def backtrack_wizard(
 
     try:
         ctx_view = ctx.execution.flows.session(None, instance_id).backtrack(body.get("to_step"))
-        view = ctx_view.to_dict()
+        view = legacy_instance_view(ctx_view)
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -133,7 +133,7 @@ def resume_child_wait(
 
     try:
         ctx_view = ctx.execution.flows.session(None, instance_id).resume_child_wait()
-        view = ctx_view.to_dict()
+        view = legacy_instance_view(ctx_view)
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except RuntimeError as exc:

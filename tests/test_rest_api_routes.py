@@ -1,4 +1,4 @@
-"""Integration tests for ``/v1/api`` service-domain REST routes."""
+"""Integration tests for ``/v1/api`` command-path REST routes."""
 
 from __future__ import annotations
 
@@ -59,13 +59,53 @@ def test_list_definitions_flows_under_api_prefix(server: ServerRuntime) -> None:
     assert "flows" in body
 
 
-def test_create_flow_instance_via_api(server: ServerRuntime) -> None:
+def test_list_execution_flows_under_api_prefix(server: ServerRuntime) -> None:
+    status, body = _request(server.base_url, "GET", "/v1/api/flows")
+    assert status == 200
+    assert isinstance(body, dict)
+    assert "flows" in body
+
+
+def test_create_flow_session_via_command_path(server: ServerRuntime) -> None:
     status, body = _request(
+        server.base_url,
+        "POST",
+        "/v1/api/flows/onboard/create",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    assert status in {200, 202}
+    assert isinstance(body, dict)
+    assert body.get("session_id")
+
+
+def test_get_session_context_via_command_path(server: ServerRuntime) -> None:
+    status, created = _request(
+        server.base_url,
+        "POST",
+        "/v1/api/flows/onboard/create",
+        body={"wizard": {"name": "onboard", "steps": 2}},
+    )
+    assert status in {200, 202}
+    assert isinstance(created, dict)
+    session_id = created.get("session_id")
+    assert session_id
+
+    status, body = _request(
+        server.base_url,
+        "GET",
+        f"/v1/api/flows/onboard/session/{session_id}",
+    )
+    assert status == 200
+    assert isinstance(body, dict)
+    assert body.get("session_id") == session_id
+    assert "next_commands" in body
+
+
+def test_legacy_instances_path_not_mounted(server: ServerRuntime) -> None:
+    status, _body = _request(
         server.base_url,
         "POST",
         "/v1/api/flows/onboard/instances",
         body={"wizard": {"name": "onboard", "steps": 2}},
     )
-    assert status in {200, 202}
-    assert isinstance(body, dict)
-    assert body.get("instance_id")
+    assert status == 404

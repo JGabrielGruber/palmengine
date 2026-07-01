@@ -17,7 +17,7 @@ from palm.runtimes.server.surfaces.rest.handlers import (
     snapshots,
     wizard,
 )
-from palm.runtimes.server.surfaces.rest.api_routes import register_api_routes
+from palm.runtimes.server.surfaces.rest.service_routes import register_service_routes
 from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, RouteId, rest_routes
 
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ def register_routes(
             surface=surface,
             auth_required=route.auth_required,
         )
-    register_api_routes(registry, ctx, surface=surface)
+    register_service_routes(registry, ctx, surface=surface)
 
 
 def _resolve_handler(
