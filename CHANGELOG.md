@@ -4,6 +4,20 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.8] — 2026-07-01
+
+**Collection one-shot add** — weak LLMs can add a titled item in one MCP call.
+
+### Added
+
+- **`drive_collection_add`** in `palm/common/operator/collection_drive.py` — menu `add` + field `value` in one helper.
+- **`palm_wizard_collection_action(action=add, value=…)`** — one-shot at menu phase (no menu-phase error).
+- **`palm_flows_session_input(input="add", value=…)`** — same one-shot via coercion sentinel.
+
+### Changed
+
+- **Version** `0.21.8` on documentation surfaces.
+
 ## [0.21.7] — 2026-07-01
 
 **Weak-LLM MCP hotfixes** — boot reliability, null param coercion, human-first `palm_assist` defaults.

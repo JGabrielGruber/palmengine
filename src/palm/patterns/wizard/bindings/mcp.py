@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.operator.collection_drive import drive_collection_add
 from palm.common.operator.collection_input import resolve_wizard_collection_action
 from palm.common.operator.commit_preview import wizard_commit_preview
 from palm.common.operator.compact import compact_wizard_inspect
@@ -22,15 +23,21 @@ def register_wizard_mcp_tools(mcp: Any, rest_client: Any) -> None:
         """Drive a wizard collection step: add, edit, remove, done, cancel, confirm_remove."""
         wizard_view = rest_client.get_wizard(instance_id)
         prompt = wizard_view.get("prompt") or {}
-        if (
-            str(action or "").strip().lower() == "add"
-            and value is not None
-            and prompt.get("collection_phase") == "field"
-        ):
-            raise ValueError(
-                "'add' is a menu-phase collection action; "
-                "provide field values via palm_wizard_input(input=…)"
+        normalized_action = str(action or "").strip().lower()
+        if normalized_action == "add" and value is not None:
+            if prompt.get("collection_phase") == "field":
+                raise ValueError(
+                    "'add' is a menu-phase collection action; "
+                    "provide field values via palm_wizard_input(input=…)"
+                )
+            view = drive_collection_add(
+                lambda resolved: rest_client.provide_wizard_input(instance_id, resolved),
+                value=value,
+                wizard_view=wizard_view,
             )
+            payload = compact_wizard_inspect(view)
+            payload["collection_action"] = action
+            return payload
         resolved = resolve_wizard_collection_action(
             action,
             item_index=item_index,

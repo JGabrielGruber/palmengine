@@ -16,6 +16,7 @@ from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
 class _Phase3FakeClient:
     def __init__(self) -> None:
         self.calls: list[tuple[str, Any]] = []
+        self._collection_phase = "menu"
 
     def get_wizard(self, instance_id: str) -> dict[str, Any]:
         self.calls.append(("get_wizard", instance_id))
@@ -28,7 +29,7 @@ class _Phase3FakeClient:
             "prompt": {
                 "step": "items",
                 "step_kind": "collection",
-                "collection_phase": "menu",
+                "collection_phase": self._collection_phase,
                 "choices": ["Continue to summary"],
             },
             "answers": {},
@@ -36,8 +37,11 @@ class _Phase3FakeClient:
 
     def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
         self.calls.append(("provide_wizard_input", instance_id, value))
+        if value == "Add a new item":
+            self._collection_phase = "field"
+        elif self._collection_phase == "field":
+            self._collection_phase = "menu"
         view = self.get_wizard(instance_id)
-        view["prompt"]["collection_phase"] = "field"
         return view
 
     def get_job_context(self, job_id: str) -> dict[str, Any]:
@@ -96,6 +100,20 @@ def phase3_server():
         client=fake,
     )
     return server, fake
+
+
+@pytest.mark.asyncio
+async def test_palm_wizard_collection_action_add_with_value_one_shot(phase3_server) -> None:
+    server, fake = phase3_server
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_wizard_collection_action",
+            {"instance_id": "inst-1", "action": "add", "value": "Test Palm"},
+        )
+    assert ("provide_wizard_input", "inst-1", "Add a new item") in fake.calls
+    assert ("provide_wizard_input", "inst-1", "Test Palm") in fake.calls
+    assert result.data["collection_action"] == "add"
+    assert result.data["collection_phase"] == "menu"
 
 
 @pytest.mark.asyncio

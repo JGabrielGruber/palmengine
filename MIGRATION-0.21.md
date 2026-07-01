@@ -142,7 +142,20 @@ palm_assist(params={"session_id": "inst-1", "value": "todo-builder"})
 palm_assist(alias="operator-entry/handoff", params={"session_id": "inst-1"})
 ```
 
-**Next (0.21.8+):** collection `add` + `value` one-shot, assistant on flows mutations — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+---
+
+## 0.21.8 — Collection `add` + `value` one-shot
+
+Weak LLMs often call `palm_wizard_collection_action(action=add, value="Title")` at menu phase. **0.21.8** chains menu → field automatically.
+
+| Tool | One-shot call |
+|------|---------------|
+| `palm_wizard_collection_action` | `action="add", value="My todo title"` |
+| `palm_flows_session_input` | `input="add", value="My todo title"` |
+
+Powertool response shape unchanged. Menu-only `action=add` (no value) still opens the field phase for multi-field schemas.
+
+**Next (0.21.9+):** assistant envelope on flows mutations — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
 
 ---
 
@@ -158,7 +171,8 @@ palm_assist(alias="operator-entry/handoff", params={"session_id": "inst-1"})
 | 0.21.5 | Flows `format=assistant` opt-in (REST/MCP) |
 | 0.21.6 | Migration + docs + verification |
 | 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) |
-| 0.21.8+ | Collection ergonomics, assistant mutations, replay harness — planned |
+| 0.21.8 | Collection `add` + `value` one-shot |
+| 0.21.9+ | Assistant mutations, unified assist, replay harness — planned |
 
 ---
 

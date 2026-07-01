@@ -64,6 +64,24 @@ def test_resolve_mcp_wizard_input_collection_menu_accepts_done_label() -> None:
     )
 
 
+def test_resolve_mcp_wizard_input_collection_menu_add_with_value_one_shot() -> None:
+    from palm.common.operator.collection_drive import COLLECTION_ADD_ONE_SHOT
+
+    wizard = {
+        "prompt": {
+            "field_type": "choice",
+            "step_kind": "collection",
+            "collection_phase": "menu",
+            "choices": ["Add a new item", "Continue to summary"],
+        },
+        "answers": {},
+    }
+    assert resolve_mcp_wizard_input(input="add", value="Title", wizard_view=wizard) == (
+        COLLECTION_ADD_ONE_SHOT,
+        "Title",
+    )
+
+
 def test_resolve_mcp_wizard_input_collection_menu_routes_add_action() -> None:
     wizard = {
         "prompt": {

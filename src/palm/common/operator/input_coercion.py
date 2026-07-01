@@ -79,6 +79,11 @@ def resolve_mcp_wizard_input(
         collection_phase = prompt.get("collection_phase")
         if collection_phase in ("field", "select_item", "remove_confirm"):
             return coerce_job_input(stripped, pattern_from_wizard_view(wizard_view))
+        if collection_phase == "menu" and input is not None and value is not None:
+            from palm.common.operator.collection_drive import COLLECTION_ADD_ONE_SHOT
+
+            if stripped.lower() == "add":
+                return (COLLECTION_ADD_ONE_SHOT, str(value))
         if collection_phase == "menu" or prompt.get("step_kind") == "collection":
             from palm.common.operator.choice_input import resolve_menu_choice
             from palm.common.operator.collection_input import resolve_wizard_collection_action

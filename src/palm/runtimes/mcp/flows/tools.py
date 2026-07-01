@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.operator.collection_drive import COLLECTION_ADD_ONE_SHOT, drive_collection_add
 from palm.common.operator.compact import compact_wizard_inspect
 from palm.common.operator.drive_inputs import drive_wizard_inputs
 from palm.common.operator.input_coercion import resolve_mcp_wizard_input
@@ -78,6 +79,22 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         inspect = flatten_session_view(backend.flows_get_session(flow_id, session_id))
         resolved = resolve_mcp_wizard_input(input=input, value=value, wizard_view=inspect)
         fid = ensure_flow_id(flow_id=flow_id, session_id=session_id, inspect=inspect)
+        if (
+            isinstance(resolved, tuple)
+            and len(resolved) == 2
+            and resolved[0] == COLLECTION_ADD_ONE_SHOT
+        ):
+
+            def provide(field_value: Any) -> dict[str, Any]:
+                raw_view = backend.flows_session_input(fid, session_id, field_value)
+                return flatten_session_view(raw_view)
+
+            view = drive_collection_add(
+                provide,
+                value=resolved[1],
+                wizard_view=inspect,
+            )
+            return compact_wizard_inspect(view)
         view = backend.flows_session_input(fid, session_id, resolved)
         return compact_wizard_inspect(flatten_session_view(view))
 

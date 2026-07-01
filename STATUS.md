@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.21.7`
+**Current Version:** `0.21.8`
 **Last Updated:** July 1, 2026  
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -262,7 +262,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Release | Theme | Status |
 |---------|-------|--------|
 | 0.21.7 | Hotfixes: MCP boot, null params, bare `palm_assist` | ✅ Shipped |
-| 0.21.8 | Collection `add` + `value` one-shot | Planned |
+| 0.21.8 | Collection `add` + `value` one-shot | ✅ Shipped |
 | 0.21.9 | `format=assistant` on flows mutations | Planned |
 | 0.21.10 | Unified `palm_assist` for flows driving | Planned |
 | 0.21.11 | Edit shortcuts, fuzzy menu, priority intent | Planned |
@@ -272,9 +272,9 @@ just mcp-inspector                       # MCP Inspector UI
 
 ## Priorities & Next Steps
 
-**0.21.7 shipped** — weak-LLM MCP hotfixes tagged; `MIGRATION-0.21.md` § 0.21.7; docs sync.
+**0.21.8 shipped** — collection `add` + `value` one-shot; fixes menu-phase error from session `019f1e9c`.
 
-**Next:** 0.21.8 — collection `add` + `value` one-shot per [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+**Next:** 0.21.9 — `format=assistant` on flows mutations per [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
 
 
 ## Useful Links
