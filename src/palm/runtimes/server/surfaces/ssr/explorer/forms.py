@@ -31,6 +31,101 @@ def assist_start_form(scenario_id: str) -> str:
     )
 
 
+def _assist_htmx_attrs(action: str) -> str:
+    return (
+        f' hx-post="{escape(action)}"'
+        ' hx-target="#assist-workspace"'
+        ' hx-swap="outerHTML"'
+        ' hx-indicator="#assist-loading"'
+        ' hx-disabled-elt="button, input, select, textarea"'
+    )
+
+
+def _assist_loading_indicator() -> str:
+    return (
+        '<span id="assist-loading" class="htmx-indicator wizard-loading" '
+        'role="status" aria-live="polite" aria-atomic="true">Updating…</span>'
+    )
+
+
+def assist_input_form(session_id: str, view: Mapping[str, Any]) -> str:
+    """Interactive assist input with HTMX partial updates."""
+    if view.get("status") != "waiting":
+        return ""
+
+    action = f"/explorer/assist/session/{escape(session_id)}/input"
+    htmx_attrs = _assist_htmx_attrs(action)
+    choices = view.get("choices")
+    choice_html = ""
+    if isinstance(choices, list) and choices:
+        buttons = []
+        for choice in choices:
+            if not isinstance(choice, dict):
+                continue
+            value = str(choice.get("value") or choice.get("label") or "")
+            label = str(choice.get("label") or value)
+            number = choice.get("n", "")
+            prefix = f"{number}. " if number else ""
+            buttons.append(
+                f'<form class="wizard-choice-form" action="{escape(action)}" method="POST"{htmx_attrs}>'
+                f'<input type="hidden" name="value" value="{escape(value)}" />'
+                f'<button type="submit" class="wizard-choice-btn">{escape(prefix)}{escape(label)}</button>'
+                f"</form>"
+            )
+        choice_html = (
+            f'<div class="wizard-choice-grid" role="group" aria-label="Choices">'
+            f'{"".join(buttons)}</div>'
+        )
+
+    return (
+        f'<form class="schema-form wizard-input-form" action="{escape(action)}" method="POST"{htmx_attrs}>'
+        f"{choice_html}"
+        f'<div class="form-field">'
+        f'<label for="assist-value-{escape(session_id)}">Your answer</label>'
+        f'<input id="assist-value-{escape(session_id)}" name="value" type="text" '
+        f'placeholder="Number, choice name, or text" autocomplete="off" />'
+        f"</div>"
+        f'<div class="form-actions">'
+        f'<button class="btn-primary" type="submit">Send answer</button>'
+        f"{_assist_loading_indicator()}"
+        f"</div>"
+        f"</form>"
+    )
+
+
+def assist_handoff_form(session_id: str) -> str:
+    """HTMX handoff trigger when the session is ready."""
+    action = f"/explorer/assist/session/{escape(session_id)}/handoff"
+    return (
+        f'<form class="schema-form" action="{escape(action)}" method="POST"{_assist_htmx_attrs(action)}>'
+        f'<button class="btn-primary" type="submit">Hand off to business flow</button>'
+        f"{_assist_loading_indicator()}"
+        f"</form>"
+    )
+
+
+def assist_session_toolbar(session_id: str, view: Mapping[str, Any]) -> str:
+    """Backtrack and cancel controls for an active assist session."""
+    if view.get("status") not in {"waiting", "running"}:
+        return ""
+
+    back_action = f"/explorer/assist/session/{escape(session_id)}/backtrack"
+    cancel_action = f"/explorer/assist/session/{escape(session_id)}/cancel"
+    return (
+        '<section class="panel"><h3>Session controls</h3>'
+        f'<div class="wizard-choice-grid">'
+        f'<form action="{escape(back_action)}" method="POST"{_assist_htmx_attrs(back_action)}>'
+        f'<button type="submit" class="btn btn-default">Back one step</button>'
+        f"</form>"
+        f'<form action="{escape(cancel_action)}" method="POST">'
+        f'<button type="submit" class="btn-ghost">Cancel session</button>'
+        f"</form>"
+        f"</div>"
+        f"{_assist_loading_indicator()}"
+        f"</section>"
+    )
+
+
 def schema_form(
     schema: DictStateSchema,
     *,

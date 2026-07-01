@@ -103,8 +103,14 @@ class AssistPages:
         except Exception:
             return not_found_page(self._ctx.version, f"Assist session not found: {session_id}")
 
-        notice = flash_banners(request)
-        workspace = assist_workspace(session_id, view, notice_html=notice)
+        from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import query_message
+
+        workspace = assist_workspace(
+            session_id,
+            view,
+            notice=query_message(request, "notice"),
+            error=query_message(request, "error"),
+        )
         content = (
             '<section class="section">'
             f'<p class="btn-row">{action_button("/explorer/assist", "Assist catalog", tone="default")}</p>'

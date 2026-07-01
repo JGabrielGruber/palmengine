@@ -782,18 +782,61 @@ def assist_status_badge(status: str) -> str:
     return badge(status or "—", tone=tone)
 
 
+def assist_handoff_result(session_id: str, result: dict[str, Any]) -> str:
+    """Render handoff outcome inside the assist workspace target."""
+    handoff = result.get("handoff") if isinstance(result.get("handoff"), dict) else {}
+    kind = str(handoff.get("kind") or "none")
+    flow_id = handoff.get("flow_id")
+    hint = str(handoff.get("operator_hint") or "")
+
+    body = ""
+    actions = ""
+    if kind == "flow" and flow_id:
+        from urllib.parse import quote
+
+        submit_href = f"/explorer/flows/submit?flow={quote(str(flow_id), safe='')}"
+        body = (
+            f"<p>Handoff target: <strong>{escape(str(flow_id))}</strong></p>"
+            f'<p class="muted">{escape(hint)}</p>'
+        )
+        actions = (
+            f'<p class="btn-row">{action_button(submit_href, "Start business flow", tone="primary")}'
+            f'{action_button("/explorer/assist", "Assist catalog", tone="default")}</p>'
+        )
+    else:
+        body = f'<p class="muted">{escape(hint or "Assist session complete — no business flow handoff.")}</p>'
+        actions = f'<p class="btn-row">{action_button("/explorer/assist", "Assist catalog", tone="default")}</p>'
+
+    return (
+        f'<div id="assist-workspace" class="assist-workspace wizard-workspace" aria-live="polite">'
+        f'<section class="wizard-prompt-card"><h3>Handoff</h3>{body}{actions}</section>'
+        f'<p class="muted">Session {escape(session_id[:16])}…</p>'
+        f"</div>"
+    )
+
+
 def assist_workspace(
     session_id: str,
     view: dict[str, Any],
     *,
-    notice_html: str = "",
-    error_html: str = "",
+    notice: str = "",
+    error: str = "",
 ) -> str:
     """Composable assist session workspace (assistant envelope consumer)."""
+    from palm.runtimes.server.surfaces.ssr.explorer.forms import (
+        alert,
+        assist_handoff_form,
+        assist_input_form,
+        assist_session_toolbar,
+    )
+
     scenario_id = str(view.get("scenario_id") or "assist")
     status = str(view.get("status") or "running")
     question = str(view.get("question") or "")
     hint = str(view.get("hint") or "")
+
+    notice_html = alert(notice) if notice else ""
+    error_html = alert(error, tone="error") if error else ""
 
     header = (
         '<header class="wizard-header">'
@@ -804,25 +847,8 @@ def assist_workspace(
         "</header>"
     )
 
-    choices_html = ""
-    choices = view.get("choices")
-    if isinstance(choices, list) and choices:
-        buttons = []
-        for choice in choices:
-            if not isinstance(choice, dict):
-                continue
-            number = choice.get("n", "?")
-            label = choice.get("label") or choice.get("value") or ""
-            buttons.append(
-                f'<span class="wizard-choice-btn" aria-disabled="true">'
-                f"{escape(str(number))}. {escape(str(label))}</span>"
-            )
-        choices_html = f'<div class="wizard-choice-grid">{"".join(buttons)}</div>'
-
     validation_html = ""
-    if error_html:
-        validation_html = error_html
-    elif view.get("validation_error"):
+    if not error_html and view.get("validation_error"):
         validation_html = (
             f'<p class="wizard-validation">{escape(str(view["validation_error"]))}</p>'
         )
@@ -830,22 +856,22 @@ def assist_workspace(
     handoff_html = ""
     if view.get("handoff_ready"):
         handoff_html = (
-            '<p class="alert alert-success">Ready to hand off — '
-            "interactive handoff control arrives in the next Explorer release.</p>"
+            '<p class="alert alert-success">Ready to hand off to a business flow.</p>'
+            f"{assist_handoff_form(session_id)}"
         )
+
+    input_html = assist_input_form(session_id, view)
+    toolbar = assist_session_toolbar(session_id, view)
 
     prompt_panel = (
         '<section class="wizard-prompt-card" id="assist-prompt">'
-        f"{notice_html}"
+        f"{notice_html}{error_html}"
         f'<h3>Current turn</h3>'
         f'<p class="wizard-prompt-text">{escape(question) or "—"}</p>'
         f"{validation_html}"
-        f"{choices_html}"
         f'<p class="muted">{escape(hint)}</p>'
         f"{handoff_html}"
-        '<p class="muted">Use <code>assist input</code> in the CLI or REST '
-        f'<a href="/v1/api/assist/session/{escape(session_id)}">assist session API</a> '
-        "to reply. HTMX input arrives in 0.21.3.</p>"
+        f"{input_html}"
         "</section>"
     )
 
@@ -896,7 +922,7 @@ def assist_workspace(
         f'<div id="assist-workspace" class="assist-workspace wizard-workspace" aria-live="polite">'
         f"{header}"
         f'<div class="grid-2">{prompt_panel}{compose_html + refs_html}</div>'
-        f"{links}"
+        f"{toolbar}{links}"
         "</div>"
     )
 

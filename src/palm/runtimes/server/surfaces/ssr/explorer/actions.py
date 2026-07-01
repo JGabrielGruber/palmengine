@@ -17,7 +17,11 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.components import wizard_workspace
+from palm.runtimes.server.surfaces.ssr.explorer.components import (
+    assist_handoff_result,
+    assist_workspace,
+    wizard_workspace,
+)
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 from palm.runtimes.server.surfaces.ssr.explorer.forms import coerce_job_input, parse_form_values
 from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import is_htmx_request
@@ -214,6 +218,89 @@ class ExplorerActions:
         if error:
             return redirect(f"/explorer/instances/{instance_id}?error={_quote(error)}")
         return redirect(f"/explorer/instances/{instance_id}?notice={_quote(notice)}")
+
+    def provide_assist_input(self, request: ServerRequest, *, session_id: str) -> ServerResponse:
+        form_data = request.body or {}
+        raw_value = str(form_data.get("value", "")).strip()
+        if not raw_value:
+            return self._assist_action_response(
+                request,
+                session_id,
+                error="Value is required",
+            )
+        try:
+            self._fetch.provide_assist_input(session_id, raw_value)
+        except Exception as exc:
+            return self._assist_action_response(request, session_id, error=str(exc))
+
+        self._ctx.wait_until_idle()
+        return self._assist_action_response(request, session_id, notice="Answer accepted")
+
+    def backtrack_assist(self, request: ServerRequest, *, session_id: str) -> ServerResponse:
+        form_data = request.body or {}
+        to_step = _optional_str(form_data.get("to_step"))
+        try:
+            self._fetch.backtrack_assist_session(session_id, to_step)
+        except Exception as exc:
+            return self._assist_action_response(request, session_id, error=str(exc))
+
+        self._ctx.wait_until_idle()
+        label = to_step or "previous step"
+        return self._assist_action_response(request, session_id, notice=f"Backtracked to {label}")
+
+    def cancel_assist(self, request: ServerRequest, *, session_id: str) -> ServerResponse:
+        try:
+            self._fetch.cancel_assist_session(session_id)
+        except Exception as exc:
+            return redirect(f"/explorer/assist/session/{session_id}?error={_quote(str(exc))}")
+
+        self._ctx.wait_until_idle()
+        return redirect("/explorer/assist?notice=Assist+session+cancelled")
+
+    def handoff_assist(self, request: ServerRequest, *, session_id: str) -> ServerResponse:
+        try:
+            result = self._fetch.handoff_assist_session(session_id)
+        except Exception as exc:
+            return self._assist_action_response(request, session_id, error=str(exc))
+
+        self._ctx.wait_until_idle()
+        if is_htmx_request(request):
+            return html_response(assist_handoff_result(session_id, result))
+
+        handoff = result.get("handoff") if isinstance(result.get("handoff"), dict) else {}
+        if handoff.get("kind") == "flow" and handoff.get("flow_id"):
+            from urllib.parse import quote
+
+            flow_id = str(handoff["flow_id"])
+            return redirect(
+                f"/explorer/flows/submit?flow={quote(flow_id, safe='')}&notice=Handoff+ready"
+            )
+        return redirect(f"/explorer/assist/session/{session_id}?notice=Handoff+complete")
+
+    def _assist_action_response(
+        self,
+        request: ServerRequest,
+        session_id: str,
+        *,
+        notice: str = "",
+        error: str = "",
+    ) -> ServerResponse:
+        if is_htmx_request(request):
+            try:
+                view = self._fetch.get_assist_session(session_id)
+            except Exception:
+                return html_response(
+                    '<div id="assist-workspace" class="assist-workspace">'
+                    '<p class="alert alert-error">Assist session not found.</p></div>',
+                    status=404,
+                )
+            return html_response(
+                assist_workspace(session_id, view, notice=notice, error=error)
+            )
+
+        if error:
+            return redirect(f"/explorer/assist/session/{session_id}?error={_quote(error)}")
+        return redirect(f"/explorer/assist/session/{session_id}?notice={_quote(notice)}")
 
     def start_assist_scenario(
         self,

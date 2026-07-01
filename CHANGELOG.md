@@ -4,6 +4,20 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.3] — 2026-07-01
+
+**Explorer assist HTMX** — interactive session verbs in the browser.
+
+### Added
+
+- **POST** `/explorer/assist/session/{id}/input|backtrack|cancel|handoff` — HTMX partial updates on `#assist-workspace`
+- **`assist_input_form`**, **`assist_handoff_form`**, **`assist_session_toolbar`** — choice buttons + text input
+- **`assist_handoff_result`** — handoff card with link to flows submit
+
+### Changed
+
+- **`assist_workspace`** — interactive forms replace read-only 0.21.2 placeholder
+
 ## [0.21.2] — 2026-07-01
 
 **Explorer assist panel** — catalog, start, and assistant workspace.

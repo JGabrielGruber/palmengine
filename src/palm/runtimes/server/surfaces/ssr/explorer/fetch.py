@@ -122,6 +122,30 @@ class ExplorerFetcher:
             .to_dict(view_format="assistant")
         )
 
+    def provide_assist_input(self, session_id: str, value: Any) -> dict[str, Any]:
+        return (
+            self._ctx.assist.session(session_id)
+            .input(value, view_format="assistant")
+            .to_dict(view_format="assistant")
+        )
+
+    def backtrack_assist_session(
+        self,
+        session_id: str,
+        to_step: str | None = None,
+    ) -> dict[str, Any]:
+        return (
+            self._ctx.assist.session(session_id)
+            .backtrack(to_step, view_format="assistant")
+            .to_dict(view_format="assistant")
+        )
+
+    def cancel_assist_session(self, session_id: str) -> dict[str, Any]:
+        return self._ctx.assist.session(session_id).cancel()
+
+    def handoff_assist_session(self, session_id: str) -> dict[str, Any]:
+        return self._ctx.assist.handoff(session_id)
+
     def get_wizard(self, instance_id: str) -> dict[str, Any] | None:
         """Rich wizard view keyed by durable instance id."""
         result = self._ctx.ask(GetWizardStatusQuery(instance_id=instance_id))

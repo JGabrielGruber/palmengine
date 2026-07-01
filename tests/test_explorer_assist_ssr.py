@@ -84,3 +84,79 @@ def test_explorer_nav_includes_assist(server: ServerRuntime) -> None:
     status, html, _ = _get_html(server.base_url, "/explorer")
     assert status == 200
     assert 'href="/explorer/assist"' in html
+
+
+def _post_form_htmx(
+    base_url: str,
+    path: str,
+    fields: dict[str, str] | None = None,
+) -> tuple[int, str, dict[str, str]]:
+    parsed = urllib.parse.urlparse(base_url)
+    body = urllib.parse.urlencode(fields or {}).encode("utf-8")
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=10)
+    conn.request(
+        "POST",
+        path,
+        body=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "HX-Request": "true",
+        },
+    )
+    response = conn.getresponse()
+    headers = {key.lower(): value for key, value in response.getheaders()}
+    raw = response.read().decode("utf-8")
+    conn.close()
+    return response.status, raw, headers
+
+
+def test_explorer_assist_session_has_htmx_input(server: ServerRuntime) -> None:
+    _, _, headers = _post_form(server.base_url, "/explorer/assist/scenarios/operator-entry/start")
+    session_path = urllib.parse.urlparse(headers.get("location", "")).path
+    _, html, _ = _get_html(server.base_url, session_path)
+    assert "assist-workspace" in html
+    assert 'hx-target="#assist-workspace"' in html
+    assert "Send answer" in html
+    assert "todo-builder" in html.lower() or "Todo Builder" in html
+
+
+def test_explorer_assist_htmx_input_advances_turn(server: ServerRuntime) -> None:
+    _, _, headers = _post_form(server.base_url, "/explorer/assist/scenarios/operator-entry/start")
+    session_path = urllib.parse.urlparse(headers.get("location", "")).path
+    session_id = session_path.rsplit("/", 1)[-1]
+
+    status, html, _ = _post_form_htmx(
+        server.base_url,
+        f"/explorer/assist/session/{session_id}/input",
+        {"value": "todo-builder"},
+    )
+    assert status == 200
+    assert "assist-workspace" in html
+    assert "operator_hint" not in html
+    assert html.count("assist-workspace") >= 1
+
+
+def test_explorer_assist_handoff_htmx(server: ServerRuntime) -> None:
+    _, _, headers = _post_form(server.base_url, "/explorer/assist/scenarios/operator-entry/start")
+    session_path = urllib.parse.urlparse(headers.get("location", "")).path
+    session_id = session_path.rsplit("/", 1)[-1]
+
+    _post_form_htmx(
+        server.base_url,
+        f"/explorer/assist/session/{session_id}/input",
+        {"value": "todo-builder"},
+    )
+    _post_form_htmx(
+        server.base_url,
+        f"/explorer/assist/session/{session_id}/input",
+        {"value": "yes"},
+    )
+
+    status, html, _ = _post_form_htmx(
+        server.base_url,
+        f"/explorer/assist/session/{session_id}/handoff",
+    )
+    assert status == 200
+    assert "Handoff" in html
+    assert "todo-builder" in html
+    assert "/explorer/flows/submit" in html

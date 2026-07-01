@@ -248,7 +248,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.0 | Design spec — CLI, Explorer, actions, flows opt-in | ✅ Shipped |
 | 0.21.1 | CLI `assist *` commands + `render_assistant_panel` | ✅ Shipped |
 | 0.21.2 | Explorer assist catalog + `assist_workspace` | ✅ Shipped |
-| 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | Planned |
+| 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | ✅ Shipped |
 | 0.21.4 | `actions` block + production enrichers + REST catalog/flows | Planned |
 | 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | Planned |
 | 0.21.6 | `MIGRATION-0.21.md`, docs, verification | Planned |
@@ -257,9 +257,9 @@ just mcp-inspector                       # MCP Inspector UI
 
 ## Priorities & Next Steps
 
-**0.21.2 shipped** — Explorer `/explorer/assist` catalog + assistant workspace.
+**0.21.3 shipped** — Explorer HTMX assist input, backtrack, cancel, and handoff CTA.
 
-**Next:** 0.21.3 — Explorer HTMX input/backtrack/handoff per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
+**Next:** 0.21.4 — `actions` block + production enrichers per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
 
 
 ## Useful Links
