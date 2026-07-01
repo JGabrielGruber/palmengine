@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.7] — 2026-07-01
+
+**Weak-LLM MCP hotfixes** — boot reliability, null param coercion, human-first `palm_assist` defaults.
+
+### Fixed
+
+- **MCP boot:** `shape_flow_session_view` moved to `palm/common/operator/flow_session_view.py` (break circular import blocking `palm-mcp` startup).
+- **`palm_assist`:** Accept `action`/`format: null` from weak LLM clients.
+- **`palm_assist`:** Bare `{}` starts `operator-entry`; infer `session_id` + `value`/`input` continuation paths via `normalize_assist_dispatch_args`.
+
+### Changed
+
+- **`MIGRATION-0.21.md`**, **`docs/MCP.md`**, **`docs/llms.txt`**, **`AGENTS.md`** — weak-LLM MCP defaults documented.
+- **Version** `0.21.7` on documentation surfaces.
+
 ## [0.21.6] — 2026-07-01
 
 **0.21 release complete** — migration guide, agent docs, verification.

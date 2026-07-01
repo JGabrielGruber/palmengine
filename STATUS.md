@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.21.6`  
+**Current Version:** `0.21.7`
 **Last Updated:** July 1, 2026  
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -252,14 +252,29 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.4 | `actions` block + production enrichers + REST catalog/flows | ✅ Shipped |
 | 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | ✅ Shipped |
 | 0.21.6 | `MIGRATION-0.21.md`, docs, verification | ✅ Shipped |
+| 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) | ✅ Shipped |
+
+## 0.21.7+ — Weak-LLM MCP (In progress)
+
+**Design:** [docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md)
+
+| Release | Theme | Status |
+|---------|-------|--------|
+| 0.21.7 | Hotfixes: MCP boot, null params, bare `palm_assist` | ✅ Shipped |
+| 0.21.8 | Collection `add` + `value` one-shot | Planned |
+| 0.21.9 | `format=assistant` on flows mutations | Planned |
+| 0.21.10 | Unified `palm_assist` for flows driving | Planned |
+| 0.21.11 | Edit shortcuts, fuzzy menu, priority intent | Planned |
+| 0.21.12 | Docs addendum + conversation replay harness | Planned |
 
 **0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.21.6 shipped** — `MIGRATION-0.21.md`; docs sync (`MCP.md`, `llms.txt`, `AGENTS.md`); version **0.21.6**; full verification pass.
+**0.21.7 shipped** — weak-LLM MCP hotfixes tagged; `MIGRATION-0.21.md` § 0.21.7; docs sync.
 
-**Next:** 0.22 — deferred items from [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md) (`palm-compose-guide`, process handoff, WebSocket assist stream).
+**Next:** 0.21.8 — collection `add` + `value` one-shot per [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
 
 
 ## Useful Links

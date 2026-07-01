@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.21.6 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Assistant expansion — human surfaces + envelope depth (0.21) · assistant vs powertool views (0.20) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.21.7 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -131,9 +131,11 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.
 9. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
 10. **`actions` block (0.21.4)** — on assistant turns; prefer structured `path`/`alias` over parsing `hint` for next steps.
 
-### Typical session (0.20 — `palm_assist` or per-domain tools)
+### Typical session (0.21.7 — weak-LLM friendly `palm_assist`)
 
 ```
+palm_assist()                                          → operator-entry first turn (0.21.7 default)
+palm_assist(params={"session_id": id, "value": "yes"}) → inferred assist input (0.21.7)
 palm_assist(alias="operator-entry/start")              → question + choices + session_id
 palm_assist(path=["assist","session",id,"input"], params={"value":"todo-builder"})
 palm_assist(alias="operator-entry/handoff", params={"session_id": id})

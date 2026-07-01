@@ -123,7 +123,30 @@ Supported: `assistant` · `powertool` · `verbose` (default `powertool` on flows
 
 ---
 
-## Release map (0.21.0–0.21.6)
+## 0.21.7 — Weak-LLM MCP defaults
+
+Hotfixes for coding agents that send sparse or null tool arguments (e.g. Llama, Composer fast models).
+
+| Behavior | Detail |
+|----------|--------|
+| **Bare `palm_assist()`** | Starts `operator-entry` (assistant first turn); response includes `dispatch_default` hint |
+| **Continue assist session** | `palm_assist(params={"session_id": "inst-…", "value": "yes"})` — path inferred to `assist/session/…/input` |
+| **Null optional params** | `action: null` and `format: null` coerced to defaults (no MCP validation failure) |
+| **MCP boot** | `shape_flow_session_view` lives in `palm/common/operator/` — REST no longer imports `palm.runtimes.mcp` |
+
+**Examples:**
+
+```
+palm_assist()
+palm_assist(params={"session_id": "inst-1", "value": "todo-builder"})
+palm_assist(alias="operator-entry/handoff", params={"session_id": "inst-1"})
+```
+
+**Next (0.21.8+):** collection `add` + `value` one-shot, assistant on flows mutations — see [weak-LLM plan](docs/superpowers/plans/2026-07-01-0.21.7-weak-llm-mcp.md).
+
+---
+
+## Release map (0.21.0–0.21.12)
 
 | Version | Theme |
 |---------|-------|
@@ -134,6 +157,8 @@ Supported: `assistant` · `powertool` · `verbose` (default `powertool` on flows
 | 0.21.4 | `actions` block + production enrichers + REST `catalog/flows` |
 | 0.21.5 | Flows `format=assistant` opt-in (REST/MCP) |
 | 0.21.6 | Migration + docs + verification |
+| 0.21.7 | Weak-LLM MCP hotfixes (boot, null params, bare assist) |
+| 0.21.8+ | Collection ergonomics, assistant mutations, replay harness — planned |
 
 ---
 

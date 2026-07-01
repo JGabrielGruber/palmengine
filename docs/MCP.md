@@ -129,6 +129,8 @@ just mcp-inspector                  # MCP Inspector UI
 
 | `palm_assist` | Purpose |
 |---------------|---------|
+| `palm_assist()` (no args) | **0.21.7** — starts `operator-entry` (human-first default for weak LLMs) |
+| `params={"session_id": id, "value": "…"}` | **0.21.7** — inferred `assist/session/…/input` when path/alias omitted |
 | `alias="operator-entry/start"` | Start operator entry — returns **first turn** (`question`, `choices`) |
 | `format="assistant"` | Default on assist paths (human envelope) |
 | `format="powertool"` | Opt-in 0.19 compact shape on assist |
