@@ -68,9 +68,19 @@ def dispatch_operator_path(
     raise ValueError(f"unhandled dispatch prefix: {prefix!r}")
 
 
+def _coerce_dispatch_result(result: Any) -> Any:
+    """Normalize dataclass session views before compact branching."""
+    if isinstance(result, dict):
+        return result
+    if hasattr(result, "session_id") and hasattr(result, "to_dict"):
+        return result.to_dict()
+    return result
+
+
 def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
     """Reduce domain results to compact operator snapshots."""
     payload: dict[str, Any] = {"path": path}
+    result = _coerce_dispatch_result(result)
     if not isinstance(result, dict):
         payload["result"] = result
         return payload

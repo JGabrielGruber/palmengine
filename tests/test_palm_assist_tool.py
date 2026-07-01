@@ -103,3 +103,34 @@ def test_in_process_assist_dispatch_doctor(assist_server_ctx) -> None:
     backend = PalmInProcessBackend(assist_server_ctx)
     report = backend.assist_dispatch(["assist", "doctor"])
     assert isinstance(report, dict)
+
+
+@pytest.mark.asyncio
+async def test_palm_assist_flows_session_returns_compact(assist_server_ctx) -> None:
+    backend = PalmInProcessBackend(assist_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        started = await client.call_tool(
+            "palm_assist",
+            {"alias": "operator-entry/start", "params": {}},
+        )
+        session_id = started.data["session_id"]
+        result = await client.call_tool(
+            "palm_assist",
+            {
+                "path": ["assist", "session", session_id],
+                "params": {},
+            },
+        )
+
+    payload = result.data
+    assert payload.get("instance_id") == session_id
+    assert "operator_hint" in payload
+    assert "detail" not in payload

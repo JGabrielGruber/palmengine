@@ -4,6 +4,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.19.1] — 2026-07-01
+
+**Bugfix** — `palm_assist` compact shaping for in-process flow session dispatch.
+
+### Fixed
+
+- **`compact_dispatch_result`** — coerce `SessionContext` dataclass results to dicts before compact branching so `palm_assist` flow session inspect/input returns slim operator snapshots (not verbose `result` blobs)
+
 ## [0.19.0] — 2026-07-01
 
 **Stable MCP proxy** — single `palm_assist` dispatch tool for agent config stability.
