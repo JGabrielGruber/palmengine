@@ -56,7 +56,7 @@ def _request(
 
 def test_rest_routes_are_grouped() -> None:
     groups = {route.group for route in rest_routes()}
-    assert groups == {"Meta", "Plans"}
+    assert groups == {"Meta"}
 
 
 def test_submit_job_requires_flow_variant() -> None:
@@ -76,10 +76,7 @@ def test_openapi_includes_tags_and_examples(server: ServerRuntime) -> None:
     assert status == 200
     assert isinstance(payload, dict)
     tag_names = {tag["name"] for tag in payload["tags"]}
-    assert "Plans" in tag_names
-    prepare_op = payload["paths"]["/v1/plans/prepare"]["post"]
-    assert "requestBody" in prepare_op
-    assert "examples" in prepare_op["requestBody"]["content"]["application/json"]
+    assert "/health" in payload["paths"]
 
 
 def test_docs_endpoint_returns_html(server: ServerRuntime) -> None:
@@ -116,7 +113,7 @@ def test_submit_plans_schema_validation(server: ServerRuntime) -> None:
     status, payload = _request(
         server.base_url,
         "POST",
-        "/v1/plans/submit",
+        "/v1/api/processes/submit",
         body={"plan_ids": []},
     )
     assert status == 400

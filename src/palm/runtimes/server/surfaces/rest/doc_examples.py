@@ -386,7 +386,7 @@ def schema_fields(schema_name: str) -> list[str]:
 
 def featured_curl_examples() -> list[tuple[str, str, str]]:
     """Return (title, description, curl) tuples for static site and quick reference."""
-    featured_ids = ("health", "prepare_plans", "submit_plans")
+    featured_ids = ("health",)
     routes_by_id = {route.route_id: route for route in rest_routes()}
     examples: list[tuple[str, str, str]] = []
     for route_id in featured_ids:
@@ -429,6 +429,14 @@ def featured_curl_examples() -> list[tuple[str, str, str]]:
                 "Point-in-time state snapshots for a durable instance.",
                 f"curl -s -X GET '{base}/v1/api/system/instances/inst-abc123/snapshots?limit=10' \\\n"
                 "  -H 'Accept: application/json'",
+            ),
+            (
+                "Prepare process plans",
+                "Stage execution plans for a multi-flow process.",
+                f"curl -s -X POST '{base}/v1/api/processes/pipeline/prepare' \\\n"
+                "  -H 'Accept: application/json' \\\n"
+                "  -H 'Content-Type: application/json' \\\n"
+                "  -d '{{\"process_name\":\"pipeline\"}}'",
             ),
         ]
     )

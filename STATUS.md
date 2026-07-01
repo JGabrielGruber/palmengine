@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.17.0`  
+**Current Version:** `0.17.1`  
 **Last Updated:** July 1, 2026  
-**Maturity:** Wizard Experience · MCP operator adapter · **0.17.0** system REST parity — `/v1/api/system/…` complete; legacy `/v1/jobs` and `/v1/instances` removed.
+**Maturity:** Wizard Experience · MCP operator adapter · **0.17.1** process execution on `/v1/api/processes/…`; legacy `/v1/plans` removed.
 
 ## Quick Overview
 
@@ -203,7 +203,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Phase | Theme | Status |
 |-------|-------|--------|
 | 0.17.0 | System REST parity — delete `/v1/jobs`, `/v1/instances` monolith | ✅ Shipped |
-| 0.17.1 | `ProcessExecutionService` + `/v1/api/processes` | Planned |
+| 0.17.1 | `ProcessExecutionService` + `/v1/api/processes` | ✅ Shipped |
 | 0.17.2 | Palm provider remote alignment | Planned |
 | 0.17.3 | OpenAPI from per-service registries | Planned |
 
@@ -225,7 +225,7 @@ Fifth service domain — conversational operator guidance (`palm/services/assist
 
 **0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
-**Next:** [0.17.1 process execution](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) → Assist domain (0.18 MVP) after 0.17 completes.
+**Next:** [0.17.2 palm provider remote](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) → Assist domain (0.18 MVP) after 0.17 completes.
 
 
 ## Useful Links

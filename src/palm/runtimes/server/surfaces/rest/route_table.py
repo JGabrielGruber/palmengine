@@ -3,8 +3,9 @@ REST route metadata — declarative table without handler imports.
 
 Shared by route registration, OpenAPI generation, and HTML docs.
 
-Legacy job/instance/snapshot monolith routes were removed in 0.17.0 — use
-``/v1/api/system``, ``/v1/api/flows``, and ``/v1/api/definitions`` instead.
+Legacy job/instance/plan monolith routes were removed in 0.17 — use
+``/v1/api/system``, ``/v1/api/flows``, ``/v1/api/processes``, and
+``/v1/api/definitions`` instead.
 """
 
 from __future__ import annotations
@@ -16,8 +17,6 @@ RouteId = Literal[
     "health",
     "openapi",
     "docs",
-    "prepare_plans",
-    "submit_plans",
 ]
 
 
@@ -63,27 +62,5 @@ def rest_routes() -> tuple[RouteDefinition, ...]:
             group="Meta",
             summary="API documentation",
             description="Human-readable HTML overview with endpoint groups.",
-        ),
-        RouteDefinition(
-            route_id="prepare_plans",
-            method="POST",
-            path="/v1/plans/prepare",
-            group="Plans",
-            summary="Prepare plans",
-            description="Stage execution plans for deferred submission.",
-            auth_required=True,
-            request_schema="PreparePlansBody",
-            response_status=201,
-        ),
-        RouteDefinition(
-            route_id="submit_plans",
-            method="POST",
-            path="/v1/plans/submit",
-            group="Plans",
-            summary="Submit plans",
-            description="Consume staged plan ids and submit orchestration jobs.",
-            auth_required=True,
-            request_schema="SubmitPlansBody",
-            response_status=202,
         ),
     )

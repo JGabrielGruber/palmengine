@@ -73,7 +73,7 @@ class ServerContext:
                     runtime=runtime,
                     definitions=definitions,
                 ),
-                processes=ProcessExecutionService(**bus_kw),
+                processes=ProcessExecutionService(**bus_kw, runtime=runtime),
             )
         else:
             self._system = host.system

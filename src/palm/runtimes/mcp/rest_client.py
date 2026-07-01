@@ -230,12 +230,18 @@ class PalmRestClient:
         )
 
     def prepare_plans(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", "/v1/plans/prepare", body=body, auth=True)
+        process_id = _process_id_from_body(body)
+        return self._request(
+            "POST",
+            f"/v1/api/processes/{process_id}/prepare",
+            body=body,
+            auth=True,
+        )
 
     def submit_plans(self, plan_ids: list[str]) -> dict[str, Any]:
         return self._request(
             "POST",
-            "/v1/plans/submit",
+            "/v1/api/processes/submit",
             body={"plan_ids": plan_ids},
             auth=True,
         )
@@ -333,6 +339,15 @@ class PalmRestClient:
             except json.JSONDecodeError:
                 detail = raw
             raise PalmRestError(exc.code, detail) from exc
+
+
+def _process_id_from_body(body: dict[str, Any]) -> str:
+    if body.get("process_name"):
+        return str(body["process_name"])
+    process = body.get("process")
+    if isinstance(process, dict) and process.get("name"):
+        return str(process["name"])
+    return "process"
 
 
 def _flow_id_from_submit_body(body: dict[str, Any]) -> str | None:

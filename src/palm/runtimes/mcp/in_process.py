@@ -380,14 +380,17 @@ class PalmInProcessBackend:
         return result
 
     def prepare_plans(self, body: dict[str, Any]) -> dict[str, Any]:
+        from palm.runtimes.mcp.rest_client import _process_id_from_body
+
+        process_id = _process_id_from_body(body)
         try:
-            return self._ctx.execute(PreparePlansCommand(body=body))
+            return self._ctx.execution.processes.prepare(process_id, body=body)
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
 
     def submit_plans(self, plan_ids: list[str]) -> dict[str, Any]:
         try:
-            result = self._ctx.execute(SubmitPlansCommand(plan_ids=plan_ids))
+            return self._ctx.execution.processes.submit(plan_ids)
         except PlanNotFoundError as exc:
             raise PalmRestError(
                 404,
@@ -399,14 +402,6 @@ class PalmInProcessBackend:
             ) from exc
         except Exception as exc:
             raise PalmRestError(500, str(exc)) from exc
-
-        self._ctx.wait_until_idle()
-        for item in result.get("jobs", []):
-            if not isinstance(item, dict):
-                continue
-            job = self._ctx.runtime.get_job(str(item["job_id"]))
-            item["status"] = job.status.value
-        return result
 
     def get_doctor(self) -> dict[str, Any]:
         return self._ctx.system.doctor(self._ctx.runtime)

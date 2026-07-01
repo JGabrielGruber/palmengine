@@ -528,7 +528,10 @@ class ApplicationHost:
                 runtime_resolver=self._resolve_execution_runtime,
                 definitions=self._definitions,
             ),
-            processes=ProcessExecutionService(**bus_kw),
+            processes=ProcessExecutionService(
+                **bus_kw,
+                runtime_resolver=self._resolve_execution_runtime,
+            ),
         )
 
     def _attach_projections(self) -> None:

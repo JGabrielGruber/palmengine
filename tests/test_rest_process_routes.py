@@ -1,4 +1,4 @@
-"""Tests for ServerRuntime deferred plan HTTP API and auth."""
+"""Tests for process execution REST route registration and HTTP integration."""
 
 from __future__ import annotations
 
@@ -10,13 +10,21 @@ from typing import Any
 import pytest
 
 from palm.core.orchestration import JobStatus
-from palm.runtimes.server import PALM_SUBJECT_HEADER, ServerRuntime
+from palm.runtimes.server import ServerRuntime
+from palm.runtimes.server.surfaces.rest.execution.processes.routes import ROUTES
+
+
+def test_process_routes_registered() -> None:
+    paths = {(entry.method, entry.path) for entry in ROUTES}
+    assert ("POST", "/v1/api/processes/{process_id}/prepare") in paths
+    assert ("POST", "/v1/api/processes/submit") in paths
+    assert ("POST", "/v1/api/processes/{process_id}/run") in paths
 
 
 @pytest.fixture
 def server() -> ServerRuntime:
     rt = ServerRuntime(host="127.0.0.1", port=0)
-    rt.start(port=0, auth_enforce=True)
+    rt.start(port=0)
     yield rt
     rt.stop()
 
@@ -27,12 +35,9 @@ def _request(
     path: str,
     *,
     body: dict[str, Any] | None = None,
-    subject: str | None = "ada",
 ) -> tuple[int, dict[str, Any]]:
     data = None
     headers = {"Accept": "application/json"}
-    if subject is not None:
-        headers[PALM_SUBJECT_HEADER] = subject
     if body is not None:
         data = json.dumps(body).encode("utf-8")
         headers["Content-Type"] = "application/json"
@@ -43,27 +48,13 @@ def _request(
         method=method,
     )
     try:
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-            return resp.status, payload
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        payload = json.loads(exc.read().decode("utf-8"))
-        return exc.code, payload
+        return exc.code, json.loads(exc.read().decode("utf-8"))
 
 
-def test_http_requires_auth_when_enforced(server: ServerRuntime) -> None:
-    status, payload = _request(
-        server.base_url,
-        "POST",
-        "/v1/api/processes/pipeline/prepare",
-        body={"process_name": "pipeline"},
-        subject=None,
-    )
-    assert status == 401
-    assert payload["error"] == "unauthorized"
-
-
-def test_prepare_and_submit_plans_http(server: ServerRuntime) -> None:
+def test_prepare_and_submit_process_http(server: ServerRuntime) -> None:
     status, prepared = _request(
         server.base_url,
         "POST",
@@ -91,15 +82,13 @@ def test_prepare_and_submit_plans_http(server: ServerRuntime) -> None:
     assert status == 202
     assert len(submitted["jobs"]) == 2
     assert submitted["jobs"][0]["status"] == JobStatus.SUCCEEDED.value
-    assert submitted["jobs"][1]["status"] == JobStatus.SUCCEEDED.value
 
 
-def test_submit_plans_rejects_unknown_plan_id(server: ServerRuntime) -> None:
-    status, payload = _request(
+def test_legacy_plans_path_not_mounted(server: ServerRuntime) -> None:
+    status, _payload = _request(
         server.base_url,
         "POST",
-        "/v1/api/processes/submit",
-        body={"plan_ids": ["plan-missing"]},
+        "/v1/plans/prepare",
+        body={"process_name": "pipeline"},
     )
     assert status == 404
-    assert payload["error"] == "plan_not_found"

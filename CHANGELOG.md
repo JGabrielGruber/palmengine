@@ -4,6 +4,27 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.17.1] — 2026-07-01
+
+**Process execution service** — multi-flow runs under `/v1/api/processes/…`; legacy `/v1/plans` removed.
+
+Migration: [MIGRATION-0.17.md](MIGRATION-0.17.md)
+
+### Added
+
+- **`ProcessExecutionService`** — `prepare`, `submit`, `run`, `dispatch` with command-path grammar
+- **REST** — `POST /v1/api/processes/{process_id}/prepare`, `/submit`, `/run`
+- **Registry** — `process_commands()` in `execution/processes/registry.py`
+
+### Changed
+
+- **`PalmRestClient`** / in-process MCP — plan staging via `/v1/api/processes/…`
+- **`ServerContext`** — wires `ProcessExecutionService` with runtime for submit idle sync
+
+### Removed (breaking)
+
+- **`POST /v1/plans/prepare`**, **`POST /v1/plans/submit`** monolith routes
+
 ## [0.17.0] — 2026-07-01
 
 **System REST parity** — observe/lifecycle HTTP under `/v1/api/system/…`; legacy monolith job/instance/snapshot routes removed.

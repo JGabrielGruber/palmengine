@@ -7,6 +7,8 @@ import pathlib
 
 from palm.services.definitions.registry import CatalogVerb, catalog_verbs
 from palm.services.execution.flows.registry import CommandSpec, flow_commands
+from palm.services.execution.processes.registry import CommandSpec as ProcessCommandSpec
+from palm.services.execution.processes.registry import process_commands
 from palm.services.execution.providers.registry import InvokeVerb, invoke_verbs
 from palm.services.system.registry import ObserveVerb, observe_verbs
 
@@ -37,6 +39,16 @@ def test_system_registry_has_observe_verbs() -> None:
     verbs = observe_verbs()
     assert any(verb.verb_id == "doctor" for verb in observe_verbs())
     assert all(isinstance(verb, ObserveVerb) for verb in verbs)
+
+
+def test_process_registry_has_command_specs() -> None:
+    commands = process_commands()
+    assert commands
+    assert all(isinstance(spec, ProcessCommandSpec) for spec in commands)
+    ids = {spec.command_id for spec in commands}
+    assert "prepare" in ids
+    assert "submit" in ids
+    assert "run" in ids
 
 
 def test_provider_registry_has_invoke_verbs() -> None:
