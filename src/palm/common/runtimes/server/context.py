@@ -12,9 +12,12 @@ from palm.common.cqrs.query import Query
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
-from palm.common.services.definition import DefinitionService
-from palm.common.services.execution import ExecutionService
-from palm.common.services.internal import InternalService
+from palm.services.definitions import DefinitionService
+from palm.services.execution import ExecutionService
+from palm.services.execution.flows import FlowExecutionService
+from palm.services.execution.processes import ProcessExecutionService
+from palm.services.execution.providers import ProviderExecutionService
+from palm.services.system import SystemService
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
@@ -51,27 +54,25 @@ class ServerContext:
                 plan_registry=self.plan_registry,
             )
             schemas = build_schema_registry()
-            self._internal = InternalService(
-                commands=self._command_bus,
-                queries=self._query_bus,
-                schemas=schemas,
-            )
-            self._definition = DefinitionService(
-                commands=self._command_bus,
-                queries=self._query_bus,
-                schemas=schemas,
+            bus_kw = {
+                "commands": self._command_bus,
+                "queries": self._query_bus,
+                "schemas": schemas,
+            }
+            self._system = SystemService(**bus_kw)
+            self._definitions = DefinitionService(
+                **bus_kw,
                 repository=runtime.repository,
             )
+            flows = FlowExecutionService(**bus_kw, system=self._system, runtime=runtime)
             self._execution = ExecutionService(
-                commands=self._command_bus,
-                queries=self._query_bus,
-                schemas=schemas,
-                internal=self._internal,
-                runtime=runtime,
+                flows=flows,
+                providers=ProviderExecutionService(**bus_kw),
+                processes=ProcessExecutionService(**bus_kw),
             )
         else:
-            self._internal = host.internal
-            self._definition = host.definition
+            self._system = host.system
+            self._definitions = host.definitions
             self._execution = host.execution
 
     @property
@@ -94,19 +95,19 @@ class ServerContext:
     def schemas(self) -> CqrsSchemaRegistry:
         if self._host is not None:
             return self._host.schemas
-        return self._internal.schemas
+        return self._system.schemas
 
     @property
-    def internal(self) -> InternalService:
+    def system(self) -> SystemService:
         if self._host is not None:
-            return self._host.internal
-        return self._internal
+            return self._host.system
+        return self._system
 
     @property
-    def definition(self) -> DefinitionService:
+    def definitions(self) -> DefinitionService:
         if self._host is not None:
-            return self._host.definition
-        return self._definition
+            return self._host.definitions
+        return self._definitions
 
     @property
     def execution(self) -> ExecutionService:
@@ -128,7 +129,6 @@ class ServerContext:
         self._host = host
         self._command_bus = host.commands
         self._query_bus = host.queries
-        self._internal = host.internal
-        self._definition = host.definition
-        self._execution = host.execution
+        self._system = host.system
+        self._definitions = host.definitions
         self._execution = host.execution

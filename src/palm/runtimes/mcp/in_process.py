@@ -18,7 +18,7 @@ from palm.common.cqrs.query import (
 from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
-from palm.common.services.execution import flow_command_from_body
+from palm.services.execution.flows import flow_command_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.rest_client import PalmRestError
@@ -67,7 +67,7 @@ def shutdown_in_process_runtime() -> None:
 
 
 class PalmInProcessBackend:
-    """Duck-typed REST client surface backed by :class:`InternalService` and CQRS."""
+    """Duck-typed REST client surface backed by :class:`SystemService` and CQRS."""
 
     def __init__(
         self,
@@ -101,20 +101,21 @@ class PalmInProcessBackend:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        rows = self._ctx.internal.list_jobs(status="WAITING_FOR_INPUT", limit=None)
+        rows = self._ctx.system.list_jobs(status="WAITING_FOR_INPUT", limit=None)
         rows = enrich_job_list_rows(self._ctx.runtime, rows)
         params = PaginationParams(limit=limit, offset=0)
         return list_envelope("jobs", rows, params)
 
     def get_wizard(self, instance_id: str) -> dict[str, Any]:
         try:
-            return self._ctx.internal.inspect_instance(instance_id)
+            return self._ctx.system.inspect_instance(instance_id)
         except InstanceNotFoundServiceError as exc:
             raise _wizard_not_found(exc.instance_id) from exc
 
     def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
         try:
-            return self._ctx.execution.on(instance_id).input(value)
+            ctx = self._ctx.execution.flows.session(None, instance_id).input(value)
+            return ctx.to_dict()
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except TypeError as exc:
@@ -124,7 +125,8 @@ class PalmInProcessBackend:
 
     def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
         try:
-            return self._ctx.execution.on(instance_id).resume_child_wait()
+            ctx = self._ctx.execution.flows.session(None, instance_id).resume_child_wait()
+            return ctx.to_dict()
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except RuntimeError as exc:
@@ -137,7 +139,7 @@ class PalmInProcessBackend:
             raise _instance_not_found(instance_id) from exc
 
     def get_job_context(self, job_id: str) -> dict[str, Any]:
-        result = self._ctx.internal.inspect_job(job_id)
+        result = self._ctx.system.inspect_job(job_id)
         if isinstance(result, dict) and not result.get("found", True):
             raise _job_not_found(job_id)
         return result
@@ -162,7 +164,7 @@ class PalmInProcessBackend:
 
     def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
         try:
-            self._ctx.execution.on(instance_id).resume()
+            self._ctx.execution.flows.session(None, instance_id).resume()
             return self.get_wizard(instance_id)
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
@@ -171,7 +173,8 @@ class PalmInProcessBackend:
 
     def backtrack_wizard(self, instance_id: str, *, to_step: str | None = None) -> dict[str, Any]:
         try:
-            return self._ctx.execution.on(instance_id).backtrack(to_step)
+            ctx = self._ctx.execution.flows.session(None, instance_id).backtrack(to_step)
+            return ctx.to_dict()
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(instance_id) from exc
         except TypeError as exc:
@@ -181,24 +184,26 @@ class PalmInProcessBackend:
 
     def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
-            session = self._ctx.execution.run_wizard(body)
+            session = self._ctx.execution.flows.run_wizard(body)
             view = session.status()
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
         except Exception as exc:
             raise PalmRestError(500, str(exc)) from exc
 
+        detail = view.get("detail") if isinstance(view.get("detail"), dict) else {}
         return {
-            "instance_id": session.instance_id,
+            "instance_id": session.session_id,
+            "session_id": session.session_id,
             "job_id": view.get("job_id"),
             "status": view.get("status"),
-            "metadata": view.get("metadata") or {},
+            "metadata": detail.get("metadata") or view.get("metadata") or {},
         }
 
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
             command = flow_command_from_body(body)
-            session = self._ctx.execution.run_flow(
+            session = self._ctx.execution.flows.run_flow(
                 command.flow,
                 by_id=command.by_id,
                 job_id=command.job_id,
@@ -219,13 +224,13 @@ class PalmInProcessBackend:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        rows = self._ctx.definition.list_flows(pattern=pattern)
+        rows = self._ctx.definitions.list_flows(pattern=pattern)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("flows", rows, params)
 
     def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
         try:
-            return self._ctx.definition.get_flow(flow_id, verbose=verbose)
+            return self._ctx.definitions.get_flow(flow_id, verbose=verbose)
         except DefinitionNotFoundServiceError as exc:
             raise _flow_not_found(exc.ref) from exc
 
@@ -233,13 +238,13 @@ class PalmInProcessBackend:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        rows = self._ctx.definition.list_processes()
+        rows = self._ctx.definitions.list_processes()
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("processes", rows, params)
 
     def get_process(self, process_id: str) -> dict[str, Any]:
         try:
-            return self._ctx.definition.get_process(process_id)
+            return self._ctx.definitions.get_process(process_id)
         except DefinitionNotFoundServiceError as exc:
             raise _process_not_found(exc.ref) from exc
 
@@ -247,13 +252,13 @@ class PalmInProcessBackend:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
-        rows = self._ctx.definition.list_resources(provider=provider)
+        rows = self._ctx.definitions.list_resources(provider=provider)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("resources", rows, params)
 
     def get_resource(self, resource_ref: str) -> dict[str, Any]:
         try:
-            return self._ctx.definition.get_resource(resource_ref)
+            return self._ctx.definitions.get_resource(resource_ref)
         except DefinitionNotFoundServiceError as exc:
             raise PalmRestError(
                 404,
@@ -270,7 +275,7 @@ class PalmInProcessBackend:
         return build_openapi_spec(version=self._ctx.runtime.version)
 
     def cancel_job(self, job_id: str) -> dict[str, Any]:
-        result = self._ctx.internal.cancel_job(job_id)
+        result = self._ctx.system.cancel_job(job_id)
         if isinstance(result, dict) and not result.get("found", True):
             raise _job_not_found(job_id)
         return result
@@ -305,11 +310,11 @@ class PalmInProcessBackend:
         return result
 
     def get_doctor(self) -> dict[str, Any]:
-        return self._ctx.internal.doctor(self._ctx.runtime)
+        return self._ctx.system.doctor(self._ctx.runtime)
 
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
-            return self._ctx.definition.validate_flow(body, runtime=self._ctx.runtime)
+            return self._ctx.definitions.validate_flow(body, runtime=self._ctx.runtime)
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
         except Exception as exc:

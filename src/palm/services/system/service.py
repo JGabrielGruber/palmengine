@@ -1,4 +1,4 @@
-"""Internal service — operational inspect and debug API."""
+"""System service — operational inspect and debug API."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from palm.common.services.base import BaseService
 from palm.common.services.errors import InstanceNotFoundServiceError
 
 
-class InternalService(BaseService):
+class SystemService(BaseService):
     """Debug and inspect surface — composes CQRS into business-shaped methods."""
 
     def doctor(self, runtime: Any) -> dict[str, Any]:
@@ -76,4 +76,4 @@ class InternalService(BaseService):
         return self.dispatch(CancelJobCommand(job_id=job_id, runtime_name=runtime_name))
 
 
-__all__ = ["InternalService"]
+__all__ = ["SystemService"]

@@ -112,8 +112,8 @@ class ApplicationHost:
         self._event_recorder = HostEventRecorder()
         self._last_recovery: dict[str, Any] | None = None
         self._schema_registry: Any | None = None
-        self._internal: Any | None = None
-        self._definition: Any | None = None
+        self._system: Any | None = None
+        self._definitions: Any | None = None
         self._execution: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
@@ -142,18 +142,18 @@ class ApplicationHost:
         return self._schema_registry
 
     @property
-    def internal(self):
+    def system(self):
         """Operational inspect/debug service API."""
-        return self._internal
+        return self._system
 
     @property
-    def definition(self):
+    def definitions(self):
         """Definition catalog service API."""
-        return self._definition
+        return self._definitions
 
     @property
     def execution(self):
-        """Instance-centric execution service API."""
+        """Execution service API (flows, providers, processes)."""
         return self._execution
 
     @property
@@ -492,28 +492,39 @@ class ApplicationHost:
             instance_manager=self._app.instance_manager,
         )
         from palm.common.cqrs.schemas import build_schema_registry
-        from palm.common.services.definition import DefinitionService
-        from palm.common.services.execution import ExecutionService
-        from palm.common.services.internal import InternalService
+        from palm.services.definitions import DefinitionService
+        from palm.services.execution import ExecutionService
+        from palm.services.execution.flows import FlowExecutionService
+        from palm.services.execution.processes import ProcessExecutionService
+        from palm.services.execution.providers import ProviderExecutionService
+        from palm.services.system import SystemService
 
         self._schema_registry = build_schema_registry()
-        self._internal = InternalService(
+        self._system = SystemService(
             commands=self._command_bus,
             queries=self._query_bus,
             schemas=self._schema_registry,
         )
-        self._definition = DefinitionService(
+        self._definitions = DefinitionService(
             commands=self._command_bus,
             queries=self._query_bus,
             schemas=self._schema_registry,
             repository=self._app.repository(),
         )
-        self._execution = ExecutionService(
-            commands=self._command_bus,
-            queries=self._query_bus,
-            schemas=self._schema_registry,
-            internal=self._internal,
+        bus_kw = {
+            "commands": self._command_bus,
+            "queries": self._query_bus,
+            "schemas": self._schema_registry,
+        }
+        flows = FlowExecutionService(
+            **bus_kw,
+            system=self._system,
             runtime_resolver=self._resolve_execution_runtime,
+        )
+        self._execution = ExecutionService(
+            flows=flows,
+            providers=ProviderExecutionService(**bus_kw),
+            processes=ProcessExecutionService(**bus_kw),
         )
 
     def _attach_projections(self) -> None:

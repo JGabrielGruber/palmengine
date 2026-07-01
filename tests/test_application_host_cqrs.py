@@ -21,17 +21,18 @@ def test_execute_dispatches_submit_flow_command(settings: PalmSettings) -> None:
     host.shutdown()
 
 
-def test_application_host_exposes_internal_service(settings: PalmSettings) -> None:
+def test_application_host_exposes_domain_services(settings: PalmSettings) -> None:
     host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
     host.start()
 
-    assert host.internal is not None
-    assert host.definition is not None
+    assert host.system is not None
+    assert host.definitions is not None
     assert host.execution is not None
+    assert host.execution.flows is not None
     assert host.schemas is not None
-    rows = host.internal.list_jobs(limit=5)
+    rows = host.system.list_jobs(limit=5)
     assert isinstance(rows, list)
-    flows = host.definition.list_flows()
+    flows = host.definitions.list_flows()
     assert isinstance(flows, list)
 
     host.shutdown()

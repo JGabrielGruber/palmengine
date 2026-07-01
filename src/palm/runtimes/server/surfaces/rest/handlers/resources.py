@@ -26,7 +26,7 @@ def list_resources(ctx: ServerContext, request: ServerRequest) -> ServerResponse
         return query
 
     provider = str(request.query.get("provider") or "").strip() or None
-    rows = ctx.definition.list_resources(provider=provider)
+    rows = ctx.definitions.list_resources(provider=provider)
     params = PaginationParams(limit=query["limit"], offset=query["offset"])
     return ok(list_envelope("resources", rows, params))
 
@@ -35,7 +35,7 @@ def get_resource(
     ctx: ServerContext, request: ServerRequest, *, resource_ref: str
 ) -> ServerResponse:
     try:
-        payload = ctx.definition.get_resource(resource_ref)
+        payload = ctx.definitions.get_resource(resource_ref)
     except DefinitionNotFoundServiceError:
         return errors.resource_not_found(resource_ref)
     return ok(payload)

@@ -82,6 +82,7 @@ class CqrsContributor:
 
 
 McpRegisterFn = Callable[[Any, Any], None]
+SessionEnricherFn = Callable[[dict[str, Any]], dict[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -104,6 +105,7 @@ _pattern_apps: dict[str, Any] = {}
 _projection_factories: dict[str, ProjectionFactoryFn] = {}
 _cqrs_contributors: dict[str, CqrsContributor] = {}
 _mcp_contributors: dict[str, McpContributor] = {}
+_session_enrichers: dict[str, SessionEnricherFn] = {}
 
 
 def register_builder(name: str, fn: PatternBuildFn) -> None:
@@ -376,3 +378,34 @@ def clear_mcp_contributors() -> None:
     """Remove MCP contributor registrations (primarily for tests)."""
     with _lock:
         _mcp_contributors.clear()
+
+
+def register_session_enricher(name: str, fn: SessionEnricherFn) -> None:
+    """Register pattern-specific fields for :class:`~palm.services.execution.flows.schemas.SessionContext`."""
+    with _lock:
+        if _session_enrichers.get(name) is fn:
+            return
+        _session_enrichers[name] = fn
+
+
+def get_session_enricher(name: str) -> SessionEnricherFn | None:
+    """Return the session enricher for pattern ``name``, if registered."""
+    with _lock:
+        return _session_enrichers.get(name)
+
+
+def enrich_session_view(pattern: str | None, view: dict[str, Any]) -> dict[str, Any]:
+    """Apply the registered enricher for ``pattern``, if any."""
+    if pattern is None:
+        return {}
+    fn = get_session_enricher(pattern)
+    if fn is None:
+        return {}
+    extra = fn(view)
+    return extra if isinstance(extra, dict) else {}
+
+
+def clear_session_enrichers() -> None:
+    """Remove session enricher registrations (primarily for tests)."""
+    with _lock:
+        _session_enrichers.clear()

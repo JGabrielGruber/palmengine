@@ -65,6 +65,20 @@ class ProcessDefinition:
             id=data.get("id"),
         )
 
+    def catalog_summary(self) -> dict[str, Any]:
+        """Minimal catalog list row — facts only, no transport or agent hints."""
+        summary: dict[str, Any] = {
+            "process_id": self.definition_id,
+            "name": self.name,
+            "storage": self.storage,
+            "flow_count": len(self.flows),
+        }
+        metadata = self.metadata or {}
+        entry_flow = metadata.get("entry_flow")
+        if isinstance(entry_flow, str) and entry_flow:
+            summary["entry_flow"] = entry_flow
+        return summary
+
     def to_storage_record(self) -> dict[str, Any]:
         """Envelope stored under the repository storage key."""
         return self.to_dict()

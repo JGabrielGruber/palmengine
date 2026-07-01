@@ -39,19 +39,19 @@ def submit_wizard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
         return body
 
     try:
-        session = ctx.execution.run_wizard(body)
+        session = ctx.execution.flows.run_wizard(body)
         view = session.status()
     except (TypeError, ValueError, KeyError) as exc:
         return errors.bad_request(str(exc))
     except Exception as exc:
         return errors.submit_failed(str(exc))
 
-    return accepted(_wizard_submission_body(view, session.instance_id))
+    return accepted(_wizard_submission_body(view, session.session_id))
 
 
 def get_wizard(ctx: ServerContext, request: ServerRequest, *, instance_id: str) -> ServerResponse:
     try:
-        row = ctx.internal.inspect_instance(instance_id)
+        row = ctx.system.inspect_instance(instance_id)
     except InstanceNotFoundServiceError:
         return errors.wizard_not_found(instance_id)
     return ok(read_model_body(row))
@@ -77,7 +77,8 @@ def provide_wizard_input(
         return body
 
     try:
-        view = ctx.execution.on(instance_id).input(body["value"])
+        ctx_view = ctx.execution.flows.session(None, instance_id).input(body["value"])
+        view = ctx_view.to_dict()
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -108,7 +109,8 @@ def backtrack_wizard(
         return body
 
     try:
-        view = ctx.execution.on(instance_id).backtrack(body.get("to_step"))
+        ctx_view = ctx.execution.flows.session(None, instance_id).backtrack(body.get("to_step"))
+        view = ctx_view.to_dict()
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except TypeError as exc:
@@ -130,7 +132,8 @@ def resume_child_wait(
         return auth_error
 
     try:
-        view = ctx.execution.on(instance_id).resume_child_wait()
+        ctx_view = ctx.execution.flows.session(None, instance_id).resume_child_wait()
+        view = ctx_view.to_dict()
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
     except RuntimeError as exc:
@@ -150,7 +153,7 @@ def resume_wizard_tick(
         return auth_error
 
     try:
-        ctx.execution.on(instance_id).resume()
+        ctx.execution.flows.session(None, instance_id).resume()
         view = _wizard_view_or_not_found(ctx, instance_id)
     except InstanceNotFoundError:
         return errors.wizard_not_found(instance_id)
@@ -166,7 +169,7 @@ def _wizard_view_or_not_found(
     ctx: ServerContext, instance_id: str
 ) -> dict[str, Any] | ServerResponse:
     try:
-        row = ctx.internal.inspect_instance(instance_id)
+        row = ctx.system.inspect_instance(instance_id)
     except InstanceNotFoundServiceError:
         return errors.wizard_not_found(instance_id)
     return read_model_body(row)

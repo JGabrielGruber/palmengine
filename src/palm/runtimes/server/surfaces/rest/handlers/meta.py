@@ -35,7 +35,7 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
 
 
 def doctor(ctx: ServerContext, request: ServerRequest) -> Any:
-    return ok(ctx.internal.doctor(ctx.runtime))
+    return ok(ctx.system.doctor(ctx.runtime))
 
 
 def openapi(ctx: ServerContext, request: ServerRequest) -> Any:

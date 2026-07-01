@@ -34,7 +34,7 @@ def validate_flow(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
         return body
 
     try:
-        result = ctx.definition.validate_flow(body, runtime=ctx.runtime)
+        result = ctx.definitions.validate_flow(body, runtime=ctx.runtime)
     except (TypeError, ValueError, KeyError) as exc:
         return errors.bad_request(str(exc))
     except Exception as exc:
@@ -50,14 +50,14 @@ def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     if isinstance(query, ServerResponse):
         return query
 
-    rows = ctx.definition.list_flows(pattern=query.get("pattern"))
+    rows = ctx.definitions.list_flows(pattern=query.get("pattern"))
     params = PaginationParams(limit=query["limit"], offset=query["offset"])
     return ok(list_envelope("flows", rows, params))
 
 
 def get_flow(ctx: ServerContext, request: ServerRequest, *, flow_id: str) -> ServerResponse:
     try:
-        payload = ctx.definition.get_flow(flow_id, verbose=_verbose_query(request))
+        payload = ctx.definitions.get_flow(flow_id, verbose=_verbose_query(request))
     except DefinitionNotFoundServiceError:
         return errors.flow_not_found(flow_id)
     return ok(payload)
@@ -75,14 +75,14 @@ def list_processes(ctx: ServerContext, request: ServerRequest) -> ServerResponse
     if isinstance(query, ServerResponse):
         return query
 
-    rows = ctx.definition.list_processes()
+    rows = ctx.definitions.list_processes()
     params = PaginationParams(limit=query["limit"], offset=query["offset"])
     return ok(list_envelope("processes", rows, params))
 
 
 def get_process(ctx: ServerContext, request: ServerRequest, *, process_id: str) -> ServerResponse:
     try:
-        payload = ctx.definition.get_process(process_id)
+        payload = ctx.definitions.get_process(process_id)
     except DefinitionNotFoundServiceError:
         return errors.process_not_found(process_id)
     return ok(payload)

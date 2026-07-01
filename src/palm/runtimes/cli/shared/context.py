@@ -11,7 +11,7 @@ from palm.app.settings import PalmSettings
 from palm.common.cqrs.adapters import read_model_to_summary
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.managers import InstanceManager, InstanceSummary
-from palm.common.services.session import ReplSession
+from palm.services.execution.flows import ReplSession
 from palm.core.orchestration import Job
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.definitions.flow import FlowDefinition
@@ -58,7 +58,7 @@ class CliContext:
     def repl(self) -> ReplSession:
         """Stateful REPL handle — tracks the active instance across commands."""
         if self._repl_session is None:
-            self._repl_session = ReplSession(self.host.execution)
+            self._repl_session = ReplSession(self.host.execution.flows)
         return self._repl_session
 
     def is_runtime_started(self) -> bool:

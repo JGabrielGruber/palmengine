@@ -103,6 +103,15 @@ class FlowDefinition:
             state_schema=state_schema,
         )
 
+    def catalog_summary(self) -> dict[str, Any]:
+        """Minimal catalog list row — facts only, no transport or agent hints."""
+        return {
+            "flow_id": self.definition_id,
+            "name": self.name,
+            "pattern": self.pattern,
+            "has_state_schema": self.has_state_schema,
+        }
+
     def to_storage_record(self) -> dict[str, Any]:
         """Envelope stored under the repository storage key."""
         return self.to_dict()

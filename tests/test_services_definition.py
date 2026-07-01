@@ -15,7 +15,7 @@ from palm.common.cqrs.query import (
     Query,
 )
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
-from palm.common.services.definition import DefinitionService
+from palm.services.definitions import DefinitionService
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
@@ -146,7 +146,7 @@ def test_definition_validate_flow() -> None:
     rt.start(http=False)
     ctx = build_server_context(rt)
     try:
-        result = ctx.definition.validate_flow(
+        result = ctx.definitions.validate_flow(
             {"wizard": {"name": "onboard", "steps": 2}},
             runtime=rt,
         )

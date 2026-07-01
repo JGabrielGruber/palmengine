@@ -1,4 +1,4 @@
-"""Tests for InternalService."""
+"""Tests for SystemService."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.common.services.errors import InstanceNotFoundServiceError
-from palm.common.services.internal import InternalService
+from palm.services.system import SystemService
 
 
 class _QueryBusStub:
@@ -32,10 +32,10 @@ class _QueryBusStub:
         return handler
 
 
-def test_internal_list_jobs_uses_list_job_status_query() -> None:
+def test_system_list_jobs_uses_list_job_status_query() -> None:
     registry = CqrsSchemaRegistry()
     queries = _QueryBusStub({ListJobStatusQuery: [{"job_id": "j1", "status": "RUNNING"}]})
-    svc = InternalService(commands=CommandBus(), queries=queries, schemas=registry)
+    svc = SystemService(commands=CommandBus(), queries=queries, schemas=registry)
 
     rows = svc.list_jobs(status="RUNNING", limit=5)
     assert rows == [{"job_id": "j1", "status": "RUNNING"}]
@@ -44,28 +44,28 @@ def test_internal_list_jobs_uses_list_job_status_query() -> None:
     assert queries.asked[0].limit == 5
 
 
-def test_internal_inspect_instance_uses_inspect_query() -> None:
+def test_system_inspect_instance_uses_inspect_query() -> None:
     registry = CqrsSchemaRegistry()
     queries = _QueryBusStub(
         {
             InspectInstanceQuery: {"instance_id": "inst_1", "pattern": "wizard"},
         }
     )
-    svc = InternalService(commands=CommandBus(), queries=queries, schemas=registry)
+    svc = SystemService(commands=CommandBus(), queries=queries, schemas=registry)
 
     view = svc.inspect_instance("inst_1")
     assert view["pattern"] == "wizard"
     assert isinstance(queries.asked[0], InspectInstanceQuery)
 
 
-def test_internal_inspect_instance_raises_when_missing() -> None:
+def test_system_inspect_instance_raises_when_missing() -> None:
     registry = CqrsSchemaRegistry()
     queries = _QueryBusStub(
         {
             InspectInstanceQuery: None,
         }
     )
-    svc = InternalService(commands=CommandBus(), queries=queries, schemas=registry)
+    svc = SystemService(commands=CommandBus(), queries=queries, schemas=registry)
 
     try:
         svc.inspect_instance("missing")
@@ -74,10 +74,10 @@ def test_internal_inspect_instance_raises_when_missing() -> None:
         assert exc.instance_id == "missing"
 
 
-def test_internal_inspect_job_uses_job_context_query() -> None:
+def test_system_inspect_job_uses_job_context_query() -> None:
     registry = CqrsSchemaRegistry()
     queries = _QueryBusStub({GetJobContextQuery: {"found": True, "job_id": "j1"}})
-    svc = InternalService(commands=CommandBus(), queries=queries, schemas=registry)
+    svc = SystemService(commands=CommandBus(), queries=queries, schemas=registry)
 
     payload = svc.inspect_job("j1")
     assert payload["job_id"] == "j1"
