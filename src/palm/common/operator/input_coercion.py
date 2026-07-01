@@ -9,12 +9,42 @@ from collections.abc import Mapping
 from typing import Any
 
 
+def coerce_priority_choice(raw: str, choices: list[Any] | None) -> str:
+    """Map natural-language priority intent to enum choice values."""
+    text = str(raw).strip().lower()
+    if not text:
+        return raw
+    canonical = ("high", "medium", "low")
+    choice_texts = [str(item).lower() for item in (choices or [])]
+    for level in canonical:
+        if level in text and (not choice_texts or level in choice_texts):
+            return level
+    return raw
+
+
+def coerce_collection_field_input(raw: Any, wizard_view: Mapping[str, Any]) -> Any:
+    """Coerce one collection field value using the current wizard prompt."""
+    if not isinstance(raw, str):
+        return raw
+    pattern = pattern_from_wizard_view(wizard_view)
+    collection_field = pattern.get("collection_field")
+    if collection_field == "priority" and pattern.get("field_type") == "choice":
+        choices = pattern.get("choices")
+        if isinstance(choices, list):
+            return coerce_priority_choice(raw, choices)
+    return coerce_job_input(raw, pattern)
+
+
 def coerce_job_input(raw: str, pattern: Mapping[str, Any]) -> Any:
     """Coerce a posted operator input string to the expected Python value."""
     field_type = pattern.get("field_type")
     schema_type = pattern.get("effective_schema_type")
+    collection_field = pattern.get("collection_field")
 
     if field_type == "choice":
+        choices = pattern.get("choices")
+        if collection_field == "priority" and isinstance(choices, list):
+            return coerce_priority_choice(raw, choices)
         return raw
     if field_type == "confirm":
         return raw.lower() in {"true", "1", "yes", "on"}
@@ -38,10 +68,12 @@ def coerce_job_input(raw: str, pattern: Mapping[str, Any]) -> Any:
 def pattern_from_wizard_view(wizard_view: Mapping[str, Any]) -> dict[str, Any]:
     """Build a coercion pattern dict from a wizard read model."""
     prompt = wizard_view.get("prompt") or {}
+    collection_field = prompt.get("collection_field") or wizard_view.get("collection_field")
     return {
         "field_type": prompt.get("field_type"),
         "effective_schema_type": prompt.get("effective_schema_type"),
         "choices": prompt.get("choices"),
+        "collection_field": collection_field,
     }
 
 
@@ -78,7 +110,7 @@ def resolve_mcp_wizard_input(
         prompt = wizard_view.get("prompt") or {}
         collection_phase = prompt.get("collection_phase")
         if collection_phase in ("field", "select_item", "remove_confirm"):
-            return coerce_job_input(stripped, pattern_from_wizard_view(wizard_view))
+            return coerce_collection_field_input(stripped, wizard_view)
         if collection_phase == "menu" and input is not None and value is not None:
             from palm.common.operator.collection_drive import COLLECTION_ADD_ONE_SHOT
 
@@ -123,7 +155,9 @@ def resolve_mcp_job_input(
 
 
 __all__ = [
+    "coerce_collection_field_input",
     "coerce_job_input",
+    "coerce_priority_choice",
     "pattern_from_job_context",
     "pattern_from_wizard_view",
     "resolve_mcp_job_input",

@@ -26,6 +26,24 @@ def test_resolve_collection_edit() -> None:
     )
 
 
+def test_resolve_collection_action_name_add() -> None:
+    wizard = {"prompt": {"choices": ["Add a new item", "Continue to summary"]}}
+    assert resolve_wizard_collection_action("add", wizard_view=wizard) == "Add a new item"
+
+
+def test_resolve_collection_action_name_edit() -> None:
+    wizard = {"prompt": {"choices": ["Add a new item", "Edit an item", "Continue to summary"]}}
+    assert resolve_wizard_collection_action("edit", wizard_view=wizard) == "Edit an item"
+
+
+def test_resolve_collection_action_name_continue() -> None:
+    wizard = {"prompt": {"choices": ["Continue to summary (1 more)"]}}
+    assert (
+        resolve_wizard_collection_action("continue", wizard_view=wizard)
+        == "Continue to summary (1 more)"
+    )
+
+
 def test_resolve_collection_done_from_choices() -> None:
     wizard = {"prompt": {"choices": ["Continue to summary (3 items)"]}}
     assert (

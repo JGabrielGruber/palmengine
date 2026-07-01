@@ -64,7 +64,10 @@ def normalize_assist_dispatch_args(
         flow_id = _clean_dispatch_str(params.get("flow_id"))
         has_value = "value" in params or "input" in params
         collection_action = params.get("collection_action")
-        if session_id and flow_id and (has_value or collection_action is not None):
+        edit = params.get("edit")
+        if session_id and flow_id and (
+            has_value or collection_action is not None or isinstance(edit, dict)
+        ):
             path = ["flows", flow_id, "session", session_id, "input"]
             if collection_action is not None and "input" not in params:
                 action_text = _clean_dispatch_str(collection_action) or str(collection_action)

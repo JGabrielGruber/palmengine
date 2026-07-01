@@ -82,6 +82,27 @@ def test_resolve_mcp_wizard_input_collection_menu_add_with_value_one_shot() -> N
     )
 
 
+def test_coerce_priority_choice_from_intent() -> None:
+    from palm.common.operator.input_coercion import coerce_priority_choice
+
+    assert coerce_priority_choice("high priority", ["low", "medium", "high"]) == "high"
+    assert coerce_priority_choice("LOW", ["low", "medium", "high"]) == "low"
+
+
+def test_resolve_mcp_wizard_input_collection_field_priority_intent() -> None:
+    wizard = {
+        "prompt": {
+            "field_type": "choice",
+            "step_kind": "collection",
+            "collection_phase": "field",
+            "collection_field": "priority",
+            "choices": ["low", "medium", "high"],
+        },
+        "answers": {},
+    }
+    assert resolve_mcp_wizard_input(input="high priority", value=None, wizard_view=wizard) == "high"
+
+
 def test_resolve_mcp_wizard_input_collection_menu_routes_add_action() -> None:
     wizard = {
         "prompt": {

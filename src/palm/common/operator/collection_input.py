@@ -7,6 +7,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from palm.common.operator.choice_input import resolve_collection_action_choice
+
 
 def resolve_wizard_form_input(
     form_data: Mapping[str, Any],
@@ -34,6 +36,19 @@ def resolve_wizard_collection_action(
     """Map a collection action name to a wizard input value."""
     normalized = str(action or "").strip().lower()
     wizard = wizard_view or {}
+    prompt = wizard.get("prompt") or {}
+    choices = prompt.get("choices") or []
+    if choices and normalized in {"add", "edit", "remove", "done", "continue"}:
+        matched = resolve_collection_action_choice(
+            normalized,
+            [str(choice) for choice in choices],
+        )
+        if matched is not None and normalized != "add":
+            if normalized == "edit" and item_index is not None:
+                return ("__compound_edit__", item_index)
+            if normalized == "remove" and item_index is not None:
+                return ("__compound_remove__", item_index)
+            return matched
 
     if normalized == "add":
         if value is not None:
@@ -63,6 +78,10 @@ def resolve_wizard_collection_action(
 def _done_choice(wizard: Mapping[str, Any]) -> str:
     prompt = wizard.get("prompt") or {}
     choices = prompt.get("choices") or []
+    if choices:
+        matched = resolve_collection_action_choice("done", [str(choice) for choice in choices])
+        if matched is not None:
+            return matched
     for choice in choices:
         text = str(choice)
         if text.startswith("Continue to summary"):
