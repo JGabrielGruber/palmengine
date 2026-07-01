@@ -77,7 +77,7 @@ def phase4_server():
 async def test_palm_doctor_tool(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_doctor", {})
+        result = await client.call_tool("palm_system_doctor", {})
     assert result.data["status"] == "ok"
 
 
@@ -85,7 +85,7 @@ async def test_palm_doctor_tool(phase4_server) -> None:
 async def test_palm_cancel_job_tool(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_cancel_job", {"job_id": "job-9"})
+        result = await client.call_tool("palm_system_cancel_job", {"job_id": "job-9"})
     assert result.data["cancelled"] is True
 
 
@@ -93,7 +93,7 @@ async def test_palm_cancel_job_tool(phase4_server) -> None:
 async def test_palm_trace_events_tool(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_trace_events", {"job_id": "job-9"})
+        result = await client.call_tool("palm_system_trace_events", {"job_id": "job-9"})
     assert result.data["count"] == 1
 
 
@@ -102,8 +102,8 @@ async def test_palm_diff_snapshots_tool(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_diff_snapshots",
-            {"instance_id": "inst-1", "from_snapshot": "0", "to_snapshot": "1"},
+            "palm_system_diff_snapshots",
+            {"session_id": "inst-1", "from_snapshot": "0", "to_snapshot": "1"},
         )
     assert result.data["change_count"] == 1
 
@@ -113,7 +113,7 @@ async def test_palm_submit_process_tool(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_submit_process",
+            "palm_processes_submit",
             {"process_name": "pipeline"},
         )
     assert result.data["jobs"][0]["job_id"] == "job-1"
@@ -125,7 +125,7 @@ async def test_palm_submit_process_rejects_interactive_catalog(phase4_server) ->
     async with Client(server) as client:
         with pytest.raises(Exception, match="interactive catalog"):
             await client.call_tool(
-                "palm_submit_process",
+                "palm_processes_submit",
                 {"process_name": "catalog"},
             )
 
@@ -134,6 +134,6 @@ async def test_palm_submit_process_rejects_interactive_catalog(phase4_server) ->
 async def test_palm_fetch_job_uses_job_context(phase4_server) -> None:
     server, _ = phase4_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_fetch_job", {"job_id": "job-9"})
+        result = await client.call_tool("palm_system_fetch_job", {"job_id": "job-9"})
     assert result.data["job_id"] == "job-9"
     assert result.data["recent_events"][0]["type"] == "wizard.step.completed"

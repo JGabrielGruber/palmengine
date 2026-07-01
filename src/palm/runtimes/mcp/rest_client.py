@@ -37,23 +37,104 @@ class PalmRestClient:
     def list_waiting_jobs(self, *, limit: int = 50) -> dict[str, Any]:
         return self._request("GET", f"/v1/jobs?status=WAITING_FOR_INPUT&limit={limit}")
 
-    def get_wizard(self, instance_id: str) -> dict[str, Any]:
-        return self._request("GET", f"/v1/wizards/{instance_id}")
+    def flows_list(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/api/flows")
 
-    def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
+    def flows_describe(self, flow_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/api/flows/{flow_id}")
+
+    def flows_create_session(self, flow_id: str, body: dict[str, Any]) -> dict[str, Any]:
         return self._request(
             "POST",
-            f"/v1/wizards/{instance_id}/input",
+            f"/v1/api/flows/{flow_id}/create",
+            body=body,
+            auth=True,
+        )
+
+    def flows_get_session(
+        self,
+        flow_id: str | None,
+        session_id: str,
+    ) -> dict[str, Any]:
+        resolved_flow = flow_id or self._resolve_flow_id(session_id)
+        return self._request(
+            "GET",
+            f"/v1/api/flows/{resolved_flow}/session/{session_id}",
+        )
+
+    def flows_session_input(
+        self,
+        flow_id: str,
+        session_id: str,
+        value: Any,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/api/flows/{flow_id}/session/{session_id}/input",
             body={"value": value},
             auth=True,
         )
 
-    def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
+    def flows_session_backtrack(
+        self,
+        flow_id: str,
+        session_id: str,
+        *,
+        to_step: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {}
+        if to_step is not None:
+            body["to_step"] = to_step
         return self._request(
             "POST",
-            f"/v1/wizards/{instance_id}/resume-child-wait",
+            f"/v1/api/flows/{flow_id}/session/{session_id}/backtrack",
+            body=body,
             auth=True,
         )
+
+    def flows_session_resume(self, flow_id: str, session_id: str) -> dict[str, Any]:
+        self._request(
+            "POST",
+            f"/v1/api/flows/{flow_id}/session/{session_id}/resume",
+            auth=True,
+        )
+        return self.flows_get_session(flow_id, session_id)
+
+    def flows_session_resume_child_wait(
+        self,
+        flow_id: str,
+        session_id: str,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/api/flows/{flow_id}/session/{session_id}/resume-child-wait",
+            auth=True,
+        )
+
+    def get_wizard(self, instance_id: str) -> dict[str, Any]:
+        from palm.runtimes.mcp.flows.views import flatten_session_view
+
+        return flatten_session_view(self.flows_get_session(None, instance_id))
+
+    def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
+        from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
+
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        view = self.flows_session_input(flow_id, instance_id, value)
+        return flatten_session_view(view)
+
+    def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
+        from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
+
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        view = self.flows_session_resume_child_wait(flow_id, instance_id)
+        return flatten_session_view(view)
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         return self._request("GET", f"/v1/instances/{instance_id}/tree")
@@ -70,25 +151,27 @@ class PalmRestClient:
         )
 
     def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
-        return self._request(
-            "POST",
-            f"/v1/wizards/{instance_id}/resume-wizard-tick",
-            auth=True,
-        )
+        from palm.runtimes.mcp.flows.views import resolve_flow_id_from_inspect
+
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        return self.flows_session_resume(flow_id, instance_id)
 
     def backtrack_wizard(self, instance_id: str, *, to_step: str | None = None) -> dict[str, Any]:
-        body: dict[str, Any] = {}
-        if to_step is not None:
-            body["to_step"] = to_step
-        return self._request(
-            "POST",
-            f"/v1/wizards/{instance_id}/backtrack",
-            body=body,
-            auth=True,
-        )
+        from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
+
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        view = self.flows_session_backtrack(flow_id, instance_id, to_step=to_step)
+        return flatten_session_view(view)
 
     def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", "/v1/wizards", body=body, auth=True)
+        flow_id = str(body.get("flow_name") or _flow_id_from_submit_body(body) or "flow")
+        return self.flows_create_session(flow_id, body)
 
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         return self._request("POST", "/v1/jobs", body=body, auth=True)
@@ -140,10 +223,19 @@ class PalmRestClient:
         )
 
     def get_doctor(self) -> dict[str, Any]:
-        return self._request("GET", "/v1/doctor")
+        return self._request("GET", "/v1/api/system/doctor")
 
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._request("POST", "/v1/flows/validate", body=body, auth=True)
+        return self._request("POST", "/v1/api/definitions/flows/validate", body=body, auth=True)
+
+    def _resolve_flow_id(self, session_id: str) -> str:
+        from palm.runtimes.mcp.flows.views import resolve_flow_id_from_inspect
+
+        view = self._request("GET", f"/v1/wizards/{session_id}")
+        flow_id = resolve_flow_id_from_inspect(view)
+        if not flow_id:
+            raise PalmRestError(404, f"could not resolve flow_id for session {session_id!r}")
+        return flow_id
 
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
         return self._request("GET", f"/v1/instances/{instance_id}/snapshots")
@@ -191,6 +283,20 @@ class PalmRestClient:
             except json.JSONDecodeError:
                 detail = raw
             raise PalmRestError(exc.code, detail) from exc
+
+
+def _flow_id_from_submit_body(body: dict[str, Any]) -> str | None:
+    wizard = body.get("wizard")
+    if isinstance(wizard, dict):
+        name = wizard.get("name")
+        return str(name) if name is not None else None
+    flow = body.get("flow")
+    if isinstance(flow, dict):
+        for key in ("name", "flow", "flow_name"):
+            value = flow.get(key)
+            if value is not None:
+                return str(value)
+    return None
 
 
 __all__ = ["PalmRestClient", "PalmRestError"]

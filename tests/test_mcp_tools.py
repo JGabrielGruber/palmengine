@@ -38,28 +38,57 @@ class _FakeRestClient:
             ]
         }
 
+    def flows_get_session(
+        self,
+        flow_id: str | None,
+        session_id: str,
+    ) -> dict[str, Any]:
+        self.calls.append(("flows_get_session", flow_id, session_id))
+        return {
+            "session_id": session_id,
+            "flow_id": flow_id or "onboard",
+            "job_id": "job-1",
+            "status": "WAITING_FOR_INPUT",
+            "detail": {
+                "instance_id": session_id,
+                "flow_name": "onboard",
+                "current_step_slug": "step_1",
+                "prompt": {"step": "step_1", "text": "Name?", "field_type": "text"},
+                "answers": {},
+                "next_actions": [],
+            },
+        }
+
     def get_wizard(self, instance_id: str) -> dict[str, Any]:
         self.calls.append(("get_wizard", instance_id))
-        return {
-            "instance_id": instance_id,
-            "job_id": "job-1",
-            "flow_name": "onboard",
-            "status": "WAITING_FOR_INPUT",
-            "current_step_slug": "step_1",
-            "prompt": {"step": "step_1", "text": "Name?", "field_type": "text"},
-            "answers": {},
-            "next_actions": [],
-        }
+        detail = self.flows_get_session("onboard", instance_id)["detail"]
+        return {**detail, "session_id": instance_id, "instance_id": instance_id}
+
+    def flows_session_input(
+        self,
+        flow_id: str,
+        session_id: str,
+        value: Any,
+    ) -> dict[str, Any]:
+        self.calls.append(("flows_session_input", flow_id, session_id, value))
+        ctx = self.flows_get_session(flow_id, session_id)
+        ctx["detail"]["answers"] = {"step_1": value}
+        return ctx
 
     def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
         self.calls.append(("provide_wizard_input", instance_id, value))
-        view = self.get_wizard(instance_id)
-        view["answers"] = {"step_1": value}
-        return view
+        return self.get_wizard(instance_id) | {"answers": {"step_1": value}}
+
+    def flows_session_resume_child_wait(
+        self,
+        flow_id: str,
+        session_id: str,
+    ) -> dict[str, Any]:
+        self.calls.append(("flows_session_resume_child_wait", flow_id, session_id))
+        return self.flows_get_session(flow_id, session_id)
 
     def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
-        self.calls.append(("resume_child_wait", instance_id))
-        return self.get_wizard(instance_id)
+        return self.flows_session_resume_child_wait("onboard", instance_id)
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         self.calls.append(("get_instance_tree", instance_id))
@@ -80,10 +109,10 @@ def mcp_server():
 
 
 @pytest.mark.asyncio
-async def test_palm_list_waiting_tool(mcp_server) -> None:
+async def test_palm_system_list_waiting_tool(mcp_server) -> None:
     server, fake = mcp_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_list_waiting", {"flow": "onboard"})
+        result = await client.call_tool("palm_system_list_waiting", {"flow": "onboard"})
     assert fake.calls[0][0] == "list_waiting_jobs"
     payload = result.data
     assert payload["count"] == 1
@@ -91,7 +120,7 @@ async def test_palm_list_waiting_tool(mcp_server) -> None:
 
 
 @pytest.mark.asyncio
-async def test_palm_list_waiting_omits_instance_id_when_unknown(mcp_server) -> None:
+async def test_palm_system_list_waiting_omits_instance_id_when_unknown(mcp_server) -> None:
     server, fake = mcp_server
 
     def list_without_instance(*, limit: int = 50) -> dict[str, Any]:
@@ -108,93 +137,100 @@ async def test_palm_list_waiting_omits_instance_id_when_unknown(mcp_server) -> N
     fake.list_waiting_jobs = list_without_instance  # type: ignore[method-assign]
 
     async with Client(server) as client:
-        result = await client.call_tool("palm_list_waiting", {})
+        result = await client.call_tool("palm_system_list_waiting", {})
     job = result.data["jobs"][0]
     assert job["job_id"] == "job-7bd386ce7f3c"
     assert "instance_id" not in job
 
 
 @pytest.mark.asyncio
-async def test_palm_inspect_instance_tool(mcp_server) -> None:
+async def test_palm_flows_session_tool(mcp_server) -> None:
     server, fake = mcp_server
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_inspect_instance",
-            {"instance_id": "inst-1", "format": "compact"},
+            "palm_flows_session",
+            {"session_id": "inst-1", "flow_id": "onboard", "format": "compact"},
         )
-    assert fake.calls[-1] == ("get_wizard", "inst-1")
+    assert ("flows_get_session", "onboard", "inst-1") in fake.calls
     payload = result.data
     assert payload["instance_id"] == "inst-1"
     assert payload["step"] == "step_1"
 
 
 @pytest.mark.asyncio
-async def test_palm_wizard_input_tool(mcp_server) -> None:
+async def test_palm_flows_session_input_tool(mcp_server) -> None:
     server, fake = mcp_server
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_wizard_input",
-            {"instance_id": "inst-1", "input": "Ada"},
+            "palm_flows_session_input",
+            {"session_id": "inst-1", "flow_id": "onboard", "input": "Ada"},
         )
-    assert ("provide_wizard_input", "inst-1", "Ada") in fake.calls
+    assert ("flows_session_input", "onboard", "inst-1", "Ada") in fake.calls
     payload = result.data
     assert payload["answers_preview"]["step_1"] == "Ada"
 
 
 @pytest.mark.asyncio
-async def test_palm_wizard_input_coerces_confirm(mcp_server) -> None:
+async def test_palm_flows_session_input_coerces_confirm(mcp_server) -> None:
     server, fake = mcp_server
 
-    def get_wizard(instance_id: str) -> dict[str, Any]:
+    def flows_get_session(flow_id: str | None, session_id: str) -> dict[str, Any]:
         return {
-            "instance_id": instance_id,
-            "flow_name": "onboard",
+            "session_id": session_id,
+            "flow_id": flow_id or "onboard",
             "status": "WAITING_FOR_INPUT",
-            "current_step_slug": "confirm",
-            "prompt": {"step": "confirm", "field_type": "confirm"},
-            "answers": {},
-            "next_actions": [],
+            "detail": {
+                "instance_id": session_id,
+                "flow_name": "onboard",
+                "current_step_slug": "confirm",
+                "prompt": {"step": "confirm", "field_type": "confirm"},
+                "answers": {},
+            },
         }
 
-    fake.get_wizard = get_wizard  # type: ignore[method-assign]
+    fake.flows_get_session = flows_get_session  # type: ignore[method-assign]
 
     async with Client(server) as client:
         await client.call_tool(
-            "palm_wizard_input",
-            {"instance_id": "inst-1", "input": "yes"},
+            "palm_flows_session_input",
+            {"session_id": "inst-1", "flow_id": "onboard", "input": "yes"},
         )
-    assert ("provide_wizard_input", "inst-1", True) in fake.calls
+    assert ("flows_session_input", "onboard", "inst-1", True) in fake.calls
 
 
 @pytest.mark.asyncio
-async def test_palm_wizard_drive_tool(mcp_server) -> None:
+async def test_palm_flows_session_drive_tool(mcp_server) -> None:
     server, fake = mcp_server
     state = {"done": False}
 
-    def get_wizard(instance_id: str) -> dict[str, Any]:
+    def flows_get_session(flow_id: str | None, session_id: str) -> dict[str, Any]:
         status = "SUCCESS" if state["done"] else "WAITING_FOR_INPUT"
         return {
-            "instance_id": instance_id,
-            "flow_name": "onboard",
+            "session_id": session_id,
+            "flow_id": flow_id or "onboard",
             "status": status,
-            "current_step_slug": "step_1",
-            "prompt": {"step": "step_1", "field_type": "text"},
-            "answers": {"step_1": "Ada"} if state["done"] else {},
-            "next_actions": [],
+            "detail": {
+                "instance_id": session_id,
+                "flow_name": "onboard",
+                "status": status,
+                "current_step_slug": "step_1",
+                "prompt": {"step": "step_1", "field_type": "text"},
+                "answers": {"step_1": "Ada"} if state["done"] else {},
+            },
         }
 
-    def provide_wizard_input(instance_id: str, value: Any) -> dict[str, Any]:
-        fake.calls.append(("provide_wizard_input", instance_id, value))
+    def flows_session_input(flow_id: str, session_id: str, value: Any) -> dict[str, Any]:
+        fake.calls.append(("flows_session_input", flow_id, session_id, value))
         state["done"] = True
-        return get_wizard(instance_id)
+        return flows_get_session(flow_id, session_id)
 
-    fake.get_wizard = get_wizard  # type: ignore[method-assign]
-    fake.provide_wizard_input = provide_wizard_input  # type: ignore[method-assign]
+    fake.flows_get_session = flows_get_session  # type: ignore[method-assign]
+    fake.flows_session_input = flows_session_input  # type: ignore[method-assign]
 
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_wizard_drive",
-            {"instance_id": "inst-1", "inputs": ["Ada"]},
+            "palm_flows_session_drive",
+            {"session_id": "inst-1", "flow_id": "onboard", "inputs": ["Ada"]},
         )
     payload = result.data
     assert payload["stopped_reason"] == "terminal"
@@ -202,64 +238,72 @@ async def test_palm_wizard_drive_tool(mcp_server) -> None:
 
 
 @pytest.mark.asyncio
-async def test_palm_wizard_drive_accepts_payload_without_inputs(mcp_server) -> None:
+async def test_palm_flows_session_drive_accepts_payload_without_inputs(mcp_server) -> None:
     server, fake = mcp_server
     state = {"done": False}
 
-    def get_wizard(instance_id: str) -> dict[str, Any]:
+    def flows_get_session(flow_id: str | None, session_id: str) -> dict[str, Any]:
         status = "SUCCESS" if state["done"] else "WAITING_FOR_INPUT"
         return {
-            "instance_id": instance_id,
-            "flow_name": "batch",
+            "session_id": session_id,
+            "flow_id": flow_id or "batch",
             "status": status,
-            "current_step_slug": "batch_payload",
-            "prompt": {"step": "batch_payload", "field_type": "text"},
-            "answers": {} if not state["done"] else {"batch_payload": {"main": {}}},
-            "next_actions": [],
+            "detail": {
+                "instance_id": session_id,
+                "flow_name": "batch",
+                "status": status,
+                "current_step_slug": "batch_payload",
+                "prompt": {"step": "batch_payload", "field_type": "text"},
+                "answers": {} if not state["done"] else {"batch_payload": {"main": {}}},
+            },
         }
 
-    def provide_wizard_input(instance_id: str, value: Any) -> dict[str, Any]:
-        fake.calls.append(("provide_wizard_input", instance_id, value))
+    def flows_session_input(flow_id: str, session_id: str, value: Any) -> dict[str, Any]:
+        fake.calls.append(("flows_session_input", flow_id, session_id, value))
         state["done"] = True
-        return get_wizard(instance_id)
+        return flows_get_session(flow_id, session_id)
 
-    fake.get_wizard = get_wizard  # type: ignore[method-assign]
-    fake.provide_wizard_input = provide_wizard_input  # type: ignore[method-assign]
+    fake.flows_get_session = flows_get_session  # type: ignore[method-assign]
+    fake.flows_session_input = flows_session_input  # type: ignore[method-assign]
 
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_wizard_drive",
+            "palm_flows_session_drive",
             {
-                "instance_id": "inst-1",
+                "session_id": "inst-1",
+                "flow_id": "batch",
                 "payload": {"main": {"title": "MCP Servers for LLMs"}},
             },
         )
 
     assert result.data["stopped_reason"] == "terminal"
     assert fake.calls == [
-        ("provide_wizard_input", "inst-1", {"main": {"title": "MCP Servers for LLMs"}}),
+        ("flows_session_input", "batch", "inst-1", {"main": {"title": "MCP Servers for LLMs"}}),
     ]
 
 
 @pytest.mark.asyncio
-async def test_palm_wizard_drive_requires_inputs_or_payload(mcp_server) -> None:
+async def test_palm_flows_session_drive_requires_inputs_or_payload(mcp_server) -> None:
     server, _ = mcp_server
     async with Client(server) as client:
         with pytest.raises(Exception, match="inputs or payload"):
-            await client.call_tool("palm_wizard_drive", {"instance_id": "inst-1"})
+            await client.call_tool("palm_flows_session_drive", {"session_id": "inst-1"})
 
 
 @pytest.mark.asyncio
-async def test_palm_resume_child_wait_skips_when_not_waiting(mcp_server) -> None:
+async def test_palm_flows_session_resume_child_wait_skips_when_not_waiting(mcp_server) -> None:
     server, fake = mcp_server
 
-    def resume_child_wait(instance_id: str) -> dict[str, Any]:
+    def flows_session_resume_child_wait(flow_id: str, session_id: str) -> dict[str, Any]:
         raise PalmRestError(400, "Instance 'inst-1' is not waiting for a nested child")
 
-    fake.resume_child_wait = resume_child_wait  # type: ignore[method-assign]
+    fake.flows_session_resume_child_wait = flows_session_resume_child_wait  # type: ignore[method-assign]
 
     async with Client(server) as client:
-        result = await client.call_tool("palm_resume_child_wait", {"instance_id": "inst-1"})
+        result = await client.call_tool(
+            "palm_flows_session_resume_child_wait",
+            {"session_id": "inst-1", "flow_id": "onboard"},
+        )
     payload = result.data
     assert payload["resume_child_wait"] == "skipped_not_waiting"
     assert payload["instance_id"] == "inst-1"

@@ -63,12 +63,12 @@ async def test_mcp_tools_use_in_process_backend(server_ctx) -> None:
     server = create_mcp_server(config, client=backend)
 
     async with Client(server) as client:
-        doctor = await client.call_tool("palm_doctor", {})
+        doctor = await client.call_tool("palm_system_doctor", {})
         assert doctor.data
 
         result = await client.call_tool(
-            "palm_inspect_instance",
-            {"instance_id": instance_id, "format": "compact"},
+            "palm_flows_session",
+            {"session_id": instance_id, "format": "compact"},
         )
     payload = result.data
     assert payload["instance_id"] == instance_id

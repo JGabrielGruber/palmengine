@@ -41,6 +41,19 @@ class _Phase5FakeClient:
             "links": {"explorer": f"http://127.0.0.1:8080/explorer/instances/{instance_id}"},
         }
 
+    def flows_get_session(
+        self,
+        flow_id: str | None,
+        session_id: str,
+    ) -> dict[str, Any]:
+        flat = self.get_wizard(session_id)
+        return {
+            "session_id": session_id,
+            "flow_id": flow_id or flat.get("flow_name"),
+            "status": flat.get("status"),
+            "detail": flat,
+        }
+
     def get_wizard(self, instance_id: str) -> dict[str, Any]:
         return {
             "instance_id": instance_id,
@@ -80,7 +93,7 @@ async def test_palm_invoke_resource_tool(phase5_server) -> None:
     server, _ = phase5_server
     async with Client(server) as client:
         result = await client.call_tool(
-            "palm_invoke_resource",
+            "palm_providers_invoke",
             {
                 "resource_ref": "fetch-customer",
                 "action": "fetch",
@@ -97,7 +110,7 @@ async def test_palm_invoke_resource_rejects_mcp_uri(phase5_server) -> None:
     async with Client(server) as client:
         with pytest.raises(Exception, match="MCP read resource"):
             await client.call_tool(
-                "palm_invoke_resource",
+                "palm_providers_invoke",
                 {"resource_ref": "palm://definitions/flows"},
             )
 
@@ -106,7 +119,7 @@ async def test_palm_invoke_resource_rejects_mcp_uri(phase5_server) -> None:
 async def test_palm_compose_status_tool(phase5_server) -> None:
     server, _ = phase5_server
     async with Client(server) as client:
-        result = await client.call_tool("palm_compose_status", {"instance_id": "inst-root"})
+        result = await client.call_tool("palm_flows_compose_status", {"session_id": "inst-root"})
     assert result.data["flow"] == "main-menu"
     assert result.data["active_child"]["flow"] == "capture-knowledge"
     assert "goal" in result.data["answers_keys"]

@@ -19,6 +19,12 @@ from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.services.execution.flows import flow_command_from_body
+from palm.runtimes.mcp.flows.views import (
+    flatten_session_view,
+    resolve_flow_id_from_inspect,
+    session_context_dict,
+    submission_view,
+)
 from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.rest_client import PalmRestError
@@ -106,31 +112,129 @@ class PalmInProcessBackend:
         params = PaginationParams(limit=limit, offset=0)
         return list_envelope("jobs", rows, params)
 
-    def get_wizard(self, instance_id: str) -> dict[str, Any]:
+    def flows_list(self) -> dict[str, Any]:
+        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
+
+        rows = self._ctx.execution.flows.dispatch(["flows"])
+        params = PaginationParams(limit=len(rows), offset=0)
+        return list_envelope("flows", rows, params)
+
+    def flows_describe(self, flow_id: str) -> dict[str, Any]:
         try:
-            return self._ctx.system.inspect_instance(instance_id)
+            row = self._ctx.execution.flows.dispatch(["flows", flow_id])
+        except DefinitionNotFoundServiceError as exc:
+            raise _flow_not_found(exc.ref) from exc
+        return row if isinstance(row, dict) else {"value": row}
+
+    def flows_create_session(self, flow_id: str, body: dict[str, Any]) -> dict[str, Any]:
+        try:
+            result = self._ctx.execution.flows.dispatch(
+                ["flows", flow_id, "create"],
+                {"body": body},
+            )
+        except (TypeError, ValueError, KeyError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        except Exception as exc:
+            raise PalmRestError(500, str(exc)) from exc
+        return submission_view(result if isinstance(result, dict) else {"result": result})
+
+    def flows_get_session(
+        self,
+        flow_id: str | None,
+        session_id: str,
+    ) -> dict[str, Any]:
+        try:
+            fid = flow_id or self._resolve_flow_id(session_id)
+            ctx = self._ctx.execution.flows.dispatch(["flows", fid, "session", session_id])
         except InstanceNotFoundServiceError as exc:
             raise _wizard_not_found(exc.instance_id) from exc
-
-    def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
-        try:
-            ctx = self._ctx.execution.flows.session(None, instance_id).input(value)
-            return ctx.to_dict()
         except InstanceNotFoundError as exc:
-            raise _wizard_not_found(instance_id) from exc
+            raise _wizard_not_found(session_id) from exc
+        return session_context_dict(ctx)
+
+    def flows_session_input(
+        self,
+        flow_id: str,
+        session_id: str,
+        value: Any,
+    ) -> dict[str, Any]:
+        try:
+            ctx = self._ctx.execution.flows.dispatch(
+                ["flows", flow_id, "session", session_id, "input"],
+                {"value": value},
+            )
+        except InstanceNotFoundError as exc:
+            raise _wizard_not_found(session_id) from exc
         except TypeError as exc:
             raise PalmRestError(400, str(exc)) from exc
         except (ValueError, RuntimeError) as exc:
             raise PalmRestError(400, str(exc)) from exc
+        return session_context_dict(ctx)
 
-    def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
+    def flows_session_backtrack(
+        self,
+        flow_id: str,
+        session_id: str,
+        *,
+        to_step: str | None = None,
+    ) -> dict[str, Any]:
         try:
-            ctx = self._ctx.execution.flows.session(None, instance_id).resume_child_wait()
-            return ctx.to_dict()
+            ctx = self._ctx.execution.flows.dispatch(
+                ["flows", flow_id, "session", session_id, "backtrack"],
+                {"to_step": to_step},
+            )
         except InstanceNotFoundError as exc:
-            raise _wizard_not_found(instance_id) from exc
+            raise _wizard_not_found(session_id) from exc
+        except TypeError as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        except ValueError as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        return session_context_dict(ctx)
+
+    def flows_session_resume(self, flow_id: str, session_id: str) -> dict[str, Any]:
+        try:
+            ctx = self._ctx.execution.flows.dispatch(
+                ["flows", flow_id, "session", session_id, "resume"],
+            )
+        except InstanceNotFoundError as exc:
+            raise _wizard_not_found(session_id) from exc
         except RuntimeError as exc:
             raise PalmRestError(400, str(exc)) from exc
+        return session_context_dict(ctx)
+
+    def flows_session_resume_child_wait(
+        self,
+        flow_id: str,
+        session_id: str,
+    ) -> dict[str, Any]:
+        try:
+            ctx = self._ctx.execution.flows.dispatch(
+                ["flows", flow_id, "session", session_id, "resume-child-wait"],
+            )
+        except InstanceNotFoundError as exc:
+            raise _wizard_not_found(session_id) from exc
+        except RuntimeError as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        return session_context_dict(ctx)
+
+    def get_wizard(self, instance_id: str) -> dict[str, Any]:
+        return flatten_session_view(self.flows_get_session(None, instance_id))
+
+    def provide_wizard_input(self, instance_id: str, value: Any) -> dict[str, Any]:
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        return flatten_session_view(self.flows_session_input(flow_id, instance_id, value))
+
+    def resume_child_wait(self, instance_id: str) -> dict[str, Any]:
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        view = self.flows_session_resume_child_wait(flow_id, instance_id)
+        return flatten_session_view(view)
 
     def get_instance_tree(self, instance_id: str) -> dict[str, Any]:
         try:
@@ -163,42 +267,37 @@ class PalmInProcessBackend:
         return {"job_id": job_id, "slug": slug, "status": status, "step": step}
 
     def resume_wizard_tick(self, instance_id: str) -> dict[str, Any]:
-        try:
-            self._ctx.execution.flows.session(None, instance_id).resume()
-            return self.get_wizard(instance_id)
-        except InstanceNotFoundError as exc:
-            raise _wizard_not_found(instance_id) from exc
-        except RuntimeError as exc:
-            raise PalmRestError(400, str(exc)) from exc
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        return flatten_session_view(self.flows_session_resume(flow_id, instance_id))
 
     def backtrack_wizard(self, instance_id: str, *, to_step: str | None = None) -> dict[str, Any]:
-        try:
-            ctx = self._ctx.execution.flows.session(None, instance_id).backtrack(to_step)
-            return ctx.to_dict()
-        except InstanceNotFoundError as exc:
-            raise _wizard_not_found(instance_id) from exc
-        except TypeError as exc:
-            raise PalmRestError(400, str(exc)) from exc
-        except ValueError as exc:
-            raise PalmRestError(400, str(exc)) from exc
+        inspect = self.get_wizard(instance_id)
+        flow_id = resolve_flow_id_from_inspect(inspect)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {instance_id!r}")
+        view = self.flows_session_backtrack(flow_id, instance_id, to_step=to_step)
+        return flatten_session_view(view)
 
     def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
-        try:
-            session = self._ctx.execution.flows.run_wizard(body)
-            view = session.status()
-        except (TypeError, ValueError, KeyError) as exc:
-            raise PalmRestError(400, str(exc)) from exc
-        except Exception as exc:
-            raise PalmRestError(500, str(exc)) from exc
+        flow_id = str(
+            body.get("flow_name")
+            or _flow_id_from_submit_body(body)
+            or "flow"
+        )
+        return self.flows_create_session(flow_id, body)
 
-        detail = view.get("detail") if isinstance(view.get("detail"), dict) else {}
-        return {
-            "instance_id": session.session_id,
-            "session_id": session.session_id,
-            "job_id": view.get("job_id"),
-            "status": view.get("status"),
-            "metadata": detail.get("metadata") or view.get("metadata") or {},
-        }
+    def _resolve_flow_id(self, session_id: str) -> str:
+        try:
+            view = self._ctx.system.inspect_instance(session_id)
+        except InstanceNotFoundServiceError as exc:
+            raise _wizard_not_found(exc.instance_id) from exc
+        flow_id = resolve_flow_id_from_inspect(view)
+        if not flow_id:
+            raise PalmRestError(400, f"could not resolve flow_id for session {session_id!r}")
+        return flow_id
 
     def submit_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -402,6 +501,20 @@ def _provider_result_body(result: Any) -> dict[str, Any]:
         "error": result.error,
         "metadata": dict(result.metadata),
     }
+
+
+def _flow_id_from_submit_body(body: dict[str, Any]) -> str | None:
+    wizard = body.get("wizard")
+    if isinstance(wizard, dict):
+        name = wizard.get("name")
+        return str(name) if name is not None else None
+    flow = body.get("flow")
+    if isinstance(flow, dict):
+        for key in ("name", "flow", "flow_name"):
+            value = flow.get(key)
+            if value is not None:
+                return str(value)
+    return None
 
 
 def _wizard_not_found(instance_id: str) -> PalmRestError:

@@ -6,12 +6,13 @@ from typing import TYPE_CHECKING, Any
 
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
-from palm.runtimes.mcp.debug_tools import register_debug_tools
-from palm.runtimes.mcp.phase5_tools import register_phase5_tools
+from palm.runtimes.mcp.definitions import register_definitions_tools
+from palm.runtimes.mcp.flows import register_flow_tools
 from palm.runtimes.mcp.prompts import register_core_prompts
+from palm.runtimes.mcp.providers import register_provider_tools
 from palm.runtimes.mcp.resources import register_core_resources
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
-from palm.runtimes.mcp.tools import register_core_tools
+from palm.runtimes.mcp.system import register_system_tools
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -36,13 +37,14 @@ def create_mcp_server(
     backend = _resolve_backend(resolved, client=client, ctx=ctx)
     mcp = FastMCP("Palm Operator")
 
-    register_core_tools(mcp, backend)
+    register_flow_tools(mcp, backend)
+    register_definitions_tools(mcp, backend)
+    register_system_tools(mcp, backend)
+    register_provider_tools(mcp, backend)
     register_core_resources(mcp, backend, config=resolved)
     register_core_prompts(mcp, resolved, backend)
     register_pattern_mcp_tools(mcp, backend)
     register_app_mcp_tools(mcp, backend)
-    register_debug_tools(mcp, backend)
-    register_phase5_tools(mcp, backend)
 
     mcp._palm_client = backend  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]
