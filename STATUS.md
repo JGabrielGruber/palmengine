@@ -196,7 +196,7 @@ just mcp-inspector                       # MCP Inspector UI
 
 **0.16.5 shipped** — service-domain API complete · [RELEASE-0.16.5.md](RELEASE-0.16.5.md)
 
-**Next:** migrate remaining legacy monolith routes (`/v1/jobs`, `/v1/instances`) to `/v1/api/system`; OpenAPI from per-service registries; WebSocket surface on `execution/flows`.
+**Next:** [0.17 service completion plan](docs/superpowers/plans/2026-07-01-0.17-service-completion.md) — system REST parity, process execution, palm provider remote, OpenAPI merge; WebSocket in 0.18.
 
 
 ## Useful Links
