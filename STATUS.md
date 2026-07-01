@@ -250,16 +250,16 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.2 | Explorer assist catalog + `assist_workspace` | ✅ Shipped |
 | 0.21.3 | Explorer HTMX verbs + handoff CTA + nav | ✅ Shipped |
 | 0.21.4 | `actions` block + production enrichers + REST catalog/flows | ✅ Shipped |
-| 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | Planned |
+| 0.21.5 | Opt-in `format=assistant` on flows REST/MCP | ✅ Shipped |
 | 0.21.6 | `MIGRATION-0.21.md`, docs, verification | Planned |
 
 **0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.21.4 shipped** — `actions` block on assistant turns; operator-entry enricher; REST `catalog/flows`.
+**0.21.5 shipped** — opt-in `format=assistant` on `palm_flows_session` and flows REST session routes; powertool default unchanged.
 
-**Next:** 0.21.5 — opt-in `format=assistant` on flows REST/MCP per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
+**Next:** 0.21.6 — `MIGRATION-0.21.md`, docs sync, full verification per [assistant-expansion spec](docs/superpowers/specs/2026-07-01-assistant-expansion-design.md).
 
 
 ## Useful Links

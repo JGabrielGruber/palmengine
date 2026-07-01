@@ -14,10 +14,13 @@ from palm.patterns.wizard.bindings.cqrs.commands import (
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+from palm.common.operator.invoke_tree import build_invoke_tree
+from palm.runtimes.mcp.flows.views import shape_flow_session_view
 from palm.runtimes.server.surfaces.rest.responses import accepted, flatten_session_context, ok
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.validation import PaginationParams
+from palm.services.assist.views import resolve_view_format
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -77,7 +80,7 @@ def get_session(
         ctx_obj = ctx.execution.flows.dispatch(["flows", flow_id, "session", session_id])
     except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
-    return ok(_session_body(ctx_obj))
+    return ok(_session_body(ctx, request, ctx_obj, flow_id=flow_id, session_id=session_id))
 
 
 def session_input(
@@ -112,7 +115,7 @@ def session_input(
     except (ValueError, RuntimeError) as exc:
         return errors.input_rejected(str(exc))
 
-    return ok(_session_body(ctx_obj))
+    return ok(_session_body(ctx, request, ctx_obj, flow_id=flow_id, session_id=session_id))
 
 
 def session_backtrack(
@@ -147,7 +150,7 @@ def session_backtrack(
     except ValueError as exc:
         return errors.backtrack_rejected(str(exc))
 
-    return ok(_session_body(ctx_obj))
+    return ok(_session_body(ctx, request, ctx_obj, flow_id=flow_id, session_id=session_id))
 
 
 def session_resume(
@@ -170,7 +173,7 @@ def session_resume(
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
 
-    return ok(_session_body(ctx_obj))
+    return ok(_session_body(ctx, request, ctx_obj, flow_id=flow_id, session_id=session_id))
 
 
 def session_resume_child_wait(
@@ -193,7 +196,7 @@ def session_resume_child_wait(
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
 
-    return ok(_session_body(ctx_obj))
+    return ok(_session_body(ctx, request, ctx_obj, flow_id=flow_id, session_id=session_id))
 
 
 def session_cancel(
@@ -219,8 +222,33 @@ def session_cancel(
     return ok(result if isinstance(result, dict) else {"result": result})
 
 
-def _session_body(ctx_obj: Any) -> dict[str, Any]:
-    return flatten_session_context(ctx_obj)
+def _view_format(request: ServerRequest) -> str:
+    query = dict(request.query) if request.query else {}
+    return resolve_view_format(query, default="powertool")
+
+
+def _session_body(
+    ctx: ServerContext,
+    request: ServerRequest,
+    ctx_obj: Any,
+    *,
+    flow_id: str | None = None,
+    session_id: str | None = None,
+) -> dict[str, Any]:
+    flat = flatten_session_context(ctx_obj)
+    view_format = _view_format(request)
+    invoke_tree = None
+    if view_format == "assistant":
+        sid = session_id or flat.get("instance_id") or flat.get("session_id")
+        if sid is not None:
+            invoke_tree = build_invoke_tree(ctx.runtime, str(sid), base_url=None)
+    return shape_flow_session_view(
+        flat,
+        format=view_format,
+        session_id=session_id or flat.get("instance_id"),
+        flow_id=flow_id or flat.get("flow_name"),
+        invoke_tree=invoke_tree,
+    )
 
 
 def _create_body(result: Any) -> dict[str, Any]:

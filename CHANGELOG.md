@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.21.5] — 2026-07-01
+
+**Flows assistant opt-in** — human envelope on business sessions without changing defaults.
+
+### Added
+
+- **`palm_flows_session(format="assistant")`** — opt-in assistant envelope (`question`, `choices`, `hint`)
+- **Flows REST** `?format=assistant|powertool|verbose` on session inspect routes
+
+### Changed
+
+- **`palm_flows_session`** default `format` is `powertool` (`compact` alias retained)
+- **`shape_dispatch_result`** flows branch delegates to `shape_flow_session_view` when `params.format=assistant`
+- **`palm_assist`** on flows session paths respects `params.format=assistant` (tool-level `format` alone still powertool)
+
 ## [0.21.4] — 2026-07-01
 
 **Assistant envelope depth** — `actions` block and production enrichers.

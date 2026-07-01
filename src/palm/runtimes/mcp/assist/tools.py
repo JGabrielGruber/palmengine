@@ -51,11 +51,21 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
             raise ValueError(str(exc)) from exc
         except PalmRestError as exc:
             raise ValueError(str(exc)) from exc
+        invoke_tree = None
+        if (
+            view_format == "assistant"
+            and len(resolved) >= 4
+            and resolved[0] == "flows"
+            and resolved[2] == "session"
+        ):
+            invoke_tree = backend.get_instance_tree(resolved[3])
+
         return shape_dispatch_result(
             resolved,
             result,
             format=view_format,
             params=dispatch_params,
+            invoke_tree=invoke_tree,
         )
 
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.common.operator.compact import compact_job_inspect, compact_wizard_inspect
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.operator.view_registry import (
     OperatorViewContext,
@@ -13,7 +12,7 @@ from palm.common.operator.view_registry import (
 )
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.runtimes.mcp.assist.routes_catalog import build_assist_routes_catalog
-from palm.runtimes.mcp.flows.views import flatten_session_view, submission_view
+from palm.runtimes.mcp.flows.views import flatten_session_view, shape_flow_session_view, submission_view
 from palm.services.assist.registry import resolve_mcp_alias
 from palm.services.assist.views import resolve_view_format
 
@@ -108,6 +107,7 @@ def shape_dispatch_result(
     format: str | None = None,
     params: dict[str, Any] | None = None,
     tool_format: str | None = None,
+    invoke_tree: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Shape domain dispatch results for MCP operator consumers."""
     fmt = normalize_view_format(
@@ -149,10 +149,16 @@ def shape_dispatch_result(
     if prefix == "flows" and _looks_like_session(path, result):
         flat = flatten_session_view(raw)
         _ensure_flow_session_flat(flat, path)
-        if fmt == "verbose":
-            payload.update(flat)
-        else:
-            payload.update(compact_wizard_inspect(flat, format="compact"))
+        payload.update(
+            shape_flow_session_view(
+                flat,
+                format=fmt,
+                session_id=flat.get("instance_id") or flat.get("session_id"),
+                flow_id=flat.get("flow_name") or flat.get("flow"),
+                path=path,
+                invoke_tree=invoke_tree,
+            )
+        )
         return payload
 
     if prefix == "flows" and path[-1:] == ["create"]:
@@ -385,15 +391,32 @@ def map_dispatch_to_rest(
         if len(path) == 3 and path[2] == "create":
             return "POST", f"/v1/api/flows/{path[1]}/create", body, True
         if len(path) == 4 and path[2] == "session":
-            return "GET", f"/v1/api/flows/{path[1]}/session/{path[3]}", None, False
+            url = _append_format_query(f"/v1/api/flows/{path[1]}/session/{path[3]}", params)
+            return "GET", url, None, False
         if len(path) == 5 and path[2] == "session" and path[4] == "input":
-            return "POST", f"/v1/api/flows/{path[1]}/session/{path[3]}/input", {"value": params.get("value", params.get("input"))}, True
+            url = _append_format_query(
+                f"/v1/api/flows/{path[1]}/session/{path[3]}/input",
+                params,
+            )
+            return "POST", url, {"value": params.get("value", params.get("input"))}, True
         if len(path) == 5 and path[2] == "session" and path[4] == "backtrack":
-            return "POST", f"/v1/api/flows/{path[1]}/session/{path[3]}/backtrack", {"to_step": params.get("to_step")}, True
+            url = _append_format_query(
+                f"/v1/api/flows/{path[1]}/session/{path[3]}/backtrack",
+                params,
+            )
+            return "POST", url, {"to_step": params.get("to_step")}, True
         if len(path) == 5 and path[2] == "session" and path[4] == "resume":
-            return "POST", f"/v1/api/flows/{path[1]}/session/{path[3]}/resume", None, True
+            url = _append_format_query(
+                f"/v1/api/flows/{path[1]}/session/{path[3]}/resume",
+                params,
+            )
+            return "POST", url, None, True
         if len(path) == 5 and path[2] == "session" and path[4] == "resume-child-wait":
-            return "POST", f"/v1/api/flows/{path[1]}/session/{path[3]}/resume-child-wait", None, True
+            url = _append_format_query(
+                f"/v1/api/flows/{path[1]}/session/{path[3]}/resume-child-wait",
+                params,
+            )
+            return "POST", url, None, True
         if len(path) == 5 and path[2] == "session" and path[4] == "cancel":
             return "POST", f"/v1/api/flows/{path[1]}/session/{path[3]}/cancel", None, True
 

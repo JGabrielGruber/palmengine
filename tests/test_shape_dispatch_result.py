@@ -77,3 +77,19 @@ def test_shape_dispatch_result_flows_session_powertool() -> None:
     assert payload["instance_id"] == "inst-1"
     assert payload["step"] == "intro"
     assert "question" not in payload
+
+
+def test_shape_dispatch_result_flows_session_assistant_opt_in() -> None:
+    from palm.common.operator.view_registry import clear_operator_view_builders
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    clear_operator_view_builders()
+    ensure_assist_view_registration()
+    ctx = _sample_session_context()
+    payload = shape_dispatch_result(
+        ["flows", "onboard", "session", "inst-1"],
+        ctx,
+        params={"format": "assistant"},
+    )
+    assert payload["question"] == "Welcome"
+    assert "operator_hint" not in payload

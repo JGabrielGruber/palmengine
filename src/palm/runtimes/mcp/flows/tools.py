@@ -8,9 +8,11 @@ from palm.common.operator.compact import compact_wizard_inspect
 from palm.common.operator.drive_inputs import drive_wizard_inputs
 from palm.common.operator.input_coercion import resolve_mcp_wizard_input
 from palm.common.operator.compose_status import build_compose_status
+from palm.common.operator.view_registry import normalize_view_format
 from palm.runtimes.mcp.flows.views import (
     ensure_flow_id,
     flatten_session_view,
+    shape_flow_session_view,
     submission_view,
 )
 from palm.runtimes.mcp.rest_client import PalmRestError
@@ -45,16 +47,22 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
     def palm_flows_session(
         session_id: str,
         flow_id: str | None = None,
-        format: str = "compact",
+        format: str = "powertool",
         include: list[str] | None = None,
         truncate_answers_at: int = 2000,
     ) -> dict[str, Any]:
-        """Inspect a flow session (compact wizard view by default)."""
+        """Inspect a flow session (powertool by default; ``format=assistant`` opt-in)."""
         view = backend.flows_get_session(flow_id, session_id)
         flat = flatten_session_view(view)
-        return compact_wizard_inspect(
+        invoke_tree = None
+        if normalize_view_format(format) == "assistant":
+            invoke_tree = backend.get_instance_tree(session_id)
+        return shape_flow_session_view(
             flat,
             format=format,
+            session_id=session_id,
+            flow_id=flow_id,
+            invoke_tree=invoke_tree,
             include=include,
             truncate_answers_at=truncate_answers_at,
         )
