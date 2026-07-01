@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from palm.common.operator.view_registry import (
+    OperatorViewContext,
+    build_operator_view,
+    normalize_view_format,
+)
 from palm.core.orchestration import JobStatus
 from palm.services.assist.grammar import command_path
 
@@ -25,8 +30,31 @@ class AssistSessionContext:
     compose_status: dict[str, Any] | None = None
     next_commands: list[list[str]] = field(default_factory=list)
     detail: dict[str, Any] = field(default_factory=dict)
+    invoke_tree: dict[str, Any] | None = None
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, *, view_format: str = "assistant") -> dict[str, Any]:
+        fmt = normalize_view_format(view_format)
+        if fmt == "verbose":
+            return self._verbose_dict()
+        flat = dict(self.detail)
+        flat["session_id"] = self.session_id
+        if self.session_id:
+            flat["instance_id"] = self.session_id
+        if self.flow_id:
+            flat.setdefault("flow_name", self.flow_id)
+        context = OperatorViewContext(
+            session_id=self.session_id,
+            flow_id=self.flow_id,
+            scenario_id=self.scenario_id,
+            invoke_tree=self.invoke_tree,
+            handoff_ready=self.handoff_ready,
+        )
+        payload = build_operator_view(fmt, flat_view=flat, context=context)
+        if fmt == "powertool":
+            payload = self._merge_powertool_fields(payload)
+        return payload
+
+    def _verbose_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "session_id": self.session_id,
             "scenario_id": self.scenario_id,
@@ -43,7 +71,24 @@ class AssistSessionContext:
             payload["operator_hint"] = self.operator_hint
         if self.compose_status is not None:
             payload["compose_status"] = self.compose_status
+        if self.invoke_tree is not None:
+            payload["invoke_tree"] = self.invoke_tree
         return payload
+
+    def _merge_powertool_fields(self, payload: dict[str, Any]) -> dict[str, Any]:
+        merged = dict(payload)
+        merged["session_id"] = self.session_id
+        if not merged.get("instance_id"):
+            merged["instance_id"] = self.session_id
+        if self.scenario_id is not None:
+            merged["scenario_id"] = self.scenario_id
+        merged["handoff_ready"] = self.handoff_ready
+        merged["next_commands"] = self.next_commands
+        if self.operator_hint is not None:
+            merged["operator_hint"] = self.operator_hint
+        if self.compose_status is not None:
+            merged["compose_status"] = self.compose_status
+        return merged
 
 
 def build_assist_session_context(

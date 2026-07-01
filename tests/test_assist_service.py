@@ -29,13 +29,28 @@ def test_application_host_exposes_assist(assist_host: ApplicationHost) -> None:
     assert hasattr(assist_host.assist, "dispatch")
 
 
-def test_start_operator_entry_returns_session(assist_host: ApplicationHost) -> None:
+def test_start_operator_entry_returns_first_turn(assist_host: ApplicationHost) -> None:
     result = assist_host.assist.dispatch(
         ["assist", "scenarios", "operator-entry", "start"],
         params={"body": {}},
     )
     assert "session_id" in result
     assert result.get("scenario_id") == "operator-entry"
+    assert result.get("question")
+    assert result.get("choices")
+    assert result.get("status") == "waiting"
+    assert "detail" not in result
+
+
+def test_start_operator_entry_powertool_opt_in(assist_host: ApplicationHost) -> None:
+    result = assist_host.assist.dispatch(
+        ["assist", "scenarios", "operator-entry", "start"],
+        params={"body": {}, "format": "powertool"},
+    )
+    assert result.get("session_id") or result.get("instance_id")
+    assert result.get("status") == "WAITING_FOR_INPUT"
+    assert "operator_hint" in result
+    assert "question" not in result
 
 
 def test_assist_list_scenarios_includes_operator_entry(assist_host: ApplicationHost) -> None:
@@ -55,14 +70,16 @@ def test_assist_session_input_and_context(assist_host: ApplicationHost) -> None:
     session_id = started["session_id"]
     ctx = assist_host.assist.dispatch(["assist", "session", session_id])
     assert ctx["session_id"] == session_id
-    assert ctx.get("waiting_for_input") is True
+    assert ctx.get("status") == "waiting"
+    assert ctx.get("question")
+    assert "detail" not in ctx
 
     updated = assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
         {"value": "todo-builder"},
     )
     assert updated["session_id"] == session_id
-    if updated.get("waiting_for_input"):
+    if updated.get("status") == "waiting":
         assist_host.assist.dispatch(
             ["assist", "session", session_id, "input"],
             {"value": "yes"},

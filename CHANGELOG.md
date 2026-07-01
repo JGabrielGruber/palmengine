@@ -4,6 +4,17 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.20.3] — 2026-07-01
+
+**Assist session defaults** — assistant envelope on service + REST; start returns first turn.
+
+### Changed
+
+- **`AssistSessionContext.to_dict`** — defaults to `format=assistant`; `verbose` and `powertool` opt-in
+- **`start_scenario`** — returns first assistant turn (question + choices), not ids-only
+- **REST assist handlers** — `?format=assistant|powertool|verbose` on session routes
+- **MCP assist dispatch** — passthrough assistant envelopes (`question` field)
+
 ## [0.20.2] — 2026-07-01
 
 **Assistant views** — compose + humanize pipeline registered from assist domain.

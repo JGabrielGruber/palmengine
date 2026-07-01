@@ -18,6 +18,7 @@ from palm.runtimes.server.surfaces.rest.responses import accepted, ok
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.validation import PaginationParams
+from palm.services.assist.views import resolve_view_format
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
@@ -56,7 +57,7 @@ def start_scenario(
     try:
         result = ctx.assist.dispatch(
             ["assist", "scenarios", scenario_id, "start"],
-            {"body": body},
+            {"body": body, "format": _view_format(request)},
         )
     except DefinitionNotFoundServiceError:
         return errors.scenario_not_found(scenario_id)
@@ -75,7 +76,10 @@ def get_session(
     session_id: str,
 ) -> ServerResponse:
     try:
-        body = ctx.assist.dispatch(["assist", "session", session_id])
+        body = ctx.assist.dispatch(
+            ["assist", "session", session_id],
+            {"format": _view_format(request)},
+        )
     except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     return ok(body if isinstance(body, dict) else {"value": body})
@@ -103,7 +107,7 @@ def session_input(
     try:
         result = ctx.assist.dispatch(
             ["assist", "session", session_id, "input"],
-            {"value": body["value"]},
+            {"value": body["value"], "format": _view_format(request)},
         )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)
@@ -137,7 +141,7 @@ def session_backtrack(
     try:
         result = ctx.assist.dispatch(
             ["assist", "session", session_id, "backtrack"],
-            {"to_step": body.get("to_step")},
+            {"to_step": body.get("to_step"), "format": _view_format(request)},
         )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)
@@ -160,7 +164,10 @@ def session_resume(
         return auth_error
 
     try:
-        result = ctx.assist.dispatch(["assist", "session", session_id, "resume"])
+        result = ctx.assist.dispatch(
+            ["assist", "session", session_id, "resume"],
+            {"format": _view_format(request)},
+        )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)
     except RuntimeError as exc:
@@ -206,15 +213,14 @@ def doctor(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ok(ctx.assist.dispatch(["assist", "doctor"]))
 
 
+def _view_format(request: ServerRequest) -> str:
+    query = dict(request.query) if request.query else {}
+    return resolve_view_format(query)
+
+
 def _start_body(result: Any) -> dict[str, Any]:
     if isinstance(result, dict):
-        return {
-            "session_id": result.get("session_id"),
-            "scenario_id": result.get("scenario_id"),
-            "flow_id": result.get("flow_id"),
-            "job_id": result.get("job_id"),
-            "status": result.get("status"),
-        }
+        return dict(result)
     return {"result": result}
 
 

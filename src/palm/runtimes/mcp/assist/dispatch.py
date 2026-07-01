@@ -92,6 +92,9 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
     prefix = path[0] if path else ""
 
     if prefix == "assist" and "session_id" in result:
+        if result.get("question"):
+            payload.update(result)
+            return payload
         if result.get("detail"):
             flat = _assist_session_flat(result)
             compact = compact_wizard_inspect(flat)
@@ -100,7 +103,7 @@ def compact_dispatch_result(path: list[str], result: Any) -> dict[str, Any]:
                 if result.get(key) is not None:
                     payload[key] = result[key]
             return payload
-        if "scenario_id" in result:
+        if "scenario_id" in result and "question" not in result:
             payload.update(submission_view(result))
             return payload
 

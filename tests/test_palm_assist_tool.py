@@ -76,6 +76,7 @@ async def test_palm_assist_starts_operator_entry(assist_server_ctx) -> None:
 
     payload = result.data
     assert payload.get("session_id")
+    assert payload.get("question")
     assert payload.get("path") == ["assist", "scenarios", "operator-entry", "start"]
 
 
@@ -106,7 +107,7 @@ def test_in_process_assist_dispatch_doctor(assist_server_ctx) -> None:
 
 
 @pytest.mark.asyncio
-async def test_palm_assist_flows_session_returns_compact(assist_server_ctx) -> None:
+async def test_palm_assist_assist_session_returns_assistant(assist_server_ctx) -> None:
     backend = PalmInProcessBackend(assist_server_ctx)
     config = PalmMcpConfig(
         base_url="http://127.0.0.1:8080",
@@ -131,6 +132,8 @@ async def test_palm_assist_flows_session_returns_compact(assist_server_ctx) -> N
         )
 
     payload = result.data
-    assert payload.get("instance_id") == session_id
-    assert "operator_hint" in payload
+    assert payload.get("session_id") == session_id
+    assert payload.get("question")
+    assert payload.get("status") == "waiting"
     assert "detail" not in payload
+    assert "operator_hint" not in payload

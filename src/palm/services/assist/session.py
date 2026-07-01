@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.operator.compose_status import build_compose_status
 from palm.common.operator.compact import compact_wizard_inspect
 from palm.core.orchestration import JobStatus
 from palm.services.assist.schemas import AssistSessionContext, build_assist_session_context
@@ -30,33 +29,30 @@ class AssistSession:
         self.session_id = session_id
         self.scenario_id = scenario_id
 
-    def context(self) -> AssistSessionContext:
-        """Assist-enriched session view with operator hints."""
+    def context(self, *, view_format: str = "assistant") -> AssistSessionContext:
+        """Assist-enriched session view shaped for ``view_format`` on ``to_dict()``."""
         flow_ctx = self._flow_session().context()
         view = flow_ctx.detail if flow_ctx.detail else flow_ctx.to_dict()
         compact = compact_wizard_inspect(view)
-        compose_status = None
-        if _has_resource_context(view):
-            tree = self._assist.invoke_tree(self.session_id)
-            compose_status = build_compose_status(tree, compact)
         handoff_ready = _handoff_ready(flow_ctx)
-        return build_assist_session_context(
+        ctx = build_assist_session_context(
             session_id=self.session_id,
             flow_id=self.flow_id or flow_ctx.flow_id,
             view=view,
             scenario_id=self.scenario_id,
             operator_hint=compact.get("operator_hint"),
-            compose_status=compose_status,
             handoff_ready=handoff_ready,
         )
+        ctx.invoke_tree = _safe_invoke_tree(self._assist, self.session_id)
+        return ctx
 
-    def input(self, value: Any) -> AssistSessionContext:
+    def input(self, value: Any, *, view_format: str = "assistant") -> AssistSessionContext:
         self._flow_session().input(value)
-        return self.context()
+        return self.context(view_format=view_format)
 
-    def backtrack(self, to_step: str | None = None) -> AssistSessionContext:
+    def backtrack(self, to_step: str | None = None, *, view_format: str = "assistant") -> AssistSessionContext:
         self._flow_session().backtrack(to_step)
-        return self.context()
+        return self.context(view_format=view_format)
 
     def resume(self) -> AssistSession:
         self._flow_session().resume()
@@ -69,15 +65,11 @@ class AssistSession:
         return self._assist.execution.flows.session(self.flow_id, self.session_id)
 
 
-def _has_resource_context(view: dict[str, Any]) -> bool:
-    prompt = view.get("prompt") or {}
-    if not isinstance(prompt, dict):
-        return False
-    return bool(
-        prompt.get("waiting_for_child")
-        or view.get("invoke_stack")
-        or view.get("active_child")
-    )
+def _safe_invoke_tree(assist: Any, session_id: str) -> dict[str, Any] | None:
+    try:
+        return assist.invoke_tree(session_id)
+    except Exception:
+        return None
 
 
 def _handoff_ready(flow_ctx: SessionContext) -> bool:

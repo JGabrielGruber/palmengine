@@ -12,6 +12,7 @@ from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
 from palm.services.assist.registry import list_scenario_rows, scenario_by_id
 from palm.services.assist.session import AssistSession
+from palm.services.assist.views import resolve_view_format
 from palm.services.definitions.flows import flow_catalog_row
 
 if TYPE_CHECKING:
@@ -77,24 +78,29 @@ class AssistService(BaseService):
         if parsed.kind == AssistCommandKind.START_SCENARIO:
             assert parsed.scenario_id is not None
             body = dict(params.get("body") or params)
-            return self.start_scenario(parsed.scenario_id, body)
+            view_format = resolve_view_format(params)
+            return self.start_scenario(parsed.scenario_id, body, view_format=view_format)
 
         if parsed.kind == AssistCommandKind.SESSION:
             assert parsed.session_id is not None
-            return self.session(parsed.session_id).context().to_dict()
+            view_format = resolve_view_format(params)
+            return self.session(parsed.session_id).context().to_dict(view_format=view_format)
 
         if parsed.kind == AssistCommandKind.SESSION_VERB:
             assert parsed.session_id is not None
             assert parsed.verb is not None
+            view_format = resolve_view_format(params)
             handle = self.session(parsed.session_id)
             if parsed.verb == "input":
                 value = params.get("value", params.get("input"))
-                return handle.input(value).to_dict()
+                return handle.input(value, view_format=view_format).to_dict(view_format=view_format)
             if parsed.verb == "backtrack":
-                return handle.backtrack(params.get("to_step")).to_dict()
+                return handle.backtrack(params.get("to_step"), view_format=view_format).to_dict(
+                    view_format=view_format
+                )
             if parsed.verb == "resume":
                 handle.resume()
-                return handle.context().to_dict()
+                return handle.context(view_format=view_format).to_dict(view_format=view_format)
             if parsed.verb == "cancel":
                 return handle.cancel()
             if parsed.verb == "handoff":
@@ -123,20 +129,25 @@ class AssistService(BaseService):
             row["flow"] = flow_catalog_row(flow)
         return row
 
-    def start_scenario(self, scenario_id: str, body: dict[str, Any]) -> dict[str, Any]:
+    def start_scenario(
+        self,
+        scenario_id: str,
+        body: dict[str, Any],
+        *,
+        view_format: str = "assistant",
+    ) -> dict[str, Any]:
         contributor = scenario_by_id(scenario_id)
         if contributor is None:
             raise DefinitionNotFoundServiceError("scenario", scenario_id)
         run_body = {**body, "flow_name": contributor.flow_id, "by_id": True}
         session = self._execution.flows.run_wizard(run_body)
-        ctx = session.context()
-        return {
-            "session_id": session.session_id,
-            "scenario_id": scenario_id,
-            "flow_id": contributor.flow_id,
-            "job_id": ctx.job_id,
-            "status": ctx.status,
-        }
+        handle = AssistSession(
+            self,
+            flow_id=contributor.flow_id,
+            session_id=session.session_id,
+            scenario_id=scenario_id,
+        )
+        return handle.context(view_format=view_format).to_dict(view_format=view_format)
 
     def session(self, session_id: str) -> AssistSession:
         view = self._system.inspect_instance(session_id)

@@ -12,6 +12,16 @@ from palm.common.operator.view_registry import (
 )
 from palm.services.assist.registry import apply_assistant_enricher
 
+def resolve_view_format(params: dict[str, Any] | None, *, default: str = "assistant") -> str:
+    """Read ``format`` from dispatch/REST params with canonical normalization."""
+    from palm.common.operator.view_registry import normalize_view_format
+
+    if not params:
+        return normalize_view_format(default)
+    raw = params.get("format", default)
+    return normalize_view_format(str(raw))
+
+
 def ensure_assist_view_registration() -> None:
     """Register the assistant view builder with the operator view registry."""
     register_operator_view_builder("assistant", build_assistant_view)
@@ -241,4 +251,8 @@ def _append_handoff_hint(hint: str) -> str:
     return suffix
 
 
-__all__ = ["build_assistant_view", "ensure_assist_view_registration"]
+__all__ = [
+    "build_assistant_view",
+    "ensure_assist_view_registration",
+    "resolve_view_format",
+]
