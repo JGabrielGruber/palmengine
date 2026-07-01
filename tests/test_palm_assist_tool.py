@@ -173,6 +173,35 @@ async def test_palm_assist_flows_session_stays_powertool(assist_server_ctx) -> N
 
 
 @pytest.mark.asyncio
+async def test_palm_assist_accepts_null_optional_fields(assist_server_ctx) -> None:
+    """Some LLM clients send explicit null for defaulted optional params."""
+    backend = PalmInProcessBackend(assist_server_ctx)
+    config = PalmMcpConfig(
+        base_url="http://127.0.0.1:8080",
+        subject="dev",
+        llms_txt_path=None,
+        in_process=True,
+    )
+    server = create_mcp_server(config, client=backend)
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "palm_assist",
+            {
+                "alias": "operator-entry/start",
+                "path": None,
+                "params": None,
+                "action": None,
+                "format": None,
+            },
+        )
+
+    payload = result.data
+    assert payload.get("session_id")
+    assert payload.get("question")
+
+
+@pytest.mark.asyncio
 async def test_palm_assist_assist_powertool_opt_in(assist_server_ctx) -> None:
     backend = PalmInProcessBackend(assist_server_ctx)
     config = PalmMcpConfig(

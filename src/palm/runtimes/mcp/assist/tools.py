@@ -21,8 +21,8 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
         path: list[str] | None = None,
         alias: str | None = None,
         params: dict[str, Any] | None = None,
-        action: str = "dispatch",
-        format: str = "assistant",
+        action: str | None = None,
+        format: str | None = None,
     ) -> dict[str, Any]:
         """Dispatch a service command path (assist, flows, processes, …).
 
@@ -34,15 +34,17 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
             palm_assist(alias="operator-entry/start", format="assistant")
             palm_assist(path=["flows", "onboard", "session", "inst-1"], format="powertool")
         """
-        if action != "dispatch":
-            raise ValueError(f"unsupported palm_assist action: {action!r}")
+        resolved_action = action or "dispatch"
+        resolved_format = format or "assistant"
+        if resolved_action != "dispatch":
+            raise ValueError(f"unsupported palm_assist action: {resolved_action!r}")
         try:
             resolved = resolve_dispatch_path(path=path, alias=alias, params=params)
             dispatch_params = dict(params or {})
             view_format = resolve_dispatch_format(
                 resolved,
                 params=dispatch_params,
-                tool_format=format,
+                tool_format=resolved_format,
             )
             if resolved[0] == "assist" and "format" not in dispatch_params:
                 dispatch_params["format"] = view_format
