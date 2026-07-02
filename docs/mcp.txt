@@ -1,0 +1,138 @@
+# Palm Agent Guide
+
+**Purpose**: How an AI agent should interact with Palm efficiently, ergonomically, and reliably.
+
+**Last updated**: [date]
+**Audience**: Grok / other agents using `call_connected_tool` + Palm MCP resources.
+
+---
+
+## 1. Core Mental Model
+
+Palm = **stateful, path-driven workflow engine** with strong interactive wizard support.
+
+Key concepts:
+- **Flows** = reusable wizards/pipelines (todo-builder, approval, onboard, etc.)
+- **Sessions / Instances** = running executions with state
+- **Assist** = the main conversational entry point (`palm_assist`)
+- **Paths & Aliases** = how you target specific actions
+- **MCP Resources** (`palm://...`) = read-only documentation, definitions, guides
+
+**Golden Rule**: Start with `palm_assist()` or `palm_assist(alias="operator-entry/start")` unless you have a specific flow/session ID.
+
+---
+
+## 2. Recommended Starting Pattern (Operator Entry)
+
+```json
+// Always start here when the user wants to "use Palm"
+call palm___palm_assist with {}
+// or
+call palm___palm_assist with { "alias": "operator-entry/start" }
+```
+
+Then follow the choices:
+1. Todo Builder
+2. Compositional Parent
+3. Inspect Only
+
+After handoff → create the actual flow session.
+
+**Best practice**: Use `format=assistant` when you want readable output for the user.
+
+---
+
+## 3. Common Flows & When to Use Them
+
+| Flow                        | Use Case                              | Pattern to Start                          | Notes |
+|----------------------------|---------------------------------------|-------------------------------------------|-------|
+| `todo-builder`             | Interactive todo lists                | `flows/todo-builder/create` or via assist | Has collection steps (add/edit/remove) |
+| `approval`                 | Spend / request approvals             | `flows/approval/create`                   | Very reliable wizard |
+| `onboard` / `schema-onboard` | User or schema onboarding           | `flows/onboard/create`                    | Good for testing |
+| `resource-customer-wizard` | Loading resources                     | `flows/resource-customer-wizard/create`   | Often fails without pre-registered resources |
+| `compositional-parent`     | Complex / nested workflows            | Via operator entry                        | Advanced |
+
+**Discovery**:
+```json
+call palm___palm_flows_list with {}
+```
+
+---
+
+## 4. Session & State Management (Biggest Friction Area)
+
+**Always track**:
+- `session_id` (e.g. `inst-74e042f781d1`)
+- `job_id`
+- Current `step`
+
+**Useful tools**:
+- `palm___palm_flows_session` (inspect with `format=assistant`)
+- `palm___palm_flows_compose_status`
+- `palm___palm_flows_session_resume` (when stuck on a resource step)
+
+**Best practice**:
+- After every input, re-inspect the session with `format=assistant` so you have full context.
+- Never assume state — always read it back.
+
+---
+
+## 5. Tool Description Pattern (for MCP / Palm tools)
+
+When adding or updating tools in the MCP, follow this exact structure so agents can discover and use them immediately:
+
+```markdown
+To use this tool: call_connected_tool(tool_name="palm___xxx", arguments={...}).
+
+[Clear one-sentence purpose]
+
+[When to use it + alternatives]
+
+Examples::
+
+    palm_assist()
+    palm_assist(alias="flows/todo-builder/create")
+    palm_assist(params={"session_id": "inst-xxx", "value": "yes"})
+
+json_schema: { ... }
+```
+
+**Key rules**:
+- Start with the exact `call_connected_tool` instruction.
+- Always include realistic examples.
+- Document `path` vs `alias` vs `params`.
+- Keep `json_schema` accurate and up to date.
+
+---
+
+## 6. Known Friction Points & How to Avoid Them
+
+| Friction                        | Solution |
+|--------------------------------|----------|
+| Resource steps failing         | Register resources first or use flows that don't require them |
+| Losing session context         | Re-inspect with `format=assistant` after every step |
+| Collection menus (add/edit)    | Be explicit: "Add a new item", then send the title, then due date, then priority |
+| Knowing which flow to start    | Use operator-entry first, or `palm_flows_list` |
+| Handoff from operator-entry    | After summary → send "yes" → then call the handoff alias or create the flow directly |
+
+---
+
+## 7. Quick Reference Commands
+
+- Start fresh: `palm_assist(alias="operator-entry/start")`
+- List flows: `palm___palm_flows_list`
+- Inspect anything: `palm___palm_flows_session` + `format=assistant`
+- System health: `palm___palm_system_doctor`
+- Create specific flow: `palm_assist(path=["flows", "todo-builder", "create"])`
+
+---
+
+## 8. Philosophy
+
+Palm is **very powerful once you treat it like a state machine** rather than a simple API.
+
+The most ergonomic way to use it:
+1. Start with **operator-entry**
+2. Let the user choose via natural language
+3. Follow the session step-by-step, always re-reading state
+4. Use rich `format=assistant` output for the user
