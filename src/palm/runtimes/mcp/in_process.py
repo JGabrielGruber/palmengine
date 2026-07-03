@@ -15,7 +15,7 @@ from palm.common.cqrs.query import (
     GetJobStatusQuery,
     ListInstanceSnapshotsQuery,
 )
-from palm.common.exceptions import InstanceNotFoundError, PlanNotFoundError
+from palm.common.exceptions import InstanceNotFoundError, MutationRejectedError, PlanNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.services.execution.flows import flow_command_from_body
@@ -181,6 +181,8 @@ class PalmInProcessBackend:
             )
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(session_id) from exc
+        except MutationRejectedError as exc:
+            raise PalmRestError(400, str(exc)) from exc
         except TypeError as exc:
             raise PalmRestError(400, str(exc)) from exc
         except (ValueError, RuntimeError) as exc:
@@ -443,6 +445,8 @@ class PalmInProcessBackend:
             raise _instance_not_found(exc.instance_id) from exc
         except InstanceNotFoundError as exc:
             raise _instance_not_found(str(exc)) from exc
+        except MutationRejectedError as exc:
+            raise PalmRestError(400, str(exc)) from exc
         except (TypeError, ValueError) as exc:
             raise PalmRestError(400, str(exc)) from exc
 

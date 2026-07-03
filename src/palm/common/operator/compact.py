@@ -101,14 +101,10 @@ def compact_wizard_inspect(
         if hint:
             payload["operator_hint"] = hint
 
-    from palm.common.operator.mutation_gate import build_mutation_envelope, mutation_secret
+    from palm.common.operator.mutation_gate import build_mutation_envelope
 
-    session_id = payload.get("instance_id") or wizard_view.get("session_id")
-    secret = mutation_secret() if session_id else None
     payload["mutation"] = build_mutation_envelope(
         payload,
-        session_id=str(session_id) if session_id else None,
-        secret=secret,
         stored_gate=stored_mutation_gate,
     )
 

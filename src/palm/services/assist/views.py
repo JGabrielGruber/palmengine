@@ -152,13 +152,10 @@ def _humanize_assistant_view(
     if handoff_ready:
         payload["hint"] = _append_handoff_hint(str(payload.get("hint") or ""))
 
-    from palm.common.operator.mutation_gate import build_mutation_envelope, mutation_secret
+    from palm.common.operator.mutation_gate import build_mutation_envelope
 
-    sid = str(session_id) if session_id else None
     mutation = build_mutation_envelope(
         composed,
-        session_id=sid,
-        secret=mutation_secret() if sid else None,
         stored_gate=context.stored_mutation_gate,
     )
     if mutation:

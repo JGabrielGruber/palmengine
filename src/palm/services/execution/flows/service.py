@@ -92,7 +92,6 @@ class FlowExecutionService(BaseService):
                     get_context=handle.context,
                     provide_input=lambda value: handle.input(value, params=params),
                     params=params,
-                    get_instance_metadata=self.get_instance_metadata,
                 )
             if parsed.verb == "backtrack":
                 return handle.backtrack(params.get("to_step"))
@@ -156,14 +155,14 @@ class FlowExecutionService(BaseService):
 
     def sync_mutation_gate(self, session_id: str, ctx: SessionContext) -> dict[str, Any] | None:
         """Issue and persist an input token when the session is waiting for input."""
-        from palm.common.operator.mutation_gate import refresh_mutation_gate
+        from palm.common.operator.mutation_gate import issue_on_inspect
 
         repository = self._instance_repository()
         if repository is None:
             return None
         inspect = flatten_session_read_model(ctx)
         self._sync_operator_mode(repository, session_id, inspect)
-        return refresh_mutation_gate(repository, session_id, inspect)
+        return issue_on_inspect(repository, session_id, inspect)
 
     def _sync_operator_mode(
         self,

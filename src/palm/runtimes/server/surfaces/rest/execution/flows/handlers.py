@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.exceptions import InstanceNotFoundError
+from palm.common.exceptions import InstanceNotFoundError, MutationRejectedError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.patterns.wizard.bindings.cqrs.commands import (
@@ -114,6 +114,8 @@ def session_input(
         )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)
+    except MutationRejectedError as exc:
+        return errors.input_rejected(str(exc))
     except TypeError as exc:
         return errors.bad_request(str(exc))
     except (ValueError, RuntimeError) as exc:

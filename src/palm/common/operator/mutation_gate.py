@@ -9,6 +9,8 @@ import secrets
 import time
 from typing import Any
 
+from palm.common.exceptions import MutationRejectedError
+
 _TERMINAL = frozenset({"SUCCEEDED", "SUCCESS", "FAILED", "CANCELLED"})
 TOKEN_TTL_SECONDS = 3600
 _DEV_SECRET = "palm-dev-mutation-secret"
@@ -26,6 +28,11 @@ def require_input_token_enabled() -> bool:
     """True when strict mutation token enforcement is enabled."""
     raw = os.environ.get(_STRICT_ENV, "").strip().lower()
     return raw in {"1", "true", "yes", "on"}
+
+
+def should_validate_mutation(params: dict[str, Any]) -> bool:
+    """Return whether a write should run through the mutation gate."""
+    return require_input_token_enabled() or bool(params.get("input_token"))
 
 
 def issue_input_token(
@@ -83,11 +90,13 @@ def validate_input_token(
 def build_mutation_envelope(
     inspect: dict[str, Any],
     *,
-    session_id: str | None = None,
-    secret: str | None = None,
     stored_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build a mutation guard block for operator inspect views."""
+    """Build a mutation guard block for operator inspect views.
+
+    ``input_token`` is surfaced only from a persisted gate issued by
+    :func:`issue_on_inspect` — envelopes never mint tokens independently.
+    """
     status = str(inspect.get("status") or "").upper()
     step = inspect.get("step") or inspect.get("current_step_slug")
     step_kind = inspect.get("step_kind")
@@ -112,20 +121,13 @@ def build_mutation_envelope(
             "Read-only: use palm_flows_session or MCP resources; do not send value/input."
         )
 
-    if mutations_allowed and session_id and secret:
-        if (
-            stored_gate
-            and stored_gate.get("step_slug") == step
-            and stored_gate.get("input_token")
-        ):
-            payload["input_token"] = stored_gate["input_token"]
-        else:
-            gate = issue_input_token(
-                session_id=session_id,
-                step_slug=str(step or ""),
-                secret=secret,
-            )
-            payload["input_token"] = gate["input_token"]
+    if (
+        mutations_allowed
+        and stored_gate
+        and stored_gate.get("step_slug") == step
+        and stored_gate.get("input_token")
+    ):
+        payload["input_token"] = stored_gate["input_token"]
 
     return {key: value for key, value in payload.items() if value is not None}
 
@@ -139,7 +141,7 @@ def persist_mutation_gate(repository: Any, instance_id: str, gate: dict[str, Any
     repository.save(instance)
 
 
-def refresh_mutation_gate(
+def issue_on_inspect(
     repository: Any,
     instance_id: str,
     inspect: dict[str, Any],
@@ -159,6 +161,48 @@ def refresh_mutation_gate(
     return gate
 
 
+def assert_on_write(
+    params: dict[str, Any],
+    *,
+    session_id: str,
+    instance_metadata: dict[str, Any] | None,
+    inspect: dict[str, Any],
+) -> None:
+    """Validate ``input_token`` for a wizard mutation (single write choke point)."""
+    if not require_input_token_enabled():
+        return
+    step = str(inspect.get("step") or inspect.get("current_step_slug") or "")
+    token = params.get("input_token")
+    secret = mutation_secret()
+    stored = (instance_metadata or {}).get("mutation_gate") or {}
+    if validate_input_token(
+        token=token,
+        session_id=session_id,
+        step_slug=step,
+        secret=secret,
+    ):
+        return
+    if token and stored.get("input_token") == token and stored.get("step_slug") != step:
+        raise MutationRejectedError(
+            reason="stale",
+            session_id=session_id,
+            step_slug=step,
+            detail=(
+                "stale input_token for prior step — re-inspect with palm_flows_session "
+                "and pass input_token from mutation block"
+            ),
+        )
+    raise MutationRejectedError(
+        reason="missing",
+        session_id=session_id,
+        step_slug=step,
+        detail=(
+            "missing or invalid input_token — re-inspect with palm_flows_session "
+            "and pass input_token from mutation block"
+        ),
+    )
+
+
 def require_mutation_token(
     params: dict[str, Any],
     *,
@@ -166,39 +210,30 @@ def require_mutation_token(
     instance_metadata: dict[str, Any] | None,
     inspect: dict[str, Any],
 ) -> None:
-    """Reject mutations without a valid token when strict mode is enabled."""
-    if not require_input_token_enabled():
-        return
-    step = inspect.get("step") or inspect.get("current_step_slug") or ""
-    token = params.get("input_token")
-    secret = mutation_secret()
-    stored = (instance_metadata or {}).get("mutation_gate") or {}
-    if validate_input_token(
-        token=token,
+    """Backward-compatible alias for :func:`assert_on_write`."""
+    assert_on_write(
+        params,
         session_id=session_id,
-        step_slug=str(step),
-        secret=secret,
-    ):
-        return
-    if token and stored.get("input_token") == token and stored.get("step_slug") != step:
-        raise ValueError(
-            "mutation_rejected: stale input_token for prior step — "
-            "re-inspect with palm_flows_session and pass input_token from mutation block"
-        )
-    raise ValueError(
-        "mutation_rejected: missing or invalid input_token — "
-        "re-inspect with palm_flows_session and pass input_token from mutation block"
+        instance_metadata=instance_metadata,
+        inspect=inspect,
     )
+
+
+# Backward-compatible alias — prefer :func:`issue_on_inspect`.
+refresh_mutation_gate = issue_on_inspect
 
 
 __all__ = [
     "TOKEN_TTL_SECONDS",
+    "assert_on_write",
     "build_mutation_envelope",
     "issue_input_token",
+    "issue_on_inspect",
     "mutation_secret",
     "persist_mutation_gate",
     "refresh_mutation_gate",
     "require_input_token_enabled",
     "require_mutation_token",
+    "should_validate_mutation",
     "validate_input_token",
 ]

@@ -48,3 +48,21 @@ class PlanNotFoundError(ExecutionError):
     def __init__(self, plan_id: str) -> None:
         super().__init__(f"Execution plan not found: {plan_id!r}")
         self.plan_id = plan_id
+
+
+class MutationRejectedError(ExecutionError):
+    """Raised when a wizard mutation lacks a valid ``input_token`` in strict mode."""
+
+    def __init__(
+        self,
+        *,
+        reason: str,
+        session_id: str,
+        step_slug: str,
+        detail: str,
+    ) -> None:
+        super().__init__(f"mutation_rejected: {detail}")
+        self.reason = reason
+        self.session_id = session_id
+        self.step_slug = step_slug
+        self.detail = detail

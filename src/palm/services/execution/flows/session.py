@@ -55,9 +55,9 @@ class FlowSession:
     def input(self, value: Any, *, params: dict[str, Any] | None = None) -> SessionContext:
         """Deliver interactive input; returns updated session context."""
         params = params or {}
-        from palm.common.operator.mutation_gate import require_input_token_enabled, require_mutation_token
+        from palm.common.operator.mutation_gate import assert_on_write, should_validate_mutation
 
-        if require_input_token_enabled() or params.get("input_token"):
+        if should_validate_mutation(params):
             view = self._flows.inspect_session(self.session_id)
             inspect = flatten_session_read_model(
                 build_session_context(
@@ -67,7 +67,7 @@ class FlowSession:
                     enricher=enrich_session_view,
                 )
             )
-            require_mutation_token(
+            assert_on_write(
                 params,
                 session_id=self.session_id,
                 instance_metadata=self._flows.get_instance_metadata(self.session_id),
