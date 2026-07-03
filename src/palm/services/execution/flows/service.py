@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.query import GetFlowQuery, ListFlowsQuery
+from palm.common.exceptions import InstanceNotFoundError
 from palm.common.job_context import instance_id_for_job
+from palm.common.operator.flows_session_input import flatten_session_read_model
 from palm.common.services.base import BaseService
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.services.definitions.flows import flow_catalog_row
@@ -76,7 +78,7 @@ class FlowExecutionService(BaseService):
         if parsed.kind == FlowCommandKind.SESSION:
             assert parsed.flow_id is not None
             assert parsed.session_id is not None
-            return self.session(parsed.flow_id, parsed.session_id).context()
+            return self.session(parsed.flow_id, parsed.session_id).context(sync_gate=True)
 
         if parsed.kind == FlowCommandKind.SESSION_VERB:
             assert parsed.flow_id is not None
@@ -88,8 +90,9 @@ class FlowExecutionService(BaseService):
 
                 return apply_flows_session_input(
                     get_context=handle.context,
-                    provide_input=handle.input,
+                    provide_input=lambda value: handle.input(value, params=params),
                     params=params,
+                    get_instance_metadata=self.get_instance_metadata,
                 )
             if parsed.verb == "backtrack":
                 return handle.backtrack(params.get("to_step"))
@@ -140,6 +143,32 @@ class FlowExecutionService(BaseService):
     def inspect_session(self, session_id: str) -> dict[str, Any]:
         """Delegate to system inspect for session status views."""
         return self._system.inspect_instance(session_id)
+
+    def get_instance_metadata(self, session_id: str) -> dict[str, Any]:
+        """Return durable metadata for ``session_id`` when persistence is configured."""
+        repository = self._instance_repository()
+        if repository is None:
+            return {}
+        try:
+            return dict(repository.get(session_id).metadata or {})
+        except InstanceNotFoundError:
+            return {}
+
+    def sync_mutation_gate(self, session_id: str, ctx: SessionContext) -> dict[str, Any] | None:
+        """Issue and persist an input token when the session is waiting for input."""
+        from palm.common.operator.mutation_gate import refresh_mutation_gate
+
+        repository = self._instance_repository()
+        if repository is None:
+            return None
+        inspect = flatten_session_read_model(ctx)
+        return refresh_mutation_gate(repository, session_id, inspect)
+
+    def _instance_repository(self) -> Any | None:
+        try:
+            return self.resolve_runtime().instances
+        except RuntimeError:
+            return None
 
     def session_context(
         self,

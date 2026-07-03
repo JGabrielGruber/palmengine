@@ -43,10 +43,14 @@ _PALM_FLOWS_SESSION_INPUT_DESC = tool_description(
     "Deliver interactive wizard input for a flow session.",
     when="Use plain ``input`` strings (``yes``, choice slugs, text) — not JSON answer blobs.",
     examples=[
-        'palm_flows_session_input(session_id="inst-xxx", input="yes")',
+        'palm_flows_session_input(session_id="inst-xxx", input="yes", input_token="<from mutation>")',
         'palm_flows_session_input(session_id="inst-xxx", input="todo-builder")',
         'palm_flows_session_input(session_id="inst-xxx", input="add", value="Buy milk")',
     ],
+    notes=(
+        "When ``PALM_MCP_REQUIRE_INPUT_TOKEN=1``, pass ``input_token`` from the last "
+        "inspect ``mutation`` block."
+    ),
     use_instead="Prefer ``palm_assist(params={session_id, flow_id, value})`` for unified driving.",
 )
 
@@ -70,6 +74,17 @@ _PALM_FLOWS_CREATE_SESSION_DESC = tool_description(
 )
 
 
+def _stored_mutation_gate(backend: Any, session_id: str) -> dict[str, Any] | None:
+    loader = getattr(backend, "get_instance_metadata", None)
+    if not callable(loader):
+        return None
+    meta = loader(session_id)
+    if not isinstance(meta, dict):
+        return None
+    gate = meta.get("mutation_gate")
+    return gate if isinstance(gate, dict) else None
+
+
 def register_flow_tools(mcp: Any, backend: Any) -> None:
     """Register flow session MCP tools (0.16 command-path vocabulary)."""
 
@@ -84,6 +99,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         if normalize_view_format(format) == "assistant":
             invoke_tree = backend.get_instance_tree(session_id)
         fid = flow_id or flat.get("flow_name") or flat.get("flow")
+        stored_gate = _stored_mutation_gate(backend, session_id)
         return shape_flow_session_view(
             flat,
             format=format,
@@ -95,6 +111,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
                 else ["flows", "session", session_id]
             ),
             invoke_tree=invoke_tree,
+            stored_mutation_gate=stored_gate,
         )
 
     @mcp.tool(description=_PALM_FLOWS_LIST_DESC)
@@ -129,6 +146,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         invoke_tree = None
         if normalize_view_format(format) == "assistant":
             invoke_tree = backend.get_instance_tree(session_id)
+        stored_gate = _stored_mutation_gate(backend, session_id)
         return shape_flow_session_view(
             flat,
             format=format,
@@ -137,6 +155,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
             invoke_tree=invoke_tree,
             include=include,
             truncate_answers_at=truncate_answers_at,
+            stored_mutation_gate=stored_gate,
         )
 
     @mcp.tool(description=_PALM_FLOWS_SESSION_INPUT_DESC)
@@ -146,6 +165,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         value: str | int | float | bool | None = None,
         flow_id: str | None = None,
         format: str = "powertool",
+        input_token: str | None = None,
     ) -> dict[str, Any]:
         inspect = flatten_session_view(backend.flows_get_session(flow_id, session_id))
         resolved = resolve_mcp_wizard_input(input=input, value=value, wizard_view=inspect)
@@ -171,7 +191,12 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
                 flow_id=fid,
                 format=format,
             )
-        view = backend.flows_session_input(fid, session_id, resolved)
+        view = backend.flows_session_input(
+            fid,
+            session_id,
+            resolved,
+            input_token=input_token,
+        )
         return _format_session_payload(
             flatten_session_view(view),
             session_id=session_id,

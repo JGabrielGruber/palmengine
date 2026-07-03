@@ -4,6 +4,24 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.23.0] — 2026-07-03
+
+**input_token strict mode** — CSRF-style mutation gate for agent hardening (opt-in).
+
+### Added
+
+- **`input_token`** on `mutation` envelope when `mutations_allowed`; HMAC-bound to session + step.
+- **`issue_input_token`**, **`validate_input_token`**, **`require_mutation_token`** in `palm/common/operator/mutation_gate.py`.
+- **Instance metadata** `mutation_gate` — rotated on inspect (`sync_gate=True` paths).
+- **`PALM_MUTATION_SECRET`**, **`PALM_MCP_REQUIRE_INPUT_TOKEN`** env vars (`.env.example`, `MIGRATION-0.23.md`).
+- **`input_token`** param on `palm_flows_session_input` and REST session input bodies.
+- **Tests** `tests/test_mutation_gate_token.py`; replay harness strict-mode pass.
+
+### Changed
+
+- **`apply_flows_session_input`** — validates token before mutations when strict mode enabled.
+- **`docs/mcp.txt` §12** — strict-mode drive loop for agents.
+
 ## [0.22.1] — 2026-07-03
 
 **Mutation envelope protocol** — read vs drive signals on inspect views; inspect guard docs.

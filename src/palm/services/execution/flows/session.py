@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from palm.common.child_wait import resume_child_wait_for_instance
 from palm.common.cqrs.command import CancelJobCommand
 from palm.common.exceptions import InstanceNotFoundError
+from palm.common.operator.flows_session_input import flatten_session_read_model
 from palm.common.interactive_runtime import (
     provide_interactive_input_for_instance,
     request_interactive_backtrack_for_instance,
@@ -34,22 +35,44 @@ class FlowSession:
         self.flow_id = flow_id
         self.session_id = session_id
 
-    def context(self) -> SessionContext:
+    def context(self, *, sync_gate: bool = False) -> SessionContext:
         """Pattern-aware session view with command-path hints."""
         view = self._flows.inspect_session(self.session_id)
-        return build_session_context(
+        ctx = build_session_context(
             flow_id=self.flow_id,
             session_id=self.session_id,
             view=view,
             enricher=enrich_session_view,
         )
+        if sync_gate:
+            self._flows.sync_mutation_gate(self.session_id, ctx)
+        return ctx
 
     def status(self) -> dict[str, Any]:
         """Return session context as a plain dict."""
         return self.context().to_dict()
 
-    def input(self, value: Any) -> SessionContext:
+    def input(self, value: Any, *, params: dict[str, Any] | None = None) -> SessionContext:
         """Deliver interactive input; returns updated session context."""
+        params = params or {}
+        from palm.common.operator.mutation_gate import require_input_token_enabled, require_mutation_token
+
+        if require_input_token_enabled() or params.get("input_token"):
+            view = self._flows.inspect_session(self.session_id)
+            inspect = flatten_session_read_model(
+                build_session_context(
+                    flow_id=self.flow_id,
+                    session_id=self.session_id,
+                    view=view,
+                    enricher=enrich_session_view,
+                )
+            )
+            require_mutation_token(
+                params,
+                session_id=self.session_id,
+                instance_metadata=self._flows.get_instance_metadata(self.session_id),
+                inspect=inspect,
+            )
         runtime = self._flows.resolve_runtime()
         try:
             _job, slug = provide_interactive_input_for_instance(
@@ -63,7 +86,7 @@ class FlowSession:
             raise exc
 
         self._flows.wait_until_idle()
-        ctx = self.context()
+        ctx = self.context(sync_gate=True)
         if slug is not None:
             ctx.detail["slug"] = slug
         return ctx

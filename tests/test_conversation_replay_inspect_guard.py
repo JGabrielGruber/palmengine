@@ -56,34 +56,29 @@ async def test_operator_entry_intent_has_mutation_envelope(inspect_guard_ctx) ->
     assert mutation.get("mutations_allowed") is True
     assert mutation.get("confirm_step") is not True
     assert mutation.get("step_slug") == "intent"
+    assert mutation.get("input_token")
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(
-    reason="0.22.1 protocol-only; engine does not block unsolicited yes yet (0.23.0)",
-    strict=False,
-)
-async def test_unsolicited_yes_completes_without_user_intent(inspect_guard_ctx) -> None:
+async def test_unsolicited_write_blocked_in_strict_mode(
+    inspect_guard_ctx,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Documents tc4 from conversation_export.xml — blocked in 0.23.0 with input_token."""
+    monkeypatch.setenv("PALM_MCP_REQUIRE_INPUT_TOKEN", "1")
+    monkeypatch.setenv("PALM_MUTATION_SECRET", "test-secret")
     server, _backend = _mcp_server(inspect_guard_ctx)
     async with Client(server) as client:
         started = await client.call_tool("palm_assist", {})
         session_id = started.data["session_id"]
-        await client.call_tool(
-            "palm_assist",
-            {"params": {"session_id": session_id, "value": "3"}},
-        )
-        after_choice = await client.call_tool(
-            "palm_flows_session",
-            {"session_id": session_id, "format": "assistant"},
-        )
-        if after_choice.data.get("mutation", {}).get("confirm_step"):
+        with pytest.raises(Exception, match="mutation_rejected"):
             await client.call_tool(
                 "palm_assist",
-                {"params": {"session_id": session_id, "value": "yes"}},
+                {"params": {"session_id": session_id, "value": "3"}},
             )
         final = await client.call_tool(
             "palm_flows_session",
             {"session_id": session_id, "format": "assistant"},
         )
-    assert final.data.get("status") != "complete"
+    assert final.data.get("status") == "waiting"
+    assert final.data.get("mutation", {}).get("step_slug") == "intent"

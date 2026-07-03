@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import pytest
+
 from palm.common.operator.flows_session_input import (
     apply_flows_session_input,
     prepare_flows_session_input_params,
 )
+from palm.common.operator.mutation_gate import issue_input_token
 
 
 def test_prepare_flows_session_input_params_maps_collection_action() -> None:
@@ -104,3 +107,55 @@ def test_apply_flows_session_input_one_shot_collection_add() -> None:
         {"input": "add", "value": "Title"},
     )
     assert calls == ["Add a new item", "Title"]
+
+
+def test_apply_flows_session_input_rejects_without_token_in_strict_mode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PALM_MCP_REQUIRE_INPUT_TOKEN", "1")
+    monkeypatch.setenv("PALM_MUTATION_SECRET", "test-secret")
+
+    def get_context() -> dict:
+        return {
+            "session_id": "inst-1",
+            "status": "WAITING_FOR_INPUT",
+            "current_step_slug": "intent",
+            "detail": {"prompt": {"field_type": "choice"}},
+        }
+
+    with pytest.raises(ValueError, match="mutation_rejected"):
+        apply_flows_session_input(
+            get_context,
+            lambda value: get_context(),
+            {"value": "yes"},
+            get_instance_metadata=lambda _sid: {},
+        )
+
+
+def test_apply_flows_session_input_accepts_valid_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PALM_MCP_REQUIRE_INPUT_TOKEN", "1")
+    monkeypatch.setenv("PALM_MUTATION_SECRET", "test-secret")
+    gate = issue_input_token(session_id="inst-1", step_slug="intent", secret="test-secret")
+    calls: list[object] = []
+
+    def get_context() -> dict:
+        return {
+            "session_id": "inst-1",
+            "status": "WAITING_FOR_INPUT",
+            "current_step_slug": "intent",
+            "detail": {"prompt": {"field_type": "choice"}},
+        }
+
+    def provide_input(value: object) -> dict:
+        calls.append(value)
+        return get_context()
+
+    apply_flows_session_input(
+        get_context,
+        provide_input,
+        {"value": "todo-builder", "input_token": gate["input_token"]},
+        get_instance_metadata=lambda _sid: {"mutation_gate": gate},
+    )
+    assert calls == ["todo-builder"]

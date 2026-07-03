@@ -34,7 +34,11 @@ def build_assistant_view(
 ) -> dict[str, Any]:
     """Build a human-first assistant turn from a flattened session inspect view."""
     flat = _flatten_view(flat_view)
-    snapshot = compact_wizard_inspect(flat, include_operator_hint=False)
+    snapshot = compact_wizard_inspect(
+        flat,
+        include_operator_hint=False,
+        stored_mutation_gate=context.stored_mutation_gate,
+    )
     invoke_tree = context.invoke_tree or _invoke_tree_from_snapshot(snapshot)
     composed = build_compose_status(invoke_tree, snapshot)
     _merge_snapshot_fields(composed, snapshot)
@@ -143,9 +147,15 @@ def _humanize_assistant_view(
     if handoff_ready:
         payload["hint"] = _append_handoff_hint(str(payload.get("hint") or ""))
 
-    from palm.common.operator.mutation_gate import build_mutation_envelope
+    from palm.common.operator.mutation_gate import build_mutation_envelope, mutation_secret
 
-    mutation = build_mutation_envelope(composed)
+    sid = str(session_id) if session_id else None
+    mutation = build_mutation_envelope(
+        composed,
+        session_id=sid,
+        secret=mutation_secret() if sid else None,
+        stored_gate=context.stored_mutation_gate,
+    )
     if mutation:
         payload["mutation"] = mutation
 

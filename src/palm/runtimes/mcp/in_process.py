@@ -157,16 +157,27 @@ class PalmInProcessBackend:
             raise _wizard_not_found(session_id) from exc
         return session_context_dict(ctx)
 
+    def get_instance_metadata(self, session_id: str) -> dict[str, Any]:
+        try:
+            return self._ctx.execution.flows.get_instance_metadata(session_id)
+        except Exception:
+            return {}
+
     def flows_session_input(
         self,
         flow_id: str,
         session_id: str,
         value: Any,
+        *,
+        input_token: str | None = None,
     ) -> dict[str, Any]:
+        params: dict[str, Any] = {"value": value}
+        if input_token is not None:
+            params["input_token"] = input_token
         try:
             ctx = self._ctx.execution.flows.dispatch(
                 ["flows", flow_id, "session", session_id, "input"],
-                {"value": value},
+                params,
             )
         except InstanceNotFoundError as exc:
             raise _wizard_not_found(session_id) from exc

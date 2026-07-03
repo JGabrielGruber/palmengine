@@ -104,10 +104,17 @@ def session_input(
     if isinstance(body, ServerResponse):
         return body
 
+    input_params: dict[str, Any] = {
+        "value": body["value"],
+        "format": _view_format(request),
+    }
+    raw_body = request.body if isinstance(request.body, dict) else {}
+    if raw_body.get("input_token") is not None:
+        input_params["input_token"] = raw_body["input_token"]
     try:
         result = ctx.assist.dispatch(
             ["assist", "session", session_id, "input"],
-            {"value": body["value"], "format": _view_format(request)},
+            input_params,
         )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)

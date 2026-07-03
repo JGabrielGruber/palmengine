@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.22.1 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.23.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 
@@ -198,6 +198,7 @@ Every assistant/powertool inspect response includes a `mutation` block:
     "mutations_allowed": true,
     "requires_user_input": true,
     "step_slug": "intent",
+    "input_token": "abc123.1710000000.digest",
     "confirm_step": true,
     "agent_hint": "Confirm step: do not send yes/no unless..."
   }
@@ -205,3 +206,22 @@ Every assistant/powertool inspect response includes a `mutation` block:
 ```
 
 Violating this completes wizards irreversibly. See `archive/conversation_export.xml` (anti-pattern: unsolicited `yes` at summary).
+
+---
+
+## 12. `input_token` strict mode (0.23.0+)
+
+When `PALM_MCP_REQUIRE_INPUT_TOKEN=1`, every mutation (`palm_assist` value, `palm_flows_session_input`) must include `input_token` from the last inspect `mutation` block.
+
+| Env | Default | Purpose |
+|-----|---------|---------|
+| `PALM_MUTATION_SECRET` | dev fallback | HMAC secret for token signing |
+| `PALM_MCP_REQUIRE_INPUT_TOKEN` | `0` | `1` = reject writes without valid token |
+
+**Drive loop with strict mode:**
+
+1. `palm_flows_session(session_id=…, format="assistant")` → copy `mutation.input_token`
+2. `palm_assist(params={session_id, value, input_token})` → pass token with every write
+3. Re-inspect after each input — tokens are step-bound and rotate on inspect
+
+Missing or stale tokens return `mutation_rejected` (HTTP 400 / MCP tool error). Explorer and CLI stay unchanged when the flag is off.

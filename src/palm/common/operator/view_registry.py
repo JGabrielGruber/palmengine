@@ -27,6 +27,7 @@ class OperatorViewContext:
     invoke_tree: dict[str, Any] | None = None
     handoff_ready: bool = False
     path: list[str] = field(default_factory=list)
+    stored_mutation_gate: dict[str, Any] | None = None
 
 
 def normalize_view_format(format: str) -> str:

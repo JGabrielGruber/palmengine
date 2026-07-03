@@ -29,9 +29,9 @@ class AssistSession:
         self.session_id = session_id
         self.scenario_id = scenario_id
 
-    def context(self, *, view_format: str = "assistant") -> AssistSessionContext:
+    def context(self, *, view_format: str = "assistant", sync_gate: bool = False) -> AssistSessionContext:
         """Assist-enriched session view shaped for ``view_format`` on ``to_dict()``."""
-        flow_ctx = self._flow_session().context()
+        flow_ctx = self._flow_session().context(sync_gate=sync_gate)
         view = flow_ctx.detail if flow_ctx.detail else flow_ctx.to_dict()
         compact = compact_wizard_inspect(view)
         handoff_ready = _handoff_ready(flow_ctx)
@@ -44,11 +44,23 @@ class AssistSession:
             handoff_ready=handoff_ready,
         )
         ctx.invoke_tree = _safe_invoke_tree(self._assist, self.session_id)
+        metadata = self._assist.execution.flows.get_instance_metadata(self.session_id)
+        gate = metadata.get("mutation_gate")
+        ctx.stored_mutation_gate = gate if isinstance(gate, dict) else None
         return ctx
 
-    def input(self, value: Any, *, view_format: str = "assistant") -> AssistSessionContext:
-        self._flow_session().input(value)
-        return self.context(view_format=view_format)
+    def input(
+        self,
+        value: Any,
+        *,
+        params: dict[str, Any] | None = None,
+        view_format: str = "assistant",
+    ) -> AssistSessionContext:
+        merged = dict(params or {})
+        if "value" not in merged and "input" not in merged:
+            merged["value"] = value
+        self._flow_session().input(value, params=merged)
+        return self.context(view_format=view_format, sync_gate=True)
 
     def backtrack(self, to_step: str | None = None, *, view_format: str = "assistant") -> AssistSessionContext:
         self._flow_session().backtrack(to_step)

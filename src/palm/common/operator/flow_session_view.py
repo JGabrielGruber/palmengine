@@ -22,6 +22,7 @@ def shape_flow_session_view(
     invoke_tree: dict[str, Any] | None = None,
     include: list[str] | None = None,
     truncate_answers_at: int = 2000,
+    stored_mutation_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Shape a flattened flow session inspect view for operator consumers."""
     fmt = normalize_view_format(format or "powertool")
@@ -36,6 +37,7 @@ def shape_flow_session_view(
             scenario_id=None,
             invoke_tree=invoke_tree,
             path=list(path or []),
+            stored_mutation_gate=stored_mutation_gate,
         )
         return build_operator_view("assistant", flat_view=flat, context=context)
     return compact_wizard_inspect(
@@ -43,6 +45,7 @@ def shape_flow_session_view(
         format="compact",
         include=include,
         truncate_answers_at=truncate_answers_at,
+        stored_mutation_gate=stored_mutation_gate,
     )
 
 

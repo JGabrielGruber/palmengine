@@ -55,10 +55,32 @@ def apply_flows_session_input(
     get_context: Callable[[], Any],
     provide_input: Callable[[Any], Any],
     params: dict[str, Any],
+    *,
+    get_instance_metadata: Callable[[str], dict[str, Any]] | None = None,
 ) -> Any:
     """Resolve params, apply one-shot collection drives, return final session context."""
+    def _validate_mutation() -> None:
+        from palm.common.operator.mutation_gate import require_mutation_token
+
+        inspect = flatten_session_read_model(get_context())
+        session_id = str(
+            inspect.get("session_id") or inspect.get("instance_id") or params.get("session_id") or ""
+        )
+        if not session_id:
+            return
+        metadata: dict[str, Any] = {}
+        if get_instance_metadata is not None:
+            metadata = get_instance_metadata(session_id)
+        require_mutation_token(
+            params,
+            session_id=session_id,
+            instance_metadata=metadata,
+            inspect=inspect,
+        )
+
     edit = params.get("edit")
     if isinstance(edit, dict):
+        _validate_mutation()
         item_index, fields = _parse_edit_params(edit)
         inspect = flatten_session_read_model(get_context())
         last_ctx: Any = None
@@ -77,6 +99,7 @@ def apply_flows_session_input(
         assert last_ctx is not None
         return last_ctx
 
+    _validate_mutation()
     prepared = prepare_flows_session_input_params(params)
     inspect = flatten_session_read_model(get_context())
     resolved = resolve_mcp_wizard_input(

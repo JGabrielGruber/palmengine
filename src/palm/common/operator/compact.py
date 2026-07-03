@@ -24,6 +24,7 @@ def compact_wizard_inspect(
     include: list[str] | None = None,
     truncate_answers_at: int = 2000,
     include_operator_hint: bool = True,
+    stored_mutation_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Reduce a full wizard read model to a compact operator snapshot."""
     if format == "verbose":
@@ -100,9 +101,16 @@ def compact_wizard_inspect(
         if hint:
             payload["operator_hint"] = hint
 
-    from palm.common.operator.mutation_gate import build_mutation_envelope
+    from palm.common.operator.mutation_gate import build_mutation_envelope, mutation_secret
 
-    payload["mutation"] = build_mutation_envelope(payload)
+    session_id = payload.get("instance_id") or wizard_view.get("session_id")
+    secret = mutation_secret() if session_id else None
+    payload["mutation"] = build_mutation_envelope(
+        payload,
+        session_id=str(session_id) if session_id else None,
+        secret=secret,
+        stored_gate=stored_mutation_gate,
+    )
 
     return payload
 

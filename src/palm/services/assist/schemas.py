@@ -31,6 +31,7 @@ class AssistSessionContext:
     next_commands: list[list[str]] = field(default_factory=list)
     detail: dict[str, Any] = field(default_factory=dict)
     invoke_tree: dict[str, Any] | None = None
+    stored_mutation_gate: dict[str, Any] | None = None
 
     def to_dict(self, *, view_format: str = "assistant") -> dict[str, Any]:
         fmt = normalize_view_format(view_format)
@@ -48,6 +49,7 @@ class AssistSessionContext:
             scenario_id=self.scenario_id,
             invoke_tree=self.invoke_tree,
             handoff_ready=self.handoff_ready,
+            stored_mutation_gate=self.stored_mutation_gate,
         )
         payload = build_operator_view(fmt, flat_view=flat, context=context)
         if fmt == "assistant":

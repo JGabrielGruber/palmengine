@@ -70,11 +70,16 @@ class PalmRestClient:
         flow_id: str,
         session_id: str,
         value: Any,
+        *,
+        input_token: str | None = None,
     ) -> dict[str, Any]:
+        body: dict[str, Any] = {"value": value}
+        if input_token is not None:
+            body["input_token"] = input_token
         return self._request(
             "POST",
             f"/v1/api/flows/{flow_id}/session/{session_id}/input",
-            body={"value": value},
+            body=body,
             auth=True,
         )
 

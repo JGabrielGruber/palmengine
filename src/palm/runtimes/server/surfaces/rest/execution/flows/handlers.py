@@ -103,10 +103,14 @@ def session_input(
     if isinstance(body, ServerResponse):
         return body
 
+    input_params: dict[str, Any] = {"value": body["value"]}
+    raw_body = request.body if isinstance(request.body, dict) else {}
+    if raw_body.get("input_token") is not None:
+        input_params["input_token"] = raw_body["input_token"]
     try:
         ctx_obj = ctx.execution.flows.dispatch(
             ["flows", flow_id, "session", session_id, "input"],
-            {"value": body["value"]},
+            input_params,
         )
     except InstanceNotFoundError:
         return errors.wizard_not_found(session_id)
@@ -242,12 +246,19 @@ def _session_body(
         sid = session_id or flat.get("instance_id") or flat.get("session_id")
         if sid is not None:
             invoke_tree = build_invoke_tree(ctx.runtime, str(sid), base_url=None)
+    sid = session_id or flat.get("instance_id") or flat.get("session_id")
+    stored_gate = None
+    if sid is not None:
+        meta = ctx.execution.flows.get_instance_metadata(str(sid))
+        gate = meta.get("mutation_gate")
+        stored_gate = gate if isinstance(gate, dict) else None
     return shape_flow_session_view(
         flat,
         format=view_format,
-        session_id=session_id or flat.get("instance_id"),
+        session_id=sid,
         flow_id=flow_id or flat.get("flow_name"),
         invoke_tree=invoke_tree,
+        stored_mutation_gate=stored_gate,
     )
 
 

@@ -84,7 +84,10 @@ class AssistService(BaseService):
         if parsed.kind == AssistCommandKind.SESSION:
             assert parsed.session_id is not None
             view_format = resolve_view_format(params)
-            return self.session(parsed.session_id).context().to_dict(view_format=view_format)
+            return self.session(parsed.session_id).context(
+                view_format=view_format,
+                sync_gate=True,
+            ).to_dict(view_format=view_format)
 
         if parsed.kind == AssistCommandKind.SESSION_VERB:
             assert parsed.session_id is not None
@@ -93,14 +96,20 @@ class AssistService(BaseService):
             handle = self.session(parsed.session_id)
             if parsed.verb == "input":
                 value = params.get("value", params.get("input"))
-                return handle.input(value, view_format=view_format).to_dict(view_format=view_format)
+                return handle.input(
+                    value,
+                    params=params,
+                    view_format=view_format,
+                ).to_dict(view_format=view_format)
             if parsed.verb == "backtrack":
                 return handle.backtrack(params.get("to_step"), view_format=view_format).to_dict(
                     view_format=view_format
                 )
             if parsed.verb == "resume":
                 handle.resume()
-                return handle.context(view_format=view_format).to_dict(view_format=view_format)
+                return handle.context(view_format=view_format, sync_gate=True).to_dict(
+                    view_format=view_format
+                )
             if parsed.verb == "cancel":
                 return handle.cancel()
             if parsed.verb == "handoff":
@@ -147,7 +156,9 @@ class AssistService(BaseService):
             session_id=session.session_id,
             scenario_id=scenario_id,
         )
-        return handle.context(view_format=view_format).to_dict(view_format=view_format)
+        return handle.context(view_format=view_format, sync_gate=True).to_dict(
+            view_format=view_format
+        )
 
     def session(self, session_id: str) -> AssistSession:
         view = self._system.inspect_instance(session_id)
