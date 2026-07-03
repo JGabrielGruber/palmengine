@@ -32,5 +32,16 @@ async def test_agent_guide_uses_bundled_llms_txt(guide_server) -> None:
     async with Client(guide_server) as client:
         result = await client.read_resource("palm://agent/guide")
     text = "".join(block.text for block in result if hasattr(block, "text"))
-    assert "Palm Engine — LLM Guide" in text
+    assert "Palm MCP Agent Guide" in text
     assert "Set PALM_LLMS_TXT" not in text
+
+
+@pytest.mark.asyncio
+async def test_agent_guide_prefers_mcp_txt_when_bundled(monkeypatch) -> None:
+    """Bundled default serves the focused MCP operator guide."""
+    monkeypatch.delenv("PALM_LLMS_TXT", raising=False)
+    config = PalmMcpConfig.from_env()
+    assert config.llms_txt_path is not None
+    assert config.llms_txt_path.name in {"mcp.txt", "llms.txt"}
+    if config.llms_txt_path.name == "mcp.txt":
+        assert "Palm MCP Agent Guide" in config.llms_txt_path.read_text(encoding="utf-8")

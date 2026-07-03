@@ -37,6 +37,18 @@ def _register_targets(version: str) -> None:
             rf"\g<1>{version}",
         ),
     ]
+    SYNC_TARGETS[ROOT / "docs/mcp.txt"] = [
+        (
+            re.compile(r"(\*\*Version\*\*: )[0-9.]+"),
+            rf"\g<1>{version}",
+        ),
+    ]
+    SYNC_TARGETS[ROOT / "docs/DOCKER.md"] = [
+        (
+            re.compile(r"(\*\*Version:\*\* )[0-9.]+"),
+            rf"\g<1>{version}",
+        ),
+    ]
     index = ROOT / "docs/index.html"
     SYNC_TARGETS[index] = [
         (re.compile(r'("version": ")[^"]+(")'), rf'\g<1>{version}\g<2>'),

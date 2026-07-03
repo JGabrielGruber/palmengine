@@ -4,6 +4,28 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-07-03
+
+**Agent skill release** — portable skill as MCP resources, operator guide split, Docker stack documentation.
+
+### Added
+
+- **`docs/mcp.txt`** — focused MCP operator guide (default `palm://agent/guide` via `PALM_LLMS_TXT`).
+- **`docs/skills/palm/`** — portable agent skill + references (manual adoption for any agent host).
+- **MCP resources** — `palm://agent/skill`, `palm://agent/references/agent-guide`, `…/mcp-patterns`, `…/session-management`, `…/common-flows`.
+- **`palm.runtimes.mcp.agent_assets`** — skill path resolution (`PALM_SKILL_DIR`, bundled `data/skills/palm/`).
+- **`palm.runtimes.mcp.descriptions.tool_description()`** — weak-LLM-friendly MCP tool docstrings.
+- **`docs/DOCKER.md`** — Docker Compose stack, volumes, HTTP MCP against container, troubleshooting.
+- **`.grok/skills/palm/`** — Grok Build mirror (synced from `docs/skills/palm/` via `docs-check`).
+- **`MIGRATION-0.22.md`** — agent doc split and resource migration guide.
+
+### Changed
+
+- **`palm_assist`**, **`palm_flows_session`**, **`palm_flows_session_input`**, **`palm_flows_list`**, **`palm_flows_create_session`**, **`palm_system_doctor`** — enriched descriptions with `call_connected_tool` prefix.
+- **Docker** — `PALM_SKILL_DIR=docs/skills/palm` in Dockerfile and compose; `docs/` copied into image.
+- **`docs/llms.txt`** — project context only; points to `docs/mcp.txt` for operator guide.
+- **Version** `0.22.0` on documentation surfaces.
+
 ## [0.21.12] — 2026-07-01
 
 **Weak-LLM MCP ergonomics (0.21.10–0.21.12 bundle)** — unified `palm_assist` flows driving, edit shortcuts, replay harness.

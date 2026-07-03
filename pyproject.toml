@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.21.12"
+version = "0.22.0"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -99,6 +99,8 @@ exclude = [
 artifacts = [
     "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
     "src/palm/runtimes/mcp/data/llms.txt",
+    "src/palm/runtimes/mcp/data/mcp.txt",
+    "src/palm/runtimes/mcp/data/skills/palm/**/*",
 ]
 
 [tool.hatch.build.targets.sdist]

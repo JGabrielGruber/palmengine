@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.21.12`
-**Last Updated:** July 1, 2026  
+**Current Version:** `0.22.0`
+**Last Updated:** July 3, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
 ## Quick Overview
@@ -112,7 +112,7 @@ host.execution.on(instance_id).input("yes")
 
 ## 0.14 — MCP Operator (Shipped)
 
-**Agent guide:** [docs/MCP.md](docs/MCP.md) · **Agent context:** [docs/llms.txt](docs/llms.txt)
+**Agent guide:** [docs/MCP.md](docs/MCP.md) · **MCP operator guide:** [docs/mcp.txt](docs/mcp.txt) (`palm://agent/guide`) · **Project context:** [docs/llms.txt](docs/llms.txt)
 
 | Component | Status |
 |-----------|--------|
@@ -163,7 +163,10 @@ just mcp-inspector                       # MCP Inspector UI
 | `EXPLORER-WIZARD.md`  | Good            | Human operator + integrator guide |
 | `docs/VISION-0.13.md` | Good            | Release vision |
 | `docs/index.html`     | Good            | v0.16.5 badge + service API in featureList |
-| `docs/llms.txt`       | Good            | AI context + 0.16 MCP conventions (`palm://agent/guide`) |
+| `docs/mcp.txt`        | Good            | MCP operator guide (`palm://agent/guide` default) |
+| `docs/llms.txt`       | Good            | Broader AI / project context |
+| `docs/skills/palm/`   | Good            | Portable agent skill (+ MCP resources + Grok mirror) |
+| `docs/DOCKER.md`      | Good            | Docker Compose stack, volumes, remote MCP |
 | `docs/VISION-0.16.md` | Good            | 0.16 release vision |
 | `docs/VISION-0.18-ASSIST.md` | Good     | Assist domain vision (planned) |
 | `docs/adr/005-*.md`   | Good            | Service-domain API ADR |
@@ -268,13 +271,15 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.11 | Edit shortcuts, fuzzy menu, priority intent | ✅ Shipped |
 | 0.21.12 | Weak-LLM playbook + conversation replay harness | ✅ Shipped |
 
-**0.22 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
+| 0.22.0 | Agent skill MCP resources, `docs/mcp.txt` operator guide, Docker docs | ✅ Shipped |
+
+**0.23 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.21.12 shipped** — weak-LLM MCP playbook (0.21.10–0.21.12 bundle): unified `palm_assist` flows driving, edit shortcuts, fuzzy menu, priority intent, conversation replay harness.
+**0.22.0 shipped** — portable agent skill (`palm://agent/skill` + references), operator guide split (`docs/mcp.txt`), weak-LLM tool descriptions, [docs/DOCKER.md](docs/DOCKER.md).
 
-**Next:** 0.22 deferred items per [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
+**Next:** 0.23 deferred items per [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 
 ## Useful Links

@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.21.12 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.22.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 
@@ -112,7 +112,7 @@ PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp    # stdio → services
 
 **Remote proxy:** `PALM_MCP_IN_PROCESS=0` + `just palm-server` on `:8080`.
 
-Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/llms.txt`. Cursor/Claude: same env vars with `uv run --extra mcp palm-mcp`.
+Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/mcp.txt`. Cursor/Claude: same env vars with `uv run --extra mcp palm-mcp`.
 
 ### Operator loop (memorize this)
 
@@ -152,7 +152,10 @@ palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}}
 
 | Need | Tool / resource |
 |------|-----------------|
-| Project context | `palm://agent/guide` (this file) |
+| MCP operator guide | `palm://agent/guide` (`docs/mcp.txt`) |
+| Agent skill | `palm://agent/skill` |
+| Skill references | `palm://agent/references/*` |
+| Project context | `docs/llms.txt` (this file) |
 | Flow catalog | `palm://definitions/flows` |
 | Start wizard | `palm_assist` path/alias or `palm_flows_create_session` |
 | Command catalog | `palm://assist/routes` |
@@ -206,6 +209,10 @@ src/palm/
 | docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
 | EXPLORER-WIZARD.md | Explorer wizard workspace + collection UI guide |
 | docs/MCP.md | **Agent MCP guide** — setup, workflows, full tool inventory |
+| docs/skills/palm/SKILL.md | Portable agent skill — copy into Cursor, Claude, or custom hosts |
+| docs/mcp.txt | MCP operator guide (`palm://agent/guide` default) |
+| docs/DOCKER.md | Docker Compose stack — Explorer, REST, HTTP MCP |
+| MIGRATION-0.22.md | Agent skill + operator guide split (0.22) |
 | MIGRATION-0.20.md | Assistant vs powertool operator views (0.20 assist surfaces) |
 | MIGRATION-0.16.md | Upgrade from 0.15.x REST/MCP to service-domain API |
 | MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |

@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.21.12 shipped)
+**Last updated:** July 2026 (0.22.0 shipped)
 
 ---
 
@@ -71,10 +71,10 @@ Coding agents should use the MCP operator adapter to develop and test flows — 
 
 | Step | Action |
 |------|--------|
-| Read first | [docs/MCP.md](docs/MCP.md) and MCP resource `palm://agent/guide` ([docs/llms.txt](docs/llms.txt)) |
+| Read first | [docs/MCP.md](docs/MCP.md) · `palm://agent/guide` ([docs/mcp.txt](docs/mcp.txt)) · `palm://agent/skill` ([docs/skills/palm](docs/skills/palm)) · project context [docs/llms.txt](docs/llms.txt) |
 | Setup (local) | `uv sync --extra mcp` → connect `palm-mcp` stdio with `PALM_MCP_IN_PROCESS=1` (default in [`.grok/config.toml`](.grok/config.toml)) — **no REST server required** |
 | Setup (remote) | `PALM_MCP_IN_PROCESS=0` → `just palm-server` (`:8080`) → `palm-mcp` proxies via `PALM_BASE_URL` |
-| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/llms.txt` |
+| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/mcp.txt` · skill [`docs/skills/palm/SKILL.md`](docs/skills/palm/SKILL.md) (mirrored in `.grok/skills/palm/`) |
 | Operator loop | definitions → submit → inspect → input → wait on children → resume |
 
 **Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); **0.20+** assistant default on assist (`question`, `choices`, `hint`, `actions`) · powertool default on `palm_flows_*` / flows dispatch (`operator_hint`); **0.21.5+** flows opt-in `format=assistant` on `palm_flows_session` and flows REST `?format=`; **0.21.7+** bare `palm_assist()` → operator-entry; `params.session_id` + `value`/`input` inferred for continuation; **0.21.10+** flows driving via `palm_assist(params={session_id, flow_id, value})` or aliases `flows/session-input` / `flows/session`; **0.21.11+** collection `params.edit={item_index, …}` and fuzzy menu tokens (`add`/`edit`/`done`/`continue`); resources for read, tools for write; **0.19+** stable proxy → `palm_assist(path=…)` or `alias=…` with `format=assistant|powertool` (catalog: `palm://assist/routes`); per-domain tools remain valid; collection menu → `palm_wizard_collection_action` or `palm_assist` collection params; interactive entry → `palm_assist` / `assist start` (CLI) / `/explorer/assist` (browser) / `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `resume-child-wait` only when `waiting_for_child`.
@@ -132,7 +132,8 @@ Documentation is not optional. It is part of the system.
   - `AGENTS.md` (this file)
   - `MIGRATION-*.md` when breaking changes occur
 - A living `STATUS.md` (or `docs/STATUS.md`) must exist and be kept reasonably current. It is the single source of truth for the current state of the project.
-- `docs/llms.txt` should be maintained as high-quality context for AI agents (served as `palm://agent/guide`).
+- `docs/mcp.txt` should be maintained as the MCP operator guide (served as `palm://agent/guide` via `PALM_LLMS_TXT`).
+- `docs/llms.txt` should be maintained as broader project context for AI agents.
 - `docs/MCP.md` is the canonical guide for agent development with Palm MCP (setup, workflows, tool inventory).
 - When updating the website (`docs/index.html`), structured data (JSON-LD) and feature highlights must reflect current capabilities.
 

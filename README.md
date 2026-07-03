@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.21.12` — services are the API: `/v1/api/…` REST, per-domain MCP, definitions CRUD · Explorer workspace · [CHANGELOG.md](CHANGELOG.md) · [docs/MCP.md](docs/MCP.md) · [MIGRATION-0.16.md](MIGRATION-0.16.md) · [docs/VISION-0.16.md](docs/VISION-0.16.md)
+**Current release:** `0.22.0` — services are the API: `/v1/api/…` REST, per-domain MCP, definitions CRUD · Explorer workspace · [CHANGELOG.md](CHANGELOG.md) · [docs/MCP.md](docs/MCP.md) · [MIGRATION-0.16.md](MIGRATION-0.16.md) · [docs/VISION-0.16.md](docs/VISION-0.16.md)
 
 ---
 
@@ -128,9 +128,19 @@ Connect your IDE to the `palm-mcp` stdio server (`pip install "palmengine[mcp]"`
 
 **Operator loop:** definitions → create session → inspect → input → wait on children → resume.
 
-**Key conventions:** use `session_id` for flow sessions; pass plain `input` strings (`yes`, choice slugs, text); read `palm://agent/guide` (`docs/llms.txt`) at session start.
+**Key conventions:** use `session_id` for flow sessions; pass plain `input` strings (`yes`, choice slugs, text); read `palm://agent/guide` (`docs/mcp.txt`) and `palm://agent/skill` at session start. Portable skill: [`docs/skills/palm/`](docs/skills/palm/).
 
-**Server + Palm Explorer:**
+**Docker (host server + Explorer):**
+
+```bash
+just docker-up          # build + start on :8080, ./data + ./logs volumes
+open http://localhost:8080/explorer
+just docker-logs        # noisy logs — by design
+```
+
+Full stack guide: **[docs/DOCKER.md](docs/DOCKER.md)** — volumes, HTTP MCP against the container, env vars, troubleshooting.
+
+**Server + Palm Explorer (local Python):**
 
 ```bash
 # Start HTTP server (default port 8080)

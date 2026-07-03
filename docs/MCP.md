@@ -9,7 +9,9 @@ Migration from 0.15 tool names: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
 | Doc | Audience |
 |-----|----------|
 | This file | Full tool inventory + phase history |
-| [`docs/llms.txt`](llms.txt) | Compact agent context (load via `palm://agent/guide`) |
+| [`docs/mcp.txt`](mcp.txt) | **MCP operator guide** (default `palm://agent/guide` via `PALM_LLMS_TXT`) |
+| [`docs/llms.txt`](llms.txt) | Broader project context (architecture, extension patterns) |
+| [`docs/skills/palm/SKILL.md`](skills/palm/SKILL.md) | Portable agent skill — session driving + MCP description patterns |
 | [`DEVELOPMENT.md`](../DEVELOPMENT.md) | Contributor setup + MCP workflow |
 | [`AGENTS.md`](../AGENTS.md) | Architecture rules for agents editing Palm |
 
@@ -86,7 +88,7 @@ just mcp-inspector                  # MCP Inspector UI
 
 | Environment | Config |
 |-------------|--------|
-| Grok (this repo) | [`.grok/config.toml`](../.grok/config.toml) — in-process default, `docs/llms.txt` for agent guide |
+| Grok (this repo) | [`.grok/config.toml`](../.grok/config.toml) — in-process default, `docs/mcp.txt` for agent guide |
 | Cursor / Claude Desktop | Add stdio server: `uv run --extra mcp palm-mcp` with `PALM_MCP_IN_PROCESS=1` |
 | HTTP clients | `POST /mcp` on running server — uses hosting `ServerContext` in-process (see [Transports](#transports)) |
 
@@ -97,7 +99,8 @@ just mcp-inspector                  # MCP Inspector UI
 | `PALM_MCP_IN_PROCESS` | `0` (env); `1` in `.grok/config.toml` | `1` = `PalmInProcessBackend` (services, no HTTP); `0` = `PalmRestClient` |
 | `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target when in-process is off |
 | `PALM_SUBJECT` | `dev` | `X-Palm-Subject` when auth is enforced |
-| `PALM_LLMS_TXT` | bundled `llms.txt` in package (override path optional) | `palm://agent/guide` content |
+| `PALM_LLMS_TXT` | bundled `mcp.txt` in package (override path optional) | `palm://agent/guide` content |
+| `PALM_SKILL_DIR` | bundled `skills/palm/` in package (override path optional) | `palm://agent/skill` and `palm://agent/references/*` |
 
 ### Conventions agents must follow
 
@@ -126,6 +129,10 @@ just mcp-inspector                  # MCP Inspector UI
 9. **Session map** — Prefer `palm_flows_compose_status(session_id)` when navigating compositional stacks.
 
 10. **Sequential driving** — Drive one session at a time. Call `palm_flows_session_resume_child_wait` only while `waiting_for_child` is true (otherwise returns `resume_child_wait: skipped_not_waiting`).
+
+### Tool descriptions (contributors)
+
+MCP tool docstrings should lead with `call_connected_tool(tool_name="palm___…", …)` so weak LLMs invoke tools correctly. Use `palm.runtimes.mcp.descriptions.tool_description()` when adding or updating tools. Pattern reference: [`docs/skills/palm/references/mcp-patterns.md`](skills/palm/references/mcp-patterns.md) · canonical operator guide: [`docs/mcp.txt`](mcp.txt).
 
 ### Assist domain (0.18 REST · 0.19 MCP · 0.20 views)
 
@@ -293,7 +300,12 @@ Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`
 
 | URI | Source |
 |-----|--------|
-| `palm://agent/guide` | `docs/llms.txt` |
+| `palm://agent/guide` | `docs/mcp.txt` (override via `PALM_LLMS_TXT`; project context in `docs/llms.txt`) |
+| `palm://agent/skill` | `docs/skills/palm/SKILL.md` (override via `PALM_SKILL_DIR`) |
+| `palm://agent/references/agent-guide` | `docs/skills/palm/references/agent-guide.md` |
+| `palm://agent/references/mcp-patterns` | `docs/skills/palm/references/mcp-patterns.md` |
+| `palm://agent/references/session-management` | `docs/skills/palm/references/session-management.md` |
+| `palm://agent/references/common-flows` | `docs/skills/palm/references/common-flows.md` |
 | `palm://server/health` | `GET /health` |
 | `palm://instances/{id}/tree` | `GET /v1/instances/{id}/tree` |
 

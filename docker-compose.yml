@@ -12,6 +12,7 @@ services:
       PALM_LOAD_EXAMPLE_DEFINITIONS: true
       PALM_LOG_FILE: /var/log/palm/palm.log
       PALM_LLMS_TXT: docs/mcp.txt
+      PALM_SKILL_DIR: docs/skills/palm
     volumes:
       - ./data:/data
       - ./logs:/var/log/palm

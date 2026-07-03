@@ -11,13 +11,36 @@ from palm.runtimes.mcp.assist.dispatch import (
     resolve_dispatch_path,
     shape_dispatch_result,
 )
+from palm.runtimes.mcp.descriptions import tool_description
 from palm.runtimes.mcp.rest_client import PalmRestError
+
+_PALM_ASSIST_DESC = tool_description(
+    "palm_assist",
+    "Primary Palm entry — dispatch assist, flows, and process command paths.",
+    when=(
+        "Bare ``palm_assist()`` starts operator-entry (0.21.7 default). "
+        "Use ``path`` or ``alias`` to target a route; ``params`` carries "
+        "``session_id`` + ``value``/``input`` for continuation. Assist paths "
+        "default to ``format=assistant``; flows/system default to powertool."
+    ),
+    examples=[
+        "palm_assist()",
+        'palm_assist(alias="operator-entry/start")',
+        'palm_assist(params={"session_id": "inst-1", "value": "yes"})',
+        'palm_assist(path=["flows", "todo-builder", "create"])',
+        'palm_assist(params={"session_id": "inst-1", "flow_id": "todo-builder", "value": "yes"})',
+    ],
+    use_instead=(
+        "Prefer ``palm_assist`` over per-domain tools for driving sessions; "
+        "use ``palm_flows_create_session`` only when you need the legacy powertool create shape."
+    ),
+)
 
 
 def register_assist_tools(mcp: Any, backend: Any) -> None:
     """Register the stable ``palm_assist`` operator dispatch tool."""
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_ASSIST_DESC)
     def palm_assist(
         path: list[str] | None = None,
         alias: str | None = None,
@@ -25,20 +48,6 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
         action: str | None = None,
         format: str | None = None,
     ) -> dict[str, Any]:
-        """Dispatch a service command path (assist, flows, processes, …).
-
-        ``path`` or ``alias`` are optional — a bare ``palm_assist()`` starts
-        ``operator-entry`` for human-first onboarding. ``params`` may include
-        ``session_id`` + ``value``/``input`` to continue a session. Assist paths
-        default to ``format=assistant``; flows/system default to powertool.
-
-        Examples::
-
-            palm_assist()
-            palm_assist(alias="operator-entry/start")
-            palm_assist(params={"session_id": "inst-1", "value": "yes"})
-            palm_assist(path=["flows", "onboard", "session", "inst-1"], format="powertool")
-        """
         resolved_action = action or "dispatch"
         resolved_format = format or "assistant"
         if resolved_action != "dispatch":

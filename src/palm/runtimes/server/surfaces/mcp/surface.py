@@ -100,7 +100,8 @@ class McpSurface(BaseSurface):
             "env": {
                 "PALM_BASE_URL": "Palm REST base URL (stdio adapter)",
                 "PALM_SUBJECT": "X-Palm-Subject header for auth-enforced servers",
-                "PALM_LLMS_TXT": "Optional path to docs/llms.txt for agent guide resource",
+                "PALM_LLMS_TXT": "Optional path to docs/mcp.txt (or docs/llms.txt) for agent guide resource",
+                "PALM_SKILL_DIR": "Optional path to docs/skills/palm for agent skill resources",
             },
         }
         if http_active:

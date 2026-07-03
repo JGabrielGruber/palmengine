@@ -10,7 +10,17 @@ from palm.common.operator.snapshots import diff_snapshot_states
 from palm.common.operator.waiting_jobs import slim_waiting_job_row
 from palm.common.operator.process_submit import validate_process_submit
 from palm.runtimes.mcp.rest_client import PalmRestError
+from palm.runtimes.mcp.descriptions import tool_description
 from palm.runtimes.mcp.submit_body import submit_body
+
+_PALM_SYSTEM_DOCTOR_DESC = tool_description(
+    "palm_system_doctor",
+    "Engine health check — registries, storage, patterns, providers, job counts.",
+    when="Run at session start or when flows behave unexpectedly.",
+    examples=[
+        "palm_system_doctor()",
+    ],
+)
 
 
 def register_system_tools(mcp: Any, backend: Any) -> None:
@@ -78,9 +88,8 @@ def register_system_tools(mcp: Any, backend: Any) -> None:
             payload["slug"] = result["slug"]
         return payload
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_SYSTEM_DOCTOR_DESC)
     def palm_system_doctor() -> dict[str, Any]:
-        """Engine health: registries, storage, patterns, providers, job counts."""
         return backend.get_doctor()
 
     @mcp.tool

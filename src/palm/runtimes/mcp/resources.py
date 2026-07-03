@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from palm.runtimes.mcp.agent_assets import read_skill_asset
+
 
 def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
     from palm.runtimes.mcp.assist.dispatch import assist_routes_payload
@@ -16,14 +18,62 @@ def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
         annotations={"readOnlyHint": True, "idempotentHint": True},
     )
     def agent_guide() -> str:
-        """Palm agent guide — llms.txt and operator protocol."""
+        """Palm MCP agent guide — operator protocol and session conventions."""
         if config.llms_txt_path is not None:
             return config.llms_txt_path.read_text(encoding="utf-8")
         return (
             "Palm operator MCP adapter.\n"
             f"REST base: {config.base_url}\n"
-            "Set PALM_LLMS_TXT to a local docs/llms.txt path for the full agent guide."
+            "Set PALM_LLMS_TXT to docs/mcp.txt (or docs/llms.txt) for the full agent guide."
         )
+
+    def _skill_fallback(suffix: str) -> str:
+        return (
+            f"Palm agent skill asset unavailable: palm://agent/{suffix}\n"
+            "Set PALM_SKILL_DIR to docs/skills/palm for portable skill resources."
+        )
+
+    @mcp.resource(
+        "palm://agent/skill",
+        mime_type="text/markdown",
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+    )
+    def agent_skill() -> str:
+        """Portable Palm agent skill — operator loop and MCP conventions."""
+        if config.skill_root is None:
+            return _skill_fallback("skill")
+        return read_skill_asset(config.skill_root, "skill")
+
+    def _register_skill_reference(resource_suffix: str, *, title: str) -> None:
+        @mcp.resource(
+            f"palm://agent/{resource_suffix}",
+            mime_type="text/markdown",
+            annotations={"readOnlyHint": True, "idempotentHint": True},
+        )
+        def _reader() -> str:
+            if config.skill_root is None:
+                return _skill_fallback(resource_suffix)
+            return read_skill_asset(config.skill_root, resource_suffix)
+
+        _reader.__name__ = f"agent_skill_{resource_suffix.replace('/', '_')}"
+        _reader.__doc__ = title
+
+    _register_skill_reference(
+        "references/agent-guide",
+        title="Palm agent skill — mental model and operator rules.",
+    )
+    _register_skill_reference(
+        "references/mcp-patterns",
+        title="Palm agent skill — MCP tool description patterns for contributors.",
+    )
+    _register_skill_reference(
+        "references/session-management",
+        title="Palm agent skill — session driving and re-inspect conventions.",
+    )
+    _register_skill_reference(
+        "references/common-flows",
+        title="Palm agent skill — quick start for common flows.",
+    )
 
     @mcp.resource(
         "palm://server/health",

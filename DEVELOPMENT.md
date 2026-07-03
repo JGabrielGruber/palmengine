@@ -36,6 +36,18 @@ The **cli** extra installs Rich and prompt-toolkit for `palm` and the REPL.
 | Palm server (REST) | `just palm-server` |
 | MCP Inspector | `just mcp-inspector` |
 | MCP extra sync | `just mcp-sync` |
+| Docker build | `just docker-build` |
+| Docker up/down | `just docker-up` / `just docker-down` |
+| Docker logs | `just docker-logs` |
+
+## Docker stack
+
+Run Palm as a containerized host server with filesystem storage, Explorer, REST, and HTTP MCP. See **[docs/DOCKER.md](docs/DOCKER.md)** for volumes, agent MCP against Docker (`PALM_MCP_IN_PROCESS=0`), and troubleshooting.
+
+```bash
+just docker-up
+curl -sf http://127.0.0.1:8080/health
+```
 
 ## Agent development with MCP (0.16)
 
@@ -52,7 +64,7 @@ PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # local default — no REST 
 
 **Grok:** [`.grok/config.toml`](.grok/config.toml) registers `palm-mcp` via `uv run --extra mcp palm-mcp`.
 
-**Env:** `PALM_MCP_IN_PROCESS` (`1` = services, no HTTP), `PALM_BASE_URL`, `PALM_SUBJECT`, `PALM_LLMS_TXT`.
+**Env:** `PALM_MCP_IN_PROCESS` (`1` = services, no HTTP), `PALM_BASE_URL`, `PALM_SUBJECT`, `PALM_LLMS_TXT`, `PALM_SKILL_DIR`.
 
 ### Operator loop
 
@@ -60,7 +72,7 @@ PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # local default — no REST 
 definitions → create session → inspect → input → wait on children → resume
 ```
 
-1. Read `palm://agent/guide` (MCP resource → `docs/llms.txt`)
+1. Read `palm://agent/guide` (MCP resource → `docs/mcp.txt`; project context → `docs/llms.txt`)
 2. `palm_system_doctor` — confirm registries and storage
 3. `palm://definitions/flows` — pick a flow
 4. `palm_flows_create_session(flow_id=…)` → `session_id`

@@ -58,6 +58,17 @@ SYNC_SURFACE_FILES = (
 )
 
 BUNDLED_LLMS_TXT = ROOT / "src/palm/runtimes/mcp/data/llms.txt"
+BUNDLED_MCP_TXT = ROOT / "src/palm/runtimes/mcp/data/mcp.txt"
+DOCS_PALM_SKILL = ROOT / "docs/skills/palm"
+GROK_PALM_SKILL = ROOT / ".grok/skills/palm"
+_PALM_SKILL_SYNC_FILES = (
+    "SKILL.md",
+    "references/agent-guide.md",
+    "references/mcp-patterns.md",
+    "references/session-management.md",
+    "references/common-flows.md",
+)
+BUNDLED_PALM_SKILL = ROOT / "src/palm/runtimes/mcp/data/skills/palm"
 
 
 def check_version_sources(version: str, errors: list[str]) -> None:
@@ -100,11 +111,11 @@ def check_stale_architecture_refs(errors: list[str]) -> None:
 def check_bundled_llms_txt(errors: list[str]) -> None:
     source = ROOT / "docs/llms.txt"
     if not source.is_file():
-        errors.append("docs/llms.txt: missing source agent guide")
+        errors.append("docs/llms.txt: missing source project context guide")
         return
     if not BUNDLED_LLMS_TXT.is_file():
         errors.append(
-            "src/palm/runtimes/mcp/data/llms.txt: missing bundled MCP agent guide"
+            "src/palm/runtimes/mcp/data/llms.txt: missing bundled project context guide"
         )
         return
     if source.read_text(encoding="utf-8") != BUNDLED_LLMS_TXT.read_text(encoding="utf-8"):
@@ -112,6 +123,69 @@ def check_bundled_llms_txt(errors: list[str]) -> None:
             "src/palm/runtimes/mcp/data/llms.txt: out of sync with docs/llms.txt "
             "(copy docs/llms.txt into the MCP data package)"
         )
+
+
+def check_bundled_mcp_txt(errors: list[str]) -> None:
+    source = ROOT / "docs/mcp.txt"
+    if not source.is_file():
+        errors.append("docs/mcp.txt: missing MCP operator agent guide")
+        return
+    if not BUNDLED_MCP_TXT.is_file():
+        errors.append(
+            "src/palm/runtimes/mcp/data/mcp.txt: missing bundled MCP operator guide"
+        )
+        return
+    if source.read_text(encoding="utf-8") != BUNDLED_MCP_TXT.read_text(encoding="utf-8"):
+        errors.append(
+            "src/palm/runtimes/mcp/data/mcp.txt: out of sync with docs/mcp.txt "
+            "(copy docs/mcp.txt into the MCP data package)"
+        )
+
+
+def check_bundled_palm_skill(errors: list[str]) -> None:
+    """Ensure bundled MCP skill assets match docs/skills/palm."""
+    if not DOCS_PALM_SKILL.is_dir():
+        return
+    for rel in _PALM_SKILL_SYNC_FILES:
+        source = DOCS_PALM_SKILL / rel
+        bundled = BUNDLED_PALM_SKILL / rel
+        if not source.is_file():
+            errors.append(f"docs/skills/palm/{rel}: missing canonical skill file")
+            continue
+        if not bundled.is_file():
+            errors.append(
+                f"src/palm/runtimes/mcp/data/skills/palm/{rel}: missing bundled skill asset"
+            )
+            continue
+        if source.read_text(encoding="utf-8") != bundled.read_text(encoding="utf-8"):
+            errors.append(
+                f"src/palm/runtimes/mcp/data/skills/palm/{rel}: out of sync with "
+                f"docs/skills/palm/{rel} (copy into MCP data package)"
+            )
+
+
+def check_grok_palm_skill_sync(errors: list[str]) -> None:
+    """Ensure Grok Build mirror matches the portable docs/skills/palm canonical copy."""
+    if not DOCS_PALM_SKILL.is_dir():
+        errors.append("docs/skills/palm: missing portable agent skill directory")
+        return
+    for rel in _PALM_SKILL_SYNC_FILES:
+        source = DOCS_PALM_SKILL / rel
+        mirror = GROK_PALM_SKILL / rel
+        if not source.is_file():
+            errors.append(f"docs/skills/palm/{rel}: missing canonical skill file")
+            continue
+        if not mirror.is_file():
+            errors.append(
+                f".grok/skills/palm/{rel}: missing Grok mirror "
+                f"(copy from docs/skills/palm/{rel})"
+            )
+            continue
+        if source.read_text(encoding="utf-8") != mirror.read_text(encoding="utf-8"):
+            errors.append(
+                f".grok/skills/palm/{rel}: out of sync with docs/skills/palm/{rel} "
+                "(copy docs/skills/palm into .grok/skills/palm)"
+            )
 
 
 def check_stale_versions(errors: list[str]) -> None:
@@ -147,6 +221,9 @@ def main() -> int:
     check_sync_surfaces(version, errors)
     check_stale_architecture_refs(errors)
     check_bundled_llms_txt(errors)
+    check_bundled_mcp_txt(errors)
+    check_bundled_palm_skill(errors)
+    check_grok_palm_skill_sync(errors)
     check_stale_versions(errors)
 
     if errors:

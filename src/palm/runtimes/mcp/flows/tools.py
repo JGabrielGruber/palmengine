@@ -17,7 +17,57 @@ from palm.runtimes.mcp.flows.views import (
     submission_view,
 )
 from palm.runtimes.mcp.rest_client import PalmRestError
+from palm.runtimes.mcp.descriptions import tool_description
 from palm.runtimes.mcp.submit_body import submit_body
+
+_PALM_FLOWS_SESSION_DESC = tool_description(
+    "palm_flows_session",
+    "Inspect a running flow session (powertool by default).",
+    when=(
+        "Pass ``format=assistant`` for human-readable turns with ``question``, "
+        "``choices``, and ``actions``. Re-inspect after every input — never guess state."
+    ),
+    examples=[
+        'palm_flows_session(session_id="inst-xxx", format="assistant")',
+        'palm_flows_session(session_id="inst-xxx")',
+        'palm_flows_session(session_id="inst-xxx", flow_id="todo-builder", include=["validation"])',
+    ],
+    use_instead=(
+        "To send input and get the next turn, use ``palm_assist(params={session_id, flow_id, value})`` "
+        "or ``palm_flows_session_input``."
+    ),
+)
+
+_PALM_FLOWS_SESSION_INPUT_DESC = tool_description(
+    "palm_flows_session_input",
+    "Deliver interactive wizard input for a flow session.",
+    when="Use plain ``input`` strings (``yes``, choice slugs, text) — not JSON answer blobs.",
+    examples=[
+        'palm_flows_session_input(session_id="inst-xxx", input="yes")',
+        'palm_flows_session_input(session_id="inst-xxx", input="todo-builder")',
+        'palm_flows_session_input(session_id="inst-xxx", input="add", value="Buy milk")',
+    ],
+    use_instead="Prefer ``palm_assist(params={session_id, flow_id, value})`` for unified driving.",
+)
+
+_PALM_FLOWS_LIST_DESC = tool_description(
+    "palm_flows_list",
+    "List runnable flows from the execution catalog.",
+    when="Use at session start to discover available wizards, or read ``palm://definitions/flows``.",
+    examples=[
+        "palm_flows_list()",
+    ],
+)
+
+_PALM_FLOWS_CREATE_SESSION_DESC = tool_description(
+    "palm_flows_create_session",
+    "Start a new flow session; returns ``session_id`` and ``job_id``.",
+    when="For interactive entry, prefer ``palm_assist(path=[\"flows\", \"<flow>\", \"create\"])``.",
+    examples=[
+        'palm_flows_create_session(flow_id="todo-builder")',
+        'palm_flows_create_session(flow_id="approval")',
+    ],
+)
 
 
 def register_flow_tools(mcp: Any, backend: Any) -> None:
@@ -47,9 +97,8 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
             invoke_tree=invoke_tree,
         )
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_FLOWS_LIST_DESC)
     def palm_flows_list() -> dict[str, Any]:
-        """List runnable flows from the execution flows catalog."""
         return backend.flows_list()
 
     @mcp.tool
@@ -57,18 +106,17 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         """Describe one flow (catalog row)."""
         return backend.flows_describe(flow_id)
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_FLOWS_CREATE_SESSION_DESC)
     def palm_flows_create_session(
         flow_id: str,
         wizard: dict[str, Any] | None = None,
         flow: dict[str, Any] | None = None,
         job_id: str | None = None,
     ) -> dict[str, Any]:
-        """Start a flow session; returns session_id and job_id."""
         body = submit_body(flow_name=flow_id, wizard=wizard, flow=flow, job_id=job_id)
         return backend.flows_create_session(flow_id, body)
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_FLOWS_SESSION_DESC)
     def palm_flows_session(
         session_id: str,
         flow_id: str | None = None,
@@ -76,7 +124,6 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         include: list[str] | None = None,
         truncate_answers_at: int = 2000,
     ) -> dict[str, Any]:
-        """Inspect a flow session (powertool by default; ``format=assistant`` opt-in)."""
         view = backend.flows_get_session(flow_id, session_id)
         flat = flatten_session_view(view)
         invoke_tree = None
@@ -92,7 +139,7 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
             truncate_answers_at=truncate_answers_at,
         )
 
-    @mcp.tool
+    @mcp.tool(description=_PALM_FLOWS_SESSION_INPUT_DESC)
     def palm_flows_session_input(
         session_id: str,
         input: str | None = None,
@@ -100,7 +147,6 @@ def register_flow_tools(mcp: Any, backend: Any) -> None:
         flow_id: str | None = None,
         format: str = "powertool",
     ) -> dict[str, Any]:
-        """Deliver interactive input. Use plain ``input`` strings—not JSON."""
         inspect = flatten_session_view(backend.flows_get_session(flow_id, session_id))
         resolved = resolve_mcp_wizard_input(input=input, value=value, wizard_view=inspect)
         fid = ensure_flow_id(flow_id=flow_id, session_id=session_id, inspect=inspect)
