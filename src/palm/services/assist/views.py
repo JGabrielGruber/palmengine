@@ -85,6 +85,7 @@ def _merge_snapshot_fields(composed: dict[str, Any], snapshot: dict[str, Any]) -
         "prompt",
         "prompt_title",
         "field_type",
+        "step_kind",
         "collection_phase",
         "choices",
         "validation_error",
@@ -141,6 +142,12 @@ def _humanize_assistant_view(
 
     if handoff_ready:
         payload["hint"] = _append_handoff_hint(str(payload.get("hint") or ""))
+
+    from palm.common.operator.mutation_gate import build_mutation_envelope
+
+    mutation = build_mutation_envelope(composed)
+    if mutation:
+        payload["mutation"] = mutation
 
     return {key: value for key, value in payload.items() if value is not None}
 

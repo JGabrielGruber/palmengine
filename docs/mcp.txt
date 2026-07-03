@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.22.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.22.1 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 
@@ -178,3 +178,30 @@ Palm is ergonomic when treated as a **guided state machine**, not a REST CRUD AP
 2. Let the user choose via natural language
 3. Follow the session step-by-step — always re-read state
 4. Use `format=assistant` for human-facing turns
+
+---
+
+## 11. Inspect vs drive (critical — 0.22.1+)
+
+When the user says **inspect**, **look**, **status**, or **what's running**:
+
+1. Use **read tools only**: `palm_flows_session`, `palm_flows_list`, `palm_system_list_waiting`, `palm://definitions/*`.
+2. Check **`mutation.mutations_allowed`** in every inspect response — if `false`, never send `value`/`input`.
+3. At **`mutation.confirm_step`**, do **not** send `yes`/`no` unless the user explicitly said yes or no.
+4. **"Inspect" ≠ operator-entry menu item 3** unless the user picks that choice by name or number.
+
+Every assistant/powertool inspect response includes a `mutation` block:
+
+```json
+{
+  "mutation": {
+    "mutations_allowed": true,
+    "requires_user_input": true,
+    "step_slug": "intent",
+    "confirm_step": true,
+    "agent_hint": "Confirm step: do not send yes/no unless..."
+  }
+}
+```
+
+Violating this completes wizards irreversibly. See `archive/conversation_export.xml` (anti-pattern: unsolicited `yes` at summary).

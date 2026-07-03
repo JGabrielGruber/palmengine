@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.22.0`
+**Current Version:** `0.22.1`
 **Last Updated:** July 3, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -272,14 +272,15 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.21.12 | Weak-LLM playbook + conversation replay harness | ✅ Shipped |
 
 | 0.22.0 | Agent skill MCP resources, `docs/mcp.txt` operator guide, Docker docs | ✅ Shipped |
+| 0.22.1 | Mutation envelope protocol (`mutation.mutations_allowed`) | ✅ Shipped |
 
 **0.23 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 ## Priorities & Next Steps
 
-**0.22.0 shipped** — portable agent skill (`palm://agent/skill` + references), operator guide split (`docs/mcp.txt`), weak-LLM tool descriptions, [docs/DOCKER.md](docs/DOCKER.md).
+**0.22.1 shipped** — `mutation` envelope on inspect views; inspect vs drive guard in `docs/mcp.txt` §11.
 
-**Next:** 0.23 deferred items per [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
+**Next:** 0.23.0 `input_token` strict mode · 0.23.1 inspect-only catalog path per [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
 
 ## Useful Links

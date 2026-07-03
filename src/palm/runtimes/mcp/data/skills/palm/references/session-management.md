@@ -3,9 +3,10 @@
 ## Golden rules
 
 1. **Never assume state** — always re-read after advancing.
-2. Track `session_id`, `job_id`, and current `step`.
-3. Use `format=assistant` when presenting state to the user.
-4. Drive one session at a time; resume child wait only when `waiting_for_child` is true.
+2. **Check `mutation` block** — if `mutations_allowed` is false, read-only tools only; at `confirm_step`, wait for explicit user yes/no.
+3. Track `session_id`, `job_id`, and current `step`.
+4. Use `format=assistant` when presenting state to the user.
+5. Drive one session at a time; resume child wait only when `waiting_for_child` is true.
 
 ## After every input
 

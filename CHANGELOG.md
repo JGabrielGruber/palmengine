@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.22.1] — 2026-07-03
+
+**Mutation envelope protocol** — read vs drive signals on inspect views; inspect guard docs.
+
+### Added
+
+- **`mutation` envelope** on assistant/powertool inspect (`mutations_allowed`, `confirm_step`, `agent_hint`).
+- **`palm/common/operator/mutation_gate.py`** — `build_mutation_envelope()`.
+- **Inspect vs drive** rules in `docs/mcp.txt` §11 and agent skill.
+- **Replay harness** `tests/test_conversation_replay_inspect_guard.py` (xfail documents tc4 until 0.23.0).
+
+### Changed
+
+- **Version** `0.22.1` on documentation surfaces.
+
 ## [0.22.0] — 2026-07-03
 
 **Agent skill release** — portable skill as MCP resources, operator guide split, Docker stack documentation.

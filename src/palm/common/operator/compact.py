@@ -100,6 +100,10 @@ def compact_wizard_inspect(
         if hint:
             payload["operator_hint"] = hint
 
+    from palm.common.operator.mutation_gate import build_mutation_envelope
+
+    payload["mutation"] = build_mutation_envelope(payload)
+
     return payload
 
 

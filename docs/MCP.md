@@ -130,6 +130,10 @@ just mcp-inspector                  # MCP Inspector UI
 
 10. **Sequential driving** — Drive one session at a time. Call `palm_flows_session_resume_child_wait` only while `waiting_for_child` is true (otherwise returns `resume_child_wait: skipped_not_waiting`).
 
+### Mutation guard (0.22.1+)
+
+Inspect responses (assistant and powertool) include a **`mutation`** block: `mutations_allowed`, `confirm_step`, `agent_hint`. Agents must not send `value`/`input` when `mutations_allowed` is false. See [`docs/mcp.txt`](mcp.txt) §11 and `archive/conversation_export.xml`.
+
 ### Tool descriptions (contributors)
 
 MCP tool docstrings should lead with `call_connected_tool(tool_name="palm___…", …)` so weak LLMs invoke tools correctly. Use `palm.runtimes.mcp.descriptions.tool_description()` when adding or updating tools. Pattern reference: [`docs/skills/palm/references/mcp-patterns.md`](skills/palm/references/mcp-patterns.md) · canonical operator guide: [`docs/mcp.txt`](mcp.txt).

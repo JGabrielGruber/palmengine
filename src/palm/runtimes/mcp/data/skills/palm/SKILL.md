@@ -22,6 +22,7 @@ You operate Palm (the connected workflow engine) through MCP — primarily `palm
 - **Assistant view for humans** — `format=assistant` on inspect and assist paths.
 - **Plain strings** — `input="yes"`, choice slugs, text (not JSON answer blobs).
 - **Read vs write** — `palm://…` resources for catalogs; tools for create/input/resume.
+- **Mutation guard (0.22.1+)** — check `mutation.mutations_allowed` on every inspect; never send `value`/`input` when false; never auto-confirm at `mutation.confirm_step`.
 
 ## Reference resources (load when relevant)
 
