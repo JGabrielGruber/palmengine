@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.23.0"
+version = "0.23.1"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}

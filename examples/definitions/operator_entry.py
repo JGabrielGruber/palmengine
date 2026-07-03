@@ -18,14 +18,61 @@ from palm.services.assist.registry import AssistContributor, register_assist_con
 
 
 def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]:
-    """Post-humanize CTA when the operator-entry scenario is ready to hand off."""
+    """Post-humanize operator-entry turns — catalog read mode and handoff CTAs."""
     payload = dict(view)
-    if payload.get("handoff_ready"):
+    step = payload.get("step_slug") or payload.get("step")
+    operator_mode = payload.get("operator_mode")
+    if step == "catalog" or operator_mode == "inspect":
+        payload["operator_mode"] = "inspect"
+        payload["hint"] = (
+            "Read-only catalog mode. Use actions to inspect flows and waiting sessions. "
+            "Say exit when done."
+        )
+        payload["actions"] = _catalog_actions(payload)
+        mutation = payload.get("mutation")
+        if isinstance(mutation, dict):
+            mutation = dict(mutation)
+            mutation["agent_hint"] = (
+                "Inspect catalog: use read actions only; send exit when the user is done."
+            )
+            payload["mutation"] = mutation
+    elif payload.get("handoff_ready"):
         extra = "Say handoff to start your flow."
         hint = str(payload.get("hint") or "")
         if extra.lower() not in hint.lower():
             payload["hint"] = f"{hint} {extra}".strip() if hint else extra
     return payload
+
+
+def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    session_id = payload.get("session_id")
+    actions: list[dict[str, Any]] = [
+        {
+            "label": "List flows",
+            "alias": "assist/catalog/flows",
+        },
+        {
+            "label": "List waiting sessions",
+            "tool": "palm_system_list_waiting",
+        },
+    ]
+    if session_id:
+        actions.append(
+            {
+                "label": "Inspect this session",
+                "alias": "flows/session",
+                "params": {"session_id": session_id},
+            }
+        )
+    actions.append(
+        {
+            "label": "Exit catalog",
+            "alias": "flows/session-input",
+            "params": {"session_id": session_id, "input": "exit"},
+        }
+    )
+    return actions
+
 
 OPERATOR_ENTRY_FLOW = FlowDefinition(
     id="flow-palm-operator-entry",
@@ -52,6 +99,23 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                 "prompt": "What would you like to do with Palm?",
                 "field_type": "choice",
                 "choices": ["todo-builder", "compositional-parent", "inspect-only"],
+                "params": {
+                    "route_on_answer": {
+                        "inspect-only": "catalog",
+                        "default": "summary",
+                    }
+                },
+            },
+            {
+                "slug": "catalog",
+                "title": "Inspect Catalog",
+                "prompt": "Read-only catalog mode. Say exit when done.",
+                "field_type": "text",
+                "required": False,
+                "params": {
+                    "inspect_only": True,
+                    "complete_on": ["exit", "quit", "done"],
+                },
             },
         ],
     },
@@ -80,6 +144,10 @@ def register_definitions(repository: object) -> None:
                 (
                     "operator-entry/handoff",
                     ("assist", "session", "{session_id}", "handoff"),
+                ),
+                (
+                    "operator-entry/inspect",
+                    ("assist", "scenarios", "operator-entry", "inspect"),
                 ),
             ),
             assistant_enricher=enrich_operator_entry,

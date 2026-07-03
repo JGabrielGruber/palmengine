@@ -30,6 +30,7 @@ __all__ = [
     "consume_wizard_input",
     "is_affirmative",
     "provide_wizard_input",
+    "queue_step_route",
     "wizard_input_key",
     "wizard_prompt_key",
 ]
@@ -135,3 +136,21 @@ def enter_phase_scope(state: BaseState, ctx: WizardPhaseContext) -> None:
 
 def is_affirmative(value: Any) -> bool:
     return value in (True, "yes", "Yes", "YES")
+
+
+def queue_step_route(state: BaseState, step: WizardStepConfig, value: Any) -> None:
+    """Queue a post-step jump when ``step.params`` defines routing rules."""
+    params = step.params or {}
+    route = params.get("route_on_answer")
+    if isinstance(route, dict):
+        target = route.get(str(value))
+        if target is None:
+            target = route.get("default")
+        if target is not None:
+            state.set(WizardKeys.JUMP_TO_STEP, str(target))
+            return
+    complete_on = params.get("complete_on")
+    if isinstance(complete_on, (list, tuple)):
+        normalized = {str(item).lower() for item in complete_on}
+        if str(value).lower() in normalized:
+            state.set(WizardKeys.JUMP_TO_STEP, "__end__")

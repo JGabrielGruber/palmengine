@@ -39,7 +39,10 @@ def test_operator_entry_handoff_recommends_flow(assist_host: ApplicationHost) ->
 def test_operator_entry_inspect_only_handoff_none(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
-    _drive_to_handoff(assist_host, session_id, "inspect-only")
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "inspect-only"},
+    )
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "none"
     assert handoff["handoff"]["flow_id"] is None

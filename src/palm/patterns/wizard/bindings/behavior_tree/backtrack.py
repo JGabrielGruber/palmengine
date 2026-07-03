@@ -96,12 +96,46 @@ class WizardSequenceNode(SequenceNode):
         state.set(WizardKeys.CURRENT_STEP, steps[index].slug)
 
     def _tick_impl(self, state: BaseState) -> PatternStatus:
+        from palm.core.behavior_tree.base_pattern import is_yielding_status
+
         from_step = state.get(WizardKeys.CURRENT_STEP)
         applied = self._apply_backtrack(state)
         if applied is not None and self._on_backtrack is not None:
             slug = self._config.iter_tree_steps()[applied].slug
             self._on_backtrack(applied, state, slug, from_step)
-        return super()._tick_impl(state)
+
+        if not self.children:
+            return PatternStatus.SUCCESS
+
+        while self._current_index < len(self.children):
+            status = self.children[self._current_index].tick(state)
+            if is_yielding_status(status):
+                return status
+            if status == PatternStatus.FAILURE:
+                self._current_index = 0
+                return PatternStatus.FAILURE
+            jump = state.get(WizardKeys.JUMP_TO_STEP)
+            if jump is not None:
+                state.delete(WizardKeys.JUMP_TO_STEP)
+                if str(jump) == "__end__":
+                    self._current_index = len(self.children)
+                    break
+                try:
+                    index = self._config.index_of(str(jump))
+                except KeyError:
+                    self._current_index += 1
+                    continue
+                self.jump_to_index(index)
+                state.set(WizardKeys.STEP_INDEX, index)
+                state.set(
+                    WizardKeys.CURRENT_STEP,
+                    self._config.iter_tree_steps()[index].slug,
+                )
+                continue
+            self._current_index += 1
+
+        self._current_index = 0
+        return PatternStatus.SUCCESS
 
     def _apply_backtrack(self, state: BaseState) -> int | None:
         if not self._config.allow_backtrack:

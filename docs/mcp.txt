@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.23.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.23.1 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 
@@ -188,7 +188,7 @@ When the user says **inspect**, **look**, **status**, or **what's running**:
 1. Use **read tools only**: `palm_flows_session`, `palm_flows_list`, `palm_system_list_waiting`, `palm://definitions/*`.
 2. Check **`mutation.mutations_allowed`** in every inspect response — if `false`, never send `value`/`input`.
 3. At **`mutation.confirm_step`**, do **not** send `yes`/`no` unless the user explicitly said yes or no.
-4. **"Inspect" ≠ operator-entry menu item 3** unless the user picks that choice by name or number.
+4. **"Inspect" ≠ operator-entry menu item 3** unless the user picks that choice by name or number — prefer `operator-entry/inspect` or `palm_flows_list` for read-only catalog (0.23.1+).
 
 Every assistant/powertool inspect response includes a `mutation` block:
 
@@ -225,3 +225,16 @@ When `PALM_MCP_REQUIRE_INPUT_TOKEN=1`, every mutation (`palm_assist` value, `pal
 3. Re-inspect after each input — tokens are step-bound and rotate on inspect
 
 Missing or stale tokens return `mutation_rejected` (HTTP 400 / MCP tool error). Explorer and CLI stay unchanged when the flag is off.
+
+---
+
+## 13. Inspect-only catalog mode (0.23.1+)
+
+Operator-entry choice **`inspect-only`** (menu item 3) enters a **non-terminal catalog step** — session stays `waiting` until the user says **exit**.
+
+| Read alias | Purpose |
+|------------|---------|
+| `operator-entry/inspect` | Standalone read-only catalog (no session write) |
+| `assist/catalog/flows` | List runnable flows |
+
+At catalog step, `operator_mode: inspect` is set on the instance. Use read actions (list flows, list waiting, inspect session) — not summary confirm. Handoff is `kind: none` until exit.

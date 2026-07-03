@@ -10,6 +10,7 @@ class AssistCommandKind(Enum):
     LIST_SCENARIOS = "list_scenarios"
     DESCRIBE_SCENARIO = "describe_scenario"
     START_SCENARIO = "start_scenario"
+    SCENARIO_INSPECT = "scenario_inspect"
     SESSION = "session"
     SESSION_VERB = "session_verb"
     DOCTOR = "doctor"
@@ -51,6 +52,11 @@ def parse_assist_command(path: list[str] | tuple[str, ...]) -> ParsedAssistComma
     if len(segments) == 3 and segments[0] == "scenarios" and segments[2] == "start":
         return ParsedAssistCommand(
             kind=AssistCommandKind.START_SCENARIO,
+            scenario_id=segments[1],
+        )
+    if len(segments) == 3 and segments[0] == "scenarios" and segments[2] == "inspect":
+        return ParsedAssistCommand(
+            kind=AssistCommandKind.SCENARIO_INSPECT,
             scenario_id=segments[1],
         )
     if segments == ("doctor",):

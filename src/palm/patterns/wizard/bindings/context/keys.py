@@ -13,6 +13,7 @@ class WizardKeys:
     CURRENT_STEP = f"{PREFIX}.current_step"
     ACTIVE_PROMPT = f"{PREFIX}.active_prompt"
     BACKTRACK_TO = f"{PREFIX}.backtrack_to"
+    JUMP_TO_STEP = f"{PREFIX}.jump_to_step"
     COMPLETED = f"{PREFIX}.completed"
     STEP_INDEX = f"{PREFIX}.step_index"
     COMMITTED = f"{PREFIX}.committed"

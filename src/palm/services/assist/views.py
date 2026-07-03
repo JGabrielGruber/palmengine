@@ -93,6 +93,7 @@ def _merge_snapshot_fields(composed: dict[str, Any], snapshot: dict[str, Any]) -
         "collection_phase",
         "choices",
         "validation_error",
+        "operator_mode",
     ):
         if snapshot.get(key) is not None and composed.get(key) is None:
             composed[key] = snapshot[key]
@@ -120,6 +121,8 @@ def _humanize_assistant_view(
     )
     handoff_ready = bool(context.handoff_ready)
 
+    operator_mode = composed.get("operator_mode")
+
     payload: dict[str, Any] = {
         "session_id": session_id,
         "status": _human_status(composed.get("status")),
@@ -131,6 +134,8 @@ def _humanize_assistant_view(
 
     if context.scenario_id:
         payload["scenario_id"] = context.scenario_id
+    if operator_mode:
+        payload["operator_mode"] = operator_mode
 
     choices = _humanize_choices(composed.get("choices"))
     if choices:

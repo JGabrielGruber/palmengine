@@ -24,6 +24,7 @@ You operate Palm (the connected workflow engine) through MCP — primarily `palm
 - **Read vs write** — `palm://…` resources for catalogs; tools for create/input/resume.
 - **Mutation guard (0.22.1+)** — check `mutation.mutations_allowed` on every inspect; never send `value`/`input` when false; never auto-confirm at `mutation.confirm_step`.
 - **input_token (0.23.0+)** — when `PALM_MCP_REQUIRE_INPUT_TOKEN=1`, pass `mutation.input_token` with every write; re-inspect after each input.
+- **inspect-only (0.23.1+)** — use `operator-entry/inspect` for read-only catalog; menu item 3 stays at catalog until `exit`, never auto-confirms summary.
 
 ## Reference resources (load when relevant)
 

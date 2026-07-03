@@ -162,7 +162,24 @@ class FlowExecutionService(BaseService):
         if repository is None:
             return None
         inspect = flatten_session_read_model(ctx)
+        self._sync_operator_mode(repository, session_id, inspect)
         return refresh_mutation_gate(repository, session_id, inspect)
+
+    def _sync_operator_mode(
+        self,
+        repository: Any,
+        session_id: str,
+        inspect: dict[str, Any],
+    ) -> None:
+        step = inspect.get("step") or inspect.get("current_step_slug")
+        instance = repository.get(session_id)
+        meta = dict(instance.metadata or {})
+        if step == "catalog":
+            meta["operator_mode"] = "inspect"
+        else:
+            meta.pop("operator_mode", None)
+        instance.metadata = meta
+        repository.save(instance)
 
     def _instance_repository(self) -> Any | None:
         try:

@@ -4,6 +4,23 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.23.1] — 2026-07-03
+
+**Inspect-only catalog** — operator-entry menu item 3 no longer commits on summary `yes`.
+
+### Added
+
+- **Wizard step routing** — `route_on_answer` and `complete_on` in step `params`.
+- **Operator-entry `catalog` step** — non-terminal read mode until `exit`.
+- **`operator-entry/inspect`** MCP alias — read-only catalog via `AssistService.inspect_catalog()`.
+- **`operator_mode: inspect`** on instance metadata at catalog step.
+- **Choice menu coercion** — numeric picks (e.g. `3`) on assist input path.
+
+### Changed
+
+- **`inspect-only` intent** — routes to catalog, skips summary; handoff stays `none` until exit.
+- **`docs/mcp.txt` §13** — inspect-only catalog semantics.
+
 ## [0.23.0] — 2026-07-03
 
 **input_token strict mode** — CSRF-style mutation gate for agent hardening (opt-in).

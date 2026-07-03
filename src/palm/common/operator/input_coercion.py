@@ -68,11 +68,15 @@ def coerce_job_input(raw: str, pattern: Mapping[str, Any]) -> Any:
 def pattern_from_wizard_view(wizard_view: Mapping[str, Any]) -> dict[str, Any]:
     """Build a coercion pattern dict from a wizard read model."""
     prompt = wizard_view.get("prompt") or {}
+    if not isinstance(prompt, dict):
+        prompt = {}
+    choices = prompt.get("choices") or wizard_view.get("choices")
     collection_field = prompt.get("collection_field") or wizard_view.get("collection_field")
+    field_type = prompt.get("field_type") or wizard_view.get("field_type")
     return {
-        "field_type": prompt.get("field_type"),
+        "field_type": field_type,
         "effective_schema_type": prompt.get("effective_schema_type"),
-        "choices": prompt.get("choices"),
+        "choices": choices,
         "collection_field": collection_field,
     }
 
@@ -116,15 +120,21 @@ def resolve_mcp_wizard_input(
 
             if stripped.lower() == "add":
                 return (COLLECTION_ADD_ONE_SHOT, str(value))
-        if collection_phase == "menu" or prompt.get("step_kind") == "collection":
+        choices = prompt.get("choices")
+        if isinstance(choices, list) and choices:
             from palm.common.operator.choice_input import resolve_menu_choice
-            from palm.common.operator.collection_input import resolve_wizard_collection_action
 
-            choices = prompt.get("choices")
-            if isinstance(choices, list) and choices:
+            if (
+                collection_phase == "menu"
+                or prompt.get("step_kind") == "collection"
+                or prompt.get("field_type") == "choice"
+            ):
                 menu_choice = resolve_menu_choice(stripped, [str(item) for item in choices])
                 if menu_choice is not None:
                     return menu_choice
+
+        if collection_phase == "menu" or prompt.get("step_kind") == "collection":
+            from palm.common.operator.collection_input import resolve_wizard_collection_action
 
             resolved = resolve_wizard_collection_action(
                 stripped,

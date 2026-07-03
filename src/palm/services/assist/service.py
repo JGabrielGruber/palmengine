@@ -81,6 +81,11 @@ class AssistService(BaseService):
             view_format = resolve_view_format(params)
             return self.start_scenario(parsed.scenario_id, body, view_format=view_format)
 
+        if parsed.kind == AssistCommandKind.SCENARIO_INSPECT:
+            assert parsed.scenario_id is not None
+            view_format = resolve_view_format(params)
+            return self.inspect_catalog(parsed.scenario_id, view_format=view_format)
+
         if parsed.kind == AssistCommandKind.SESSION:
             assert parsed.session_id is not None
             view_format = resolve_view_format(params)
@@ -208,6 +213,58 @@ class AssistService(BaseService):
 
     def list_flows(self) -> list[dict[str, Any]]:
         return self._definitions.list_flows()
+
+    def inspect_catalog(
+        self,
+        scenario_id: str,
+        *,
+        view_format: str = "assistant",
+    ) -> dict[str, Any]:
+        """Read-only operator catalog — no session mutation."""
+        contributor = scenario_by_id(scenario_id)
+        if contributor is None:
+            raise DefinitionNotFoundServiceError("scenario", scenario_id)
+        from palm.core.orchestration import JobStatus
+
+        flows = self.list_flows()
+        waiting = self._system.list_instances(
+            status=JobStatus.WAITING_FOR_INPUT.value,
+            include_terminal=False,
+            limit=50,
+        )
+        waiting_rows: list[dict[str, Any]] = []
+        for row in waiting:
+            if hasattr(row, "to_dict"):
+                waiting_rows.append(row.to_dict())
+            elif isinstance(row, dict):
+                waiting_rows.append(dict(row))
+        payload: dict[str, Any] = {
+            "scenario_id": scenario_id,
+            "operator_mode": "inspect",
+            "status": "catalog",
+            "question": "Read-only operator catalog.",
+            "hint": (
+                "Use list flows / list waiting tools. Start a scenario only when the user asks."
+            ),
+            "flows": flows,
+            "waiting": waiting_rows,
+            "mutation": {
+                "mutations_allowed": False,
+                "requires_user_input": False,
+                "agent_hint": "Read-only catalog — do not send value/input.",
+            },
+            "actions": [
+                {"label": "List flows", "alias": "assist/catalog/flows"},
+                {"label": "List waiting sessions", "tool": "palm_system_list_waiting"},
+                {
+                    "label": "Start operator entry",
+                    "alias": "operator-entry/start",
+                },
+            ],
+        }
+        if resolve_view_format({"format": view_format}) != "assistant":
+            payload["format"] = view_format
+        return payload
 
     def invoke_tree(self, session_id: str) -> dict[str, Any]:
         return build_invoke_tree(self.resolve_runtime(), session_id, base_url=None)

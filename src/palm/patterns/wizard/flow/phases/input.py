@@ -17,6 +17,7 @@ from palm.patterns.wizard.flow.phases._base import (
     build_phase_prompt,
     clear_phase_prompt,
     enter_phase_scope,
+    queue_step_route,
 )
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
@@ -85,6 +86,7 @@ class WizardInputLeaf(InteractiveLeaf):
             value=value,
             step_index=self._ctx.step_index,
         )
+        queue_step_route(state, self._ctx.step, value)
         return PatternStatus.SUCCESS
 
 

@@ -32,7 +32,11 @@ class AssistSession:
     def context(self, *, view_format: str = "assistant", sync_gate: bool = False) -> AssistSessionContext:
         """Assist-enriched session view shaped for ``view_format`` on ``to_dict()``."""
         flow_ctx = self._flow_session().context(sync_gate=sync_gate)
-        view = flow_ctx.detail if flow_ctx.detail else flow_ctx.to_dict()
+        view = dict(flow_ctx.detail if flow_ctx.detail else flow_ctx.to_dict())
+        metadata = self._assist.execution.flows.get_instance_metadata(self.session_id)
+        operator_mode = metadata.get("operator_mode")
+        if operator_mode:
+            view["operator_mode"] = operator_mode
         compact = compact_wizard_inspect(view)
         handoff_ready = _handoff_ready(flow_ctx)
         ctx = build_assist_session_context(
@@ -56,10 +60,19 @@ class AssistSession:
         params: dict[str, Any] | None = None,
         view_format: str = "assistant",
     ) -> AssistSessionContext:
+        from palm.common.operator.flows_session_input import flatten_session_read_model
+        from palm.common.operator.input_coercion import resolve_mcp_wizard_input
+
         merged = dict(params or {})
         if "value" not in merged and "input" not in merged:
             merged["value"] = value
-        self._flow_session().input(value, params=merged)
+        inspect = flatten_session_read_model(self._flow_session().context())
+        resolved = resolve_mcp_wizard_input(
+            input=merged.get("input"),
+            value=merged.get("value"),
+            wizard_view=inspect,
+        )
+        self._flow_session().input(resolved, params=merged)
         return self.context(view_format=view_format, sync_gate=True)
 
     def backtrack(self, to_step: str | None = None, *, view_format: str = "assistant") -> AssistSessionContext:

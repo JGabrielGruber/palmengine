@@ -47,6 +47,13 @@ Add to `.env` or `docker-compose.yml` environment block. See [docs/DOCKER.md](do
 
 None by default. Enabling `PALM_MCP_REQUIRE_INPUT_TOKEN=1` requires clients to pass `input_token` — update agent loops per `docs/mcp.txt` §12.
 
-## Next (0.23.1)
+## 0.23.1 — inspect-only catalog
 
-Non-terminal `inspect-only` catalog path — operator-entry menu item 3 will no longer commit on `yes`.
+Operator-entry **`inspect-only`** now routes to a **catalog** step instead of summary/commit:
+
+- Session stays `WAITING_FOR_INPUT` until the user says `exit`
+- `operator_mode: inspect` on instance metadata at catalog step
+- Read alias: `palm_assist(alias="operator-entry/inspect")` — no session required
+- Menu number `3` coerces to `inspect-only` on choice steps (MCP assist path)
+
+Agents that mapped user "inspect" to menu item 3 no longer reach an accidental summary confirm.
