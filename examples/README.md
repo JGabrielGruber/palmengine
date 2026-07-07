@@ -14,6 +14,7 @@ examples/
 │   ├── schema_wizard.py     # Flow + per-step state schemas
 │   ├── parallel_demo.py     # Parallel branches + sub-workflows
 │   ├── todo_builder.py      # Collection step + todo list schemas
+│   ├── migrate_instance_demo.py  # Definition revision migration (0.24.3)
 │   └── transform_*.py       # Transform rule demos
 └── full_demo.py             # ApplicationHost end-to-end script
 ```
@@ -113,6 +114,31 @@ curl -s -X POST http://localhost:8080/v1/wizards \
 ```
 
 See [EXPLORER-WIZARD.md](../EXPLORER-WIZARD.md).
+
+## Migrate instance demo (`migrate-instance-demo`)
+
+Demonstrates **definition revision migration** (0.24.1–0.24.3): a source flow at
+revisions 1 and 2, a registered migration rule, and an operator wizard that
+dry-runs then applies the upgrade.
+
+```bash
+# Start a session pinned to revision 1
+palm flow start migrate-demo-source
+palm instance list   # note instance_id
+
+# Operator wizard: confirm → dry-run → apply
+palm flow start migrate-instance-demo
+```
+
+REST equivalent:
+
+```bash
+curl -s 'http://localhost:8080/v1/api/definitions/flows/migrate-demo-source/impact'
+curl -s -X POST 'http://localhost:8080/v1/api/definitions/instances/<instance_id>/migrate' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Palm-Subject: operator' \
+  -d '{"target_revision": 2, "dry_run": true}'
+```
 
 ## Quick wizard (`quick`)
 

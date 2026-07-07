@@ -30,6 +30,22 @@ class InstanceNotFoundError(ExecutionError):
         self.instance_id = instance_id
 
 
+class InstanceMigrationError(ExecutionError):
+    """Raised when an instance cannot migrate to a target flow revision."""
+
+    def __init__(
+        self,
+        instance_id: str,
+        reason: str,
+        *,
+        blockers: list[str] | None = None,
+    ) -> None:
+        super().__init__(f"Instance migration failed for {instance_id!r}: {reason}")
+        self.instance_id = instance_id
+        self.reason = reason
+        self.blockers = list(blockers or [])
+
+
 class InstanceResumeError(ExecutionError):
     """Raised when an instance cannot be resumed (terminal, missing flow, etc.)."""
 

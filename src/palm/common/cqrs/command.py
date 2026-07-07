@@ -70,6 +70,15 @@ class CancelJobCommand(Command):
     runtime_name: str | None = None
 
 
+@dataclass(frozen=True)
+class MigrateInstanceCommand(Command):
+    """Apply or dry-run a definition migration for a durable instance."""
+
+    instance_id: str
+    target_revision: int
+    dry_run: bool = False
+
+
 @runtime_checkable
 class CommandHandler(Protocol):
     """Handle a single command type."""

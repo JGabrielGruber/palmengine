@@ -36,8 +36,27 @@ class DefinitionNotFoundServiceError(LookupError):
         super().__init__(f"{kind} not found: {ref}")
 
 
+class InstanceMigrationServiceError(ValueError):
+    """Raised when an instance migration request cannot be applied."""
+
+    def __init__(
+        self,
+        instance_id: str,
+        reason: str,
+        *,
+        blockers: list[str] | None = None,
+        result: dict[str, object] | None = None,
+    ) -> None:
+        self.instance_id = instance_id
+        self.reason = reason
+        self.blockers = list(blockers or [])
+        self.result = result
+        super().__init__(f"Instance migration failed for {instance_id}: {reason}")
+
+
 __all__ = [
     "DefinitionNotFoundServiceError",
+    "InstanceMigrationServiceError",
     "InstanceNotFoundServiceError",
     "ServiceValidationError",
 ]

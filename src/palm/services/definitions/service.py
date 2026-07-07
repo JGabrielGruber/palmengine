@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from palm.common.cqrs.command import MigrateInstanceCommand
 from palm.common.cqrs.query import (
     AnalyzeDefinitionImpactQuery,
     GetFlowQuery,
@@ -11,11 +12,15 @@ from palm.common.cqrs.query import (
     ListFlowsQuery,
     ListProcessesQuery,
 )
-from palm.common.exceptions import DefinitionNotFoundError
+from palm.common.exceptions import DefinitionNotFoundError, InstanceMigrationError, InstanceNotFoundError
 from palm.common.resource.catalog import ResourceCatalog
 from palm.common.runtimes.server.plans import prepare_flow_from_body
 from palm.common.services.base import BaseService
-from palm.common.services.errors import DefinitionNotFoundServiceError
+from palm.common.services.errors import (
+    DefinitionNotFoundServiceError,
+    InstanceMigrationServiceError,
+    InstanceNotFoundServiceError,
+)
 from palm.definitions.flow import FlowDefinition
 from palm.patterns.wizard.bindings.catalog import flow_step_slugs
 from palm.services.definitions.flows import flow_catalog_row
@@ -142,6 +147,40 @@ class DefinitionService(BaseService):
             )
         except DefinitionNotFoundError as exc:
             raise DefinitionNotFoundServiceError("flow", flow_id) from exc
+
+    def migrate_instance(
+        self,
+        instance_id: str,
+        *,
+        target_revision: int,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        """Dry-run or apply a definition migration for a durable instance."""
+        try:
+            result = self.dispatch(
+                MigrateInstanceCommand(
+                    instance_id=instance_id,
+                    target_revision=target_revision,
+                    dry_run=dry_run,
+                )
+            )
+        except InstanceNotFoundError as exc:
+            raise InstanceNotFoundServiceError(instance_id) from exc
+        except InstanceMigrationError as exc:
+            raise InstanceMigrationServiceError(
+                instance_id,
+                exc.reason,
+                blockers=exc.blockers,
+            ) from exc
+
+        if not dry_run and not result.get("applied"):
+            raise InstanceMigrationServiceError(
+                instance_id,
+                "migration blocked",
+                blockers=list(result.get("blockers") or []),
+                result=result,
+            )
+        return result
 
     def delete_flow(self, flow_id: str) -> bool:
         flow = self.ask(GetFlowQuery(flow_id=flow_id))

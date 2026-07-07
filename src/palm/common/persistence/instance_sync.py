@@ -13,6 +13,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
+from palm.common.persistence.instance_migration_metadata import preserve_migration_metadata
 from palm.common.persistence.state_snapshot import (
     snapshot_meta,
     snapshot_state,
@@ -68,7 +69,7 @@ def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInst
     step_slug, position = _pattern_instance_fields(job, instance.pattern)
     instance.job_id = job.id
     instance.state_snapshot = snapshot_state(job.state)
-    instance.metadata = dict(job.metadata)
+    instance.metadata = preserve_migration_metadata(instance.metadata, dict(job.metadata))
     instance.current_step_slug = step_slug
     instance.runtime_position = position
     instance.state_meta = snapshot_meta(job.state)

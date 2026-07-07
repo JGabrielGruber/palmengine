@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
-from palm.common.services.errors import DefinitionNotFoundServiceError
+from palm.common.services.errors import (
+    DefinitionNotFoundServiceError,
+    InstanceMigrationServiceError,
+    InstanceNotFoundServiceError,
+)
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.pagination import list_envelope
@@ -41,6 +45,49 @@ def analyze_flow_impact(
         )
     except DefinitionNotFoundServiceError:
         return errors.flow_not_found(flow_id)
+    return ok(payload)
+
+
+def migrate_instance(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    instance_id: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+
+    target_revision = body.get("target_revision")
+    if target_revision is None:
+        return errors.bad_request("target_revision is required")
+    try:
+        target = int(target_revision)
+    except (TypeError, ValueError):
+        return errors.bad_request("target_revision must be an integer")
+    if target < 1:
+        return errors.bad_request("target_revision must be >= 1")
+
+    dry_run = bool(body.get("dry_run", False))
+
+    try:
+        payload = ctx.definitions.migrate_instance(
+            instance_id,
+            target_revision=target,
+            dry_run=dry_run,
+        )
+    except InstanceNotFoundServiceError:
+        return errors.instance_not_found(instance_id)
+    except InstanceMigrationServiceError as exc:
+        return errors.bad_request(
+            exc.reason,
+            extra={"blockers": exc.blockers, "result": exc.result},
+        )
+
     return ok(payload)
 
 
@@ -339,6 +386,7 @@ __all__ = [
     "list_flows",
     "list_processes",
     "list_resources",
+    "migrate_instance",
     "update_flow",
     "update_process",
     "update_resource",

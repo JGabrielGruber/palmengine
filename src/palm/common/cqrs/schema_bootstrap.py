@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from palm.common.cqrs.command import (
     CancelJobCommand,
+    MigrateInstanceCommand,
     PreparePlansCommand,
     ProvideInputCommand,
     ResumeProcessCommand,
@@ -142,6 +143,20 @@ def register_core_schemas(registry: CqrsSchemaRegistry) -> None:
                     "runtime_name": _OPTIONAL_STRING,
                 },
                 "required": ["job_id"],
+            }
+        ),
+    )
+    registry.register_command(
+        MigrateInstanceCommand,
+        DictStateSchema(
+            {
+                "type": "object",
+                "properties": {
+                    "instance_id": _STRING,
+                    "target_revision": _INT,
+                    "dry_run": _BOOL,
+                },
+                "required": ["instance_id", "target_revision"],
             }
         ),
     )

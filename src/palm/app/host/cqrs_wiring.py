@@ -20,6 +20,7 @@ from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     CancelJobCommand,
     Command,
+    MigrateInstanceCommand,
     PreparePlansCommand,
     ProvideInputCommand,
     ResumeProcessCommand,
@@ -140,7 +141,20 @@ class PalmCommandHandlers:
                 "cancelled": cancelled,
                 "status": job.status.value,
             }
+        if isinstance(command, MigrateInstanceCommand):
+            return self._migrate_instance(command)
         raise TypeError(f"Unsupported command: {type(command).__name__}")
+
+    def _migrate_instance(self, command: MigrateInstanceCommand) -> dict[str, Any]:
+        from palm.common.persistence.instance_migration import migrate_instance
+
+        return migrate_instance(
+            self._app.repository(),
+            self._app.instance_manager,
+            instance_id=command.instance_id,
+            target_revision=command.target_revision,
+            dry_run=command.dry_run,
+        )
 
     def _prepare_plans(self, command: PreparePlansCommand) -> dict[str, Any]:
         runtime = self._resolve_plan_runtime(command.runtime_name)
@@ -362,6 +376,7 @@ def collect_cqrs_command_types() -> tuple[type, ...]:
         PreparePlansCommand,
         SubmitPlansCommand,
         CancelJobCommand,
+        MigrateInstanceCommand,
     ]
     for contributor in iter_cqrs_contributors():
         types.extend(contributor.command_types)
