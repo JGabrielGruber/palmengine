@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.common.exceptions import MutationRejectedError
 from palm.common.operator.mutation_gate import (
     issue_input_token,
     mutation_secret,
     require_input_token_enabled,
     validate_input_token,
 )
+from palm.common.services.errors import DesignCommitRejectedServiceError
 
 _COMMIT_STEP = "commit"
 
@@ -61,11 +61,9 @@ def enforce_commit_token(
     token = commit_token or input_token
     if validate_commit_token(proposal_id, token):
         return
-    raise MutationRejectedError(
-        reason="missing_commit_token",
-        session_id=proposal_id,
-        step_slug=_COMMIT_STEP,
-        detail=(
+    raise DesignCommitRejectedServiceError(
+        proposal_id,
+        (
             "missing or invalid commit_token — run palm_design_validate or palm_design_impact "
             "and pass commit_token from the mutation block"
         ),

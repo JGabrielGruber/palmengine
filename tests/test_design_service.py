@@ -8,7 +8,6 @@ import pytest
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
-from palm.common.exceptions import MutationRejectedError
 from palm.common.persistence.definition_migration import (
     CallableMigrationRule,
     migration_registry,
@@ -178,13 +177,77 @@ def test_commit_requires_token_when_strict_mode(monkeypatch: pytest.MonkeyPatch,
     result = design_host.design.propose_flow(_quick_flow_body("strict-flow"))
     proposal_id = result["proposal"]["proposal_id"]
     design_host.design.validate_proposal(proposal_id)
-    with pytest.raises(MutationRejectedError):
+    with pytest.raises(DesignCommitRejectedServiceError):
         design_host.design.commit_proposal(proposal_id)
 
     validation = design_host.design.validate_proposal(proposal_id)
     token = validation["mutation"]["commit_token"]
     committed = design_host.design.commit_proposal(proposal_id, commit_token=token)
     assert committed["revision"] == 1
+
+
+def test_commit_reanalyzes_impact_before_auto_migrate(design_host: ApplicationHost) -> None:
+    register_migration_rule(
+        CallableMigrationRule(
+            flow_id="fresh-impact-flow",
+            from_revision=1,
+            to_revision=2,
+            _can_migrate=lambda _ctx: (True, []),
+            _migrate_state=lambda ctx: {**ctx.state, "migrated": True},
+        ),
+    )
+    design_host.definitions.create_flow(_quick_flow_body("fresh-impact-flow"))
+    flow_v1 = design_host.definitions.get_flow("fresh-impact-flow", revision=1)
+
+    design_host.instance_manager.save(
+        ProcessInstance(
+            instance_id="inst-fresh-a",
+            job_id="job-fresh-a",
+            status="WAITING_FOR_INPUT",
+            state_snapshot={"answers": {}},
+            flow_definition=flow_v1,
+            pattern="wizard",
+            flow_id="fresh-impact-flow",
+            flow_revision=1,
+        )
+    )
+
+    body = _quick_flow_body("fresh-impact-flow")
+    body["options"]["steps"].append({"slug": "extra", "title": "Extra", "prompt": "More?"})
+    result = design_host.design.propose_flow(body, base_flow_id="fresh-impact-flow")
+    proposal_id = result["proposal"]["proposal_id"]
+
+    stale_impact = design_host.design.analyze_proposal_impact(proposal_id)
+    assert stale_impact["summary"]["compatible"] == 1
+
+    design_host.instance_manager.save(
+        ProcessInstance(
+            instance_id="inst-fresh-b",
+            job_id="job-fresh-b",
+            status="WAITING_FOR_INPUT",
+            state_snapshot={"answers": {}},
+            flow_definition=flow_v1,
+            pattern="wizard",
+            flow_id="fresh-impact-flow",
+            flow_revision=1,
+        )
+    )
+
+    committed = design_host.design.commit_proposal(proposal_id)
+    assert committed["migrations"]["succeeded"] == 2
+    assert committed["migrations"]["attempted"] == 2
+
+    for instance_id in ("inst-fresh-a", "inst-fresh-b"):
+        updated = design_host.instance_manager.get(instance_id)
+        assert updated.flow_revision == 2
+        assert updated.state_snapshot.get("migrated") is True
+
+
+def test_definition_service_next_revision_for_flow(design_host: ApplicationHost) -> None:
+    assert design_host.definitions.next_revision_for_flow("missing-flow") == 1
+    design_host.definitions.create_flow(_quick_flow_body("next-rev-flow"))
+    assert design_host.definitions.get_latest_revision("next-rev-flow") == 1
+    assert design_host.definitions.next_revision_for_flow("next-rev-flow") == 2
 
 
 def test_design_dispatch_via_service(design_host: ApplicationHost) -> None:

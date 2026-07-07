@@ -146,7 +146,7 @@ class DesignService(BaseService):
                 proposal_id,
                 "proposal has no resolvable flow_id for impact analysis",
             )
-        target_revision = self._target_revision_for_proposal(flow_id)
+        target_revision = self._definitions.next_revision_for_flow(flow_id)
         try:
             impact = self._definitions.analyze_impact(flow_id, target_revision=target_revision)
         except DefinitionNotFoundServiceError as exc:
@@ -214,7 +214,7 @@ class DesignService(BaseService):
         if not flow_id:
             raise DesignCommitRejectedServiceError(proposal_id, "cannot resolve flow_id to publish")
 
-        impact = proposal.impact or self.analyze_proposal_impact(proposal_id)
+        impact = self.analyze_proposal_impact(proposal_id)
 
         try:
             if proposal.base_flow_id or self._flow_exists(flow_id):
@@ -315,16 +315,6 @@ class DesignService(BaseService):
                     }
                 )
                 continue
-            except Exception as exc:
-                summary["failed"] += 1
-                summary["results"].append(
-                    {
-                        "instance_id": instance_id,
-                        "status": "failed",
-                        "detail": str(exc),
-                    }
-                )
-                continue
 
             summary["succeeded"] += 1
             summary["results"].append({"instance_id": instance_id, "status": "ok"})
@@ -345,17 +335,6 @@ class DesignService(BaseService):
             return True
         except DefinitionNotFoundServiceError:
             return False
-
-    def _target_revision_for_proposal(self, flow_id: str) -> int:
-        latest = self._definitions._repository.get_latest_revision(flow_id)
-        if latest is None:
-            try:
-                flow = self._definitions._repository.get_flow(flow_id)
-                return int(flow.revision or 1) + 1
-            except Exception:
-                return 1
-        return latest + 1
-
 
 def _validation_body(body: dict[str, Any]) -> dict[str, Any]:
     """Normalize proposal payload for ``validate_flow`` (expects ``flow`` wrapper)."""

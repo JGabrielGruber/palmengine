@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.exceptions import MutationRejectedError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import (
     DesignCommitRejectedServiceError,
@@ -131,8 +130,6 @@ def commit_proposal(
         return errors.proposal_not_found(proposal_id)
     except DesignCommitRejectedServiceError as exc:
         return errors.bad_request(exc.reason, extra={"blockers": exc.blockers})
-    except MutationRejectedError as exc:
-        return errors.bad_request(str(exc))
     return ok(payload)
 
 

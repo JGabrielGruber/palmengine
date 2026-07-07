@@ -131,6 +131,21 @@ class DefinitionService(BaseService):
         """Return revision index rows for ``flow_id``."""
         return self._repository.list_flow_revisions(flow_id)
 
+    def get_latest_revision(self, flow_id: str) -> int | None:
+        """Return the latest published revision for ``flow_id``, if any."""
+        return self._repository.get_latest_revision(flow_id)
+
+    def next_revision_for_flow(self, flow_id: str) -> int:
+        """Return the revision number the next publish would assign."""
+        latest = self._repository.get_latest_revision(flow_id)
+        if latest is not None:
+            return latest + 1
+        try:
+            flow = self._repository.get_flow(flow_id)
+        except DefinitionNotFoundError:
+            return 1
+        return int(flow.revision or 1) + 1
+
     def analyze_impact(
         self,
         flow_id: str,

@@ -602,7 +602,6 @@ class PalmInProcessBackend:
         commit_token: str | None = None,
         input_token: str | None = None,
     ) -> dict[str, Any]:
-        from palm.common.exceptions import MutationRejectedError
         from palm.common.services.errors import (
             DesignCommitRejectedServiceError,
             DesignProposalNotFoundServiceError,
@@ -614,8 +613,6 @@ class PalmInProcessBackend:
                 commit_token=commit_token,
                 input_token=input_token,
             )
-        except MutationRejectedError as exc:
-            raise PalmRestError(400, str(exc)) from exc
         except DesignProposalNotFoundServiceError as exc:
             raise PalmRestError(
                 404,
