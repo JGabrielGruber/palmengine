@@ -290,7 +290,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Component | Status |
 |-----------|--------|
 | Vision + spec + ADR (0.24 design release) | ✅ Documented |
-| Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | 📋 0.24.1 |
+| Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | ✅ 0.24.1 (local) |
 | Migration rules + impact query | 📋 0.24.2 |
 | Migration execution hooks + demo flow | 📋 0.24.3 |
 | **Design Service** | 📋 [0.25 vision](docs/VISION-0.25.md) — depends on 0.24 |

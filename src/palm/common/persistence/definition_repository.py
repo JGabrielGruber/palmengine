@@ -36,6 +36,8 @@ class DefinitionRepository:
         self._prefix = prefix.rstrip(":")
         self._flows_by_id: dict[str, FlowDefinition] = {}
         self._flows_by_name: dict[str, FlowDefinition] = {}
+        self._flow_revisions: dict[str, dict[int, FlowDefinition]] = {}
+        self._flow_latest_revision: dict[str, int] = {}
         self._processes_by_id: dict[str, ProcessDefinition] = {}
         self._processes_by_name: dict[str, ProcessDefinition] = {}
         self._schemas_by_id: dict[str, StateSchemaDefinition] = {}
@@ -52,56 +54,122 @@ class DefinitionRepository:
     # ------------------------------------------------------------------
 
     def register_flow(self, flow: FlowDefinition) -> FlowDefinition:
-        """Register a flow in memory (does not persist)."""
-        self._index_flow(flow)
-        return flow
+        """Publish a flow revision in memory (does not persist)."""
+        return self._publish_flow_revision(flow, persist=False)
 
     def save_flow(self, flow: FlowDefinition) -> FlowDefinition:
-        """Register and persist a flow definition."""
-        self._index_flow(flow)
-        storage = self._require_storage()
-        storage.set(self._key("flow", flow.definition_id), flow.to_storage_record())
-        self._update_index("flow", flow.definition_id)
-        return flow
+        """Publish and persist a flow definition revision."""
+        return self._publish_flow_revision(flow, persist=True)
 
-    def get_flow(self, ref: str, *, by_id: bool = False) -> FlowDefinition:
+    def publish_flow_revision(self, flow: FlowDefinition) -> FlowDefinition:
+        """Append a new flow revision (persists when storage is configured)."""
+        persist = self._storage is not None and self._storage.is_initialized
+        return self._publish_flow_revision(flow, persist=persist)
+
+    def get_latest_revision(self, flow_id: str) -> int | None:
+        """Return the latest revision number for ``flow_id``, if any."""
+        if flow_id in self._flow_latest_revision:
+            return self._flow_latest_revision[flow_id]
+        latest = self._load_latest_revision_number(flow_id)
+        if latest is not None:
+            self._flow_latest_revision[flow_id] = latest
+        return latest
+
+    def list_flow_revisions(self, flow_id: str) -> list[dict[str, int | str]]:
+        """Return revision index rows for ``flow_id``."""
+        self.get_flow_by_id(flow_id)
+        numbers = self._revision_numbers(flow_id)
+        return [{"flow_id": flow_id, "revision": revision} for revision in numbers]
+
+    def get_flow(
+        self,
+        ref: str,
+        *,
+        by_id: bool = False,
+        revision: int | None = None,
+    ) -> FlowDefinition:
         """Load a flow by id (default) or by display name."""
         if by_id:
-            return self.get_flow_by_id(ref)
-        return self.get_flow_by_name(ref)
+            return self.get_flow_by_id(ref, revision=revision)
+        return self.get_flow_by_name(ref, revision=revision)
 
-    def get_flow_by_id(self, definition_id: str) -> FlowDefinition:
+    def get_flow_by_id(
+        self,
+        definition_id: str,
+        *,
+        revision: int | None = None,
+    ) -> FlowDefinition:
+        if revision is not None:
+            cached_revisions = self._flow_revisions.get(definition_id)
+            if cached_revisions is not None:
+                cached = cached_revisions.get(revision)
+                if cached is not None:
+                    return cached
+            record = self._load_flow_revision_record(definition_id, revision)
+            if record is None:
+                raise DefinitionNotFoundError("flow", definition_id)
+            flow = FlowDefinition.from_dict(record)
+            self._cache_flow_revision(flow)
+            return flow
+
         cached = self._flows_by_id.get(definition_id)
         if cached is not None:
             return cached
+
+        latest = self._load_latest_revision_number(definition_id)
+        if latest is not None:
+            return self.get_flow_by_id(definition_id, revision=latest)
+
         record = self._load_record("flow", definition_id)
         if record is None:
             raise DefinitionNotFoundError("flow", definition_id)
         flow = FlowDefinition.from_dict(record)
-        self._index_flow(flow)
+        if flow.revision is None:
+            flow = FlowDefinition(
+                name=flow.name,
+                pattern=flow.pattern,
+                options=flow.options,
+                id=flow.id,
+                revision=1,
+                state_schema_ref=flow.state_schema_ref,
+                state_schema=flow.state_schema,
+            )
+        self._cache_flow_revision(flow)
+        self._index_flow_latest(flow)
         return flow
 
-    def get_flow_by_name(self, name: str) -> FlowDefinition:
+    def get_flow_by_name(self, name: str, *, revision: int | None = None) -> FlowDefinition:
         cached = self._flows_by_name.get(name)
-        if cached is not None:
+        if cached is not None and revision is None:
             return cached
         for flow in self._flows_by_id.values():
             if flow.name == name:
-                return flow
+                if revision is None:
+                    return flow
+                return self.get_flow_by_id(flow.definition_id, revision=revision)
         loaded = self._scan_storage_for_name("flow", name)
         if isinstance(loaded, FlowDefinition):
-            self._index_flow(loaded)
-            return loaded
+            self._cache_flow_revision(loaded)
+            self._index_flow_latest(loaded)
+            if revision is None:
+                return self.get_flow_by_id(loaded.definition_id)
+            return self.get_flow_by_id(loaded.definition_id, revision=revision)
         raise DefinitionNotFoundError("flow", name)
 
     def delete_flow(self, ref: str, *, by_id: bool = True) -> bool:
-        """Remove a flow from memory and storage."""
+        """Remove all revisions of a flow from memory and storage."""
         try:
             flow = self.get_flow(ref, by_id=by_id)
         except DefinitionNotFoundError:
             return False
+        flow_id = flow.definition_id
         self._unindex_flow(flow)
-        self._delete_record("flow", flow.definition_id)
+        for revision in list(self._revision_numbers(flow_id)):
+            self._delete_flow_revision_record(flow_id, revision)
+        self._flow_revisions.pop(flow_id, None)
+        self._flow_latest_revision.pop(flow_id, None)
+        self._delete_record("flow", flow_id)
+        self._delete_latest_revision_pointer(flow_id)
         return True
 
     def list_flows(self) -> list[FlowDefinition]:
@@ -377,14 +445,138 @@ class DefinitionRepository:
     # Internal indexing / storage
     # ------------------------------------------------------------------
 
-    def _index_flow(self, flow: FlowDefinition) -> None:
+    def _publish_flow_revision(self, flow: FlowDefinition, *, persist: bool) -> FlowDefinition:
+        flow_id = flow.definition_id
+        next_revision = (self._flow_latest_revision.get(flow_id) or 0) + 1
+        published = FlowDefinition(
+            name=flow.name,
+            pattern=flow.pattern,
+            options=dict(flow.options),
+            id=flow.id,
+            revision=next_revision,
+            state_schema_ref=flow.state_schema_ref,
+            state_schema=dict(flow.state_schema) if flow.state_schema is not None else None,
+        )
+        self._cache_flow_revision(published)
+        self._index_flow_latest(published)
+        if persist:
+            storage = self._require_storage()
+            storage.set(
+                self._flow_revision_key(flow_id, next_revision),
+                published.to_storage_record(),
+            )
+            storage.set(self._flow_latest_key(flow_id), next_revision)
+            self._append_revision_index(flow_id, next_revision)
+            self._update_index("flow", flow_id)
+        return published
+
+    def _cache_flow_revision(self, flow: FlowDefinition) -> None:
+        if flow.revision is None:
+            return
+        revisions = self._flow_revisions.setdefault(flow.definition_id, {})
+        revisions[flow.revision] = flow
+        self._flow_latest_revision[flow.definition_id] = max(
+            self._flow_latest_revision.get(flow.definition_id, 0),
+            flow.revision,
+        )
+
+    def _index_flow_latest(self, flow: FlowDefinition) -> None:
         self._flows_by_id[flow.definition_id] = flow
         self._flows_by_name[flow.name] = flow
+
+    def _index_flow(self, flow: FlowDefinition) -> None:
+        self._index_flow_latest(flow)
 
     def _unindex_flow(self, flow: FlowDefinition) -> None:
         self._flows_by_id.pop(flow.definition_id, None)
         if self._flows_by_name.get(flow.name) is flow:
             self._flows_by_name.pop(flow.name, None)
+
+    def _revision_numbers(self, flow_id: str) -> list[int]:
+        numbers = set(self._flow_revisions.get(flow_id, {}))
+        storage = self._storage
+        if storage is not None and storage.is_initialized:
+            try:
+                indexed = storage.get(self._flow_revisions_index_key(flow_id))
+                if isinstance(indexed, list):
+                    numbers.update(int(item) for item in indexed)
+            except StorageNotConfiguredError:
+                pass
+        if not numbers:
+            latest = self._flow_latest_revision.get(flow_id)
+            if latest is not None:
+                numbers.add(latest)
+        return sorted(numbers)
+
+    def _flow_revision_key(self, flow_id: str, revision: int) -> str:
+        return f"{self._prefix}:flow:{flow_id}:rev:{revision}"
+
+    def _flow_latest_key(self, flow_id: str) -> str:
+        return f"{self._prefix}:flow:{flow_id}:latest"
+
+    def _flow_revisions_index_key(self, flow_id: str) -> str:
+        return f"{self._prefix}:flow:{flow_id}:revs"
+
+    def _load_flow_revision_record(
+        self,
+        flow_id: str,
+        revision: int,
+    ) -> dict[str, Any] | None:
+        storage = self._storage
+        if storage is None or not storage.is_initialized:
+            return None
+        try:
+            value = storage.get(self._flow_revision_key(flow_id, revision))
+        except StorageNotConfiguredError:
+            return None
+        return value if isinstance(value, dict) else None
+
+    def _load_latest_revision_number(self, flow_id: str) -> int | None:
+        storage = self._storage
+        if storage is None or not storage.is_initialized:
+            return None
+        try:
+            value = storage.get(self._flow_latest_key(flow_id))
+        except StorageNotConfiguredError:
+            return None
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+        return None
+
+    def _append_revision_index(self, flow_id: str, revision: int) -> None:
+        storage = self._require_storage()
+        key = self._flow_revisions_index_key(flow_id)
+        current = storage.get(key)
+        numbers = list(current) if isinstance(current, list) else []
+        if revision not in numbers:
+            numbers.append(revision)
+            storage.set(key, sorted(numbers))
+
+    def _delete_flow_revision_record(self, flow_id: str, revision: int) -> None:
+        storage = self._storage
+        if storage is None or not storage.is_initialized:
+            return
+        try:
+            storage.delete(self._flow_revision_key(flow_id, revision))
+            key = self._flow_revisions_index_key(flow_id)
+            current = storage.get(key)
+            if isinstance(current, list):
+                numbers = [item for item in current if int(item) != revision]
+                storage.set(key, numbers)
+        except StorageNotConfiguredError:
+            return
+
+    def _delete_latest_revision_pointer(self, flow_id: str) -> None:
+        storage = self._storage
+        if storage is None or not storage.is_initialized:
+            return
+        try:
+            storage.delete(self._flow_latest_key(flow_id))
+            storage.delete(self._flow_revisions_index_key(flow_id))
+        except StorageNotConfiguredError:
+            return
 
     def _index_process(self, process: ProcessDefinition) -> None:
         self._processes_by_id[process.definition_id] = process
@@ -488,13 +680,19 @@ class DefinitionRepository:
     ) -> FlowDefinition | ProcessDefinition | ResourceDefinition | StateSchemaDefinition | None:
         ids = self._collect_ids(kind, self._definition_memory(kind))
         for definition_id in ids:
+            if kind == "flow":
+                try:
+                    flow = self.get_flow_by_id(definition_id)
+                except DefinitionNotFoundError:
+                    continue
+                if flow.name == name:
+                    return flow
+                continue
             record = self._load_record(kind, definition_id)
             if not isinstance(record, dict):
                 continue
             if str(record.get("name")) != name:
                 continue
-            if kind == "flow":
-                return FlowDefinition.from_dict(record)
             if kind == "state_schema":
                 return StateSchemaDefinition.from_dict(record)
             if kind == "resource":

@@ -30,6 +30,7 @@ class ProcessInstance:
     flow_definition: dict[str, Any]
     pattern: str
     flow_id: str | None = None
+    flow_revision: int | None = None
     flow_name: str | None = None
     process_id: str | None = None
     process_name: str | None = None
@@ -54,6 +55,7 @@ class ProcessInstance:
             "flow_definition": dict(self.flow_definition),
             "pattern": self.pattern,
             "flow_id": self.flow_id,
+            "flow_revision": self.flow_revision,
             "flow_name": self.flow_name,
             "process_id": self.process_id,
             "process_name": self.process_name,
@@ -86,6 +88,11 @@ class ProcessInstance:
             flow_definition=dict(data.get("flow_definition") or {}),
             pattern=str(data.get("pattern", "")),
             flow_id=data.get("flow_id"),
+            flow_revision=(
+                int(data["flow_revision"])
+                if data.get("flow_revision") is not None
+                else None
+            ),
             flow_name=data.get("flow_name"),
             process_id=data.get("process_id"),
             process_name=data.get("process_name"),

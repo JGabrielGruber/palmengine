@@ -15,12 +15,17 @@ if TYPE_CHECKING:
     from palm.instances import StateSnapshot
 
 
-def resolve_flow(repository: DefinitionRepository, flow_id: str) -> FlowDefinition:
+def resolve_flow(
+    repository: DefinitionRepository,
+    flow_id: str,
+    *,
+    revision: int | None = None,
+) -> FlowDefinition:
     """Load a flow by definition id, falling back to display name."""
     try:
-        return repository.get_flow(flow_id, by_id=True)
+        return repository.get_flow(flow_id, by_id=True, revision=revision)
     except DefinitionNotFoundError:
-        return repository.get_flow(flow_id, by_id=False)
+        return repository.get_flow(flow_id, by_id=False, revision=revision)
 
 
 def resolve_process(repository: DefinitionRepository, process_id: str) -> ProcessDefinition:

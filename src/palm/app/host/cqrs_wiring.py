@@ -323,7 +323,11 @@ class HostQueryHandlers:
 
     def _get_flow(self, query: GetFlowQuery) -> FlowDefinition | None:
         try:
-            return resolve_flow(self._app.repository(), query.flow_id)
+            return resolve_flow(
+                self._app.repository(),
+                query.flow_id,
+                revision=query.revision,
+            )
         except DefinitionNotFoundError:
             return None
 

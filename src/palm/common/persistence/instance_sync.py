@@ -51,6 +51,7 @@ def build_instance_from_job(
         flow_definition=flow.to_dict(),
         pattern=flow.pattern,
         flow_id=flow.definition_id,
+        flow_revision=flow.revision,
         flow_name=flow.name,
         process_id=process_id or job.metadata.get("process_id"),
         process_name=process_name or job.metadata.get("process"),

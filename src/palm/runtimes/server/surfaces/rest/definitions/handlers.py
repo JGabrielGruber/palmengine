@@ -30,7 +30,11 @@ def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
 
 def get_flow(ctx: ServerContext, request: ServerRequest, *, flow_id: str) -> ServerResponse:
     try:
-        payload = ctx.definitions.get_flow(flow_id, verbose=_verbose_query(request))
+        payload = ctx.definitions.get_flow(
+            flow_id,
+            verbose=_verbose_query(request),
+            revision=_revision_query(request),
+        )
     except DefinitionNotFoundServiceError:
         return errors.flow_not_found(flow_id)
     return ok(payload)
@@ -287,6 +291,16 @@ def _verbose_query(request: ServerRequest) -> bool:
     if raw is None:
         return True
     return str(raw).strip().lower() not in {"0", "false", "no"}
+
+
+def _revision_query(request: ServerRequest) -> int | None:
+    raw = request.query.get("revision")
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    if not text:
+        return None
+    return int(text)
 
 
 def _json_object(request: ServerRequest) -> dict[str, Any] | ServerResponse:

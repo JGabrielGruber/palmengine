@@ -90,6 +90,7 @@ class GetFlowQuery(Query):
     """Load a flow definition by id or name."""
 
     flow_id: str
+    revision: int | None = None
 
 
 @dataclass(frozen=True)

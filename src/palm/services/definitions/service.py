@@ -40,10 +40,22 @@ class DefinitionService(BaseService):
         flows = self.ask(ListFlowsQuery(pattern=pattern))
         return [flow_catalog_row(flow) for flow in flows]
 
-    def get_flow(self, flow_id: str, *, verbose: bool = True) -> dict[str, Any]:
-        flow = self.ask(GetFlowQuery(flow_id=flow_id))
-        if flow is None:
-            raise DefinitionNotFoundServiceError("flow", flow_id)
+    def get_flow(
+        self,
+        flow_id: str,
+        *,
+        verbose: bool = True,
+        revision: int | None = None,
+    ) -> dict[str, Any]:
+        if revision is not None:
+            try:
+                flow = self._repository.get_flow(flow_id, revision=revision)
+            except DefinitionNotFoundError as exc:
+                raise DefinitionNotFoundServiceError("flow", flow_id) from exc
+        else:
+            flow = self.ask(GetFlowQuery(flow_id=flow_id))
+            if flow is None:
+                raise DefinitionNotFoundServiceError("flow", flow_id)
         return flow.to_dict() if verbose else flow_catalog_row(flow)
 
     def validate_flow(self, body: dict[str, Any], *, runtime: BaseRuntime) -> dict[str, Any]:
@@ -88,14 +100,25 @@ class DefinitionService(BaseService):
 
     def create_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         flow = parse_flow(body)
-        self._repository.register_flow(flow)
-        return flow.to_dict()
+        published = self._repository.publish_flow_revision(flow)
+        return published.to_dict()
 
     def update_flow(self, flow_id: str, body: dict[str, Any]) -> dict[str, Any]:
         self.get_flow(flow_id)
         flow = parse_flow(body)
-        self._repository.register_flow(flow)
-        return flow.to_dict()
+        published = self._repository.publish_flow_revision(flow)
+        return published.to_dict()
+
+    def publish_flow_revision(self, flow_id: str, body: dict[str, Any]) -> dict[str, Any]:
+        """Append a new revision for an existing flow."""
+        self.get_flow(flow_id)
+        flow = parse_flow(body)
+        published = self._repository.publish_flow_revision(flow)
+        return published.to_dict()
+
+    def list_flow_revisions(self, flow_id: str) -> list[dict[str, Any]]:
+        """Return revision index rows for ``flow_id``."""
+        return self._repository.list_flow_revisions(flow_id)
 
     def delete_flow(self, flow_id: str) -> bool:
         flow = self.ask(GetFlowQuery(flow_id=flow_id))

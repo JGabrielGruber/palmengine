@@ -23,7 +23,10 @@ class _QueryBus:
     def ask(self, query: object) -> object:
         if isinstance(query, GetFlowQuery):
             try:
-                return self._repository.get_flow(query.flow_id)
+                return self._repository.get_flow(
+                    query.flow_id,
+                    revision=query.revision,
+                )
             except Exception:
                 return None
         if isinstance(query, ListFlowsQuery):
@@ -55,6 +58,7 @@ def test_definition_service_create_and_delete_flow(service: DefinitionService) -
         }
     )
     assert created["name"] == "svc-flow"
+    assert created["revision"] == 1
 
     row = service.get_flow("svc-flow", verbose=False)
     assert row["flow_id"] == "svc-flow"
@@ -78,3 +82,24 @@ def test_definition_service_update_flow(service: DefinitionService) -> None:
         },
     )
     assert updated["options"]["steps"][0]["slug"] == "b"
+    assert updated["revision"] == 2
+
+
+def test_definition_service_list_flow_revisions(service: DefinitionService) -> None:
+    service.create_flow(
+        {
+            "name": "rev-flow",
+            "pattern": "wizard",
+            "options": {"steps": []},
+        }
+    )
+    service.update_flow(
+        "rev-flow",
+        {
+            "name": "rev-flow",
+            "pattern": "wizard",
+            "options": {"steps": [{"slug": "b", "title": "B", "prompt": "?"}]},
+        },
+    )
+    rows = service.list_flow_revisions("rev-flow")
+    assert [row["revision"] for row in rows] == [1, 2]

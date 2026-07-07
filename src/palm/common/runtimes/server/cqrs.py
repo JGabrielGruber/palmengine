@@ -316,7 +316,11 @@ class StandaloneQueryHandlers:
 
     def _get_flow(self, query: GetFlowQuery) -> Any:
         try:
-            return resolve_flow(self._runtime.repository, query.flow_id)
+            return resolve_flow(
+                self._runtime.repository,
+                query.flow_id,
+                revision=query.revision,
+            )
         except DefinitionNotFoundError:
             return None
 

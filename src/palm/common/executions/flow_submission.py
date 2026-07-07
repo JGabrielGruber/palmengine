@@ -67,6 +67,8 @@ def prepare_flow_submission(
     meta.setdefault("flow_id", flow.definition_id)
     meta.setdefault("pattern", flow.pattern)
     meta["flow_definition"] = flow.to_dict()
+    if flow.revision is not None:
+        meta["flow_revision"] = flow.revision
     _apply_pattern_submission_metadata(flow, meta)
 
     iid = instance_id

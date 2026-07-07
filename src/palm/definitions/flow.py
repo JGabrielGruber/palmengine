@@ -29,6 +29,7 @@ class FlowDefinition:
     pattern: str
     options: dict[str, Any] = field(default_factory=dict)
     id: str | None = None
+    revision: int | None = None
     state_schema_ref: str | None = None
     state_schema: dict[str, Any] | None = None
 
@@ -72,6 +73,8 @@ class FlowDefinition:
         }
         if self.id is not None:
             payload["id"] = self.id
+        if self.revision is not None:
+            payload["revision"] = self.revision
         if self.state_schema_ref is not None:
             payload["state_schema_ref"] = self.state_schema_ref
         if self.state_schema is not None:
@@ -85,12 +88,15 @@ class FlowDefinition:
         state_schema_ref = str(ref) if ref else None
         inline = data.get("state_schema")
         state_schema = dict(inline) if isinstance(inline, dict) else None
+        revision_raw = data.get("revision")
+        revision = int(revision_raw) if revision_raw is not None else None
         if data.get("kind") == "flow" and "version" in data:
             return cls(
                 name=str(data["name"]),
                 pattern=str(data["pattern"]),
                 options=dict(data.get("options") or {}),
                 id=data.get("id"),
+                revision=revision,
                 state_schema_ref=state_schema_ref,
                 state_schema=state_schema,
             )
@@ -99,18 +105,22 @@ class FlowDefinition:
             pattern=str(data["pattern"]),
             options=dict(data.get("options") or {}),
             id=data.get("id"),
+            revision=revision,
             state_schema_ref=state_schema_ref,
             state_schema=state_schema,
         )
 
     def catalog_summary(self) -> dict[str, Any]:
         """Minimal catalog list row — facts only, no transport or agent hints."""
-        return {
+        row: dict[str, Any] = {
             "flow_id": self.definition_id,
             "name": self.name,
             "pattern": self.pattern,
             "has_state_schema": self.has_state_schema,
         }
+        if self.revision is not None:
+            row["revision"] = self.revision
+        return row
 
     def to_storage_record(self) -> dict[str, Any]:
         """Envelope stored under the repository storage key."""
