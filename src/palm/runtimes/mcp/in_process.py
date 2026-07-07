@@ -518,6 +518,126 @@ class PalmInProcessBackend:
                 },
             ) from exc
 
+    def design_propose_flow(
+        self,
+        body: dict[str, Any],
+        *,
+        base_flow_id: str | None = None,
+    ) -> dict[str, Any]:
+        try:
+            return self._ctx.design.propose_flow(body, base_flow_id=base_flow_id)
+        except (TypeError, ValueError, KeyError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+
+    def design_list_proposals(self, *, flow_id: str | None = None) -> dict[str, Any]:
+        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
+
+        rows = self._ctx.design.list_proposals(flow_id=flow_id)
+        params = PaginationParams(limit=max(len(rows), 1), offset=0)
+        return list_envelope("proposals", rows, params)
+
+    def design_get_proposal(self, proposal_id: str) -> dict[str, Any]:
+        from palm.common.services.errors import DesignProposalNotFoundServiceError
+
+        try:
+            return self._ctx.design.get_proposal(proposal_id)
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(
+                404,
+                {
+                    "error": "proposal_not_found",
+                    "message": str(exc),
+                    "proposal_id": proposal_id,
+                },
+            ) from exc
+
+    def design_validate_proposal(self, proposal_id: str) -> dict[str, Any]:
+        from palm.common.services.errors import DesignProposalNotFoundServiceError
+
+        try:
+            return self._ctx.design.validate_proposal(proposal_id, dry_run=True)
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(
+                404,
+                {
+                    "error": "proposal_not_found",
+                    "message": str(exc),
+                    "proposal_id": proposal_id,
+                },
+            ) from exc
+
+    def design_analyze_proposal_impact(self, proposal_id: str) -> dict[str, Any]:
+        from palm.common.services.errors import (
+            DesignCommitRejectedServiceError,
+            DesignProposalNotFoundServiceError,
+        )
+
+        try:
+            return self._ctx.design.analyze_proposal_impact(proposal_id)
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(
+                404,
+                {
+                    "error": "proposal_not_found",
+                    "message": str(exc),
+                    "proposal_id": proposal_id,
+                },
+            ) from exc
+        except DesignCommitRejectedServiceError as exc:
+            raise PalmRestError(
+                400,
+                {
+                    "error": "design_commit_rejected",
+                    "message": exc.reason,
+                    "proposal_id": proposal_id,
+                    "blockers": exc.blockers,
+                },
+            ) from exc
+
+    def design_commit_proposal(self, proposal_id: str) -> dict[str, Any]:
+        from palm.common.services.errors import (
+            DesignCommitRejectedServiceError,
+            DesignProposalNotFoundServiceError,
+        )
+
+        try:
+            return self._ctx.design.commit_proposal(proposal_id)
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(
+                404,
+                {
+                    "error": "proposal_not_found",
+                    "message": str(exc),
+                    "proposal_id": proposal_id,
+                },
+            ) from exc
+        except DesignCommitRejectedServiceError as exc:
+            raise PalmRestError(
+                400,
+                {
+                    "error": "design_commit_rejected",
+                    "message": exc.reason,
+                    "proposal_id": proposal_id,
+                    "blockers": exc.blockers,
+                },
+            ) from exc
+
+    def design_discard_proposal(self, proposal_id: str) -> dict[str, Any]:
+        from palm.common.services.errors import DesignProposalNotFoundServiceError
+
+        try:
+            return self._ctx.design.discard_proposal(proposal_id)
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(
+                404,
+                {
+                    "error": "proposal_not_found",
+                    "message": str(exc),
+                    "proposal_id": proposal_id,
+                },
+            ) from exc
+
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.serializers import snapshot_summary

@@ -294,13 +294,13 @@ just mcp-inspector                       # MCP Inspector UI
 | Migration rules + impact query | ✅ 0.24.2 (local) |
 | Migration execution hooks + demo flow | ✅ 0.24.3 (local) |
 | Documentation + MCP surface cleanup | ✅ 0.24.4 (local) |
-| **Design Service** | 📋 [0.25 vision](docs/VISION-0.25.md) — depends on 0.24 |
+| **Design Service** | ✅ 0.25.0 (local) — propose/validate/impact/commit |
 
 ## Priorities & Next Steps
 
 **0.24 revisioning + migration complete (local)** — [MIGRATION-0.24.md](MIGRATION-0.24.md) documents REST/MCP operator paths.
 
-**Next implementation (when ready):** [0.25 Design Service](docs/VISION-0.25.md) per [design spec](docs/superpowers/specs/2026-07-03-design-service-design.md).
+**0.25 Design Service shipped (local)** — `host.design`, REST `/v1/api/design/proposals`, MCP `palm_design_*`. Agents should prefer design tools over direct definition writes.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream.
 

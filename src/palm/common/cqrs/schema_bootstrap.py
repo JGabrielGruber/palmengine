@@ -266,7 +266,7 @@ def register_core_schemas(registry: CqrsSchemaRegistry) -> None:
                 "type": "object",
                 "properties": {
                     "flow_id": _STRING,
-                    "revision": {"type": "integer"},
+                    "revision": {"type": ["integer", "null"]},
                 },
                 "required": ["flow_id"],
             }
@@ -279,7 +279,7 @@ def register_core_schemas(registry: CqrsSchemaRegistry) -> None:
                 "type": "object",
                 "properties": {
                     "flow_id": _STRING,
-                    "target_revision": {"type": "integer"},
+                    "target_revision": {"type": ["integer", "null"]},
                 },
                 "required": ["flow_id"],
             }

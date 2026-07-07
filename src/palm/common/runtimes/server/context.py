@@ -14,6 +14,8 @@ from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
 from palm.services.assist import AssistService
 from palm.services.definitions import DefinitionService
+from palm.services.design import DesignService
+from palm.services.design.proposal import DesignProposalRepository
 from palm.services.execution import ExecutionService
 from palm.services.execution.flows import FlowExecutionService
 from palm.services.execution.processes import ProcessExecutionService
@@ -83,11 +85,18 @@ class ServerContext:
                 system=self._system,
                 runtime=runtime,
             )
+            self._design = DesignService(
+                **bus_kw,
+                definitions=definitions,
+                proposals=DesignProposalRepository(),
+                runtime=runtime,
+            )
         else:
             self._system = host.system
             self._definitions = host.definitions
             self._execution = host.execution
             self._assist = host.assist
+            self._design = host.design
 
     @property
     def runtime(self) -> BaseRuntime:
@@ -135,6 +144,12 @@ class ServerContext:
             return self._host.assist
         return self._assist
 
+    @property
+    def design(self) -> DesignService:
+        if self._host is not None:
+            return self._host.design
+        return self._design
+
     def execute(self, command: Command) -> Any:
         return self._command_bus.dispatch(command)
 
@@ -153,3 +168,4 @@ class ServerContext:
         self._definitions = host.definitions
         self._execution = host.execution
         self._assist = host.assist
+        self._design = host.design

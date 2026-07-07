@@ -30,6 +30,30 @@ class InstanceNotFoundError(ExecutionError):
         self.instance_id = instance_id
 
 
+class DesignProposalNotFoundError(ExecutionError):
+    """Raised when a design proposal id cannot be loaded."""
+
+    def __init__(self, proposal_id: str) -> None:
+        super().__init__(f"Design proposal not found: {proposal_id!r}")
+        self.proposal_id = proposal_id
+
+
+class DesignCommitRejectedError(ExecutionError):
+    """Raised when a design proposal cannot be committed."""
+
+    def __init__(
+        self,
+        proposal_id: str,
+        reason: str,
+        *,
+        blockers: list[str] | None = None,
+    ) -> None:
+        super().__init__(f"Design commit rejected for {proposal_id!r}: {reason}")
+        self.proposal_id = proposal_id
+        self.reason = reason
+        self.blockers = list(blockers or [])
+
+
 class InstanceMigrationError(ExecutionError):
     """Raised when an instance cannot migrate to a target flow revision."""
 

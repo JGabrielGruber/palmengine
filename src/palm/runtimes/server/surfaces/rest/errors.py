@@ -95,6 +95,15 @@ def snapshot_not_found(instance_id: str, snapshot_id: str) -> ServerResponse:
     )
 
 
+def proposal_not_found(proposal_id: str) -> ServerResponse:
+    return error_response(
+        404,
+        "proposal_not_found",
+        f"Design proposal not found: {proposal_id}",
+        extra={"proposal_id": proposal_id},
+    )
+
+
 def scenario_not_found(scenario_id: str) -> ServerResponse:
     return error_response(
         404,

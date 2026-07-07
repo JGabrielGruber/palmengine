@@ -2,8 +2,8 @@
 
 **Theme:** A sixth service domain for safe, structured definition evolution — propose, validate, analyze impact, and commit revisions.
 
-**Status:** Stub — depends on [0.24 definition revisioning](VISION-0.24.md)  
-**Target:** 0.25.0 implementation after 0.24.1–0.24.3 land
+**Status:** Implemented locally (0.25.0) · **Released on PyPI:** pending explicit release request  
+**Depends on:** [0.24 definition revisioning](VISION-0.24.md) ✅
 
 ---
 
@@ -13,7 +13,17 @@ Design Service orchestrates **revision publishes** and **migration triggers**. W
 
 ---
 
-## Goal (preview)
+## What shipped (0.25.0)
+
+| Surface | Delivered |
+|---------|-----------|
+| Service | `DesignService` — `propose_flow`, `validate_proposal`, `analyze_proposal_impact`, `commit_proposal`, `discard_proposal` |
+| Host | `host.design` / `ctx.design` |
+| REST | `POST/GET /v1/api/design/proposals`, `…/validate`, `…/impact`, `…/commit` |
+| MCP | `palm_design_*` tools (recommended agent path for catalog writes) |
+| Extension | `register_design_contributor()` for pattern-specific validation |
+
+## Goal
 
 | Responsibility | Delegates to |
 |----------------|--------------|

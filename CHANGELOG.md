@@ -4,6 +4,22 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.25.0] — 2026-07-07
+
+**Design Service** — structured propose → validate → impact → commit for flow definition evolution.
+
+### Added
+
+- **`palm/services/design/`** — `DesignService`, in-memory `DesignProposalRepository`, `register_design_contributor()`.
+- **`host.design`** + `ServerContext.design` wiring.
+- **REST** — `/v1/api/design/proposals` (propose, list, get, validate, impact, commit, discard).
+- **MCP** — `palm_design_propose_flow`, `palm_design_validate`, `palm_design_impact`, `palm_design_commit`, `palm_design_list_proposals`, `palm_design_discard`.
+- **Tests** — `test_design_service.py`, `test_rest_design_routes.py`.
+
+### Fixed
+
+- **CQRS schemas** — `GetFlowQuery.revision` and `AnalyzeDefinitionImpactQuery.target_revision` accept `null`.
+
 ## [0.24.4] — 2026-07-07
 
 **Documentation cleanup** — align operator surfaces with shipped 0.24.1–0.24.3 revisioning and migration.

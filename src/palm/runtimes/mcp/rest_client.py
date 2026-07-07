@@ -303,6 +303,52 @@ class PalmRestClient:
     def validate_flow(self, body: dict[str, Any]) -> dict[str, Any]:
         return self._request("POST", "/v1/api/definitions/flows/validate", body=body, auth=True)
 
+    def design_propose_flow(
+        self,
+        body: dict[str, Any],
+        *,
+        base_flow_id: str | None = None,
+    ) -> dict[str, Any]:
+        payload = dict(body)
+        if base_flow_id is not None:
+            payload["base_flow_id"] = base_flow_id
+        return self._request("POST", "/v1/api/design/proposals", body=payload, auth=True)
+
+    def design_list_proposals(self, *, flow_id: str | None = None) -> dict[str, Any]:
+        path = "/v1/api/design/proposals"
+        if flow_id:
+            path = f"{path}?flow_id={flow_id}"
+        return self._request("GET", path)
+
+    def design_get_proposal(self, proposal_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/api/design/proposals/{proposal_id}")
+
+    def design_validate_proposal(self, proposal_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/api/design/proposals/{proposal_id}/validate",
+            body={},
+            auth=True,
+        )
+
+    def design_analyze_proposal_impact(self, proposal_id: str) -> dict[str, Any]:
+        return self._request("GET", f"/v1/api/design/proposals/{proposal_id}/impact")
+
+    def design_commit_proposal(self, proposal_id: str) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/api/design/proposals/{proposal_id}/commit",
+            body={},
+            auth=True,
+        )
+
+    def design_discard_proposal(self, proposal_id: str) -> dict[str, Any]:
+        return self._request(
+            "DELETE",
+            f"/v1/api/design/proposals/{proposal_id}",
+            auth=True,
+        )
+
     def _resolve_flow_id(self, session_id: str) -> str:
         from palm.runtimes.mcp.flows.views import flatten_session_view, resolve_flow_id_from_inspect
 

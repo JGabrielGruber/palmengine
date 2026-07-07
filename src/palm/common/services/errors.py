@@ -36,6 +36,30 @@ class DefinitionNotFoundServiceError(LookupError):
         super().__init__(f"{kind} not found: {ref}")
 
 
+class DesignProposalNotFoundServiceError(LookupError):
+    """Raised when a design proposal cannot be resolved."""
+
+    def __init__(self, proposal_id: str) -> None:
+        self.proposal_id = proposal_id
+        super().__init__(f"Design proposal not found: {proposal_id}")
+
+
+class DesignCommitRejectedServiceError(ValueError):
+    """Raised when a design proposal commit is rejected."""
+
+    def __init__(
+        self,
+        proposal_id: str,
+        reason: str,
+        *,
+        blockers: list[str] | None = None,
+    ) -> None:
+        self.proposal_id = proposal_id
+        self.reason = reason
+        self.blockers = list(blockers or [])
+        super().__init__(f"Design commit rejected for {proposal_id}: {reason}")
+
+
 class InstanceMigrationServiceError(ValueError):
     """Raised when an instance migration request cannot be applied."""
 
@@ -56,6 +80,8 @@ class InstanceMigrationServiceError(ValueError):
 
 __all__ = [
     "DefinitionNotFoundServiceError",
+    "DesignCommitRejectedServiceError",
+    "DesignProposalNotFoundServiceError",
     "InstanceMigrationServiceError",
     "InstanceNotFoundServiceError",
     "ServiceValidationError",

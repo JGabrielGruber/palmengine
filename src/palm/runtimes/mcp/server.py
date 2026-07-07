@@ -8,6 +8,7 @@ from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.assist import register_assist_tools
 from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
 from palm.runtimes.mcp.definitions import register_definitions_tools
+from palm.runtimes.mcp.design import register_design_tools
 from palm.runtimes.mcp.flows import register_flow_tools
 from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.providers import register_provider_tools
@@ -41,6 +42,7 @@ def create_mcp_server(
     register_assist_tools(mcp, backend)
     register_flow_tools(mcp, backend)
     register_definitions_tools(mcp, backend)
+    register_design_tools(mcp, backend)
     register_system_tools(mcp, backend)
     register_provider_tools(mcp, backend)
     register_core_resources(mcp, backend, config=resolved)

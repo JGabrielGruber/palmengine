@@ -116,6 +116,7 @@ class ApplicationHost:
         self._definitions: Any | None = None
         self._execution: Any | None = None
         self._assist: Any | None = None
+        self._design: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -161,6 +162,11 @@ class ApplicationHost:
     def assist(self):
         """Assist operator guidance service API."""
         return self._assist
+
+    @property
+    def design(self):
+        """Design service API — propose/validate/impact/commit revisions."""
+        return self._design
 
     @property
     def router(self) -> RuntimeRouter:
@@ -500,6 +506,8 @@ class ApplicationHost:
         from palm.common.cqrs.schemas import build_schema_registry
         from palm.services.assist import AssistService
         from palm.services.definitions import DefinitionService
+        from palm.services.design import DesignService
+        from palm.services.design.proposal import DesignProposalRepository
         from palm.services.execution import ExecutionService
         from palm.services.execution.flows import FlowExecutionService
         from palm.services.execution.processes import ProcessExecutionService
@@ -545,6 +553,12 @@ class ApplicationHost:
             definitions=self._definitions,
             execution=self._execution,
             system=self._system,
+            runtime_resolver=self._resolve_execution_runtime,
+        )
+        self._design = DesignService(
+            **bus_kw,
+            definitions=self._definitions,
+            proposals=DesignProposalRepository(),
             runtime_resolver=self._resolve_execution_runtime,
         )
 

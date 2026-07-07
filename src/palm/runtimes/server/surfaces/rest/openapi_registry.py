@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from palm.runtimes.server.surfaces.rest.assist import routes as assist_routes
 from palm.runtimes.server.surfaces.rest.definitions import routes as definitions_routes
+from palm.runtimes.server.surfaces.rest.design import routes as design_routes
 from palm.runtimes.server.surfaces.rest.execution.flows import routes as flows_routes
 from palm.runtimes.server.surfaces.rest.execution.processes import routes as processes_routes
 from palm.runtimes.server.surfaces.rest.execution.providers import routes as providers_routes
@@ -21,6 +22,7 @@ from palm.services.system.registry import observe_verbs
 _SERVICE_GROUPS = {
     "assist": "Assist",
     "definitions": "Definitions",
+    "design": "Design",
     "flows": "Flows",
     "processes": "Processes",
     "providers": "Providers",
@@ -229,6 +231,7 @@ def collect_service_routes() -> tuple[RouteDefinition, ...]:
     sources: tuple[tuple[str, tuple[definitions_routes.RouteEntry, ...]], ...] = (
         ("assist", assist_routes.ROUTES),
         ("definitions", definitions_routes.ROUTES),
+        ("design", design_routes.ROUTES),
         ("flows", flows_routes.ROUTES),
         ("processes", processes_routes.ROUTES),
         ("providers", providers_routes.ROUTES),
