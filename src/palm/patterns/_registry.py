@@ -82,6 +82,7 @@ class CqrsContributor:
 
 
 McpRegisterFn = Callable[[Any, Any], None]
+DesignContributorRegisterFn = Callable[[], None]
 SessionEnricherFn = Callable[[dict[str, Any]], dict[str, Any]]
 
 
@@ -91,6 +92,14 @@ class McpContributor:
 
     pattern_name: str
     register: McpRegisterFn
+
+
+@dataclass(frozen=True)
+class DesignContributorHook:
+    """Pattern-owned design proposal validator registration (drained at host bootstrap)."""
+
+    pattern_name: str
+    register: DesignContributorRegisterFn
 
 
 _lock = threading.RLock()
@@ -105,6 +114,7 @@ _pattern_apps: dict[str, Any] = {}
 _projection_factories: dict[str, ProjectionFactoryFn] = {}
 _cqrs_contributors: dict[str, CqrsContributor] = {}
 _mcp_contributors: dict[str, McpContributor] = {}
+_design_contributor_hooks: dict[str, DesignContributorHook] = {}
 _session_enrichers: dict[str, SessionEnricherFn] = {}
 
 
@@ -378,6 +388,33 @@ def clear_mcp_contributors() -> None:
     """Remove MCP contributor registrations (primarily for tests)."""
     with _lock:
         _mcp_contributors.clear()
+
+
+def register_design_contributor_hook(hook: DesignContributorHook) -> None:
+    """Register a pattern-owned design validator hook (drained by DesignService bootstrap)."""
+    with _lock:
+        existing = _design_contributor_hooks.get(hook.pattern_name)
+        if existing is hook:
+            return
+        _design_contributor_hooks[hook.pattern_name] = hook
+
+
+def get_design_contributor_hook(name: str) -> DesignContributorHook | None:
+    """Return the design contributor hook for pattern ``name``, if registered."""
+    with _lock:
+        return _design_contributor_hooks.get(name)
+
+
+def iter_design_contributor_hooks() -> list[DesignContributorHook]:
+    """Return design contributor hooks in stable pattern-name order."""
+    with _lock:
+        return [_design_contributor_hooks[name] for name in sorted(_design_contributor_hooks)]
+
+
+def clear_design_contributor_hooks() -> None:
+    """Remove design contributor hook registrations (primarily for tests)."""
+    with _lock:
+        _design_contributor_hooks.clear()
 
 
 def register_session_enricher(name: str, fn: SessionEnricherFn) -> None:

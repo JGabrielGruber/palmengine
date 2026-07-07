@@ -9,8 +9,10 @@ from __future__ import annotations
 from palm.common.patterns.app import PatternApp
 from palm.patterns._registry import (
     CqrsContributor,
+    DesignContributorHook,
     McpContributor,
     register_cqrs_contributor,
+    register_design_contributor_hook,
     register_mcp_contributor,
     register_projection_factory,
 )
@@ -63,6 +65,7 @@ class WizardApp(PatternApp):
         "projection_factory",
         "cqrs_contributor",
         "mcp_contributor",
+        "design_contributor",
     )
 
     def ready(self) -> None:
@@ -90,6 +93,14 @@ class WizardApp(PatternApp):
         )
         register_mcp_contributor(
             McpContributor(pattern_name="wizard", register=register_wizard_mcp_tools)
+        )
+        from palm.patterns.wizard.bindings.design import register_wizard_design_contributor
+
+        register_design_contributor_hook(
+            DesignContributorHook(
+                pattern_name="wizard",
+                register=register_wizard_design_contributor,
+            )
         )
 
 

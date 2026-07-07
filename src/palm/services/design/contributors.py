@@ -9,14 +9,15 @@ _wired = False
 
 
 def wire_builtin_design_contributors() -> None:
-    """Register pattern-owned design validators (idempotent)."""
+    """Drain pattern-registered design hooks into the design service registry (idempotent)."""
     global _wired
     with _lock:
         if _wired:
             return
-        from palm.patterns.wizard.bindings.design import register_wizard_design_contributor
+        from palm.patterns._registry import iter_design_contributor_hooks
 
-        register_wizard_design_contributor()
+        for hook in iter_design_contributor_hooks():
+            hook.register()
         _wired = True
 
 

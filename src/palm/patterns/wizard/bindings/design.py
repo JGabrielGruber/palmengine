@@ -1,4 +1,4 @@
-"""Wizard design proposal validation — registered via ``register_design_contributor``."""
+"""Wizard design proposal validation — registered via pattern ``design_contributor`` hook."""
 
 from __future__ import annotations
 
