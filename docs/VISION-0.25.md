@@ -2,7 +2,7 @@
 
 **Theme:** A sixth service domain for safe, structured definition evolution — propose, validate, analyze impact, commit revisions, and auto-migrate compatible instances.
 
-**Status:** 0.25.0 MVP local · **Final PyPI release:** pending (bundles full 0.24 + 0.25 stack per [ADR-008](adr/008-design-service.md))  
+**Status:** Shipped **0.25.0** on PyPI (bundles full 0.24 + 0.25 stack per [ADR-008](adr/008-design-service.md))  
 **Depends on:** [0.24 definition revisioning](VISION-0.24.md) ✅  
 **ADR:** [008-design-service.md](adr/008-design-service.md) · **Plan:** [design-service-plus.md](superpowers/plans/2026-07-07-design-service-plus.md)
 

@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.23.1`
+**Current Version:** `0.25.0`
 **Last Updated:** July 3, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -290,35 +290,26 @@ just mcp-inspector                       # MCP Inspector UI
 | Component | Status |
 |-----------|--------|
 | Vision + spec + ADR (0.24 design release) | ✅ Documented |
-| Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | ✅ 0.24.1 (local) |
-| Migration rules + impact query | ✅ 0.24.2 (local) |
-| Migration execution hooks + demo flow | ✅ 0.24.3 (local) |
-| Documentation + MCP surface cleanup | ✅ 0.24.4 (local) |
-| **Design Service** | ✅ 0.25.0 MVP (local) — propose/validate/impact/commit |
+| Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | ✅ 0.24.1 (0.25.0) |
+| Migration rules + impact query | ✅ 0.24.2 (0.25.0) |
+| Migration execution hooks + demo flow | ✅ 0.25.0 |
+| Documentation + MCP surface cleanup | ✅ 0.24.4 (0.25.0) |
+| **Design Service** | ✅ 0.25.0 — propose/validate/impact/commit + auto-migrate |
 
-### 0.25+ — Design Service completion (pre–final release)
+**Release:** [RELEASE-0.25.0.md](RELEASE-0.25.0.md) · **Migration:** [MIGRATION-0.24.md](MIGRATION-0.24.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md)
 
-**ADR:** [docs/adr/008-design-service.md](docs/adr/008-design-service.md)  
-**Plan:** [docs/superpowers/plans/2026-07-07-design-service-plus.md](docs/superpowers/plans/2026-07-07-design-service-plus.md)
+### 0.25+ deferred (post-ship)
 
 | Phase | Theme | Status |
 |-------|-------|--------|
-| 0.25.1 | Docs hygiene, ADR-008, `MIGRATION-0.25.md` | ✅ Local |
-| 0.25.2 | Durable `StorageEngine` proposals | ✅ Local |
-| 0.25.3 | Auto-migrate on commit | ✅ Local |
-| 0.25.4 | Agent safety + `palm_assist` design aliases | ✅ Local |
-| 0.25.5 | Pattern design contributors | ⏳ Recommended |
-| 0.25.7 | CQRS transport (below service layer) | ⏳ After business slices |
-
-**Release policy:** One PyPI release bundles 0.24.1–0.24.4 + complete 0.25 (not partial cuts).
+| 0.25.6 | Dogfooding meta-flows | Stretch |
+| 0.25.7 | CQRS transport (below service layer) | Deferred |
 
 ## Priorities & Next Steps
 
-**0.24 revisioning + migration complete (local)** — [MIGRATION-0.24.md](MIGRATION-0.24.md) documents REST/MCP operator paths.
+**0.25.0 shipped** — definition revisioning, instance migration, Design Service on PyPI.
 
-**0.25 Design Service complete (local)** — durable proposals, auto-migrate on commit, commit token gate, `palm_assist` design paths. Ready for bundled PyPI release with 0.24 stack when requested.
-
-**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream.
+**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 
 
 ## Useful Links
@@ -332,6 +323,8 @@ just mcp-inspector                       # MCP Inspector UI
 - [RELEASE-0.16.5.md](RELEASE-0.16.5.md) — release checklist
 - [MIGRATION-0.16.md](MIGRATION-0.16.md) — upgrade from 0.15.x
 - [MIGRATION-0.24.md](MIGRATION-0.24.md) — definition revisioning & instance migration (0.24+)
+- [MIGRATION-0.25.md](MIGRATION-0.25.md) — Design Service operator workflow (0.25+)
+- [RELEASE-0.25.0.md](RELEASE-0.25.0.md) — 0.25.0 release checklist
 - Examples: `examples/README.md`
 
 ## How to Contribute

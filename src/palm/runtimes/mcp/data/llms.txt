@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.23.1 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.25.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
 
 ## Philosophy
 

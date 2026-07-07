@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from palm.common.exceptions import DesignProposalNotFoundError
+from palm.common.exceptions import DefinitionBuildError, DesignProposalNotFoundError
 from palm.common.services.base import BaseService
 from palm.common.services.errors import (
     DefinitionNotFoundServiceError,
@@ -111,15 +111,15 @@ class DesignService(BaseService):
     def validate_proposal(self, proposal_id: str, *, dry_run: bool = True) -> dict[str, Any]:
         proposal = self._proposals.get(proposal_id)
         runtime = self._resolve_runtime()
+        ok, blockers = run_design_validators(proposal.body, context=self)
         try:
             catalog_validation = self._definitions.validate_flow(
                 _validation_body(proposal.body),
                 runtime=runtime,
             )
-        except (TypeError, ValueError, KeyError) as exc:
+        except (TypeError, ValueError, KeyError, DefinitionBuildError) as exc:
             catalog_validation = {"valid": False, "error": str(exc)}
 
-        ok, blockers = run_design_validators(proposal.body, context=self)
         valid = bool(catalog_validation.get("valid", False)) and ok
         result: dict[str, Any] = {
             "proposal_id": proposal.proposal_id,

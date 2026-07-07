@@ -561,6 +561,9 @@ class ApplicationHost:
             proposals=create_proposal_repository(self._app.storage),
             runtime_resolver=self._resolve_execution_runtime,
         )
+        from palm.services.design.contributors import wire_builtin_design_contributors
+
+        wire_builtin_design_contributors()
 
     def _attach_projections(self) -> None:
         self._projection_manager.attach(self._event)

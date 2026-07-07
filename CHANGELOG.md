@@ -4,25 +4,35 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added
-
-- **Durable design proposals** — `StorageDesignProposalRepository` (`palm:design:proposals:{id}`) when `StorageEngine` is active.
-- **Auto-migrate on commit** — `commit_proposal` migrates impact-compatible instances; `migrations` block in commit response.
-- **Commit token gate** — `commit_token` / `input_token` on commit; `PALM_MCP_REQUIRE_INPUT_TOKEN` applies to `palm_design_commit`.
-- **`palm_assist` design paths** — `design/*` aliases and dispatch; assistant views on validate/impact.
-- **ADR-008**, **MIGRATION-0.25.md**, `examples/definitions/design_proposal_demo.py`.
-
 ## [0.25.0] — 2026-07-07
 
-**Design Service** — structured propose → validate → impact → commit for flow definition evolution.
+**Definition revisioning, instance migration, and Design Service** — one PyPI release bundling the full 0.24 stack and complete 0.25 design orchestration. Jump from 0.23.1: read [MIGRATION-0.24.md](MIGRATION-0.24.md) and [MIGRATION-0.25.md](MIGRATION-0.25.md).
 
-### Added
+### Added — Design Service (0.25)
 
-- **`palm/services/design/`** — `DesignService`, in-memory `DesignProposalRepository`, `register_design_contributor()`.
-- **`host.design`** + `ServerContext.design` wiring.
-- **REST** — `/v1/api/design/proposals` (propose, list, get, validate, impact, commit, discard).
-- **MCP** — `palm_design_propose_flow`, `palm_design_validate`, `palm_design_impact`, `palm_design_commit`, `palm_design_list_proposals`, `palm_design_discard`.
-- **Tests** — `test_design_service.py`, `test_rest_design_routes.py`.
+- **`palm/services/design/`** — sixth service domain: `propose_flow` → `validate_proposal` → `analyze_proposal_impact` → `commit_proposal`.
+- **`host.design`** / `ServerContext.design` · REST `/v1/api/design/proposals` · MCP `palm_design_*`.
+- **Durable proposals** — `StorageDesignProposalRepository` (`palm:design:proposals:{id}`) when storage is active.
+- **Auto-migrate on commit** — compatible instances migrated after revision publish; `migrations` summary in commit response.
+- **Agent safety** — `commit_token` on validate/impact; `PALM_MCP_REQUIRE_INPUT_TOKEN` applies to `palm_design_commit`.
+- **`palm_assist` design paths** — `design/*` aliases, dispatch, assistant views on validate/impact.
+- **Wizard design contributor** — step slug uniqueness, collection `item_fields`, resource/transform checks.
+- **Docs** — [ADR-008](docs/adr/008-design-service.md), [MIGRATION-0.25.md](MIGRATION-0.25.md), `examples/definitions/design_proposal_demo.py`.
+
+### Added — Definition revisioning & migration (0.24, bundled)
+
+- **Append-only flow revisions** — `update_flow` publishes `latest + 1`; optional `?revision=N` on get.
+- **Instance revision pin** — `flow_revision` on submit; snapshot retained until migration.
+- **Migration rules** — `register_migration_rule()` in `definition_migration.py`.
+- **Impact query** — instances behind target revision with compatibility flags.
+- **Instance migration** — `POST …/instances/{id}/migrate`; `migration_*` metadata preserved on job sync.
+- **MCP** — `palm_definitions_analyze_impact`, `palm_definitions_migrate_instance`.
+- **Docs** — [MIGRATION-0.24.md](MIGRATION-0.24.md), [ADR-007](docs/adr/007-definition-revisioning.md).
+
+### Changed
+
+- **Agent policy** — prefer `palm_design_*` for catalog writes; `palm_definitions_*` direct CRUD remains for integrators.
+- **`update_flow` semantics** — append revision, not in-place overwrite (see MIGRATION-0.24).
 
 ### Fixed
 

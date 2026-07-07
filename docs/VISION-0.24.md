@@ -2,9 +2,9 @@
 
 **Theme:** Safe definition evolution — immutable revision history, instance revision pins, and migration as first-class Palm primitives.
 
-**Status:** Implemented locally (0.24.1–0.24.4) · **Released on PyPI:** pending explicit release request
+**Status:** Shipped **0.25.0** on PyPI (0.24.1–0.24.4 bundled with Design Service)  
 **Builds on:** [0.23.1 shipped](STATUS.md) · [0.16 services API](VISION-0.16.md)  
-**Deferred:** [Design Service → 0.25](VISION-0.25.md)
+**Design Service:** [VISION-0.25.md](VISION-0.25.md) (shipped in 0.25.0)
 
 ---
 

@@ -91,6 +91,9 @@ class ServerContext:
                 proposals=create_proposal_repository(runtime.storage),
                 runtime=runtime,
             )
+            from palm.services.design.contributors import wire_builtin_design_contributors
+
+            wire_builtin_design_contributors()
         else:
             self._system = host.system
             self._definitions = host.definitions

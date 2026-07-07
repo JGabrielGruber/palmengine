@@ -128,9 +128,9 @@
 
 **Tasks:**
 
-- [ ] Wizard contributor: step slug uniqueness, collection schema sanity
-- [ ] Register via `register_design_contributor()`
-- [ ] Test: invalid proposal → blocker in `validate_proposal`
+- [x] Wizard contributor: step slug uniqueness, collection schema sanity
+- [x] Register via `register_design_contributor()` (wired at host bootstrap — avoids pattern autoload cycle)
+- [x] Test: invalid proposal → blocker in `validate_proposal`
 
 **Commit:** `feat(0.25.5): wizard design validation contributor`
 
