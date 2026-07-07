@@ -16,6 +16,13 @@
 - **Start**: `palm_assist(path=["flows","onboard","create"])`
 - Good for testing wizard mechanics.
 
+## Migrate instance demo (0.24.3+)
+
+- **Prerequisite**: session on `migrate-demo-source` (revision 1) — `palm flow start migrate-demo-source`
+- **Operator wizard**: `palm flow start migrate-instance-demo` — confirm → dry-run → apply
+- **API**: `palm_definitions_analyze_impact` → `palm_definitions_migrate_instance(dry_run=True)` → apply
+- See [MIGRATION-0.24.md](../../../../MIGRATION-0.24.md)
+
 ## General pattern
 
 1. Create session (operator-entry or `flows/<name>/create`)

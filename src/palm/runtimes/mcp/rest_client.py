@@ -205,9 +205,45 @@ class PalmRestClient:
             path = f"{path}?pattern={pattern}"
         return self._request("GET", path)
 
-    def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
-        suffix = "" if verbose else "?verbose=0"
+    def get_flow(
+        self,
+        flow_id: str,
+        *,
+        verbose: bool = False,
+        revision: int | None = None,
+    ) -> dict[str, Any]:
+        query: list[str] = []
+        if not verbose:
+            query.append("verbose=0")
+        if revision is not None:
+            query.append(f"revision={revision}")
+        suffix = f"?{'&'.join(query)}" if query else ""
         return self._request("GET", f"/v1/api/definitions/flows/{flow_id}{suffix}")
+
+    def analyze_flow_impact(
+        self,
+        flow_id: str,
+        *,
+        target_revision: int | None = None,
+    ) -> dict[str, Any]:
+        path = f"/v1/api/definitions/flows/{flow_id}/impact"
+        if target_revision is not None:
+            path = f"{path}?revision={target_revision}"
+        return self._request("GET", path)
+
+    def migrate_instance(
+        self,
+        instance_id: str,
+        *,
+        target_revision: int,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/api/definitions/instances/{instance_id}/migrate",
+            body={"target_revision": target_revision, "dry_run": dry_run},
+            auth=True,
+        )
 
     def list_processes(self) -> dict[str, Any]:
         return self._request("GET", "/v1/api/definitions/processes")

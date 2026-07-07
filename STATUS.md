@@ -292,14 +292,15 @@ just mcp-inspector                       # MCP Inspector UI
 | Vision + spec + ADR (0.24 design release) | ✅ Documented |
 | Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | ✅ 0.24.1 (local) |
 | Migration rules + impact query | ✅ 0.24.2 (local) |
-| Migration execution hooks + demo flow | 📋 0.24.3 |
+| Migration execution hooks + demo flow | ✅ 0.24.3 (local) |
+| Documentation + MCP surface cleanup | ✅ 0.24.4 (local) |
 | **Design Service** | 📋 [0.25 vision](docs/VISION-0.25.md) — depends on 0.24 |
 
 ## Priorities & Next Steps
 
-**0.24 vision documented** — revisioning and migration before Design Service.
+**0.24 revisioning + migration complete (local)** — [MIGRATION-0.24.md](MIGRATION-0.24.md) documents REST/MCP operator paths.
 
-**Next implementation (when ready):** 0.24.1 flow revisioning per [implementation plan](docs/superpowers/plans/2026-07-03-definition-revisioning.md).
+**Next implementation (when ready):** [0.25 Design Service](docs/VISION-0.25.md) per [design spec](docs/superpowers/specs/2026-07-03-design-service-design.md).
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream.
 
@@ -314,6 +315,7 @@ just mcp-inspector                       # MCP Inspector UI
 - [docs/MCP.md](docs/MCP.md) — agent development with Palm MCP
 - [RELEASE-0.16.5.md](RELEASE-0.16.5.md) — release checklist
 - [MIGRATION-0.16.md](MIGRATION-0.16.md) — upgrade from 0.15.x
+- [MIGRATION-0.24.md](MIGRATION-0.24.md) — definition revisioning & instance migration (0.24+)
 - Examples: `examples/README.md`
 
 ## How to Contribute

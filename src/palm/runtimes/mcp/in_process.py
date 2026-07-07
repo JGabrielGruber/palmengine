@@ -344,11 +344,64 @@ class PalmInProcessBackend:
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("flows", rows, params)
 
-    def get_flow(self, flow_id: str, *, verbose: bool = False) -> dict[str, Any]:
+    def get_flow(
+        self,
+        flow_id: str,
+        *,
+        verbose: bool = False,
+        revision: int | None = None,
+    ) -> dict[str, Any]:
         try:
-            return self._ctx.definitions.get_flow(flow_id, verbose=verbose)
+            return self._ctx.definitions.get_flow(
+                flow_id,
+                verbose=verbose,
+                revision=revision,
+            )
         except DefinitionNotFoundServiceError as exc:
             raise _flow_not_found(exc.ref) from exc
+
+    def analyze_flow_impact(
+        self,
+        flow_id: str,
+        *,
+        target_revision: int | None = None,
+    ) -> dict[str, Any]:
+        try:
+            return self._ctx.definitions.analyze_impact(
+                flow_id,
+                target_revision=target_revision,
+            )
+        except DefinitionNotFoundServiceError as exc:
+            raise _flow_not_found(exc.ref) from exc
+
+    def migrate_instance(
+        self,
+        instance_id: str,
+        *,
+        target_revision: int,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        from palm.common.services.errors import InstanceMigrationServiceError
+
+        try:
+            return self._ctx.definitions.migrate_instance(
+                instance_id,
+                target_revision=target_revision,
+                dry_run=dry_run,
+            )
+        except InstanceNotFoundServiceError as exc:
+            raise _instance_not_found(exc.instance_id) from exc
+        except InstanceMigrationServiceError as exc:
+            raise PalmRestError(
+                400,
+                {
+                    "error": "migration_failed",
+                    "message": exc.reason,
+                    "instance_id": instance_id,
+                    "blockers": exc.blockers,
+                    "result": exc.result,
+                },
+            ) from exc
 
     def list_processes(self) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope

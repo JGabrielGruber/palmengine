@@ -102,6 +102,18 @@ palm_system_trace_events(job_id)
 
 MCP prompt `debug-wizard-block` provides a structured checklist.
 
+### Definition revision migration (0.24+)
+
+After publishing a new flow revision, upgrade live instances explicitly — they pin `flow_revision` at submit and do not auto-upgrade.
+
+```
+palm_definitions_analyze_impact(flow_id, target_revision=N)
+palm_definitions_migrate_instance(instance_id, target_revision=N, dry_run=True)
+palm_definitions_migrate_instance(instance_id, target_revision=N)
+```
+
+See [MIGRATION-0.24.md](MIGRATION-0.24.md) and example `migrate-instance-demo` in `examples/README.md`.
+
 ### Developing MCP itself
 
 | Area | Location |

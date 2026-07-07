@@ -64,6 +64,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
 | **Flow REST (0.16)** | `/v1/api/flows/{flow_id}/session/{session_id}/…` — create, inspect, input, backtrack |
 | **Definitions REST (0.16)** | `/v1/api/definitions/{flows,processes,resources}/…` — catalog CRUD + validate |
+| **Definition revisions (0.24)** | Append-only flow revisions; `flow_revision` pin; `GET flow?revision=`; impact + migrate |
 | **Providers REST (0.16)** | `POST /v1/api/providers/{provider}/{resource_ref}/invoke` |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
 | **MCP (0.16)** | Per-domain tools (`palm_flows_*`, `palm_system_*`, `palm_definitions_*`, `palm_providers_invoke`); see `docs/MCP.md` |
@@ -164,6 +165,8 @@ palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}}
 | Parent/child stack | `palm://instances/{id}/tree`, `palm_flows_compose_status` |
 | Collection UI | `palm_wizard_collection_action` |
 | Dry-run flow | `palm_definitions_validate_flow` |
+| Revision impact | `palm_definitions_analyze_impact` |
+| Instance migration | `palm_definitions_migrate_instance` (dry_run then apply) |
 | Health | `palm_system_doctor` |
 | Read catalogs / guide | `palm://definitions/*`, `palm://agent/guide` (FetchMcpResource) |
 | Invoke resource definition | `palm_providers_invoke` (definition name, not `palm://`) |

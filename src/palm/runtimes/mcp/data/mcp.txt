@@ -238,3 +238,19 @@ Operator-entry choice **`inspect-only`** (menu item 3) enters a **non-terminal c
 | `assist/catalog/flows` | List runnable flows |
 
 At catalog step, `operator_mode: inspect` is set on the instance. Use read actions (list flows, list waiting, inspect session) — not summary confirm. Handoff is `kind: none` until exit.
+
+---
+
+## 14. Definition revision migration (0.24+)
+
+Catalog flows are **append-only revisions**. Running instances pin `flow_revision` + snapshot — they do not auto-upgrade when the catalog changes.
+
+| Step | Tool / REST |
+|------|-------------|
+| Impact | `palm_definitions_analyze_impact(flow_id, target_revision=…)` · `GET /v1/api/definitions/flows/{id}/impact?revision=N` |
+| Dry-run | `palm_definitions_migrate_instance(instance_id, target_revision, dry_run=True)` |
+| Apply | `palm_definitions_migrate_instance(instance_id, target_revision)` · `POST …/instances/{id}/migrate` |
+
+**Operator loop:** impact → dry-run → apply. Example wizard: `migrate-instance-demo` (see `examples/README.md`).
+
+`GET flow` accepts `?revision=N`. `update_flow` publishes `latest+1` (no overwrite). See [MIGRATION-0.24.md](../MIGRATION-0.24.md).

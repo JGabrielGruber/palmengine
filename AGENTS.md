@@ -112,7 +112,8 @@ Follow these patterns. They exist so growth remains orderly.
 | MCP tool, resource, or prompt | `palm/runtimes/mcp/` + pattern or app `app.py` | Pattern: `register_mcp_contributor()`. App: `register_app_mcp_contributor()`. See [docs/MCP.md](docs/MCP.md) |
 | Cross-cutting coordination | `palm/common/<area>/` | executions, plans, hooks, persistence, etc. |
 | Definition revisioning (0.24+) | `palm/common/persistence/definition_repository.py`, `palm/definitions/`, `palm/instances/` | Append-only `publish_flow_revision`; instance `flow_revision` pin; see [VISION-0.24](docs/VISION-0.24.md) |
-| Definition migration rules (0.24.2+) | `palm/common/transforms/rules/` | `DefinitionMigrationRule` via transform registry; see [ADR-007](docs/adr/007-definition-revisioning.md) |
+| Definition migration rules (0.24.2+) | `palm/common/persistence/definition_migration.py` | `register_migration_rule()` / `resolve_migration_rule()`; see [ADR-007](docs/adr/007-definition-revisioning.md) |
+| Instance migration execution (0.24.3+) | `palm/common/persistence/instance_migration.py` | `migrate_instance()`; preserve `migration_*` in `instance_sync.py`; REST `POST …/instances/{id}/migrate` |
 | Design Service (0.25+) | `palm/services/design/` | Propose/validate/impact/commit atop revisions; layered with `DefinitionService` CRUD — see [VISION-0.25](docs/VISION-0.25.md) |
 | Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
 

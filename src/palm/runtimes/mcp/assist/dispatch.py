@@ -346,8 +346,26 @@ def _dispatch_definitions(ctx: Any, path: list[str], params: dict[str, Any]) -> 
         return ctx.definitions.list_processes()
     if len(path) == 2 and path[0] == "definitions" and path[1] == "resources":
         return ctx.definitions.list_resources(provider=params.get("provider"))
+    if len(path) == 4 and path[0] == "definitions" and path[1] == "flows" and path[3] == "impact":
+        revision = params.get("revision", params.get("target_revision"))
+        target_revision = int(revision) if revision is not None else None
+        return ctx.definitions.analyze_impact(path[2], target_revision=target_revision)
+    if len(path) == 4 and path[0] == "definitions" and path[1] == "instances" and path[3] == "migrate":
+        target_revision = params.get("target_revision")
+        if target_revision is None:
+            raise ValueError("target_revision is required")
+        return ctx.definitions.migrate_instance(
+            path[2],
+            target_revision=int(target_revision),
+            dry_run=bool(params.get("dry_run", False)),
+        )
     if len(path) == 3 and path[0] == "definitions" and path[1] == "flows":
-        return ctx.definitions.get_flow(path[2], verbose=bool(params.get("verbose", True)))
+        revision = params.get("revision")
+        return ctx.definitions.get_flow(
+            path[2],
+            verbose=bool(params.get("verbose", True)),
+            revision=int(revision) if revision is not None else None,
+        )
     if len(path) == 3 and path[0] == "definitions" and path[1] == "processes":
         return ctx.definitions.get_process(path[2])
     if len(path) == 3 and path[0] == "definitions" and path[1] == "resources":

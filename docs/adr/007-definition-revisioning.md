@@ -23,7 +23,7 @@ External feedback proposed a Design Service first. Palm's architecture assessmen
 
 2. **Instance revision pin** — `ProcessInstance` gains `flow_revision: int | None`. Submit sets pin + retains snapshot. Resume prefers snapshot; no silent auto-upgrade to catalog latest.
 
-3. **Migration rules via transform registry (0.24.2)** — `DefinitionMigrationRule` in `palm/common/transforms/rules/` with `can_migrate` + `migrate_state`. Registry-based extension; no core changes.
+3. **Migration rules registry (0.24.2)** — `DefinitionMigrationRule` in `palm/common/persistence/definition_migration.py` with `can_migrate` + `migrate_state`. Dedicated `register_migration_rule()` registry; no core changes.
 
 4. **Impact query v0 (0.24.2)** — Definitions domain query listing instances behind `latest_revision` with compatibility flags. Feeds 0.25 Design Service.
 

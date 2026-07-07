@@ -89,7 +89,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/executions/` | `DefinitionExecutor`, flow/process submission prep |
 | `common/plans/` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
 | `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`, `StateSnapshotHook`) |
-| `common/persistence/` | Definition and instance repositories, resume/sync; **0.24+** revision keys (`flow:{id}:rev:{n}`) |
+| `common/persistence/` | Definition and instance repositories, resume/sync; **0.24+** revision keys (`flow:{id}:rev:{n}`), `definition_migration.py`, `instance_migration.py` |
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
 | `common/cqrs/` | Command/query buses, projections, rebuild policy |

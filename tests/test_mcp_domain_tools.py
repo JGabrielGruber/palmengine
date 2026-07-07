@@ -53,6 +53,8 @@ async def test_legacy_wizard_tools_removed() -> None:
     assert "palm_flows_session" in names
     assert "palm_system_doctor" in names
     assert "palm_definitions_validate_flow" in names
+    assert "palm_definitions_analyze_impact" in names
+    assert "palm_definitions_migrate_instance" in names
     assert "palm_providers_invoke" in names
     assert "palm_wizard_input" not in names
     assert "palm_submit_wizard" not in names

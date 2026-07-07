@@ -37,5 +37,26 @@ def register_definitions_tools(mcp: Any, backend: Any) -> None:
             raise ValueError(f"step {step_slug!r} not found in flow {flow_id!r}")
         return explained
 
+    @mcp.tool
+    def palm_definitions_analyze_impact(
+        flow_id: str,
+        target_revision: int | None = None,
+    ) -> dict[str, Any]:
+        """List instances behind a target flow revision with migration compatibility."""
+        return backend.analyze_flow_impact(flow_id, target_revision=target_revision)
+
+    @mcp.tool
+    def palm_definitions_migrate_instance(
+        instance_id: str,
+        target_revision: int,
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
+        """Dry-run or apply a definition migration for a durable instance."""
+        return backend.migrate_instance(
+            instance_id,
+            target_revision=target_revision,
+            dry_run=dry_run,
+        )
+
 
 __all__ = ["register_definitions_tools"]

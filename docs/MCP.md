@@ -227,6 +227,18 @@ Use prompt `debug-wizard-block` for a structured checklist.
 4. palm_system_diff_snapshots(session_id, from_snapshot, to_snapshot)
 ```
 
+#### Upgrading live instances (0.24+)
+
+After publishing a new flow revision (`update_flow` appends; see [MIGRATION-0.24.md](../MIGRATION-0.24.md)):
+
+```
+1. palm_definitions_analyze_impact(flow_id, target_revision=N)
+2. palm_definitions_migrate_instance(instance_id, target_revision=N, dry_run=True)
+3. palm_definitions_migrate_instance(instance_id, target_revision=N)
+```
+
+Example wizard: `migrate-instance-demo`. Instances pin `flow_revision` at submit — they do not auto-upgrade.
+
 #### Reading vs invoking resources
 
 | Kind | Examples | Access |
@@ -245,7 +257,7 @@ Use prompt `debug-wizard-block` for a structured checklist.
 |------|-------|------|
 | **1 — Operator loop** | `palm_system_list_waiting`, `palm_flows_session`, `palm_flows_session_input`, `palm_flows_session_drive`, `palm_flows_session_resume_child_wait`, `palm_flows_session_resume`, `palm_flows_session_backtrack` | Daily wizard driving |
 | **2 — Lifecycle** | `palm_flows_create_session`, `palm_processes_submit`, `palm_system_job_input`, `palm_system_cancel_job`, `palm_providers_invoke` | Start/stop work |
-| **3 — Debug** | `palm_system_trace_events`, `palm_system_diff_snapshots`, `palm_definitions_explain_step`, `palm_definitions_validate_flow`, `palm_system_doctor`, `palm_system_fetch_job`, `palm_flows_compose_status` | Investigation |
+| **3 — Debug** | `palm_system_trace_events`, `palm_system_diff_snapshots`, `palm_definitions_explain_step`, `palm_definitions_validate_flow`, `palm_definitions_analyze_impact`, `palm_definitions_migrate_instance`, `palm_system_doctor`, `palm_system_fetch_job`, `palm_flows_compose_status` | Investigation |
 | **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` | Pattern-specific steps |
 
 **Prompts:** `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
@@ -271,7 +283,7 @@ Install: `pip install "palmengine[mcp]"` · CLI: `palm-mcp`
 |--------|-------|
 | **Flows** | `palm_flows_list`, `palm_flows_describe`, `palm_flows_create_session`, `palm_flows_session`, `palm_flows_session_input`, `palm_flows_session_drive`, `palm_flows_session_resume`, `palm_flows_session_resume_child_wait`, `palm_flows_session_backtrack`, `palm_flows_compose_status` |
 | **System** | `palm_system_list_waiting`, `palm_system_inspect_job`, `palm_system_job_input`, `palm_system_doctor`, `palm_system_cancel_job`, `palm_system_fetch_job`, `palm_system_trace_events`, `palm_system_diff_snapshots`, `palm_processes_submit` |
-| **Definitions** | `palm_definitions_validate_flow`, `palm_definitions_explain_step` |
+| **Definitions** | `palm_definitions_validate_flow`, `palm_definitions_explain_step`, `palm_definitions_analyze_impact`, `palm_definitions_migrate_instance` |
 | **Providers** | `palm_providers_invoke` |
 | **Pattern** | `palm_wizard_collection_action`, `palm_wizard_commit_preview`, `palm_parallel_branch_status`, `palm_pipeline_step_trace` |
 

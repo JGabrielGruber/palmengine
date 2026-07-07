@@ -2,7 +2,7 @@
 
 **Theme:** Safe definition evolution — immutable revision history, instance revision pins, and migration as first-class Palm primitives.
 
-**Status:** Design release (vision + spec + ADR) · **Implementation:** 0.24.1+  
+**Status:** Implemented locally (0.24.1–0.24.4) · **Released on PyPI:** pending explicit release request
 **Builds on:** [0.23.1 shipped](STATUS.md) · [0.16 services API](VISION-0.16.md)  
 **Deferred:** [Design Service → 0.25](VISION-0.25.md)
 
@@ -85,16 +85,17 @@ flowchart LR
 
 ---
 
-## What ships in 0.24 (documentation only)
+## What shipped in 0.24 (local)
 
-This release is **vision + design artifacts** — no service code, no version bump until explicitly requested.
+| Release | Delivered |
+|---------|-----------|
+| **0.24 vision** | This document, design spec, ADR-007, implementation plan |
+| **0.24.1** | Append-only revisions, `flow_revision` pin, `?revision=` on get flow |
+| **0.24.2** | Migration rules registry, impact query |
+| **0.24.3** | Instance migration execution, demo wizard, metadata preservation |
+| **0.24.4** | [MIGRATION-0.24.md](../../MIGRATION-0.24.md), MCP tools, operator doc sync |
 
-1. [`docs/VISION-0.24.md`](VISION-0.24.md) — this document
-2. [`docs/superpowers/specs/2026-07-03-definition-revisioning-design.md`](superpowers/specs/2026-07-03-definition-revisioning-design.md) — revision model, migration rules, impact v0
-3. [`docs/adr/007-definition-revisioning.md`](adr/007-definition-revisioning.md) — architectural decision
-4. [`docs/superpowers/specs/2026-07-03-design-service-design.md`](superpowers/specs/2026-07-03-design-service-design.md) — **Draft / deferred to 0.25**
-5. [`docs/superpowers/plans/2026-07-03-definition-revisioning.md`](superpowers/plans/2026-07-03-definition-revisioning.md) — implementation DAG for 0.24.1+
-6. Minimal touch-ups: `STATUS.md`, `AGENTS.md`, `ARCHITECTURE.md`
+Operator guide: [MIGRATION-0.24.md](../../MIGRATION-0.24.md) · Example: `migrate-instance-demo`
 
 ---
 

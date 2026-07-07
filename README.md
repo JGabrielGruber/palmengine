@@ -67,6 +67,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Palm Explorer** | SSR hub at `/explorer` — flows, jobs, instances, **wizard workspace** (HTMX + collection editor), **resources**; `/` redirects here |
 | **Flow REST (0.16)** | `/v1/api/flows/{flow_id}/session/{session_id}/…` — create, inspect, input, backtrack |
 | **Definitions REST (0.16)** | `/v1/api/definitions/…` — catalog reads + CRUD writes |
+| **Definition revisions (0.24)** | Append-only flow revisions, `flow_revision` pin, impact query, instance migrate — [MIGRATION-0.24.md](MIGRATION-0.24.md) |
 | **MCP (0.16)** | `palm-mcp` — per-domain tools (`palm_flows_*`, `palm_system_*`, …); [docs/MCP.md](docs/MCP.md) |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm resource *`, `just` quality recipes |

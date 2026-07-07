@@ -4,6 +4,64 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.24.4] — 2026-07-07
+
+**Documentation cleanup** — align operator surfaces with shipped 0.24.1–0.24.3 revisioning and migration.
+
+### Added
+
+- **`MIGRATION-0.24.md`** — revision semantics, impact/migrate REST, agent workflow.
+- **MCP tools** — `palm_definitions_analyze_impact`, `palm_definitions_migrate_instance`.
+- **`docs/mcp.txt` §14** — definition revision migration operator loop.
+- **Route tests** — impact + migrate paths in definitions REST table.
+
+### Changed
+
+- **`STATUS.md`**, **`VISION-0.24.md`**, **`ADR-007`**, **`AGENTS.md`** — 0.24.1–0.24.4 status; migration rule path corrected to `common/persistence/definition_migration.py`.
+- **`docs/MCP.md`**, **`docs/llms.txt`**, **`README.md`**, **`DEVELOPMENT.md`** — 0.24 capabilities and operator references.
+- **Assist dispatch** — `definitions/flows/{id}/impact`, `definitions/instances/{id}/migrate` paths.
+
+## [0.24.3] — 2026-07-07
+
+**Instance migration execution** — apply migration rules to durable instances.
+
+### Added
+
+- **`migrate_instance()`** — dry-run and apply; updates `flow_revision`, snapshot, and definition pin.
+- **`MigrateInstanceCommand`** + `DefinitionService.migrate_instance()`.
+- **REST** — `POST /v1/api/definitions/instances/{instance_id}/migrate`.
+- **Instance metadata** — `migration_status`, `migration_target_revision`, `migration_from_revision`, `migration_blockers`.
+- **Job sync** — preserve `migration_*` keys in `update_instance_from_job`.
+- **Example** — `migrate-instance-demo` wizard (`examples/definitions/migrate_instance_demo.py`).
+- **Tests** — `test_instance_migration.py`, `test_instance_sync_migration_metadata.py`.
+
+## [0.24.2] — 2026-07-07
+
+**Migration rules + impact query** — compatibility analysis before upgrading instances.
+
+### Added
+
+- **`definition_migration.py`** — `MigrationContext`, `DefinitionMigrationRule`, `register_migration_rule()`.
+- **`definition_impact.py`** — `analyze_definition_impact()`.
+- **`AnalyzeDefinitionImpactQuery`** + `DefinitionService.analyze_impact()`.
+- **REST** — `GET /v1/api/definitions/flows/{flow_id}/impact`.
+- **Tests** — `test_definition_migration_rule.py`, `test_definition_impact_query.py`.
+
+## [0.24.1] — 2026-07-07
+
+**Append-only flow revisions** — catalog evolution without silent overwrites.
+
+### Added
+
+- **`publish_flow_revision`** — monotonic revisions per `flow_id`; repository key layout `flow:{id}:rev:{n}`.
+- **`ProcessInstance.flow_revision`** — explicit pin on submit.
+- **`GET flow?revision=`** — load explicit revision.
+- **Tests** — `test_definition_repository_revisions.py`, `test_flow_submission_revision.py`.
+
+### Changed
+
+- **`update_flow`** / **`create_flow`** — publish revisions (append-only semantics).
+
 ## [0.23.1] — 2026-07-03
 
 **Inspect-only catalog** — operator-entry menu item 3 no longer commits on summary `yes`.
