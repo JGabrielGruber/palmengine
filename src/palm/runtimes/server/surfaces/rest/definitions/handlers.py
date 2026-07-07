@@ -28,6 +28,22 @@ def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ok(list_envelope("flows", rows, params))
 
 
+def analyze_flow_impact(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    flow_id: str,
+) -> ServerResponse:
+    try:
+        payload = ctx.definitions.analyze_impact(
+            flow_id,
+            target_revision=_revision_query(request),
+        )
+    except DefinitionNotFoundServiceError:
+        return errors.flow_not_found(flow_id)
+    return ok(payload)
+
+
 def get_flow(ctx: ServerContext, request: ServerRequest, *, flow_id: str) -> ServerResponse:
     try:
         payload = ctx.definitions.get_flow(

@@ -32,6 +32,12 @@ ROUTES: tuple[RouteEntry, ...] = (
         "create_flow",
         auth_required=True,
     ),
+    RouteEntry(
+        "analyze_flow_impact",
+        "GET",
+        f"{API_PREFIX}/definitions/flows/{{flow_id}}/impact",
+        "analyze_flow_impact",
+    ),
     RouteEntry("get_flow", "GET", f"{API_PREFIX}/definitions/flows/{{flow_id}}", "get_flow"),
     RouteEntry(
         "update_flow",
@@ -115,6 +121,7 @@ ROUTES: tuple[RouteEntry, ...] = (
 _HANDLERS = {
     "list_flows": handlers.list_flows,
     "create_flow": handlers.create_flow,
+    "analyze_flow_impact": handlers.analyze_flow_impact,
     "get_flow": handlers.get_flow,
     "update_flow": handlers.update_flow,
     "delete_flow": handlers.delete_flow,

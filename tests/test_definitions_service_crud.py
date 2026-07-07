@@ -5,7 +5,12 @@ from __future__ import annotations
 import pytest
 
 from palm.common.cqrs import CommandBus
-from palm.common.cqrs.query import GetFlowQuery, ListFlowsQuery
+from palm.common.cqrs.query import (
+    AnalyzeDefinitionImpactQuery,
+    GetFlowQuery,
+    ListFlowsQuery,
+)
+from palm.common.persistence.definition_impact import analyze_definition_impact
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.services.errors import DefinitionNotFoundServiceError
@@ -34,6 +39,13 @@ class _QueryBus:
             if query.pattern:
                 return [flow for flow in flows if flow.pattern == query.pattern]
             return flows
+        if isinstance(query, AnalyzeDefinitionImpactQuery):
+            return analyze_definition_impact(
+                self._repository,
+                [],
+                flow_id=query.flow_id,
+                target_revision=query.target_revision,
+            )
         raise AssertionError(f"unexpected query: {query!r}")
 
 
@@ -103,3 +115,25 @@ def test_definition_service_list_flow_revisions(service: DefinitionService) -> N
     )
     rows = service.list_flow_revisions("rev-flow")
     assert [row["revision"] for row in rows] == [1, 2]
+
+
+def test_definition_service_analyze_impact(service: DefinitionService) -> None:
+    service.create_flow(
+        {
+            "name": "impact-flow",
+            "pattern": "wizard",
+            "options": {"step_count": 1},
+        }
+    )
+    service.update_flow(
+        "impact-flow",
+        {
+            "name": "impact-flow",
+            "pattern": "wizard",
+            "options": {"step_count": 2},
+        },
+    )
+    report = service.analyze_impact("impact-flow")
+    assert report["flow_id"] == "impact-flow"
+    assert report["latest_revision"] == 2
+    assert report["summary"]["total"] == 0

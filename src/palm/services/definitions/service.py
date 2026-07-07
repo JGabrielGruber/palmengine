@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.query import GetFlowQuery, GetProcessQuery, ListFlowsQuery, ListProcessesQuery
+from palm.common.cqrs.query import (
+    AnalyzeDefinitionImpactQuery,
+    GetFlowQuery,
+    GetProcessQuery,
+    ListFlowsQuery,
+    ListProcessesQuery,
+)
 from palm.common.exceptions import DefinitionNotFoundError
 from palm.common.resource.catalog import ResourceCatalog
 from palm.common.runtimes.server.plans import prepare_flow_from_body
@@ -119,6 +125,23 @@ class DefinitionService(BaseService):
     def list_flow_revisions(self, flow_id: str) -> list[dict[str, Any]]:
         """Return revision index rows for ``flow_id``."""
         return self._repository.list_flow_revisions(flow_id)
+
+    def analyze_impact(
+        self,
+        flow_id: str,
+        *,
+        target_revision: int | None = None,
+    ) -> dict[str, Any]:
+        """Report instances pinned behind ``target_revision`` (latest by default)."""
+        try:
+            return self.ask(
+                AnalyzeDefinitionImpactQuery(
+                    flow_id=flow_id,
+                    target_revision=target_revision,
+                )
+            )
+        except DefinitionNotFoundError as exc:
+            raise DefinitionNotFoundServiceError("flow", flow_id) from exc
 
     def delete_flow(self, flow_id: str) -> bool:
         flow = self.ask(GetFlowQuery(flow_id=flow_id))

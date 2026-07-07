@@ -38,6 +38,12 @@ _registry: list[CatalogVerb] = [
         "list",
         "List flow definition revisions",
     ),
+    CatalogVerb(
+        "analyze_flow_impact",
+        "flows",
+        "get",
+        "Analyze impact of publishing a flow revision",
+    ),
     CatalogVerb("list_processes", "processes", "list", "List process definitions"),
     CatalogVerb("get_process", "processes", "get", "Get process definition"),
     CatalogVerb("create_process", "processes", "create", "Create process definition"),

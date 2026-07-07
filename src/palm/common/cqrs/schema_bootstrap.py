@@ -14,6 +14,7 @@ from palm.common.cqrs.command import (
     SubmitProcessCommand,
 )
 from palm.common.cqrs.query import (
+    AnalyzeDefinitionImpactQuery,
     GetFlowQuery,
     GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
@@ -248,7 +249,23 @@ def register_core_schemas(registry: CqrsSchemaRegistry) -> None:
         DictStateSchema(
             {
                 "type": "object",
-                "properties": {"flow_id": _STRING},
+                "properties": {
+                    "flow_id": _STRING,
+                    "revision": {"type": "integer"},
+                },
+                "required": ["flow_id"],
+            }
+        ),
+    )
+    registry.register_query(
+        AnalyzeDefinitionImpactQuery,
+        DictStateSchema(
+            {
+                "type": "object",
+                "properties": {
+                    "flow_id": _STRING,
+                    "target_revision": {"type": "integer"},
+                },
                 "required": ["flow_id"],
             }
         ),

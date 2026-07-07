@@ -32,6 +32,7 @@ from palm.common.cqrs.projections.instance_index import InstanceIndexProjection
 from palm.common.cqrs.projections.job_status_board import JobStatusBoardProjection
 from palm.common.cqrs.projections.resource_invocation import ResourceInvocationProjection
 from palm.common.cqrs.query import (
+    AnalyzeDefinitionImpactQuery,
     GetFlowQuery,
     GetInstanceSnapshotQuery,
     GetInstanceStatusQuery,
@@ -229,6 +230,8 @@ class HostQueryHandlers:
             return self._list_flows(query)
         if isinstance(query, GetFlowQuery):
             return self._get_flow(query)
+        if isinstance(query, AnalyzeDefinitionImpactQuery):
+            return self._analyze_definition_impact(query)
         if isinstance(query, ListProcessesQuery):
             return self._app.list_processes()
         if isinstance(query, GetProcessQuery):
@@ -331,6 +334,18 @@ class HostQueryHandlers:
         except DefinitionNotFoundError:
             return None
 
+    def _analyze_definition_impact(self, query: AnalyzeDefinitionImpactQuery) -> dict[str, Any]:
+        from palm.common.persistence.definition_impact import analyze_definition_impact_or_raise
+
+        repository = self._app.repository()
+        instances = self._instance_manager.list_instances()
+        return analyze_definition_impact_or_raise(
+            repository,
+            instances,
+            flow_id=query.flow_id,
+            target_revision=query.target_revision,
+        )
+
     def _get_process(self, query: GetProcessQuery) -> ProcessDefinition | None:
         try:
             return resolve_process(self._app.repository(), query.process_id)
@@ -360,6 +375,7 @@ def collect_cqrs_query_types() -> tuple[type, ...]:
         ListInstanceSnapshotsQuery,
         GetInstanceSnapshotQuery,
         ListFlowsQuery,
+        AnalyzeDefinitionImpactQuery,
         GetFlowQuery,
         ListProcessesQuery,
         GetProcessQuery,

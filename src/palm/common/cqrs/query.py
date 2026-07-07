@@ -94,6 +94,14 @@ class GetFlowQuery(Query):
 
 
 @dataclass(frozen=True)
+class AnalyzeDefinitionImpactQuery(Query):
+    """Report instances behind a target flow definition revision."""
+
+    flow_id: str
+    target_revision: int | None = None
+
+
+@dataclass(frozen=True)
 class ListProcessesQuery(Query):
     """List registered process definitions from the repository."""
 
