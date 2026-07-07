@@ -278,11 +278,30 @@ just mcp-inspector                       # MCP Inspector UI
 
 **0.23 deferred:** `palm-compose-guide` scenario, process handoff, `create_params` mapping, WebSocket assist stream.
 
+**0.23.2 prep (local):** mutation gate cleanup committed — single `FlowSession.input` choke point, `MutationRejectedError`; not released until requested.
+
+## 0.24 — Definition Revisioning & Migration (vision)
+
+**Vision:** [docs/VISION-0.24.md](docs/VISION-0.24.md)  
+**Design:** [docs/superpowers/specs/2026-07-03-definition-revisioning-design.md](docs/superpowers/specs/2026-07-03-definition-revisioning-design.md)  
+**ADR:** [docs/adr/007-definition-revisioning.md](docs/adr/007-definition-revisioning.md)  
+**Plan:** [docs/superpowers/plans/2026-07-03-definition-revisioning.md](docs/superpowers/plans/2026-07-03-definition-revisioning.md)
+
+| Component | Status |
+|-----------|--------|
+| Vision + spec + ADR (0.24 design release) | ✅ Documented |
+| Flow revisioning (`publish_flow_revision`, instance `flow_revision`) | 📋 0.24.1 |
+| Migration rules + impact query | 📋 0.24.2 |
+| Migration execution hooks + demo flow | 📋 0.24.3 |
+| **Design Service** | 📋 [0.25 vision](docs/VISION-0.25.md) — depends on 0.24 |
+
 ## Priorities & Next Steps
 
-**0.23.1 shipped** — mutation guard trilogy complete (envelope · token · inspect-only catalog).
+**0.24 vision documented** — revisioning and migration before Design Service.
 
-**Next:** [weak-LLM design](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide` scenario, process handoff, WebSocket assist stream.
+**Next implementation (when ready):** 0.24.1 flow revisioning per [implementation plan](docs/superpowers/plans/2026-07-03-definition-revisioning.md).
+
+**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream.
 
 
 ## Useful Links

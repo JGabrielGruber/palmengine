@@ -16,6 +16,8 @@ Three ideas recur everywhere:
 2. **Definitions as contract** — `FlowDefinition` / `ProcessDefinition` describe *what* to run; `palm.common` builds and submits *how*.
 3. **Hybrid middleware** — cross-cutting concerns (auth, observability, persistence) live primarily at the **runtime**; optional **BT guard nodes** handle step-level policy without polluting step definitions.
 
+4. **Definition lifecycle (0.24+)** — Catalog definitions gain **append-only revisions**; instances pin `flow_id` + `flow_revision` while retaining a resume snapshot. Migration rules (transform registry) upgrade live instances. **Design Service (0.25)** orchestrates propose/validate/impact/commit on top — see [VISION-0.24](docs/VISION-0.24.md).
+
 ---
 
 ## Layer diagram
@@ -87,7 +89,7 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | `common/executions/` | `DefinitionExecutor`, flow/process submission prep |
 | `common/plans/` | `ExecutionPlan`, `ProcessPlan`, `PlanRegistry` |
 | `common/hooks/` | Orchestration hooks (`InstancePersistenceHook`, `StateSnapshotHook`) |
-| `common/persistence/` | Definition and instance repositories, resume/sync |
+| `common/persistence/` | Definition and instance repositories, resume/sync; **0.24+** revision keys (`flow:{id}:rev:{n}`) |
 | `common/storage/` | `StorageFactory` — lazy backend load, settings-driven options |
 | `common/managers/` | `InstanceManager` — cache, active tracking, summaries, reconciliation |
 | `common/cqrs/` | Command/query buses, projections, rebuild policy |
