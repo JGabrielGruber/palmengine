@@ -1,11 +1,9 @@
-# Design Service Design (Draft — 0.25)
+# Design Service Design (0.25)
 
-**Status:** Draft / deferred  
-**Version target:** 0.25.0  
-**Depends on:** [ADR-007 definition revisioning](../../adr/007-definition-revisioning.md) · [0.24.1+ implementation](../plans/2026-07-03-definition-revisioning.md)  
+**Status:** 0.25.0 MVP shipped (local) · completion per [ADR-008](../../adr/008-design-service.md) + [plan](../plans/2026-07-07-design-service-plus.md)  
+**Version target:** 0.25.0 MVP ✅ · final release bundles 0.24 + 0.25  
+**Depends on:** [ADR-007 definition revisioning](../../adr/007-definition-revisioning.md) · [0.24.1+ implementation](../plans/2026-07-03-definition-revisioning.md) ✅  
 **Vision:** [VISION-0.25.md](../../VISION-0.25.md)
-
-> Do not implement until flow revisioning (0.24.1) and migration primitives (0.24.2+) are shipped.
 
 ---
 
@@ -22,8 +20,8 @@ Introduce **`palm/services/design/`** as the recommended path for **agent-driven
 1. **Proposal envelope** — durable draft before commit
 2. **Validation** — reuse `validate_flow`, pattern-specific contributors
 3. **Impact analysis** — delegate to 0.24 `analyze_impact`
-4. **Commit** — `publish_flow_revision` (not overwrite)
-5. **Migration trigger** — optional instance migration via 0.24 rules
+4. **Commit** — revision append via `create_flow` / `update_flow` (0.24.1)
+5. **Migration trigger** — **auto-migrate** compatible instances on commit ([ADR-008](../../adr/008-design-service.md))
 6. **MCP surface** — `palm_design_*` tools; optional `palm_assist` aliases
 
 **Layered coexistence:** `DefinitionService` CRUD stays for direct integrators and Explorer.

@@ -1,4 +1,4 @@
-"""Design service contract — contributor registry for proposal validation."""
+"""Design service contract — contributor registry and command-path catalog."""
 
 from __future__ import annotations
 
@@ -11,6 +11,15 @@ DesignValidatorFn = Callable[[dict[str, Any], Any], tuple[bool, list[str]]]
 
 
 @dataclass(frozen=True)
+class CommandSpec:
+    """Registered design command path for operator dispatch."""
+
+    command_id: str
+    path_pattern: tuple[str, ...]
+    summary: str
+
+
+@dataclass(frozen=True)
 class DesignContributor:
     """Pattern- or domain-specific proposal validation hook."""
 
@@ -18,6 +27,46 @@ class DesignContributor:
     validate: DesignValidatorFn | None = None
     summary: str = ""
 
+
+_registry: tuple[CommandSpec, ...] = (
+    CommandSpec("propose_flow", ("design", "propose"), "Create a design proposal from a flow body"),
+    CommandSpec("list_proposals", ("design", "proposals"), "List open design proposals"),
+    CommandSpec(
+        "get_proposal",
+        ("design", "proposals", "{proposal_id}"),
+        "Load a design proposal envelope",
+    ),
+    CommandSpec(
+        "validate_proposal",
+        ("design", "proposals", "{proposal_id}", "validate"),
+        "Validate a design proposal",
+    ),
+    CommandSpec(
+        "analyze_impact",
+        ("design", "proposals", "{proposal_id}", "impact"),
+        "Analyze instance impact for a proposal commit",
+    ),
+    CommandSpec(
+        "commit_proposal",
+        ("design", "proposals", "{proposal_id}", "commit"),
+        "Publish proposal revision and auto-migrate compatible instances",
+    ),
+    CommandSpec(
+        "discard_proposal",
+        ("design", "proposals", "{proposal_id}", "discard"),
+        "Discard an open design proposal",
+    ),
+)
+
+_DESIGN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
+    "design/propose": ("design", "propose"),
+    "design/list": ("design", "proposals"),
+    "design/get": ("design", "proposals", "{proposal_id}"),
+    "design/validate": ("design", "proposals", "{proposal_id}", "validate"),
+    "design/impact": ("design", "proposals", "{proposal_id}", "impact"),
+    "design/commit": ("design", "proposals", "{proposal_id}", "commit"),
+    "design/discard": ("design", "proposals", "{proposal_id}", "discard"),
+}
 
 _lock = threading.RLock()
 _contributors: dict[str, DesignContributor] = {}
@@ -55,11 +104,50 @@ def clear_design_contributors() -> None:
         _contributors.clear()
 
 
+def design_commands() -> tuple[CommandSpec, ...]:
+    return _registry
+
+
+def list_design_mcp_aliases() -> list[dict[str, Any]]:
+    return [
+        {"alias": alias, "path": list(path), "domain": "design"}
+        for alias, path in sorted(_DESIGN_MCP_ALIASES.items())
+    ]
+
+
+def resolve_design_mcp_alias(
+    alias: str,
+    *,
+    params: dict[str, Any] | None = None,
+) -> tuple[str, ...] | None:
+    """Resolve a design alias to a concrete command path."""
+    params = params or {}
+    pattern = _DESIGN_MCP_ALIASES.get(alias)
+    if pattern is None:
+        return None
+    resolved: list[str] = []
+    for segment in pattern:
+        text = str(segment)
+        if text.startswith("{") and text.endswith("}"):
+            key = text[1:-1]
+            value = params.get(key)
+            if value is None:
+                raise ValueError(f"alias {alias!r} requires param {key!r}")
+            resolved.append(str(value))
+        else:
+            resolved.append(text)
+    return tuple(resolved)
+
+
 __all__ = [
+    "CommandSpec",
     "DesignContributor",
     "DesignValidatorFn",
     "clear_design_contributors",
+    "design_commands",
     "iter_design_contributors",
+    "list_design_mcp_aliases",
     "register_design_contributor",
+    "resolve_design_mcp_alias",
     "run_design_validators",
 ]

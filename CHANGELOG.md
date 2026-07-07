@@ -4,6 +4,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **Durable design proposals** — `StorageDesignProposalRepository` (`palm:design:proposals:{id}`) when `StorageEngine` is active.
+- **Auto-migrate on commit** — `commit_proposal` migrates impact-compatible instances; `migrations` block in commit response.
+- **Commit token gate** — `commit_token` / `input_token` on commit; `PALM_MCP_REQUIRE_INPUT_TOKEN` applies to `palm_design_commit`.
+- **`palm_assist` design paths** — `design/*` aliases and dispatch; assistant views on validate/impact.
+- **ADR-008**, **MIGRATION-0.25.md**, `examples/definitions/design_proposal_demo.py`.
+
 ## [0.25.0] — 2026-07-07
 
 **Design Service** — structured propose → validate → impact → commit for flow definition evolution.

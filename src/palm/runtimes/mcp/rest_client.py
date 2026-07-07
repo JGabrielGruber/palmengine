@@ -334,11 +334,22 @@ class PalmRestClient:
     def design_analyze_proposal_impact(self, proposal_id: str) -> dict[str, Any]:
         return self._request("GET", f"/v1/api/design/proposals/{proposal_id}/impact")
 
-    def design_commit_proposal(self, proposal_id: str) -> dict[str, Any]:
+    def design_commit_proposal(
+        self,
+        proposal_id: str,
+        *,
+        commit_token: str | None = None,
+        input_token: str | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {}
+        if commit_token is not None:
+            body["commit_token"] = commit_token
+        if input_token is not None:
+            body["input_token"] = input_token
         return self._request(
             "POST",
             f"/v1/api/design/proposals/{proposal_id}/commit",
-            body={},
+            body=body,
             auth=True,
         )
 

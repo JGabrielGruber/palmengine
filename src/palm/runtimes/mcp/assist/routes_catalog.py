@@ -6,6 +6,7 @@ from typing import Any
 
 from palm.services.assist.registry import assist_commands, list_mcp_path_aliases
 from palm.services.definitions.registry import catalog_verbs
+from palm.services.design.registry import design_commands, list_design_mcp_aliases
 from palm.services.execution.flows.registry import flow_commands
 from palm.services.execution.processes.registry import process_commands
 from palm.services.execution.providers.registry import invoke_verbs
@@ -46,6 +47,16 @@ def build_assist_routes_catalog() -> dict[str, Any]:
             }
         )
 
+    for command in design_commands():
+        routes.append(
+            {
+                "domain": "design",
+                "command_id": command.command_id,
+                "path": list(command.path_pattern),
+                "summary": command.summary,
+            }
+        )
+
     for verb in catalog_verbs():
         routes.append(
             {
@@ -76,7 +87,7 @@ def build_assist_routes_catalog() -> dict[str, Any]:
             }
         )
 
-    aliases = list_mcp_path_aliases()
+    aliases = list_mcp_path_aliases() + list_design_mcp_aliases()
     return {
         "routes": routes,
         "aliases": aliases,

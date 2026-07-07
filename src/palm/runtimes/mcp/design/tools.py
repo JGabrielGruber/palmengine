@@ -37,9 +37,17 @@ def register_design_tools(mcp: Any, backend: Any) -> None:
         return backend.design_analyze_proposal_impact(proposal_id)
 
     @mcp.tool
-    def palm_design_commit(proposal_id: str) -> dict[str, Any]:
-        """Publish a validated proposal as a new flow revision."""
-        return backend.design_commit_proposal(proposal_id)
+    def palm_design_commit(
+        proposal_id: str,
+        commit_token: str | None = None,
+        input_token: str | None = None,
+    ) -> dict[str, Any]:
+        """Publish a validated proposal as a new flow revision and auto-migrate compatible instances."""
+        return backend.design_commit_proposal(
+            proposal_id,
+            commit_token=commit_token,
+            input_token=input_token,
+        )
 
     @mcp.tool
     def palm_design_discard(proposal_id: str) -> dict[str, Any]:

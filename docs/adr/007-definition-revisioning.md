@@ -72,5 +72,6 @@ External feedback proposed a Design Service first. Palm's architecture assessmen
 - [VISION-0.24.md](../VISION-0.24.md)
 - [Definition revisioning design spec](../superpowers/specs/2026-07-03-definition-revisioning-design.md)
 - [Design Service draft (0.25)](../superpowers/specs/2026-07-03-design-service-design.md)
+- [ADR-008](008-design-service.md) — Design Service (sixth domain); auto-migrate on commit
 - [ADR-005](005-service-domain-api.md) — service domain layout
 - [ADR-006](006-assist-domain.md) — assist as fifth service; design as sixth in 0.25

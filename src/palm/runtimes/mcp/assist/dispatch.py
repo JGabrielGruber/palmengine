@@ -15,10 +15,15 @@ from palm.runtimes.mcp.assist.routes_catalog import build_assist_routes_catalog
 from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.runtimes.mcp.flows.views import flatten_session_view, submission_view
 from palm.services.assist.registry import resolve_mcp_alias
+from palm.services.design.registry import resolve_design_mcp_alias
+from palm.services.design.views import (
+    build_design_impact_assistant_view,
+    build_design_validate_assistant_view,
+)
 from palm.services.assist.views import resolve_view_format
 
 _DELEGATED_PREFIXES = frozenset(
-    {"assist", "flows", "processes", "definitions", "system", "providers"},
+    {"assist", "flows", "processes", "definitions", "design", "system", "providers"},
 )
 
 _DEFAULT_ASSIST_ALIAS = "operator-entry/start"
@@ -105,9 +110,11 @@ def resolve_dispatch_path(
     if alias:
         resolved = resolve_mcp_alias(alias, params=params)
         if resolved is None:
+            resolved = resolve_design_mcp_alias(alias, params=params)
+        if resolved is None:
             if alias == _DEFAULT_ASSIST_ALIAS:
                 return ["assist", "scenarios"]
-            raise ValueError(f"unknown assist MCP alias: {alias!r}")
+            raise ValueError(f"unknown MCP alias: {alias!r}")
         return list(resolved)
     if path:
         return [str(segment) for segment in path]
@@ -139,6 +146,9 @@ def dispatch_operator_path(
     if prefix == "definitions":
         return _dispatch_definitions(ctx, path, params)
 
+    if prefix == "design":
+        return ctx.design.dispatch(path, params)
+
     if prefix == "system":
         return _dispatch_system(ctx, path, params)
 
@@ -163,9 +173,9 @@ def resolve_dispatch_format(
     params: dict[str, Any] | None = None,
     tool_format: str | None = None,
 ) -> str:
-    """Resolve view format: assistant default on assist paths; powertool elsewhere."""
+    """Resolve view format: assistant default on assist/design paths; powertool elsewhere."""
     prefix = path[0] if path else ""
-    if prefix == "assist":
+    if prefix in {"assist", "design"}:
         merged = dict(params or {})
         if tool_format is not None and "format" not in merged:
             merged["format"] = tool_format
@@ -254,6 +264,16 @@ def shape_dispatch_result(
         payload["doctor"] = result
         return payload
 
+    if prefix == "design" and fmt == "assistant":
+        proposal_id = _design_proposal_id_from_path(path, result)
+        if proposal_id and path[-1:] == ["validate"] and isinstance(result, dict):
+            payload.update(build_design_validate_assistant_view(proposal_id, result))
+            return payload
+        if proposal_id and path[-1:] == ["impact"] and isinstance(result, dict):
+            valid = bool((result.get("mutation") or {}).get("mutations_allowed"))
+            payload.update(build_design_impact_assistant_view(proposal_id, result, valid=valid))
+            return payload
+
     payload.update(result)
     return payload
 
@@ -325,6 +345,13 @@ def _operator_context_from_flow_path(path: list[str], flat: dict[str, Any]) -> O
 
 def _optional_str(value: object | None) -> str | None:
     return str(value) if value is not None else None
+
+
+def _design_proposal_id_from_path(path: list[str], result: dict[str, Any]) -> str | None:
+    if len(path) >= 3 and path[0] == "design" and path[1] == "proposals":
+        return path[2]
+    proposal_id = result.get("proposal_id")
+    return str(proposal_id) if proposal_id else None
 
 
 def _append_format_query(url_path: str, params: dict[str, Any]) -> str:

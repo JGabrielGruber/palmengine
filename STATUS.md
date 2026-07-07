@@ -294,13 +294,29 @@ just mcp-inspector                       # MCP Inspector UI
 | Migration rules + impact query | ✅ 0.24.2 (local) |
 | Migration execution hooks + demo flow | ✅ 0.24.3 (local) |
 | Documentation + MCP surface cleanup | ✅ 0.24.4 (local) |
-| **Design Service** | ✅ 0.25.0 (local) — propose/validate/impact/commit |
+| **Design Service** | ✅ 0.25.0 MVP (local) — propose/validate/impact/commit |
+
+### 0.25+ — Design Service completion (pre–final release)
+
+**ADR:** [docs/adr/008-design-service.md](docs/adr/008-design-service.md)  
+**Plan:** [docs/superpowers/plans/2026-07-07-design-service-plus.md](docs/superpowers/plans/2026-07-07-design-service-plus.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.25.1 | Docs hygiene, ADR-008, `MIGRATION-0.25.md` | ✅ Local |
+| 0.25.2 | Durable `StorageEngine` proposals | ✅ Local |
+| 0.25.3 | Auto-migrate on commit | ✅ Local |
+| 0.25.4 | Agent safety + `palm_assist` design aliases | ✅ Local |
+| 0.25.5 | Pattern design contributors | ⏳ Recommended |
+| 0.25.7 | CQRS transport (below service layer) | ⏳ After business slices |
+
+**Release policy:** One PyPI release bundles 0.24.1–0.24.4 + complete 0.25 (not partial cuts).
 
 ## Priorities & Next Steps
 
 **0.24 revisioning + migration complete (local)** — [MIGRATION-0.24.md](MIGRATION-0.24.md) documents REST/MCP operator paths.
 
-**0.25 Design Service shipped (local)** — `host.design`, REST `/v1/api/design/proposals`, MCP `palm_design_*`. Agents should prefer design tools over direct definition writes.
+**0.25 Design Service complete (local)** — durable proposals, auto-migrate on commit, commit token gate, `palm_assist` design paths. Ready for bundled PyPI release with 0.24 stack when requested.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream.
 

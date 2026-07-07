@@ -595,14 +595,27 @@ class PalmInProcessBackend:
                 },
             ) from exc
 
-    def design_commit_proposal(self, proposal_id: str) -> dict[str, Any]:
+    def design_commit_proposal(
+        self,
+        proposal_id: str,
+        *,
+        commit_token: str | None = None,
+        input_token: str | None = None,
+    ) -> dict[str, Any]:
+        from palm.common.exceptions import MutationRejectedError
         from palm.common.services.errors import (
             DesignCommitRejectedServiceError,
             DesignProposalNotFoundServiceError,
         )
 
         try:
-            return self._ctx.design.commit_proposal(proposal_id)
+            return self._ctx.design.commit_proposal(
+                proposal_id,
+                commit_token=commit_token,
+                input_token=input_token,
+            )
+        except MutationRejectedError as exc:
+            raise PalmRestError(400, str(exc)) from exc
         except DesignProposalNotFoundServiceError as exc:
             raise PalmRestError(
                 404,

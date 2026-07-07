@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from palm.common.exceptions import MutationRejectedError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import (
     DesignCommitRejectedServiceError,
@@ -119,12 +120,19 @@ def commit_proposal(
     if auth_error is not None:
         return auth_error
 
+    body = request.body if isinstance(request.body, dict) else {}
     try:
-        payload = ctx.design.commit_proposal(proposal_id)
+        payload = ctx.design.commit_proposal(
+            proposal_id,
+            commit_token=body.get("commit_token"),
+            input_token=body.get("input_token"),
+        )
     except DesignProposalNotFoundServiceError:
         return errors.proposal_not_found(proposal_id)
     except DesignCommitRejectedServiceError as exc:
         return errors.bad_request(exc.reason, extra={"blockers": exc.blockers})
+    except MutationRejectedError as exc:
+        return errors.bad_request(str(exc))
     return ok(payload)
 
 

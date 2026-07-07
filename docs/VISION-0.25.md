@@ -1,9 +1,10 @@
-# Vision 0.25 — Design Service (deferred)
+# Vision 0.25 — Design Service
 
-**Theme:** A sixth service domain for safe, structured definition evolution — propose, validate, analyze impact, and commit revisions.
+**Theme:** A sixth service domain for safe, structured definition evolution — propose, validate, analyze impact, commit revisions, and auto-migrate compatible instances.
 
-**Status:** Implemented locally (0.25.0) · **Released on PyPI:** pending explicit release request  
-**Depends on:** [0.24 definition revisioning](VISION-0.24.md) ✅
+**Status:** 0.25.0 MVP local · **Final PyPI release:** pending (bundles full 0.24 + 0.25 stack per [ADR-008](adr/008-design-service.md))  
+**Depends on:** [0.24 definition revisioning](VISION-0.24.md) ✅  
+**ADR:** [008-design-service.md](adr/008-design-service.md) · **Plan:** [design-service-plus.md](superpowers/plans/2026-07-07-design-service-plus.md)
 
 ---
 
@@ -30,9 +31,9 @@ Design Service orchestrates **revision publishes** and **migration triggers**. W
 | Propose definition changes | In-memory or storage-backed proposal store |
 | Validate proposals | `definitions.validate_flow`, `prepare_flow_from_body`, pattern validators |
 | Analyze impact | 0.24 impact query — affected instances, compatibility flags |
-| Commit | `definitions.publish_flow_revision` (0.24.1) |
-| Trigger migration | 0.24 migration rules + optional migration flows |
-| Agent surface | MCP `palm_design_*` tools + optional `palm_assist` aliases |
+| Commit | `definitions.create_flow` / `update_flow` (revision append, 0.24.1) |
+| Trigger migration | **Auto-migrate** compatible instances on commit (0.25.3); 0.24 rules + `migrate_instance` |
+| Agent surface | MCP `palm_design_*` tools + `palm_assist` design aliases (final release) |
 
 **Layered coexistence:** `DefinitionService` CRUD remains for direct integrators. Design Service is the **recommended agent path**.
 

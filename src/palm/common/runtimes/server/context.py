@@ -15,7 +15,7 @@ from palm.common.runtimes.server.cqrs import wire_standalone_buses
 from palm.services.assist import AssistService
 from palm.services.definitions import DefinitionService
 from palm.services.design import DesignService
-from palm.services.design.proposal import DesignProposalRepository
+from palm.services.design.factory import create_proposal_repository
 from palm.services.execution import ExecutionService
 from palm.services.execution.flows import FlowExecutionService
 from palm.services.execution.processes import ProcessExecutionService
@@ -88,7 +88,7 @@ class ServerContext:
             self._design = DesignService(
                 **bus_kw,
                 definitions=definitions,
-                proposals=DesignProposalRepository(),
+                proposals=create_proposal_repository(runtime.storage),
                 runtime=runtime,
             )
         else:
