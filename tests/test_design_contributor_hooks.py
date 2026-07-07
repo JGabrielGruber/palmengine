@@ -39,13 +39,20 @@ def test_wizard_registers_design_contributor_hook_on_pattern_import() -> None:
     assert hook.register.__name__ == "register_wizard_design_contributor"
 
 
+def _ensure_pipeline_hook() -> None:
+    from palm.patterns.pipeline.app import pipeline_app
+
+    pipeline_app.register()
+
+
 def test_wire_drains_pattern_hooks_into_design_registry() -> None:
     _ensure_wizard_hook()
+    _ensure_pipeline_hook()
 
     assert len(iter_design_contributors()) == 0
     wire_builtin_design_contributors()
     contributor_ids = {row.contributor_id for row in iter_design_contributors()}
-    assert contributor_ids == {"wizard"}
+    assert contributor_ids == {"pipeline", "wizard"}
 
 
 def test_custom_hook_registers_via_wire() -> None:

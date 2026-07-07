@@ -1,4 +1,4 @@
-"""Tests for wizard pattern design proposal contributor."""
+"""Tests for pipeline pattern design proposal contributor (0.25.5)."""
 
 from __future__ import annotations
 
@@ -32,25 +32,60 @@ def setup_function() -> None:
     reset_design_contributor_wiring()
 
 
-def _wizard_flow(*, steps: list[dict]) -> dict:
+def _pipeline_flow(*, steps: list[dict]) -> dict:
     return FlowDefinition(
-        name="wizard-design-test",
-        pattern="wizard",
+        name="pipeline-design-test",
+        pattern="pipeline",
         options={"steps": steps},
     ).to_dict()
 
 
-def test_wizard_design_contributor_registered_after_host_start(design_host: ApplicationHost) -> None:
+def test_pipeline_design_contributor_registered_after_host_start(design_host: ApplicationHost) -> None:
     del design_host
     contributor_ids = {row.contributor_id for row in iter_design_contributors()}
-    assert "wizard" in contributor_ids
+    assert "pipeline" in contributor_ids
 
 
-def test_wizard_contributor_rejects_duplicate_step_slugs(design_host: ApplicationHost) -> None:
-    body = _wizard_flow(
+def test_pipeline_contributor_rejects_empty_steps(design_host: ApplicationHost) -> None:
+    body = _pipeline_flow(steps=[])
+    result = design_host.design.propose_flow(body)
+    validation = result["validation"]
+    assert validation["valid"] is False
+    assert any("steps" in blocker.lower() for blocker in validation["blockers"])
+
+
+def test_pipeline_contributor_rejects_step_without_rule_or_chain(design_host: ApplicationHost) -> None:
+    body = _pipeline_flow(
         steps=[
-            {"slug": "note", "title": "Note", "prompt": "Note?"},
-            {"slug": "note", "title": "Again", "prompt": "Again?"},
+            {
+                "name": "broken",
+                "source_key": "payload",
+            },
+        ],
+    )
+    result = design_host.design.propose_flow(body)
+    validation = result["validation"]
+    assert validation["valid"] is False
+    assert any("rule or chain" in blocker for blocker in validation["blockers"])
+
+
+def test_pipeline_contributor_rejects_duplicate_step_names(design_host: ApplicationHost) -> None:
+    body = _pipeline_flow(
+        steps=[
+            {
+                "name": "rename",
+                "source_key": "payload",
+                "target_key": "user",
+                "rule": "rename_field",
+                "options": {"from_key": "first_name", "to_key": "name"},
+            },
+            {
+                "name": "rename",
+                "source_key": "user",
+                "target_key": "out",
+                "rule": "rename_field",
+                "options": {"from_key": "name", "to_key": "full_name"},
+            },
         ],
     )
     result = design_host.design.propose_flow(body)
@@ -59,48 +94,16 @@ def test_wizard_contributor_rejects_duplicate_step_slugs(design_host: Applicatio
     assert any("duplicate" in blocker.lower() for blocker in validation["blockers"])
 
 
-def test_wizard_contributor_rejects_collection_without_item_fields(design_host: ApplicationHost) -> None:
-    body = _wizard_flow(
+def test_pipeline_contributor_allows_valid_flow(design_host: ApplicationHost) -> None:
+    body = _pipeline_flow(
         steps=[
             {
-                "slug": "items",
-                "title": "Items",
-                "prompt": "Items?",
-                "step_kind": "collection",
+                "name": "rename",
+                "source_key": "payload",
+                "target_key": "user",
+                "rule": "rename_field",
+                "options": {"from_key": "first_name", "to_key": "name"},
             },
-        ],
-    )
-    result = design_host.design.propose_flow(body)
-    validation = result["validation"]
-    assert validation["valid"] is False
-    assert any("item_fields" in blocker for blocker in validation["blockers"])
-
-
-def test_wizard_contributor_rejects_duplicate_collection_field_slugs(design_host: ApplicationHost) -> None:
-    body = _wizard_flow(
-        steps=[
-            {
-                "slug": "items",
-                "title": "Items",
-                "prompt": "Items?",
-                "step_kind": "collection",
-                "item_fields": [
-                    {"slug": "title", "title": "Title", "prompt": "Title?"},
-                    {"slug": "title", "title": "Dup", "prompt": "Dup?"},
-                ],
-            },
-        ],
-    )
-    result = design_host.design.propose_flow(body)
-    validation = result["validation"]
-    assert validation["valid"] is False
-    assert any("duplicate" in blocker.lower() for blocker in validation["blockers"])
-
-
-def test_wizard_contributor_allows_valid_flow(design_host: ApplicationHost) -> None:
-    body = _wizard_flow(
-        steps=[
-            {"slug": "note", "title": "Note", "prompt": "Note?"},
         ],
     )
     result = design_host.design.propose_flow(body)
