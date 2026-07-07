@@ -66,7 +66,10 @@ class StorageDesignProposalRepository:
         with self._lock:
             self._cache[proposal.proposal_id] = proposal
             self._persist(proposal)
-            self._index_add(proposal.proposal_id)
+            if proposal.status == _OPEN:
+                self._index_add(proposal.proposal_id)
+            else:
+                self._index_remove(proposal.proposal_id)
         return proposal
 
     def get(self, proposal_id: str) -> DesignProposal:

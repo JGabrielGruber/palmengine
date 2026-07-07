@@ -7,8 +7,6 @@ from typing import Any
 from palm.common.exceptions import DefinitionBuildError
 from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
 from palm.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
-
-
 def register_wizard_design_contributor() -> None:
     """Register wizard-specific design proposal checks at pattern bootstrap."""
     from palm.services.design.registry import DesignContributor, register_design_contributor
@@ -24,7 +22,9 @@ def register_wizard_design_contributor() -> None:
 
 def validate_wizard_design_proposal(body: dict[str, Any], _context: Any) -> tuple[bool, list[str]]:
     """Validate wizard flow payloads inside a design proposal envelope."""
-    flow = _extract_flow_dict(body)
+    from palm.services.design.envelope import extract_flow_dict
+
+    flow = extract_flow_dict(body)
     if flow is None or str(flow.get("pattern") or "") != "wizard":
         return True, []
 
@@ -43,15 +43,6 @@ def validate_wizard_design_proposal(body: dict[str, Any], _context: Any) -> tupl
         blockers.append(str(exc))
 
     return (not blockers, blockers)
-
-
-def _extract_flow_dict(body: dict[str, Any]) -> dict[str, Any] | None:
-    flow_section = body.get("flow")
-    if isinstance(flow_section, dict):
-        return flow_section
-    if "pattern" in body or "name" in body or "flow_name" in body:
-        return body
-    return None
 
 
 def _validate_step_list(options: dict[str, Any]) -> list[str]:

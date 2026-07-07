@@ -17,6 +17,12 @@ from palm.common.services.errors import DesignCommitRejectedServiceError
 from palm.core import StorageEngine
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance
+from palm.services.design.envelope import (
+    PublishAction,
+    extract_flow_dict,
+    resolve_publish_intent,
+    validation_body,
+)
 from palm.services.design.factory import create_proposal_repository
 from palm.services.design.proposal import DesignProposalRepository
 from palm.services.design.registry import DesignContributor, clear_design_contributors, register_design_contributor
@@ -241,6 +247,47 @@ def test_commit_reanalyzes_impact_before_auto_migrate(design_host: ApplicationHo
         updated = design_host.instance_manager.get(instance_id)
         assert updated.flow_revision == 2
         assert updated.state_snapshot.get("migrated") is True
+
+
+def test_storage_repository_removes_closed_proposals_from_index() -> None:
+    storage = StorageEngine()
+    storage.initialize(backend="memory")
+    repo = StorageDesignProposalRepository(storage)
+    proposal = repo.create(_quick_flow_body("index-flow"), flow_id="index-flow")
+    assert proposal.proposal_id in repo._index_read()
+
+    proposal.status = "committed"
+    repo.save(proposal)
+    assert proposal.proposal_id not in repo._index_read()
+    assert repo.get(proposal.proposal_id).status == "committed"
+
+
+def test_envelope_helpers_and_publish_intent(design_host: ApplicationHost) -> None:
+    body = _quick_flow_body("envelope-flow")
+    assert extract_flow_dict(body) == body
+    assert extract_flow_dict({"flow": body}) == body
+    assert validation_body(body) == {"flow": body}
+
+    intent = resolve_publish_intent(
+        body=body,
+        base_flow_id=None,
+        flow_id=None,
+        flow_exists=lambda _flow_id: False,
+    )
+    assert intent is not None
+    assert intent.action == PublishAction.CREATE
+    assert intent.flow_id == "envelope-flow"
+
+    design_host.definitions.create_flow(_quick_flow_body("envelope-flow"))
+    update_intent = resolve_publish_intent(
+        body=body,
+        base_flow_id="envelope-flow",
+        flow_id="envelope-flow",
+        flow_exists=lambda _flow_id: True,
+    )
+    assert update_intent is not None
+    assert update_intent.action == PublishAction.UPDATE
+    assert update_intent.flow_id == "envelope-flow"
 
 
 def test_definition_service_next_revision_for_flow(design_host: ApplicationHost) -> None:

@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from palm.common.operator.path_alias import resolve_path_alias
+
 DesignValidatorFn = Callable[[dict[str, Any], Any], tuple[bool, list[str]]]
 
 
@@ -121,22 +123,7 @@ def resolve_design_mcp_alias(
     params: dict[str, Any] | None = None,
 ) -> tuple[str, ...] | None:
     """Resolve a design alias to a concrete command path."""
-    params = params or {}
-    pattern = _DESIGN_MCP_ALIASES.get(alias)
-    if pattern is None:
-        return None
-    resolved: list[str] = []
-    for segment in pattern:
-        text = str(segment)
-        if text.startswith("{") and text.endswith("}"):
-            key = text[1:-1]
-            value = params.get(key)
-            if value is None:
-                raise ValueError(f"alias {alias!r} requires param {key!r}")
-            resolved.append(str(value))
-        else:
-            resolved.append(text)
-    return tuple(resolved)
+    return resolve_path_alias(alias, _DESIGN_MCP_ALIASES.get(alias), params=params)
 
 
 __all__ = [

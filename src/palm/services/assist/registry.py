@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from palm.common.operator.path_alias import resolve_path_alias
+
 AssistantEnricherFn = Callable[..., dict[str, Any]]
 
 
@@ -150,23 +152,9 @@ def resolve_mcp_alias(
     params: dict[str, Any] | None = None,
 ) -> tuple[str, ...] | None:
     """Resolve an alias to a concrete command path, substituting ``params`` tokens."""
-    params = params or {}
     with _lock:
         pattern = _mcp_aliases.get(alias)
-    if pattern is None:
-        return None
-    resolved: list[str] = []
-    for segment in pattern:
-        text = str(segment)
-        if text.startswith("{") and text.endswith("}"):
-            key = text[1:-1]
-            value = params.get(key)
-            if value is None:
-                raise ValueError(f"alias {alias!r} requires param {key!r}")
-            resolved.append(str(value))
-        else:
-            resolved.append(text)
-    return tuple(resolved)
+    return resolve_path_alias(alias, pattern, params=params)
 
 
 def register_assistant_enricher(scenario_id: str, fn: AssistantEnricherFn) -> None:

@@ -14,7 +14,13 @@ from palm.common.services.errors import (
     InstanceMigrationServiceError,
 )
 from palm.services.design.commit_gate import build_commit_mutation_block, enforce_commit_token
-from palm.services.design.proposal import resolve_flow_id_from_body
+from palm.services.design.envelope import (
+    PublishAction,
+    resolve_flow_id_from_body,
+    resolve_publish_intent,
+    validation_body,
+)
+from palm.services.design.proposal import ProposalRepository, resolve_proposal_flow_id
 from palm.services.design.registry import run_design_validators
 
 if TYPE_CHECKING:
@@ -32,7 +38,7 @@ class DesignService(BaseService):
         queries: Any,
         schemas: Any,
         definitions: DefinitionService,
-        proposals: Any,
+        proposals: ProposalRepository,
         runtime: BaseRuntime | None = None,
         runtime_resolver: Callable[[str | None], BaseRuntime] | None = None,
     ) -> None:
@@ -114,7 +120,7 @@ class DesignService(BaseService):
         ok, blockers = run_design_validators(proposal.body, context=self)
         try:
             catalog_validation = self._definitions.validate_flow(
-                _validation_body(proposal.body),
+                validation_body(proposal.body),
                 runtime=runtime,
             )
         except (TypeError, ValueError, KeyError, DefinitionBuildError) as exc:
@@ -137,10 +143,7 @@ class DesignService(BaseService):
 
     def analyze_proposal_impact(self, proposal_id: str) -> dict[str, Any]:
         proposal = self._proposals.get(proposal_id)
-        flow_id = proposal.flow_id or resolve_flow_id_from_body(
-            proposal.body,
-            base_flow_id=proposal.base_flow_id,
-        )
+        flow_id = resolve_proposal_flow_id(proposal)
         if not flow_id:
             raise DesignCommitRejectedServiceError(
                 proposal_id,
@@ -207,26 +210,25 @@ class DesignService(BaseService):
                 blockers=blockers,
             )
 
-        flow_id = proposal.flow_id or resolve_flow_id_from_body(
-            proposal.body,
+        intent = resolve_publish_intent(
+            body=proposal.body,
             base_flow_id=proposal.base_flow_id,
+            flow_id=proposal.flow_id,
+            flow_exists=self._flow_exists,
         )
-        if not flow_id:
+        if intent is None:
             raise DesignCommitRejectedServiceError(proposal_id, "cannot resolve flow_id to publish")
 
         impact = self.analyze_proposal_impact(proposal_id)
 
-        try:
-            if proposal.base_flow_id or self._flow_exists(flow_id):
-                published = self._definitions.update_flow(flow_id, proposal.body)
-            else:
-                published = self._definitions.create_flow(proposal.body)
-        except DefinitionNotFoundServiceError:
+        if intent.action == PublishAction.UPDATE:
+            published = self._definitions.update_flow(intent.flow_id, proposal.body)
+        else:
             published = self._definitions.create_flow(proposal.body)
 
         proposal.status = "committed"
         proposal.committed_revision = int(published.get("revision") or 1)
-        proposal.flow_id = str(published.get("definition_id") or published.get("name") or flow_id)
+        proposal.flow_id = str(published.get("definition_id") or published.get("name") or intent.flow_id)
         self._proposals.save(proposal)
 
         migrations = self._auto_migrate_compatible_instances(
@@ -335,12 +337,5 @@ class DesignService(BaseService):
             return True
         except DefinitionNotFoundServiceError:
             return False
-
-def _validation_body(body: dict[str, Any]) -> dict[str, Any]:
-    """Normalize proposal payload for ``validate_flow`` (expects ``flow`` wrapper)."""
-    if "flow" in body or "wizard" in body or "flow_name" in body:
-        return body
-    return {"flow": body}
-
 
 __all__ = ["DesignService"]

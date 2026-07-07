@@ -6,9 +6,10 @@ import threading
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from palm.common.exceptions import DesignProposalNotFoundError
+from palm.services.design.envelope import resolve_flow_id_from_body
 
 _OPEN = "open"
 
@@ -41,6 +42,32 @@ class DesignProposal:
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
+
+
+@runtime_checkable
+class ProposalRepository(Protocol):
+    """Contract for design proposal persistence backends."""
+
+    def create(
+        self,
+        body: dict[str, Any],
+        *,
+        base_flow_id: str | None = None,
+        flow_id: str | None = None,
+    ) -> DesignProposal: ...
+
+    def save(self, proposal: DesignProposal) -> DesignProposal: ...
+
+    def get(self, proposal_id: str) -> DesignProposal: ...
+
+    def delete(self, proposal_id: str) -> bool: ...
+
+    def list_proposals(
+        self,
+        *,
+        flow_id: str | None = None,
+        status: str | None = _OPEN,
+    ) -> list[DesignProposal]: ...
 
 
 class DesignProposalRepository:
@@ -93,25 +120,18 @@ class DesignProposalRepository:
         return sorted(rows, key=lambda item: item.updated_at, reverse=True)
 
 
-def resolve_flow_id_from_body(body: dict[str, Any], *, base_flow_id: str | None = None) -> str | None:
-    """Best-effort flow id from a proposal payload."""
-    if base_flow_id:
-        return str(base_flow_id)
-    flow_section = body.get("flow")
-    if isinstance(flow_section, dict):
-        for key in ("definition_id", "id", "name"):
-            value = flow_section.get(key)
-            if value:
-                return str(value)
-    for key in ("definition_id", "flow_id", "flow_name", "name"):
-        value = body.get(key)
-        if value:
-            return str(value)
-    return None
+def resolve_proposal_flow_id(proposal: DesignProposal) -> str | None:
+    """Resolve ``flow_id`` from a stored proposal envelope."""
+    return proposal.flow_id or resolve_flow_id_from_body(
+        proposal.body,
+        base_flow_id=proposal.base_flow_id,
+    )
 
 
 __all__ = [
     "DesignProposal",
     "DesignProposalRepository",
+    "ProposalRepository",
     "resolve_flow_id_from_body",
+    "resolve_proposal_flow_id",
 ]
