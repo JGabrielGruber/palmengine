@@ -380,6 +380,9 @@ def collect_cqrs_command_types() -> tuple[type, ...]:
     ]
     for contributor in iter_cqrs_contributors():
         types.extend(contributor.command_types)
+    from palm.services.design.bindings.cqrs.registry import DESIGN_COMMAND_TYPES
+
+    types.extend(DESIGN_COMMAND_TYPES)
     return tuple(types)
 
 
@@ -403,6 +406,9 @@ def collect_cqrs_query_types() -> tuple[type, ...]:
     ]
     for contributor in iter_cqrs_contributors():
         types.extend(contributor.query_types)
+    from palm.services.design.bindings.cqrs.registry import DESIGN_QUERY_TYPES
+
+    types.extend(DESIGN_QUERY_TYPES)
     return tuple(types)
 
 
