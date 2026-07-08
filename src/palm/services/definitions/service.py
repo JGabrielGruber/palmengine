@@ -51,6 +51,10 @@ class DefinitionService(BaseService):
         flows = self.ask(ListFlowsQuery(pattern=pattern))
         return [flow_catalog_row(flow) for flow in flows]
 
+    def list_flow_definitions(self) -> list[FlowDefinition]:
+        """Return full flow definitions for impact scans and integrators."""
+        return list(self._repository.list_flows())
+
     def get_flow(
         self,
         flow_id: str,

@@ -37,6 +37,7 @@ You operate Palm (the connected workflow engine) through MCP — primarily `palm
 | Session driving | `palm://agent/references/session-management` |
 | Common flows | `palm://agent/references/common-flows` |
 | Create/improve flows | `palm://agent/references/design-flows` |
+| Branching / hub menus | `palm://agent/references/branching-flows` |
 
 On-disk copies (for manual adoption): `docs/skills/palm/references/`.
 
@@ -60,6 +61,7 @@ design (optional) → create session → inspect → input → wait on children 
 | Routes catalog | read `palm://assist/routes` |
 | Propose flow | `palm_design_propose_flow(body={...})` |
 | Publish flow | `palm_design_impact` → `palm_design_commit` |
+| Propose resource | `palm_design_propose_resource(body={...})` |
 | Run custom flow | `palm_flows_create_session(flow_id="my-flow")` |
 
 ## When editing Palm MCP code

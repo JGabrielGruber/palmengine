@@ -529,6 +529,17 @@ class PalmInProcessBackend:
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
 
+    def design_propose_resource(
+        self,
+        body: dict[str, Any],
+        *,
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        try:
+            return self._ctx.design.propose_resource(body, base_resource_id=base_resource_id)
+        except (TypeError, ValueError, KeyError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+
     def design_list_proposals(self, *, flow_id: str | None = None) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope
         from palm.runtimes.server.surfaces.rest.validation import PaginationParams

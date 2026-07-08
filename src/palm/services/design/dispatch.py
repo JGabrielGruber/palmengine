@@ -30,6 +30,26 @@ def _handle_propose_flow(
     return service.propose_flow(payload, base_flow_id=base_flow_id)
 
 
+_PROPOSE_RESOURCE_BODY_SKIP = frozenset(
+    {"base_resource_id", "body", "commit_token", "input_token"},
+)
+
+
+def _handle_propose_resource(
+    service: DesignService,
+    params: dict[str, Any],
+    _capture: dict[str, str],
+) -> Any:
+    body = dict(params.get("body") or params)
+    base_resource_id = params.get("base_resource_id")
+    payload = {
+        key: value
+        for key, value in body.items()
+        if key not in _PROPOSE_RESOURCE_BODY_SKIP
+    }
+    return service.propose_resource(payload, base_resource_id=base_resource_id)
+
+
 def _handle_list_proposals(
     service: DesignService,
     params: dict[str, Any],
@@ -84,6 +104,7 @@ def _handle_discard_proposal(
 
 _DISPATCH_HANDLERS: dict[str, DispatchHandler] = {
     "propose_flow": _handle_propose_flow,
+    "propose_resource": _handle_propose_resource,
     "list_proposals": _handle_list_proposals,
     "get_proposal": _handle_get_proposal,
     "validate_proposal": _handle_validate_proposal,

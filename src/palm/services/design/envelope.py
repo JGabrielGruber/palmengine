@@ -22,6 +22,37 @@ class PublishIntent:
     flow_id: str
 
 
+def extract_resource_dict(body: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the inner resource dict from a proposal envelope, if present."""
+    resource_section = body.get("resource")
+    if isinstance(resource_section, dict):
+        return resource_section
+    if "provider" in body or body.get("kind") == "resource":
+        return body
+    return None
+
+
+def resolve_resource_id_from_body(
+    body: dict[str, Any],
+    *,
+    base_resource_id: str | None = None,
+) -> str | None:
+    """Best-effort resource name/id from a proposal payload."""
+    if base_resource_id:
+        return str(base_resource_id)
+    resource_section = body.get("resource")
+    if isinstance(resource_section, dict):
+        for key in ("definition_id", "id", "name"):
+            value = resource_section.get(key)
+            if value:
+                return str(value)
+    for key in ("definition_id", "id", "name", "resource_ref"):
+        value = body.get(key)
+        if value:
+            return str(value)
+    return None
+
+
 def extract_flow_dict(body: dict[str, Any]) -> dict[str, Any] | None:
     """Return the inner flow dict from a proposal envelope, if present."""
     flow_section = body.get("flow")
@@ -74,11 +105,32 @@ def resolve_publish_intent(
     return PublishIntent(PublishAction.CREATE, resolved)
 
 
+def resolve_resource_publish_intent(
+    *,
+    body: dict[str, Any],
+    base_resource_id: str | None,
+    resource_id: str | None,
+    resource_exists: Callable[[str], bool],
+) -> PublishIntent | None:
+    """Resolve whether commit should create or update a catalog resource."""
+    resolved = resource_id or resolve_resource_id_from_body(body, base_resource_id=base_resource_id)
+    if not resolved:
+        return None
+    if base_resource_id:
+        return PublishIntent(PublishAction.UPDATE, str(base_resource_id))
+    if resource_exists(resolved):
+        return PublishIntent(PublishAction.UPDATE, resolved)
+    return PublishIntent(PublishAction.CREATE, resolved)
+
+
 __all__ = [
     "PublishAction",
     "PublishIntent",
     "extract_flow_dict",
+    "extract_resource_dict",
     "resolve_flow_id_from_body",
     "resolve_publish_intent",
+    "resolve_resource_id_from_body",
+    "resolve_resource_publish_intent",
     "validation_body",
 ]

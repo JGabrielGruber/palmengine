@@ -321,11 +321,11 @@ just mcp-inspector                       # MCP Inspector UI
 
 | Phase | Theme | Status |
 |-------|-------|--------|
-| 0.27.0 | Design transform schema parity + `coconut-npc` example | 🟡 In progress (validator + example shipped) |
-| 0.27.1 | Wizard prompt `{{ state.* }}` interpolation (ADR-010) | 📋 Planned |
-| 0.27.2 | Design service: `propose_resource` | 📋 Planned |
+| 0.27.0 | Design transform schema parity + `coconut-npc` example | ✅ Shipped |
+| 0.27.1 | Wizard prompt `{{ state.* }}` interpolation (ADR-010) | ✅ Shipped |
+| 0.27.2 | Design service: `propose_resource` | ✅ Shipped |
 | 0.27.3 | Resource doctor preflight + step failure modes | 📋 Planned |
-| 0.27.4 | Branching playbook MCP reference | 📋 Planned |
+| 0.27.4 | Branching playbook MCP reference | ✅ Shipped |
 
 ## Priorities & Next Steps
 

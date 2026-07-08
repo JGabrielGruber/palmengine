@@ -103,6 +103,7 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 "slug": "topic",
                 "title": "Coconut",
                 "prompt": (
+                    "{{ state.mood_line }}\n\n"
                     "*(She leans on the cart.)*\n\n"
                     "\"Well then. What'll it be?\""
                 ),

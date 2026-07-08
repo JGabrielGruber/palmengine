@@ -10,9 +10,15 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from palm.common.operator.prompt_binding import resolve_wizard_prompt
 from palm.core.context import BaseState, ContextEngine
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.context.state import enrich_prompt_bundle, enter_step, leave_step
+from palm.patterns.wizard.bindings.context.state import (
+    enrich_prompt_bundle,
+    enter_step,
+    get_answers,
+    leave_step,
+)
 from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig
 
 EventEmitter = Callable[[str, dict[str, Any]], None]
@@ -48,11 +54,14 @@ def build_prompt_bundle(
     **extra: Any,
 ) -> dict[str, Any]:
     """Build a standard wizard prompt bundle with scope metadata."""
+    binding = get_answers(state)
+    resolved_title = resolve_wizard_prompt(step.title, binding) or step.title
+    resolved_prompt = resolve_wizard_prompt(step.prompt, binding) or step.prompt
     bundle: dict[str, Any] = {
         "wizard": wizard_name,
         "slug": step.slug,
-        "title": step.title,
-        "prompt": step.prompt,
+        "title": resolved_title,
+        "prompt": resolved_prompt,
         "field_type": step.field_type,
         "choices": list(step.choices),
         "step_index": step_index,

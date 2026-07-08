@@ -37,12 +37,36 @@ def validate_wizard_design_proposal(body: dict[str, Any], _context: Any) -> tupl
     if options.get("include_commit") and not options.get("commit_hook"):
         blockers.append("wizard with include_commit requires commit_hook in options")
 
+    normalized_options = _normalize_options_steps(options)
     try:
-        wizard_config_from_options(parse_wizard_flow_options(options))
+        wizard_config_from_options(parse_wizard_flow_options(normalized_options))
     except (DefinitionBuildError, ValueError, TypeError, KeyError) as exc:
         blockers.append(str(exc))
 
     return (not blockers, blockers)
+
+
+def _normalize_options_steps(options: dict[str, Any]) -> dict[str, Any]:
+    steps = options.get("steps")
+    if not isinstance(steps, list) or not steps:
+        return options
+    if not isinstance(steps[0], dict):
+        return options
+    normalized = dict(options)
+    normalized["steps"] = [
+        normalize_wizard_step(step) if isinstance(step, dict) else step for step in steps
+    ]
+    return normalized
+
+
+def normalize_wizard_step(raw_step: dict[str, Any]) -> dict[str, Any]:
+    """Merge nested ``transform`` object into flat builder fields when present."""
+    step = dict(raw_step)
+    nested = step.get("transform")
+    if isinstance(nested, dict):
+        for key, value in nested.items():
+            step.setdefault(key, value)
+    return step
 
 
 def _validate_step_list(options: dict[str, Any]) -> list[str]:
@@ -62,6 +86,7 @@ def _validate_step_list(options: dict[str, Any]) -> list[str]:
         if not isinstance(raw_step, dict):
             blockers.append(f"wizard step[{index}] must be an object")
             continue
+        raw_step = normalize_wizard_step(raw_step)
         slug = str(raw_step.get("slug") or "").strip()
         if not slug:
             blockers.append(f"wizard step[{index}] requires a non-empty slug")
@@ -123,6 +148,7 @@ def _validate_collection_step(slug: str, step: dict[str, Any]) -> list[str]:
 
 
 __all__ = [
+    "normalize_wizard_step",
     "register_wizard_design_contributor",
     "validate_wizard_design_proposal",
 ]

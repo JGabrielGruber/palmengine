@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Any, Protocol, runtime_checkable
 
 from palm.common.exceptions import DesignProposalNotFoundError
-from palm.services.design.envelope import resolve_flow_id_from_body
+from palm.services.design.envelope import resolve_flow_id_from_body, resolve_resource_id_from_body
 
 _OPEN = "open"
 
@@ -21,8 +21,11 @@ class DesignProposal:
     proposal_id: str
     body: dict[str, Any]
     status: str = _OPEN
+    kind: str = "flow"
     base_flow_id: str | None = None
     flow_id: str | None = None
+    base_resource_id: str | None = None
+    resource_id: str | None = None
     validation: dict[str, Any] | None = None
     impact: dict[str, Any] | None = None
     committed_revision: int | None = None
@@ -33,8 +36,11 @@ class DesignProposal:
         return {
             "proposal_id": self.proposal_id,
             "status": self.status,
+            "kind": self.kind,
             "base_flow_id": self.base_flow_id,
             "flow_id": self.flow_id,
+            "base_resource_id": self.base_resource_id,
+            "resource_id": self.resource_id,
             "body": dict(self.body),
             "validation": dict(self.validation) if isinstance(self.validation, dict) else None,
             "impact": dict(self.impact) if isinstance(self.impact, dict) else None,
@@ -81,15 +87,21 @@ class DesignProposalRepository:
         self,
         body: dict[str, Any],
         *,
+        kind: str = "flow",
         base_flow_id: str | None = None,
         flow_id: str | None = None,
+        base_resource_id: str | None = None,
+        resource_id: str | None = None,
     ) -> DesignProposal:
         proposal_id = f"prop-{uuid.uuid4().hex[:12]}"
         proposal = DesignProposal(
             proposal_id=proposal_id,
             body=dict(body),
+            kind=str(kind),
             base_flow_id=base_flow_id,
             flow_id=flow_id or base_flow_id,
+            base_resource_id=base_resource_id,
+            resource_id=resource_id or base_resource_id,
         )
         return self.save(proposal)
 
@@ -128,10 +140,19 @@ def resolve_proposal_flow_id(proposal: DesignProposal) -> str | None:
     )
 
 
+def resolve_proposal_resource_id(proposal: DesignProposal) -> str | None:
+    """Resolve ``resource_id`` from a stored resource proposal envelope."""
+    return proposal.resource_id or resolve_resource_id_from_body(
+        proposal.body,
+        base_resource_id=proposal.base_resource_id,
+    )
+
+
 __all__ = [
     "DesignProposal",
     "DesignProposalRepository",
     "ProposalRepository",
     "resolve_flow_id_from_body",
     "resolve_proposal_flow_id",
+    "resolve_proposal_resource_id",
 ]

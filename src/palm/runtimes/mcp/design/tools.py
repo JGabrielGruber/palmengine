@@ -29,6 +29,21 @@ _PALM_DESIGN_PROPOSE_DESC = tool_description(
     ),
 )
 
+_PALM_DESIGN_PROPOSE_RESOURCE_DESC = tool_description(
+    "palm_design_propose_resource",
+    "Create a design proposal from a resource definition body.",
+    when=(
+        "Run propose → impact → commit in order. Resource ``name`` must be a slug. "
+        "Impact lists flows that reference this ``resource_ref``. "
+        "Load ``palm://agent/references/design-flows`` for the full loop."
+    ),
+    examples=[
+        'palm_design_propose_resource(body={"name": "my-ledger", "provider": "rest", "action": "fetch", "resource_id": "ledger/{id}"})',
+        'palm_design_propose_resource(base_resource_id="fetch-customer", body={"name": "fetch-customer", "provider": "rest", ...})',
+    ],
+    use_instead="Use ``palm_design_propose_flow`` for wizard flows, not resources.",
+)
+
 _PALM_DESIGN_LIST_DESC = tool_description(
     "palm_design_list_proposals",
     "List open design proposals, optionally filtered by flow_id.",
@@ -109,6 +124,13 @@ def register_design_tools(mcp: Any, backend: Any) -> None:
         base_flow_id: str | None = None,
     ) -> dict[str, Any]:
         return backend.design_propose_flow(body, base_flow_id=base_flow_id)
+
+    @mcp.tool(description=_PALM_DESIGN_PROPOSE_RESOURCE_DESC)
+    def palm_design_propose_resource(
+        body: dict[str, Any],
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        return backend.design_propose_resource(body, base_resource_id=base_resource_id)
 
     @mcp.tool(description=_PALM_DESIGN_LIST_DESC)
     def palm_design_list_proposals(flow_id: str | None = None) -> dict[str, Any]:

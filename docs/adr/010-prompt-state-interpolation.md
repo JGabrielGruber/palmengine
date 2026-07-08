@@ -2,7 +2,7 @@
 
 ## Status
 
-**Proposed** — July 2026 (Palm 0.27.1 target)
+**Accepted** — July 2026 (Palm 0.27.1 shipped)
 
 ## Context
 

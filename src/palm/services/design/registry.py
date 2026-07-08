@@ -32,6 +32,11 @@ class DesignContributor:
 
 _registry: tuple[CommandSpec, ...] = (
     CommandSpec("propose_flow", ("design", "propose"), "Create a design proposal from a flow body"),
+    CommandSpec(
+        "propose_resource",
+        ("design", "propose-resource"),
+        "Create a design proposal from a resource definition body",
+    ),
     CommandSpec("list_proposals", ("design", "proposals"), "List open design proposals"),
     CommandSpec(
         "get_proposal",
@@ -62,6 +67,7 @@ _registry: tuple[CommandSpec, ...] = (
 
 _DESIGN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
     "design/propose": ("design", "propose"),
+    "design/propose-resource": ("design", "propose-resource"),
     "design/list": ("design", "proposals"),
     "design/get": ("design", "proposals", "{proposal_id}"),
     "design/validate": ("design", "proposals", "{proposal_id}", "validate"),

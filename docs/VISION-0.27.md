@@ -129,9 +129,9 @@ Extension remains **registry-based** — design contributors per pattern/provide
 
 ## Success criteria
 
-- [ ] MCP agent proposes `coconut-npc` rev N+1 with flat transform steps — `valid: true` on first propose.
-- [ ] Prompt shows `mood_line` (or equivalent) on hub step after 0.27.1 without a display-only transform.
-- [ ] Agent proposes a new `ResourceDefinition` via design MCP, commits, and references it from a flow step.
+- [x] MCP agent proposes `coconut-npc` rev N+1 with flat transform steps — `valid: true` on first propose.
+- [x] Prompt shows `mood_line` on hub step via `{{ state.mood_line }}` (0.27.1).
+- [x] Agent proposes a `ResourceDefinition` via `palm_design_propose_resource`, commits, impact lists referencing flows.
 - [ ] `palm doctor` reports REST resource misconfiguration before a wizard session stalls.
 - [ ] `just docs-check` + parity tests green; `coconut-npc` session replay test in CI.
 

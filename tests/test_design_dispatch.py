@@ -46,6 +46,7 @@ def test_match_command_path_rejects_mismatch() -> None:
 
 _CONCRETE_PATHS: dict[str, tuple[str, ...]] = {
     "propose_flow": ("design", "propose"),
+    "propose_resource": ("design", "propose-resource"),
     "list_proposals": ("design", "proposals"),
     "get_proposal": ("design", "proposals", "prop-1"),
     "validate_proposal": ("design", "proposals", "prop-1", "validate"),

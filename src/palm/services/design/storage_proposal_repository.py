@@ -27,8 +27,11 @@ def proposal_from_dict(data: dict[str, Any]) -> DesignProposal:
         proposal_id=str(data["proposal_id"]),
         body=dict(data.get("body") or {}),
         status=str(data.get("status") or _OPEN),
+        kind=str(data.get("kind") or "flow"),
         base_flow_id=data.get("base_flow_id"),
         flow_id=data.get("flow_id"),
+        base_resource_id=data.get("base_resource_id"),
+        resource_id=data.get("resource_id"),
         validation=dict(data["validation"]) if isinstance(data.get("validation"), dict) else None,
         impact=dict(data["impact"]) if isinstance(data.get("impact"), dict) else None,
         committed_revision=data.get("committed_revision"),
@@ -49,15 +52,21 @@ class StorageDesignProposalRepository:
         self,
         body: dict[str, Any],
         *,
+        kind: str = "flow",
         base_flow_id: str | None = None,
         flow_id: str | None = None,
+        base_resource_id: str | None = None,
+        resource_id: str | None = None,
     ) -> DesignProposal:
         proposal_id = f"prop-{uuid.uuid4().hex[:12]}"
         proposal = DesignProposal(
             proposal_id=proposal_id,
             body=dict(body),
+            kind=str(kind),
             base_flow_id=base_flow_id,
             flow_id=flow_id or base_flow_id,
+            base_resource_id=base_resource_id,
+            resource_id=resource_id or base_resource_id,
         )
         return self.save(proposal)
 

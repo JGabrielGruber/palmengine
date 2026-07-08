@@ -68,6 +68,7 @@ _PALM_SKILL_SYNC_FILES = (
     "references/session-management.md",
     "references/common-flows.md",
     "references/design-flows.md",
+    "references/branching-flows.md",
 )
 BUNDLED_PALM_SKILL = ROOT / "src/palm/runtimes/mcp/data/skills/palm"
 

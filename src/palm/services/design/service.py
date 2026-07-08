@@ -14,13 +14,22 @@ from palm.common.services.errors import (
     InstanceMigrationServiceError,
 )
 from palm.services.design.commit_gate import build_commit_mutation_block, enforce_commit_token
+from palm.services.definitions.parsers import parse_resource
 from palm.services.design.envelope import (
     PublishAction,
+    extract_resource_dict,
     resolve_flow_id_from_body,
     resolve_publish_intent,
+    resolve_resource_id_from_body,
+    resolve_resource_publish_intent,
     validation_body,
 )
-from palm.services.design.proposal import ProposalRepository, resolve_proposal_flow_id
+from palm.services.design.impact_scan import flows_referencing_resource
+from palm.services.design.proposal import (
+    ProposalRepository,
+    resolve_proposal_flow_id,
+    resolve_proposal_resource_id,
+)
 from palm.services.design.dispatch import dispatch_design_command
 from palm.services.design.registry import run_design_validators
 
@@ -67,9 +76,36 @@ class DesignService(BaseService):
         *,
         base_flow_id: str | None = None,
     ) -> dict[str, Any]:
-        """Store a proposal and return a validation preview."""
+        """Store a flow proposal and return a validation preview."""
         flow_id = resolve_flow_id_from_body(body, base_flow_id=base_flow_id)
-        proposal = self._proposals.create(body, base_flow_id=base_flow_id, flow_id=flow_id)
+        proposal = self._proposals.create(
+            body,
+            kind="flow",
+            base_flow_id=base_flow_id,
+            flow_id=flow_id,
+        )
+        validation = self.validate_proposal(proposal.proposal_id, dry_run=True)
+        proposal.validation = validation
+        self._proposals.save(proposal)
+        return {
+            "proposal": proposal.to_dict(),
+            "validation": validation,
+        }
+
+    def propose_resource(
+        self,
+        body: dict[str, Any],
+        *,
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Store a resource proposal and return a validation preview."""
+        resource_id = resolve_resource_id_from_body(body, base_resource_id=base_resource_id)
+        proposal = self._proposals.create(
+            body,
+            kind="resource",
+            base_resource_id=base_resource_id,
+            resource_id=resource_id,
+        )
         validation = self.validate_proposal(proposal.proposal_id, dry_run=True)
         proposal.validation = validation
         self._proposals.save(proposal)
@@ -90,15 +126,18 @@ class DesignService(BaseService):
 
     def validate_proposal(self, proposal_id: str, *, dry_run: bool = True) -> dict[str, Any]:
         proposal = self._proposals.get(proposal_id)
-        runtime = self._resolve_runtime()
         ok, blockers = run_design_validators(proposal.body, context=self)
-        try:
-            catalog_validation = self._definitions.validate_flow(
-                validation_body(proposal.body),
-                runtime=runtime,
-            )
-        except (TypeError, ValueError, KeyError, DefinitionBuildError) as exc:
-            catalog_validation = {"valid": False, "error": str(exc)}
+        if proposal.kind == "resource":
+            catalog_validation = self._validate_resource_catalog(proposal.body)
+        else:
+            runtime = self._resolve_runtime()
+            try:
+                catalog_validation = self._definitions.validate_flow(
+                    validation_body(proposal.body),
+                    runtime=runtime,
+                )
+            except (TypeError, ValueError, KeyError, DefinitionBuildError) as exc:
+                catalog_validation = {"valid": False, "error": str(exc)}
 
         valid = bool(catalog_validation.get("valid", False)) and ok
         result: dict[str, Any] = {
@@ -117,6 +156,8 @@ class DesignService(BaseService):
 
     def analyze_proposal_impact(self, proposal_id: str) -> dict[str, Any]:
         proposal = self._proposals.get(proposal_id)
+        if proposal.kind == "resource":
+            return self._analyze_resource_proposal_impact(proposal)
         flow_id = resolve_proposal_flow_id(proposal)
         if not flow_id:
             raise DesignCommitRejectedServiceError(
@@ -183,6 +224,9 @@ class DesignService(BaseService):
                 "validation failed",
                 blockers=blockers,
             )
+
+        if proposal.kind == "resource":
+            return self._commit_resource_proposal(proposal_id, proposal)
 
         intent = resolve_publish_intent(
             body=proposal.body,
@@ -311,5 +355,88 @@ class DesignService(BaseService):
             return True
         except DefinitionNotFoundServiceError:
             return False
+
+    def _resource_exists(self, resource_ref: str) -> bool:
+        try:
+            self._definitions.get_resource(resource_ref)
+            return True
+        except DefinitionNotFoundServiceError:
+            return False
+
+    def _validate_resource_catalog(self, body: dict[str, Any]) -> dict[str, Any]:
+        payload = extract_resource_dict(body) or body
+        try:
+            resource = parse_resource(payload)
+        except (TypeError, ValueError, KeyError) as exc:
+            return {"valid": False, "kind": "resource", "error": str(exc)}
+        return {
+            "valid": True,
+            "kind": "resource",
+            "resource": resource.name,
+            "provider": resource.provider,
+        }
+
+    def _analyze_resource_proposal_impact(self, proposal: Any) -> dict[str, Any]:
+        resource_ref = resolve_proposal_resource_id(proposal)
+        if not resource_ref:
+            raise DesignCommitRejectedServiceError(
+                proposal.proposal_id,
+                "proposal has no resolvable resource_id for impact analysis",
+            )
+        references = flows_referencing_resource(
+            self._definitions.list_flow_definitions(),
+            resource_ref,
+        )
+        impact = {
+            "kind": "resource",
+            "resource_ref": resource_ref,
+            "referencing_flows": references,
+            "summary": {
+                "total_references": len(references),
+                "new_resource": not self._resource_exists(resource_ref),
+            },
+        }
+        proposal.impact = impact
+        self._proposals.save(proposal)
+        valid = bool((proposal.validation or {}).get("valid"))
+        mutation = build_commit_mutation_block(proposal.proposal_id, valid=valid)
+        if mutation is not None:
+            impact = dict(impact)
+            impact["mutation"] = mutation
+        return impact
+
+    def _commit_resource_proposal(self, proposal_id: str, proposal: Any) -> dict[str, Any]:
+        intent = resolve_resource_publish_intent(
+            body=proposal.body,
+            base_resource_id=proposal.base_resource_id,
+            resource_id=proposal.resource_id,
+            resource_exists=self._resource_exists,
+        )
+        if intent is None:
+            raise DesignCommitRejectedServiceError(proposal_id, "cannot resolve resource_id to publish")
+
+        impact = self.analyze_proposal_impact(proposal_id)
+        payload = extract_resource_dict(proposal.body) or proposal.body
+
+        if intent.action == PublishAction.UPDATE:
+            published = self._definitions.update_resource(intent.flow_id, payload)
+        else:
+            published = self._definitions.create_resource(payload)
+
+        proposal.status = "committed"
+        proposal.resource_id = str(
+            published.get("name") or published.get("definition_id") or intent.flow_id
+        )
+        self._proposals.save(proposal)
+
+        return {
+            "proposal_id": proposal.proposal_id,
+            "status": proposal.status,
+            "kind": "resource",
+            "resource_ref": proposal.resource_id,
+            "resource": published,
+            "impact": impact,
+        }
+
 
 __all__ = ["DesignService"]

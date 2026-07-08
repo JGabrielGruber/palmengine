@@ -47,6 +47,39 @@ Always run **all four steps in order**. Save `proposal_id` from step 1.
 }
 ```
 
+### Transform steps (flat schema — canonical)
+
+```json
+{
+  "slug": "format_greeting",
+  "step_kind": "transform",
+  "source_key": "player_name",
+  "target_key": "greeting_line",
+  "rule": "string_format",
+  "options": { "template": "Ah, {value} — …" }
+}
+```
+
+Nested `"transform": { ... }` is normalized at validate time but **prefer flat** fields.
+
+### Prompt interpolation (0.27.1+)
+
+Use `{{ state.key }}` in step `prompt` / `title` — resolves from wizard answers:
+
+```json
+"prompt": "{{ state.mood_line }}\n\nWhat'll it be?"
+```
+
+### Resource proposals (0.27.2+)
+
+```text
+palm_design_propose_resource(body={name, provider, action, resource_id, ...})
+palm_design_impact(proposal_id)
+palm_design_commit(proposal_id)
+```
+
+Impact lists flows referencing the `resource_ref`. See `coconut-npc` + `palm://agent/references/branching-flows`.
+
 ### Name rules (common mistakes)
 
 | Wrong | Right |
