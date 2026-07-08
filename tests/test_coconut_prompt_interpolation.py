@@ -59,6 +59,8 @@ def test_topic_prompt_includes_mood_line_after_friend_reputation() -> None:
 
     prompt = state.get(WizardKeys.ACTIVE_PROMPT)
     assert isinstance(prompt, dict)
-    assert "sweet coconuts" in str(prompt.get("prompt", "")).lower()
+    body = str(prompt.get("prompt", "")).lower()
+    assert "sweet coconuts" in body
+    assert "what'll it be" in body
     runtime.stop()
     clear_palm_runtime()

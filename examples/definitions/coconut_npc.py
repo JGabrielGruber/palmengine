@@ -87,6 +87,14 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 },
             },
             {
+                "slug": "prepare_returning",
+                "step_kind": "transform",
+                "title": "Returning traveler routing",
+                "source_key": "player_profile",
+                "target_key": "player_profile",
+                "rule": "coconut_prepare_returning",
+            },
+            {
                 "slug": "reputation",
                 "title": "Coconut",
                 "prompt": (
@@ -119,6 +127,14 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 },
             },
             {
+                "slug": "first_topic_prompt",
+                "step_kind": "transform",
+                "title": "First-visit topic menu",
+                "source_key": "mood_line",
+                "target_key": "topic_prompt",
+                "rule": "coconut_first_topic_prompt",
+            },
+            {
                 "slug": "sync_profile",
                 "step_kind": "transform",
                 "title": "Sync profile",
@@ -135,11 +151,7 @@ COCONUT_NPC_FLOW = FlowDefinition(
             {
                 "slug": "topic",
                 "title": "Coconut",
-                "prompt": (
-                    "{{ state.mood_line }}\n\n"
-                    "*(She leans on the cart.)*\n\n"
-                    "\"Well then. What'll it be?\""
-                ),
+                "prompt": "{{ state.mood_line }}\n\n{{ state.topic_prompt }}",
                 "field_type": "choice",
                 "choices": ["rumors", "trade", "about", "leave"],
                 "params": {

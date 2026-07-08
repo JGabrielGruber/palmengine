@@ -107,13 +107,13 @@ def test_coconut_cross_session_visit_count_and_returning_greeting() -> None:
 
         job = rt.submit_flow("coconut-npc")
         rt.wait_until_idle(timeout=10)
-        while job.state.get(WizardKeys.CURRENT_STEP) != "reputation":
+        while job.state.get(WizardKeys.CURRENT_STEP) != "topic":
             if job.status == JobStatus.WAITING_FOR_INPUT:
                 step = job.state.get(WizardKeys.CURRENT_STEP)
                 if step == "player_name":
                     rt.provide_input(job.id, "Lyra")
                 else:
-                    raise AssertionError(f"expected reputation, at {step!r}")
+                    raise AssertionError(f"expected topic (returning skip), at {step!r}")
             rt.wait_until_idle(timeout=10)
             job = rt.get_job(job.id)
 
@@ -121,8 +121,12 @@ def test_coconut_cross_session_visit_count_and_returning_greeting() -> None:
         profile = answers.get("player_profile") or {}
         assert profile.get("visit_count") == 2
         assert profile.get("is_returning") is True
+        assert answers.get("reputation") == "stranger"
         greeting = answers.get("greeting_line") or ""
         assert "remember you" in greeting.lower()
+        topic_prompt = str(answers.get("topic_prompt") or "").lower()
+        assert "stranger" in topic_prompt
+        assert job.state.get(WizardKeys.CURRENT_STEP) == "topic"
 
         stored = get_memory_kv_store().get(build_memory_key("coconut", "players/Lyra"))
         assert stored is not None
