@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.25.0`
-**Last Updated:** July 3, 2026
+**Last Updated:** July 8, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
 ## Quick Overview
@@ -17,7 +17,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 Palm follows a **layered, registry-driven** model with a strictly pure core:
 
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
-- `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`); `palm/common/services/` retains primitives only.
+- `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`, `design`); `palm/common/services/` retains primitives only.
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
 - `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
@@ -298,16 +298,23 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Release:** [RELEASE-0.25.0.md](RELEASE-0.25.0.md) · **Migration:** [MIGRATION-0.24.md](MIGRATION-0.24.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md)
 
-### 0.25+ deferred (post-ship)
+### 0.25.1–0.25.13 (local — 0.26.0 release pending)
 
 | Phase | Theme | Status |
 |-------|-------|--------|
-| 0.25.6 | Dogfooding meta-flows | Stretch |
-| 0.25.7 | CQRS transport (below service layer) | Deferred |
+| 0.25.2–0.25.5 | Correctness, structure, contributors | ✅ Local |
+| 0.25.6 | Dogfooding demo | ✅ Local |
+| 0.25.7 | Design CQRS transport | ✅ Local |
+| 0.25.8 | Registry-driven design dispatch | ✅ Local |
+| 0.25.9–0.25.12 | Service CQRS contributors + bus parity | ✅ Local ([ADR-009](docs/adr/009-service-cqrs-contributors.md)) |
+| 0.25.13 | Docs sync (AGENTS, MCP, STATUS) | ✅ Local |
+| **0.26.0** | PyPI cut + CHANGELOG | ⏳ Pending |
+
+**Plan:** [docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md](docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md)
 
 ## Priorities & Next Steps
 
-**0.25.0 shipped** — definition revisioning, instance migration, Design Service on PyPI.
+**0.25.0 shipped** — definition revisioning, instance migration, Design Service on PyPI. **0.26.0** bundles 0.25.1–0.25.13 when release is requested.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 

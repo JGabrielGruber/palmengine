@@ -2,7 +2,7 @@
 
 **Status:** 0.16 shipped · **per-domain service tools** · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
 
-Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default it runs **in-process** via `PalmInProcessBackend` — tools call `palm/services/` (`definitions`, `execution/flows`, `execution/providers`, `system`) on a bootstrapped engine with **no HTTP round-trip**. Set `PALM_MCP_IN_PROCESS=0` for REST proxy mode (`palm server` required).
+Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default it runs **in-process** via `PalmInProcessBackend` — tools call `palm/services/` (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`, `design`) on a bootstrapped `ServerContext` with **no HTTP round-trip**. Service-domain CQRS types (definitions impact/migrate, design propose/commit) register via `ServiceCqrsContributor` so standalone MCP parity matches `ApplicationHost` ([ADR-009](adr/009-service-cqrs-contributors.md)). Set `PALM_MCP_IN_PROCESS=0` for REST proxy mode (`palm server` required).
 
 Migration from 0.15 tool names: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
 
@@ -54,7 +54,7 @@ flowchart LR
 | **In-process** (default) | `PALM_MCP_IN_PROCESS=1` | `PalmInProcessBackend` → `palm.services` | Local agent dev; no `palm server` required |
 | **REST proxy** | `PALM_MCP_IN_PROCESS=0` + `PALM_BASE_URL` | `PalmRestClient` → HTTP `:8080` | Remote Palm, cross-process, CI against live server |
 
-Tests: `tests/test_mcp_in_process.py` (in-process) · `tests/test_mcp_tools.py` (REST client mocks).
+Tests: `tests/test_mcp_in_process.py` · `tests/test_mcp_design_in_process.py` (design impact/commit) · `tests/test_definitions_cqrs_standalone.py` (bus parity) · `tests/test_mcp_tools.py` (REST mocks).
 
 ### Setup (one time per machine)
 

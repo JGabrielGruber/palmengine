@@ -138,8 +138,8 @@
 
 ## Phase 0.25.6 — Dogfooding (stretch)
 
-- [ ] `examples/definitions/design_proposal_demo.py` end-to-end with auto-migrate
-- [ ] Optional meta-flow sketch for agent guide updates (document only if not implemented)
+- [x] `examples/definitions/design_proposal_demo.py` end-to-end with auto-migrate
+- [x] Optional meta-flow sketch for agent guide updates (document only if not implemented)
 
 **Commit:** `examples(0.25.6): design proposal demo with auto-migrate`
 
@@ -157,9 +157,9 @@
 
 **Tasks:**
 
-- [ ] `ProposeFlowDefinitionCommand`, `CommitDesignProposalCommand`, etc.
-- [ ] Register design CQRS contributor
-- [ ] Bus tests; REST/MCP may continue calling service directly
+- [x] `ProposeFlowDefinitionCommand`, `CommitDesignProposalCommand`, etc.
+- [x] Register design CQRS contributor
+- [x] Bus tests; REST/MCP may continue calling service directly
 
 **Commit:** `feat(0.25.7): design CQRS transport bindings`
 
