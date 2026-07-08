@@ -14,6 +14,7 @@ WizardStepKind = Literal[
     "resource",
     "collection",
     "transform",
+    "branch",
 ]
 
 PROTECTED_KINDS: frozenset[WizardStepKind] = frozenset(

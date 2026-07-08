@@ -31,8 +31,22 @@ class JsonpathSetRule(BaseTransformRule):
             set_value = options["set_value"]
         elif "value" in options:
             set_value = options["value"]
+        elif "set_value_from_key" in options:
+            from_key = str(options["set_value_from_key"])
+            if context.state is None:
+                raise TransformApplicationError(
+                    f"{self.rule_name} set_value_from_key={from_key!r} requires wizard state",
+                )
+            from palm.core.transform.engine import TransformEngine
+
+            engine = TransformEngine()
+            if not engine.is_initialized:
+                engine.initialize()
+            set_value = engine.read_state_value(context.state, from_key, scoped=False, default=None)
         else:
-            raise TransformApplicationError(f"{self.rule_name} requires set_value=")
+            raise TransformApplicationError(
+                f"{self.rule_name} requires set_value=, value=, or set_value_from_key=",
+            )
         root = require_mapping(context.value, self.rule_name)
         updated = jsonpath_set(root, str(path), set_value)
         return context.advance(

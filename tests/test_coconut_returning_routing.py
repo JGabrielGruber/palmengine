@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from examples.definitions.coconut_npc import COCONUT_NPC_FLOW
-from examples.definitions.coconut_resources import LOAD_COCONUT_PLAYER, SAVE_COCONUT_PLAYER
-from examples.definitions.coconut_transforms import (
+from examples.definitions.coconut_npc import (
+    COCONUT_NPC_FLOW,
     RETURNING_TOPIC_BY_REPUTATION,
-    register_coconut_transforms,
 )
+from examples.definitions.coconut_resources import LOAD_COCONUT_PLAYER, SAVE_COCONUT_PLAYER
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine
@@ -23,7 +22,6 @@ from palm.states import BlackboardState
 
 
 def _tree_and_engine():
-    register_coconut_transforms()
     repo = DefinitionRepository()
     repo.register_resource(LOAD_COCONUT_PLAYER)
     repo.register_resource(SAVE_COCONUT_PLAYER)
@@ -64,7 +62,7 @@ def test_returning_traveler_skips_reputation_and_uses_friend_topic_prompt() -> N
     try:
         assert root.tick(state).name == "WAITING_FOR_INPUT"
         provide_wizard_input(state, "Gruber")
-        for _ in range(50):
+        for _ in range(80):
             slug = state.get(WizardKeys.CURRENT_STEP)
             if slug == "topic":
                 break

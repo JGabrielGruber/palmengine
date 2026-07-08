@@ -84,6 +84,10 @@ def register_builtin_wizard_step_kinds(
     target.register("collection", build_collection_phase)
     target.register("resource", build_resource_phase)
     target.register("transform", build_transform_phase)
+
+    from palm.patterns.wizard.flow.branch.phases.step import build_branch_phase
+
+    target.register("branch", build_branch_phase)
     return target
 
 

@@ -11,7 +11,7 @@ from examples.definitions.coconut_resources import (
     SAVE_COCONUT_PLAYER,
     register_definitions as register_coconut_resources,
 )
-from examples.definitions.coconut_transforms import register_coconut_transforms
+
 from palm.common.resource.document_storage import (
     build_memory_key,
     clear_memory_kv_store,
@@ -31,7 +31,6 @@ def _reset_kv() -> None:
 
 
 def _register_coconut(rt: EmbeddedRuntime) -> None:
-    register_coconut_transforms()
     rt.repository.save_flow(COCONUT_NPC_FLOW)
     rt.repository.save_resource(LOAD_COCONUT_PLAYER)
     rt.repository.save_resource(SAVE_COCONUT_PLAYER)
@@ -120,7 +119,7 @@ def test_coconut_cross_session_visit_count_and_returning_greeting() -> None:
         answers = job.state.get(WizardKeys.ANSWERS) or {}
         profile = answers.get("player_profile") or {}
         assert profile.get("visit_count") == 2
-        assert profile.get("is_returning") is True
+        assert answers.get("is_returning") is True
         assert answers.get("reputation") == "stranger"
         greeting = answers.get("greeting_line") or ""
         assert "remember you" in greeting.lower()
@@ -130,7 +129,7 @@ def test_coconut_cross_session_visit_count_and_returning_greeting() -> None:
 
         stored = get_memory_kv_store().get(build_memory_key("coconut", "players/Lyra"))
         assert stored is not None
-        assert stored["visit_count"] == 1
+        assert stored["visit_count"] == 2
     finally:
         rt.stop()
         clear_palm_runtime()

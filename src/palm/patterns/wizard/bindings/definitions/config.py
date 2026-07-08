@@ -45,6 +45,9 @@ class WizardStepConfig:
     min_items: int = 1
     label_field: str | None = None
     transform: TransformStepSpec | None = None
+    when: dict[str, Any] | None = None
+    then_steps: tuple[WizardStepConfig, ...] = ()
+    else_steps: tuple[WizardStepConfig, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.slug:
@@ -62,6 +65,16 @@ class WizardStepConfig:
             raise ValueError(f"Transform step {self.slug!r} requires transform configuration")
         if self.step_kind == "resource" and not self.resource_ref:
             raise ValueError(f"Resource step {self.slug!r} requires resource_ref")
+        if self.step_kind == "branch":
+            from palm.patterns.wizard.flow.branch.predicate import validate_when_clause
+
+            if not self.when:
+                raise ValueError(f"Branch step {self.slug!r} requires when")
+            validate_when_clause(self.when)
+            if not self.then_steps and not self.else_steps:
+                raise ValueError(
+                    f"Branch step {self.slug!r} requires at least one nested step in then or else",
+                )
 
     @property
     def has_state_schema(self) -> bool:
@@ -110,7 +123,7 @@ class WizardConfig:
     def __post_init__(self) -> None:
         if not self.steps:
             raise ValueError("WizardConfig requires at least one step")
-        slugs = [s.slug for s in self.iter_tree_steps()]
+        slugs = [s.slug for s in self.iter_all_steps()]
         if len(slugs) != len(set(slugs)):
             raise ValueError("Wizard step slugs must be unique")
 
@@ -126,6 +139,13 @@ class WizardConfig:
         if self.include_commit and not _has_slug(items, self.commit_slug):
             items.append(self._default_commit_step())
         return tuple(items)
+
+    def iter_all_steps(self) -> tuple[WizardStepConfig, ...]:
+        """Flatten spine steps and nested branch arms for slug validation."""
+        flattened: list[WizardStepConfig] = []
+        for step in self.iter_tree_steps():
+            flattened.extend(_flatten_step_tree(step))
+        return tuple(flattened)
 
     def protected_slugs(self) -> frozenset[str]:
         slugs: set[str] = set()
@@ -203,3 +223,11 @@ class WizardConfig:
 
 def _has_slug(steps: list[WizardStepConfig], slug: str) -> bool:
     return any(step.slug == slug for step in steps)
+
+
+def _flatten_step_tree(step: WizardStepConfig) -> list[WizardStepConfig]:
+    items = [step]
+    if step.step_kind == "branch":
+        for nested in (*step.then_steps, *step.else_steps):
+            items.extend(_flatten_step_tree(nested))
+    return items

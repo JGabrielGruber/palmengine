@@ -112,7 +112,36 @@ def _validate_step_list(options: dict[str, Any]) -> list[str]:
                     f"wizard transform step {slug!r} requires transform configuration "
                     "(nested 'transform' object or flat rule + source_key)",
                 )
+        elif step_kind == "branch":
+            blockers.extend(_validate_branch_step(slug, raw_step))
 
+    return blockers
+
+
+def _validate_branch_step(slug: str, step: dict[str, Any]) -> list[str]:
+    blockers: list[str] = []
+    when = step.get("when")
+    if not isinstance(when, dict) or not when:
+        blockers.append(f"wizard branch step {slug!r} requires a non-empty when object")
+    then_steps = step.get("then")
+    else_steps = step.get("else")
+    if not isinstance(then_steps, list) or not then_steps:
+        blockers.append(f"wizard branch step {slug!r} requires a non-empty then step list")
+    if not isinstance(else_steps, list) or not else_steps:
+        blockers.append(f"wizard branch step {slug!r} requires a non-empty else step list")
+    for label, nested_list in (("then", then_steps), ("else", else_steps)):
+        if not isinstance(nested_list, list):
+            continue
+        for index, nested in enumerate(nested_list):
+            if not isinstance(nested, dict):
+                blockers.append(
+                    f"wizard branch step {slug!r} {label}[{index}] must be an object",
+                )
+                continue
+            if str(nested.get("step_kind") or "input") == "branch":
+                blockers.append(
+                    f"wizard branch step {slug!r} cannot nest branch in {label}[{index}]",
+                )
     return blockers
 
 

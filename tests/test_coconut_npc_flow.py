@@ -14,7 +14,8 @@ def test_coconut_npc_flow_builds() -> None:
     slugs = [step.slug for step in config.steps]
     assert slugs[0] == "player_name"
     assert "load_player" in slugs
-    assert "hydrate_profile" in slugs
+    assert "unwrap_profile" in slugs
+    assert "reputation_gate" in slugs
     assert "topic" in slugs
     assert "build_greeting" in slugs
     assert "save_profile" in slugs

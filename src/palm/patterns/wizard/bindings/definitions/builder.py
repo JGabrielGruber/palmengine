@@ -205,6 +205,17 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         )
         prompt = default_resource_prompt(preview)
 
+    when_clause: dict[str, Any] | None = None
+    then_steps: tuple[WizardStepConfig, ...] = ()
+    else_steps: tuple[WizardStepConfig, ...] = ()
+    if step_kind == "branch":
+        raw_when = data.get("when")
+        if not isinstance(raw_when, dict):
+            raise DefinitionBuildError(f"Branch step {slug!r} requires a when object")
+        when_clause = dict(raw_when)
+        then_steps = _nested_branch_steps(data.get("then"), label="then", parent_slug=str(slug))
+        else_steps = _nested_branch_steps(data.get("else"), label="else", parent_slug=str(slug))
+
     transform = None
     if step_kind == "transform":
         from palm.common.transforms.builder import transform_step_from_mapping
@@ -246,7 +257,35 @@ def _step_from_mapping(data: dict[str, Any]) -> WizardStepConfig:
         min_items=min_items,
         label_field=str(label_field) if label_field else None,
         transform=transform,
+        when=when_clause,
+        then_steps=then_steps,
+        else_steps=else_steps,
     )
+
+
+def _nested_branch_steps(
+    raw_steps: Any,
+    *,
+    label: str,
+    parent_slug: str,
+) -> tuple[WizardStepConfig, ...]:
+    if not isinstance(raw_steps, list) or not raw_steps:
+        raise DefinitionBuildError(
+            f"Branch step {parent_slug!r} requires a non-empty {label} step list",
+        )
+    built: list[WizardStepConfig] = []
+    for index, item in enumerate(raw_steps):
+        if not isinstance(item, dict):
+            raise DefinitionBuildError(
+                f"Branch step {parent_slug!r} {label}[{index}] must be an object",
+            )
+        nested = _step_from_mapping(item)
+        if nested.step_kind == "branch":
+            raise DefinitionBuildError(
+                f"Branch step {parent_slug!r} cannot nest another branch at {label}[{index}]",
+            )
+        built.append(nested)
+    return tuple(built)
 
 
 def materialize_wizard_step_schemas(
@@ -299,7 +338,18 @@ def _materialize_step(
     if schema is None and step.has_state_schema:
         schema = step.materialize_state_schema(repository)
 
-    if schema is step.schema and item_fields == step.item_fields:
+    then_steps = step.then_steps
+    else_steps = step.else_steps
+    if step.step_kind == "branch":
+        then_steps = tuple(_materialize_step(nested, repository) for nested in then_steps)
+        else_steps = tuple(_materialize_step(nested, repository) for nested in else_steps)
+
+    if (
+        schema is step.schema
+        and item_fields == step.item_fields
+        and then_steps == step.then_steps
+        and else_steps == step.else_steps
+    ):
         return step
 
     return WizardStepConfig(
@@ -325,4 +375,7 @@ def _materialize_step(
         min_items=step.min_items,
         label_field=step.label_field,
         transform=step.transform,
+        when=step.when,
+        then_steps=then_steps,
+        else_steps=else_steps,
     )

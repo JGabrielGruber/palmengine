@@ -7,7 +7,7 @@ from examples.definitions.coconut_resources import (
     LOAD_COCONUT_PLAYER,
     SAVE_COCONUT_PLAYER,
 )
-from examples.definitions.coconut_transforms import register_coconut_transforms
+
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine
@@ -22,7 +22,6 @@ from palm.states import BlackboardState
 
 
 def _wizard_tree():
-    register_coconut_transforms()
     repo = DefinitionRepository()
     repo.register_resource(LOAD_COCONUT_PLAYER)
     repo.register_resource(SAVE_COCONUT_PLAYER)
