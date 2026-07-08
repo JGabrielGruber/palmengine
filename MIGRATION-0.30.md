@@ -95,6 +95,16 @@ Agents that always sent summary `yes` after create-flow can stop; session is alr
 
 `palm_flows_*` tools remain powertool-default when called directly.
 
+## 0.31.1 — MCP surface (optional)
+
+| Env | Effect |
+|-----|--------|
+| `PALM_MCP_SURFACE=full` | Default — all tools (unchanged) |
+| `PALM_MCP_SURFACE=assist` | Only **`palm_assist`** tool (meta-execute); use for weak LLMs |
+| `PALM_MCP_SURFACE=core` | assist + system tools |
+
+No change unless you set the env. Inventory: `just mcp-inventory surface=assist`.
+
 ## 0.30.8 — Terminal turn clarity
 
 | Change | Effect |

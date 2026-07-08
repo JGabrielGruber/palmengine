@@ -1,8 +1,27 @@
 # Palm MCP — Operator Adapter (0.16 per-domain tools)
 
-**Status:** 0.16 shipped · **per-domain service tools** · [FastMCP](https://pypi.org/project/fastmcp/) · 26 tools · 4 prompts · 10 resources
+**Status:** 0.16+ per-domain tools · **0.31.1 surface profiles** · [FastMCP](https://pypi.org/project/fastmcp/) · ~39 tools (full) · resources + prompts
 
 Palm MCP is a thin operator adapter for coding agents (Cursor, Grok, Claude, etc.). By default it runs **in-process** via `PalmInProcessBackend` — tools call `palm/services/` (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`, `design`) on a bootstrapped `ServerContext` with **no HTTP round-trip**. Service-domain CQRS types (definitions impact/migrate, design propose/commit) register via `ServiceCqrsContributor` so standalone MCP parity matches `ApplicationHost` ([ADR-009](adr/009-service-cqrs-contributors.md)). Set `PALM_MCP_IN_PROCESS=0` for REST proxy mode (`palm server` required).
+
+### MCP surface (0.31.1) — progressive disclosure
+
+| `PALM_MCP_SURFACE` | Tools registered | Use when |
+|--------------------|------------------|----------|
+| **`full`** (default) | All domain + pattern/app tools | Power users, existing configs |
+| **`assist`** | **`palm_assist` only** | Weak LLMs / token-sensitive hosts |
+| **`core`** | assist + system (doctor, waiting, …) | Middle ground |
+| **`experimental`** | Same as full (reserved) | Future experiments |
+
+Resources and prompts still register on all surfaces. Measure catalog size:
+
+```bash
+just mcp-inventory              # full
+just mcp-inventory surface=assist
+uv run --extra mcp python scripts/mcp_catalog_inventory.py --surface assist --json
+```
+
+Vision: [VISION-0.31.md](VISION-0.31.md).
 
 Migration from 0.15 tool names: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
 

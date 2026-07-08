@@ -90,6 +90,11 @@ sync-version:
     @echo "🔄 Syncing version to documentation surfaces..."
     uv run python scripts/sync_version.py
 
+# MCP catalog size inventory (0.31.1) — progressive disclosure / token proxy
+mcp-inventory surface='full':
+    @echo "📊 MCP tool catalog inventory (surface={{surface}})..."
+    uv run --extra mcp python scripts/mcp_catalog_inventory.py --surface {{surface}}
+
 bump-version version:
     uv run python scripts/sync_version.py --set {{version}}
 

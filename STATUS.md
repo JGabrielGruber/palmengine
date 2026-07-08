@@ -379,7 +379,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Phase | Theme | Status |
 |-------|-------|--------|
 | 0.31.0 | Vision + design + open ladder (docs-only) | ✅ Documented |
-| 0.31.1 | `PALM_MCP_SURFACE` profiles + catalog inventory | ⬜ Open |
+| 0.31.1 | `PALM_MCP_SURFACE` profiles + catalog inventory | ✅ Shipped |
 | 0.31.2 | Assist-complete happy paths (assist-only dogfood) | ⬜ Open |
 | 0.31.3 | Progressive docs (L0/L1/L2) | ⬜ Open |
 | 0.31.4 | Optional discover meta-tool | ⬜ Optional |

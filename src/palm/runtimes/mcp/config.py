@@ -8,6 +8,7 @@ from importlib import resources
 from pathlib import Path
 
 from palm.runtimes.mcp.agent_assets import resolve_skill_root
+from palm.runtimes.mcp.surface import DEFAULT_SURFACE, normalize_surface
 
 
 def _env_flag(name: str, *, default: bool = False) -> bool:
@@ -26,6 +27,8 @@ class PalmMcpConfig:
     llms_txt_path: Path | None = None
     skill_root: Path | None = None
     in_process: bool = False
+    # 0.31.1 — which MCP tool groups to register (full | assist | core | experimental)
+    surface: str = DEFAULT_SURFACE
 
     @classmethod
     def from_env(cls) -> PalmMcpConfig:
@@ -36,12 +39,14 @@ class PalmMcpConfig:
         llms_path = _resolve_llms_path(llms_override or None)
         skill_path = resolve_skill_root(skill_override or None)
         in_process = _env_flag("PALM_MCP_IN_PROCESS")
+        surface = normalize_surface(os.environ.get("PALM_MCP_SURFACE"))
         return cls(
             base_url=base_url,
             subject=subject,
             llms_txt_path=llms_path,
             skill_root=skill_path,
             in_process=in_process,
+            surface=surface,
         )
 
 

@@ -14,6 +14,7 @@ from palm.runtimes.mcp.prompts import register_core_prompts
 from palm.runtimes.mcp.providers import register_provider_tools
 from palm.runtimes.mcp.resources import register_core_resources
 from palm.runtimes.mcp.rest_client import PalmRestClient, PalmRestError
+from palm.runtimes.mcp.surface import normalize_surface, surface_includes
 from palm.runtimes.mcp.system import register_system_tools
 
 if TYPE_CHECKING:
@@ -34,24 +35,40 @@ def create_mcp_server(
     client: Any | None = None,
     ctx: ServerContext | None = None,
 ) -> FastMCP:
-    """Build a FastMCP server wired to in-process services or a REST backend."""
+    """Build a FastMCP server wired to in-process services or a REST backend.
+
+    Tool registration is filtered by ``config.surface`` / ``PALM_MCP_SURFACE``
+    (0.31.1): ``full`` (default), ``assist`` (meta-tool only), ``core``,
+    ``experimental``. MCP resources and prompts always register (progressive
+    docs); only *tools* are surface-gated.
+    """
     resolved = config or PalmMcpConfig.from_env()
+    surface = normalize_surface(resolved.surface)
     backend = _resolve_backend(resolved, client=client, ctx=ctx)
     mcp = FastMCP("Palm Operator")
 
+    # assist is always registered — primary meta-execute tool
     register_assist_tools(mcp, backend)
-    register_flow_tools(mcp, backend)
-    register_definitions_tools(mcp, backend)
-    register_design_tools(mcp, backend)
-    register_system_tools(mcp, backend)
-    register_provider_tools(mcp, backend)
+    if surface_includes(surface, "flows"):
+        register_flow_tools(mcp, backend)
+    if surface_includes(surface, "definitions"):
+        register_definitions_tools(mcp, backend)
+    if surface_includes(surface, "design"):
+        register_design_tools(mcp, backend)
+    if surface_includes(surface, "system"):
+        register_system_tools(mcp, backend)
+    if surface_includes(surface, "providers"):
+        register_provider_tools(mcp, backend)
     register_core_resources(mcp, backend, config=resolved)
     register_core_prompts(mcp, resolved, backend)
-    register_pattern_mcp_tools(mcp, backend)
-    register_app_mcp_tools(mcp, backend)
+    if surface_includes(surface, "patterns"):
+        register_pattern_mcp_tools(mcp, backend)
+    if surface_includes(surface, "apps"):
+        register_app_mcp_tools(mcp, backend)
 
     mcp._palm_client = backend  # type: ignore[attr-defined]
     mcp._palm_config = resolved  # type: ignore[attr-defined]
+    mcp._palm_surface = surface  # type: ignore[attr-defined]
     return mcp
 
 
