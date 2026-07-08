@@ -68,18 +68,19 @@ def test_operator_entry_create_flow_actions_after_to_dict(
     ).lower()
 
 
-def test_operator_entry_create_flow_handoff_none_hint(
+def test_operator_entry_create_flow_handoff_kind_design(
     assist_host: ApplicationHost,
 ) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
     _drive_to_handoff(assist_host, session_id, "create-flow")
     handoff = assist_host.assist.handoff(session_id)
-    assert handoff["handoff"]["kind"] == "none"
+    assert handoff["handoff"]["kind"] == "design"
     assert handoff["handoff"]["flow_id"] is None
+    assert handoff["handoff"]["design_action"] == "propose_flow"
+    assert handoff["handoff"]["intent"] == "create-flow"
     hint = handoff["handoff"]["operator_hint"]
     assert "palm_design_propose_flow" in hint
-    assert "no business flow handoff" not in hint.lower() or "Design" in hint or "design" in hint
 
 
 def test_operator_entry_start_includes_design_choices(

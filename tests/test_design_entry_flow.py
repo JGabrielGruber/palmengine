@@ -103,7 +103,7 @@ def test_design_entry_create_flow_has_design_actions(
     assert "design" in hint or "propose" in hint
 
 
-def test_design_entry_handoff_none_with_hint(assist_host: ApplicationHost) -> None:
+def test_design_entry_handoff_kind_design(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("design-entry", {})
     session_id = started["session_id"]
     assist_host.assist.dispatch(
@@ -122,8 +122,35 @@ def test_design_entry_handoff_none_with_hint(assist_host: ApplicationHost) -> No
             {"value": "yes"},
         )
     handoff = assist_host.assist.handoff(session_id)
-    assert handoff["handoff"]["kind"] == "none"
+    assert handoff["handoff"]["kind"] == "design"
+    assert handoff["handoff"]["design_action"] == "propose_flow"
+    assert handoff["handoff"]["suggested_name"] == "demo-flow"
     assert "palm_design_propose_flow" in handoff["handoff"]["operator_hint"]
+
+
+def test_design_entry_improve_handoff_base_flow_id(
+    assist_host: ApplicationHost,
+) -> None:
+    started = assist_host.assist.start_scenario("design-entry", {})
+    session_id = started["session_id"]
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "improve-flow"},
+    )
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder"},
+    )
+    ctx = assist_host.assist.dispatch(["assist", "session", session_id])
+    if ctx.get("status") == "waiting":
+        assist_host.assist.dispatch(
+            ["assist", "session", session_id, "input"],
+            {"value": "yes"},
+        )
+    handoff = assist_host.assist.handoff(session_id)
+    assert handoff["handoff"]["kind"] == "design"
+    assert handoff["handoff"]["base_flow_id"] == "todo-builder"
+    assert handoff["handoff"]["intent"] == "improve-flow"
 
 
 def test_design_entry_start_alias_resolves(assist_host: ApplicationHost) -> None:

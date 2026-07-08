@@ -17,6 +17,7 @@ from palm.services.assist.views import (
     DESIGN_DISCOVERY_INTENTS,
     design_discovery_actions,
     design_discovery_hint,
+    post_terminal_design_actions,
 )
 
 _CREATE_HINT = (
@@ -41,26 +42,39 @@ def enrich_design_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]
         if isinstance(preview, dict) and preview.get("intent") is not None:
             intent = str(preview["intent"])
 
+    preview = getattr(context, "answers_preview", None) or {}
+    name_or_base = None
+    if isinstance(preview, dict) and preview.get("name_or_base"):
+        name_or_base = str(preview["name_or_base"])
+
     if intent in DESIGN_DISCOVERY_INTENTS:
         hint = design_discovery_hint(str(intent))
         if hint:
             payload["hint"] = hint
-        payload["actions"] = design_discovery_actions(intent=str(intent))
-        # Surface name/base answer in hint when present (agent convenience only)
-        preview = getattr(context, "answers_preview", None) or {}
-        if isinstance(preview, dict) and preview.get("name_or_base"):
-            base = preview["name_or_base"]
+        if name_or_base:
             payload["hint"] = (
-                f"{payload.get('hint', '')} name_or_base={base!r}."
+                f"{payload.get('hint', '')} name_or_base={name_or_base!r}."
             ).strip()
+        if payload.get("handoff_ready") or payload.get("status") == "complete":
+            payload["actions"] = post_terminal_design_actions(
+                intent=str(intent),
+                name_or_base=name_or_base,
+            )
+            extra = (
+                "Handoff returns kind=design with design_action; "
+                "then propose → impact → commit out-of-band."
+            )
+            h = str(payload.get("hint") or "")
+            if "kind=design" not in h.lower():
+                payload["hint"] = f"{h} {extra}".strip() if h else extra
+        else:
+            payload["actions"] = design_discovery_actions(intent=str(intent))
     elif intent == "exit" or payload.get("status") == "complete":
         payload["hint"] = (
             str(payload.get("hint") or "")
             + " Design entry finished. Use operator-entry/start or palm_assist()."
         ).strip()
-        payload["actions"] = [
-            {"label": "Start operator entry", "alias": "operator-entry/start"},
-        ]
+        payload["actions"] = post_terminal_design_actions(intent="create-flow")
     return payload
 
 
@@ -81,6 +95,11 @@ DESIGN_ENTRY_FLOW = FlowDefinition(
                     "propose-resource": None,
                     "exit": None,
                 },
+                "design_handoff_intents": [
+                    "create-flow",
+                    "improve-flow",
+                    "propose-resource",
+                ],
                 "handoff_none_hints": {
                     "create-flow": _CREATE_HINT,
                     "improve-flow": _IMPROVE_HINT,

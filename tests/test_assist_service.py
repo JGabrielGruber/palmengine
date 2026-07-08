@@ -101,6 +101,22 @@ def test_inspect_catalog_includes_design_cta(assist_host: ApplicationHost) -> No
     assert payload.get("mutation", {}).get("mutations_allowed") is False
 
 
+def test_handoff_todo_builder_still_kind_flow(assist_host: ApplicationHost) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder"},
+    )
+    assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "yes"},
+    )
+    handoff = assist_host.assist.handoff(session_id)
+    assert handoff["handoff"]["kind"] == "flow"
+    assert handoff["handoff"]["flow_id"] == "todo-builder"
+
+
 def test_assist_session_input_and_context(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]

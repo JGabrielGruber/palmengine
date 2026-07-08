@@ -22,6 +22,7 @@ from palm.services.assist.views import (
     DESIGN_DISCOVERY_INTENTS,
     design_discovery_actions,
     design_discovery_hint,
+    post_terminal_design_actions,
 )
 
 
@@ -61,15 +62,21 @@ def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, An
         design_hint = design_discovery_hint(str(intent))
         if design_hint:
             payload["hint"] = design_hint
-        payload["actions"] = design_discovery_actions(intent=str(intent))
-        # Sibling scenario for guided design shell (0.30.2)
-        if not any(
-            isinstance(a, dict) and a.get("alias") == "design-entry/start"
-            for a in payload["actions"]
-        ):
-            payload["actions"] = list(payload["actions"]) + [
-                {"label": "Open design entry", "alias": "design-entry/start"},
-            ]
+        if payload.get("handoff_ready") or payload.get("status") == "complete":
+            payload["actions"] = post_terminal_design_actions(intent=str(intent))
+            extra = "Handoff returns kind=design — use palm_design_* tools (or re-enter via actions)."
+            hint = str(payload.get("hint") or "")
+            if "kind=design" not in hint.lower() and "kind: design" not in hint.lower():
+                payload["hint"] = f"{hint} {extra}".strip() if hint else extra
+        else:
+            payload["actions"] = design_discovery_actions(intent=str(intent))
+            if not any(
+                isinstance(a, dict) and a.get("alias") == "design-entry/start"
+                for a in payload["actions"]
+            ):
+                payload["actions"] = list(payload["actions"]) + [
+                    {"label": "Open design entry", "alias": "design-entry/start"},
+                ]
     elif payload.get("handoff_ready"):
         extra = "Say handoff to start your flow."
         hint = str(payload.get("hint") or "")
@@ -139,6 +146,7 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                     "create-flow": None,
                     "improve-flow": None,
                 },
+                "design_handoff_intents": ["create-flow", "improve-flow"],
                 "handoff_none_hints": {
                     "create-flow": _CREATE_FLOW_HINT,
                     "improve-flow": _IMPROVE_FLOW_HINT,

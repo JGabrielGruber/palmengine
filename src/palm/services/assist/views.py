@@ -342,6 +342,28 @@ def design_discovery_hint(intent: str | None) -> str:
     return ""
 
 
+def post_terminal_design_actions(
+    *,
+    intent: str | None = None,
+    name_or_base: str | None = None,
+) -> list[dict[str, Any]]:
+    """Re-entry CTAs after design work (0.30.3) — no DesignService calls."""
+    actions: list[dict[str, Any]] = list(
+        design_discovery_actions(intent=intent or "create-flow")
+    )
+    actions.append({"label": "Start operator entry", "alias": "operator-entry/start"})
+    actions.append({"label": "Open design entry", "alias": "design-entry/start"})
+    if name_or_base and intent in {"create-flow", "improve-flow"}:
+        actions.append(
+            {
+                "label": f"Run flow {name_or_base}",
+                "tool": "palm_flows_create_session",
+                "params": {"flow_id": name_or_base},
+            }
+        )
+    return merge_assistant_actions(actions)
+
+
 def merge_assistant_actions(
     *lists: list[dict[str, Any]] | None,
 ) -> list[dict[str, Any]]:
@@ -432,5 +454,6 @@ __all__ = [
     "design_discovery_hint",
     "ensure_assist_view_registration",
     "merge_assistant_actions",
+    "post_terminal_design_actions",
     "resolve_view_format",
 ]

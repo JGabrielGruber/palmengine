@@ -29,6 +29,22 @@ palm_assist(alias="design-entry/start")
 
 Also reachable from operator-entry design CTAs: **Open design entry** (`design-entry/start`).
 
+### Handoff `kind: design` (0.30.3+)
+
+After design intents, `palm_assist` / session **handoff** may return:
+
+```json
+{
+  "kind": "design",
+  "design_action": "propose_flow",
+  "intent": "create-flow",
+  "suggested_name": "…",
+  "operator_hint": "Use palm_design_propose_flow…"
+}
+```
+
+Treat unknown kinds like `none` and **always** read `operator_hint`. See [MIGRATION-0.30.md](../../../../MIGRATION-0.30.md).
+
 ---
 
 ## A. Create a new wizard flow (copy this loop)
