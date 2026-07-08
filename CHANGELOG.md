@@ -4,6 +4,34 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.26.0] — 2026-07-08
+
+**Design Service hardening and CQRS bus parity** — post-0.25.0 quality release. No breaking API changes vs 0.25.0; upgrade path is drop-in.
+
+### Added
+
+- **Design CQRS transport** (`0.25.7`) — `ProposeFlowDefinitionCommand`, `CommitDesignProposalCommand`, design query types; bus tests via `ApplicationHost`.
+- **Registry-driven design dispatch** (`0.25.8`) — `design_commands()` + handler table; `match_command_path` / `resolve_design_command`.
+- **Service CQRS contributors** (`0.25.9–0.25.12`) — `ServiceCqrsContributor` registry; `definitions/bindings/cqrs/` for impact/migrate; unified `collect_cqrs_catalog()` for host and standalone.
+- **Pipeline design contributor** (`0.25.5`) — transform step validation on proposals.
+- **Pattern design contributor hook** (`0.25.4`) — `DesignContributorHook` drained at host bootstrap (wizard, pipeline).
+- **Design proposal demo** (`0.25.6`) — end-to-end propose → commit + auto-migrate; meta-flow sketch.
+- **ADR-009** — [service CQRS contributors](docs/adr/009-service-cqrs-contributors.md).
+- **Tests** — `test_mcp_design_in_process.py`, `test_definitions_cqrs_standalone.py`, `test_cqrs_bus_catalog_parity.py`, `test_design_dispatch.py`.
+
+### Changed
+
+- **`wire_all_service_cqrs()`** — host and `ServerContext` wire definitions + design transport after generic bus registration.
+- **`build_schema_registry()`** — drains service contributor schemas (design).
+- **Host CQRS** — definitions impact/migrate handlers moved to service bindings (no duplication in `HostQueryHandlers`).
+
+### Fixed
+
+- **In-process MCP** — `palm_design_impact` and `palm_design_commit` failed with `No handler registered for AnalyzeDefinitionImpactQuery` on standalone `ServerContext`; standalone bus now registers definitions CQRS types.
+- **Design commit correctness** (`0.25.2`) — re-runs impact before auto-migrate; `DesignCommitRejectedServiceError` for token failures; `next_revision_for_flow()` helper.
+- **Proposal storage index** (`0.25.3`) — non-open proposals removed from index on save.
+- **Shared path utilities** — `path_match.py` + `path_alias.py` for MCP alias ↔ path matching.
+
 ## [0.25.0] — 2026-07-07
 
 **Definition revisioning, instance migration, and Design Service** — one PyPI release bundling the full 0.24 stack and complete 0.25 design orchestration. Jump from 0.23.1: read [MIGRATION-0.24.md](MIGRATION-0.24.md) and [MIGRATION-0.25.md](MIGRATION-0.25.md).

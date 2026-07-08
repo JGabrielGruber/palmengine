@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.25.0`
+**Current Version:** `0.26.0`
 **Last Updated:** July 8, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
 
@@ -308,13 +308,13 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.25.8 | Registry-driven design dispatch | ✅ Local |
 | 0.25.9–0.25.12 | Service CQRS contributors + bus parity | ✅ Local ([ADR-009](docs/adr/009-service-cqrs-contributors.md)) |
 | 0.25.13 | Docs sync (AGENTS, MCP, STATUS) | ✅ Local |
-| **0.26.0** | PyPI cut + CHANGELOG | ⏳ Pending |
+| **0.26.0** | PyPI cut + CHANGELOG | ✅ Local |
 
 **Plan:** [docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md](docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md)
 
 ## Priorities & Next Steps
 
-**0.25.0 shipped** — definition revisioning, instance migration, Design Service on PyPI. **0.26.0** bundles 0.25.1–0.25.13 when release is requested.
+**0.26.0 local** — design hardening (0.25.1–0.25.13) + CQRS bus parity. **0.25.0** remains prior PyPI baseline for revisioning + Design Service MVP.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 

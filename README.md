@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.25.0` — definition revisioning, instance migration, Design Service (`palm_design_*`) · `/v1/api/…` REST · per-domain MCP · [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.24.md](MIGRATION-0.24.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.26.0` — design hardening + in-process MCP CQRS parity (`palm_design_*`) · definition revisioning & migration · [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md) · [docs/MCP.md](docs/MCP.md)
 
 ---
 
