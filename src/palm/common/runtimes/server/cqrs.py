@@ -368,32 +368,10 @@ def wire_standalone_buses(
 ) -> None:
     commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
     queries = StandaloneQueryHandlers(runtime)
-    command_types = [
-        SubmitFlowCommand,
-        SubmitProcessCommand,
-        ProvideInputCommand,
-        ResumeProcessCommand,
-        PreparePlansCommand,
-        SubmitPlansCommand,
-        CancelJobCommand,
-    ]
-    query_types = [
-        GetJobStatusQuery,
-        GetJobContextQuery,
-        InspectInstanceQuery,
-        ListJobStatusQuery,
-        ListInstancesQuery,
-        GetInstanceStatusQuery,
-        ListInstanceSnapshotsQuery,
-        GetInstanceSnapshotQuery,
-        ListFlowsQuery,
-        GetFlowQuery,
-        ListProcessesQuery,
-        GetProcessQuery,
-    ]
-    for contributor in iter_cqrs_contributors():
-        command_types.extend(contributor.command_types)
-        query_types.extend(contributor.query_types)
+    from palm.common.cqrs.catalog import collect_cqrs_command_types, collect_cqrs_query_types
+
+    command_types = list(collect_cqrs_command_types(mode="standalone"))
+    query_types = list(collect_cqrs_query_types(mode="standalone"))
     for command_type in command_types:
         command_bus.register(command_type, commands)
     for query_type in query_types:

@@ -91,11 +91,16 @@ class ServerContext:
                 proposals=create_proposal_repository(runtime.storage),
                 runtime=runtime,
             )
-            from palm.services.design.bindings.cqrs.wiring import wire_design_service_cqrs
+            from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
             from palm.services.design.contributors import wire_builtin_design_contributors
 
             wire_builtin_design_contributors()
-            wire_design_service_cqrs(self._command_bus, self._query_bus, self._design)
+            wire_all_service_cqrs_from_runtime(
+                self._command_bus,
+                self._query_bus,
+                runtime,
+                design=self._design,
+            )
         else:
             self._system = host.system
             self._definitions = host.definitions

@@ -561,11 +561,17 @@ class ApplicationHost:
             proposals=create_proposal_repository(self._app.storage),
             runtime_resolver=self._resolve_execution_runtime,
         )
-        from palm.services.design.bindings.cqrs.wiring import wire_design_service_cqrs
+        from palm.services._cqrs_wiring import wire_all_service_cqrs
         from palm.services.design.contributors import wire_builtin_design_contributors
 
         wire_builtin_design_contributors()
-        wire_design_service_cqrs(self._command_bus, self._query_bus, self._design)
+        wire_all_service_cqrs(
+            self._command_bus,
+            self._query_bus,
+            repository=self._app.repository(),
+            instance_manager=self._app.instance_manager,
+            design=self._design,
+        )
 
     def _attach_projections(self) -> None:
         self._projection_manager.attach(self._event)
