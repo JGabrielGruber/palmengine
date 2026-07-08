@@ -117,6 +117,7 @@ Follow these patterns. They exist so growth remains orderly.
 | Instance migration execution (0.24.3+) | `palm/common/persistence/instance_migration.py` | `migrate_instance()`; preserve `migration_*` in `instance_sync.py`; REST `POST …/instances/{id}/migrate` |
 | Design Service (0.25+) | `palm/services/design/` | Propose/validate/impact/commit + auto-migrate atop revisions; layered with `DefinitionService` CRUD — see [VISION-0.25](docs/VISION-0.25.md), [ADR-008](docs/adr/008-design-service.md) |
 | Assist design entry (0.30+) | `palm/services/assist/` + operator-entry / design-entry scenarios | Surface create/improve flow from Assist without reimplementing Design — [VISION-0.30](docs/VISION-0.30.md) |
+| MCP meta-surface (0.31+) | `palm/runtimes/mcp/` surface profiles | Progressive disclosure: slim tool catalogs, assist-as-meta-execute, inventory measurement — [VISION-0.31](docs/VISION-0.31.md) |
 | Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
 
 **Never:**
