@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 import palm.providers  # noqa: F401 — register providers
 from examples.definitions.coconut_npc import COCONUT_NPC_FLOW
 from examples.definitions.coconut_resources import (
@@ -22,12 +20,6 @@ from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.providers.kv.provider import KvProvider
 from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
 from palm.runtimes.embedded import EmbeddedRuntime
-
-
-@pytest.fixture(autouse=True)
-def _reset_kv() -> None:
-    clear_memory_kv_store()
-    clear_palm_runtime()
 
 
 def _register_coconut(rt: EmbeddedRuntime) -> None:

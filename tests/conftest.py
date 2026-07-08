@@ -49,6 +49,22 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(skip)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_coconut_kv_state(request: pytest.FixtureRequest) -> Iterator[None]:
+    """Reset in-memory KV and palm runtime binding between coconut-related tests."""
+    if "coconut" not in request.node.nodeid:
+        yield
+        return
+    from palm.common.resource.document_storage import clear_memory_kv_store
+    from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+
+    clear_memory_kv_store()
+    clear_palm_runtime()
+    yield
+    clear_memory_kv_store()
+    clear_palm_runtime()
+
+
 @pytest.fixture
 def event_engine() -> Iterator[EventEngine]:
     """Initialized event bus for integration tests."""

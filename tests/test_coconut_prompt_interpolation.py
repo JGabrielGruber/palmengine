@@ -40,26 +40,36 @@ def test_topic_prompt_includes_mood_line_after_friend_reputation() -> None:
     root, runtime = _wizard_tree()
     state = BlackboardState()
 
-    assert root.tick(state).name == "WAITING_FOR_INPUT"
-    provide_wizard_input(state, "Lyra")
-    while state.get(WizardKeys.CURRENT_STEP) != "reputation":
-        status = root.tick(state)
-        if status.name == "WAITING_FOR_INPUT":
-            slug = state.get(WizardKeys.CURRENT_STEP)
-            if slug == "reputation":
+    try:
+        assert root.tick(state).name == "WAITING_FOR_INPUT"
+        provide_wizard_input(state, "Mira")
+        for _ in range(80):
+            if state.get(WizardKeys.CURRENT_STEP) == "reputation":
                 break
-            provide_wizard_input(state, "placeholder")
+            status = root.tick(state)
+            if status.name == "WAITING_FOR_INPUT":
+                slug = state.get(WizardKeys.CURRENT_STEP)
+                if slug == "reputation":
+                    break
+                provide_wizard_input(state, "placeholder")
+        else:
+            raise AssertionError(
+                f"expected reputation step, got {state.get(WizardKeys.CURRENT_STEP)!r}",
+            )
 
-    provide_wizard_input(state, "friend")
-    while state.get(WizardKeys.CURRENT_STEP) != "topic":
-        status = root.tick(state)
-        if status.name == "WAITING_FOR_INPUT" and state.get(WizardKeys.CURRENT_STEP) == "topic":
-            break
+        provide_wizard_input(state, "friend")
+        for _ in range(80):
+            status = root.tick(state)
+            if status.name == "WAITING_FOR_INPUT" and state.get(WizardKeys.CURRENT_STEP) == "topic":
+                break
+        else:
+            raise AssertionError(f"expected topic step, got {state.get(WizardKeys.CURRENT_STEP)!r}")
 
-    prompt = state.get(WizardKeys.ACTIVE_PROMPT)
-    assert isinstance(prompt, dict)
-    body = str(prompt.get("prompt", "")).lower()
-    assert "sweet coconuts" in body
-    assert "what'll it be" in body
-    runtime.stop()
-    clear_palm_runtime()
+        prompt = state.get(WizardKeys.ACTIVE_PROMPT)
+        assert isinstance(prompt, dict)
+        body = str(prompt.get("prompt", "")).lower()
+        assert "sweet coconuts" in body
+        assert "what'll it be" in body
+    finally:
+        runtime.stop()
+        clear_palm_runtime()
