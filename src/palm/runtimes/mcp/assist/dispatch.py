@@ -234,6 +234,22 @@ def shape_dispatch_result(
     payload: dict[str, Any] = {"path": path}
     raw = result
     result = _coerce_dispatch_result(result)
+    prefix = path[0] if path else ""
+
+    # List-shaped catalog/waiting results (0.31.2) — before dict-only handling
+    if isinstance(result, list):
+        if prefix == "assist" and path[-2:] == ["catalog", "flows"]:
+            payload.update(_shape_flows_catalog_assistant(result))
+            return payload
+        if prefix == "assist" and path[-2:] == ["catalog", "waiting"]:
+            payload.update(_shape_waiting_assistant(result, params=params))
+            return payload
+        if prefix == "system" and path[-1:] == ["waiting"]:
+            payload.update(_shape_waiting_assistant(result, params=params))
+            return payload
+        payload["result"] = result
+        return payload
+
     if not isinstance(result, dict):
         payload["result"] = result
         return payload
@@ -241,8 +257,6 @@ def shape_dispatch_result(
     if "handoff" in result:
         payload.update(result)
         return payload
-
-    prefix = path[0] if path else ""
 
     if prefix == "assist" and "session_id" in result:
         if fmt == "assistant" or result.get("question"):
@@ -297,7 +311,38 @@ def shape_dispatch_result(
         return payload
 
     if prefix == "system" and path[-1:] == ["doctor"]:
-        payload["doctor"] = result
+        if fmt == "assistant":
+            payload.update(_shape_doctor_assistant(result))
+        else:
+            payload["doctor"] = result
+        return payload
+
+    if prefix == "system" and path[-1:] == ["waiting"]:
+        if fmt == "assistant":
+            payload.update(_shape_waiting_assistant(result, params=params))
+        else:
+            payload.update(result if isinstance(result, dict) else {"waiting": result})
+        return payload
+
+    if prefix == "assist" and path[-1:] == ["doctor"]:
+        if fmt == "assistant":
+            payload.update(_shape_doctor_assistant(result))
+        else:
+            payload["doctor"] = result
+        return payload
+
+    if prefix == "assist" and len(path) >= 3 and path[1] == "catalog" and path[2] == "flows":
+        if fmt == "assistant":
+            payload.update(_shape_flows_catalog_assistant(result))
+        else:
+            payload["flows"] = result
+        return payload
+
+    if prefix == "assist" and len(path) >= 3 and path[1] == "catalog" and path[2] == "waiting":
+        if fmt == "assistant":
+            payload.update(_shape_waiting_assistant(result, params=params))
+        else:
+            payload["waiting"] = result
         return payload
 
     if prefix == "design" and fmt == "assistant":
@@ -316,6 +361,109 @@ def shape_dispatch_result(
 
     payload.update(result)
     return payload
+
+
+def _shape_doctor_assistant(result: Any) -> dict[str, Any]:
+    """Compact doctor report for assist-only agents (0.31.2)."""
+    report = result if isinstance(result, dict) else {"value": result}
+    preflight = report.get("resource_preflight") if isinstance(report, dict) else None
+    hint = "Engine health OK." if report else "Doctor returned no data."
+    if isinstance(preflight, dict):
+        missing = preflight.get("rest_missing_base_url")
+        if missing:
+            hint = f"REST resources missing base_url: {missing!r}. Fix params or env."
+        elif preflight.get("kv") or preflight.get("file"):
+            hint = "See resource_preflight for kv/file backends."
+    return {
+        "status": "ok",
+        "question": "Palm doctor report.",
+        "hint": hint,
+        "doctor": report,
+        "actions": [
+            {"label": "List flows", "alias": "assist/catalog/flows"},
+            {"label": "List waiting", "alias": "assist/catalog/waiting"},
+            {"label": "Start operator entry", "alias": "operator-entry/start"},
+        ],
+    }
+
+
+def _shape_flows_catalog_assistant(result: Any) -> dict[str, Any]:
+    """List flows as a short assistant turn (0.31.2)."""
+    rows = result if isinstance(result, list) else []
+    names: list[str] = []
+    for row in rows[:30]:
+        if isinstance(row, dict):
+            name = row.get("name") or row.get("flow_id") or row.get("id")
+            if name is not None:
+                names.append(str(name))
+        else:
+            names.append(str(row))
+    preview = ", ".join(names[:12])
+    if len(names) > 12:
+        preview += ", …"
+    return {
+        "status": "ok",
+        "question": f"Catalog: {len(rows)} flow(s).",
+        "hint": (
+            f"Known: {preview}. Start with palm_assist(params={{flow_id: \"…\"}})."
+            if preview
+            else "No flows listed."
+        ),
+        "flow_count": len(rows),
+        "flow_names": names,
+        "actions": [
+            {
+                "label": "Start coconut NPC",
+                "tool": "palm_assist",
+                "params": {"flow_id": "coconut-npc"},
+            },
+            {"label": "Operator entry", "alias": "operator-entry/start"},
+            {"label": "Publish flow", "alias": "design/publish"},
+        ],
+    }
+
+
+def _shape_waiting_assistant(
+    result: Any,
+    *,
+    params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Waiting jobs/sessions as assistant turn (0.31.2)."""
+    rows: list[Any]
+    if isinstance(result, list):
+        rows = result
+    elif isinstance(result, dict) and isinstance(result.get("jobs"), list):
+        rows = result["jobs"]
+    elif isinstance(result, dict) and isinstance(result.get("waiting"), list):
+        rows = result["waiting"]
+    else:
+        rows = []
+    slim: list[dict[str, Any]] = []
+    for row in rows[:20]:
+        if not isinstance(row, dict):
+            continue
+        slim.append(
+            {
+                k: row[k]
+                for k in ("session_id", "instance_id", "job_id", "flow", "flow_id", "status")
+                if row.get(k) is not None
+            }
+        )
+    return {
+        "status": "ok",
+        "question": f"{len(rows)} session(s) waiting for input.",
+        "hint": (
+            "Continue with palm_assist(params={session_id, flow_id, value})."
+            if rows
+            else "Nothing waiting."
+        ),
+        "waiting_count": len(rows),
+        "waiting": slim,
+        "actions": [
+            {"label": "List flows", "alias": "assist/catalog/flows"},
+            {"label": "Operator entry", "alias": "operator-entry/start"},
+        ],
+    }
 
 
 def _shape_design_publish_assistant(result: dict[str, Any]) -> dict[str, Any]:
@@ -526,6 +674,25 @@ def _dispatch_system(ctx: Any, path: list[str], params: dict[str, Any]) -> Any:
     params = params or {}
     if path == ["system", "doctor"]:
         return ctx.system.doctor(ctx.runtime)
+    if path == ["system", "waiting"]:
+        from palm.core.orchestration import JobStatus
+
+        limit = params.get("limit", 50)
+        try:
+            limit_i = int(limit) if limit is not None else 50
+        except (TypeError, ValueError):
+            limit_i = 50
+        rows = ctx.system.list_jobs(
+            status=JobStatus.WAITING_FOR_INPUT.value,
+            limit=limit_i,
+        )
+        out: list[dict[str, Any]] = []
+        for row in rows or []:
+            if hasattr(row, "to_dict"):
+                out.append(row.to_dict())
+            elif isinstance(row, dict):
+                out.append(dict(row))
+        return out
     if path == ["system", "jobs"]:
         return ctx.system.list_jobs(
             status=params.get("status"),

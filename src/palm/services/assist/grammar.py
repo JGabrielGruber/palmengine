@@ -15,6 +15,7 @@ class AssistCommandKind(Enum):
     SESSION_VERB = "session_verb"
     DOCTOR = "doctor"
     CATALOG_FLOWS = "catalog_flows"
+    CATALOG_WAITING = "catalog_waiting"
 
 
 _SESSION_VERBS = frozenset(
@@ -63,6 +64,8 @@ def parse_assist_command(path: list[str] | tuple[str, ...]) -> ParsedAssistComma
         return ParsedAssistCommand(kind=AssistCommandKind.DOCTOR)
     if segments == ("catalog", "flows"):
         return ParsedAssistCommand(kind=AssistCommandKind.CATALOG_FLOWS)
+    if segments == ("catalog", "waiting"):
+        return ParsedAssistCommand(kind=AssistCommandKind.CATALOG_WAITING)
     if len(segments) >= 2 and segments[0] == "session":
         session_id = segments[1]
         if len(segments) == 2:

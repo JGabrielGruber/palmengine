@@ -87,11 +87,15 @@ def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "label": "List waiting sessions",
-            "tool": "palm_system_list_waiting",
+            "alias": "assist/catalog/waiting",
         },
         {
             "label": "Publish new flow (one call)",
-            "tool": "palm_design_publish_flow",
+            "alias": "design/publish",
+        },
+        {
+            "label": "Doctor (resource preflight)",
+            "alias": "assist/doctor",
         },
     ]
     if session_id:

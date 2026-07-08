@@ -302,22 +302,23 @@ def _resource_assistant_actions(
     params: dict[str, Any] = {"session_id": session_id}
     if flow_id:
         params["flow_id"] = flow_id
+    # Prefer aliases so PALM_MCP_SURFACE=assist (palm_assist only) still works (0.31.2)
     actions: list[dict[str, Any]] = [
         {
             "label": "Resume resource step",
-            "tool": "palm_flows_session_resume",
+            "alias": "flows/session-resume",
             "params": dict(params),
         },
         {
             "label": "Doctor (resource preflight)",
-            "tool": "palm_system_doctor",
+            "alias": "assist/doctor",
         },
     ]
     if has_error:
         actions.append(
             {
                 "label": "Publish missing resource",
-                "tool": "palm_design_publish_resource",
+                "alias": "design/publish-resource",
             }
         )
     return actions

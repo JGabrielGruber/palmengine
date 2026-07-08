@@ -2,7 +2,7 @@
 
 **Vision:** [docs/VISION-0.31.md](../../VISION-0.31.md)  
 **Design:** [2026-07-08-mcp-meta-surface-design.md](../specs/2026-07-08-mcp-meta-surface-design.md)  
-**Status:** 0.31.0 ✅ · 0.31.1 ✅ · 0.31.2 open  
+**Status:** 0.31.0 ✅ · 0.31.1 ✅ · 0.31.2 ✅ · 0.31.3 open  
 
 Delivery: commit when good enough; phases are capability gates, not a rigid stack. **New work can be inserted** if dogfood demands it.
 

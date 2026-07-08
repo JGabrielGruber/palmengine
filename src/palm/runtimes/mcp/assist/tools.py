@@ -37,9 +37,10 @@ _PALM_ASSIST_DESC = tool_description(
         "use ``palm_flows_create_session`` only when you need the legacy powertool create shape."
     ),
     notes=(
-        "Resource steps in wizards (e.g. coconut-npc KV load/save) auto-run when possible; "
-        "if stuck, use Resume action or palm_flows_session_resume. "
-        "Publish resources with palm_design_publish_resource when definitions are missing."
+        "With PALM_MCP_SURFACE=assist this is the only tool — use aliases: "
+        "assist/doctor, assist/catalog/flows, assist/catalog/waiting, "
+        "flows/session-resume, design/publish, design/publish-resource. "
+        "Resource steps auto-run when possible; stuck → alias flows/session-resume."
     ),
 )
 

@@ -41,10 +41,22 @@ def test_resolve_dispatch_format_assist_defaults_assistant() -> None:
     )
 
 
-def test_resolve_dispatch_format_flows_stays_powertool() -> None:
+def test_resolve_dispatch_format_flows_honors_assistant_tool_format() -> None:
+    """0.30.6+ — palm_assist passes tool_format=assistant for flows paths."""
     assert (
         resolve_dispatch_format(
             ["flows", "onboard", "session", "inst-1"],
+            tool_format="assistant",
+        )
+        == "assistant"
+    )
+
+
+def test_resolve_dispatch_format_flows_powertool_when_requested() -> None:
+    assert (
+        resolve_dispatch_format(
+            ["flows", "onboard", "session", "inst-1"],
+            params={"format": "powertool"},
             tool_format="assistant",
         )
         == "powertool"
@@ -67,16 +79,20 @@ def test_shape_dispatch_result_assistant_passthrough() -> None:
     assert payload["path"] == ["assist", "session", "inst-1"]
 
 
-def test_shape_dispatch_result_flows_session_powertool() -> None:
+def test_shape_dispatch_result_flows_session_assistant_default() -> None:
+    from palm.common.operator.view_registry import clear_operator_view_builders
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    clear_operator_view_builders()
+    ensure_assist_view_registration()
     ctx = _sample_session_context()
     payload = shape_dispatch_result(
         ["flows", "onboard", "session", "inst-1"],
         ctx,
         tool_format="assistant",
     )
-    assert payload["instance_id"] == "inst-1"
-    assert payload["step"] == "intro"
-    assert "question" not in payload
+    assert payload.get("session_id") == "inst-1" or payload.get("instance_id") == "inst-1"
+    assert payload.get("question") == "Welcome"
 
 
 def test_shape_dispatch_result_flows_session_assistant_opt_in() -> None:

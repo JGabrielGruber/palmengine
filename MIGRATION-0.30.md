@@ -105,6 +105,16 @@ Agents that always sent summary `yes` after create-flow can stop; session is alr
 
 No change unless you set the env. Inventory: `just mcp-inventory surface=assist`.
 
+### 0.31.2 — Assist-only path coverage
+
+Peer tools are optional when CTAs use **aliases** resolved by `palm_assist`:
+
+- `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`
+- `flows/session-resume` (+ `flow_id`, `session_id`)
+- `design/publish`, `design/publish-resource`
+
+Hosts with `PALM_MCP_SURFACE=assist` should not need `palm_flows_*` / `palm_design_*` / `palm_system_*` for normal loops.
+
 ## 0.30.8 — Terminal turn clarity
 
 | Change | Effect |

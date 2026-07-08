@@ -283,9 +283,9 @@ def test_resource_error_surfaces_resume_actions() -> None:
         ),
     )
     assert "resource_error" in payload or "Register" in str(payload.get("hint") or "")
-    tools = {a.get("tool") for a in payload.get("actions") or []}
-    assert "palm_flows_session_resume" in tools
-    assert "palm_system_doctor" in tools
+    aliases = {a.get("alias") for a in payload.get("actions") or []}
+    assert "flows/session-resume" in aliases
+    assert "assist/doctor" in aliases
 
 
 def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:

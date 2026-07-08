@@ -126,6 +126,14 @@ class AssistService(BaseService):
         if parsed.kind == AssistCommandKind.CATALOG_FLOWS:
             return self.list_flows()
 
+        if parsed.kind == AssistCommandKind.CATALOG_WAITING:
+            limit = params.get("limit", 50)
+            try:
+                limit_i = int(limit) if limit is not None else 50
+            except (TypeError, ValueError):
+                limit_i = 50
+            return self.list_waiting(limit=limit_i)
+
         raise RuntimeError(f"unhandled assist command: {parsed}")
 
     def describe_scenario(self, scenario_id: str) -> dict[str, Any]:
@@ -229,6 +237,24 @@ class AssistService(BaseService):
     def list_flows(self) -> list[dict[str, Any]]:
         return self._definitions.list_flows()
 
+    def list_waiting(self, *, limit: int = 50) -> list[dict[str, Any]]:
+        """Jobs/instances waiting for interactive input (assist-only friendly)."""
+        from palm.core.orchestration import JobStatus
+
+        rows = self._system.list_jobs(
+            status=JobStatus.WAITING_FOR_INPUT.value,
+            limit=limit,
+        )
+        out: list[dict[str, Any]] = []
+        for row in rows or []:
+            if hasattr(row, "to_dict"):
+                out.append(row.to_dict())
+            elif isinstance(row, dict):
+                out.append(dict(row))
+            else:
+                out.append({"value": str(row)})
+        return out
+
     def inspect_catalog(
         self,
         scenario_id: str,
@@ -271,20 +297,20 @@ class AssistService(BaseService):
             "actions": [
                 {
                     "label": "Publish new flow (one call)",
-                    "tool": "palm_design_publish_flow",
+                    "alias": "design/publish",
                 },
                 {
                     "label": "Publish resource (one call)",
-                    "tool": "palm_design_publish_resource",
+                    "alias": "design/publish-resource",
                 },
                 {
                     "label": "Start coconut NPC",
-                    "params": {"flow_id": "coconut-npc"},
                     "tool": "palm_assist",
+                    "params": {"flow_id": "coconut-npc"},
                 },
                 {"label": "List flows", "alias": "assist/catalog/flows"},
-                {"label": "Doctor (resource preflight)", "tool": "palm_system_doctor"},
-                {"label": "List waiting sessions", "tool": "palm_system_list_waiting"},
+                {"label": "Doctor (resource preflight)", "alias": "assist/doctor"},
+                {"label": "List waiting sessions", "alias": "assist/catalog/waiting"},
                 {
                     "label": "Start operator entry",
                     "alias": "operator-entry/start",

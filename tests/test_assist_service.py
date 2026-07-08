@@ -96,8 +96,9 @@ def test_assist_catalog_flows_dispatch(assist_host: ApplicationHost) -> None:
 def test_inspect_catalog_includes_design_cta(assist_host: ApplicationHost) -> None:
     payload = assist_host.assist.inspect_catalog("operator-entry")
     actions = payload.get("actions") or []
-    tools = {a.get("tool") for a in actions if isinstance(a, dict)}
-    assert "palm_design_publish_flow" in tools
+    aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
+    assert "design/publish" in aliases
+    assert "assist/doctor" in aliases
     assert payload.get("mutation", {}).get("mutations_allowed") is False
 
 

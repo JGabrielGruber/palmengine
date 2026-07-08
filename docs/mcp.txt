@@ -41,6 +41,8 @@ PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # stdio → services, no RES
 |----------|---------------------|---------|
 | `PALM_MCP_IN_PROCESS` | `1` in `.grok/config.toml` | In-process services (no HTTP) |
 | `PALM_MCP_SURFACE` | `full` (default) | Tool catalog: `full` · `assist` (palm_assist only) · `core` (assist+system). See 0.31.1. |
+
+**Assist-only (0.31.2):** when surface is `assist`, use aliases only — `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`, `flows/session-resume`, `design/publish`, `params={flow_id}` / `{body}`.
 | `PALM_LLMS_TXT` | `docs/mcp.txt` | Content for `palm://agent/guide` |
 | `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target when in-process is off |
 

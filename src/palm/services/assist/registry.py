@@ -83,11 +83,38 @@ _registry: list[CommandSpec] = [
         ("assist", "catalog", "flows"),
         "List runnable flows from the definition catalog",
     ),
+    CommandSpec(
+        "catalog_waiting",
+        ("assist", "catalog", "waiting"),
+        "List sessions/jobs waiting for interactive input",
+    ),
 ]
 
 _BUILTIN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
     "flows/session-input": ("flows", "{flow_id}", "session", "{session_id}", "input"),
     "flows/session": ("flows", "{flow_id}", "session", "{session_id}"),
+    # 0.31.2 — assist-only happy paths (no peer MCP tools required)
+    "flows/session-resume": (
+        "flows",
+        "{flow_id}",
+        "session",
+        "{session_id}",
+        "resume",
+    ),
+    "flows/session-resume-child": (
+        "flows",
+        "{flow_id}",
+        "session",
+        "{session_id}",
+        "resume-child-wait",
+    ),
+    "assist/doctor": ("assist", "doctor"),
+    "assist/catalog/flows": ("assist", "catalog", "flows"),
+    "assist/catalog/waiting": ("assist", "catalog", "waiting"),
+    "system/doctor": ("system", "doctor"),
+    "system/waiting": ("system", "waiting"),
+    "design/publish": ("design", "publish"),
+    "design/publish-resource": ("design", "publish-resource"),
 }
 
 _lock = threading.RLock()

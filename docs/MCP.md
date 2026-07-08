@@ -21,6 +21,17 @@ just mcp-inventory surface=assist
 uv run --extra mcp python scripts/mcp_catalog_inventory.py --surface assist --json
 ```
 
+**Assist-only happy paths (0.31.2)** — with `PALM_MCP_SURFACE=assist`, use aliases on `palm_assist`:
+
+| Need | Alias / params |
+|------|----------------|
+| Doctor | `alias="assist/doctor"` |
+| List flows | `alias="assist/catalog/flows"` |
+| List waiting | `alias="assist/catalog/waiting"` |
+| Resume resource step | `alias="flows/session-resume"`, `params={session_id, flow_id}` |
+| Publish flow | `alias="design/publish"`, `params={body: …}` |
+| Run flow | `params={flow_id: "…"}` |
+
 Vision: [VISION-0.31.md](VISION-0.31.md).
 
 Migration from 0.15 tool names: [MIGRATION-0.16.md](../MIGRATION-0.16.md)
