@@ -65,3 +65,22 @@ def test_assist_catalog_waiting_shape(host: ApplicationHost) -> None:
 def test_host_assist_dispatch_waiting(host: ApplicationHost) -> None:
     rows = host.assist.dispatch(["assist", "catalog", "waiting"], {"limit": 5})
     assert isinstance(rows, list)
+
+
+def test_assist_discover_alias_and_shape(host: ApplicationHost) -> None:
+    assert resolve_mcp_alias("assist/discover") == ("assist", "discover")
+    path = resolve_dispatch_path(alias="assist/discover", params={"query": "doctor"})
+    raw = dispatch_operator_path(host, path, {"query": "doctor"})
+    assert isinstance(raw, dict)
+    assert raw.get("hits")
+    shaped = shape_dispatch_result(path, raw, format="assistant", params={})
+    assert shaped.get("question")
+    assert shaped.get("hit_count", 0) >= 1
+    assert "doctor" in str(shaped).lower() or "assist/doctor" in str(shaped)
+
+
+def test_assist_discover_empty_query_starters(host: ApplicationHost) -> None:
+    raw = host.assist.discover("", limit=8)
+    assert raw["hit_count"] >= 1
+    calls = " ".join(str(h.get("call") or "") for h in raw["hits"])
+    assert "palm_assist" in calls or "operator-entry" in calls

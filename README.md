@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.30.7` — design hardening + in-process MCP CQRS parity (`palm_design_*`) · definition revisioning & migration · [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.30.7` on PyPI · **trunk** continues 0.30.8+ / **0.31** MCP meta-surface (`palm_assist` progressive disclosure, `PALM_MCP_SURFACE=assist`) · [CHANGELOG.md](CHANGELOG.md) · [MIGRATION-0.30.md](MIGRATION-0.30.md) · [docs/MCP.md](docs/MCP.md) · [VISION-0.31.md](docs/VISION-0.31.md)
 
 ---
 
@@ -68,8 +68,9 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 | **Flow REST (0.16)** | `/v1/api/flows/{flow_id}/session/{session_id}/…` — create, inspect, input, backtrack |
 | **Definitions REST (0.16)** | `/v1/api/definitions/…` — catalog reads + CRUD writes |
 | **Definition revisions (0.24)** | Append-only flow revisions, `flow_revision` pin, impact query, instance migrate — [MIGRATION-0.24.md](MIGRATION-0.24.md) |
-| **Design Service (0.25)** | Propose → validate → impact → commit revisions — [VISION-0.25.md](docs/VISION-0.25.md) |
-| **MCP (0.16)** | `palm-mcp` — per-domain tools (`palm_flows_*`, `palm_system_*`, …); [docs/MCP.md](docs/MCP.md) |
+| **Design Service (0.25+)** | Propose → impact → commit · **one-shot** `palm_design_publish_*` / `palm_assist(params={body})` — [VISION-0.25.md](docs/VISION-0.25.md) |
+| **Local resources (0.28–0.29)** | `kv` / `file` / tiered backends; coconut-npc cross-session profile |
+| **MCP (0.16–0.31)** | `palm-mcp` · **`palm_assist` meta-tool** · `PALM_MCP_SURFACE=assist` slim catalog · `palm://agent/card` progressive docs — [docs/MCP.md](docs/MCP.md) · [VISION-0.31.md](docs/VISION-0.31.md) |
 | **Dashboard** | `palm status` — projection-backed Rich overview; `--full`, `-r` live refresh |
 | **DX** | Rich examples, `palm doctor`, `palm resource *`, `just` quality recipes |
 

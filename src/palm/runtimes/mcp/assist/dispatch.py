@@ -258,6 +258,14 @@ def shape_dispatch_result(
         payload.update(result)
         return payload
 
+    # 0.31.4 — discover hits
+    if prefix == "assist" and path[-1:] == ["discover"] and "hits" in result:
+        if fmt == "assistant":
+            payload.update(_shape_discover_assistant(result))
+        else:
+            payload.update(result)
+        return payload
+
     if prefix == "assist" and "session_id" in result:
         if fmt == "assistant" or result.get("question"):
             payload.update(result)
@@ -361,6 +369,37 @@ def shape_dispatch_result(
 
     payload.update(result)
     return payload
+
+
+def _shape_discover_assistant(result: dict[str, Any]) -> dict[str, Any]:
+    """Short discover turn — progressive disclosure without a second MCP tool."""
+    hits = result.get("hits") if isinstance(result.get("hits"), list) else []
+    lines: list[str] = []
+    for hit in hits[:8]:
+        if not isinstance(hit, dict):
+            continue
+        call = hit.get("call") or hit.get("alias") or ""
+        summary = hit.get("summary") or ""
+        if summary:
+            lines.append(f"- {call}: {summary}")
+        else:
+            lines.append(f"- {call}")
+    body = "\n".join(lines) if lines else "No hits — try a broader query or read palm://agent/card."
+    query = result.get("query") or ""
+    return {
+        "status": "ok",
+        "question": f"Discover results{f' for {query!r}' if query else ''} ({len(hits)}).",
+        "hint": str(result.get("hint") or "Use palm_assist with the call strings above."),
+        "hits": hits,
+        "hit_count": result.get("hit_count", len(hits)),
+        "actions": [
+            {"label": "Operator card", "hint": "read palm://agent/card"},
+            {"label": "List flows", "alias": "assist/catalog/flows"},
+            {"label": "Doctor", "alias": "assist/doctor"},
+            {"label": "Operator entry", "alias": "operator-entry/start"},
+        ],
+        "preview": body,
+    }
 
 
 def _shape_doctor_assistant(result: Any) -> dict[str, Any]:

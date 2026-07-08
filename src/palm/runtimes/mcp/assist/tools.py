@@ -21,16 +21,16 @@ _PALM_ASSIST_DESC = tool_description(
     when=(
         "Bare ``{}`` → operator-entry. "
         "``params={flow_id}`` start · ``{session_id, flow_id, value}`` continue · "
-        "``{body}`` publish flow · aliases: assist/doctor, assist/catalog/flows, "
-        "assist/catalog/waiting, design/publish, flows/session-resume. "
+        "``{body}`` publish · ``alias=assist/discover`` (+ query) to search routes. "
+        "Aliases: assist/doctor, assist/catalog/flows, design/publish, flows/session-resume. "
         "Read ``palm://agent/card`` before full guides."
     ),
     examples=[
         "palm_assist()",
+        'palm_assist(alias="assist/discover", params={"query": "publish"})',
         'palm_assist(params={"flow_id": "coconut-npc"})',
         'palm_assist(params={"session_id": "inst-1", "flow_id": "coconut-npc", "value": "hi"})',
         'palm_assist(params={"body": {"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}}})',
-        'palm_assist(alias="assist/doctor")',
     ],
 )
 

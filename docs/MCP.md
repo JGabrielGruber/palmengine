@@ -28,6 +28,7 @@ uv run --extra mcp python scripts/mcp_catalog_inventory.py --surface assist --js
 | Need | Alias / params |
 |------|----------------|
 | Doctor | `alias="assist/doctor"` |
+| Discover | `alias="assist/discover"`, optional `params={query: "…"}` |
 | List flows | `alias="assist/catalog/flows"` |
 | List waiting | `alias="assist/catalog/waiting"` |
 | Resume resource step | `alias="flows/session-resume"`, `params={session_id, flow_id}` |

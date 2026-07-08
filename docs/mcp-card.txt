@@ -7,6 +7,7 @@
 | Goal | Call |
 |------|------|
 | Operator menu | `palm_assist()` |
+| Discover routes | `alias=assist/discover` + optional `params={query: "publish"}` |
 | Run a flow | `palm_assist(params={flow_id: "coconut-npc"})` |
 | Continue | `palm_assist(params={session_id, flow_id, value})` |
 | Publish flow | `palm_assist(params={body: {name, pattern, options.steps}})` or `alias=design/publish` |

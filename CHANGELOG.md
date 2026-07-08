@@ -10,6 +10,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.31.1 MCP surface profiles** — `PALM_MCP_SURFACE=full|assist|core|experimental`; assist-only registers `palm_assist`; `scripts/mcp_catalog_inventory.py` + `just mcp-inventory` size proxy.
 - **0.31.2 assist-complete paths** — aliases `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`, `flows/session-resume`; assistant envelopes for doctor/catalog/waiting; CTAs use aliases (works with `PALM_MCP_SURFACE=assist`).
 - **0.31.3 progressive docs** — short `palm_assist` L0 description; `palm://agent/card` L1 mini-guide (`docs/mcp-card.txt`); skill/mcp recipes load card before full guide; publish success CTAs use `palm_assist(params={flow_id})`.
+- **0.31.4 assist/discover** — `palm_assist(alias="assist/discover", params={query})` searches aliases/routes without a second MCP tool; AGENTS/README/llms/skill refreshed for assist-first + progressive docs.
 - **0.30.8 terminal assistant polish** — complete turns get a short “Finished. Answers: …” blurb; waiting turns without richer actions get a single **Send answer** CTA; complete turns get **Run again** + operator-entry.
 
 ## [0.30.7] — 2026-07-08

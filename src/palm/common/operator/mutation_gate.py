@@ -118,7 +118,7 @@ def build_mutation_envelope(
         )
     elif not mutations_allowed:
         payload["agent_hint"] = (
-            "Read-only: use palm_flows_session or MCP resources; do not send value/input."
+            "Read-only: re-inspect with palm_assist or palm:// resources; do not send value/input."
         )
 
     if (

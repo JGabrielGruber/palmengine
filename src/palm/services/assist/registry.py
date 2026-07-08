@@ -88,6 +88,11 @@ _registry: list[CommandSpec] = [
         ("assist", "catalog", "waiting"),
         "List sessions/jobs waiting for interactive input",
     ),
+    CommandSpec(
+        "discover",
+        ("assist", "discover"),
+        "Search assist routes and aliases (progressive disclosure)",
+    ),
 ]
 
 _BUILTIN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
@@ -111,6 +116,7 @@ _BUILTIN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
     "assist/doctor": ("assist", "doctor"),
     "assist/catalog/flows": ("assist", "catalog", "flows"),
     "assist/catalog/waiting": ("assist", "catalog", "waiting"),
+    "assist/discover": ("assist", "discover"),
     "system/doctor": ("system", "doctor"),
     "system/waiting": ("system", "waiting"),
     "design/publish": ("design", "publish"),

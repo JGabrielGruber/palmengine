@@ -45,6 +45,7 @@ You operate Palm through MCP — **prefer `palm_assist` only** (required when `P
 | Action | Call |
 |--------|------|
 | Fresh start | `palm_assist()` |
+| Discover | `alias=assist/discover` + optional `query` |
 | Run a flow | `params={flow_id: "coconut-npc"}` then `value` |
 | Continue | `params={session_id, flow_id, value}` |
 | List flows | `alias=assist/catalog/flows` |

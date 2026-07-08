@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.30.7+ · 0.31 MCP meta-surface track open)
+**Last updated:** July 2026 (0.30.7 release · 0.31 meta-surface through 0.31.4)
 
 ---
 
@@ -65,21 +65,40 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 - Job state transitions happen only through `RunResult` + `OrchestrationEngine.apply_result()`.
 - Persistence and resume are first-class (via `InstancePersistenceHook` and state snapshots).
 
-### Operating Palm via MCP (0.14 + 0.15 in-process)
+### Operating Palm via MCP (0.31 — meta-surface + assist-first)
 
-Coding agents should use the MCP operator adapter to develop and test flows — not hand-written curl or JSON blobs.
+Coding agents should operate Palm through MCP — **prefer a single meta-tool `palm_assist`**, not curl or sprawling per-domain tools.
 
 | Step | Action |
 |------|--------|
-| Read first | [docs/MCP.md](docs/MCP.md) · `palm://agent/guide` ([docs/mcp.txt](docs/mcp.txt)) · `palm://agent/skill` ([docs/skills/palm](docs/skills/palm)) · project context [docs/llms.txt](docs/llms.txt) |
-| Setup (local) | `uv sync --extra mcp` → connect `palm-mcp` stdio with `PALM_MCP_IN_PROCESS=1` (default in [`.grok/config.toml`](.grok/config.toml)) — **no REST server required** |
-| Setup (remote) | `PALM_MCP_IN_PROCESS=0` → `just palm-server` (`:8080`) → `palm-mcp` proxies via `PALM_BASE_URL` |
-| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml) — `uv run --extra mcp palm-mcp`, in-process + `docs/mcp.txt` · skill [`docs/skills/palm/SKILL.md`](docs/skills/palm/SKILL.md) (mirrored in `.grok/skills/palm/`) |
-| Operator loop | definitions → submit → inspect → input → wait on children → resume |
+| **Docs (progressive)** | **L1 first:** `palm://agent/card` · L2 only if stuck: `palm://agent/guide` · skill/references · [docs/MCP.md](docs/MCP.md) · [docs/llms.txt](docs/llms.txt) |
+| Setup (local) | `uv sync --extra mcp` · `PALM_MCP_IN_PROCESS=1` · optional **`PALM_MCP_SURFACE=assist`** (one tool) |
+| Grok (this repo) | [`.grok/config.toml`](.grok/config.toml); skill [docs/skills/palm/SKILL.md](docs/skills/palm/SKILL.md) |
+| Catalog size | `just mcp-inventory` / `just mcp-inventory surface=assist` |
+| Operator loop | `palm_assist` → question/actions → input → complete |
 
-**Conventions:** session-first (`session_id` / `instance_id` in views, not `job_id`); plain `input` strings (`yes`, choice slugs, text); **0.20+** assistant default on assist (`question`, `choices`, `hint`, `actions`) · powertool default on `palm_flows_*` / flows dispatch (`operator_hint`); **0.21.5+** flows opt-in `format=assistant` on `palm_flows_session` and flows REST `?format=`; **0.21.7+** bare `palm_assist()` → operator-entry; `params.session_id` + `value`/`input` inferred for continuation; **0.21.10+** flows driving via `palm_assist(params={session_id, flow_id, value})` or aliases `flows/session-input` / `flows/session`; **0.21.11+** collection `params.edit={item_index, …}` and fuzzy menu tokens (`add`/`edit`/`done`/`continue`); resources for read, tools for write; **0.19+** stable proxy → `palm_assist(path=…)` or `alias=…` with `format=assistant|powertool` (catalog: `palm://assist/routes`); per-domain tools remain valid; collection menu → `palm_wizard_collection_action` or `palm_assist` collection params; interactive entry → `palm_assist` / `assist start` (CLI) / `/explorer/assist` (browser) / `palm_flows_create_session` (not `palm_processes_submit` on entry-flow processes); `resume-child-wait` only when `waiting_for_child`.
+**Default calls (assist-only safe):**
 
-**Extending MCP** (when adding tools, not just using them): pattern contributors via `register_mcp_contributor()` in `PatternApp.ready()`; app contributors via `register_app_mcp_contributor()` in `palm/app/mcp_registry.py`; adapter code in `palm/runtimes/mcp/` (operator logic belongs in `palm/common/operator/`).
+| Goal | Call |
+|------|------|
+| Menu | `palm_assist()` |
+| Discover | `palm_assist(alias="assist/discover", params={query: "…"})` |
+| Run flow | `palm_assist(params={flow_id: "coconut-npc"})` |
+| Continue | `palm_assist(params={session_id, flow_id, value})` |
+| Publish flow | `palm_assist(params={body: {name, pattern, options.steps}})` or `alias=design/publish` |
+| Doctor / list / waiting | `assist/doctor` · `assist/catalog/flows` · `assist/catalog/waiting` |
+| Resume resource | `alias=flows/session-resume` + `session_id`, `flow_id` |
+
+**Conventions:** session-first (`session_id`); plain `value`/`input` strings; follow returned **`question` / `choices` / `actions` / `mutation`**; do **not** guess state; design writes via **publish** (or propose→impact→commit only when inspecting impact); never `palm_processes_submit` for interactive wizard entry; `resume-child-wait` only when `waiting_for_child`.
+
+**Token efficiency (0.31):**
+
+- Prefer **`PALM_MCP_SURFACE=assist`** for weak LLMs (≈1 tool vs ≈39).
+- Prefer **L1 card** over loading full skill + all references.
+- Prefer **one-shot publish** over multi-step design tools when validating impact is not required.
+- When **adding MCP capability**, prefer **assist aliases/paths** over new top-level tools so slim surface stays complete ([VISION-0.31](docs/VISION-0.31.md)).
+
+**Extending MCP:** pattern `register_mcp_contributor()` / app `register_app_mcp_contributor()`; logic in `palm/common/operator/` or services — not thick runtime code. New happy paths should work via **`palm_assist` alone**.
 
 ---
 
