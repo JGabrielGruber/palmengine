@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.26.0`
+**Current Version:** `0.30.7`
 **Last Updated:** July 8, 2026
-**Maturity:** Wizard Experience · MCP operator adapter · **0.19.0** `palm_assist` stable dispatch proxy.
+**Maturity:** Wizard Experience · MCP operator adapter · Assist design entry + local KV/file resources · **`palm_assist`** primary weak-LLM surface.
 
 ## Quick Overview
 
@@ -365,6 +365,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.30.4 | Weak-LLM: `palm_design_publish_flow` one-shot + compact design CTAs | ✅ Shipped |
 | 0.30.5 | Skip design summary confirm; `palm_assist(params={body})` → publish | ✅ Shipped |
 | 0.30.6 | Flow usage + resources: assistant flows, coconut entry, resource CTAs | ✅ Shipped |
+| **0.30.7** | **PyPI/GitHub bundle** of 0.27–0.30.6 (from last cut 0.26.0) | ✅ Release |
 
 **Boundaries:** Assist discovers and guides; Design Service owns propose → impact → commit. Bare `palm_assist()` remains operator-entry; design is a sibling intent/scenario.
 

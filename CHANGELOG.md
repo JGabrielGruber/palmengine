@@ -4,27 +4,50 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added
+## [0.30.7] — 2026-07-08
 
-- **0.30 Assist design entry (foundation)** — [VISION-0.30.md](docs/VISION-0.30.md); design [spec](docs/superpowers/specs/2026-07-08-assist-design-entry-design.md) + [plan](docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md).
-- **0.30.1 design discovery CTAs** — operator-entry intents `create-flow` / `improve-flow`; assistant action merge + `OperatorViewContext.intent`; `inspect_catalog` propose CTA; metadata `handoff_none_hints` for design-oriented none handoffs.
-- **0.30.2 design-entry scenario** — assist scenario `design-entry` (`examples/definitions/design_entry.py`, alias `design-entry/start`): create/improve/propose-resource shell with Design tool CTAs only (no catalog writes on start).
-- **0.30.3 design handoff** — `AssistService.handoff()` returns `kind: design` for opted-in intents (`design_handoff_intents`) with `design_action` / `base_flow_id` / `suggested_name`; post-terminal re-entry CTAs; [MIGRATION-0.30.md](MIGRATION-0.30.md).
-- **0.30.4 weak-LLM design publish** — `palm_design_publish_flow` / `publish_resource` one-shot (propose→impact→commit); assist CTAs prioritize a single publish tool; shorter design hints; session-verb noise dropped on design intents.
-- **0.30.5 design path shortening** — operator-entry `create-flow`/`improve-flow` skip summary confirm (`__end__`); design-entry drops summary; `palm_assist(params={body})` infers `design/publish` (one tool for publish).
+**Bundled release since 0.26.0** — compositional design parity (0.27), local document/KV resources (0.28–0.29), and Assist design-entry + weak-LLM operator UX (0.30.0–0.30.6). Upgrade from 0.26.0: read [MIGRATION-0.30.md](MIGRATION-0.30.md) (and 0.24/0.25 if jumping from older cuts).
+
+**Checklist:** [RELEASE-0.30.7.md](RELEASE-0.30.7.md)
+
+### Added — Assist design entry & weak-LLM MCP (0.30)
+
+- **0.30 foundation** — [VISION-0.30.md](docs/VISION-0.30.md); design [spec](docs/superpowers/specs/2026-07-08-assist-design-entry-design.md) + [plan](docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md).
+- **0.30.1 design discovery CTAs** — operator-entry intents `create-flow` / `improve-flow`; assistant action merge + `OperatorViewContext.intent`; `inspect_catalog` propose CTA; metadata `handoff_none_hints`.
+- **0.30.2 design-entry scenario** — `design-entry` / `design-entry/start`; Design tool CTAs only (no catalog writes on start).
+- **0.30.3 design handoff** — `kind: design` with `design_action` / `base_flow_id` / `suggested_name`; post-terminal re-entry CTAs; [MIGRATION-0.30.md](MIGRATION-0.30.md).
+- **0.30.4 one-shot design publish** — `palm_design_publish_flow` / `palm_design_publish_resource` (propose→impact→commit); compact design CTAs and hints.
+- **0.30.5 design path shortening** — operator-entry design intents skip summary confirm; design-entry drops summary; `palm_assist(params={body})` → `design/publish`.
 - **0.30.6 assist flow + resource ergonomics** — `palm_assist` defaults assistant on flows create/session; `params={flow_id}` starts a flow; create re-inspects first turn; operator-entry adds `coconut-npc` + `propose-resource`; resource failures surface resume/doctor/publish-resource CTAs.
-- **0.27 vision** — [VISION-0.27.md](docs/VISION-0.27.md) compositional design parity; [ADR-010](docs/adr/010-prompt-state-interpolation.md); implementation [plan](docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md).
-- **Example flow `coconut-npc`** — branching wizard reference (`examples/definitions/coconut_npc.py`): hub menu, transforms, `route_on_answer` / `complete_on`; MCP dogfood profile.
-- **Wizard design contributor (0.27.0)** — flat transform steps (`rule` + `source_key`) validate like runtime builder; nested `transform` normalized at validate time.
-- **Prompt interpolation (0.27.1)** — `{{ state.key }}` in wizard `prompt` / `title` via `resolve_wizard_prompt()` ([ADR-010](docs/adr/010-prompt-state-interpolation.md)).
-- **Design `propose_resource` (0.27.2)** — `DesignService.propose_resource`, impact scan for referencing flows, `palm_design_propose_resource` MCP tool.
+
+### Added — Compositional design parity (0.27)
+
+- **Example flow `coconut-npc`** — branching wizard reference (hub menu, transforms, routing); MCP dogfood profile.
+- **Wizard design contributor** — flat transform steps validate like runtime builder.
+- **Prompt interpolation** — `{{ state.key }}` in wizard `prompt` / `title` ([ADR-010](docs/adr/010-prompt-state-interpolation.md)).
+- **Design `propose_resource`** — impact scan for referencing flows; `palm_design_propose_resource`.
 - **`palm://agent/references/branching-flows`** — hub menu / routing playbook for weak LLMs.
-- **Resource operator ergonomics (0.27.3)** — `palm_system_doctor` `resource_preflight` (REST `base_url` gaps, optional `check-health` probe); wizard resource step `on_resource_failure`: `block` | `skip` | `branch`; `palm_providers_invoke` failures include `remediation` hints; powertool inspect surfaces `resource_error` + `resource_remediation`.
-- **`kv` resource provider (0.28.0)** — local key-value `get`/`put`/`delete`/`list`; `backend: auto|memory|storage`; shared `document_storage` adapter; coconut resource defs (`load-coconut-player`, `save-coconut-player`).
-- **Coconut cross-session persistence (0.28.2)** — `coconut-npc` loads/saves `player_profile` via `kv` keyed by `player_name`; returning travelers see `visit_count` and prior `reputation`.
-- **KV/file design contributors (0.28.3)** — `validate_kv_resource` / `validate_file_resource`; `palm_design_propose_resource` validates local provider proposals; doctor `resource_preflight` reports `kv.backend_resolved`, namespaces, `file.documents_root` + writability; [ADR-011](docs/adr/011-local-document-resources.md).
-- **`file` document provider (0.28.1)** — `read`/`write`/`delete`/`exists`/`list` under `data_dir/documents`; `FileDocumentStore` with path safety and atomic writes; runtime `documents_root` resolution via bound host.
-- **Tiered KV backend (0.29.0)** — `backend: tiered` hot memory cache with write-through cold storage (filesystem spill or `StorageEngine`), LRU eviction via `hot_max_keys`, promote-on-read; doctor `resource_preflight.kv.tiered` reports hot/cold counts.
+- **Resource operator ergonomics** — doctor `resource_preflight`; wizard `on_resource_failure`; provider invoke remediation; powertool `resource_error` / `resource_remediation`.
+- **`step_kind: branch`** — state-driven BT routing ([ADR-012](docs/adr/012-wizard-branch-step.md)).
+
+### Added — Local document resources (0.28) & tiered KV (0.29)
+
+- **`kv` resource provider** — `get`/`put`/`delete`/`list`; `backend: auto|memory|storage`; coconut player profile load/save.
+- **`file` document provider** — `read`/`write`/`delete`/`exists`/`list` under `documents_root`.
+- **Coconut cross-session persistence** — KV keyed by `player_name`; visit counts / reputation for returners.
+- **KV/file design contributors + doctor preflight** — [ADR-011](docs/adr/011-local-document-resources.md).
+- **Tiered KV backend** — hot memory + cold storage, LRU eviction (`hot_max_keys`).
+
+### Changed
+
+- Agent skill / `mcp.txt` emphasize one-shot publish, `palm_assist` as primary driver, and coconut as the resource-backed reference flow.
+- Bare `palm_assist()` remains operator-entry; design is sibling intent/scenario (not a new default).
+
+### Migration notes
+
+- Prefer `palm_design_publish_*` over multi-step propose→impact→commit for agents.
+- Treat unknown handoff `kind` like `none` and always read `operator_hint` (`kind: design` in 0.30.3+).
+- Flows via `palm_assist` are assistant-first; direct `palm_flows_*` stay powertool-default.
 
 ## [0.26.0] — 2026-07-08
 
