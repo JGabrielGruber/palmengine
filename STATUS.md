@@ -370,6 +370,23 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Boundaries:** Assist discovers and guides; Design Service owns propose → impact → commit. Bare `palm_assist()` remains operator-entry; design is a sibling intent/scenario.
 
+### 0.31 — MCP Meta-Surface (active, open-ended)
+
+**Vision:** [docs/VISION-0.31.md](docs/VISION-0.31.md)  
+**Design:** [docs/superpowers/specs/2026-07-08-mcp-meta-surface-design.md](docs/superpowers/specs/2026-07-08-mcp-meta-surface-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-08-mcp-meta-surface-0.31.md](docs/superpowers/plans/2026-07-08-mcp-meta-surface-0.31.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.31.0 | Vision + design + open ladder (docs-only) | ✅ Documented |
+| 0.31.1 | `PALM_MCP_SURFACE` profiles + catalog inventory | ⬜ Open |
+| 0.31.2 | Assist-complete happy paths (assist-only dogfood) | ⬜ Open |
+| 0.31.3 | Progressive docs (L0/L1/L2) | ⬜ Open |
+| 0.31.4 | Optional discover meta-tool | ⬜ Optional |
+| 0.31.5+ | Open field (Code Mode, host gateways, size logging, …) | ⬜ Open |
+
+**Theme:** Progressive disclosure — thin host tool catalog; `palm_assist` as meta-execute; measure catalog/turn size. Default surface stays **full** until assist-only is proven.
+
 **Also tracked (outside 0.30 critical path):** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 
 

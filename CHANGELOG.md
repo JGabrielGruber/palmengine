@@ -6,6 +6,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Added
 
+- **0.31 MCP meta-surface (foundation)** — [VISION-0.31.md](docs/VISION-0.31.md); design [spec](docs/superpowers/specs/2026-07-08-mcp-meta-surface-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-08-mcp-meta-surface-0.31.md). Progressive disclosure / slim MCP surfaces; docs-only in 0.31.0.
 - **0.30.8 terminal assistant polish** — complete turns get a short “Finished. Answers: …” blurb; waiting turns without richer actions get a single **Send answer** CTA; complete turns get **Run again** + operator-entry.
 
 ## [0.30.7] — 2026-07-08
