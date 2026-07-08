@@ -62,10 +62,11 @@ def test_operator_entry_create_flow_actions_after_to_dict(
     actions = updated.get("actions") or []
     tools = {a.get("tool") for a in actions if isinstance(a, dict)}
     aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
-    assert "palm_design_propose_flow" in tools or "design/propose" in aliases
-    assert "palm_design_propose_flow" in (updated.get("hint") or "") or "design" in (
-        updated.get("hint") or ""
-    ).lower()
+    assert "palm_design_publish_flow" in tools
+    assert "publish" in (updated.get("hint") or "").lower()
+    # Weak-LLM: design tool first; no long session-verb list
+    labels = [a.get("label") for a in actions if isinstance(a, dict)]
+    assert labels and "Publish" in str(labels[0])
 
 
 def test_operator_entry_create_flow_handoff_kind_design(
@@ -77,10 +78,10 @@ def test_operator_entry_create_flow_handoff_kind_design(
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "design"
     assert handoff["handoff"]["flow_id"] is None
-    assert handoff["handoff"]["design_action"] == "propose_flow"
+    assert handoff["handoff"]["design_action"] == "publish_flow"
     assert handoff["handoff"]["intent"] == "create-flow"
     hint = handoff["handoff"]["operator_hint"]
-    assert "palm_design_propose_flow" in hint
+    assert "palm_design_publish_flow" in hint
 
 
 def test_operator_entry_start_includes_design_choices(

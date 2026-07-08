@@ -70,13 +70,6 @@ def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, An
                 payload["hint"] = f"{hint} {extra}".strip() if hint else extra
         else:
             payload["actions"] = design_discovery_actions(intent=str(intent))
-            if not any(
-                isinstance(a, dict) and a.get("alias") == "design-entry/start"
-                for a in payload["actions"]
-            ):
-                payload["actions"] = list(payload["actions"]) + [
-                    {"label": "Open design entry", "alias": "design-entry/start"},
-                ]
     elif payload.get("handoff_ready"):
         extra = "Say handoff to start your flow."
         hint = str(payload.get("hint") or "")
@@ -97,8 +90,8 @@ def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
             "tool": "palm_system_list_waiting",
         },
         {
-            "label": "Propose new flow",
-            "tool": "palm_design_propose_flow",
+            "label": "Publish new flow (one call)",
+            "tool": "palm_design_publish_flow",
         },
     ]
     if session_id:
@@ -120,12 +113,10 @@ def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 _CREATE_FLOW_HINT = (
-    "No business flow handoff. Use palm_design_propose_flow, then "
-    "palm_design_impact and palm_design_commit. See palm://agent/references/design-flows."
+    "No business flow handoff. One call: palm_design_publish_flow(body=…)."
 )
 _IMPROVE_FLOW_HINT = (
-    "No business flow handoff. Propose changes with palm_design_propose_flow, then "
-    "impact and commit. See palm://agent/references/design-flows."
+    "No business flow handoff. One call: palm_design_publish_flow(base_flow_id=…, body=…)."
 )
 
 OPERATOR_ENTRY_FLOW = FlowDefinition(

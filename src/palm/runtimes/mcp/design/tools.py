@@ -6,26 +6,57 @@ from typing import Any
 
 from palm.runtimes.mcp.descriptions import tool_description
 
+_PALM_DESIGN_PUBLISH_DESC = tool_description(
+    "palm_design_publish_flow",
+    "One-shot publish a wizard flow: propose → impact → commit in a single call (preferred weak-LLM path).",
+    when=(
+        "Prefer this over separate propose/impact/commit when creating or updating a flow. "
+        "Flow ``name`` must be a slug (``foo-bar``). For revisions pass ``base_flow_id``. "
+        "Returns ``status``: ``committed`` or ``blocked`` (validation failed)."
+    ),
+    examples=[
+        'palm_design_publish_flow(body={"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}})',
+        'palm_design_publish_flow(base_flow_id="foo-bar", body={"name": "foo-bar", "pattern": "wizard", "options": {...}})',
+    ],
+    use_instead=(
+        "Do **not** chain palm_design_propose_flow + impact + commit unless you need "
+        "to inspect impact before publish. Do not use palm_definitions_* for catalog writes."
+    ),
+    notes=(
+        "Each step needs ``slug``, ``title``, ``prompt``. "
+        "``field_type: choice`` requires ``choices: [...]``. "
+        "On success use returned ``actions`` to run the flow."
+    ),
+)
+
+_PALM_DESIGN_PUBLISH_RESOURCE_DESC = tool_description(
+    "palm_design_publish_resource",
+    "One-shot publish a resource definition: propose → impact → commit (preferred weak-LLM path).",
+    when="Prefer this over separate resource propose/impact/commit when publishing a resource.",
+    examples=[
+        'palm_design_publish_resource(body={"name": "my-ledger", "provider": "rest", "action": "fetch", "resource_id": "ledger/{id}"})',
+    ],
+    use_instead="Use palm_design_publish_flow for wizard flows.",
+)
+
 _PALM_DESIGN_PROPOSE_DESC = tool_description(
     "palm_design_propose_flow",
-    "Create a design proposal from a wizard flow body (recommended agent catalog write path).",
+    "Create a design proposal only (step-by-step path). Prefer palm_design_publish_flow for one-shot publish.",
     when=(
-        "Run propose → impact → commit in order. Save ``proposal_id`` from this call. "
-        "For revisions, pass ``base_flow_id``. Flow ``name`` must be a slug (``foo-bar``, not spaces). "
-        "Load ``palm://agent/references/design-flows`` for a full weak-LLM playbook."
+        "Use when you must inspect impact before commit. Otherwise prefer ``palm_design_publish_flow``. "
+        "For revisions, pass ``base_flow_id``. Flow ``name`` must be a slug."
     ),
     examples=[
         'palm_design_propose_flow(body={"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}})',
         'palm_design_propose_flow(base_flow_id="foo-bar", body={"name": "foo-bar", "pattern": "wizard", "options": {...}})',
     ],
     use_instead=(
-        "Do **not** use ``palm_definitions_*`` create/update for agent catalog writes. "
-        "Prefer this tool over editing repo YAML unless the user explicitly asked for file edits."
+        "Prefer ``palm_design_publish_flow`` (one tool). "
+        "Do **not** use ``palm_definitions_*`` create/update for agent catalog writes."
     ),
     notes=(
         "Each step needs ``slug``, ``title``, ``prompt``. "
-        "``field_type: choice`` requires ``choices: [...]``. "
-        "Optional: ``palm_design_validate(proposal_id)`` if propose did not return ``valid: true``."
+        "``field_type: choice`` requires ``choices: [...]``."
     ),
 )
 
@@ -117,6 +148,20 @@ _PALM_DESIGN_DISCARD_DESC = tool_description(
 
 def register_design_tools(mcp: Any, backend: Any) -> None:
     """Register design proposal MCP tools."""
+
+    @mcp.tool(description=_PALM_DESIGN_PUBLISH_DESC)
+    def palm_design_publish_flow(
+        body: dict[str, Any],
+        base_flow_id: str | None = None,
+    ) -> dict[str, Any]:
+        return backend.design_publish_flow(body, base_flow_id=base_flow_id)
+
+    @mcp.tool(description=_PALM_DESIGN_PUBLISH_RESOURCE_DESC)
+    def palm_design_publish_resource(
+        body: dict[str, Any],
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        return backend.design_publish_resource(body, base_resource_id=base_resource_id)
 
     @mcp.tool(description=_PALM_DESIGN_PROPOSE_DESC)
     def palm_design_propose_flow(

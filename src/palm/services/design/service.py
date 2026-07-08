@@ -274,6 +274,132 @@ class DesignService(BaseService):
         self._proposals.delete(proposal_id)
         return {"proposal_id": proposal_id, "discarded": True}
 
+    def publish_flow(
+        self,
+        body: dict[str, Any],
+        *,
+        base_flow_id: str | None = None,
+    ) -> dict[str, Any]:
+        """One-shot propose → impact → commit for weak-LLM agents (0.30.4).
+
+        Stops without commit when validation fails. Impact is always run when
+        valid so agents get a single response with ``status`` and next ``actions``.
+        """
+        proposed = self.propose_flow(body, base_flow_id=base_flow_id)
+        proposal = proposed.get("proposal") or {}
+        proposal_id = str(proposal.get("proposal_id") or "")
+        validation = proposed.get("validation") or {}
+        if not validation.get("valid"):
+            return {
+                "status": "blocked",
+                "stage": "validate",
+                "proposal_id": proposal_id,
+                "proposal": proposal,
+                "validation": validation,
+                "hint": (
+                    "Fix validation blockers and call palm_design_publish_flow again, "
+                    "or palm_design_propose_flow for a step-by-step loop."
+                ),
+                "actions": [
+                    {
+                        "label": "Retry publish",
+                        "tool": "palm_design_publish_flow",
+                    },
+                    {
+                        "label": "Discard proposal",
+                        "tool": "palm_design_discard",
+                        "params": {"proposal_id": proposal_id},
+                    },
+                ],
+            }
+
+        impact = self.analyze_proposal_impact(proposal_id)
+        mutation = impact.get("mutation") if isinstance(impact, dict) else None
+        commit_token = None
+        if isinstance(mutation, dict):
+            commit_token = mutation.get("commit_token") or mutation.get("input_token")
+
+        committed = self.commit_proposal(
+            proposal_id,
+            commit_token=str(commit_token) if commit_token else None,
+        )
+        flow_id = committed.get("flow_id")
+        return {
+            "status": "committed",
+            "stage": "commit",
+            "proposal_id": proposal_id,
+            "flow_id": flow_id,
+            "revision": committed.get("revision"),
+            "migrations": committed.get("migrations"),
+            "impact_summary": (impact.get("summary") if isinstance(impact, dict) else None),
+            "hint": (
+                f"Published {flow_id!r}. Run with palm_flows_create_session "
+                f"or palm_assist(path=['flows', {flow_id!r}, 'create'])."
+            ),
+            "actions": [
+                {
+                    "label": "Run published flow",
+                    "tool": "palm_flows_create_session",
+                    "params": {"flow_id": flow_id},
+                },
+                {
+                    "label": "Describe flow",
+                    "tool": "palm_flows_describe",
+                    "params": {"flow_id": flow_id},
+                },
+            ],
+            "flow": committed.get("flow"),
+        }
+
+    def publish_resource(
+        self,
+        body: dict[str, Any],
+        *,
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        """One-shot propose → impact → commit for resource definitions (0.30.4)."""
+        proposed = self.propose_resource(body, base_resource_id=base_resource_id)
+        proposal = proposed.get("proposal") or {}
+        proposal_id = str(proposal.get("proposal_id") or "")
+        validation = proposed.get("validation") or {}
+        if not validation.get("valid"):
+            return {
+                "status": "blocked",
+                "stage": "validate",
+                "proposal_id": proposal_id,
+                "proposal": proposal,
+                "validation": validation,
+                "hint": "Fix validation blockers, then call palm_design_publish_resource again.",
+                "actions": [
+                    {
+                        "label": "Discard proposal",
+                        "tool": "palm_design_discard",
+                        "params": {"proposal_id": proposal_id},
+                    },
+                ],
+            }
+
+        impact = self.analyze_proposal_impact(proposal_id)
+        mutation = impact.get("mutation") if isinstance(impact, dict) else None
+        commit_token = None
+        if isinstance(mutation, dict):
+            commit_token = mutation.get("commit_token") or mutation.get("input_token")
+
+        committed = self.commit_proposal(
+            proposal_id,
+            commit_token=str(commit_token) if commit_token else None,
+        )
+        resource_ref = committed.get("resource_ref") or committed.get("resource_id")
+        return {
+            "status": "committed",
+            "stage": "commit",
+            "proposal_id": proposal_id,
+            "resource_ref": resource_ref,
+            "impact_summary": (impact.get("summary") if isinstance(impact, dict) else None),
+            "hint": "Resource published. Reference it from flow steps via resource_ref.",
+            "result": committed,
+        }
+
     def _auto_migrate_compatible_instances(
         self,
         flow_id: str,

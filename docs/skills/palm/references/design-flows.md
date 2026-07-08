@@ -4,61 +4,47 @@
 
 **Golden rule:** use **`palm_design_*`** tools for catalog writes. Do **not** use `palm_definitions_*` create/update unless an integrator doc explicitly requires it.
 
+### Preferred weak-LLM path (0.30.4+) — one tool
+
+```text
+palm_design_publish_flow(body={name, pattern, options: {steps: [...]}})
+  → status=committed, flow_id, actions (run flow)
+```
+
+Same for resources: `palm_design_publish_resource(body=…)`.  
+Use propose → impact → commit only when you must inspect impact before publish.
+
 ### From operator-entry (0.30.1+)
 
 ```text
-1. palm_assist()  → choose create-flow or improve-flow
-2. On summary, use actions: palm_design_propose_flow (or alias design/propose)
-3. impact → commit  (out-of-band; handoff is optional)
-4. palm_flows_create_session(flow_id=…) to run the published flow
+1. palm_assist()  → create-flow
+2. palm_design_publish_flow(body=…)   ← one call, not three
+3. palm_flows_create_session(flow_id=…) from returned actions
 ```
-
-`operator-entry/inspect` and catalog mode also expose a **Propose new flow** action.
 
 ### design-entry scenario (0.30.2+)
 
-Guided shell (still no Design writes inside Assist):
-
 ```text
-palm_assist(alias="design-entry/start")
-  → intent: create-flow | improve-flow | propose-resource | exit
-  → name_or_base (optional text)
-  → summary with palm_design_* actions
-  → propose → impact → commit out-of-band
+palm_assist(alias="design-entry/start") → intent → name_or_base
+  → palm_design_publish_flow (one call)
 ```
-
-Also reachable from operator-entry design CTAs: **Open design entry** (`design-entry/start`).
 
 ### Handoff `kind: design` (0.30.3+)
 
-After design intents, `palm_assist` / session **handoff** may return:
-
-```json
-{
-  "kind": "design",
-  "design_action": "propose_flow",
-  "intent": "create-flow",
-  "suggested_name": "…",
-  "operator_hint": "Use palm_design_propose_flow…"
-}
-```
-
-Treat unknown kinds like `none` and **always** read `operator_hint`. See [MIGRATION-0.30.md](../../../../MIGRATION-0.30.md).
+`design_action` is typically `publish_flow` / `publish_resource`. Always read `operator_hint`. See [MIGRATION-0.30.md](../../../../MIGRATION-0.30.md).
 
 ---
 
-## A. Create a new wizard flow (copy this loop)
+## A. Create a new wizard flow (step-by-step alternative)
 
-Always run **all four steps in order**. Save `proposal_id` from step 1.
+Prefer **A0** (`palm_design_publish_flow`). Use this only when debugging validation/impact:
 
 ```text
 1. palm_design_propose_flow(body={...})
 2. palm_design_impact(proposal_id="prop-...")
 3. palm_design_commit(proposal_id="prop-...")
-4. palm_flows_describe(flow_id="my-flow")   ← verify revision published
+4. palm_flows_describe(flow_id="my-flow")
 ```
-
-**Optional:** `palm_design_validate(proposal_id)` if propose did not return `"valid": true`.
 
 ### Minimal `body` (wizard)
 

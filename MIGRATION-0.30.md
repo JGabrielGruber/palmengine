@@ -63,10 +63,21 @@ Alias `design-entry/start` → assist scenario shell. **Does not** write the cat
 
 ---
 
+## 0.30.4 — One-shot publish (weak-LLM)
+
+Preferred agent path is no longer three tools:
+
+| Before | After |
+|--------|--------|
+| `propose` → `impact` → `commit` | **`palm_design_publish_flow(body=…)`** (or `publish_resource`) |
+| Multiple design CTAs | Single primary CTA: **Publish … (one call)** |
+
+Step-by-step tools remain for power users. `design_action` on handoff is `publish_flow` / `publish_resource`.
+
 ## Unchanged
 
 - Bare `palm_assist()` still starts **operator-entry** (not design-entry).
-- Design Service API (`propose` → `impact` → `commit`) unchanged.
+- Multi-step Design APIs remain available.
 - Business flow handoffs (`kind: flow`) for todo-builder / compositional-parent unchanged.
 - `kind: process` remains deferred.
 

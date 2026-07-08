@@ -234,7 +234,7 @@ def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:
     )
     payload = ctx.to_dict(view_format="assistant")
     tools = {a.get("tool") for a in payload.get("actions") or []}
-    assert "palm_design_propose_flow" in tools
+    assert "palm_design_publish_flow" in tools
 
 
 def test_assistant_handoff_action_uses_alias() -> None:

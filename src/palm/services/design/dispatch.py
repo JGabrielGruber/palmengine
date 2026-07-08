@@ -102,6 +102,34 @@ def _handle_discard_proposal(
     return service.discard_proposal(capture["proposal_id"])
 
 
+def _handle_publish_flow(
+    service: DesignService,
+    params: dict[str, Any],
+    _capture: dict[str, str],
+) -> Any:
+    body = dict(params.get("body") or params)
+    base_flow_id = params.get("base_flow_id")
+    payload = {
+        key: value for key, value in body.items() if key not in _PROPOSE_BODY_SKIP
+    }
+    return service.publish_flow(payload, base_flow_id=base_flow_id)
+
+
+def _handle_publish_resource(
+    service: DesignService,
+    params: dict[str, Any],
+    _capture: dict[str, str],
+) -> Any:
+    body = dict(params.get("body") or params)
+    base_resource_id = params.get("base_resource_id")
+    payload = {
+        key: value
+        for key, value in body.items()
+        if key not in _PROPOSE_RESOURCE_BODY_SKIP
+    }
+    return service.publish_resource(payload, base_resource_id=base_resource_id)
+
+
 _DISPATCH_HANDLERS: dict[str, DispatchHandler] = {
     "propose_flow": _handle_propose_flow,
     "propose_resource": _handle_propose_resource,
@@ -111,6 +139,8 @@ _DISPATCH_HANDLERS: dict[str, DispatchHandler] = {
     "analyze_impact": _handle_analyze_impact,
     "commit_proposal": _handle_commit_proposal,
     "discard_proposal": _handle_discard_proposal,
+    "publish_flow": _handle_publish_flow,
+    "publish_resource": _handle_publish_resource,
 }
 
 

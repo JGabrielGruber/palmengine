@@ -23,3 +23,18 @@ def test_design_full_flow_in_process_backend() -> None:
     committed = backend.design_commit_proposal(proposal_id)
     assert committed["revision"] == 1
     assert committed["flow_id"] == "mcp-integration-flow"
+
+
+def test_design_publish_flow_one_shot() -> None:
+    backend = create_in_process_backend()
+    body = FlowDefinition(
+        name="mcp-publish-one-shot",
+        pattern="wizard",
+        options={"steps": [{"slug": "n", "title": "N", "prompt": "?"}]},
+    ).to_dict()
+    result = backend.design_publish_flow(body=body)
+    assert result["status"] == "committed"
+    assert result["flow_id"] == "mcp-publish-one-shot"
+    assert result["revision"] == 1
+    tools = {a.get("tool") for a in result.get("actions") or []}
+    assert "palm_flows_create_session" in tools

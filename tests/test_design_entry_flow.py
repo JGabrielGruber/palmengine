@@ -98,9 +98,9 @@ def test_design_entry_create_flow_has_design_actions(
     actions = updated.get("actions") or []
     tools = {a.get("tool") for a in actions if isinstance(a, dict)}
     aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
-    assert "palm_design_propose_flow" in tools or "design/propose" in aliases
+    assert "palm_design_publish_flow" in tools
     hint = (updated.get("hint") or "").lower()
-    assert "design" in hint or "propose" in hint
+    assert "publish" in hint or "design" in hint
 
 
 def test_design_entry_handoff_kind_design(assist_host: ApplicationHost) -> None:
@@ -123,9 +123,9 @@ def test_design_entry_handoff_kind_design(assist_host: ApplicationHost) -> None:
         )
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "design"
-    assert handoff["handoff"]["design_action"] == "propose_flow"
+    assert handoff["handoff"]["design_action"] == "publish_flow"
     assert handoff["handoff"]["suggested_name"] == "demo-flow"
-    assert "palm_design_propose_flow" in handoff["handoff"]["operator_hint"]
+    assert "palm_design_publish_flow" in handoff["handoff"]["operator_hint"]
 
 
 def test_design_entry_improve_handoff_base_flow_id(

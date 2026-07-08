@@ -63,11 +63,23 @@ _registry: tuple[CommandSpec, ...] = (
         ("design", "proposals", "{proposal_id}", "discard"),
         "Discard an open design proposal",
     ),
+    CommandSpec(
+        "publish_flow",
+        ("design", "publish"),
+        "One-shot propose → impact → commit a flow (weak-LLM path)",
+    ),
+    CommandSpec(
+        "publish_resource",
+        ("design", "publish-resource"),
+        "One-shot propose → impact → commit a resource (weak-LLM path)",
+    ),
 )
 
 _DESIGN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
     "design/propose": ("design", "propose"),
     "design/propose-resource": ("design", "propose-resource"),
+    "design/publish": ("design", "publish"),
+    "design/publish-resource": ("design", "publish-resource"),
     "design/list": ("design", "proposals"),
     "design/get": ("design", "proposals", "{proposal_id}"),
     "design/validate": ("design", "proposals", "{proposal_id}", "validate"),

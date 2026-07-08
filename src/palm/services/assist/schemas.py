@@ -73,6 +73,8 @@ class AssistSessionContext:
                 merge_assistant_actions,
             )
 
+            from palm.services.assist.views import prioritize_assistant_actions_for_design
+
             base = build_assistant_actions(self)
             extras = payload.get("actions")
             extras_list = extras if isinstance(extras, list) else []
@@ -81,8 +83,21 @@ class AssistSessionContext:
                 intent=intent,
                 operator_mode=str(operator_mode) if operator_mode else None,
             )
-            # Collection menu actions (in extras) stay first among extras; base verbs first.
-            merged = merge_assistant_actions(base, extras_list, design_ctas)
+            # Design CTAs first for design intents; base verbs only as needed (weak-LLM).
+            if intent in (
+                "create-flow",
+                "improve-flow",
+                "propose-resource",
+            ):
+                merged = merge_assistant_actions(design_ctas, extras_list, base)
+                merged = prioritize_assistant_actions_for_design(
+                    merged,
+                    intent=intent,
+                    handoff_ready=self.handoff_ready,
+                    waiting_for_input=self.waiting_for_input,
+                )
+            else:
+                merged = merge_assistant_actions(base, extras_list, design_ctas)
             if merged:
                 payload["actions"] = merged
         if fmt == "powertool":

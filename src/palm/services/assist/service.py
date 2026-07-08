@@ -269,12 +269,12 @@ class AssistService(BaseService):
                 "agent_hint": "Read-only catalog — do not send value/input.",
             },
             "actions": [
+                {
+                    "label": "Publish new flow (one call)",
+                    "tool": "palm_design_publish_flow",
+                },
                 {"label": "List flows", "alias": "assist/catalog/flows"},
                 {"label": "List waiting sessions", "tool": "palm_system_list_waiting"},
-                {
-                    "label": "Propose new flow",
-                    "tool": "palm_design_propose_flow",
-                },
                 {
                     "label": "Start operator entry",
                     "alias": "operator-entry/start",
@@ -373,9 +373,9 @@ def _answers_from_view(view: dict[str, Any]) -> dict[str, Any]:
 
 
 _DESIGN_ACTION_BY_INTENT: dict[str, str] = {
-    "create-flow": "propose_flow",
-    "improve-flow": "propose_flow",
-    "propose-resource": "propose_resource",
+    "create-flow": "publish_flow",
+    "improve-flow": "publish_flow",
+    "propose-resource": "publish_resource",
 }
 
 
@@ -405,8 +405,8 @@ def _design_handoff_payload(
     intent_s = str(intent)
     none_hints = assist_meta.get("handoff_none_hints") or {}
     default_hint = (
-        "Use palm_design_propose_flow / palm_design_propose_resource, then "
-        "impact and commit. Treat unknown handoff kinds like none and read operator_hint."
+        "Use palm_design_publish_flow (or palm_design_publish_resource). "
+        "Treat unknown handoff kinds like none and always read operator_hint."
     )
     operator_hint = default_hint
     if isinstance(none_hints, dict):

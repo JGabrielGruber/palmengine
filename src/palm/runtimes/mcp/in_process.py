@@ -529,6 +529,33 @@ class PalmInProcessBackend:
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
 
+    def design_publish_flow(
+        self,
+        body: dict[str, Any],
+        *,
+        base_flow_id: str | None = None,
+    ) -> dict[str, Any]:
+        from palm.common.services.errors import (
+            DesignCommitRejectedServiceError,
+            DesignProposalNotFoundServiceError,
+        )
+
+        try:
+            return self._ctx.design.publish_flow(body, base_flow_id=base_flow_id)
+        except (TypeError, ValueError, KeyError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(404, {"error": "proposal_not_found", "message": str(exc)}) from exc
+        except DesignCommitRejectedServiceError as exc:
+            raise PalmRestError(
+                400,
+                {
+                    "error": "design_commit_rejected",
+                    "message": exc.reason,
+                    "blockers": exc.blockers,
+                },
+            ) from exc
+
     def design_propose_resource(
         self,
         body: dict[str, Any],
@@ -539,6 +566,33 @@ class PalmInProcessBackend:
             return self._ctx.design.propose_resource(body, base_resource_id=base_resource_id)
         except (TypeError, ValueError, KeyError) as exc:
             raise PalmRestError(400, str(exc)) from exc
+
+    def design_publish_resource(
+        self,
+        body: dict[str, Any],
+        *,
+        base_resource_id: str | None = None,
+    ) -> dict[str, Any]:
+        from palm.common.services.errors import (
+            DesignCommitRejectedServiceError,
+            DesignProposalNotFoundServiceError,
+        )
+
+        try:
+            return self._ctx.design.publish_resource(body, base_resource_id=base_resource_id)
+        except (TypeError, ValueError, KeyError) as exc:
+            raise PalmRestError(400, str(exc)) from exc
+        except DesignProposalNotFoundServiceError as exc:
+            raise PalmRestError(404, {"error": "proposal_not_found", "message": str(exc)}) from exc
+        except DesignCommitRejectedServiceError as exc:
+            raise PalmRestError(
+                400,
+                {
+                    "error": "design_commit_rejected",
+                    "message": exc.reason,
+                    "blockers": exc.blockers,
+                },
+            ) from exc
 
     def design_list_proposals(self, *, flow_id: str | None = None) -> dict[str, Any]:
         from palm.runtimes.server.surfaces.rest.pagination import list_envelope

@@ -53,6 +53,8 @@ _CONCRETE_PATHS: dict[str, tuple[str, ...]] = {
     "analyze_impact": ("design", "proposals", "prop-1", "impact"),
     "commit_proposal": ("design", "proposals", "prop-1", "commit"),
     "discard_proposal": ("design", "proposals", "prop-1", "discard"),
+    "publish_flow": ("design", "publish"),
+    "publish_resource": ("design", "publish-resource"),
 }
 
 

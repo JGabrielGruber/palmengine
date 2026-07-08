@@ -303,42 +303,47 @@ def design_discovery_actions(
     operator_mode: str | None = None,
     for_catalog: bool = False,
 ) -> list[dict[str, Any]]:
-    """CTAs that point agents at ``palm_design_*`` (never perform design writes)."""
+    """Minimal CTAs for Design tools — prefer one-shot publish (weak-LLM)."""
     actions: list[dict[str, Any]] = []
     catalog_mode = for_catalog or operator_mode == "inspect"
     if intent == "create-flow" or catalog_mode:
-        actions.append({"label": "Propose new flow", "tool": "palm_design_propose_flow"})
-        actions.append({"label": "Propose via assist proxy", "alias": "design/propose"})
-        if not catalog_mode:
-            actions.append({"label": "Open design entry", "alias": "design-entry/start"})
+        actions.append(
+            {
+                "label": "Publish new flow (one call)",
+                "tool": "palm_design_publish_flow",
+            }
+        )
     if intent == "improve-flow":
-        actions.append({"label": "Propose flow change", "tool": "palm_design_propose_flow"})
-        actions.append({"label": "List design proposals", "tool": "palm_design_list_proposals"})
-        actions.append({"label": "Open design entry", "alias": "design-entry/start"})
+        actions.append(
+            {
+                "label": "Publish flow change (one call)",
+                "tool": "palm_design_publish_flow",
+            }
+        )
     if intent == "propose-resource":
         actions.append(
-            {"label": "Propose resource", "tool": "palm_design_propose_resource"}
+            {
+                "label": "Publish resource (one call)",
+                "tool": "palm_design_publish_resource",
+            }
         )
-        actions.append({"label": "Open design entry", "alias": "design-entry/start"})
     return merge_assistant_actions(actions)
 
 
 def design_discovery_hint(intent: str | None) -> str:
-    """Human/agent hint for design intents (playbook URI in text, not action keys)."""
+    """Short hint — avoid multi-tool scripts (weak-LLM token budget)."""
     if intent == "create-flow":
         return (
-            "Create a flow via Design: palm_design_propose_flow → palm_design_impact → "
-            "palm_design_commit. Load palm://agent/references/design-flows. Handoff is optional."
+            "One call: palm_design_publish_flow(body={name, pattern, options.steps}). "
+            "Handoff optional."
         )
     if intent == "improve-flow":
         return (
-            "Improve a flow via Design: palm_design_propose_flow (with existing body) → "
-            "impact → commit. Load palm://agent/references/design-flows."
+            "One call: palm_design_publish_flow(base_flow_id=…, body=…). "
+            "Handoff optional."
         )
     if intent == "propose-resource":
-        return (
-            "Propose a resource via palm_design_propose_resource → impact → commit."
-        )
+        return "One call: palm_design_publish_resource(body={name, provider, action, …})."
     return ""
 
 
@@ -347,12 +352,11 @@ def post_terminal_design_actions(
     intent: str | None = None,
     name_or_base: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Re-entry CTAs after design work (0.30.3) — no DesignService calls."""
+    """Compact re-entry CTAs after design work — design first, few session verbs."""
     actions: list[dict[str, Any]] = list(
         design_discovery_actions(intent=intent or "create-flow")
     )
     actions.append({"label": "Start operator entry", "alias": "operator-entry/start"})
-    actions.append({"label": "Open design entry", "alias": "design-entry/start"})
     if name_or_base and intent in {"create-flow", "improve-flow"}:
         actions.append(
             {
@@ -362,6 +366,51 @@ def post_terminal_design_actions(
             }
         )
     return merge_assistant_actions(actions)
+
+
+def prioritize_assistant_actions_for_design(
+    actions: list[dict[str, Any]],
+    *,
+    intent: str | None,
+    handoff_ready: bool = False,
+    waiting_for_input: bool = False,
+) -> list[dict[str, Any]]:
+    """Put design tools first; drop noisy session verbs for design intents (0.30.4)."""
+    if intent not in DESIGN_DISCOVERY_INTENTS:
+        return actions
+
+    design_first: list[dict[str, Any]] = []
+    session_keep: list[dict[str, Any]] = []
+    other: list[dict[str, Any]] = []
+
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        tool = str(action.get("tool") or "")
+        alias = str(action.get("alias") or "")
+        label = str(action.get("label") or "")
+        if tool.startswith("palm_design") or alias.startswith("design/"):
+            design_first.append(action)
+            continue
+        if label == "Send answer" and waiting_for_input:
+            session_keep.append(action)
+            continue
+        if "Hand off" in label and handoff_ready:
+            session_keep.append(action)
+            continue
+        if label == "Cancel session":
+            session_keep.append(action)
+            continue
+        if alias in {"operator-entry/start", "design-entry/start"}:
+            other.append(action)
+            continue
+        if tool == "palm_flows_create_session":
+            other.append(action)
+            continue
+        # Drop Inspect / Go back / Resume and other noise for design path
+        continue
+
+    return merge_assistant_actions(design_first, session_keep, other)
 
 
 def merge_assistant_actions(
@@ -455,5 +504,6 @@ __all__ = [
     "ensure_assist_view_registration",
     "merge_assistant_actions",
     "post_terminal_design_actions",
+    "prioritize_assistant_actions_for_design",
     "resolve_view_format",
 ]

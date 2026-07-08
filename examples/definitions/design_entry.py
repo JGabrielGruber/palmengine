@@ -21,15 +21,13 @@ from palm.services.assist.views import (
 )
 
 _CREATE_HINT = (
-    "No business flow handoff. Use palm_design_propose_flow → impact → commit. "
-    "Load palm://agent/references/design-flows. Then run with palm_flows_create_session."
+    "No business flow handoff. One call: palm_design_publish_flow(body=…)."
 )
 _IMPROVE_HINT = (
-    "No business flow handoff. Propose changes with palm_design_propose_flow "
-    "(base body from existing flow) → impact → commit."
+    "No business flow handoff. One call: palm_design_publish_flow(base_flow_id=…, body=…)."
 )
 _RESOURCE_HINT = (
-    "No business flow handoff. Use palm_design_propose_resource → impact → commit."
+    "No business flow handoff. One call: palm_design_publish_resource(body=…)."
 )
 
 
@@ -61,8 +59,7 @@ def enrich_design_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]
                 name_or_base=name_or_base,
             )
             extra = (
-                "Handoff returns kind=design with design_action; "
-                "then propose → impact → commit out-of-band."
+                "Handoff returns kind=design; use palm_design_publish_flow (one call)."
             )
             h = str(payload.get("hint") or "")
             if "kind=design" not in h.lower():
