@@ -80,7 +80,8 @@ DESIGN_ENTRY_FLOW = FlowDefinition(
     name="palm-design-entry",
     pattern="wizard",
     options={
-        "include_summary": True,
+        # 0.30.5 — no summary confirm; finish after name_or_base (weak-LLM)
+        "include_summary": False,
         "allow_backtrack": True,
         "metadata": {
             "assist": {
@@ -132,10 +133,15 @@ DESIGN_ENTRY_FLOW = FlowDefinition(
                 "title": "Name or base flow",
                 "prompt": (
                     "New flow name (create), existing flow id to improve, "
-                    "or resource name (propose-resource). Optional — press enter to skip."
+                    "or resource name (propose-resource). Optional — press enter to skip, "
+                    "then use Publish (one call)."
                 ),
                 "field_type": "text",
                 "required": False,
+                "params": {
+                    # 0.30.5 — end after name (skip summary/bye sequential)
+                    "route_on_answer": {"default": "__end__"},
+                },
             },
             {
                 "slug": "bye",

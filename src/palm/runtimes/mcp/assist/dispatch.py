@@ -87,12 +87,36 @@ def normalize_assist_dispatch_args(
             scenario_id = _clean_dispatch_str(params.get("scenario_id"))
             if scenario_id:
                 alias = f"{scenario_id}/start"
+            elif _looks_like_design_publish_body(params):
+                # 0.30.5 — one-shot design publish via palm_assist(params={body})
+                kind = _clean_dispatch_str(params.get("kind")) or "flow"
+                if kind in {"resource", "publish-resource"}:
+                    alias = "design/publish-resource"
+                else:
+                    alias = "design/publish"
 
     if not alias and not path:
         alias = _DEFAULT_ASSIST_ALIAS
         used_default_entry = True
 
     return path, alias, params, used_default_entry
+
+
+def _looks_like_design_publish_body(params: dict[str, Any]) -> bool:
+    """True when params carry a flow/resource definition body for one-shot publish."""
+    body = params.get("body")
+    if not isinstance(body, dict) or not body:
+        # Allow top-level name/pattern without nested body (weak-LLM)
+        if params.get("name") and (params.get("pattern") or params.get("options")):
+            return True
+        if params.get("name") and params.get("provider"):
+            return True
+        return False
+    if body.get("name") or body.get("pattern") or body.get("options"):
+        return True
+    if body.get("provider") or body.get("resource_id"):
+        return True
+    return False
 
 
 def resolve_dispatch_path(
@@ -273,9 +297,44 @@ def shape_dispatch_result(
             valid = bool((result.get("mutation") or {}).get("mutations_allowed"))
             payload.update(build_design_impact_assistant_view(proposal_id, result, valid=valid))
             return payload
+        # 0.30.5 — compact one-shot publish / publish-resource results
+        if path[-1:] in (["publish"], ["publish-resource"]) and isinstance(result, dict):
+            payload.update(_shape_design_publish_assistant(result))
+            return payload
 
     payload.update(result)
     return payload
+
+
+def _shape_design_publish_assistant(result: dict[str, Any]) -> dict[str, Any]:
+    """Human-first envelope for publish_flow / publish_resource responses."""
+    status = result.get("status")
+    shaped: dict[str, Any] = {
+        "status": status,
+        "stage": result.get("stage"),
+        "hint": result.get("hint"),
+        "actions": result.get("actions") or [],
+    }
+    if result.get("proposal_id") is not None:
+        shaped["proposal_id"] = result["proposal_id"]
+    if result.get("flow_id") is not None:
+        shaped["flow_id"] = result["flow_id"]
+    if result.get("revision") is not None:
+        shaped["revision"] = result["revision"]
+    if result.get("resource_ref") is not None:
+        shaped["resource_ref"] = result["resource_ref"]
+    if status == "committed":
+        shaped["question"] = (
+            f"Published {result.get('flow_id') or result.get('resource_ref')!r}. "
+            "Use actions to run or inspect."
+        )
+    elif status == "blocked":
+        shaped["question"] = "Publish blocked by validation — fix body and retry."
+        if result.get("validation") is not None:
+            shaped["validation"] = result["validation"]
+    else:
+        shaped["result"] = result
+    return shaped
 
 
 def compact_dispatch_result(

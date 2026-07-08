@@ -85,19 +85,19 @@ def test_design_entry_create_flow_has_design_actions(
 ) -> None:
     started = assist_host.assist.start_scenario("design-entry", {})
     session_id = started["session_id"]
-    # intent → name_or_base
     assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
         {"value": "create-flow"},
     )
-    # name_or_base → summary
+    # name_or_base → complete (no summary in 0.30.5)
     updated = assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
         {"value": "my-new-flow"},
     )
+    assert updated.get("status") == "complete"
+    assert updated.get("mutation", {}).get("confirm_step") is not True
     actions = updated.get("actions") or []
     tools = {a.get("tool") for a in actions if isinstance(a, dict)}
-    aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
     assert "palm_design_publish_flow" in tools
     hint = (updated.get("hint") or "").lower()
     assert "publish" in hint or "design" in hint
@@ -114,13 +114,6 @@ def test_design_entry_handoff_kind_design(assist_host: ApplicationHost) -> None:
         ["assist", "session", session_id, "input"],
         {"value": "demo-flow"},
     )
-    # confirm summary if needed
-    ctx = assist_host.assist.dispatch(["assist", "session", session_id])
-    if ctx.get("waiting_for_input") or ctx.get("status") == "waiting":
-        assist_host.assist.dispatch(
-            ["assist", "session", session_id, "input"],
-            {"value": "yes"},
-        )
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "design"
     assert handoff["handoff"]["design_action"] == "publish_flow"
@@ -141,12 +134,6 @@ def test_design_entry_improve_handoff_base_flow_id(
         ["assist", "session", session_id, "input"],
         {"value": "todo-builder"},
     )
-    ctx = assist_host.assist.dispatch(["assist", "session", session_id])
-    if ctx.get("status") == "waiting":
-        assist_host.assist.dispatch(
-            ["assist", "session", session_id, "input"],
-            {"value": "yes"},
-        )
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "design"
     assert handoff["handoff"]["base_flow_id"] == "todo-builder"

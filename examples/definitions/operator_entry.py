@@ -163,6 +163,9 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                 "params": {
                     "route_on_answer": {
                         "inspect-only": "catalog",
+                        # 0.30.5 — skip summary confirm (weak-LLM); design CTAs on complete
+                        "create-flow": "__end__",
+                        "improve-flow": "__end__",
                         "default": "summary",
                     }
                 },

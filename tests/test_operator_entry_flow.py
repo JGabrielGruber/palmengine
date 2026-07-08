@@ -53,18 +53,17 @@ def test_operator_entry_create_flow_actions_after_to_dict(
 ) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
-    # Land on summary with create-flow intent
+    # 0.30.5: create-flow skips summary → terminal with design CTAs
     updated = assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
         {"value": "create-flow"},
     )
-    assert updated.get("status") in {"waiting", "complete"}
+    assert updated.get("status") == "complete"
+    assert updated.get("mutation", {}).get("confirm_step") is not True
     actions = updated.get("actions") or []
     tools = {a.get("tool") for a in actions if isinstance(a, dict)}
-    aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
     assert "palm_design_publish_flow" in tools
     assert "publish" in (updated.get("hint") or "").lower()
-    # Weak-LLM: design tool first; no long session-verb list
     labels = [a.get("label") for a in actions if isinstance(a, dict)]
     assert labels and "Publish" in str(labels[0])
 

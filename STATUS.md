@@ -363,7 +363,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.30.2 | `design-entry` assist scenario shell | ✅ Shipped |
 | 0.30.3 | Handoff polish; `kind: design` + post-terminal CTAs | ✅ Shipped |
 | 0.30.4 | Weak-LLM: `palm_design_publish_flow` one-shot + compact design CTAs | ✅ Shipped |
-| 0.30.5+ | Deeper design UX (gated) | ⬜ Optional |
+| 0.30.5 | Skip design summary confirm; `palm_assist(params={body})` → publish | ✅ Shipped |
 
 **Boundaries:** Assist discovers and guides; Design Service owns propose → impact → commit. Bare `palm_assist()` remains operator-entry; design is a sibling intent/scenario.
 

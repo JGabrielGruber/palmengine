@@ -128,6 +128,38 @@ def test_normalize_assist_dispatch_args_reads_nested_alias() -> None:
     assert used_default is False
 
 
+def test_normalize_assist_dispatch_args_body_infers_design_publish() -> None:
+    path, alias, params, used_default = normalize_assist_dispatch_args(
+        params={
+            "body": {
+                "name": "foo-bar",
+                "pattern": "wizard",
+                "options": {"steps": [{"slug": "a", "title": "A", "prompt": "?"}]},
+            }
+        },
+    )
+    assert alias == "design/publish"
+    assert path is None
+    assert used_default is False
+    assert params["body"]["name"] == "foo-bar"
+
+
+def test_normalize_assist_dispatch_args_resource_body_infers_publish() -> None:
+    path, alias, params, used_default = normalize_assist_dispatch_args(
+        params={
+            "kind": "resource",
+            "body": {
+                "name": "my-kv",
+                "provider": "kv",
+                "action": "get",
+                "resource_id": "x",
+            },
+        },
+    )
+    assert alias == "design/publish-resource"
+    assert used_default is False
+
+
 def test_assist_routes_resource_includes_aliases() -> None:
     _register_operator_entry_contributor()
     catalog = assist_routes_payload()

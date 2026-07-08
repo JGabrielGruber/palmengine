@@ -74,6 +74,16 @@ Preferred agent path is no longer three tools:
 
 Step-by-step tools remain for power users. `design_action` on handoff is `publish_flow` / `publish_resource`.
 
+## 0.30.5 — Shorter assist design path
+
+| Change | Effect |
+|--------|--------|
+| operator-entry `create-flow` / `improve-flow` | Jump to `__end__` — **no summary yes** |
+| design-entry | `include_summary: false`; ends after `name_or_base` |
+| `palm_assist(params={body: {…}})` | Infers alias **`design/publish`** (no separate tool required) |
+
+Agents that always sent summary `yes` after create-flow can stop; session is already complete with publish CTAs.
+
 ## Unchanged
 
 - Bare `palm_assist()` still starts **operator-entry** (not design-entry).
