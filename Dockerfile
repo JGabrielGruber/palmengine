@@ -24,7 +24,8 @@ ENV PYTHONUNBUFFERED=1 \
     PALM_SERVER_PORT=8080 \
     PALM_LOG_FILE=/var/log/palm/palm.log \
     PALM_LLMS_TXT=docs/mcp.txt \
-    PALM_SKILL_DIR=docs/skills/palm
+    PALM_SKILL_DIR=docs/skills/palm \
+    PALM_MCP_SURFACE=full
 
 VOLUME ["/data", "/var/log/palm"]
 
