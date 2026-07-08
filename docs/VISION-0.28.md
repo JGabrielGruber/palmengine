@@ -94,8 +94,8 @@
 
 - [ ] `palm_providers_invoke(resource_ref="load-coconut-player", …)` works in-process without `base_url`.
 - [ ] `palm flow start coconut-npc` twice with same name restores `visit_count` / reputation.
-- [ ] `palm_system_doctor` reports `kv` backend mode (`memory` vs `storage`).
-- [ ] `palm_design_propose_resource` accepts `kv` and `file` proposals.
+- [x] `palm_system_doctor` reports `kv` backend mode (`memory` vs `storage`).
+- [x] `palm_design_propose_resource` accepts `kv` and `file` proposals.
 - [ ] `just guard-common` · targeted pytest · no core imports from providers.
 
 ---

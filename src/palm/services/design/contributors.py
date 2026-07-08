@@ -18,6 +18,10 @@ def wire_builtin_design_contributors() -> None:
 
         for hook in iter_design_contributor_hooks():
             hook.register()
+        from palm.providers._registry import iter_provider_design_contributor_hooks
+
+        for hook in iter_provider_design_contributor_hooks():
+            hook()
         _wired = True
 
 

@@ -80,6 +80,45 @@ palm_design_commit(proposal_id)
 
 Impact lists flows referencing the `resource_ref`. See `coconut-npc` + `palm://agent/references/branching-flows`.
 
+### Local `kv` resource (0.28+)
+
+```json
+{
+  "name": "load-coconut-player",
+  "provider": "kv",
+  "action": "get",
+  "resource_id": "players/{{ state.player_name }}",
+  "params": {
+    "namespace": "coconut",
+    "backend": "auto",
+    "default": {}
+  }
+}
+```
+
+| Field | Notes |
+|-------|-------|
+| `action` | `get` \| `put` \| `delete` \| `list` |
+| `params.backend` | `auto` (default) \| `memory` \| `storage` |
+| `params.namespace` | Slug — alphanumeric, underscore, hyphen |
+| `put` | Requires `params.value` or `{{ state.* }}` binding |
+
+`palm_system_doctor` → `resource_preflight.kv.backend_resolved` shows `memory` vs `storage`.
+
+### Local `file` resource (0.28.1 provider; design validates now)
+
+```json
+{
+  "name": "read-profile",
+  "provider": "file",
+  "action": "read",
+  "resource_id": "profiles/alice.json",
+  "params": { "format": "json" }
+}
+```
+
+`resource_id` must be a relative path (no `..`). Doctor reports `file.documents_root` and `writable`.
+
 ### Name rules (common mistakes)
 
 | Wrong | Right |

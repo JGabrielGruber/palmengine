@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from palm.common.resource.catalog import ResourceCatalog
+from palm.common.resource.document_storage import resolve_kv_backend
 from palm.common.resource.resolver import resource_definition_resolver
 from palm.definitions.resource import ResourceDefinition
+
+_DEFAULT_DOCUMENTS_ROOT = Path("data") / "documents"
 
 
 def rest_resource_has_base_url(resource: ResourceDefinition) -> bool:
@@ -80,26 +84,146 @@ def probe_check_health(runtime: Any) -> dict[str, Any]:
     return payload
 
 
+def build_kv_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
+    """Report KV provider catalog usage and resolved ``auto`` backend."""
+    catalog = ResourceCatalog(repository)
+    entries = catalog.by_provider("kv")
+    storage = getattr(runtime, "storage", None)
+    storage_backend_name = storage.backend_name if storage is not None else None
+    try:
+        backend_resolved = resolve_kv_backend(
+            "auto",
+            storage=storage,
+            storage_backend_name=storage_backend_name,
+        )
+    except ValueError:
+        backend_resolved = "memory"
+
+    namespace_set: set[str] = set()
+    for entry in entries:
+        resource = repository.get_resource(entry.name)
+        namespace_set.add(str(resource.params.get("namespace") or "default"))
+    namespaces = sorted(namespace_set)
+
+    return {
+        "resource_count": len(entries),
+        "backend_resolved": backend_resolved,
+        "storage_backend": storage_backend_name,
+        "namespaces": namespaces,
+    }
+
+
+def resolve_documents_root(runtime: Any) -> Path:
+    """Best-effort documents root for ``file`` provider preflight."""
+    storage = getattr(runtime, "storage", None)
+    backend = storage.backend if storage is not None else None
+    data_dir = getattr(backend, "data_dir", None)
+    if data_dir is not None:
+        return Path(data_dir) / "documents"
+    settings = getattr(runtime, "settings", None)
+    if settings is not None:
+        configured = getattr(settings, "data_dir", None)
+        if configured is not None:
+            return Path(configured) / "documents"
+    return _DEFAULT_DOCUMENTS_ROOT
+
+
+def _documents_root_writable(root: Path) -> bool:
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+        probe = root / ".palm_write_probe"
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+def build_file_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
+    """Report ``file`` document resources and documents_root writability."""
+    catalog = ResourceCatalog(repository)
+    entries = catalog.by_provider("file")
+    if not entries:
+        return {
+            "resource_count": 0,
+            "documents_root": None,
+            "writable": None,
+            "provider_installed": _file_provider_installed(),
+        }
+
+    root = resolve_documents_root(runtime)
+    return {
+        "resource_count": len(entries),
+        "documents_root": str(root.resolve()),
+        "writable": _documents_root_writable(root),
+        "provider_installed": _file_provider_installed(),
+    }
+
+
+def _file_provider_installed() -> bool:
+    try:
+        from palm.core.registry import provider_registry
+
+        provider_registry.get("file")
+        return True
+    except Exception:
+        return False
+
+
 def build_resource_preflight(runtime: Any) -> dict[str, Any]:
-    """Assemble REST resource preflight data for doctor reports."""
+    """Assemble resource preflight data for doctor reports."""
     repository = getattr(runtime, "repository", None)
     if repository is None:
         return {
             "rest_missing_base_url": [],
+            "rest_missing_base_url_count": 0,
             "check_health": {"available": False, "reason": "repository unavailable"},
+            "kv": {"resource_count": 0, "backend_resolved": "memory"},
+            "file": {"resource_count": 0, "documents_root": None, "writable": None},
         }
 
     missing = rest_resources_missing_base_url(repository)
+    kv_preflight = build_kv_preflight(runtime, repository)
+    file_preflight = build_file_preflight(runtime, repository)
     return {
         "rest_missing_base_url": missing,
         "rest_missing_base_url_count": len(missing),
         "check_health": probe_check_health(runtime),
+        "kv": kv_preflight,
+        "file": file_preflight,
     }
 
 
+def resource_preflight_issues(preflight: dict[str, Any]) -> list[str]:
+    """Derive doctor issue strings from a resource preflight payload."""
+    issues: list[str] = []
+    missing = preflight.get("rest_missing_base_url") or []
+    if missing:
+        names = ", ".join(str(item.get("name") or "") for item in missing[:5])
+        suffix = f" (+{len(missing) - 5} more)" if len(missing) > 5 else ""
+        issues.append(f"{len(missing)} REST resource(s) missing base_url: {names}{suffix}")
+
+    file_info = preflight.get("file") or {}
+    file_count = int(file_info.get("resource_count") or 0)
+    if file_count and file_info.get("writable") is False:
+        root = file_info.get("documents_root") or "(unknown)"
+        issues.append(f"file documents_root is not writable: {root}")
+
+    if file_count and not file_info.get("provider_installed"):
+        issues.append(
+            f"{file_count} file resource definition(s) registered but file provider is not installed",
+        )
+
+    return issues
+
+
 __all__ = [
+    "build_file_preflight",
+    "build_kv_preflight",
     "build_resource_preflight",
     "probe_check_health",
+    "resolve_documents_root",
+    "resource_preflight_issues",
     "rest_resource_has_base_url",
     "rest_resources_missing_base_url",
 ]

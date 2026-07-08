@@ -12,8 +12,10 @@ from palm.common.operator.resource_remediation import (
     resource_invoke_remediation,
 )
 from palm.common.resource import resource_definition_resolver
+from examples.definitions.coconut_resources import LOAD_COCONUT_PLAYER
 from palm.common.resource.preflight import (
     build_resource_preflight,
+    resource_preflight_issues,
     rest_resource_has_base_url,
 )
 from palm.common.runtimes.server.diagnostics import build_doctor_report
@@ -204,6 +206,55 @@ def test_resource_step_branch_requires_target() -> None:
     state = BlackboardState()
     assert root.tick(state) == PatternStatus.FAILURE
     engine.shutdown()
+
+
+def test_kv_preflight_reports_backend_and_namespaces() -> None:
+    runtime = EmbeddedRuntime()
+    runtime.start()
+    try:
+        runtime.repository.register_resource(LOAD_COCONUT_PLAYER)
+        preflight = build_resource_preflight(runtime)
+        kv = preflight["kv"]
+        assert kv["resource_count"] == 1
+        assert kv["backend_resolved"] in {"memory", "storage"}
+        assert kv["namespaces"] == ["coconut"]
+        report = build_doctor_report(runtime)
+        assert report["resource_preflight"]["kv"]["resource_count"] == 1
+    finally:
+        runtime.stop()
+
+
+def test_file_preflight_flags_non_writable_root(tmp_path, monkeypatch) -> None:
+    blocked_root = tmp_path / "blocked"
+    blocked_root.mkdir()
+    blocked_root.chmod(0o555)
+    runtime = EmbeddedRuntime()
+    runtime.start()
+    try:
+        monkeypatch.setattr(
+            "palm.common.resource.preflight.resolve_documents_root",
+            lambda _runtime: blocked_root,
+        )
+        runtime.repository.register_resource(
+            ResourceDefinition(
+                name="read-doc",
+                provider="file",
+                action="read",
+                resource_id="notes/demo.json",
+                params={"format": "json"},
+            )
+        )
+        preflight = build_resource_preflight(runtime)
+        assert preflight["file"]["resource_count"] == 1
+        assert preflight["file"]["writable"] is False
+        issues = resource_preflight_issues(preflight)
+        assert any("documents_root is not writable" in row for row in issues)
+        report = build_doctor_report(runtime)
+        assert report["status"] == "degraded"
+        assert any("documents_root is not writable" in row for row in report["issues"])
+    finally:
+        blocked_root.chmod(0o755)
+        runtime.stop()
 
 
 def test_compact_inspect_surfaces_resource_remediation() -> None:

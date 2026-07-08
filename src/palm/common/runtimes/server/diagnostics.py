@@ -48,13 +48,9 @@ def build_doctor_report(runtime: Any) -> dict[str, Any]:
 
         resource_count = len(ResourceCatalog(repository).entries())
         resource_preflight = build_resource_preflight(runtime)
-        missing = resource_preflight.get("rest_missing_base_url") or []
-        if missing:
-            names = ", ".join(str(item.get("name") or "") for item in missing[:5])
-            suffix = f" (+{len(missing) - 5} more)" if len(missing) > 5 else ""
-            issues.append(
-                f"{len(missing)} REST resource(s) missing base_url: {names}{suffix}"
-            )
+        from palm.common.resource.preflight import resource_preflight_issues
+
+        issues.extend(resource_preflight_issues(resource_preflight))
 
     return {
         "status": "ok" if not issues else "degraded",

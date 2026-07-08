@@ -18,9 +18,11 @@ if TYPE_CHECKING:
 RuntimeBindingFn = Callable[["BaseRuntime"], None]
 RuntimeUnbindingFn = Callable[[], None]
 RuntimeAccessorFn = Callable[[], "BaseRuntime | None"]
+DesignContributorHookFn = Callable[[], None]
 
 _lock = threading.RLock()
 _provider_apps: dict[str, Any] = {}
+_design_contributor_hooks: list[DesignContributorHookFn] = []
 _runtime_binding: RuntimeBindingFn | None = None
 _runtime_unbinding: RuntimeUnbindingFn | None = None
 _runtime_accessor: RuntimeAccessorFn | None = None
@@ -87,10 +89,29 @@ def get_bound_runtime() -> BaseRuntime | None:
         return _runtime_accessor()
 
 
+def register_provider_design_contributor_hook(fn: DesignContributorHookFn) -> None:
+    """Register a deferred design contributor hook (drained at host bootstrap)."""
+    with _lock:
+        if fn not in _design_contributor_hooks:
+            _design_contributor_hooks.append(fn)
+
+
+def iter_provider_design_contributor_hooks() -> tuple[DesignContributorHookFn, ...]:
+    """Return provider design contributor hooks in registration order."""
+    with _lock:
+        return tuple(_design_contributor_hooks)
+
+
 def clear_provider_apps() -> None:
     """Remove provider app registrations (primarily for tests)."""
     with _lock:
         _provider_apps.clear()
+
+
+def clear_provider_design_contributor_hooks() -> None:
+    """Remove provider design contributor hooks (primarily for tests)."""
+    with _lock:
+        _design_contributor_hooks.clear()
 
 
 def clear_runtime_binding() -> None:
