@@ -16,6 +16,15 @@
 - **Start**: `palm_assist(path=["flows","onboard","create"])`
 - Good for testing wizard mechanics.
 
+## Coconut NPC (`coconut-npc`) — branching reference
+
+Hub-and-spoke wizard: transforms + `route_on_answer` + loop-back to topic menu. Regression profile for compositional workflows ([VISION-0.27.md](../../../../VISION-0.27.md)).
+
+```bash
+palm flow start coconut-npc
+# or palm_flows_create_session(flow_id="coconut-npc")
+```
+
 ## Custom flows (design + run)
 
 When the user asks to **create or improve** a flow (not run a built-in one):

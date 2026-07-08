@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **0.27 vision** — [VISION-0.27.md](docs/VISION-0.27.md) compositional design parity; [ADR-010](docs/adr/010-prompt-state-interpolation.md); implementation [plan](docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md).
+- **Example flow `coconut-npc`** — branching wizard reference (`examples/definitions/coconut_npc.py`): hub menu, transforms, `route_on_answer` / `complete_on`; MCP dogfood profile.
+- **Wizard design contributor (0.27.0 partial)** — flat transform steps (`rule` + `source_key`) validate like runtime builder; nested `transform` object still accepted.
+
 ## [0.26.0] — 2026-07-08
 
 **Design Service hardening and CQRS bus parity** — post-0.25.0 quality release. No breaking API changes vs 0.25.0; upgrade path is drop-in.

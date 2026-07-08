@@ -298,23 +298,38 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Release:** [RELEASE-0.25.0.md](RELEASE-0.25.0.md) · **Migration:** [MIGRATION-0.24.md](MIGRATION-0.24.md) · [MIGRATION-0.25.md](MIGRATION-0.25.md)
 
-### 0.25.1–0.25.13 (local — 0.26.0 release pending)
+### 0.25.1–0.26.0 (shipped locally)
 
 | Phase | Theme | Status |
 |-------|-------|--------|
-| 0.25.2–0.25.5 | Correctness, structure, contributors | ✅ Local |
-| 0.25.6 | Dogfooding demo | ✅ Local |
-| 0.25.7 | Design CQRS transport | ✅ Local |
-| 0.25.8 | Registry-driven design dispatch | ✅ Local |
-| 0.25.9–0.25.12 | Service CQRS contributors + bus parity | ✅ Local ([ADR-009](docs/adr/009-service-cqrs-contributors.md)) |
-| 0.25.13 | Docs sync (AGENTS, MCP, STATUS) | ✅ Local |
-| **0.26.0** | PyPI cut + CHANGELOG | ✅ Local |
+| 0.25.2–0.25.5 | Correctness, structure, contributors | ✅ Shipped |
+| 0.25.6 | Dogfooding demo | ✅ Shipped |
+| 0.25.7 | Design CQRS transport | ✅ Shipped |
+| 0.25.8 | Registry-driven design dispatch | ✅ Shipped |
+| 0.25.9–0.25.12 | Service CQRS contributors + bus parity | ✅ Shipped ([ADR-009](docs/adr/009-service-cqrs-contributors.md)) |
+| 0.25.13 | Docs sync (AGENTS, MCP, STATUS) | ✅ Shipped |
+| **0.26.0** | PyPI cut + CHANGELOG + MCP guides | ✅ Shipped |
 
 **Plan:** [docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md](docs/superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md)
 
+## 0.27 — Compositional Design Parity (planned)
+
+**Vision:** [docs/VISION-0.27.md](docs/VISION-0.27.md)  
+**ADR:** [docs/adr/010-prompt-state-interpolation.md](docs/adr/010-prompt-state-interpolation.md)  
+**Plan:** [docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md](docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md)  
+**Reference flow:** `coconut-npc` ([examples/definitions/coconut_npc.py](examples/definitions/coconut_npc.py))
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.27.0 | Design transform schema parity + `coconut-npc` example | 🟡 In progress (validator + example shipped) |
+| 0.27.1 | Wizard prompt `{{ state.* }}` interpolation (ADR-010) | 📋 Planned |
+| 0.27.2 | Design service: `propose_resource` | 📋 Planned |
+| 0.27.3 | Resource doctor preflight + step failure modes | 📋 Planned |
+| 0.27.4 | Branching playbook MCP reference | 📋 Planned |
+
 ## Priorities & Next Steps
 
-**0.26.0 local** — design hardening (0.25.1–0.25.13) + CQRS bus parity. **0.25.0** remains prior PyPI baseline for revisioning + Design Service MVP.
+**0.26.0** — design hardening + CQRS bus parity (shipped locally). **0.27** — compositional design parity per vision above.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 

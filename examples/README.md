@@ -15,6 +15,7 @@ examples/
 │   ├── parallel_demo.py     # Parallel branches + sub-workflows
 │   ├── todo_builder.py      # Collection step + todo list schemas
 │   ├── migrate_instance_demo.py  # Definition revision migration (0.24.3)
+│   ├── coconut_npc.py       # Branching wizard reference (hub menu + routing)
 │   └── transform_*.py       # Transform rule demos
 └── full_demo.py             # ApplicationHost end-to-end script
 ```
@@ -140,6 +141,21 @@ curl -s -X POST 'http://localhost:8080/v1/api/definitions/instances/<instance_id
   -d '{"target_revision": 2, "dry_run": true}'
 ```
 
+## Coconut NPC (`coconut-npc`)
+
+**Branching wizard reference** — hub-and-spoke topic menu, transform chain
+(`string_format`, `lookup`), and `route_on_answer` / `complete_on` routing.
+Dogfood profile for compositional interactive workflows (see [VISION-0.27.md](../docs/VISION-0.27.md));
+not a game-NPC product direction.
+
+```bash
+palm flow start coconut-npc
+```
+
+Example path: name → reputation → topic hub → rumors/trade/about → farewell.
+
+MCP agents can revise via `palm_design_propose_flow(base_flow_id="coconut-npc", …)`.
+
 ## Quick wizard (`quick`)
 
 Two text steps with backtracking — useful for resume demos.
@@ -191,6 +207,8 @@ Wizard flow options commonly used:
 | `allow_backtrack` | Enable `back <instance> <slug>` in CLI |
 | `step_kind: collection` | Repeatable item builder |
 | `step_kind: transform` | Apply transform rule/chain between steps |
+| `params.route_on_answer` | Jump to step slug after choice input (hub menus) |
+| `params.complete_on` | Finish wizard when input matches (farewell / exit) |
 
 ### Transform examples
 

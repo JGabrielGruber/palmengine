@@ -79,8 +79,14 @@ def _validate_step_list(options: dict[str, Any]) -> list[str]:
             blockers.extend(_validate_collection_step(slug, raw_step))
         elif step_kind == "resource" and not raw_step.get("resource_ref"):
             blockers.append(f"wizard resource step {slug!r} requires resource_ref")
-        elif step_kind == "transform" and not raw_step.get("transform"):
-            blockers.append(f"wizard transform step {slug!r} requires transform configuration")
+        elif step_kind == "transform":
+            has_nested = isinstance(raw_step.get("transform"), dict)
+            has_flat = bool(raw_step.get("rule")) and bool(raw_step.get("source_key"))
+            if not has_nested and not has_flat:
+                blockers.append(
+                    f"wizard transform step {slug!r} requires transform configuration "
+                    "(nested 'transform' object or flat rule + source_key)",
+                )
 
     return blockers
 
