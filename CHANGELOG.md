@@ -4,14 +4,28 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added
+## [0.31.5] — 2026-07-08
 
-- **0.31 MCP meta-surface (foundation)** — [VISION-0.31.md](docs/VISION-0.31.md); design [spec](docs/superpowers/specs/2026-07-08-mcp-meta-surface-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-08-mcp-meta-surface-0.31.md). Progressive disclosure / slim MCP surfaces; docs-only in 0.31.0.
-- **0.31.1 MCP surface profiles** — `PALM_MCP_SURFACE=full|assist|core|experimental`; assist-only registers `palm_assist`; `scripts/mcp_catalog_inventory.py` + `just mcp-inventory` size proxy.
-- **0.31.2 assist-complete paths** — aliases `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`, `flows/session-resume`; assistant envelopes for doctor/catalog/waiting; CTAs use aliases (works with `PALM_MCP_SURFACE=assist`).
-- **0.31.3 progressive docs** — short `palm_assist` L0 description; `palm://agent/card` L1 mini-guide (`docs/mcp-card.txt`); skill/mcp recipes load card before full guide; publish success CTAs use `palm_assist(params={flow_id})`.
-- **0.31.4 assist/discover** — `palm_assist(alias="assist/discover", params={query})` searches aliases/routes without a second MCP tool; AGENTS/README/llms/skill refreshed for assist-first + progressive docs.
-- **0.30.8 terminal assistant polish** — complete turns get a short “Finished. Answers: …” blurb; waiting turns without richer actions get a single **Send answer** CTA; complete turns get **Run again** + operator-entry.
+**Bundled release since 0.30.7** — terminal assistant polish (0.30.8) and **MCP meta-surface / progressive disclosure** (0.31.0–0.31.4). Upgrade notes: [MIGRATION-0.30.md](MIGRATION-0.30.md) (§ 0.31.1 surface, 0.31.2 aliases).
+
+**Checklist:** [RELEASE-0.31.5.md](RELEASE-0.31.5.md)
+
+### Added — MCP meta-surface (0.31)
+
+- **0.31 foundation** — [VISION-0.31.md](docs/VISION-0.31.md); [design](docs/superpowers/specs/2026-07-08-mcp-meta-surface-design.md) + open [plan](docs/superpowers/plans/2026-07-08-mcp-meta-surface-0.31.md).
+- **0.31.1 surface profiles** — `PALM_MCP_SURFACE=full|assist|core|experimental`; assist-only ≈1 tool; `just mcp-inventory` / `scripts/mcp_catalog_inventory.py`.
+- **0.31.2 assist-complete paths** — aliases `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`, `flows/session-resume`; assistant envelopes; CTAs use aliases.
+- **0.31.3 progressive docs** — L0 short tool description; L1 `palm://agent/card` (`docs/mcp-card.txt`); L2 full guide on demand; publish CTAs → `palm_assist`.
+- **0.31.4 assist/discover** — `alias=assist/discover` (+ optional `query`); AGENTS/README/llms/skill assist-first refresh.
+
+### Added — Terminal polish (0.30.8)
+
+- Complete turns: “Finished. Answers: …” blurb; waiting **Send answer** CTA; complete **Run again** + operator-entry.
+
+### Changed
+
+- Default MCP surface remains **`full`** (backward compatible). Token-sensitive hosts should set **`PALM_MCP_SURFACE=assist`**.
+- Prefer progressive docs: card before full guide/skill dumps.
 
 ## [0.30.7] — 2026-07-08
 

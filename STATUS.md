@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.30.7`
+**Current Version:** `0.31.5`
 **Last Updated:** July 8, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · Assist design entry + local KV/file resources · **`palm_assist`** primary weak-LLM surface.
 
@@ -383,7 +383,8 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.31.2 | Assist-complete happy paths (assist-only dogfood) | ✅ Shipped |
 | 0.31.3 | Progressive docs (L0/L1/L2) + publish CTAs → palm_assist | ✅ Shipped |
 | 0.31.4 | `assist/discover` (no second tool) + docs/AGENTS refresh | ✅ Shipped |
-| 0.31.5+ | Open field (Code Mode, host gateways, size logging, …) | ⬜ Open |
+| **0.31.5** | **PyPI/GitHub bundle** of 0.30.8 + 0.31.0–0.31.4 | ✅ Release |
+| 0.31.6+ | Open field (Code Mode, host gateways, size logging, …) | ⬜ Open |
 
 **Theme:** Progressive disclosure — thin host tool catalog; `palm_assist` as meta-execute; measure catalog/turn size. Default surface stays **full** until assist-only is proven.
 
