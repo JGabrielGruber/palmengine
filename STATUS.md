@@ -350,7 +350,23 @@ just mcp-inspector                       # MCP Inspector UI
 
 **0.28** — local document/KV resource providers (shipped). **0.29** — tiered KV for RAM-constrained hosts (shipped).
 
-**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
+### 0.30 — Assist Design Entry (active)
+
+**Vision:** [docs/VISION-0.30.md](docs/VISION-0.30.md)  
+**Design:** [docs/superpowers/specs/2026-07-08-assist-design-entry-design.md](docs/superpowers/specs/2026-07-08-assist-design-entry-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md](docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.30.0 | Vision + design + plan + STATUS/AGENTS (docs-only) | ✅ Documented |
+| 0.30.1 | Pipeline action-merge + intent visibility + operator-entry design CTAs | ⬜ Open |
+| 0.30.2 | `design-entry` assist scenario shell | ⬜ Open |
+| 0.30.3 | Handoff polish; optional `kind: design` (gated) | ⬜ Open |
+| 0.30.4+ | Deeper design UX (gated) | ⬜ Optional |
+
+**Boundaries:** Assist discovers and guides; Design Service owns propose → impact → commit. Bare `palm_assist()` remains operator-entry; design is a sibling intent/scenario.
+
+**Also tracked (outside 0.30 critical path):** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 
 
 ## Useful Links

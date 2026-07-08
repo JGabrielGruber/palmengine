@@ -116,6 +116,7 @@ Follow these patterns. They exist so growth remains orderly.
 | Definition migration rules (0.24.2+) | `palm/common/persistence/definition_migration.py` | `register_migration_rule()` / `resolve_migration_rule()`; see [ADR-007](docs/adr/007-definition-revisioning.md) |
 | Instance migration execution (0.24.3+) | `palm/common/persistence/instance_migration.py` | `migrate_instance()`; preserve `migration_*` in `instance_sync.py`; REST `POST …/instances/{id}/migrate` |
 | Design Service (0.25+) | `palm/services/design/` | Propose/validate/impact/commit + auto-migrate atop revisions; layered with `DefinitionService` CRUD — see [VISION-0.25](docs/VISION-0.25.md), [ADR-008](docs/adr/008-design-service.md) |
+| Assist design entry (0.30+) | `palm/services/assist/` + operator-entry / design-entry scenarios | Surface create/improve flow from Assist without reimplementing Design — [VISION-0.30](docs/VISION-0.30.md) |
 | Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
 
 **Never:**
