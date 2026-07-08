@@ -21,6 +21,7 @@ from palm.services.design.envelope import (
     validation_body,
 )
 from palm.services.design.proposal import ProposalRepository, resolve_proposal_flow_id
+from palm.services.design.dispatch import dispatch_design_command
 from palm.services.design.registry import run_design_validators
 
 if TYPE_CHECKING:
@@ -58,34 +59,7 @@ class DesignService(BaseService):
         params: dict[str, Any] | None = None,
     ) -> Any:
         """Execute a design command path."""
-        params = params or {}
-        segments = [str(item) for item in path]
-        if segments == ["design", "propose"]:
-            body = dict(params.get("body") or params)
-            base_flow_id = params.get("base_flow_id")
-            payload = {
-                key: value
-                for key, value in body.items()
-                if key not in {"base_flow_id", "body", "commit_token", "input_token"}
-            }
-            return self.propose_flow(payload, base_flow_id=base_flow_id)
-        if segments == ["design", "proposals"]:
-            return {"proposals": self.list_proposals(flow_id=params.get("flow_id"))}
-        if len(segments) == 3 and segments[:2] == ["design", "proposals"]:
-            return self.get_proposal(segments[2])
-        if len(segments) == 4 and segments[:2] == ["design", "proposals"] and segments[3] == "validate":
-            return self.validate_proposal(segments[2], dry_run=True)
-        if len(segments) == 4 and segments[:2] == ["design", "proposals"] and segments[3] == "impact":
-            return self.analyze_proposal_impact(segments[2])
-        if len(segments) == 4 and segments[:2] == ["design", "proposals"] and segments[3] == "commit":
-            return self.commit_proposal(
-                segments[2],
-                commit_token=params.get("commit_token"),
-                input_token=params.get("input_token"),
-            )
-        if len(segments) == 4 and segments[:2] == ["design", "proposals"] and segments[3] == "discard":
-            return self.discard_proposal(segments[2])
-        raise ValueError(f"unrecognized design dispatch path: {'/'.join(segments)}")
+        return dispatch_design_command(self, path, params)
 
     def propose_flow(
         self,
