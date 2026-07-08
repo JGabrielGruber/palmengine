@@ -38,6 +38,21 @@ _DESC = tool_description(
 
 @mcp.tool(description=_DESC)
 def palm_flows_session(...):
+```
+
+Design tools follow the same pattern — see `src/palm/runtimes/mcp/design/tools.py`:
+
+```python
+_PALM_DESIGN_PROPOSE_DESC = tool_description(
+    "palm_design_propose_flow",
+    "Create a design proposal from a wizard flow body.",
+    when="Run propose → impact → commit. Load palm://agent/references/design-flows for agent playbook.",
+    examples=['palm_design_propose_flow(body={"name": "foo-bar", "pattern": "wizard", "options": {...}})'],
+    use_instead="Do not use palm_definitions_* create/update for agent catalog writes.",
+)
+
+@mcp.tool(description=_PALM_DESIGN_PROPOSE_DESC)
+def palm_design_propose_flow(...):
     ...
 ```
 

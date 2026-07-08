@@ -12,6 +12,7 @@ SKILL_ASSET_FILES: dict[str, str] = {
     "references/mcp-patterns": "references/mcp-patterns.md",
     "references/session-management": "references/session-management.md",
     "references/common-flows": "references/common-flows.md",
+    "references/design-flows": "references/design-flows.md",
 }
 
 

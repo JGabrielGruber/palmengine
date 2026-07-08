@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.25.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.26.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 
@@ -20,8 +20,11 @@ Palm = **stateful, path-driven workflow engine** with strong interactive wizard 
 | **Paths & Aliases** | Target specific actions (`path=["flows",…]`, `alias="operator-entry/start"`) |
 | **MCP Resources** (`palm://…`) | Read-only catalogs, guides, instance trees |
 | **MCP Tools** | Write/act — create sessions, send input, resume, cancel |
+| **Design (0.25+)** | Safe catalog writes — `palm_design_*` propose → impact → commit |
 
-**Golden rule**: Start with `palm_assist()` unless you already have a `session_id` or explicit `flow_id`.
+**Golden rules**:
+- **Run a flow** → start with `palm_assist()` unless you have `session_id` or explicit `flow_id`.
+- **Create or change a flow definition** → use `palm_design_*` (see §15), not repo files or `palm_definitions_*` writes.
 
 **Operator loop**: definitions → create session → inspect → input → wait on children → resume.
 
@@ -71,6 +74,10 @@ Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand 
 6. **Interactive entry** — `palm_assist` / `palm_flows_create_session`. Never `palm_processes_submit` on processes with `entry_flow`.
 7. **Compositional wizards** — check `waiting_for_child`, read `palm://instances/{id}/tree`, call `palm_flows_session_resume_child_wait`.
 8. **Prefer `actions` block** (0.21.4) — structured `path`/`alias` over parsing `hint`.
+9. **Catalog writes** — use `palm_design_*` (not `palm_definitions_*` create/update) unless docs say otherwise.
+10. **Flow names are slugs** — `foo-bar` not `foo bar`; hyphens, lowercase, no spaces.
+11. **Choice steps** — reply with choice slug (`beta`) or menu number (`2`); never JSON answer blobs.
+12. **After engine upgrade** — restart `palm-mcp` so in-process CQRS wiring reloads (impact/commit otherwise fail).
 
 ---
 
@@ -143,7 +150,10 @@ Portable skill: `palm://agent/skill` + `palm://agent/references/*` (on-disk: `do
 |------|-----------------|
 | Agent guide (this file) | `palm://agent/guide` |
 | Agent skill | `palm://agent/skill` |
-| Skill references | `palm://agent/references/agent-guide`, `…/mcp-patterns`, `…/session-management`, `…/common-flows` |
+| Skill references | `palm://agent/references/agent-guide`, `…/design-flows`, `…/session-management`, `…/common-flows`, `…/mcp-patterns` |
+| Create/improve flows | `palm://agent/references/design-flows` · `palm_design_*` |
+| Design propose | `palm_design_propose_flow` |
+| Design publish | `palm_design_impact` → `palm_design_commit` |
 | Project architecture | `docs/llms.txt` |
 | Flow catalog | `palm://definitions/flows` |
 | Start wizard | `palm_assist()` or `palm_flows_create_session` |
@@ -151,6 +161,8 @@ Portable skill: `palm://agent/skill` + `palm://agent/references/*` (on-disk: `do
 | Current step | `palm_flows_session` (powertool or `format="assistant"`) |
 | Collection UI | `palm_wizard_collection_action` or assist `collection_action` |
 | Health | `palm_system_doctor` |
+| **Create/improve flow** | `palm_design_propose_flow` → `palm_design_impact` → `palm_design_commit` |
+| Design playbook (weak LLMs) | `palm://agent/references/design-flows` |
 | Invoke resource definition | `palm_providers_invoke` |
 | Instance tree | `palm://instances/{id}/tree` |
 
@@ -167,6 +179,10 @@ Portable skill: `palm://agent/skill` + `palm://agent/references/*` (on-disk: `do
 | Collection menus | Be explicit: "add" → title → due date → priority |
 | Which flow to start | `palm_assist()` or `palm_flows_list` |
 | Operator-entry handoff | Send "yes" at summary → handoff alias or create flow directly |
+| Create a new flow | §15 — `palm_design_*` loop; see `palm://agent/references/design-flows` |
+| `AnalyzeDefinitionImpactQuery` error | Restart `palm-mcp` after upgrading Palm |
+| User said "foo bar" flow name | Use slug `foo-bar` in `body.name` |
+| Summary step | `confirm_step: true` — only `yes`/`no` when user explicitly confirms |
 
 ---
 
@@ -254,3 +270,75 @@ Catalog flows are **append-only revisions**. Running instances pin `flow_revisio
 **Operator loop:** impact → dry-run → apply. Example wizard: `migrate-instance-demo` (see `examples/README.md`).
 
 `GET flow` accepts `?revision=N`. `update_flow` publishes `latest+1` (no overwrite). See [MIGRATION-0.24.md](../MIGRATION-0.24.md).
+
+---
+
+## 15. Create or improve a flow (Design Service — weak-LLM recipe)
+
+**When the user wants a new flow or changes to an existing one** — do **not** edit Python files. Use MCP only.
+
+### New flow — four tools, fixed order
+
+```text
+palm_design_propose_flow(body={name, pattern, options})
+palm_design_impact(proposal_id="prop-...")
+palm_design_commit(proposal_id="prop-...")
+palm_flows_describe(flow_id="my-flow")    # confirm revision in catalog
+```
+
+Save `proposal_id` from propose. If propose returns `"valid": false`, read `blockers` and fix the body before impact.
+
+### Update existing flow
+
+Add `base_flow_id="existing-id"` to propose. Same impact → commit sequence. Revision number increments.
+
+### Minimal wizard body
+
+```json
+{
+  "name": "my-flow",
+  "pattern": "wizard",
+  "options": {
+    "include_summary": true,
+    "steps": [
+      {"slug": "step1", "title": "Step one", "prompt": "Your answer?"}
+    ]
+  }
+}
+```
+
+- **`name`** must be a slug (`foo-bar`, not `foo bar`).
+- Each step needs **`slug`**, **`title`**, **`prompt`**.
+- **`field_type": "choice"`** requires **`choices": ["a","b"]`**.
+- **`include_summary": true`** adds a confirm step before finish — user must say yes (do not auto-confirm unless they asked).
+
+### Run the flow (separate from design)
+
+```text
+palm_flows_create_session(flow_id="my-flow")
+palm_flows_session(session_id, flow_id="my-flow", format="assistant")
+palm_flows_session_input(session_id, flow_id="my-flow", input="plain answer")
+```
+
+Repeat session → input until `status` is `complete`. Re-inspect after **every** input.
+
+### Choice and summary steps
+
+| Step type | What to send |
+|-----------|----------------|
+| Text | `input="any plain string"` |
+| Choice | `input="beta"` or `input="2"` (from assistant `choices`) |
+| Summary | `input="yes"` only when user explicitly confirms |
+
+### Strict commit / input tokens
+
+- Design commit: pass `commit_token` from validate/impact `mutation` when `PALM_MCP_REQUIRE_INPUT_TOKEN=1`.
+- Session input: pass `input_token` from last `palm_flows_session` `mutation` block.
+
+### Full walkthrough
+
+See **`palm://agent/references/design-flows`** (worked `foo-bar` example: create → improve → run).
+
+### Do not use for catalog writes
+
+- `palm_definitions_*` direct create/update — integrator path only; agents should prefer `palm_design_*`.

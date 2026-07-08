@@ -74,6 +74,10 @@ def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
         "references/common-flows",
         title="Palm agent skill — quick start for common flows.",
     )
+    _register_skill_reference(
+        "references/design-flows",
+        title="Palm agent skill — create, improve, and run flows (weak-LLM playbook).",
+    )
 
     @mcp.resource(
         "palm://server/health",

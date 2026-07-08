@@ -6,7 +6,7 @@ Portable skill for any coding agent that uses Palm MCP. Canonical files live in 
 
 1. **`palm://agent/guide`** — operator protocol (`docs/mcp.txt`).
 2. **`palm://agent/skill`** — core skill (this folder's `SKILL.md`).
-3. **`palm://agent/references/*`** — on-demand references (session management, MCP patterns, flows).
+3. **`palm://agent/references/*`** — on-demand references (session management, design flows, MCP patterns, common flows).
 4. **`docs/MCP.md`** — full tool inventory when you need specifics.
 
 On-disk copies in this folder are for manual paste into non-MCP agent hosts.

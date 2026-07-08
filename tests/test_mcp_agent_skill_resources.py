@@ -36,6 +36,7 @@ def skill_server():
         ("palm://agent/references/mcp-patterns", "call_connected_tool"),
         ("palm://agent/references/session-management", "Never assume state"),
         ("palm://agent/references/common-flows", "Todo Builder"),
+        ("palm://agent/references/design-flows", "palm_design_propose_flow"),
     ],
 )
 async def test_agent_skill_resources(skill_server, uri: str, needle: str) -> None:

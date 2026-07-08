@@ -1,6 +1,6 @@
 ---
 name: palm
-description: Palm MCP integration — flows, sessions, operator-entry, palm_assist, palm:// resources, tool description patterns, and wizard driving (todo-builder, approval, collection steps). Use when the user mentions Palm, MCP tools, starting flows, session state, or updating agent/MCP descriptions.
+description: Palm MCP integration — flows, sessions, design (create/improve flows), operator-entry, palm_assist, palm:// resources, tool description patterns, and wizard driving. Use when the user mentions Palm, MCP tools, starting flows, designing flows, session state, or updating agent/MCP descriptions.
 ---
 
 # Palm Skill
@@ -22,6 +22,7 @@ You operate Palm (the connected workflow engine) through MCP — primarily `palm
 - **Assistant view for humans** — `format=assistant` on inspect and assist paths.
 - **Plain strings** — `input="yes"`, choice slugs, text (not JSON answer blobs).
 - **Read vs write** — `palm://…` resources for catalogs; tools for create/input/resume.
+- **Catalog writes (0.25+)** — create or change flow definitions with `palm_design_*` (propose → impact → commit). Do **not** use `palm_definitions_*` create/update unless an integrator doc requires it. Load `palm://agent/references/design-flows` first.
 - **Mutation guard (0.22.1+)** — check `mutation.mutations_allowed` on every inspect; never send `value`/`input` when false; never auto-confirm at `mutation.confirm_step`.
 - **input_token (0.23.0+)** — when `PALM_MCP_REQUIRE_INPUT_TOKEN=1`, pass `mutation.input_token` with every write; re-inspect after each input.
 - **inspect-only (0.23.1+)** — use `operator-entry/inspect` for read-only catalog; menu item 3 stays at catalog until `exit`, never auto-confirms summary.
@@ -35,14 +36,17 @@ You operate Palm (the connected workflow engine) through MCP — primarily `palm
 | Updating MCP tool docstrings | `palm://agent/references/mcp-patterns` |
 | Session driving | `palm://agent/references/session-management` |
 | Common flows | `palm://agent/references/common-flows` |
+| Create/improve flows | `palm://agent/references/design-flows` |
 
 On-disk copies (for manual adoption): `docs/skills/palm/references/`.
 
 ## Operator loop
 
 ```
-definitions → create session → inspect → input → wait on children → resume
+design (optional) → create session → inspect → input → wait on children → resume
 ```
+
+**Design loop** (when user asks to create or change a flow): `palm_design_propose_flow` → `palm_design_impact` → `palm_design_commit` → `palm_flows_describe` to verify. See `palm://agent/references/design-flows`.
 
 ## Quick commands
 
@@ -54,6 +58,9 @@ definitions → create session → inspect → input → wait on children → re
 | Continue session | `palm_assist(params={session_id, flow_id, value})` |
 | Health | `palm_system_doctor` |
 | Routes catalog | read `palm://assist/routes` |
+| Propose flow | `palm_design_propose_flow(body={...})` |
+| Publish flow | `palm_design_impact` → `palm_design_commit` |
+| Run custom flow | `palm_flows_create_session(flow_id="my-flow")` |
 
 ## When editing Palm MCP code
 
