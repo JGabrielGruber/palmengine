@@ -120,6 +120,23 @@ Drive with `palm_flows_session(..., format="assistant")` → `palm_flows_session
 
 ---
 
+## Cross-session persistence (0.28.2)
+
+`coconut-npc` loads/saves a **`player_profile`** via the **`kv`** provider (`load-coconut-player` /
+`save-coconut-player` in `coconut_resources.py`), keyed by `player_name`. `backend: auto` uses
+durable storage when the host runs filesystem storage; otherwise in-memory.
+
+Returning travelers get `visit_count > 1`, `is_returning`, and a greeting suffix ("I remember you.").
+
+```bash
+palm flow start coconut-npc   # first visit
+palm flow start coconut-npc   # same name → visit_count increments
+```
+
+Inspect KV: `palm_providers_invoke(resource_ref="load-coconut-player", params={backend: memory}, state={player_name: …})`.
+
+---
+
 ## Anti-patterns
 
 - Linear-only steps with no hub — hard to add topics later.

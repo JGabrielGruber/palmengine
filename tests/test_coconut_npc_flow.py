@@ -13,8 +13,11 @@ def test_coconut_npc_flow_builds() -> None:
     config = wizard_config_from_options(options)
     slugs = [step.slug for step in config.steps]
     assert slugs[0] == "player_name"
+    assert "load_player" in slugs
+    assert "hydrate_profile" in slugs
     assert "topic" in slugs
     assert "build_greeting" in slugs
+    assert "save_profile" in slugs
     assert config.steps[slugs.index("topic")].params is not None
     route = config.steps[slugs.index("topic")].params.get("route_on_answer")
     assert isinstance(route, dict)

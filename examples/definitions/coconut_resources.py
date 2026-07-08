@@ -46,6 +46,9 @@ SAVE_COCONUT_PLAYER = ResourceDefinition(
 
 
 def register_definitions(repository: object) -> None:
+    from examples.definitions.coconut_transforms import register_coconut_transforms
+
+    register_coconut_transforms()
     save_resource = getattr(repository, "save_resource", None)
     if callable(save_resource):
         save_resource(LOAD_COCONUT_PLAYER)

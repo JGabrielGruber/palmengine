@@ -12,6 +12,7 @@ Patterns demonstrated:
 - ``string_format`` + ``lookup`` transform steps between inputs
 - Reputation-style branching via choice + lookup table
 - Clean exit via ``complete_on`` on a farewell step
+- Cross-session KV persistence keyed by ``player_name`` (``kv`` provider, 0.28.2)
 
 Built originally via MCP ``palm_design_*`` (0.26 dogfood). Shipped here as a
 canonical example for CLI, Explorer, and agent playbooks.
@@ -43,7 +44,7 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 "Branching wizard reference — hub menu, transforms, route_on_answer. "
                 "See docs/VISION-0.27.md and examples/README.md."
             ),
-            "tags": ["branching", "transform", "routing", "reference"],
+            "tags": ["branching", "transform", "routing", "reference", "kv", "persistence"],
         },
         "steps": [
             {
@@ -57,14 +58,32 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 "validation": [{"rule": "min_length", "params": {"min": 1}}],
             },
             {
+                "slug": "load_player",
+                "title": "Recall traveler",
+                "step_kind": "resource",
+                "resource_ref": "load-coconut-player",
+                "output_key": "player_profile_load",
+            },
+            {
+                "slug": "hydrate_profile",
+                "step_kind": "transform",
+                "title": "Hydrate profile",
+                "source_key": "player_profile_load",
+                "target_key": "player_profile",
+                "rule": "coconut_hydrate_profile",
+            },
+            {
                 "slug": "build_greeting",
                 "step_kind": "transform",
                 "title": "Coconut sizes you up",
-                "source_key": "player_name",
+                "source_key": "player_profile",
                 "target_key": "greeting_line",
                 "rule": "string_format",
                 "options": {
-                    "template": "Ah, {value} — Coconut wipes her hands on her apron and studies you.",
+                    "template": (
+                        "Ah, {player_name}{returning_note} — Coconut wipes her hands "
+                        "on her apron and studies you."
+                    ),
                 },
             },
             {
@@ -98,6 +117,20 @@ COCONUT_NPC_FLOW = FlowDefinition(
                     },
                     "default": "\"Hmph.\"",
                 },
+            },
+            {
+                "slug": "sync_profile",
+                "step_kind": "transform",
+                "title": "Sync profile",
+                "source_key": "player_profile",
+                "target_key": "player_profile",
+                "rule": "coconut_sync_profile",
+            },
+            {
+                "slug": "save_profile",
+                "title": "Save profile",
+                "step_kind": "resource",
+                "resource_ref": "save-coconut-player",
             },
             {
                 "slug": "topic",
@@ -176,6 +209,20 @@ COCONUT_NPC_FLOW = FlowDefinition(
                 "params": {
                     "route_on_answer": {"more": "topic", "leave": "farewell"},
                 },
+            },
+            {
+                "slug": "sync_profile_farewell",
+                "step_kind": "transform",
+                "title": "Sync profile (farewell)",
+                "source_key": "player_profile",
+                "target_key": "player_profile",
+                "rule": "coconut_sync_profile",
+            },
+            {
+                "slug": "save_profile_farewell",
+                "title": "Save profile (farewell)",
+                "step_kind": "resource",
+                "resource_ref": "save-coconut-player",
             },
             {
                 "slug": "farewell",

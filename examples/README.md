@@ -157,9 +157,9 @@ Example path: name → reputation → topic hub → rumors/trade/about → farew
 
 MCP agents can revise via `palm_design_propose_flow(base_flow_id="coconut-npc", …)`.
 
-**KV resources** (`coconut_resources.py`): `load-coconut-player` / `save-coconut-player` use the
-`kv` provider (`backend: auto`) for cross-session profiles keyed by `player_name` — wired in
-0.28.2.
+**KV persistence** (`coconut_resources.py` + `coconut_transforms.py`): after `player_name`, the
+flow loads/saves a `player_profile` via `kv` (`backend: auto`) keyed by `player_name`.
+Returning travelers get `visit_count > 1` and a "I remember you" greeting line.
 
 ## Quick wizard (`quick`)
 
