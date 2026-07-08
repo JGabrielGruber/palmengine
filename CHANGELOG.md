@@ -12,6 +12,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **Prompt interpolation (0.27.1)** — `{{ state.key }}` in wizard `prompt` / `title` via `resolve_wizard_prompt()` ([ADR-010](docs/adr/010-prompt-state-interpolation.md)).
 - **Design `propose_resource` (0.27.2)** — `DesignService.propose_resource`, impact scan for referencing flows, `palm_design_propose_resource` MCP tool.
 - **`palm://agent/references/branching-flows`** — hub menu / routing playbook for weak LLMs.
+- **Resource operator ergonomics (0.27.3)** — `palm_system_doctor` `resource_preflight` (REST `base_url` gaps, optional `check-health` probe); wizard resource step `on_resource_failure`: `block` | `skip` | `branch`; `palm_providers_invoke` failures include `remediation` hints; powertool inspect surfaces `resource_error` + `resource_remediation`.
 
 ## [0.26.0] — 2026-07-08
 

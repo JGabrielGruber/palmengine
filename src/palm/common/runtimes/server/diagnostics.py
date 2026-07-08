@@ -40,11 +40,21 @@ def build_doctor_report(runtime: Any) -> dict[str, Any]:
     }
 
     resource_count = 0
+    resource_preflight: dict[str, Any] = {}
     repository = getattr(runtime, "repository", None)
     if repository is not None:
         from palm.common.resource.catalog import ResourceCatalog
+        from palm.common.resource.preflight import build_resource_preflight
 
         resource_count = len(ResourceCatalog(repository).entries())
+        resource_preflight = build_resource_preflight(runtime)
+        missing = resource_preflight.get("rest_missing_base_url") or []
+        if missing:
+            names = ", ".join(str(item.get("name") or "") for item in missing[:5])
+            suffix = f" (+{len(missing) - 5} more)" if len(missing) > 5 else ""
+            issues.append(
+                f"{len(missing)} REST resource(s) missing base_url: {names}{suffix}"
+            )
 
     return {
         "status": "ok" if not issues else "degraded",
@@ -57,6 +67,7 @@ def build_doctor_report(runtime: Any) -> dict[str, Any]:
         },
         "registries": registries,
         "resource_count": resource_count,
+        "resource_preflight": resource_preflight,
         "jobs": {
             "total": len(jobs),
             "waiting_for_input": waiting,

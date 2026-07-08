@@ -15,11 +15,15 @@ from palm.runtimes.mcp.submit_body import submit_body
 
 _PALM_SYSTEM_DOCTOR_DESC = tool_description(
     "palm_system_doctor",
-    "Engine health check — registries, storage, patterns, providers, job counts.",
-    when="Run at session start or when flows behave unexpectedly.",
+    "Engine health check — registries, storage, patterns, providers, job counts, resource preflight.",
+    when="Run at session start or when REST resource invokes fail (missing base_url).",
     examples=[
         "palm_system_doctor()",
     ],
+    notes=(
+        "resource_preflight.rest_missing_base_url lists REST definitions needing base_url. "
+        "resource_preflight.check_health probes check-health when configured."
+    ),
 )
 
 

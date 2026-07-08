@@ -53,6 +53,12 @@ def compact_wizard_inspect(
 
     if "validation" in fields:
         payload["validation_error"] = prompt.get("validation_error")
+        resource_error = prompt.get("resource_error")
+        if resource_error:
+            payload["resource_error"] = resource_error
+        resource_remediation = prompt.get("resource_remediation")
+        if resource_remediation:
+            payload["resource_remediation"] = resource_remediation
 
     waiting_for_child = bool(prompt.get("waiting_for_child"))
     payload["waiting_for_child"] = waiting_for_child
@@ -112,6 +118,12 @@ def compact_wizard_inspect(
 
 
 def _operator_input_hint(payload: dict[str, Any]) -> str | None:
+    if payload.get("resource_error"):
+        remediation = payload.get("resource_remediation")
+        if remediation:
+            return str(remediation)
+        return "resource step failed; inspect resource_error or run palm_system_doctor()"
+
     if payload.get("waiting_for_child"):
         child = payload.get("child")
         if isinstance(child, dict) and child.get("instance_id"):

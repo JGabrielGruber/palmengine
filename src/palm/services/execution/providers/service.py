@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+from palm.common.operator.resource_remediation import enrich_provider_result
 from palm.common.services.base import BaseService
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.core.resource.result import ProviderResult
@@ -81,7 +82,7 @@ class ProviderExecutionService(BaseService):
             state=_resolve_state(state),
             resource_id=resource_id,
         )
-        return _provider_result_body(result)
+        return enrich_provider_result(_provider_result_body(result))
 
 
 def _resolve_state(raw: Any) -> BlackboardState | None:

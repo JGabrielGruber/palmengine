@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.operator.resource_remediation import resource_invoke_remediation
 from palm.common.resource.binding import promote_binding_keys
 from palm.common.resource.builder import build_resource_leaf
 from palm.common.resource.compensation import is_mutating_action, track_resource_invocation
@@ -167,7 +168,7 @@ class WizardResourceLeaf(LeafNode):
         if status == PatternStatus.SUCCESS:
             return self._complete_success(state)
 
-        return self._fail_step(state)
+        return self._handle_resource_failure(state)
 
     def _enter_child_wait(self, state: BaseState) -> PatternStatus:
         result_value = state.get(self._inner.output_key)
@@ -324,25 +325,129 @@ class WizardResourceLeaf(LeafNode):
         )
         return PatternStatus.SUCCESS
 
-    def _fail_step(self, state: BaseState, *, message: str | None = None) -> PatternStatus:
+    def _failure_mode(self) -> str:
+        params = self._ctx.step.params or {}
+        mode = str(params.get("on_resource_failure") or "block").lower()
+        if mode not in {"block", "skip", "branch"}:
+            return "block"
+        return mode
+
+    def _failure_context(self, state: BaseState, *, message: str | None = None) -> tuple[str, dict[str, Any], str | None]:
         detail = message or self._failure_message(state)
         trace = state.get(self._inner.trace_key)
         trace_dict = trace if isinstance(trace, dict) else {}
+        remediation = resource_invoke_remediation(
+            error=detail,
+            resource_ref=self._ctx.step.resource_ref,
+            provider=str(trace_dict.get("provider")) if trace_dict.get("provider") else None,
+        )
+        return detail, trace_dict, remediation
+
+    def _handle_resource_failure(self, state: BaseState) -> PatternStatus:
+        mode = self._failure_mode()
+        detail, trace_dict, remediation = self._failure_context(state)
+
+        if mode == "skip":
+            return self._complete_recovered(
+                state,
+                detail=detail,
+                remediation=remediation,
+                recovery="skip",
+            )
+
+        if mode == "branch":
+            branch_target = (self._ctx.step.params or {}).get("on_resource_failure_branch")
+            if not branch_target:
+                return self._fail_step(
+                    state,
+                    message=(
+                        f"{detail} (on_resource_failure=branch requires "
+                        "on_resource_failure_branch step param)"
+                    ),
+                    remediation=remediation,
+                )
+            state.set(WizardKeys.JUMP_TO_STEP, str(branch_target))
+            return self._complete_recovered(
+                state,
+                detail=detail,
+                remediation=remediation,
+                recovery="branch",
+                branch_target=str(branch_target),
+            )
+
+        return self._fail_step(state, message=detail, remediation=remediation, trace_dict=trace_dict)
+
+    def _complete_recovered(
+        self,
+        state: BaseState,
+        *,
+        detail: str,
+        remediation: str | None,
+        recovery: str,
+        branch_target: str | None = None,
+    ) -> PatternStatus:
+        output_key = self._inner.output_key
+        state.set(output_key, None)
+        leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
+        clear_active_prompt(state, prompt_key=self.prompt_key())
+        clear_validation_feedback(state)
+
+        recovery_note = f"resource failure recovered via {recovery}"
+        if branch_target:
+            recovery_note = f"{recovery_note} → {branch_target}"
+        feedback = format_resource_feedback(
+            self._ctx.step,
+            success=False,
+            error=f"{detail} · {recovery_note}",
+        )
+        state.set(WizardKeys.RESOURCE_FEEDBACK, feedback)
+        state.set(f"{WizardKeys.RESOURCE_RESULT}:{self._ctx.step.slug}", None)
+
+        answers = get_answers(state)
+        answers[output_key] = None
+        set_answers(state, answers)
+
+        emit_wizard_event(
+            self._ctx.emit,
+            self._ctx.wizard_name,
+            WizardEventType.STEP_COMPLETED,
+            slug=self._ctx.step.slug,
+            step_index=self._ctx.step_index,
+            step_kind="resource",
+            resource_ref=self._ctx.step.resource_ref,
+            output_key=output_key,
+            recovery=recovery,
+            resource_error=detail,
+            resource_remediation=remediation,
+        )
+        return PatternStatus.SUCCESS
+
+    def _fail_step(
+        self,
+        state: BaseState,
+        *,
+        message: str | None = None,
+        remediation: str | None = None,
+        trace_dict: dict[str, Any] | None = None,
+    ) -> PatternStatus:
+        detail, resolved_trace, resolved_remediation = self._failure_context(state, message=message)
+        trace = trace_dict if trace_dict is not None else resolved_trace
+        hint = remediation if remediation is not None else resolved_remediation
         state.set(
             WizardKeys.RESOURCE_FEEDBACK,
             format_resource_feedback(
                 self._ctx.step,
-                resource_id=str(trace_dict.get("resource_id"))
-                if trace_dict.get("resource_id")
-                else None,
-                provider=str(trace_dict.get("provider")) if trace_dict.get("provider") else None,
-                action=str(trace_dict.get("action") or self._ctx.step.resource_action or "invoke"),
+                resource_id=str(trace.get("resource_id")) if trace.get("resource_id") else None,
+                provider=str(trace.get("provider")) if trace.get("provider") else None,
+                action=str(trace.get("action") or self._ctx.step.resource_action or "invoke"),
                 success=False,
                 error=detail,
             ),
         )
         prompt_bundle = self._prompt_bundle(state)
         prompt_bundle["resource_error"] = detail
+        if hint:
+            prompt_bundle["resource_remediation"] = hint
         publish_validation_feedback(
             state,
             (detail,),
@@ -357,6 +462,7 @@ class WizardResourceLeaf(LeafNode):
             errors=[detail],
             step_kind="resource",
             resource_ref=self._ctx.step.resource_ref,
+            resource_remediation=hint,
         )
         leave_wizard_step(state, self._ctx.step, context=self._ctx.context_engine)
         return PatternStatus.FAILURE
