@@ -309,13 +309,17 @@ def design_discovery_actions(
     if intent == "create-flow" or catalog_mode:
         actions.append({"label": "Propose new flow", "tool": "palm_design_propose_flow"})
         actions.append({"label": "Propose via assist proxy", "alias": "design/propose"})
+        if not catalog_mode:
+            actions.append({"label": "Open design entry", "alias": "design-entry/start"})
     if intent == "improve-flow":
         actions.append({"label": "Propose flow change", "tool": "palm_design_propose_flow"})
         actions.append({"label": "List design proposals", "tool": "palm_design_list_proposals"})
+        actions.append({"label": "Open design entry", "alias": "design-entry/start"})
     if intent == "propose-resource":
         actions.append(
             {"label": "Propose resource", "tool": "palm_design_propose_resource"}
         )
+        actions.append({"label": "Open design entry", "alias": "design-entry/start"})
     return merge_assistant_actions(actions)
 
 

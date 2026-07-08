@@ -15,6 +15,20 @@
 
 `operator-entry/inspect` and catalog mode also expose a **Propose new flow** action.
 
+### design-entry scenario (0.30.2+)
+
+Guided shell (still no Design writes inside Assist):
+
+```text
+palm_assist(alias="design-entry/start")
+  → intent: create-flow | improve-flow | propose-resource | exit
+  → name_or_base (optional text)
+  → summary with palm_design_* actions
+  → propose → impact → commit out-of-band
+```
+
+Also reachable from operator-entry design CTAs: **Open design entry** (`design-entry/start`).
+
 ---
 
 ## A. Create a new wizard flow (copy this loop)

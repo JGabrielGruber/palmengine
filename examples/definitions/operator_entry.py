@@ -62,6 +62,14 @@ def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, An
         if design_hint:
             payload["hint"] = design_hint
         payload["actions"] = design_discovery_actions(intent=str(intent))
+        # Sibling scenario for guided design shell (0.30.2)
+        if not any(
+            isinstance(a, dict) and a.get("alias") == "design-entry/start"
+            for a in payload["actions"]
+        ):
+            payload["actions"] = list(payload["actions"]) + [
+                {"label": "Open design entry", "alias": "design-entry/start"},
+            ]
     elif payload.get("handoff_ready"):
         extra = "Say handoff to start your flow."
         hint = str(payload.get("hint") or "")

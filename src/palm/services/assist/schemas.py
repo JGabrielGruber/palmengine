@@ -47,8 +47,14 @@ class AssistSessionContext:
         intent_raw = answers.get("intent")
         intent = str(intent_raw) if intent_raw is not None else None
         answers_preview: dict[str, Any] | None = None
+        preview: dict[str, Any] = {}
         if intent is not None:
-            answers_preview = {"intent": intent}
+            preview["intent"] = intent
+        name_or_base = answers.get("name_or_base")
+        if name_or_base is not None and str(name_or_base).strip() != "":
+            preview["name_or_base"] = name_or_base
+        if preview:
+            answers_preview = preview
         context = OperatorViewContext(
             session_id=self.session_id,
             flow_id=self.flow_id,

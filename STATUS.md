@@ -360,7 +360,7 @@ just mcp-inspector                       # MCP Inspector UI
 |-------|-------|--------|
 | 0.30.0 | Vision + design + plan + STATUS/AGENTS (docs-only) | ✅ Documented |
 | 0.30.1 | Pipeline action-merge + intent visibility + operator-entry design CTAs | ✅ Shipped |
-| 0.30.2 | `design-entry` assist scenario shell | ⬜ Open |
+| 0.30.2 | `design-entry` assist scenario shell | ✅ Shipped |
 | 0.30.3 | Handoff polish; optional `kind: design` (gated) | ⬜ Open |
 | 0.30.4+ | Deeper design UX (gated) | ⬜ Optional |
 
