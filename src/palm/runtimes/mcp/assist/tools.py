@@ -14,34 +14,24 @@ from palm.runtimes.mcp.assist.dispatch import (
 from palm.runtimes.mcp.descriptions import tool_description
 from palm.runtimes.mcp.rest_client import PalmRestError
 
+# L0 (0.31.3) — keep always-on description short; deep docs → palm://agent/card
 _PALM_ASSIST_DESC = tool_description(
     "palm_assist",
-    "Primary Palm entry — dispatch assist, flows, and process command paths.",
+    "Primary Palm meta-tool: operator-entry, run flows, publish designs, doctor/catalog.",
     when=(
-        "Bare ``palm_assist()`` starts operator-entry (0.21.7 default). "
-        "Use ``path`` or ``alias`` to target a route; ``params`` carries "
-        "``session_id`` + ``value``/``input`` for continuation. "
-        "``params={flow_id}`` starts a flow (0.30.6). "
-        "``params={body}`` one-shot design publish (0.30.5). "
-        "Assist/flows via this tool default to ``format=assistant`` (questions + choices)."
+        "Bare ``{}`` → operator-entry. "
+        "``params={flow_id}`` start · ``{session_id, flow_id, value}`` continue · "
+        "``{body}`` publish flow · aliases: assist/doctor, assist/catalog/flows, "
+        "assist/catalog/waiting, design/publish, flows/session-resume. "
+        "Read ``palm://agent/card`` before full guides."
     ),
     examples=[
         "palm_assist()",
         'palm_assist(params={"flow_id": "coconut-npc"})',
-        'palm_assist(params={"session_id": "inst-1", "flow_id": "coconut-npc", "value": "Gruber"})',
+        'palm_assist(params={"session_id": "inst-1", "flow_id": "coconut-npc", "value": "hi"})',
         'palm_assist(params={"body": {"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}}})',
-        'palm_assist(path=["flows", "todo-builder", "create"])',
+        'palm_assist(alias="assist/doctor")',
     ],
-    use_instead=(
-        "Prefer ``palm_assist`` over per-domain tools for driving sessions; "
-        "use ``palm_flows_create_session`` only when you need the legacy powertool create shape."
-    ),
-    notes=(
-        "With PALM_MCP_SURFACE=assist this is the only tool — use aliases: "
-        "assist/doctor, assist/catalog/flows, assist/catalog/waiting, "
-        "flows/session-resume, design/publish, design/publish-resource. "
-        "Resource steps auto-run when possible; stuck → alias flows/session-resume."
-    ),
 )
 
 

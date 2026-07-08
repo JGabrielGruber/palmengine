@@ -333,19 +333,18 @@ class DesignService(BaseService):
             "migrations": committed.get("migrations"),
             "impact_summary": (impact.get("summary") if isinstance(impact, dict) else None),
             "hint": (
-                f"Published {flow_id!r}. Run with palm_flows_create_session "
-                f"or palm_assist(path=['flows', {flow_id!r}, 'create'])."
+                f"Published {flow_id!r}. "
+                f'Run: palm_assist(params={{"flow_id": {flow_id!r}}}).'
             ),
             "actions": [
                 {
                     "label": "Run published flow",
-                    "tool": "palm_flows_create_session",
+                    "tool": "palm_assist",
                     "params": {"flow_id": flow_id},
                 },
                 {
-                    "label": "Describe flow",
-                    "tool": "palm_flows_describe",
-                    "params": {"flow_id": flow_id},
+                    "label": "List flows",
+                    "alias": "assist/catalog/flows",
                 },
             ],
             "flow": committed.get("flow"),

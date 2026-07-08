@@ -37,7 +37,7 @@ def test_design_publish_flow_one_shot() -> None:
     assert result["flow_id"] == "mcp-publish-one-shot"
     assert result["revision"] == 1
     tools = {a.get("tool") for a in result.get("actions") or []}
-    assert "palm_flows_create_session" in tools
+    assert "palm_assist" in tools
 
 
 def test_assist_dispatch_body_publishes_via_design_alias() -> None:

@@ -7,14 +7,27 @@
 # Install MCP extra once in this repo:
 #   uv sync --extra mcp
 
-[mcp_servers.palm]
+[mcp_servers.palm-dev]
 command = "uv"
 args = ["run", "--extra", "mcp", "palm-mcp"]
 enabled = true
 startup_timeout_sec = 30
 
-[mcp_servers.palm.env]
+[mcp_servers.palm-dev.env]
 PALM_MCP_IN_PROCESS = "${PALM_MCP_IN_PROCESS:-1}"
 PALM_LLMS_TXT = "${PALM_LLMS_TXT:-docs/mcp.txt}"
 PALM_BASE_URL = "${PALM_BASE_URL:-http://127.0.0.1:8080}"
 PALM_SUBJECT = "${PALM_SUBJECT:-dev}"
+
+[mcp_servers.palm-assist]
+command = "uv"
+args = ["run", "--extra", "mcp", "palm-mcp"]
+enabled = true
+startup_timeout_sec = 30
+
+[mcp_servers.palm-assist.env]
+PALM_MCP_IN_PROCESS = "${PALM_MCP_IN_PROCESS:-1}"
+PALM_LLMS_TXT = "${PALM_LLMS_TXT:-docs/mcp.txt}"
+PALM_BASE_URL = "${PALM_BASE_URL:-http://127.0.0.1:8080}"
+PALM_SUBJECT = "${PALM_SUBJECT:-dev}"
+PALM_MCP_SURFACE = "assist"

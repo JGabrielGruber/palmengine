@@ -52,13 +52,14 @@ Grok: `.grok/config.toml` — in-process + `docs/mcp.txt`. Remote proxy: `PALM_M
 
 ## 3. Recommended Starting Pattern
 
+**Progressive docs (0.31.3):** read `palm://agent/card` first — not this entire file.
+
 ```text
 palm_assist()                                    → operator-entry (0.21.7 default)
-palm_assist(alias="operator-entry/start")        → explicit operator entry
-palm_assist(params={"session_id": id, "value": "yes"})  → continue assist session
+palm_assist(params={flow_id: "coconut-npc"})     → start a flow
+palm_assist(params={"session_id": id, "flow_id", "value": "yes"})  → continue
+palm_assist(alias="assist/doctor")               → health / resource preflight
 ```
-
-Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand off.
 
 **View modes (0.20–0.21)**:
 - **Assistant** — `question`, `choices`, `hint`, `actions` (default on assist paths)

@@ -1,0 +1,36 @@
+# Palm operator card (L1 — load first; ~1 page)
+
+**Tool:** prefer `palm_assist` only (especially with `PALM_MCP_SURFACE=assist`).
+
+## Start
+
+| Goal | Call |
+|------|------|
+| Operator menu | `palm_assist()` |
+| Run a flow | `palm_assist(params={flow_id: "coconut-npc"})` |
+| Continue | `palm_assist(params={session_id, flow_id, value})` |
+| Publish flow | `palm_assist(params={body: {name, pattern, options.steps}})` or `alias=design/publish` |
+| Publish resource | `alias=design/publish-resource` + body |
+| Doctor | `alias=assist/doctor` |
+| List flows | `alias=assist/catalog/flows` |
+| List waiting | `alias=assist/catalog/waiting` |
+| Resume resource | `alias=flows/session-resume` + session_id, flow_id |
+
+## Rules
+
+1. Re-read the returned **question** / **actions** after every call — do not guess state.
+2. Send plain strings (`yes`, choice slugs, text) as `value` / `input`.
+3. Respect `mutation.mutations_allowed` and `confirm_step`.
+4. On resource failure: resume alias or doctor — do not invent peer tools if assist-only.
+
+## Load more only when stuck
+
+| Depth | Resource |
+|-------|----------|
+| L1 (this card) | `palm://agent/card` |
+| L2 full guide | `palm://agent/guide` |
+| L2 skill | `palm://agent/skill` |
+| Design playbook | `palm://agent/references/design-flows` |
+| Routes | `palm://assist/routes` |
+
+Do **not** preload full skill + all references unless needed.

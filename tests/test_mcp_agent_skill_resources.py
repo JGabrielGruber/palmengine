@@ -28,6 +28,17 @@ def skill_server():
 
 
 @pytest.mark.asyncio
+async def test_agent_card_resource(skill_server) -> None:
+    """L1 progressive guide (0.31.3)."""
+    async with Client(skill_server) as client:
+        result = await client.read_resource("palm://agent/card")
+    text = "".join(block.text for block in result if hasattr(block, "text"))
+    assert "palm_assist" in text
+    assert "palm://agent/card" in text or "Load more" in text or "L1" in text
+    assert len(text) < 4000  # keep card small vs full mcp.txt
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "uri,needle",
     [

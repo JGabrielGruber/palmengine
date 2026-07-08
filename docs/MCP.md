@@ -21,6 +21,8 @@ just mcp-inventory surface=assist
 uv run --extra mcp python scripts/mcp_catalog_inventory.py --surface assist --json
 ```
 
+**Progressive docs (0.31.3)** — load `palm://agent/card` before `palm://agent/guide` / skill references.
+
 **Assist-only happy paths (0.31.2)** — with `PALM_MCP_SURFACE=assist`, use aliases on `palm_assist`:
 
 | Need | Alias / params |

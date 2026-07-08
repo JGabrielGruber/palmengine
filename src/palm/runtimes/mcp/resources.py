@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from palm.runtimes.mcp.agent_assets import read_skill_asset
@@ -13,18 +14,30 @@ def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
     """Register Phase 1-2b MCP resources."""
 
     @mcp.resource(
+        "palm://agent/card",
+        mime_type="text/plain",
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+    )
+    def agent_card() -> str:
+        """L1 operator card — short progressive guide (load before full mcp.txt)."""
+        card = _resolve_agent_card_path()
+        if card is not None:
+            return card.read_text(encoding="utf-8")
+        return _builtin_agent_card()
+
+    @mcp.resource(
         "palm://agent/guide",
         mime_type="text/plain",
         annotations={"readOnlyHint": True, "idempotentHint": True},
     )
     def agent_guide() -> str:
-        """Palm MCP agent guide — operator protocol and session conventions."""
+        """Palm MCP agent guide — operator protocol and session conventions (L2)."""
         if config.llms_txt_path is not None:
             return config.llms_txt_path.read_text(encoding="utf-8")
         return (
             "Palm operator MCP adapter.\n"
             f"REST base: {config.base_url}\n"
-            "Set PALM_LLMS_TXT to docs/mcp.txt (or docs/llms.txt) for the full agent guide."
+            "Prefer palm://agent/card first; set PALM_LLMS_TXT to docs/mcp.txt for the full guide."
         )
 
     def _skill_fallback(suffix: str) -> str:
@@ -172,6 +185,34 @@ def register_core_resources(mcp: Any, rest_client: Any, *, config: Any) -> None:
     def assist_routes() -> str:
         """Command-path catalog for ``palm_assist`` dispatch and contributor aliases."""
         return json.dumps(assist_routes_payload())
+
+
+def _resolve_agent_card_path() -> Path | None:
+    """Locate docs/mcp-card.txt (dev checkout or bundled data)."""
+    from importlib import resources
+
+    try:
+        candidate = resources.files("palm.runtimes.mcp.data").joinpath("mcp-card.txt")
+        with resources.as_file(candidate) as path:
+            if path.is_file():
+                return Path(path)
+    except (FileNotFoundError, ModuleNotFoundError, TypeError, ValueError):
+        pass
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "docs" / "mcp-card.txt"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _builtin_agent_card() -> str:
+    return (
+        "# Palm operator card\n"
+        "Use palm_assist() for operator-entry; params={flow_id} to run; "
+        "params={body} to publish; alias assist/doctor for health.\n"
+        "Load palm://agent/guide only when stuck.\n"
+    )
 
 
 __all__ = ["register_core_resources"]
