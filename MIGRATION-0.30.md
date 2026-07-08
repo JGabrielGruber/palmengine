@@ -95,6 +95,16 @@ Agents that always sent summary `yes` after create-flow can stop; session is alr
 
 `palm_flows_*` tools remain powertool-default when called directly.
 
+## 0.30.8 — Terminal turn clarity
+
+| Change | Effect |
+|--------|--------|
+| SUCCEEDED assistant view | Non-empty `question` (“Finished. Answers: …”) + complete hint |
+| Waiting, no other actions | Single **Send answer** → `palm_assist` with `session_id` (+ `flow_id`) |
+| Complete | **Run again** / **Start operator entry** CTAs |
+
+Payload stays lean (no full answer dumps; nested blobs skipped in summary).
+
 ## Unchanged
 
 - Bare `palm_assist()` still starts **operator-entry** (not design-entry).

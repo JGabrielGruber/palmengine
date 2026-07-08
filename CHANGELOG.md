@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **0.30.8 terminal assistant polish** — complete turns get a short “Finished. Answers: …” blurb; waiting turns without richer actions get a single **Send answer** CTA; complete turns get **Run again** + operator-entry.
+
 ## [0.30.7] — 2026-07-08
 
 **Bundled release since 0.26.0** — compositional design parity (0.27), local document/KV resources (0.28–0.29), and Assist design-entry + weak-LLM operator UX (0.30.0–0.30.6). Upgrade from 0.26.0: read [MIGRATION-0.30.md](MIGRATION-0.30.md) (and 0.24/0.25 if jumping from older cuts).

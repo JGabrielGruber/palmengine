@@ -208,6 +208,52 @@ def test_assistant_to_dict_includes_actions() -> None:
     assert payload["actions"][0]["path"][0] == "assist"
 
 
+def test_waiting_turn_gets_send_answer_cta() -> None:
+    _setup()
+    payload = build_assistant_view(
+        _operator_entry_flat(),
+        context=OperatorViewContext(
+            session_id="inst-1",
+            flow_id="flow-palm-operator-entry",
+        ),
+    )
+    assert payload["status"] == "waiting"
+    assert payload.get("question")
+    actions = payload.get("actions") or []
+    assert any(
+        a.get("label") == "Send answer" and a.get("tool") == "palm_assist"
+        for a in actions
+        if isinstance(a, dict)
+    )
+
+
+def test_complete_turn_gets_finished_blurb_and_run_again() -> None:
+    _setup()
+    flat = {
+        "session_id": "inst-done",
+        "instance_id": "inst-done",
+        "job_id": "job-done",
+        "flow_name": "foo-bar",
+        "status": "SUCCEEDED",
+        "current_step_slug": None,
+        "prompt": {},
+        "answers": {"foo": "alpha", "bar": "beta"},
+    }
+    payload = build_assistant_view(
+        flat,
+        context=OperatorViewContext(session_id="inst-done", flow_id="foo-bar"),
+    )
+    assert payload["status"] == "complete"
+    assert "Finished" in str(payload.get("question") or "")
+    assert "alpha" in str(payload.get("question") or "") or "foo" in str(
+        payload.get("question") or ""
+    )
+    assert "complete" in str(payload.get("hint") or "").lower()
+    labels = [a.get("label") for a in payload.get("actions") or [] if isinstance(a, dict)]
+    assert "Run again" in labels
+    assert "Start operator entry" in labels
+
+
 def test_resource_error_surfaces_resume_actions() -> None:
     _setup()
     from palm.services.assist.views import build_assistant_view

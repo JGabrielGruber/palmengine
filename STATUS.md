@@ -366,6 +366,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.30.5 | Skip design summary confirm; `palm_assist(params={body})` → publish | ✅ Shipped |
 | 0.30.6 | Flow usage + resources: assistant flows, coconut entry, resource CTAs | ✅ Shipped |
 | **0.30.7** | **PyPI/GitHub bundle** of 0.27–0.30.6 (from last cut 0.26.0) | ✅ Release |
+| 0.30.8 | Terminal complete blurb + lean Send answer / Run again CTAs | ✅ Shipped |
 
 **Boundaries:** Assist discovers and guides; Design Service owns propose → impact → commit. Bare `palm_assist()` remains operator-entry; design is a sibling intent/scenario.
 

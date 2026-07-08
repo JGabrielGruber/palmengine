@@ -61,6 +61,16 @@ def build_assistant_view(
     )
     if collection_actions:
         payload["actions"] = collection_actions
+    # 0.30.8 — single continue CTA when waiting and no richer actions yet
+    if not payload.get("actions"):
+        default_actions = _default_turn_actions(
+            payload,
+            composed,
+            session_id=session_id or None,
+            flow_id=context.flow_id,
+        )
+        if default_actions:
+            payload["actions"] = default_actions
     return payload
 
 
@@ -172,6 +182,11 @@ def _humanize_assistant_view(
     if mutation:
         payload["mutation"] = mutation
 
+    # 0.30.8 — terminal complete/failed blurb (avoid empty question on SUCCEEDED)
+    status = str(payload.get("status") or "")
+    if status in {"complete", "failed"}:
+        _apply_terminal_blurb(payload, composed)
+
     # 0.30.6 — resource-aware CTAs for flow sessions (no scenario enricher)
     resource_actions = _resource_assistant_actions(
         composed,
@@ -182,6 +197,89 @@ def _humanize_assistant_view(
         payload["actions"] = resource_actions
 
     return {key: value for key, value in payload.items() if value is not None}
+
+
+def _apply_terminal_blurb(payload: dict[str, Any], composed: dict[str, Any]) -> None:
+    """Fill empty terminal turns with a short completion line + slim answer summary."""
+    status = str(payload.get("status") or "")
+    summary = _slim_answer_summary(composed.get("answers_preview"))
+    if status == "complete":
+        if not payload.get("question"):
+            if summary:
+                payload["question"] = f"Finished. Answers: {summary}"
+            else:
+                payload["question"] = "Flow finished successfully."
+        if not payload.get("hint"):
+            payload["hint"] = "Session complete — no further input."
+        if summary and not payload.get("answers_summary"):
+            payload["answers_summary"] = summary
+    elif status == "failed":
+        if not payload.get("question"):
+            payload["question"] = "Flow failed."
+        if not payload.get("hint"):
+            err = composed.get("validation_error") or composed.get("resource_error")
+            payload["hint"] = str(err) if err else "Inspect the session or start a new run."
+
+
+def _slim_answer_summary(preview: object, *, max_keys: int = 6, max_len: int = 120) -> str:
+    """Compact key=value line for terminal turns (token-thrifty)."""
+    if not isinstance(preview, dict) or not preview:
+        return ""
+    parts: list[str] = []
+    for key in sorted(preview.keys()):
+        if len(parts) >= max_keys:
+            parts.append("…")
+            break
+        value = preview[key]
+        if isinstance(value, (dict, list)):
+            continue  # skip nested blobs (resources, collections)
+        text = str(value)
+        if len(text) > 40:
+            text = text[:40] + "…"
+        parts.append(f"{key}={text}")
+    if not parts:
+        return ""
+    joined = ", ".join(parts)
+    if len(joined) > max_len:
+        return joined[: max_len - 1] + "…"
+    return joined
+
+
+def _default_turn_actions(
+    payload: dict[str, Any],
+    composed: dict[str, Any],
+    *,
+    session_id: str | None,
+    flow_id: str | None,
+) -> list[dict[str, Any]]:
+    """One lean CTA for waiting or terminal turns when nothing else set."""
+    status = str(payload.get("status") or "")
+    if status == "waiting" and session_id:
+        params: dict[str, Any] = {"session_id": session_id}
+        if flow_id:
+            params["flow_id"] = flow_id
+        return [
+            {
+                "label": "Send answer",
+                "tool": "palm_assist",
+                "params": params,
+            }
+        ]
+    if status == "complete":
+        actions: list[dict[str, Any]] = []
+        if flow_id:
+            actions.append(
+                {
+                    "label": "Run again",
+                    "tool": "palm_assist",
+                    "params": {"flow_id": flow_id},
+                }
+            )
+        actions.append(
+            {"label": "Start operator entry", "alias": "operator-entry/start"}
+        )
+        return actions
+    return []
 
 
 def _resource_assistant_actions(
