@@ -93,6 +93,9 @@ Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand 
 | *(design)* create / improve flow | Catalog writes via Design Service | `palm_design_publish_flow` or `palm_assist(params={body})` (0.30.4–0.30.5) |
 | *(design)* design-entry scenario | Guided Design discovery shell | `design-entry/start` (0.30.2+) |
 | *(design)* handoff | Typed design handoff after create/improve | `kind: design` + `design_action` (0.30.3+); always read `operator_hint` |
+| Run a flow | Interactive session | `palm_assist(params={flow_id: "coconut-npc"})` then `value` (0.30.6+) |
+| Resources in flows | KV/file/REST steps (e.g. coconut) | Auto-run when possible; resume + doctor CTAs on failure (0.30.6+) |
+| Publish resource def | Catalog write for resource_ref | `palm_design_publish_resource` or operator-entry `propose-resource` |
 
 Discovery: `palm_flows_list()` · Catalog: `palm://definitions/flows` · Routes: `palm://assist/routes`
 

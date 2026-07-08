@@ -2,7 +2,7 @@
 
 **Theme:** Make create/improve flow (and related Design Service work) discoverable from the Assist operator front door — without reimplementing Design inside Assist.
 
-**Status:** **0.30.0**–**0.30.5** shipped  
+**Status:** **0.30.0**–**0.30.6** shipped  
 **Depends on:** Assist 0.18–0.23 ✅ · Design Service 0.25+ ✅ · compositional design 0.27+ · document/KV 0.28–0.29  
 **Design:** [assist-design-entry-design.md](superpowers/specs/2026-07-08-assist-design-entry-design.md)  
 **Plan:** [assist-design-entry-0.30.md](superpowers/plans/2026-07-08-assist-design-entry-0.30.md)  

@@ -94,6 +94,8 @@ def _merge_snapshot_fields(composed: dict[str, Any], snapshot: dict[str, Any]) -
         "choices",
         "validation_error",
         "operator_mode",
+        "resource_error",
+        "resource_remediation",
     ):
         if snapshot.get(key) is not None and composed.get(key) is None:
             composed[key] = snapshot[key]
@@ -149,6 +151,15 @@ def _humanize_assistant_view(
     if validation_error:
         payload["validation_error"] = validation_error
 
+    resource_error = composed.get("resource_error")
+    if resource_error is not None:
+        payload["resource_error"] = resource_error
+    resource_remediation = composed.get("resource_remediation")
+    if resource_remediation:
+        payload["resource_remediation"] = resource_remediation
+        # Prefer remediation over generic input hint when a resource failed
+        payload["hint"] = str(resource_remediation)
+
     if handoff_ready:
         payload["hint"] = _append_handoff_hint(str(payload.get("hint") or ""))
 
@@ -161,7 +172,57 @@ def _humanize_assistant_view(
     if mutation:
         payload["mutation"] = mutation
 
+    # 0.30.6 — resource-aware CTAs for flow sessions (no scenario enricher)
+    resource_actions = _resource_assistant_actions(
+        composed,
+        session_id=str(session_id) if session_id else None,
+        flow_id=context.flow_id,
+    )
+    if resource_actions:
+        payload["actions"] = resource_actions
+
     return {key: value for key, value in payload.items() if value is not None}
+
+
+def _resource_assistant_actions(
+    composed: dict[str, Any],
+    *,
+    session_id: str | None,
+    flow_id: str | None,
+) -> list[dict[str, Any]]:
+    """CTAs when a resource step failed or is waiting for resume."""
+    if not session_id:
+        return []
+    has_error = bool(composed.get("resource_error"))
+    step_kind = composed.get("step_kind")
+    status = str(composed.get("status") or "").upper()
+    waiting = status in {"WAITING_FOR_INPUT", "WAITING", "RUNNING"} or _human_status(
+        composed.get("status")
+    ) in {"waiting", "running"}
+    if not has_error and not (step_kind == "resource" and waiting):
+        return []
+    params: dict[str, Any] = {"session_id": session_id}
+    if flow_id:
+        params["flow_id"] = flow_id
+    actions: list[dict[str, Any]] = [
+        {
+            "label": "Resume resource step",
+            "tool": "palm_flows_session_resume",
+            "params": dict(params),
+        },
+        {
+            "label": "Doctor (resource preflight)",
+            "tool": "palm_system_doctor",
+        },
+    ]
+    if has_error:
+        actions.append(
+            {
+                "label": "Publish missing resource",
+                "tool": "palm_design_publish_resource",
+            }
+        )
+    return actions
 
 
 def _human_status(raw: object | None) -> str:
@@ -320,7 +381,7 @@ def design_discovery_actions(
                 "tool": "palm_design_publish_flow",
             }
         )
-    if intent == "propose-resource":
+    if intent == "propose-resource" or catalog_mode:
         actions.append(
             {
                 "label": "Publish resource (one call)",
@@ -343,7 +404,10 @@ def design_discovery_hint(intent: str | None) -> str:
             "Handoff optional."
         )
     if intent == "propose-resource":
-        return "One call: palm_design_publish_resource(body={name, provider, action, …})."
+        return (
+            "One call: palm_design_publish_resource(body={name, provider, action, …}). "
+            "Flows like coconut-npc need kv resources registered first."
+        )
     return ""
 
 

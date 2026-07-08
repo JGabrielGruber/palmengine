@@ -88,7 +88,7 @@ class AssistSessionContext:
                 "create-flow",
                 "improve-flow",
                 "propose-resource",
-            ):
+            ):  # design discovery intents
                 merged = merge_assistant_actions(design_ctas, extras_list, base)
                 merged = prioritize_assistant_actions_for_design(
                     merged,

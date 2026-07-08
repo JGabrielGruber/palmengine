@@ -2,7 +2,7 @@
 
 **Vision:** [docs/VISION-0.30.md](../../VISION-0.30.md)  
 **Design:** [2026-07-08-assist-design-entry-design.md](../specs/2026-07-08-assist-design-entry-design.md)  
-**Status:** 0.30.0–0.30.5 ✅  
+**Status:** 0.30.0–0.30.6 ✅ (includes flow usage + resource CTAs)  
 
 Delivery: commit each phase when good enough (typically on `master`; short branches OK for tracking). Phases are capability gates, not a mandatory PR stack.
 

@@ -128,6 +128,26 @@ def test_normalize_assist_dispatch_args_reads_nested_alias() -> None:
     assert used_default is False
 
 
+def test_normalize_assist_dispatch_args_flow_id_starts_create() -> None:
+    path, alias, params, used_default = normalize_assist_dispatch_args(
+        params={"flow_id": "coconut-npc"},
+    )
+    assert path == ["flows", "coconut-npc", "create"]
+    assert alias is None
+    assert used_default is False
+
+
+def test_resolve_dispatch_format_flows_honors_assistant_tool_format() -> None:
+    from palm.runtimes.mcp.assist.dispatch import resolve_dispatch_format
+
+    fmt = resolve_dispatch_format(
+        ["flows", "coconut-npc", "session", "inst-1", "input"],
+        params={},
+        tool_format="assistant",
+    )
+    assert fmt == "assistant"
+
+
 def test_normalize_assist_dispatch_args_body_infers_design_publish() -> None:
     path, alias, params, used_default = normalize_assist_dispatch_args(
         params={
@@ -251,7 +271,8 @@ async def test_palm_assist_assist_session_returns_assistant(assist_server_ctx) -
 
 
 @pytest.mark.asyncio
-async def test_palm_assist_flows_session_stays_powertool(assist_server_ctx) -> None:
+async def test_palm_assist_flows_session_defaults_assistant(assist_server_ctx) -> None:
+    """0.30.6 — flows via palm_assist use assistant (question/choices), not powertool."""
     backend = PalmInProcessBackend(assist_server_ctx)
     config = PalmMcpConfig(
         base_url="http://127.0.0.1:8080",
@@ -273,14 +294,13 @@ async def test_palm_assist_flows_session_stays_powertool(assist_server_ctx) -> N
             {
                 "path": ["flows", flow_id, "session", session_id],
                 "params": {},
-                "format": "assistant",
             },
         )
 
     payload = result.data
-    assert payload.get("instance_id") == session_id
-    assert payload.get("step")
-    assert "question" not in payload
+    assert payload.get("session_id") == session_id or payload.get("instance_id") == session_id
+    assert payload.get("question")
+    assert payload.get("status") == "waiting"
 
 
 @pytest.mark.asyncio

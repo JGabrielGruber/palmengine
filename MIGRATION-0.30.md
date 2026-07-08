@@ -84,6 +84,17 @@ Step-by-step tools remain for power users. `design_action` on handoff is `publis
 
 Agents that always sent summary `yes` after create-flow can stop; session is already complete with publish CTAs.
 
+## 0.30.6 — Flow driving + resources via palm_assist
+
+| Change | Effect |
+|--------|--------|
+| Flows via `palm_assist` | **Assistant** format by default (question/choices), not powertool |
+| `palm_assist(params={flow_id})` | Starts that flow (create) and re-inspects first turn |
+| operator-entry choices | Adds **`coconut-npc`** (KV resource demo) and **`propose-resource`** |
+| Resource step failure | Assistant actions: resume, doctor, publish resource |
+
+`palm_flows_*` tools remain powertool-default when called directly.
+
 ## Unchanged
 
 - Bare `palm_assist()` still starts **operator-entry** (not design-entry).

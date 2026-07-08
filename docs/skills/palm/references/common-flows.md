@@ -16,7 +16,17 @@
 - **Start**: `palm_assist(path=["flows","onboard","create"])`
 - Good for testing wizard mechanics.
 
-## Coconut NPC (`coconut-npc`) — branching reference
+## Coconut NPC (`coconut-npc`) — branching reference + KV resources
+
+**Start (0.30.6+, preferred):**
+
+```text
+palm_assist(params={flow_id: "coconut-npc"})
+  → first question (assistant format)
+palm_assist(params={session_id, flow_id: "coconut-npc", value: "YourName"})
+```
+
+Or pick **coconut-npc** from operator-entry. Resources `load-coconut-player` / `save-coconut-player` auto-run between steps; if stuck: **Resume resource step** or `palm_system_doctor`.
 
 Hub-and-spoke wizard: transforms + `route_on_answer` + loop-back to topic menu. Regression profile for compositional workflows ([VISION-0.27.md](../../../../VISION-0.27.md)).
 

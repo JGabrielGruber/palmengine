@@ -273,7 +273,17 @@ class AssistService(BaseService):
                     "label": "Publish new flow (one call)",
                     "tool": "palm_design_publish_flow",
                 },
+                {
+                    "label": "Publish resource (one call)",
+                    "tool": "palm_design_publish_resource",
+                },
+                {
+                    "label": "Start coconut NPC",
+                    "params": {"flow_id": "coconut-npc"},
+                    "tool": "palm_assist",
+                },
                 {"label": "List flows", "alias": "assist/catalog/flows"},
+                {"label": "Doctor (resource preflight)", "tool": "palm_system_doctor"},
                 {"label": "List waiting sessions", "tool": "palm_system_list_waiting"},
                 {
                     "label": "Start operator entry",

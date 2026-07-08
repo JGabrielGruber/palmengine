@@ -129,18 +129,32 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
         "metadata": {
             "assist": {
                 "scenario_id": "operator-entry",
-                "handoff_flows": ["todo-builder", "compositional-parent"],
+                "handoff_flows": [
+                    "todo-builder",
+                    "compositional-parent",
+                    "coconut-npc",
+                ],
                 "handoff_map": {
                     "todo-builder": "todo-builder",
                     "compositional-parent": "compositional-parent",
+                    "coconut-npc": "coconut-npc",
                     "inspect-only": None,
                     "create-flow": None,
                     "improve-flow": None,
+                    "propose-resource": None,
                 },
-                "design_handoff_intents": ["create-flow", "improve-flow"],
+                "design_handoff_intents": [
+                    "create-flow",
+                    "improve-flow",
+                    "propose-resource",
+                ],
                 "handoff_none_hints": {
                     "create-flow": _CREATE_FLOW_HINT,
                     "improve-flow": _IMPROVE_FLOW_HINT,
+                    "propose-resource": (
+                        "No business flow handoff. One call: "
+                        "palm_design_publish_resource(body=…)."
+                    ),
                     "inspect-only": (
                         "No business flow handoff. Catalog inspect complete."
                     ),
@@ -151,13 +165,19 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
             {
                 "slug": "intent",
                 "title": "Operator Intent",
-                "prompt": "What would you like to do with Palm?",
+                "prompt": (
+                    "What would you like to do with Palm? "
+                    "Run a demo flow (todo, compositional, coconut NPC with KV resources), "
+                    "design a flow/resource, or inspect the catalog."
+                ),
                 "field_type": "choice",
                 "choices": [
                     "todo-builder",
                     "compositional-parent",
+                    "coconut-npc",
                     "create-flow",
                     "improve-flow",
+                    "propose-resource",
                     "inspect-only",
                 ],
                 "params": {
@@ -166,6 +186,7 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                         # 0.30.5 — skip summary confirm (weak-LLM); design CTAs on complete
                         "create-flow": "__end__",
                         "improve-flow": "__end__",
+                        "propose-resource": "__end__",
                         "default": "summary",
                     }
                 },

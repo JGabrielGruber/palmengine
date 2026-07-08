@@ -83,6 +83,9 @@ def normalize_assist_dispatch_args(
             path = ["flows", flow_id, "session", session_id]
         elif session_id:
             path = ["assist", "session", session_id]
+        elif flow_id:
+            # 0.30.6 — palm_assist(params={flow_id}) starts the flow (one call)
+            path = ["flows", flow_id, "create"]
         else:
             scenario_id = _clean_dispatch_str(params.get("scenario_id"))
             if scenario_id:
@@ -197,15 +200,21 @@ def resolve_dispatch_format(
     params: dict[str, Any] | None = None,
     tool_format: str | None = None,
 ) -> str:
-    """Resolve view format: assistant default on assist/design paths; powertool elsewhere."""
+    """Resolve view format for palm_assist (human-first).
+
+    Assist + design always prefer assistant. Flows paths (create/session)
+    honor ``tool_format`` from palm_assist (default assistant) so weak LLMs
+    get questions/choices without remembering format=assistant each call.
+    Direct palm_flows_* tools do not use this helper and stay powertool-default.
+    """
     prefix = path[0] if path else ""
-    if prefix in {"assist", "design"}:
-        merged = dict(params or {})
-        if tool_format is not None and "format" not in merged:
-            merged["format"] = tool_format
+    merged = dict(params or {})
+    if tool_format is not None and "format" not in merged:
+        merged["format"] = tool_format
+    if prefix in {"assist", "design", "flows"}:
         return resolve_view_format(merged, default="assistant")
-    if params and params.get("format") is not None:
-        return resolve_view_format(params, default="powertool")
+    if "format" in merged:
+        return resolve_view_format(merged, default="powertool")
     return "powertool"
 
 
@@ -271,7 +280,10 @@ def shape_dispatch_result(
         return payload
 
     if prefix == "flows" and path[-1:] == ["create"]:
-        payload.update(submission_view(result))
+        if fmt == "assistant":
+            payload.update(_shape_flow_create_assistant(result, path=path))
+        else:
+            payload.update(submission_view(result))
         return payload
 
     if prefix == "system" and _looks_like_job_context(result):
@@ -335,6 +347,55 @@ def _shape_design_publish_assistant(result: dict[str, Any]) -> dict[str, Any]:
     else:
         shaped["result"] = result
     return shaped
+
+
+def _shape_flow_create_assistant(
+    result: dict[str, Any],
+    *,
+    path: list[str],
+) -> dict[str, Any]:
+    """Minimal create envelope when first-turn re-inspect is unavailable."""
+    session_id = result.get("session_id") or result.get("instance_id")
+    flow_id = result.get("flow_id") or result.get("flow")
+    if flow_id is None and len(path) >= 2 and path[0] == "flows":
+        flow_id = path[1]
+    shaped = submission_view(result)
+    shaped["status"] = _human_status(shaped.get("status"))
+    shaped["question"] = (
+        f"Session started for {flow_id!r}. Reply with your next answer via palm_assist."
+    )
+    shaped["hint"] = (
+        f'palm_assist(params={{"session_id": "{session_id}", "flow_id": "{flow_id}", "value": "…"}})'
+    )
+    if session_id and flow_id:
+        shaped["actions"] = [
+            {
+                "label": "Continue session",
+                "alias": "flows/session-input",
+                "params": {"session_id": session_id, "flow_id": flow_id},
+            },
+            {
+                "label": "Inspect session",
+                "alias": "flows/session",
+                "params": {"session_id": session_id, "flow_id": flow_id, "format": "assistant"},
+            },
+        ]
+    return shaped
+
+
+def _human_status(raw: object | None) -> str:
+    if raw is None:
+        return "waiting"
+    text = str(raw).upper()
+    if text == "WAITING_FOR_INPUT":
+        return "waiting"
+    if text in {"SUCCEEDED", "SUCCESS"}:
+        return "complete"
+    if text in {"FAILED", "CANCELLED"}:
+        return "failed"
+    if text == "RUNNING":
+        return "running"
+    return str(raw).lower()
 
 
 def compact_dispatch_result(

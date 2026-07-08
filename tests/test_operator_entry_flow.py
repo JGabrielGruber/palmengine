@@ -94,3 +94,14 @@ def test_operator_entry_start_includes_design_choices(
     }
     assert "create-flow" in values
     assert "improve-flow" in values
+    assert "coconut-npc" in values
+    assert "propose-resource" in values
+
+
+def test_operator_entry_coconut_handoff(assist_host: ApplicationHost) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    _drive_to_handoff(assist_host, session_id, "coconut-npc")
+    handoff = assist_host.assist.handoff(session_id)
+    assert handoff["handoff"]["kind"] == "flow"
+    assert handoff["handoff"]["flow_id"] == "coconut-npc"

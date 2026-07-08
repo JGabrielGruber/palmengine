@@ -208,6 +208,40 @@ def test_assistant_to_dict_includes_actions() -> None:
     assert payload["actions"][0]["path"][0] == "assist"
 
 
+def test_resource_error_surfaces_resume_actions() -> None:
+    _setup()
+    from palm.services.assist.views import build_assistant_view
+
+    flat = {
+        "session_id": "inst-res-1",
+        "instance_id": "inst-res-1",
+        "status": "WAITING_FOR_INPUT",
+        "flow_name": "coconut-npc",
+        "prompt": {
+            "title": "Load",
+            "prompt": "load failed",
+            "step": "load_player",
+            "step_kind": "resource",
+            "resource_error": "resource not found",
+            "resource_remediation": "Register the resource or run palm_system_doctor.",
+        },
+        "step_kind": "resource",
+        "resource_error": "resource not found",
+        "resource_remediation": "Register the resource or run palm_system_doctor.",
+    }
+    payload = build_assistant_view(
+        flat,
+        context=OperatorViewContext(
+            session_id="inst-res-1",
+            flow_id="coconut-npc",
+        ),
+    )
+    assert "resource_error" in payload or "Register" in str(payload.get("hint") or "")
+    tools = {a.get("tool") for a in payload.get("actions") or []}
+    assert "palm_flows_session_resume" in tools
+    assert "palm_system_doctor" in tools
+
+
 def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:
     _setup()
     from palm.services.assist.views import merge_assistant_actions

@@ -20,19 +20,26 @@ _PALM_ASSIST_DESC = tool_description(
     when=(
         "Bare ``palm_assist()`` starts operator-entry (0.21.7 default). "
         "Use ``path`` or ``alias`` to target a route; ``params`` carries "
-        "``session_id`` + ``value``/``input`` for continuation. Assist paths "
-        "default to ``format=assistant``; flows/system default to powertool."
+        "``session_id`` + ``value``/``input`` for continuation. "
+        "``params={flow_id}`` starts a flow (0.30.6). "
+        "``params={body}`` one-shot design publish (0.30.5). "
+        "Assist/flows via this tool default to ``format=assistant`` (questions + choices)."
     ),
     examples=[
         "palm_assist()",
-        'palm_assist(alias="operator-entry/start")',
-        'palm_assist(params={"session_id": "inst-1", "value": "yes"})',
+        'palm_assist(params={"flow_id": "coconut-npc"})',
+        'palm_assist(params={"session_id": "inst-1", "flow_id": "coconut-npc", "value": "Gruber"})',
+        'palm_assist(params={"body": {"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}}})',
         'palm_assist(path=["flows", "todo-builder", "create"])',
-        'palm_assist(params={"session_id": "inst-1", "flow_id": "todo-builder", "value": "yes"})',
     ],
     use_instead=(
         "Prefer ``palm_assist`` over per-domain tools for driving sessions; "
         "use ``palm_flows_create_session`` only when you need the legacy powertool create shape."
+    ),
+    notes=(
+        "Resource steps in wizards (e.g. coconut-npc KV load/save) auto-run when possible; "
+        "if stuck, use Resume action or palm_flows_session_resume. "
+        "Publish resources with palm_design_publish_resource when definitions are missing."
     ),
 )
 
@@ -69,6 +76,26 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
             if resolved[0] == "assist" and "format" not in dispatch_params:
                 dispatch_params["format"] = view_format
             result = backend.assist_dispatch(resolved, params=dispatch_params)
+            # 0.30.6 — after create, re-inspect first turn so agents get question/choices
+            if (
+                view_format == "assistant"
+                and len(resolved) >= 2
+                and resolved[0] == "flows"
+                and resolved[-1] == "create"
+                and isinstance(result, dict)
+                and result.get("session_id")
+            ):
+                flow_id = resolved[1]
+                session_id = str(result["session_id"])
+                inspect_path = ["flows", flow_id, "session", session_id]
+                try:
+                    result = backend.assist_dispatch(
+                        inspect_path,
+                        params={"format": "assistant"},
+                    )
+                    resolved = inspect_path
+                except Exception:
+                    pass  # fall back to create envelope
         except (TypeError, ValueError, DefinitionNotFoundServiceError) as exc:
             raise ValueError(str(exc)) from exc
         except PalmRestError as exc:
@@ -80,13 +107,17 @@ def register_assist_tools(mcp: Any, backend: Any) -> None:
             and resolved[0] == "flows"
             and resolved[2] == "session"
         ):
-            invoke_tree = backend.get_instance_tree(resolved[3])
+            try:
+                invoke_tree = backend.get_instance_tree(resolved[3])
+            except Exception:
+                invoke_tree = None
 
         payload = shape_dispatch_result(
             resolved,
             result,
             format=view_format,
             params=dispatch_params,
+            tool_format=view_format,
             invoke_tree=invoke_tree,
         )
         if used_default_entry:

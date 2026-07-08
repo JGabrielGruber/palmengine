@@ -54,15 +54,16 @@ design (optional) → create session → inspect → input → wait on children 
 | Action | Call |
 |--------|------|
 | Fresh start | `palm_assist()` |
+| Run a flow | `palm_assist(params={flow_id: "coconut-npc"})` then `value` |
 | List flows | `palm_flows_list` |
-| Inspect session | `palm_flows_session(session_id, format="assistant")` |
+| Inspect session | `palm_assist(params={session_id, flow_id})` or `palm_flows_session(..., format="assistant")` |
 | Continue session | `palm_assist(params={session_id, flow_id, value})` |
+| Resource stuck | Resume action / `palm_flows_session_resume` · doctor `palm_system_doctor` |
 | Health | `palm_system_doctor` |
 | Routes catalog | read `palm://assist/routes` |
-| Propose flow | `palm_design_propose_flow(body={...})` |
-| Publish flow | `palm_design_impact` → `palm_design_commit` |
-| Propose resource | `palm_design_propose_resource(body={...})` |
-| Run custom flow | `palm_flows_create_session(flow_id="my-flow")` |
+| Publish flow (one call) | `palm_design_publish_flow(body={...})` or `palm_assist(params={body})` |
+| Publish resource | `palm_design_publish_resource(body={...})` |
+| Run custom flow | `palm_assist(params={flow_id: "my-flow"})` |
 
 ## When editing Palm MCP code
 
