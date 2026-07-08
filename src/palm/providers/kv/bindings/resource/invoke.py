@@ -6,13 +6,17 @@ from typing import Any
 
 from palm.common.resource.document_storage import (
     StorageKvBackend,
+    TieredKvConfig,
+    TieredKvStore,
     build_memory_key,
     build_memory_prefix,
     build_storage_key,
     build_storage_prefix,
     get_memory_kv_store,
+    get_tiered_kv_store,
     logical_keys_from_prefixed,
     resolve_kv_backend,
+    resolve_kv_cold_root,
 )
 from palm.core.resource.result import ProviderResult
 from palm.providers._registry import get_bound_runtime
@@ -48,6 +52,7 @@ def invoke_action(
             invoke_params=invoke_params,
             backend_mode=backend_mode,
             storage=storage,
+            runtime=runtime,
         )
 
     if not logical_key:
@@ -65,6 +70,7 @@ def invoke_action(
             logical_key=logical_key,
             backend_mode=backend_mode,
             storage=storage,
+            runtime=runtime,
         )
     if action == "put":
         return _invoke_put(
@@ -74,6 +80,7 @@ def invoke_action(
             logical_key=logical_key,
             backend_mode=backend_mode,
             storage=storage,
+            runtime=runtime,
         )
     if action == "delete":
         return _invoke_delete(
@@ -83,6 +90,7 @@ def invoke_action(
             logical_key=logical_key,
             backend_mode=backend_mode,
             storage=storage,
+            runtime=runtime,
         )
 
     return ProviderResult.fail(
@@ -90,6 +98,22 @@ def invoke_action(
         action=action,
         provider=name,
         resource_id=logical_key,
+    )
+
+
+def _tiered_store(
+    invoke_params: KvInvokeParams,
+    storage: Any,
+    runtime: Any,
+) -> TieredKvStore:
+    cold_root = resolve_kv_cold_root(runtime, invoke_params.cold_root)
+    config = TieredKvConfig(hot_max_keys=invoke_params.hot_max_keys)
+    storage_backend_name = storage.backend_name if storage is not None else None
+    return get_tiered_kv_store(
+        storage=storage,
+        storage_backend_name=storage_backend_name,
+        cold_root=cold_root,
+        config=config,
     )
 
 
@@ -101,8 +125,12 @@ def _invoke_get(
     logical_key: str,
     backend_mode: str,
     storage: Any,
+    runtime: Any,
 ) -> ProviderResult:
-    if backend_mode == "memory":
+    if backend_mode == "tiered":
+        store = _tiered_store(invoke_params, storage, runtime)
+        value = store.get(invoke_params.namespace, logical_key)
+    elif backend_mode == "memory":
         store = get_memory_kv_store()
         value = store.get(build_memory_key(invoke_params.namespace, logical_key))
     else:
@@ -144,6 +172,7 @@ def _invoke_put(
     logical_key: str,
     backend_mode: str,
     storage: Any,
+    runtime: Any,
 ) -> ProviderResult:
     if invoke_params.value is None:
         return ProviderResult.fail(
@@ -153,7 +182,10 @@ def _invoke_put(
             resource_id=logical_key,
         )
 
-    if backend_mode == "memory":
+    if backend_mode == "tiered":
+        store = _tiered_store(invoke_params, storage, runtime)
+        store.set(invoke_params.namespace, logical_key, invoke_params.value)
+    elif backend_mode == "memory":
         store = get_memory_kv_store()
         store.set(build_memory_key(invoke_params.namespace, logical_key), invoke_params.value)
     else:
@@ -181,8 +213,12 @@ def _invoke_delete(
     logical_key: str,
     backend_mode: str,
     storage: Any,
+    runtime: Any,
 ) -> ProviderResult:
-    if backend_mode == "memory":
+    if backend_mode == "tiered":
+        store = _tiered_store(invoke_params, storage, runtime)
+        deleted = store.delete(invoke_params.namespace, logical_key)
+    elif backend_mode == "memory":
         store = get_memory_kv_store()
         deleted = store.delete(build_memory_key(invoke_params.namespace, logical_key))
     else:
@@ -209,8 +245,12 @@ def _invoke_list(
     invoke_params: KvInvokeParams,
     backend_mode: str,
     storage: Any,
+    runtime: Any,
 ) -> ProviderResult:
-    if backend_mode == "memory":
+    if backend_mode == "tiered":
+        store = _tiered_store(invoke_params, storage, runtime)
+        keys = store.list_prefix(invoke_params.namespace, invoke_params.prefix)
+    elif backend_mode == "memory":
         store = get_memory_kv_store()
         prefix = build_memory_prefix(invoke_params.namespace, invoke_params.prefix)
         full_keys = store.list_prefix(prefix)

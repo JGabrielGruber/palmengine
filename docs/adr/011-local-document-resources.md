@@ -27,7 +27,13 @@ Resource providers already adapt external systems through `ResourceEngine` ([ADR
    - Provider design contributors validate `kv`/`file` proposals (`action`, `backend`, namespace slug, path safety).
    - `palm_system_doctor` `resource_preflight` reports `kv.backend_resolved`, `kv.namespaces`, `file.documents_root`, `file.writable`; issues when file resources exist but the root is not writable.
 
-6. **Semantics**
+6. **Tiered hot/cold KV (0.29.0)**
+   - `backend: tiered` — bounded hot `MemoryKvStore`, write-through cold tier.
+   - Cold storage uses durable `StorageEngine` when the host storage backend is durable; otherwise JSON spill under `data_dir/palm/kv-cold/`.
+   - `hot_max_keys` (default 500) controls LRU eviction from hot; cold retains all keys.
+   - Promote-on-read reloads cold keys into hot.
+
+7. **Semantics**
    - `get` on a missing key returns success with `{found: false}` (not a failure).
    - Single-key last-write-wins; no transactions across keys.
    - `file` paths must be relative; traversal (`..`, absolute paths) rejected at validate and invoke time.

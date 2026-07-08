@@ -99,11 +99,12 @@ Impact lists flows referencing the `resource_ref`. See `coconut-npc` + `palm://a
 | Field | Notes |
 |-------|-------|
 | `action` | `get` \| `put` \| `delete` \| `list` |
-| `params.backend` | `auto` (default) \| `memory` \| `storage` |
+| `params.backend` | `auto` (default) \| `memory` \| `storage` \| `tiered` |
 | `params.namespace` | Slug — alphanumeric, underscore, hyphen |
 | `put` | Requires `params.value` or `{{ state.* }}` binding |
+| `tiered` | Optional `hot_max_keys` (default 500); cold spill at `data_dir/palm/kv-cold` |
 
-`palm_system_doctor` → `resource_preflight.kv.backend_resolved` shows `memory` vs `storage`.
+`palm_system_doctor` → `resource_preflight.kv.backend_resolved` shows `memory` vs `storage`; tiered resources also expose `resource_preflight.kv.tiered` (`hot_keys`, `cold_keys`, `cold_root`).
 
 ### Local `file` resource (0.28.1+)
 

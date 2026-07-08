@@ -7,7 +7,11 @@ import pytest
 import palm.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
-from palm.common.resource.document_storage import clear_memory_kv_store
+from palm.common.resource.document_storage import (
+    build_memory_key,
+    clear_memory_kv_store,
+    clear_tiered_kv_stores,
+)
 from palm.core.resource import ResourceEngine
 from palm.definitions import ResourceDefinition
 from palm.providers.kv.provider import KvProvider
@@ -19,6 +23,7 @@ from palm.states import BlackboardState
 @pytest.fixture(autouse=True)
 def _clear_kv_memory() -> None:
     clear_memory_kv_store()
+    clear_tiered_kv_stores()
     clear_palm_runtime()
 
 
@@ -170,6 +175,76 @@ def test_resource_engine_invoke_via_definition_ref() -> None:
     assert loaded.data["found"] is True
     assert loaded.data["value"]["visit_count"] == 2
     engine.shutdown()
+
+
+def test_kv_provider_tiered_hot_cold_with_eviction(tmp_path) -> None:
+    provider = KvProvider(name="kv")
+    cold_root = tmp_path / "kv-cold"
+    base_params = {
+        "namespace": "coconut",
+        "backend": "tiered",
+        "hot_max_keys": 2,
+        "cold_root": str(cold_root),
+    }
+    for name in ("alice", "bob", "charlie"):
+        result = provider.invoke(
+            "put",
+            resource_id=f"players/{name}",
+            params={**base_params, "value": {"name": name}},
+        )
+        assert result.success is True
+        assert result.data["backend"] == "tiered"
+
+    from palm.common.resource.document_storage import get_memory_kv_store
+
+    assert get_memory_kv_store().get(build_memory_key("coconut", "players/alice")) is None
+
+    got = provider.invoke(
+        "get",
+        resource_id="players/alice",
+        params={**base_params, "default": {}},
+    )
+    assert got.success is True
+    assert got.data["found"] is True
+    assert got.data["value"]["name"] == "alice"
+
+    listed = provider.invoke("list", params={**base_params, "prefix": "players"})
+    assert listed.success is True
+    assert listed.data["keys"] == ["alice", "bob", "charlie"]
+
+
+def test_kv_provider_tiered_uses_storage_cold_on_filesystem_host(tmp_path) -> None:
+    runtime = EmbeddedRuntime()
+    runtime.start()
+    runtime.storage.select("filesystem", data_dir=tmp_path)
+    bind_palm_runtime(runtime)
+    try:
+        provider = KvProvider(name="kv")
+        put = provider.invoke(
+            "put",
+            resource_id="players/alice",
+            params={
+                "namespace": "coconut",
+                "backend": "tiered",
+                "hot_max_keys": 10,
+                "value": {"visit_count": 4},
+            },
+        )
+        assert put.success is True
+        assert put.data["backend"] == "tiered"
+        clear_memory_kv_store()
+        got = provider.invoke(
+            "get",
+            resource_id="players/alice",
+            params={"namespace": "coconut", "backend": "tiered"},
+        )
+        assert got.success is True
+        assert got.data["found"] is True
+        assert got.data["value"]["visit_count"] == 4
+    finally:
+        runtime.stop()
+        clear_palm_runtime()
+        clear_tiered_kv_stores()
 
 
 def test_kv_provider_describe_lists_actions() -> None:

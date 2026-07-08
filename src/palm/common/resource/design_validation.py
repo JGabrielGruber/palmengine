@@ -7,7 +7,7 @@ import re
 from palm.definitions.resource import ResourceDefinition
 
 _KV_ACTIONS = frozenset({"get", "put", "delete", "list"})
-_KV_BACKENDS = frozenset({"auto", "memory", "storage"})
+_KV_BACKENDS = frozenset({"auto", "memory", "storage", "tiered"})
 _FILE_ACTIONS = frozenset({"read", "write", "delete", "exists", "list"})
 _NAMESPACE_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]*$")
 
@@ -27,8 +27,20 @@ def validate_kv_resource(resource: ResourceDefinition) -> list[str]:
     if backend not in _KV_BACKENDS:
         blockers.append(
             f"kv resource {resource.name!r} params.backend must be "
-            f"auto, memory, or storage (got {backend!r})",
+            f"auto, memory, storage, or tiered (got {backend!r})",
         )
+
+    hot_max_keys = params.get("hot_max_keys")
+    if hot_max_keys is not None:
+        try:
+            if int(hot_max_keys) < 1:
+                blockers.append(
+                    f"kv resource {resource.name!r} params.hot_max_keys must be >= 1",
+                )
+        except (TypeError, ValueError):
+            blockers.append(
+                f"kv resource {resource.name!r} params.hot_max_keys must be an integer",
+            )
 
     namespace = str(params.get("namespace") or "default").strip()
     if not _NAMESPACE_RE.match(namespace):

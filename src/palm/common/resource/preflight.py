@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from palm.common.resource.catalog import ResourceCatalog
-from palm.common.resource.document_storage import resolve_documents_root, resolve_kv_backend
+from palm.common.resource.document_storage import (
+    build_tiered_preflight_stats,
+    resolve_documents_root,
+    resolve_kv_backend,
+)
 from palm.common.resource.resolver import resource_definition_resolver
 from palm.definitions.resource import ResourceDefinition
 
@@ -98,17 +102,37 @@ def build_kv_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
         backend_resolved = "memory"
 
     namespace_set: set[str] = set()
+    uses_tiered = False
+    tiered_hot_max_keys = 500
     for entry in entries:
         resource = repository.get_resource(entry.name)
         namespace_set.add(str(resource.params.get("namespace") or "default"))
+        backend = str(resource.params.get("backend") or "auto").strip().lower()
+        if backend == "tiered":
+            uses_tiered = True
+            configured = resource.params.get("hot_max_keys")
+            if configured is not None:
+                try:
+                    tiered_hot_max_keys = max(1, int(configured))
+                except (TypeError, ValueError):
+                    pass
     namespaces = sorted(namespace_set)
 
-    return {
+    payload: dict[str, Any] = {
         "resource_count": len(entries),
         "backend_resolved": backend_resolved,
         "storage_backend": storage_backend_name,
         "namespaces": namespaces,
     }
+    if uses_tiered:
+        primary_namespace = namespaces[0] if namespaces else "default"
+        payload["tiered"] = build_tiered_preflight_stats(
+            runtime,
+            storage,
+            namespace=primary_namespace,
+            hot_max_keys=tiered_hot_max_keys,
+        )
+    return payload
 
 
 def _documents_root_writable(root: Path) -> bool:

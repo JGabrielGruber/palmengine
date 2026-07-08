@@ -327,7 +327,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.27.3 | Resource doctor preflight + step failure modes | ✅ Shipped |
 | 0.27.4 | Branching playbook MCP reference | ✅ Shipped |
 
-## 0.28 — Local Document Resources (planned)
+## 0.28 — Local Document Resources (shipped)
 
 **Vision:** [docs/VISION-0.28.md](docs/VISION-0.28.md)  
 **Design:** [docs/superpowers/specs/2026-07-08-document-kv-providers-design.md](docs/superpowers/specs/2026-07-08-document-kv-providers-design.md)  
@@ -340,9 +340,15 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.28.2 | Coconut cross-session persistence (`player_name`) | ✅ Shipped |
 | 0.28.3 | Design contributors + doctor + docs | ✅ Shipped |
 
+## 0.29 — Tiered KV (shipped)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.29.0 | `backend: tiered` hot/cold KV with LRU eviction | ✅ Shipped |
+
 ## Priorities & Next Steps
 
-**0.27** — compositional design parity (shipped). **0.28** — local document/KV resource providers per vision above.
+**0.28** — local document/KV resource providers (shipped). **0.29** — tiered KV for RAM-constrained hosts (shipped).
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
 

@@ -107,6 +107,23 @@ def test_propose_resource_accepts_kv_via_design_host(design_host) -> None:
     assert proposed["validation"]["valid"] is True
 
 
+def test_propose_resource_accepts_tiered_kv_via_design_host(design_host) -> None:
+    body = {
+        "name": "design-kv-tiered",
+        "provider": "kv",
+        "action": "put",
+        "resource_id": "players/{{ state.player_name }}",
+        "params": {
+            "namespace": "coconut",
+            "backend": "tiered",
+            "hot_max_keys": 250,
+            "value": "{{ state.player_profile }}",
+        },
+    }
+    proposed = design_host.design.propose_resource(body)
+    assert proposed["validation"]["valid"] is True
+
+
 def test_propose_resource_rejects_invalid_kv_via_design_host(design_host) -> None:
     body = {
         "name": "design-kv-bad",

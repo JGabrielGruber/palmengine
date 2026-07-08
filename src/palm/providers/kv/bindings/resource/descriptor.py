@@ -8,7 +8,7 @@ from palm.core.resource.result import ProviderActionDescriptor, ProviderDescript
 def describe(*, name: str) -> ProviderDescriptor:
     return ProviderDescriptor(
         name=name,
-        description="Local key-value resource storage (memory or durable StorageEngine)",
+        description="Local key-value storage (memory, durable StorageEngine, or tiered hot/cold)",
         actions=(
             ProviderActionDescriptor(
                 "get",

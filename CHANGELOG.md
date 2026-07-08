@@ -17,6 +17,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **Coconut cross-session persistence (0.28.2)** — `coconut-npc` loads/saves `player_profile` via `kv` keyed by `player_name`; returning travelers see `visit_count` and prior `reputation`.
 - **KV/file design contributors (0.28.3)** — `validate_kv_resource` / `validate_file_resource`; `palm_design_propose_resource` validates local provider proposals; doctor `resource_preflight` reports `kv.backend_resolved`, namespaces, `file.documents_root` + writability; [ADR-011](docs/adr/011-local-document-resources.md).
 - **`file` document provider (0.28.1)** — `read`/`write`/`delete`/`exists`/`list` under `data_dir/documents`; `FileDocumentStore` with path safety and atomic writes; runtime `documents_root` resolution via bound host.
+- **Tiered KV backend (0.29.0)** — `backend: tiered` hot memory cache with write-through cold storage (filesystem spill or `StorageEngine`), LRU eviction via `hot_max_keys`, promote-on-read; doctor `resource_preflight.kv.tiered` reports hot/cold counts.
 
 ## [0.26.0] — 2026-07-08
 

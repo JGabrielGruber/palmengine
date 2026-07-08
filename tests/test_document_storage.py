@@ -5,12 +5,16 @@ from __future__ import annotations
 import pytest
 
 from palm.common.resource.document_storage import (
+    FileColdKvStore,
     FileDocumentStore,
     MemoryKvStore,
     StorageKvBackend,
+    TieredKvConfig,
+    TieredKvStore,
     build_memory_key,
     build_storage_key,
     clear_memory_kv_store,
+    clear_tiered_kv_stores,
     get_memory_kv_store,
     logical_keys_from_prefixed,
     resolve_kv_backend,
@@ -20,6 +24,7 @@ from palm.core.storage import StorageEngine
 
 def setup_function() -> None:
     clear_memory_kv_store()
+    clear_tiered_kv_stores()
 
 
 def test_memory_kv_store_round_trip() -> None:
@@ -67,6 +72,13 @@ def test_resolve_kv_backend_auto_filesystem(tmp_path) -> None:
         resolve_kv_backend("auto", storage=storage, storage_backend_name="filesystem")
         == "storage"
     )
+    storage.shutdown()
+
+
+def test_resolve_kv_backend_tiered() -> None:
+    storage = StorageEngine()
+    storage.initialize()
+    assert resolve_kv_backend("tiered", storage=storage, storage_backend_name="memory") == "tiered"
     storage.shutdown()
 
 
@@ -128,6 +140,30 @@ def test_file_document_store_blocks_traversal(tmp_path) -> None:
         store.read("../secret.json")
     with pytest.raises(ValueError, match="\\.\\."):
         store.read("profiles/../../secret.json")
+
+
+def test_tiered_kv_store_write_through_and_promote(tmp_path) -> None:
+    hot = MemoryKvStore()
+    cold = FileColdKvStore(tmp_path / "kv-cold")
+    store = TieredKvStore(hot=hot, cold=cold, config=TieredKvConfig(hot_max_keys=2))
+    store.set("coconut", "players/alice", {"visit_count": 1})
+    assert cold.get("coconut", "players/alice") == {"visit_count": 1}
+    hot.delete(build_memory_key("coconut", "players/alice"))
+    assert store.get("coconut", "players/alice") == {"visit_count": 1}
+    assert hot.get(build_memory_key("coconut", "players/alice")) == {"visit_count": 1}
+
+
+def test_tiered_kv_store_evicts_lru_from_hot(tmp_path) -> None:
+    hot = MemoryKvStore()
+    cold = FileColdKvStore(tmp_path / "kv-cold")
+    store = TieredKvStore(hot=hot, cold=cold, config=TieredKvConfig(hot_max_keys=2))
+    store.set("coconut", "players/alice", {"n": 1})
+    store.set("coconut", "players/bob", {"n": 2})
+    store.set("coconut", "players/charlie", {"n": 3})
+    assert hot.get(build_memory_key("coconut", "players/alice")) is None
+    assert store.get("coconut", "players/alice") == {"n": 1}
+    assert store.list_prefix("coconut", "players") == ["alice", "bob", "charlie"]
+    assert cold.count_keys("coconut") == 3
 
 
 def test_file_document_store_list_glob(tmp_path) -> None:
