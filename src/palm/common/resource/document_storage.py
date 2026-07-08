@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import json
+import os
+import tempfile
 import threading
 from pathlib import Path
 from typing import Any, Literal
 
+from palm.core.exceptions import StoragePermissionError
 from palm.core.storage import StorageEngine
+
+_DEFAULT_DOCUMENTS_ROOT = Path("data") / "documents"
 
 KV_STORAGE_PREFIX = "palm:resources:kv"
 
@@ -190,6 +196,144 @@ def _normalize_logical_key(logical_key: str) -> str:
     return key.replace("\\", "/").replace("/", ":")
 
 
+def resolve_documents_root(runtime: Any) -> Path:
+    """Best-effort documents root for the ``file`` resource provider."""
+    storage = getattr(runtime, "storage", None)
+    backend = storage.backend if storage is not None else None
+    data_dir = getattr(backend, "data_dir", None)
+    if data_dir is not None:
+        return Path(data_dir) / "documents"
+    settings = getattr(runtime, "settings", None)
+    if settings is not None:
+        configured = getattr(settings, "data_dir", None)
+        if configured is not None:
+            return Path(configured) / "documents"
+    return _DEFAULT_DOCUMENTS_ROOT
+
+
+def _validate_relative_document_path(relative_path: str) -> str:
+    """Normalize and validate a relative document path."""
+    rel = str(relative_path or "").strip().replace("\\", "/")
+    if not rel or rel.startswith("/"):
+        raise ValueError(f"document path must be a relative path, got {relative_path!r}")
+    parts = Path(rel).parts
+    if ".." in parts:
+        raise ValueError(f"document path must not contain '..': {relative_path!r}")
+    return rel
+
+
+def _validate_glob_pattern(glob_pattern: str) -> str:
+    """Reject glob patterns that attempt directory escape."""
+    pattern = str(glob_pattern or "**/*").strip().replace("\\", "/")
+    if pattern.startswith("/") or ".." in Path(pattern).parts:
+        raise ValueError(f"invalid glob pattern {glob_pattern!r}")
+    return pattern or "**/*"
+
+
+def _resolve_document_path(root: Path, relative_path: str) -> Path:
+    """Resolve ``relative_path`` under ``root``; reject escapes outside the root."""
+    normalized = _validate_relative_document_path(relative_path)
+    root_resolved = root.resolve()
+    candidate = (root_resolved / normalized).resolve()
+    if not candidate.is_relative_to(root_resolved):
+        raise ValueError(f"document path {relative_path!r} escapes documents_root")
+    return candidate
+
+
+def _atomic_write_text(path: Path, payload: str) -> int:
+    """Write ``payload`` to ``path`` atomically; return bytes written."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path: str | None = None
+    try:
+        fd, tmp_path = tempfile.mkstemp(
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+        )
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_path, path)
+        tmp_path = None
+        return len(payload.encode("utf-8"))
+    except OSError as exc:
+        raise StoragePermissionError(f"Cannot write document file {path}: {exc}") from exc
+    finally:
+        if tmp_path is not None:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+
+
+class FileDocumentStore:
+    """Filesystem document store under a single ``documents_root`` directory."""
+
+    def __init__(self, documents_root: Path | str) -> None:
+        self._root = Path(documents_root).resolve()
+        self._lock = threading.RLock()
+
+    @property
+    def documents_root(self) -> Path:
+        return self._root
+
+    def read(self, relative_path: str, *, format: str = "json") -> Any:
+        with self._lock:
+            path = _resolve_document_path(self._root, relative_path)
+            try:
+                raw = path.read_text(encoding="utf-8")
+            except FileNotFoundError:
+                return None
+            except OSError as exc:
+                raise StoragePermissionError(
+                    f"Cannot read document {relative_path!r} at {path}: {exc}",
+                ) from exc
+            if str(format or "json").strip().lower() == "text":
+                return raw
+            stripped = raw.strip()
+            if not stripped:
+                return None
+            return json.loads(stripped)
+
+    def write(self, relative_path: str, content: Any, *, format: str = "json") -> int:
+        with self._lock:
+            path = _resolve_document_path(self._root, relative_path)
+            if str(format or "json").strip().lower() == "text":
+                payload = str(content)
+            else:
+                payload = json.dumps(content, ensure_ascii=False, separators=(",", ":"))
+            return _atomic_write_text(path, payload)
+
+    def delete(self, relative_path: str) -> bool:
+        with self._lock:
+            path = _resolve_document_path(self._root, relative_path)
+            try:
+                path.unlink()
+                return True
+            except FileNotFoundError:
+                return False
+            except OSError as exc:
+                raise StoragePermissionError(
+                    f"Cannot delete document {relative_path!r} at {path}: {exc}",
+                ) from exc
+
+    def exists(self, relative_path: str) -> bool:
+        with self._lock:
+            path = _resolve_document_path(self._root, relative_path)
+            return path.is_file()
+
+    def list(self, glob_pattern: str = "**/*") -> list[str]:
+        with self._lock:
+            pattern = _validate_glob_pattern(glob_pattern)
+            self._root.mkdir(parents=True, exist_ok=True)
+            paths: list[str] = []
+            for path in self._root.glob(pattern):
+                if path.is_file():
+                    paths.append(path.relative_to(self._root).as_posix())
+            return sorted(paths)
+
+
 def _list_filesystem_storage_prefix(data_dir: Path, prefix: str) -> list[str]:
     rel_dir = Path(*[segment for segment in prefix.split(":") if segment])
     root = data_dir / rel_dir
@@ -205,6 +349,7 @@ def _list_filesystem_storage_prefix(data_dir: Path, prefix: str) -> list[str]:
 
 
 __all__ = [
+    "FileDocumentStore",
     "KV_STORAGE_PREFIX",
     "MemoryKvStore",
     "StorageKvBackend",
@@ -216,5 +361,6 @@ __all__ = [
     "get_memory_kv_store",
     "list_storage_keys_with_prefix",
     "logical_keys_from_prefixed",
+    "resolve_documents_root",
     "resolve_kv_backend",
 ]

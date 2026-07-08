@@ -105,7 +105,7 @@ Impact lists flows referencing the `resource_ref`. See `coconut-npc` + `palm://a
 
 `palm_system_doctor` → `resource_preflight.kv.backend_resolved` shows `memory` vs `storage`.
 
-### Local `file` resource (0.28.1 provider; design validates now)
+### Local `file` resource (0.28.1+)
 
 ```json
 {

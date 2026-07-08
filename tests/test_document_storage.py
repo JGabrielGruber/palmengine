@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from palm.common.resource.document_storage import (
+    FileDocumentStore,
     MemoryKvStore,
     StorageKvBackend,
     build_memory_key,
@@ -109,3 +110,30 @@ def test_storage_kv_backend_list_prefix(tmp_path) -> None:
 def test_get_memory_kv_store_is_process_singleton() -> None:
     get_memory_kv_store().set(build_memory_key("demo", "x"), 1)
     assert get_memory_kv_store().get(build_memory_key("demo", "x")) == 1
+
+
+def test_file_document_store_json_round_trip(tmp_path) -> None:
+    store = FileDocumentStore(tmp_path / "documents")
+    nbytes = store.write("profiles/alice.json", {"visit_count": 2})
+    assert nbytes > 0
+    assert store.read("profiles/alice.json") == {"visit_count": 2}
+    assert store.exists("profiles/alice.json") is True
+    assert store.delete("profiles/alice.json") is True
+    assert store.exists("profiles/alice.json") is False
+
+
+def test_file_document_store_blocks_traversal(tmp_path) -> None:
+    store = FileDocumentStore(tmp_path / "documents")
+    with pytest.raises(ValueError, match="\\.\\."):
+        store.read("../secret.json")
+    with pytest.raises(ValueError, match="\\.\\."):
+        store.read("profiles/../../secret.json")
+
+
+def test_file_document_store_list_glob(tmp_path) -> None:
+    store = FileDocumentStore(tmp_path / "documents")
+    store.write("coconut/players/alice.json", {"a": 1})
+    store.write("coconut/players/bob.json", {"b": 2})
+    store.write("notes/readme.txt", "hello", format="text")
+    paths = store.list("coconut/**/*.json")
+    assert paths == ["coconut/players/alice.json", "coconut/players/bob.json"]

@@ -336,7 +336,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Phase | Theme | Status |
 |-------|-------|--------|
 | 0.28.0 | `kv` resource provider (memory + auto/storage) | ✅ Shipped |
-| 0.28.1 | `file` document provider | 📋 Planned |
+| 0.28.1 | `file` document provider | ✅ Shipped |
 | 0.28.2 | Coconut cross-session persistence (`player_name`) | ✅ Shipped |
 | 0.28.3 | Design contributors + doctor + docs | ✅ Shipped |
 

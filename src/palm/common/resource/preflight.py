@@ -6,11 +6,9 @@ from pathlib import Path
 from typing import Any
 
 from palm.common.resource.catalog import ResourceCatalog
-from palm.common.resource.document_storage import resolve_kv_backend
+from palm.common.resource.document_storage import resolve_documents_root, resolve_kv_backend
 from palm.common.resource.resolver import resource_definition_resolver
 from palm.definitions.resource import ResourceDefinition
-
-_DEFAULT_DOCUMENTS_ROOT = Path("data") / "documents"
 
 
 def rest_resource_has_base_url(resource: ResourceDefinition) -> bool:
@@ -111,21 +109,6 @@ def build_kv_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
         "storage_backend": storage_backend_name,
         "namespaces": namespaces,
     }
-
-
-def resolve_documents_root(runtime: Any) -> Path:
-    """Best-effort documents root for ``file`` provider preflight."""
-    storage = getattr(runtime, "storage", None)
-    backend = storage.backend if storage is not None else None
-    data_dir = getattr(backend, "data_dir", None)
-    if data_dir is not None:
-        return Path(data_dir) / "documents"
-    settings = getattr(runtime, "settings", None)
-    if settings is not None:
-        configured = getattr(settings, "data_dir", None)
-        if configured is not None:
-            return Path(configured) / "documents"
-    return _DEFAULT_DOCUMENTS_ROOT
 
 
 def _documents_root_writable(root: Path) -> bool:

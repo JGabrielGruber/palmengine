@@ -20,13 +20,7 @@ class KvApp(ProviderApp):
 
             register_kv_design_contributor()
 
-        def _register_file_design_contributor() -> None:
-            from palm.providers.file.bindings.design import register_file_design_contributor
-
-            register_file_design_contributor()
-
         register_provider_design_contributor_hook(_register_kv_design_contributor)
-        register_provider_design_contributor_hook(_register_file_design_contributor)
 
 
 kv_app = KvApp()

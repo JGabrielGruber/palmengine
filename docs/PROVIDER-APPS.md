@@ -92,8 +92,8 @@ providers/<name>/
 |----------|-------------|---------|---------------------|
 | **palm** | resource, orchestration, runtimes, recursion | coordinator, params, target, remote | provider_registry, runtime_binding |
 | **rest** | resource, transport | params | provider_registry |
-| **kv** | resource, design | params | provider_registry, design_contributor, runtime_binding |
-| **file** | design (0.28.3; provider 0.28.1) | — | design_contributor (via kv autoload) |
+| **kv** | resource, design | params | provider_registry, design_contributor |
+| **file** | resource, design | params | provider_registry, design_contributor |
 | **graphql** | — (stub) | — | provider_registry |
 | **postgres** | — (stub) | — | provider_registry |
 
