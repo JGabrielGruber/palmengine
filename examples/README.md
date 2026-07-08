@@ -16,6 +16,7 @@ examples/
 │   ├── todo_builder.py      # Collection step + todo list schemas
 │   ├── migrate_instance_demo.py  # Definition revision migration (0.24.3)
 │   ├── coconut_npc.py       # Branching wizard reference (hub menu + routing)
+│   ├── coconut_resources.py # KV resources for coconut cross-session persistence (0.28+)
 │   └── transform_*.py       # Transform rule demos
 └── full_demo.py             # ApplicationHost end-to-end script
 ```
@@ -155,6 +156,10 @@ palm flow start coconut-npc
 Example path: name → reputation → topic hub → rumors/trade/about → farewell.
 
 MCP agents can revise via `palm_design_propose_flow(base_flow_id="coconut-npc", …)`.
+
+**KV resources** (`coconut_resources.py`): `load-coconut-player` / `save-coconut-player` use the
+`kv` provider (`backend: auto`) for cross-session profiles keyed by `player_name` — wired in
+0.28.2.
 
 ## Quick wizard (`quick`)
 

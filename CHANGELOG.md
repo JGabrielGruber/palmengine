@@ -13,6 +13,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **Design `propose_resource` (0.27.2)** — `DesignService.propose_resource`, impact scan for referencing flows, `palm_design_propose_resource` MCP tool.
 - **`palm://agent/references/branching-flows`** — hub menu / routing playbook for weak LLMs.
 - **Resource operator ergonomics (0.27.3)** — `palm_system_doctor` `resource_preflight` (REST `base_url` gaps, optional `check-health` probe); wizard resource step `on_resource_failure`: `block` | `skip` | `branch`; `palm_providers_invoke` failures include `remediation` hints; powertool inspect surfaces `resource_error` + `resource_remediation`.
+- **`kv` resource provider (0.28.0)** — local key-value `get`/`put`/`delete`/`list`; `backend: auto|memory|storage`; shared `document_storage` adapter; coconut resource defs (`load-coconut-player`, `save-coconut-player`).
 
 ## [0.26.0] — 2026-07-08
 
