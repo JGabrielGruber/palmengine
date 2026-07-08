@@ -293,6 +293,79 @@ _VERB_ACTION_LABELS: dict[str, str] = {
     "cancel": "Cancel session",
 }
 
+# Intents that surface Design Service tools (0.30.1)
+DESIGN_DISCOVERY_INTENTS = frozenset({"create-flow", "improve-flow", "propose-resource"})
+
+
+def design_discovery_actions(
+    *,
+    intent: str | None = None,
+    operator_mode: str | None = None,
+    for_catalog: bool = False,
+) -> list[dict[str, Any]]:
+    """CTAs that point agents at ``palm_design_*`` (never perform design writes)."""
+    actions: list[dict[str, Any]] = []
+    catalog_mode = for_catalog or operator_mode == "inspect"
+    if intent == "create-flow" or catalog_mode:
+        actions.append({"label": "Propose new flow", "tool": "palm_design_propose_flow"})
+        actions.append({"label": "Propose via assist proxy", "alias": "design/propose"})
+    if intent == "improve-flow":
+        actions.append({"label": "Propose flow change", "tool": "palm_design_propose_flow"})
+        actions.append({"label": "List design proposals", "tool": "palm_design_list_proposals"})
+    if intent == "propose-resource":
+        actions.append(
+            {"label": "Propose resource", "tool": "palm_design_propose_resource"}
+        )
+    return merge_assistant_actions(actions)
+
+
+def design_discovery_hint(intent: str | None) -> str:
+    """Human/agent hint for design intents (playbook URI in text, not action keys)."""
+    if intent == "create-flow":
+        return (
+            "Create a flow via Design: palm_design_propose_flow → palm_design_impact → "
+            "palm_design_commit. Load palm://agent/references/design-flows. Handoff is optional."
+        )
+    if intent == "improve-flow":
+        return (
+            "Improve a flow via Design: palm_design_propose_flow (with existing body) → "
+            "impact → commit. Load palm://agent/references/design-flows."
+        )
+    if intent == "propose-resource":
+        return (
+            "Propose a resource via palm_design_propose_resource → impact → commit."
+        )
+    return ""
+
+
+def merge_assistant_actions(
+    *lists: list[dict[str, Any]] | None,
+) -> list[dict[str, Any]]:
+    """Merge action lists; first wins on (alias|tool|path, label)."""
+    seen: set[tuple[Any, Any]] = set()
+    out: list[dict[str, Any]] = []
+    for lst in lists:
+        if not lst:
+            continue
+        for action in lst:
+            if not isinstance(action, dict):
+                continue
+            path = action.get("path")
+            path_key: Any
+            if isinstance(path, (list, tuple)):
+                path_key = tuple(path)
+            else:
+                path_key = path
+            key = (
+                action.get("alias") or action.get("tool") or path_key,
+                action.get("label"),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(dict(action))
+    return out
+
 
 def build_assistant_actions(session_ctx: Any) -> list[dict[str, Any]]:
     """Map ``next_commands`` to human-readable progressive-disclosure actions."""
@@ -348,8 +421,12 @@ def build_assistant_actions(session_ctx: Any) -> list[dict[str, Any]]:
 
 
 __all__ = [
+    "DESIGN_DISCOVERY_INTENTS",
     "build_assistant_actions",
     "build_assistant_view",
+    "design_discovery_actions",
+    "design_discovery_hint",
     "ensure_assist_view_registration",
+    "merge_assistant_actions",
     "resolve_view_format",
 ]

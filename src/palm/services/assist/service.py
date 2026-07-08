@@ -198,13 +198,22 @@ class AssistService(BaseService):
                     ),
                 }
             }
+        default_none_hint = (
+            "Assist session complete — no business flow handoff requested."
+        )
+        none_hints = assist_meta.get("handoff_none_hints") or {}
+        operator_hint = default_none_hint
+        if intent is not None and isinstance(none_hints, dict):
+            mapped = none_hints.get(intent)
+            if isinstance(mapped, str) and mapped.strip():
+                operator_hint = mapped
         return {
             "handoff": {
                 "kind": "none",
                 "flow_id": None,
                 "session_id": None,
                 "create_params": {},
-                "operator_hint": "Assist session complete — no business flow handoff requested.",
+                "operator_hint": operator_hint,
             }
         }
 
@@ -256,6 +265,10 @@ class AssistService(BaseService):
             "actions": [
                 {"label": "List flows", "alias": "assist/catalog/flows"},
                 {"label": "List waiting sessions", "tool": "palm_system_list_waiting"},
+                {
+                    "label": "Propose new flow",
+                    "tool": "palm_design_propose_flow",
+                },
                 {
                     "label": "Start operator entry",
                     "alias": "operator-entry/start",

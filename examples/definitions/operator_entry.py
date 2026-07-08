@@ -4,6 +4,9 @@ Palm operator entry — assist scenario for agent/human triage and handoff.
 Demonstrates the 0.18 assist domain: a wizard-driven entry flow that recommends
 a business flow handoff based on operator intent.
 
+0.30.1 — also surfaces Design Service discovery (create/improve flow) via
+choices, assistant actions, and intent-specific handoff none-hints.
+
 Try via assist REST::
 
     POST /v1/api/assist/scenarios/operator-entry/start
@@ -15,27 +18,50 @@ from typing import Any
 
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.services.assist.registry import AssistContributor, register_assist_contributor
+from palm.services.assist.views import (
+    DESIGN_DISCOVERY_INTENTS,
+    design_discovery_actions,
+    design_discovery_hint,
+)
 
 
 def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]:
-    """Post-humanize operator-entry turns — catalog read mode and handoff CTAs."""
+    """Post-humanize operator-entry turns — catalog, design CTAs, handoff hints."""
     payload = dict(view)
     step = payload.get("step_slug") or payload.get("step")
+    if isinstance(step, dict):
+        step = step.get("slug") or step.get("step")
+    # compose.step may nest under slim compose
+    compose = payload.get("compose")
+    if step is None and isinstance(compose, dict):
+        step = compose.get("step")
     operator_mode = payload.get("operator_mode")
+    intent = getattr(context, "intent", None)
+    if intent is None and getattr(context, "answers_preview", None):
+        preview = context.answers_preview
+        if isinstance(preview, dict) and preview.get("intent") is not None:
+            intent = str(preview["intent"])
+
     if step == "catalog" or operator_mode == "inspect":
         payload["operator_mode"] = "inspect"
         payload["hint"] = (
-            "Read-only catalog mode. Use actions to inspect flows and waiting sessions. "
-            "Say exit when done."
+            "Read-only catalog mode. Use actions to inspect flows, propose a new flow, "
+            "or list waiting sessions. Say exit when done."
         )
         payload["actions"] = _catalog_actions(payload)
         mutation = payload.get("mutation")
         if isinstance(mutation, dict):
             mutation = dict(mutation)
             mutation["agent_hint"] = (
-                "Inspect catalog: use read actions only; send exit when the user is done."
+                "Inspect catalog: use read/design-discovery actions only; "
+                "send exit when the user is done."
             )
             payload["mutation"] = mutation
+    elif intent in DESIGN_DISCOVERY_INTENTS:
+        design_hint = design_discovery_hint(str(intent))
+        if design_hint:
+            payload["hint"] = design_hint
+        payload["actions"] = design_discovery_actions(intent=str(intent))
     elif payload.get("handoff_ready"):
         extra = "Say handoff to start your flow."
         hint = str(payload.get("hint") or "")
@@ -54,6 +80,10 @@ def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "label": "List waiting sessions",
             "tool": "palm_system_list_waiting",
+        },
+        {
+            "label": "Propose new flow",
+            "tool": "palm_design_propose_flow",
         },
     ]
     if session_id:
@@ -74,6 +104,15 @@ def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return actions
 
 
+_CREATE_FLOW_HINT = (
+    "No business flow handoff. Use palm_design_propose_flow, then "
+    "palm_design_impact and palm_design_commit. See palm://agent/references/design-flows."
+)
+_IMPROVE_FLOW_HINT = (
+    "No business flow handoff. Propose changes with palm_design_propose_flow, then "
+    "impact and commit. See palm://agent/references/design-flows."
+)
+
 OPERATOR_ENTRY_FLOW = FlowDefinition(
     id="flow-palm-operator-entry",
     name="palm-operator-entry",
@@ -89,6 +128,15 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                     "todo-builder": "todo-builder",
                     "compositional-parent": "compositional-parent",
                     "inspect-only": None,
+                    "create-flow": None,
+                    "improve-flow": None,
+                },
+                "handoff_none_hints": {
+                    "create-flow": _CREATE_FLOW_HINT,
+                    "improve-flow": _IMPROVE_FLOW_HINT,
+                    "inspect-only": (
+                        "No business flow handoff. Catalog inspect complete."
+                    ),
                 },
             }
         },
@@ -98,7 +146,13 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                 "title": "Operator Intent",
                 "prompt": "What would you like to do with Palm?",
                 "field_type": "choice",
-                "choices": ["todo-builder", "compositional-parent", "inspect-only"],
+                "choices": [
+                    "todo-builder",
+                    "compositional-parent",
+                    "create-flow",
+                    "improve-flow",
+                    "inspect-only",
+                ],
                 "params": {
                     "route_on_answer": {
                         "inspect-only": "catalog",
@@ -127,7 +181,10 @@ OPERATOR_ENTRY_PROCESS = ProcessDefinition(
     flows=[OPERATOR_ENTRY_FLOW],
     metadata={
         "example": True,
-        "description": "Assist operator entry — triage and handoff to business flows",
+        "description": (
+            "Assist operator entry — triage intent, design discovery, "
+            "and hand off to business flows"
+        ),
     },
 )
 
@@ -138,7 +195,10 @@ def register_definitions(repository: object) -> None:
             contributor_id="builtin-operator-entry",
             scenario_id="operator-entry",
             flow_id="flow-palm-operator-entry",
-            summary="Palm operator entry — triage intent and hand off to business flows",
+            summary=(
+                "Palm operator entry — triage intent, design discovery, "
+                "and hand off to business flows"
+            ),
             mcp_aliases=(
                 ("operator-entry/start", ("assist", "scenarios", "operator-entry", "start")),
                 (

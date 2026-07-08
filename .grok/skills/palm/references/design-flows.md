@@ -4,6 +4,17 @@
 
 **Golden rule:** use **`palm_design_*`** tools for catalog writes. Do **not** use `palm_definitions_*` create/update unless an integrator doc explicitly requires it.
 
+### From operator-entry (0.30.1+)
+
+```text
+1. palm_assist()  → choose create-flow or improve-flow
+2. On summary, use actions: palm_design_propose_flow (or alias design/propose)
+3. impact → commit  (out-of-band; handoff is optional)
+4. palm_flows_create_session(flow_id=…) to run the published flow
+```
+
+`operator-entry/inspect` and catalog mode also expose a **Propose new flow** action.
+
 ---
 
 ## A. Create a new wizard flow (copy this loop)

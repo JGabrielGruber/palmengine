@@ -43,6 +43,12 @@ class AssistSessionContext:
             flat["instance_id"] = self.session_id
         if self.flow_id:
             flat.setdefault("flow_name", self.flow_id)
+        answers = _answers_from_detail(self.detail)
+        intent_raw = answers.get("intent")
+        intent = str(intent_raw) if intent_raw is not None else None
+        answers_preview: dict[str, Any] | None = None
+        if intent is not None:
+            answers_preview = {"intent": intent}
         context = OperatorViewContext(
             session_id=self.session_id,
             flow_id=self.flow_id,
@@ -50,14 +56,29 @@ class AssistSessionContext:
             invoke_tree=self.invoke_tree,
             handoff_ready=self.handoff_ready,
             stored_mutation_gate=self.stored_mutation_gate,
+            intent=intent,
+            answers_preview=answers_preview,
         )
         payload = build_operator_view(fmt, flat_view=flat, context=context)
         if fmt == "assistant":
-            from palm.services.assist.views import build_assistant_actions
+            from palm.services.assist.views import (
+                build_assistant_actions,
+                design_discovery_actions,
+                merge_assistant_actions,
+            )
 
-            actions = build_assistant_actions(self)
-            if actions:
-                payload["actions"] = actions
+            base = build_assistant_actions(self)
+            extras = payload.get("actions")
+            extras_list = extras if isinstance(extras, list) else []
+            operator_mode = payload.get("operator_mode")
+            design_ctas = design_discovery_actions(
+                intent=intent,
+                operator_mode=str(operator_mode) if operator_mode else None,
+            )
+            # Collection menu actions (in extras) stay first among extras; base verbs first.
+            merged = merge_assistant_actions(base, extras_list, design_ctas)
+            if merged:
+                payload["actions"] = merged
         if fmt == "powertool":
             payload = self._merge_powertool_fields(payload)
         return payload
@@ -169,6 +190,18 @@ def _flow_name(view: dict[str, Any]) -> str | None:
 
 def _optional_str(value: object | None) -> str | None:
     return str(value) if value is not None else None
+
+
+def _answers_from_detail(detail: dict[str, Any]) -> dict[str, Any]:
+    answers = detail.get("answers")
+    if isinstance(answers, dict):
+        return answers
+    pattern = detail.get("pattern")
+    if isinstance(pattern, dict):
+        nested = pattern.get("answers")
+        if isinstance(nested, dict):
+            return nested
+    return {}
 
 
 __all__ = ["AssistSessionContext", "build_assist_session_context"]

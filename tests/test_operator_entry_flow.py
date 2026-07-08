@@ -46,3 +46,50 @@ def test_operator_entry_inspect_only_handoff_none(assist_host: ApplicationHost) 
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "none"
     assert handoff["handoff"]["flow_id"] is None
+
+
+def test_operator_entry_create_flow_actions_after_to_dict(
+    assist_host: ApplicationHost,
+) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    # Land on summary with create-flow intent
+    updated = assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "create-flow"},
+    )
+    assert updated.get("status") in {"waiting", "complete"}
+    actions = updated.get("actions") or []
+    tools = {a.get("tool") for a in actions if isinstance(a, dict)}
+    aliases = {a.get("alias") for a in actions if isinstance(a, dict)}
+    assert "palm_design_propose_flow" in tools or "design/propose" in aliases
+    assert "palm_design_propose_flow" in (updated.get("hint") or "") or "design" in (
+        updated.get("hint") or ""
+    ).lower()
+
+
+def test_operator_entry_create_flow_handoff_none_hint(
+    assist_host: ApplicationHost,
+) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    _drive_to_handoff(assist_host, session_id, "create-flow")
+    handoff = assist_host.assist.handoff(session_id)
+    assert handoff["handoff"]["kind"] == "none"
+    assert handoff["handoff"]["flow_id"] is None
+    hint = handoff["handoff"]["operator_hint"]
+    assert "palm_design_propose_flow" in hint
+    assert "no business flow handoff" not in hint.lower() or "Design" in hint or "design" in hint
+
+
+def test_operator_entry_start_includes_design_choices(
+    assist_host: ApplicationHost,
+) -> None:
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    choices = started.get("choices") or []
+    values = {
+        c.get("value") if isinstance(c, dict) else c
+        for c in choices
+    }
+    assert "create-flow" in values
+    assert "improve-flow" in values

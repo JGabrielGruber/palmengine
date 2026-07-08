@@ -208,6 +208,35 @@ def test_assistant_to_dict_includes_actions() -> None:
     assert payload["actions"][0]["path"][0] == "assist"
 
 
+def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:
+    _setup()
+    from palm.services.assist.views import merge_assistant_actions
+
+    merged = merge_assistant_actions(
+        [{"label": "Send answer", "path": ["assist", "session", "x", "input"]}],
+        [{"label": "Propose new flow", "tool": "palm_design_propose_flow"}],
+        [{"label": "Propose new flow", "tool": "palm_design_propose_flow"}],
+    )
+    assert len(merged) == 2
+
+    view = {
+        **_operator_entry_flat(),
+        "answers": {"intent": "create-flow"},
+        "status": "WAITING_FOR_INPUT",
+        "prompt": {"step_kind": "summary", "title": "Summary"},
+    }
+    ctx = build_assist_session_context(
+        session_id="inst-1",
+        flow_id="flow-palm-operator-entry",
+        view=view,
+        scenario_id="operator-entry",
+        handoff_ready=True,
+    )
+    payload = ctx.to_dict(view_format="assistant")
+    tools = {a.get("tool") for a in payload.get("actions") or []}
+    assert "palm_design_propose_flow" in tools
+
+
 def test_assistant_handoff_action_uses_alias() -> None:
     _setup()
     from palm.services.assist.registry import AssistContributor, register_assist_contributor

@@ -90,6 +90,7 @@ Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand 
 | `onboard` / `schema-onboard` | Onboarding | `flows/onboard/create` |
 | `resource-customer-wizard` | Resource loading | Needs pre-registered resources |
 | `compositional-parent` | Nested workflows | Via operator-entry |
+| *(design)* create / improve flow | Catalog writes via Design Service | operator-entry `create-flow` / `improve-flow` → `palm_design_*` (0.30.1+) |
 
 Discovery: `palm_flows_list()` · Catalog: `palm://definitions/flows` · Routes: `palm://assist/routes`
 

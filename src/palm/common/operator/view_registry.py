@@ -28,6 +28,9 @@ class OperatorViewContext:
     handoff_ready: bool = False
     path: list[str] = field(default_factory=list)
     stored_mutation_gate: dict[str, Any] | None = None
+    # 0.30.1 — intent visibility for design discovery CTAs (not full answers on the wire)
+    intent: str | None = None
+    answers_preview: dict[str, Any] | None = None
 
 
 def normalize_view_format(format: str) -> str:

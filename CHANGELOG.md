@@ -6,7 +6,8 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Added
 
-- **0.30 Assist design entry (foundation)** — [VISION-0.30.md](docs/VISION-0.30.md); design [spec](docs/superpowers/specs/2026-07-08-assist-design-entry-design.md) + [plan](docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md). Docs/contracts only in 0.30.0; runtime discovery CTAs planned for 0.30.1+.
+- **0.30 Assist design entry (foundation)** — [VISION-0.30.md](docs/VISION-0.30.md); design [spec](docs/superpowers/specs/2026-07-08-assist-design-entry-design.md) + [plan](docs/superpowers/plans/2026-07-08-assist-design-entry-0.30.md).
+- **0.30.1 design discovery CTAs** — operator-entry intents `create-flow` / `improve-flow`; assistant action merge + `OperatorViewContext.intent`; `inspect_catalog` propose CTA; metadata `handoff_none_hints` for design-oriented none handoffs.
 - **0.27 vision** — [VISION-0.27.md](docs/VISION-0.27.md) compositional design parity; [ADR-010](docs/adr/010-prompt-state-interpolation.md); implementation [plan](docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md).
 - **Example flow `coconut-npc`** — branching wizard reference (`examples/definitions/coconut_npc.py`): hub menu, transforms, `route_on_answer` / `complete_on`; MCP dogfood profile.
 - **Wizard design contributor (0.27.0)** — flat transform steps (`rule` + `source_key`) validate like runtime builder; nested `transform` normalized at validate time.

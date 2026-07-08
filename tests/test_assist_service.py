@@ -93,6 +93,14 @@ def test_assist_catalog_flows_dispatch(assist_host: ApplicationHost) -> None:
     assert rows
 
 
+def test_inspect_catalog_includes_design_cta(assist_host: ApplicationHost) -> None:
+    payload = assist_host.assist.inspect_catalog("operator-entry")
+    actions = payload.get("actions") or []
+    tools = {a.get("tool") for a in actions if isinstance(a, dict)}
+    assert "palm_design_propose_flow" in tools
+    assert payload.get("mutation", {}).get("mutations_allowed") is False
+
+
 def test_assist_session_input_and_context(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]

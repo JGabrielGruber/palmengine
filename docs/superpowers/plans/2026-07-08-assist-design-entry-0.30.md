@@ -2,7 +2,7 @@
 
 **Vision:** [docs/VISION-0.30.md](../../VISION-0.30.md)  
 **Design:** [2026-07-08-assist-design-entry-design.md](../specs/2026-07-08-assist-design-entry-design.md)  
-**Status:** 0.30.0 foundation in progress / documented  
+**Status:** 0.30.0 ✅ · 0.30.1 ✅ · 0.30.2 open  
 
 Delivery: commit each phase when good enough (typically on `master`; short branches OK for tracking). Phases are capability gates, not a mandatory PR stack.
 
