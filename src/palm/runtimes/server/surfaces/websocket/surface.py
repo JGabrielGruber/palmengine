@@ -90,9 +90,15 @@ class WebSocketSurface(BaseSurface):
         )
 
     def _assist_http_hint(self, request: ServerRequest) -> ServerResponse:
-        """Plain HTTP GET hit the WS path — upgrade headers missing/stripped."""
+        """Fallback when a non-stdlib transport hits the WS path without upgrade.
+
+        Stdlib transport answers 101/426 itself (``diag=ws-upgrade-v4``). If you
+        still see this body (``diag=surface-fallback``), the request never entered
+        ``_try_websocket_upgrade`` (wrong transport, or path mismatch).
+        """
+        from palm import __version__ as palm_version
+
         lower = {str(k).lower(): str(v) for k, v in (request.headers or {}).items()}
-        # Help diagnose reverse proxies (e.g. Cloudflare) that drop Upgrade
         present = {
             "path": getattr(request, "path", None),
             "upgrade": lower.get("upgrade"),
@@ -101,6 +107,7 @@ class WebSocketSurface(BaseSurface):
             "sec-websocket-version": lower.get("sec-websocket-version"),
             "cf-ray": lower.get("cf-ray"),
             "cdn-loop": lower.get("cdn-loop"),
+            "header_names": sorted(lower.keys()),
         }
         missing = [
             name
@@ -122,15 +129,22 @@ class WebSocketSurface(BaseSurface):
                     f"Use WebSocket upgrade on {ASSIST_WS_PATH} "
                     "(Sec-WebSocket-Version: 13). "
                     "If this appears behind a tunnel/proxy, Upgrade headers "
-                    "were not forwarded to Palm."
+                    "were not forwarded to Palm — or Palm is not on the "
+                    "stdlib transport upgrade path."
                 ),
                 "assist_path": ASSIST_WS_PATH,
                 "protocol": PROTOCOL_VERSION,
                 "portal_path": "/portal/",
+                "diag": "surface-fallback",
+                "palm_version": palm_version,
                 "handshake": present,
                 "missing": missing,
             },
-            headers={"Upgrade": "websocket"},
+            headers={
+                "Upgrade": "websocket",
+                "X-Palm-WS-Diag": "surface-fallback",
+                "X-Palm-Version": palm_version,
+            },
         )
 
     def _portal_index(self, request: ServerRequest) -> ServerResponse:

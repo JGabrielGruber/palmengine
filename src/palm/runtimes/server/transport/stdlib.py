@@ -115,11 +115,19 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
         def _try_websocket_upgrade(self) -> bool:
             """0.32.1 — handle WebSocket upgrade for Assist channel.
 
-            Proxies (Cloudflare Tunnel) may send mixed-case header names.
-            Always resolve handshake fields case-insensitively.
+            Proxies (Cloudflare Tunnel / cloudflared) may:
+
+            * send mixed-case header names
+            * rewrite ``Connection`` to ``keep-alive, Upgrade``
+            * leave ``self.path`` with a trailing slash or query
+
+            Always resolve handshake fields case-insensitively. When the path
+            matches the Assist WS route, **never** fall through to the JSON
+            426 surface handler without a ``diag`` stamp — that hid whether
+            the transport or the surface answered.
             """
+            from palm import __version__ as palm_version
             from palm.runtimes.server.surfaces.websocket.frames import (
-                is_websocket_upgrade,
                 websocket_accept_key,
             )
             from palm.runtimes.server.surfaces.websocket.session import (
@@ -128,31 +136,79 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             )
 
             # Preserve original pairs for session; use lower map for decisions
-            headers = {key: value for key, value in self.headers.items()}
-            lower = {str(k).lower(): str(v) for k, v in headers.items()}
-            parsed = urlparse(self.path)
-            path = parsed.path.rstrip("/") or "/"
+            headers = {str(key): str(value) for key, value in self.headers.items()}
+            lower = {k.lower(): v for k, v in headers.items()}
+            raw_path = self.path or ""
+            parsed = urlparse(raw_path)
+            path = (parsed.path or "/").rstrip("/") or "/"
             target = ASSIST_WS_PATH.rstrip("/") or "/"
             if path != target:
                 return False
-            # Prefer lower-map check so SEC-WEBSOCKET-KEY / Connection: Upgrade work
-            upgrade_ok = (
-                "websocket" in lower.get("upgrade", "").lower()
-                and "upgrade" in lower.get("connection", "").lower()
-                and bool(lower.get("sec-websocket-key", "").strip())
-            )
-            if not upgrade_ok and not is_websocket_upgrade(headers):
-                return False
 
+            # Stamp every response on this route so tunnel deploy can be verified
+            diag = "ws-upgrade-v4"
+
+            upgrade_hdr = (lower.get("upgrade") or "").lower()
+            connection_hdr = (lower.get("connection") or "").lower()
             key = (lower.get("sec-websocket-key") or "").strip()
-            if not key:
-                return False
+            version_hdr = (lower.get("sec-websocket-version") or "").strip()
+
+            upgrade_ok = (
+                "websocket" in upgrade_hdr
+                and "upgrade" in connection_hdr
+                and bool(key)
+            )
+
+            if not upgrade_ok:
+                body = json.dumps(
+                    {
+                        "error": "upgrade_required",
+                        "message": (
+                            f"Use WebSocket upgrade on {ASSIST_WS_PATH} "
+                            "(Sec-WebSocket-Version: 13)."
+                        ),
+                        "assist_path": ASSIST_WS_PATH,
+                        "diag": diag,
+                        "palm_version": palm_version,
+                        "raw_path": raw_path,
+                        "normalized_path": path,
+                        "handshake": {
+                            "upgrade": lower.get("upgrade"),
+                            "connection": lower.get("connection"),
+                            "sec-websocket-key": bool(key),
+                            "sec-websocket-version": version_hdr or None,
+                            "cf-ray": lower.get("cf-ray"),
+                            "cdn-loop": lower.get("cdn-loop"),
+                            "header_names": sorted(lower.keys()),
+                        },
+                        "missing": [
+                            name
+                            for name, ok in (
+                                ("Upgrade: websocket", "websocket" in upgrade_hdr),
+                                ("Connection: …Upgrade…", "upgrade" in connection_hdr),
+                                ("Sec-WebSocket-Key", bool(key)),
+                            )
+                            if not ok
+                        ],
+                    }
+                ).encode("utf-8")
+                self.send_response(426, "Upgrade Required")
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Upgrade", "websocket")
+                self.send_header("X-Palm-WS-Diag", diag)
+                self.send_header("X-Palm-Version", palm_version)
+                self.end_headers()
+                self.wfile.write(body)
+                return True
 
             accept = websocket_accept_key(key)
             self.send_response(101, "Switching Protocols")
             self.send_header("Upgrade", "websocket")
             self.send_header("Connection", "Upgrade")
             self.send_header("Sec-WebSocket-Accept", accept)
+            self.send_header("X-Palm-WS-Diag", diag)
+            self.send_header("X-Palm-Version", palm_version)
             # Avoid accidental Content-Length on 101 (some proxies mishandle it)
             self.end_headers()
 
