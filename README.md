@@ -439,7 +439,7 @@ High-level direction (not all shipped yet). Full detail in [SCOPE.md](SCOPE.md).
 
 | Theme | Direction |
 |-------|-----------|
-| **Runtimes** | WebSocket surface, persistent plan registry, richer server auth |
+| **Runtimes** | WebSocket Assist channel + Portal backend ([VISION-0.32](docs/VISION-0.32.md)), persistent plan registry, richer server auth |
 | **Middleware** | Runtime-level auth/observability; optional BT guard nodes for step policy |
 | **Compute** | `KernelLeaf` GPU nodes, resident kernels, dataset staging (Parquet → context → kernel → artifact) |
 | **Observability** | Structured events, long-running job management |

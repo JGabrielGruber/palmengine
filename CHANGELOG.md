@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **0.32 WebSocket Assist & Portal backend (foundation)** — [VISION-0.32.md](docs/VISION-0.32.md); design [spec](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md). Assist-first WS protocol draft for Portal PWA / future mobile; docs-only in 0.32.0.
+
 ## [0.31.5] — 2026-07-08
 
 **Bundled release since 0.30.7** — terminal assistant polish (0.30.8) and **MCP meta-surface / progressive disclosure** (0.31.0–0.31.4). Upgrade notes: [MIGRATION-0.30.md](MIGRATION-0.30.md) (§ 0.31.1 surface, 0.31.2 aliases).

@@ -388,7 +388,24 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Theme:** Progressive disclosure — thin host tool catalog; `palm_assist` as meta-execute; measure catalog/turn size. Default surface stays **full** until assist-only is proven.
 
-**Also tracked (outside 0.30 critical path):** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff, WebSocket assist stream · **0.23.2** mutation gate (local).
+### 0.32 — WebSocket Assist & Portal Backend (active, open-ended)
+
+**Vision:** [docs/VISION-0.32.md](docs/VISION-0.32.md)  
+**Design:** [docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md)  
+**Plan:** [docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md)
+
+| Phase | Theme | Status |
+|-------|-------|--------|
+| 0.32.0 | Vision + protocol draft + Portal arc (docs-only) | ✅ Documented |
+| 0.32.1 | Real WebSocket transport MVP | ⬜ Open |
+| 0.32.2 | Assist channel (dispatch ↔ turn frames) | ⬜ Open |
+| 0.32.3 | Continuity (reconnect, auth hook) | ⬜ Open |
+| 0.32.4 | Portal dogfood chat shell | ⬜ Open |
+| 0.32.5+ | Open (events, PWA polish, Android, …) | ⬜ Open |
+
+**Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. Stub `WebSocketSurface` remains until 0.32.1.
+
+**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 
 
 ## Useful Links

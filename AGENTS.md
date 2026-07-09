@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.31.5 shipped — MCP meta-surface + progressive disclosure)
+**Last updated:** July 2026 (0.31.5 · 0.32 WebSocket Assist / Portal track open)
 
 ---
 
