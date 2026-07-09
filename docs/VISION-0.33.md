@@ -1,6 +1,6 @@
 # VISION 0.33 — Assist modularity (tool vs chat, small files)
 
-**Status:** scaffolding  
+**Status:** in progress (0.33.0–0.33.1 scaffolded)  
 **Depends on:** 0.32 WebSocket Assist / Portal  
 **Goal:** Split Assist like Execution — façade + subdomains + **tool** / **chat** profiles. Prefer many small modules over god files.
 
@@ -101,9 +101,9 @@ assist.dispatch(path, params, profile="chat")  # explicit later
 
 | Step | Work | Status |
 |------|------|--------|
-| 0.33.0 | File map + VISION; split `present/` from `views.py` | this cut |
-| 0.33.1 | Split façade: scenarios / sessions / catalog | next |
-| 0.33.2 | `profiles/tool` + `profiles/chat`; move auto-* from WS | |
+| 0.33.0 | File map + VISION; split `present/` from `views.py` | ✅ |
+| 0.33.1 | Façade leafs: scenarios / sessions / catalog | ✅ |
+| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | next |
 | 0.33.3 | Split MCP `dispatch` into `shape/*` | |
 | 0.33.4 | Optional Bot façade only if product needs persona/LLM | optional |
 

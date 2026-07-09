@@ -9,6 +9,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.33.0 Assist modularity (scaffold)** — split presentation into `palm.services.assist.present/*`;
   **tool vs chat** profiles under `profiles/`; handoff → `sessions/handoff.py`; helpers → `_params` / `_view_meta`.
   Compat: `assist.views` re-exports. Vision: [VISION-0.33.md](docs/VISION-0.33.md).
+- **0.33.1 Execution-shaped leafs** — `AssistService.scenarios` / `.sessions` / `.catalog`;
+  domain work lives in small services; façade `dispatch` + stable public methods delegate.
+  Discover → `catalog/discover.py`.
 
 ## [0.32.10] — 2026-07-09
 

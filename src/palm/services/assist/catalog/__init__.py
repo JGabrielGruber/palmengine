@@ -1,5 +1,5 @@
 """Assist catalog subdomain — discover / doctor / lists."""
 
-# Leaf service methods still on AssistService façade (0.33.1 will move catalog ops here).
+from palm.services.assist.catalog.service import AssistCatalogService
 
-__all__: list[str] = []
+__all__ = ["AssistCatalogService"]
