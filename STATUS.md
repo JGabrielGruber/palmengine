@@ -397,7 +397,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Phase | Theme | Status |
 |-------|-------|--------|
 | 0.32.0 | Vision + protocol draft + Portal arc (docs-only) | ✅ Documented |
-| 0.32.1 | Real WebSocket transport MVP | ⬜ Open |
+| 0.32.1 | Real WebSocket transport MVP (hello/ping on `/ws/v1/assist`) | ✅ Shipped |
 | 0.32.2 | Assist channel (dispatch ↔ turn frames) | ⬜ Open |
 | 0.32.3 | Continuity (reconnect, auth hook) | ⬜ Open |
 | 0.32.4 | Portal dogfood chat shell | ⬜ Open |

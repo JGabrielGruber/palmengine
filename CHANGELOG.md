@@ -7,6 +7,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Added
 
 - **0.32 WebSocket Assist & Portal backend (foundation)** — [VISION-0.32.md](docs/VISION-0.32.md); design [spec](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md). Assist-first WS protocol draft for Portal PWA / future mobile; docs-only in 0.32.0.
+- **0.32.1 WebSocket transport MVP** — pure-Python RFC6455 on stdlib HTTP; `GET /ws/v1/assist` upgrade; server `hello` + client `ping`/`pong`; `GET /v1/surfaces/websocket` reports `live`; `dispatch` frames deferred to 0.32.2.
 
 ## [0.31.5] — 2026-07-08
 

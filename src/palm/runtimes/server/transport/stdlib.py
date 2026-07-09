@@ -93,6 +93,8 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             return None
 
         def do_GET(self) -> None:
+            if self._try_websocket_upgrade():
+                return
             self._dispatch("GET")
 
         def do_POST(self) -> None:
@@ -106,6 +108,47 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
 
         def do_DELETE(self) -> None:
             self._dispatch("DELETE")
+
+        def _try_websocket_upgrade(self) -> bool:
+            """0.32.1 — handle WebSocket upgrade for Assist channel."""
+            from palm.runtimes.server.surfaces.websocket.frames import (
+                is_websocket_upgrade,
+                websocket_accept_key,
+            )
+            from palm.runtimes.server.surfaces.websocket.session import (
+                ASSIST_WS_PATH,
+                run_assist_websocket,
+            )
+
+            headers = {key: value for key, value in self.headers.items()}
+            parsed = urlparse(self.path)
+            if parsed.path.rstrip("/") != ASSIST_WS_PATH.rstrip("/"):
+                return False
+            if not is_websocket_upgrade(headers):
+                return False
+
+            key = headers.get("Sec-WebSocket-Key") or headers.get("sec-websocket-key")
+            if not key:
+                return False
+
+            accept = websocket_accept_key(key)
+            self.send_response(101, "Switching Protocols")
+            self.send_header("Upgrade", "websocket")
+            self.send_header("Connection", "Upgrade")
+            self.send_header("Sec-WebSocket-Accept", accept)
+            self.end_headers()
+
+            ctx = getattr(app, "context", None)
+            try:
+                run_assist_websocket(
+                    rfile=self.rfile,
+                    wfile=self.wfile,
+                    ctx=ctx,
+                    headers=headers,
+                )
+            except Exception:
+                pass
+            return True
 
         def _dispatch(self, method: str) -> None:
             parsed = urlparse(self.path)
