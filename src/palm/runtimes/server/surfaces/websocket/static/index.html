@@ -22,6 +22,7 @@
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" id="btn-menu" class="ghost" title="Palm menu">Menu</button>
         <button type="button" id="btn-start" class="ghost">Start</button>
         <button type="button" id="btn-min" class="ghost" aria-label="Minimize">—</button>
       </div>
@@ -31,6 +32,10 @@
     <div id="log" class="log" role="log" aria-live="polite"></div>
 
     <form id="composer" class="composer">
+      <div id="menu-search-row" class="menu-search-row" hidden>
+        <input id="menu-search" type="search" autocomplete="off" placeholder="Search this menu…" />
+        <button type="button" id="btn-menu-search" class="ghost">Find</button>
+      </div>
       <div id="choices" class="choices"></div>
       <div id="field-host" class="field-host"></div>
       <div class="composer-row">

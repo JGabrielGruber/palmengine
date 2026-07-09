@@ -120,6 +120,23 @@ def test_design_auto_start_intent_set() -> None:
     assert "create-flow" in CHAT_DESIGN_AUTO_START_INTENTS
 
 
+def test_browse_menu_actions_on_operator_intent() -> None:
+    from palm.services.assist.profiles.actions_chat import ensure_browse_menu_actions
+
+    payload = {
+        "status": "waiting",
+        "scenario_id": "operator-entry",
+        "compose": {"step": "intent"},
+        "choices": [{"value": "todo-builder"}, {"value": "improve-flow"}],
+        "actions": [{"label": "Cancel session", "path": ["assist", "session", "x", "cancel"]}],
+    }
+    out = ensure_browse_menu_actions(payload)
+    assert any(
+        a.get("alias") == "assist/menu" and (a.get("params") or {}).get("section") == "flows"
+        for a in out.get("actions") or []
+    )
+
+
 def test_maybe_auto_start_design_entry_chain() -> None:
     calls: list[tuple[list[str], dict]] = []
 

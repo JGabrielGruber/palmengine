@@ -1,7 +1,7 @@
 /**
- * Palm Portal dogfood (0.32.11) — floating chat over WebSocket Assist.
+ * Palm Portal dogfood (0.34.4) — floating chat over WebSocket Assist.
  * Renders payload.input for dynamic widgets; dispatches path/alias/params frames.
- * Intro auto-continue: separate intro_banner bubble + real step question.
+ * Menu: search row, open:kind:id chips, header Menu; open tokens skip sticky session.
  * Mobile: no autofocus (keyboard covers chips); visualViewport sizes panel.
  */
 (() => {
@@ -17,7 +17,11 @@
   const form = $("composer");
   const btnSend = $("btn-send");
   const btnStart = $("btn-start");
+  const btnMenu = $("btn-menu");
   const btnMin = $("btn-min");
+  const menuSearchRow = $("menu-search-row");
+  const menuSearch = $("menu-search");
+  const btnMenuSearch = $("btn-menu-search");
 
   const messages = [];
   let typingEl = null;
@@ -29,12 +33,26 @@
     sessionId: null,
     flowId: null,
     lastInput: null,
+    lastPayload: null,
+    menuSection: "root",
     connected: false,
     /** true after we auto-open operator-entry on connect (human-first) */
     bootstrapped: false,
     /** true while waiting for a turn after dispatch */
     pending: false,
   };
+
+  function isOpenToken(value) {
+    return typeof value === "string" && value.startsWith("open:");
+  }
+
+  function isMenuPayload(payload) {
+    if (!payload) return false;
+    const schema = payload.input;
+    if (schema && (schema.widget === "menu" || schema.kind === "menu")) return true;
+    if (payload.kind === "menu") return true;
+    return false;
+  }
 
   /** True on touch / coarse pointer phones — avoid stealing focus. */
   function isMobileUi() {
@@ -398,9 +416,42 @@
     }
 
     state.lastInput = payload.input || null;
+    state.lastPayload = payload;
+    if (isMenuPayload(payload)) {
+      const sec =
+        (payload.input && payload.input.section) ||
+        payload.section ||
+        "root";
+      state.menuSection = sec;
+    }
     renderInput(payload);
     renderActions(payload.actions || []);
     scrollLogToEnd();
+  }
+
+  function renderChoiceChips(choices, { menu } = {}) {
+    for (const c of choices) {
+      const value = c.value != null ? c.value : c;
+      const label = c.label != null ? c.label : String(value);
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      if (menu || isOpenToken(String(value))) chip.classList.add("menu-item");
+      chip.textContent = c.n != null ? `${c.n}. ${label}` : label;
+      chip.onclick = () => submitValue(String(value));
+      choicesEl.appendChild(chip);
+    }
+  }
+
+  function setMenuSearchVisible(visible, section) {
+    if (!menuSearchRow) return;
+    menuSearchRow.hidden = !visible;
+    if (visible && menuSearch) {
+      menuSearch.placeholder =
+        section && section !== "root"
+          ? `Search ${section}…`
+          : "Search menu…";
+    }
   }
 
   function renderInput(payload) {
@@ -413,6 +464,7 @@
 
     const schema = payload.input;
     const status = payload.status;
+    const menuMode = isMenuPayload(payload);
 
     if (status === "complete" || status === "failed") {
       textInput.placeholder = "Session finished";
@@ -420,20 +472,22 @@
     }
 
     const choices = (schema && schema.choices) || payload.choices || [];
-    const widget = (schema && schema.widget) || (choices.length ? "choice" : "text");
+    let widget =
+      (schema && schema.widget) || (choices.length ? "choice" : "text");
+    if (menuMode) widget = "menu";
 
-    if (widget === "choice" && choices.length) {
-      textInput.placeholder = "Or type a choice value…";
-      for (const c of choices) {
-        const value = c.value != null ? c.value : c;
-        const label = c.label != null ? c.label : String(value);
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.className = "chip";
-        chip.textContent = c.n != null ? `${c.n}. ${label}` : label;
-        chip.onclick = () => submitValue(String(value));
-        choicesEl.appendChild(chip);
+    setMenuSearchVisible(widget === "menu", state.menuSection);
+
+    if (widget === "menu" && choices.length) {
+      textInput.placeholder = "Pick a row, or search above…";
+      renderChoiceChips(choices, { menu: true });
+      if (schema && schema.has_more) {
+        // Show more is usually an action; keep placeholder note
+        textInput.placeholder = "More rows available — use Show more";
       }
+    } else if (widget === "choice" && choices.length) {
+      textInput.placeholder = "Or type a choice value…";
+      renderChoiceChips(choices, { menu: false });
     } else if (widget === "confirm") {
       textInput.placeholder = "yes / no";
       for (const [label, value] of [
@@ -521,15 +575,41 @@
     if (action.alias) frame.alias = action.alias;
     if (action.path) frame.path = action.path;
     frame.params = { ...(action.params || {}) };
+    const alias = action.alias || "";
+    const navAlias =
+      alias === "assist/menu" ||
+      alias === "assist/open" ||
+      alias === "assist/doctor" ||
+      alias === "assist/discover" ||
+      alias === "assist/catalog/flows" ||
+      alias === "assist/catalog/waiting";
     const freshStart =
-      action.alias === "operator-entry/start" ||
-      action.alias === "design-entry/start" ||
-      (!!frame.params.flow_id && !frame.params.value && !frame.params.session_id && !action.path);
+      alias === "operator-entry/start" ||
+      alias === "design-entry/start" ||
+      navAlias ||
+      (!!frame.params.flow_id &&
+        !frame.params.value &&
+        !frame.params.session_id &&
+        !action.path);
     if (freshStart) {
-      state.sessionId = null;
-      state.flowId = frame.params.flow_id || null;
+      // Menu/open/start must not stick previous session onto params
+      if (!navAlias || alias === "operator-entry/start" || alias === "design-entry/start") {
+        state.sessionId = null;
+        state.flowId = frame.params.flow_id || null;
+      } else {
+        // pure nav: clear bind so next open starts clean
+        state.sessionId = null;
+        state.flowId = null;
+      }
       setMeta();
-      send({ op: "bind", id: nextId(), session_id: null, flow_id: frame.params.flow_id || null });
+      send({
+        op: "bind",
+        id: nextId(),
+        session_id: null,
+        flow_id: frame.params.flow_id || null,
+      });
+      delete frame.params.session_id;
+      if (navAlias) delete frame.params.flow_id;
     } else {
       if (!frame.params.session_id && state.sessionId) {
         frame.params.session_id = state.sessionId;
@@ -574,11 +654,65 @@
       return;
     }
     appendBubbleUser(v || "Skip");
+    // Menu open tokens → assist/open (no sticky session)
+    if (isOpenToken(v)) {
+      state.sessionId = null;
+      state.flowId = null;
+      setMeta();
+      send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
+      dispatch({
+        alias: "assist/open",
+        params: { value: v, format: "assistant", include_input_schema: true },
+      });
+      textInput.value = "";
+      return;
+    }
     const params = { value: v };
     if (state.sessionId) params.session_id = state.sessionId;
     if (state.flowId) params.flow_id = state.flowId;
     dispatch({ params });
     textInput.value = "";
+  }
+
+  function openPalmMenu(section) {
+    if (state.pending) return;
+    appendBubble("sys", section ? `Menu · ${section}…` : "Opening Palm menu…");
+    state.sessionId = null;
+    state.flowId = null;
+    state.menuSection = section || "root";
+    setMeta();
+    send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
+    const params = { format: "assistant", include_input_schema: true };
+    if (section) params.section = section;
+    send({
+      op: "dispatch",
+      id: nextId(),
+      format: "assistant",
+      alias: "assist/menu",
+      params,
+    });
+  }
+
+  function runMenuSearch() {
+    if (state.pending || !menuSearch) return;
+    const q = String(menuSearch.value || "").trim();
+    appendBubbleUser(q ? `Search: ${q}` : "Search (clear)");
+    state.sessionId = null;
+    state.flowId = null;
+    send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
+    const params = {
+      format: "assistant",
+      include_input_schema: true,
+      section: state.menuSection || "root",
+    };
+    if (q) params.query = q;
+    send({
+      op: "dispatch",
+      id: nextId(),
+      format: "assistant",
+      alias: "assist/menu",
+      params,
+    });
   }
 
   function appendBubbleUser(text) {
@@ -607,6 +741,21 @@
       params: {},
     });
   };
+
+  if (btnMenu) {
+    btnMenu.onclick = () => openPalmMenu("root");
+  }
+  if (btnMenuSearch) {
+    btnMenuSearch.onclick = () => runMenuSearch();
+  }
+  if (menuSearch) {
+    menuSearch.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        runMenuSearch();
+      }
+    });
+  }
 
   btnMin.onclick = () => {
     panel.hidden = true;

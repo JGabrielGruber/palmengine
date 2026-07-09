@@ -30,10 +30,55 @@ def filter_chat_noise_actions(actions: list[dict[str, Any]] | None) -> list[dict
     return out
 
 
+def ensure_browse_menu_actions(payload: dict[str, Any]) -> dict[str, Any]:
+    """On operator-entry intent waiting, offer Browse flows (0.34.4)."""
+    status = str(payload.get("status") or "")
+    if status not in {"waiting", "WAITING_FOR_INPUT"}:
+        return payload
+    scenario = str(payload.get("scenario_id") or "")
+    compose = payload.get("compose") if isinstance(payload.get("compose"), dict) else {}
+    step = str(compose.get("step") or "")
+    if scenario != "operator-entry" and step != "intent":
+        # still allow when choices look like operator intent menu
+        choices = payload.get("choices") or []
+        labels = " ".join(
+            str(c.get("value") or c.get("label") or "") for c in choices if isinstance(c, dict)
+        ).lower()
+        if "todo-builder" not in labels and "improve-flow" not in labels:
+            return payload
+    actions = list(payload.get("actions") or [])
+    aliases = {
+        (str(a.get("alias") or ""), str((a.get("params") or {}).get("section") or ""))
+        for a in actions
+        if isinstance(a, dict)
+    }
+    if ("assist/menu", "flows") in aliases or ("assist/menu", "") in aliases:
+        # may still want flows-specific
+        if any(a.get("alias") == "assist/menu" for a in actions if isinstance(a, dict)):
+            has_flows = any(
+                isinstance(a, dict)
+                and a.get("alias") == "assist/menu"
+                and (a.get("params") or {}).get("section") == "flows"
+                for a in actions
+            )
+            if has_flows:
+                return payload
+    out = dict(payload)
+    browse = {
+        "label": "Browse all flows",
+        "alias": "assist/menu",
+        "params": {"section": "flows"},
+    }
+    rest = [a for a in actions if isinstance(a, dict)]
+    out["actions"] = [browse, *rest]
+    return out
+
+
 def rewrite_actions_for_chat(payload: dict[str, Any]) -> dict[str, Any]:
     """Map peer MCP tool actions to dispatch-friendly alias/params; drop agent chrome."""
     actions = payload.get("actions")
     if not isinstance(actions, list):
+        payload = ensure_browse_menu_actions(payload)
         return payload
     rewritten: list[dict[str, Any]] = []
     for action in actions:
@@ -100,10 +145,11 @@ def rewrite_actions_for_chat(payload: dict[str, Any]) -> dict[str, Any]:
         out["actions"] = rewritten
     elif "actions" in out:
         out.pop("actions", None)
-    return out
+    return ensure_browse_menu_actions(out)
 
 
 __all__ = [
+    "ensure_browse_menu_actions",
     "filter_chat_noise_actions",
     "rewrite_actions_for_chat",
 ]

@@ -433,7 +433,8 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.34.1 | Chat L0: design auto-start → design-entry; confirm Yes/No; design CTAs | ✅ |
 | 0.34.2 | Menu protocol: `assist/menu` browse/search/page | ✅ |
 | 0.34.3 | `assist/open` + `open:kind:id` normalize; aliases | ✅ |
-| 0.34.4+ | Portal menu shell polish; richer waiting chips | ⬜ Open |
+| 0.34.4 | Portal menu shell (Menu, search, open tokens); Browse CTAs; waiting labels | ✅ |
+| 0.34.5+ | Typeahead debounce; session resume chips polish | ⬜ Open |
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 

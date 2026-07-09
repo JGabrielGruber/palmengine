@@ -295,6 +295,32 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
 .composer.busy {
   opacity: 0.85;
 }
+.menu-search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.menu-search-row[hidden] {
+  display: none !important;
+}
+.menu-search-row input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: #0b1220;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.menu-search-row input:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+.menu-search-row .ghost {
+  flex-shrink: 0;
+}
 .choices {
   display: flex;
   flex-wrap: wrap;
@@ -309,6 +335,12 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
   padding: 8px 10px;
   font-size: 13px;
   transition: background 0.12s ease, opacity 0.12s ease;
+}
+.chip.menu-item {
+  max-width: 100%;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.25;
 }
 .chip:hover { background: rgba(20, 184, 166, 0.22); }
 .chip:disabled {

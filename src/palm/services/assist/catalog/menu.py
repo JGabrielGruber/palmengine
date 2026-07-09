@@ -277,21 +277,32 @@ def menu_for_assist(
                 data.get("instance_id")
                 or data.get("session_id")
                 or data.get("id")
-                or data.get("job_id")
                 or ""
             )
+            job_id = str(data.get("job_id") or "")
+            if not sid and job_id:
+                sid = job_id
             if not sid:
                 continue
             flow = data.get("flow_name") or data.get("flow_id") or data.get("flow")
-            label = f"{sid[:16]}…" if len(sid) > 16 else sid
+            step = data.get("step") or data.get("current_step") or data.get("step_slug")
+            short = f"{sid[:12]}…" if len(sid) > 12 else sid
+            parts = []
             if flow:
-                label = f"{flow} · {label}"
+                parts.append(str(flow))
+            if step:
+                parts.append(f"@{step}")
+            parts.append(short)
+            label = " · ".join(parts)
+            summary_bits = [str(data.get("status") or "waiting")]
+            if job_id and job_id != sid:
+                summary_bits.append(f"job {job_id[:10]}")
             items.append(
                 {
                     "id": sid,
                     "kind": "session",
                     "label": label,
-                    "summary": str(data.get("status") or "waiting"),
+                    "summary": " · ".join(summary_bits),
                     "open": {"kind": "session", "id": sid},
                 }
             )

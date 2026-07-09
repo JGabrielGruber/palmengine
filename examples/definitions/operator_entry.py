@@ -111,6 +111,11 @@ def post_terminal_flow_actions(*, intent: str, label: str | None = None) -> list
                 "label": "Hand off to business flow",
                 "alias": "operator-entry/handoff",
             },
+            {
+                "label": "Browse all flows",
+                "alias": "assist/menu",
+                "params": {"section": "flows"},
+            },
             {"label": "Start operator entry", "alias": "operator-entry/start"},
         ]
     )
@@ -119,6 +124,16 @@ def post_terminal_flow_actions(*, intent: str, label: str | None = None) -> list
 def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
     session_id = payload.get("session_id")
     actions: list[dict[str, Any]] = [
+        {
+            "label": "Browse flows",
+            "alias": "assist/menu",
+            "params": {"section": "flows"},
+        },
+        {
+            "label": "Palm menu",
+            "alias": "assist/menu",
+            "params": {},
+        },
         {
             "label": "List flows",
             "alias": "assist/catalog/flows",
