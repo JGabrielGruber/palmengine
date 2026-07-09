@@ -120,6 +120,28 @@ def test_design_auto_start_intent_set() -> None:
     assert "create-flow" in CHAT_DESIGN_AUTO_START_INTENTS
 
 
+def test_shape_waiting_resume_chips() -> None:
+    from palm.runtimes.mcp.assist.shape.catalog import shape_waiting_assistant
+
+    shaped = shape_waiting_assistant(
+        [
+            {
+                "instance_id": "inst-abc123456789",
+                "flow_name": "todo-builder",
+                "step": "todos",
+                "status": "WAITING_FOR_INPUT",
+            }
+        ]
+    )
+    assert shaped["waiting_count"] == 1
+    assert shaped["choices"]
+    assert shaped["choices"][0]["value"] == "open:session:inst-abc123456789"
+    assert shaped["input"]["widget"] == "menu"
+    assert any(
+        a.get("alias") == "assist/open" for a in shaped.get("actions") or []
+    )
+
+
 def test_browse_menu_actions_on_operator_intent() -> None:
     from palm.services.assist.profiles.actions_chat import ensure_browse_menu_actions
 

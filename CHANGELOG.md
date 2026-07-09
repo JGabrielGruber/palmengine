@@ -14,6 +14,8 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
   - **0.34.3 Open** — `assist/open` (+ alias); normalize routes `value=open:flow:…` to open (not session input).
   - **0.34.4 Portal menu shell** — header **Menu**, in-panel search, `open:` chips without sticky session;
     operator-entry **Browse all flows**; richer waiting-session labels.
+  - **0.34.5** — Portal menu **typeahead debounce** (350ms, silent); waiting list/catalog as **Resume chips**
+    (`open:session:…`); open session attaches `flow_id` + continue CTA.
 - **0.33.0 Assist modularity (scaffold)** — split presentation into `palm.services.assist.present/*`;
   **tool vs chat** profiles under `profiles/`; handoff → `sessions/handoff.py`; helpers → `_params` / `_view_meta`.
   Compat: `assist.views` re-exports. Vision: [VISION-0.33.md](docs/VISION-0.33.md).

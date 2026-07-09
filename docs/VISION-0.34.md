@@ -1,6 +1,6 @@
 # VISION 0.34 — Assist operator remote (menu + open + chat L0)
 
-**Status:** 0.34.0–0.34.4 shipped  
+**Status:** 0.34.0–0.34.5 shipped  
 **Depends on:** 0.33 Assist modularity (tool vs chat, leaf services)  
 **Non-goal:** Bot / LLM pilot (deferred). Assist is the remote; Portal/MCP are clients.
 
@@ -44,6 +44,7 @@ No Bot package until menus and open targets are complete.
 | **0.34.2** | Menu protocol: `assist/menu`, search, cursor page, actionable items |
 | **0.34.3** | `assist/open` — flow / scenario / session / alias; wire grammar + shape + aliases |
 | **0.34.4** | Portal menu shell (Menu, search, open tokens); Browse CTAs; waiting labels |
+| **0.34.5** | Typeahead debounce; waiting resume chips; open session polish |
 
 ## Menu turn shape (chat + tool)
 

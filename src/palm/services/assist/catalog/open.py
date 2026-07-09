@@ -79,11 +79,51 @@ def open_target(
         )
 
     if kind_s in {"session", "instance"}:
-        return assist.sessions.inspect(
+        # Optional resume verb before inspect (0.34.5)
+        action = str(params.get("action") or params.get("verb") or "").lower()
+        if action in {"resume", "continue"}:
+            try:
+                return assist.sessions.apply_verb(tid, "resume", params)
+            except Exception:
+                pass
+        view = assist.sessions.inspect(
             tid,
             view_format=view_format,
             include_input_schema=include_input,
         )
+        # Attach flow_id from params or inspect for Portal bind
+        if isinstance(view, dict):
+            flow = params.get("flow_id") or view.get("flow_id")
+            refs = view.get("refs") if isinstance(view.get("refs"), dict) else {}
+            if not flow and refs.get("flow_id"):
+                flow = refs["flow_id"]
+            if flow:
+                view = dict(view)
+                view.setdefault("flow_id", flow)
+                r = dict(view.get("refs") or {})
+                r.setdefault("flow_id", flow)
+                view["refs"] = r
+            # Human CTA if still waiting
+            status = str(view.get("status") or "").lower()
+            if status in {"waiting", "waiting_for_input"}:
+                actions = list(view.get("actions") or [])
+                labels = {str(a.get("label") or "").lower() for a in actions if isinstance(a, dict)}
+                if "resume session" not in labels and "continue" not in labels:
+                    actions.insert(
+                        0,
+                        {
+                            "label": "Continue answering",
+                            "alias": "assist/open",
+                            "params": {
+                                "kind": "session",
+                                "id": tid,
+                                **({"flow_id": flow} if flow else {}),
+                            },
+                        },
+                    )
+                    view = dict(view)
+                    view["actions"] = actions
+        return view
 
     if kind_s in {"alias", "path"}:
         # Resolve via assist dispatch of alias-like path segments is caller's job;

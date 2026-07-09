@@ -297,16 +297,20 @@ def menu_for_assist(
             summary_bits = [str(data.get("status") or "waiting")]
             if job_id and job_id != sid:
                 summary_bits.append(f"job {job_id[:10]}")
+            open_spec: dict[str, Any] = {"kind": "session", "id": sid}
+            if flow:
+                open_spec["flow_id"] = str(flow)
             items.append(
                 {
                     "id": sid,
                     "kind": "session",
-                    "label": label,
+                    "label": f"Resume · {label}" if not label.lower().startswith("resume") else label,
                     "summary": " · ".join(summary_bits),
-                    "open": {"kind": "session", "id": sid},
+                    "open": open_spec,
+                    "flow_id": str(flow) if flow else None,
                 }
             )
-        return build_menu_page(
+        page = build_menu_page(
             section="waiting",
             query=query,
             cursor=cursor,
@@ -314,6 +318,11 @@ def menu_for_assist(
             items=items,
             title="Waiting sessions",
         )
+        page["hint"] = (
+            "Tap Resume to open a waiting session and continue answering. "
+            "Search by flow name or session id."
+        )
+        return page
 
     if sec in {"scenarios", "scenario"}:
         from palm.services.assist.registry import list_scenario_rows

@@ -126,7 +126,7 @@ def shape_waiting_assistant(
     *,
     params: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Waiting jobs/sessions as assistant turn (0.31.2)."""
+    """Waiting jobs/sessions as assistant turn (0.31.2 / 0.34.5 resume chips)."""
     del params  # reserved for future filters
     rows: list[Any]
     if isinstance(result, list):
@@ -138,36 +138,116 @@ def shape_waiting_assistant(
     else:
         rows = []
     slim: list[dict[str, Any]] = []
-    for row in rows[:20]:
+    choices: list[dict[str, Any]] = []
+    resume_actions: list[dict[str, Any]] = []
+    for index, row in enumerate(rows[:20], start=1):
         if not isinstance(row, dict):
             continue
-        slim.append(
+        sid = row.get("instance_id") or row.get("session_id") or row.get("id")
+        if sid is None:
+            continue
+        sid_s = str(sid)
+        flow = row.get("flow_name") or row.get("flow_id") or row.get("flow")
+        step = row.get("step") or row.get("current_step") or row.get("step_slug")
+        status = row.get("status")
+        entry = {
+            k: row[k]
+            for k in (
+                "session_id",
+                "instance_id",
+                "job_id",
+                "flow",
+                "flow_id",
+                "flow_name",
+                "status",
+                "step",
+            )
+            if row.get(k) is not None
+        }
+        if "instance_id" not in entry and "session_id" not in entry:
+            entry["session_id"] = sid_s
+        slim.append(entry)
+        short = f"{sid_s[:12]}…" if len(sid_s) > 12 else sid_s
+        label_parts = ["Resume"]
+        if flow:
+            label_parts.append(str(flow))
+        if step:
+            label_parts.append(f"@{step}")
+        label_parts.append(short)
+        label = " · ".join(label_parts)
+        choices.append(
             {
-                k: row[k]
-                for k in ("session_id", "instance_id", "job_id", "flow", "flow_id", "status")
-                if row.get(k) is not None
+                "n": index,
+                "label": label,
+                "value": f"open:session:{sid_s}",
             }
         )
-    return {
+        open_params: dict[str, Any] = {"kind": "session", "id": sid_s}
+        if flow:
+            open_params["flow_id"] = str(flow)
+        resume_actions.append(
+            {
+                "label": label if len(label) < 40 else f"Resume {flow or short}",
+                "alias": "assist/open",
+                "params": open_params,
+            }
+        )
+    actions: list[dict[str, Any]] = list(resume_actions[:8])
+    actions.extend(
+        [
+            {
+                "label": "Waiting menu",
+                "alias": "assist/menu",
+                "params": {"section": "waiting"},
+            },
+            {"label": "Browse flows", "alias": "assist/menu", "params": {"section": "flows"}},
+            {"label": "Operator entry", "alias": "operator-entry/start"},
+        ]
+    )
+    out: dict[str, Any] = {
         "status": "ok",
+        "kind": "menu",
+        "section": "waiting",
         "question": f"{len(rows)} session(s) waiting for input.",
         "hint": (
-            "Continue with palm_assist(params={session_id, flow_id, value})."
+            "Tap a Resume chip to open that session, or use the Waiting menu."
             if rows
             else "Nothing waiting."
         ),
         "waiting_count": len(rows),
         "waiting": slim,
-        "actions": [
-            {"label": "List flows", "alias": "assist/catalog/flows"},
-            {"label": "Operator entry", "alias": "operator-entry/start"},
-        ],
+        "actions": actions,
     }
+    if choices:
+        items = []
+        for s, c in zip(slim, choices):
+            iid = str(s.get("instance_id") or s.get("session_id") or "")
+            items.append(
+                {
+                    "id": iid,
+                    "kind": "session",
+                    "label": c["label"],
+                    "open": {"kind": "session", "id": iid},
+                }
+            )
+        out["choices"] = choices
+        out["items"] = items
+        out["input"] = {
+            "kind": "menu",
+            "widget": "menu",
+            "section": "waiting",
+            "choices": choices,
+            "interactive": True,
+            "field_type": "choice",
+            "prompt": f"{len(rows)} waiting session(s)",
+        }
+    return out
 
 
 __all__ = [
     "shape_discover_assistant",
     "shape_doctor_assistant",
     "shape_flows_catalog_assistant",
+    "shape_menu_assistant",
     "shape_waiting_assistant",
 ]

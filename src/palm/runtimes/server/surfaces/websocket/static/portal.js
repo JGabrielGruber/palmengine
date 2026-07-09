@@ -1,7 +1,7 @@
 /**
- * Palm Portal dogfood (0.34.4) — floating chat over WebSocket Assist.
+ * Palm Portal dogfood (0.34.5) — floating chat over WebSocket Assist.
  * Renders payload.input for dynamic widgets; dispatches path/alias/params frames.
- * Menu: search row, open:kind:id chips, header Menu; open tokens skip sticky session.
+ * Menu: debounced typeahead search, open:kind:id chips, header Menu.
  * Mobile: no autofocus (keyboard covers chips); visualViewport sizes panel.
  */
 (() => {
@@ -26,6 +26,9 @@
   const messages = [];
   let typingEl = null;
   let pendingTimer = null;
+  let menuSearchTimer = null;
+  let lastMenuQuerySent = null;
+  const MENU_SEARCH_DEBOUNCE_MS = 350;
 
   const state = {
     ws: null,
@@ -693,17 +696,31 @@
     });
   }
 
-  function runMenuSearch() {
-    if (state.pending || !menuSearch) return;
+  function runMenuSearch(opts) {
+    const options = opts || {};
+    if (!menuSearch) return;
+    if (state.pending && options.fromDebounce) return;
+    if (state.pending && !options.force) return;
     const q = String(menuSearch.value || "").trim();
-    appendBubbleUser(q ? `Search: ${q}` : "Search (clear)");
+    // Avoid duplicate dispatches (debounce re-fires same query)
+    const section = state.menuSection || "root";
+    const key = `${section}::${q}`;
+    if (options.fromDebounce && key === lastMenuQuerySent && !options.force) {
+      return;
+    }
+    lastMenuQuerySent = key;
+    if (!options.silent) {
+      appendBubbleUser(q ? `Search: ${q}` : "Search (clear)");
+    } else if (q) {
+      setMeta(`Searching ${section}…`);
+    }
     state.sessionId = null;
     state.flowId = null;
     send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
     const params = {
       format: "assistant",
       include_input_schema: true,
-      section: state.menuSection || "root",
+      section,
     };
     if (q) params.query = q;
     send({
@@ -713,6 +730,14 @@
       alias: "assist/menu",
       params,
     });
+  }
+
+  function scheduleMenuSearch() {
+    if (menuSearchTimer) clearTimeout(menuSearchTimer);
+    menuSearchTimer = setTimeout(() => {
+      menuSearchTimer = null;
+      runMenuSearch({ silent: true, fromDebounce: true });
+    }, MENU_SEARCH_DEBOUNCE_MS);
   }
 
   function appendBubbleUser(text) {
@@ -746,13 +771,20 @@
     btnMenu.onclick = () => openPalmMenu("root");
   }
   if (btnMenuSearch) {
-    btnMenuSearch.onclick = () => runMenuSearch();
+    btnMenuSearch.onclick = () => {
+      if (menuSearchTimer) clearTimeout(menuSearchTimer);
+      menuSearchTimer = null;
+      runMenuSearch({ force: true });
+    };
   }
   if (menuSearch) {
+    menuSearch.addEventListener("input", () => scheduleMenuSearch());
     menuSearch.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        runMenuSearch();
+        if (menuSearchTimer) clearTimeout(menuSearchTimer);
+        menuSearchTimer = null;
+        runMenuSearch({ force: true });
       }
     });
   }
