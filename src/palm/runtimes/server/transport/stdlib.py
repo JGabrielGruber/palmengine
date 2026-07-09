@@ -113,7 +113,11 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             self._dispatch("DELETE")
 
         def _try_websocket_upgrade(self) -> bool:
-            """0.32.1 — handle WebSocket upgrade for Assist channel."""
+            """0.32.1 — handle WebSocket upgrade for Assist channel.
+
+            Proxies (Cloudflare Tunnel) may send mixed-case header names.
+            Always resolve handshake fields case-insensitively.
+            """
             from palm.runtimes.server.surfaces.websocket.frames import (
                 is_websocket_upgrade,
                 websocket_accept_key,
@@ -123,14 +127,24 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
                 run_assist_websocket,
             )
 
+            # Preserve original pairs for session; use lower map for decisions
             headers = {key: value for key, value in self.headers.items()}
+            lower = {str(k).lower(): str(v) for k, v in headers.items()}
             parsed = urlparse(self.path)
-            if parsed.path.rstrip("/") != ASSIST_WS_PATH.rstrip("/"):
+            path = parsed.path.rstrip("/") or "/"
+            target = ASSIST_WS_PATH.rstrip("/") or "/"
+            if path != target:
                 return False
-            if not is_websocket_upgrade(headers):
+            # Prefer lower-map check so SEC-WEBSOCKET-KEY / Connection: Upgrade work
+            upgrade_ok = (
+                "websocket" in lower.get("upgrade", "").lower()
+                and "upgrade" in lower.get("connection", "").lower()
+                and bool(lower.get("sec-websocket-key", "").strip())
+            )
+            if not upgrade_ok and not is_websocket_upgrade(headers):
                 return False
 
-            key = headers.get("Sec-WebSocket-Key") or headers.get("sec-websocket-key")
+            key = (lower.get("sec-websocket-key") or "").strip()
             if not key:
                 return False
 
@@ -139,6 +153,7 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             self.send_header("Upgrade", "websocket")
             self.send_header("Connection", "Upgrade")
             self.send_header("Sec-WebSocket-Accept", accept)
+            # Avoid accidental Content-Length on 101 (some proxies mishandle it)
             self.end_headers()
 
             ctx = getattr(app, "context", None)

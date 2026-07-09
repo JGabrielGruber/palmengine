@@ -28,11 +28,15 @@ def websocket_accept_key(sec_websocket_key: str) -> str:
 
 
 def is_websocket_upgrade(headers: dict[str, str]) -> bool:
-    """True when the request is a WebSocket upgrade handshake."""
-    lower = {k.lower(): v for k, v in headers.items()}
+    """True when the request is a WebSocket upgrade handshake.
+
+    Header names are matched case-insensitively (proxies vary casing).
+    ``Connection`` may be a list, e.g. ``keep-alive, Upgrade``.
+    """
+    lower = {str(k).lower(): str(v) for k, v in headers.items()}
     upgrade = lower.get("upgrade", "").lower()
     connection = lower.get("connection", "").lower()
-    key = lower.get("sec-websocket-key", "")
+    key = (lower.get("sec-websocket-key") or "").strip()
     return "websocket" in upgrade and "upgrade" in connection and bool(key)
 
 

@@ -94,6 +94,7 @@ class WebSocketSurface(BaseSurface):
         lower = {str(k).lower(): str(v) for k, v in (request.headers or {}).items()}
         # Help diagnose reverse proxies (e.g. Cloudflare) that drop Upgrade
         present = {
+            "path": getattr(request, "path", None),
             "upgrade": lower.get("upgrade"),
             "connection": lower.get("connection"),
             "sec-websocket-key": bool(lower.get("sec-websocket-key")),
