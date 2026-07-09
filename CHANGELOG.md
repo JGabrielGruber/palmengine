@@ -4,19 +4,42 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added
+## [0.32.10] — 2026-07-09
 
-- **0.32 WebSocket Assist & Portal backend (foundation)** — [VISION-0.32.md](docs/VISION-0.32.md); design [spec](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md). Assist-first WS protocol draft for Portal PWA / future mobile; docs-only in 0.32.0.
-- **0.32.1 WebSocket transport MVP** — pure-Python RFC6455 on stdlib HTTP; `GET /ws/v1/assist` upgrade; server `hello` + client `ping`/`pong`; `GET /v1/surfaces/websocket` reports `live`.
-- **0.32.2 WebSocket assist channel** — `dispatch` frames use the same path/alias/params spine as MCP `palm_assist` and return assistant `turn` payloads; peer-tool actions rewritten for WS clients.
-- **0.32.3 Portal input schema + continuity** — structured ``input`` (widget, field_type, choices, validation, collection) on **WebSocket** turns for Portal; **MCP omits** ``input`` by default (token budget); WS ``bind`` / auto-bind; hello auth mode; create re-inspects for first-turn schema.
-- **0.32.4 Portal dogfood shell** — static chat UI at ``GET /portal/`` (FAB + panel, choice chips, text/confirm/collection widgets from ``payload.input``); assets co-located under ``websocket/static/``; ``?open=1`` auto-connects WS Assist.
-- **0.32.5 Human-first Portal dogfood** — demo intents skip summary; terminal **Start {flow}** CTA; WS **auto-starts** todo/compositional/coconut after operator-entry complete; flows-path carries ``handoff_ready`` + scenario enricher; summary **no** backtracks; Portal drops agent chrome actions; bind clear on fresh start; assist turns can rebuild ``input`` schema for WS.
-- **0.32.6 Portal first-turn / lock fix** — ``include_input_schema`` threaded through AssistService; WS sets the flag; shape attaches ``input`` without re-humanizing (no empty question / read-only mutation); strip greeting ``value`` from ``run_wizard`` body; Portal keeps composer open while ``waiting``; regression test for ``value=Hi``.
-- **0.32.7 Portal open + bind** — on WS ``hello``, Portal auto-starts operator-entry (no need to type Hello); after demo auto-start, ``bound.flow_id`` / ``refs.flow_id`` track the business flow (not sticky operator-entry).
-- **0.32.8 Auto-continue introduction** — WebSocket Assist advances past ``introduction`` steps (empty ack) and keeps the welcome text as a banner on the first real step (e.g. Todo Builder lands on the collection menu). Opt out: ``auto_continue_intro=false``.
-- **0.32.9 Optional Skip + cleanup** — collection field prompts carry active-field ``required``; optional fields expose ``skip_allowed`` + Portal **Skip** chip; empty/skip tokens accepted; finish blurb includes collection item counts; ``handoff_ready`` no longer set on ordinary business-flow complete.
-- **0.32.10 Portal chat polish** — auto-continue keeps ``intro_banner`` separate from step ``question`` (two bot bubbles); themed scrollbar; reliable end-scroll; typing/pending indicator while waiting for a turn; composer lock during dispatch.
+**Bundled release since 0.31.5** — **WebSocket Assist** transport + **Portal dogfood chat** (0.32.0–0.32.10). Same Assist meta-dispatch brain as MCP; human real-time channel for floating UI / future PWA.
+
+**Checklist:** [RELEASE-0.32.10.md](RELEASE-0.32.10.md) · **Vision:** [VISION-0.32.md](docs/VISION-0.32.md)
+
+### Added — WebSocket Assist (0.32.0–0.32.3)
+
+- **0.32 foundation** — [VISION-0.32.md](docs/VISION-0.32.md); design [spec](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md) + [plan](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md).
+- **0.32.1 transport MVP** — pure-Python RFC6455 on stdlib HTTP; `GET /ws/v1/assist`; `hello` / `ping`/`pong`; surface info `live`.
+- **0.32.2 assist channel** — `dispatch` frames → shared path/alias/params spine → assistant `turn` payloads.
+- **0.32.3 Portal input schema + continuity** — structured ``input`` (widget, field_type, choices, collection) on **WebSocket** turns; **MCP omits** ``input`` by default; WS ``bind`` / auto-bind; hello auth mode.
+
+### Added — Portal dogfood (0.32.4–0.32.10)
+
+- **0.32.4** — Static chat at `GET /portal/` (FAB + panel, chips from ``payload.input``).
+- **0.32.5** — Human-first demos: skip summary for demo intents; WS **auto-start** todo/compositional/coconut; summary **no** → backtrack; action hygiene.
+- **0.32.6** — First-turn lock fix (`include_input_schema` without clobbering assist turns).
+- **0.32.7** — Auto-open operator-entry on connect; correct ``bound.flow_id`` after handoff.
+- **0.32.8** — Auto-continue introduction steps (land on real work).
+- **0.32.9** — Optional field **Skip** chip; active-field ``required``; richer finish blurb; no false ``handoff_ready`` on business flows.
+- **0.32.10** — Split ``intro_banner`` / question bubbles; themed scrollbar; pending/thinking indicator.
+
+### Changed
+
+- WebSocket surface is **live** (no longer 501 placeholder).
+- Prefer `include_input_schema` only on human transports (WS); MCP stays token-lean.
+- Portal is a **dogfood** shell, not a full product PWA (auth, events, Android deferred).
+
+### Try it
+
+```bash
+just palm-server   # or: uv run palm server
+# open http://127.0.0.1:8080/portal/?open=1
+# ws: /ws/v1/assist
+```
 
 ## [0.31.5] — 2026-07-08
 
