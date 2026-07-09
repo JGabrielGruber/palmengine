@@ -2,7 +2,7 @@
 
 **Theme:** Give Palm a **real-time human transport** for Assist — WebSocket as a thin surface over the same meta-dispatch spine as MCP — so we can build **Portal** (lightweight PWA chat) and, later, a digital assistant experience on mobile.
 
-**Status:** **0.32.0** documented · **0.32.1** transport MVP shipped · 0.32.2+ open  
+**Status:** **0.32.0**–**0.32.2** shipped · 0.32.3+ open  
 **Depends on:** Assist Service 0.18–0.30 ✅ · MCP meta-surface 0.31 ✅ · ServerRuntime + REST assist ✅  
 **Design:** [websocket-assist-portal-design.md](superpowers/specs/2026-07-09-websocket-assist-portal-design.md)  
 **Plan:** [websocket-assist-portal-0.32.md](superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md)  

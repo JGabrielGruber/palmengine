@@ -62,10 +62,10 @@ class WebSocketSurface(BaseSurface):
                     "WebSocket Assist channel is available. "
                     f"Connect with Upgrade: websocket to {ASSIST_WS_PATH}."
                 ),
-                "detail": "0.32.1 transport MVP — hello/ping live; dispatch in 0.32.2.",
+                "detail": "0.32.2 assist channel — hello/ping/dispatch→turn.",
                 "mount_prefix": self.mount_prefix,
                 "assist_path": ASSIST_WS_PATH,
-                "ops": ["hello", "ping", "dispatch (0.32.2)"],
+                "ops": ["hello", "ping", "dispatch"],
             },
         )
 

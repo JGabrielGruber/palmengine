@@ -2,7 +2,7 @@
 
 **Vision:** [docs/VISION-0.32.md](../../VISION-0.32.md)  
 **Design:** [2026-07-09-websocket-assist-portal-design.md](../specs/2026-07-09-websocket-assist-portal-design.md)  
-**Status:** 0.32.0 ✅ · 0.32.1 ✅ · 0.32.2 open  
+**Status:** 0.32.0–0.32.2 ✅ · 0.32.3 open  
 
 Delivery: commit when good enough. **Insert phases freely** if dogfood demands it.
 

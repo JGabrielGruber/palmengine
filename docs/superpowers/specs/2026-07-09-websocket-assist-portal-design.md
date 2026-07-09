@@ -4,7 +4,7 @@
 |-------|--------|
 | **Document** | Design specification + protocol draft + open ladder |
 | **Date** | 2026-07-09 |
-| **Status** | **Draft for 0.32 track** (0.32.0 docs foundation) |
+| **Status** | **In progress** — 0.32.1 transport ✅ · 0.32.2 assist channel ✅ |
 | **Target track** | **0.32 WebSocket Assist + Portal backend** |
 | **Depends on** | Assist 0.18–0.30, MCP dispatch 0.19–0.31, ServerRuntime surfaces |
 | **Vision** | [docs/VISION-0.32.md](../../VISION-0.32.md) |

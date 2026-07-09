@@ -53,8 +53,9 @@ def test_handle_client_hello_and_ping() -> None:
 
     err = handle_client_message({"op": "dispatch", "id": "3", "params": {}})
     assert err is not None
+    # without ctx → unavailable (not not_implemented)
     assert err["op"] == "error"
-    assert err["error"]["code"] == "not_implemented"
+    assert err["error"]["code"] == "unavailable"
 
 
 def _mask_client_frame(payload: bytes, *, opcode: int = OP_TEXT) -> bytes:
@@ -117,6 +118,31 @@ def test_websocket_info_route_live(palm_server: ServerRuntime) -> None:
     assert body["protocol"] == PROTOCOL_VERSION
 
 
+def test_handle_dispatch_doctor_with_context(palm_server: ServerRuntime) -> None:
+    ctx = palm_server.server_app.context  # type: ignore[union-attr]
+    frame = handle_client_message(
+        {"op": "dispatch", "id": "d1", "alias": "assist/doctor"},
+        ctx=ctx,
+    )
+    assert frame is not None
+    assert frame["op"] == "turn"
+    assert frame["id"] == "d1"
+    payload = frame["payload"]
+    assert payload.get("question") or payload.get("doctor") or payload.get("status")
+
+
+def test_handle_dispatch_catalog_flows(palm_server: ServerRuntime) -> None:
+    ctx = palm_server.server_app.context  # type: ignore[union-attr]
+    frame = handle_client_message(
+        {"op": "dispatch", "id": "c1", "alias": "assist/catalog/flows"},
+        ctx=ctx,
+    )
+    assert frame is not None
+    assert frame["op"] == "turn"
+    payload = frame["payload"]
+    assert payload.get("question") or payload.get("flow_count") is not None
+
+
 def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
     h, port = palm_server.host, palm_server.port
     key = base64.b64encode(os.urandom(16)).decode("ascii")
@@ -155,5 +181,19 @@ def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
         pong = json.loads(payload.decode())
         assert pong["op"] == "pong"
         assert pong["id"] == "p1"
+
+        # 0.32.2 — dispatch doctor over the wire
+        sock.sendall(
+            _mask_client_frame(
+                json.dumps(
+                    {"op": "dispatch", "id": "doc1", "alias": "assist/doctor"}
+                ).encode()
+            )
+        )
+        opcode, payload = _read_server_frame(sock)
+        turn = json.loads(payload.decode())
+        assert turn["op"] == "turn"
+        assert turn["id"] == "doc1"
+        assert isinstance(turn.get("payload"), dict)
     finally:
         sock.close()

@@ -1,7 +1,7 @@
 """WebSocket Assist session loop — hello / ping / dispatch (0.32.1+).
 
-0.32.1: hello + ping/pong + echo error for unknown ops.
-0.32.2: wire ``dispatch`` to assist services.
+0.32.1: hello + ping/pong.
+0.32.2: ``dispatch`` → same spine as MCP ``palm_assist`` → ``turn`` frames.
 """
 
 from __future__ import annotations
@@ -51,6 +51,7 @@ def run_assist_websocket(
             "version": version,
             "channel": "assist",
             "path": ASSIST_WS_PATH,
+            "ops": ["hello", "ping", "dispatch"],
         },
     )
 
@@ -158,24 +159,14 @@ def handle_client_message(
             "channel": "assist",
             "ack": True,
             "client": message.get("client"),
+            "ops": ["hello", "ping", "dispatch"],
         }
 
     if op == "ping":
         return {"op": "pong", "id": msg_id}
 
     if op == "dispatch":
-        # 0.32.2 will wire AssistService; 0.32.1 returns not_implemented
-        return {
-            "op": "error",
-            "id": msg_id,
-            "error": {
-                "code": "not_implemented",
-                "message": (
-                    "dispatch frames land in 0.32.2; "
-                    "connection hello/ping are live in 0.32.1"
-                ),
-            },
-        }
+        return _handle_dispatch(message, ctx=ctx)
 
     return {
         "op": "error",
@@ -185,6 +176,188 @@ def handle_client_message(
             "message": f"unknown op {op!r}",
         },
     }
+
+
+def _handle_dispatch(
+    message: dict[str, Any],
+    *,
+    ctx: ServerContext | None,
+) -> dict[str, Any]:
+    """Run assist meta-dispatch (same spine as MCP palm_assist) → turn/error."""
+    msg_id = message.get("id")
+    if ctx is None:
+        return {
+            "op": "error",
+            "id": msg_id,
+            "error": {
+                "code": "unavailable",
+                "message": "server context not available for dispatch",
+            },
+        }
+
+    path_raw = message.get("path")
+    alias = message.get("alias")
+    params = message.get("params")
+    if params is None:
+        params = {}
+    if not isinstance(params, dict):
+        return {
+            "op": "error",
+            "id": msg_id,
+            "error": {
+                "code": "validation",
+                "message": "params must be an object",
+            },
+        }
+    params = dict(params)
+    # Allow top-level convenience keys (chat clients)
+    for key in ("value", "input", "session_id", "flow_id", "body", "query", "q"):
+        if key in message and key not in params:
+            params[key] = message[key]
+
+    path_list: list[str] | None = None
+    if isinstance(path_raw, list):
+        path_list = [str(p) for p in path_raw]
+    elif path_raw is not None:
+        return {
+            "op": "error",
+            "id": msg_id,
+            "error": {
+                "code": "validation",
+                "message": "path must be an array of strings",
+            },
+        }
+
+    try:
+        from palm.runtimes.mcp.assist.dispatch import (
+            dispatch_operator_path,
+            normalize_assist_dispatch_args,
+            resolve_dispatch_path,
+            shape_dispatch_result,
+        )
+        from palm.services.assist.views import ensure_assist_view_registration
+
+        ensure_assist_view_registration()
+        norm_path, norm_alias, dispatch_params, _used_default = (
+            normalize_assist_dispatch_args(
+                path=path_list,
+                alias=str(alias) if alias is not None else None,
+                params=params,
+            )
+        )
+        resolved = resolve_dispatch_path(
+            path=norm_path,
+            alias=norm_alias,
+            params=dispatch_params,
+        )
+        raw = dispatch_operator_path(ctx, resolved, dispatch_params)
+        view_format = str(message.get("format") or "assistant")
+        shaped = shape_dispatch_result(
+            resolved,
+            raw,
+            format=view_format,
+            params=dispatch_params,
+            tool_format=view_format,
+        )
+        shaped = _rewrite_actions_for_websocket(shaped)
+        return {
+            "op": "turn",
+            "id": msg_id,
+            "payload": shaped,
+        }
+    except ValueError as exc:
+        return {
+            "op": "error",
+            "id": msg_id,
+            "error": {"code": "validation", "message": str(exc)},
+        }
+    except Exception as exc:
+        logger.exception("websocket assist dispatch failed")
+        return {
+            "op": "error",
+            "id": msg_id,
+            "error": {
+                "code": "internal",
+                "message": str(exc) or exc.__class__.__name__,
+            },
+        }
+
+
+def _rewrite_actions_for_websocket(payload: dict[str, Any]) -> dict[str, Any]:
+    """Map peer MCP tool actions to dispatch-friendly alias/params for Portal."""
+    actions = payload.get("actions")
+    if not isinstance(actions, list):
+        return payload
+    rewritten: list[dict[str, Any]] = []
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        item = dict(action)
+        tool = str(item.get("tool") or "")
+        # Prefer alias/path already set
+        if item.get("alias") or item.get("path"):
+            item.pop("tool", None)
+            rewritten.append(item)
+            continue
+        if tool in {"", "palm_assist"}:
+            # Keep params for client re-dispatch over WS
+            item.pop("tool", None)
+            if not item.get("params") and not item.get("alias"):
+                continue
+            rewritten.append(item)
+            continue
+        if tool == "palm_flows_create_session":
+            params = dict(item.get("params") or {})
+            flow_id = params.get("flow_id")
+            if flow_id:
+                rewritten.append(
+                    {
+                        "label": item.get("label") or "Run flow",
+                        "params": {"flow_id": flow_id},
+                    }
+                )
+            continue
+        if tool == "palm_flows_session_resume":
+            rewritten.append(
+                {
+                    "label": item.get("label") or "Resume",
+                    "alias": "flows/session-resume",
+                    "params": dict(item.get("params") or {}),
+                }
+            )
+            continue
+        if tool in {"palm_design_publish_flow", "palm_design_publish_resource"}:
+            alias = (
+                "design/publish"
+                if "flow" in tool
+                else "design/publish-resource"
+            )
+            rewritten.append(
+                {
+                    "label": item.get("label") or "Publish",
+                    "alias": alias,
+                    "params": dict(item.get("params") or {}),
+                }
+            )
+            continue
+        if tool == "palm_system_doctor":
+            rewritten.append(
+                {
+                    "label": item.get("label") or "Doctor",
+                    "alias": "assist/doctor",
+                }
+            )
+            continue
+        # Drop unknown peer tools — Portal only speaks dispatch frames
+        if tool.startswith("palm_"):
+            continue
+        rewritten.append(item)
+    out = dict(payload)
+    if rewritten:
+        out["actions"] = rewritten
+    elif "actions" in out:
+        out.pop("actions", None)
+    return out
 
 
 def _send_json(wfile: object, payload: dict[str, Any]) -> None:
