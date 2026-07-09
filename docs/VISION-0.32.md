@@ -2,7 +2,8 @@
 
 **Theme:** Give Palm a **real-time human transport** for Assist — WebSocket as a thin surface over the same meta-dispatch spine as MCP — so we can build **Portal** (lightweight PWA chat) and, later, a digital assistant experience on mobile.
 
-**Status:** **0.32.0**–**0.32.4** shipped · 0.32.5+ open field  
+**Status:** **0.32.0**–**0.32.5** shipped · 0.32.6+ open field  
+
 
 **Depends on:** Assist Service 0.18–0.30 ✅ · MCP meta-surface 0.31 ✅ · ServerRuntime + REST assist ✅  
 **Design:** [websocket-assist-portal-design.md](superpowers/specs/2026-07-09-websocket-assist-portal-design.md)  
@@ -88,7 +89,8 @@ Without WebSocket (or equivalent), Portal would be forced into chatty REST polli
 | **0.32.2** | Assist channel — dispatch frames ↔ turn frames | **Yes** |
 | **0.32.3** | Continuity — reconnect, session_id binding, basic auth hook | **Yes** |
 | **0.32.4** | Portal dogfood — lightweight chat shell (static or minimal PWA) | **Yes** ✅ |
-| **0.32.5+** | Open — event push, cookies/auth polish, multi-tab, Android shell, job stream | Optional |
+| **0.32.5** | Human-first dogfood — auto-start demos, summary no→back, action hygiene | **Yes** ✅ |
+| **0.32.6+** | Open — event push, cookies/auth polish, multi-tab, Android shell, job stream | Optional |
 
 ---
 

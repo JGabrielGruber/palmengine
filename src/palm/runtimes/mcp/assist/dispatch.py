@@ -274,6 +274,12 @@ def shape_dispatch_result(
     if prefix == "assist" and "session_id" in result:
         if fmt == "assistant" or result.get("question"):
             payload.update(result)
+            # 0.32.5 — Portal: rebuild input schema on assist turns when requested
+            if include_input_schema and fmt == "assistant" and "input" not in payload:
+                rebuilt = _rebuild_assist_with_input_schema(result)
+                if rebuilt is not None:
+                    payload.update(rebuilt)
+                    payload["path"] = path
             return payload
         if result.get("detail"):
             flat = _assist_session_flat(result)
@@ -605,6 +611,47 @@ def compact_dispatch_result(
 
 def assist_routes_payload() -> dict[str, Any]:
     return build_assist_routes_catalog()
+
+
+def _rebuild_assist_with_input_schema(result: dict[str, Any]) -> dict[str, Any] | None:
+    """Re-humanize an assist session dict with Portal ``input`` widgets (0.32.5)."""
+    try:
+        from palm.services.assist.views import build_assistant_view
+    except Exception:
+        return None
+    flat = _assist_session_flat(result)
+    if not isinstance(flat, dict):
+        return None
+    # Ensure instance/session ids for humanize
+    sid = result.get("session_id") or flat.get("session_id") or flat.get("instance_id")
+    if sid is not None:
+        flat.setdefault("session_id", sid)
+        flat.setdefault("instance_id", sid)
+    ctx = OperatorViewContext(
+        session_id=_optional_str(sid),
+        flow_id=_optional_str(result.get("flow_id") or flat.get("flow_name") or flat.get("flow")),
+        scenario_id=_optional_str(result.get("scenario_id")),
+        handoff_ready=bool(result.get("handoff_ready")),
+        include_input_schema=True,
+        intent=_optional_str(
+            (result.get("answers_summary") or "").split("intent=", 1)[-1]
+            if "intent=" in str(result.get("answers_summary") or "")
+            else None
+        ),
+    )
+    # Prefer explicit intent from nested answers
+    answers = flat.get("answers") if isinstance(flat.get("answers"), dict) else None
+    if isinstance(answers, dict) and answers.get("intent") is not None:
+        ctx.intent = str(answers["intent"])
+        ctx.answers_preview = {"intent": ctx.intent}
+    shaped = build_assistant_view(flat, context=ctx)
+    # Preserve assist action list when rebuild drops them
+    if result.get("actions") and not shaped.get("actions"):
+        shaped["actions"] = result["actions"]
+    for key in ("handoff_ready", "scenario_id", "session_id", "answers_summary"):
+        if result.get(key) is not None and shaped.get(key) is None:
+            shaped[key] = result[key]
+    return shaped
 
 
 def _assist_session_flat(result: dict[str, Any]) -> dict[str, Any]:

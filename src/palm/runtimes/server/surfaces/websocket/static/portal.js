@@ -17,6 +17,8 @@
   const btnStart = $("btn-start");
   const btnMin = $("btn-min");
 
+  const messages = [];
+
   const state = {
     ws: null,
     reqId: 0,
@@ -91,6 +93,8 @@
       let msg;
       try {
         msg = JSON.parse(ev.data);
+        messages.push(msg);
+        console.log(messages);
       } catch {
         appendBubble("error", "Invalid frame from server");
         return;
@@ -110,6 +114,8 @@
       return;
     }
     state.ws.send(JSON.stringify(obj));
+    messages.push(obj);
+    console.log(messages);
   }
 
   function dispatch(partial) {
@@ -250,13 +256,19 @@
     }
   }
 
+  const NOISE_ACTIONS = new Set([
+    "send answer",
+    "inspect session",
+    "resume session",
+    "inspect this session",
+  ]);
+
   function renderActions(actions) {
-    // Append secondary action chips after choice chips
+    // Append secondary action chips after choice chips (human-first: drop agent chrome)
     for (const action of actions) {
       if (!action || typeof action !== "object") continue;
       const label = action.label || "Action";
-      // Skip generic Send answer — we have the composer
-      if (label === "Send answer") continue;
+      if (NOISE_ACTIONS.has(String(label).toLowerCase())) continue;
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "chip secondary";
@@ -271,19 +283,25 @@
     if (action.alias) frame.alias = action.alias;
     if (action.path) frame.path = action.path;
     frame.params = { ...(action.params || {}) };
-    if (!frame.params.session_id && state.sessionId) {
-      frame.params.session_id = state.sessionId;
-    }
-    if (!frame.params.flow_id && state.flowId) {
-      frame.params.flow_id = state.flowId;
-    }
-    // No alias/path and only flow_id → start flow
-    if (!frame.alias && !frame.path && frame.params.flow_id && !frame.params.value) {
-      // ok
-    }
-    if (!frame.alias && !frame.path && !frame.params.flow_id && !frame.params.session_id) {
-      // bare start
-      frame.params = frame.params || {};
+    const label = String(action.label || "").toLowerCase();
+    // Fresh starts: do not drag prior session into a new operator-entry / flow create
+    const freshStart =
+      action.alias === "operator-entry/start" ||
+      action.alias === "design-entry/start" ||
+      (!!frame.params.flow_id && !frame.params.value && !frame.params.session_id && !action.path);
+    if (freshStart) {
+      state.sessionId = null;
+      state.flowId = frame.params.flow_id || null;
+      setMeta();
+      // bind clear so server does not re-inject old session
+      send({ op: "bind", id: nextId(), session_id: null, flow_id: frame.params.flow_id || null });
+    } else {
+      if (!frame.params.session_id && state.sessionId) {
+        frame.params.session_id = state.sessionId;
+      }
+      if (!frame.params.flow_id && state.flowId) {
+        frame.params.flow_id = state.flowId;
+      }
     }
     appendBubbleUser(`[${action.label || "action"}]`);
     send(frame);
@@ -314,7 +332,17 @@
 
   btnStart.onclick = () => {
     appendBubble("sys", "Starting operator entry…");
-    dispatch({ params: {} });
+    state.sessionId = null;
+    state.flowId = null;
+    setMeta();
+    send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
+    send({
+      op: "dispatch",
+      id: nextId(),
+      format: "assistant",
+      alias: "operator-entry/start",
+      params: {},
+    });
   };
 
   btnMin.onclick = () => {

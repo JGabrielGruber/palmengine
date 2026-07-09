@@ -29,6 +29,7 @@ __all__ = [
     "activate_prompt",
     "consume_wizard_input",
     "is_affirmative",
+    "is_negative",
     "provide_wizard_input",
     "queue_step_route",
     "wizard_input_key",
@@ -135,7 +136,29 @@ def enter_phase_scope(state: BaseState, ctx: WizardPhaseContext) -> None:
 
 
 def is_affirmative(value: Any) -> bool:
-    return value in (True, "yes", "Yes", "YES")
+    if value is True:
+        return True
+    if not isinstance(value, str):
+        return value in (True,)
+    return value.strip().lower() in {"yes", "y", "ok", "okay", "confirm", "continue"}
+
+
+def is_negative(value: Any) -> bool:
+    """Human 'no' / cancel / back on confirm steps (0.32.5)."""
+    if value is False:
+        return True
+    if not isinstance(value, str):
+        return False
+    return value.strip().lower() in {
+        "no",
+        "n",
+        "nope",
+        "cancel",
+        "back",
+        "go back",
+        "change",
+        "edit",
+    }
 
 
 def queue_step_route(state: BaseState, step: WizardStepConfig, value: Any) -> None:

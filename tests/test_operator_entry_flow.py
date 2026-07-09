@@ -23,14 +23,23 @@ def assist_host() -> Iterator[ApplicationHost]:
 def _drive_to_handoff(host: ApplicationHost, session_id: str, intent: str) -> None:
     host.assist.dispatch(["assist", "session", session_id, "input"], {"value": intent})
     ctx = host.assist.dispatch(["assist", "session", session_id])
-    if ctx.get("waiting_for_input"):
+    # Demo flows skip summary (0.32.5); design intents may also be terminal.
+    if ctx.get("waiting_for_input") or ctx.get("status") == "waiting":
         host.assist.dispatch(["assist", "session", session_id, "input"], {"value": "yes"})
 
 
 def test_operator_entry_handoff_recommends_flow(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
-    _drive_to_handoff(assist_host, session_id, "todo-builder")
+    updated = assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder"},
+    )
+    # 0.32.5 — skip summary; terminal with Start Todo Builder CTA
+    assert updated.get("status") == "complete"
+    assert updated.get("handoff_ready") is True
+    labels = [a.get("label") for a in (updated.get("actions") or []) if isinstance(a, dict)]
+    assert any(isinstance(l, str) and "Todo Builder" in l for l in labels)
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "flow"
     assert handoff["handoff"]["flow_id"] == "todo-builder"
@@ -105,3 +114,18 @@ def test_operator_entry_coconut_handoff(assist_host: ApplicationHost) -> None:
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "flow"
     assert handoff["handoff"]["flow_id"] == "coconut-npc"
+
+
+def test_operator_entry_demo_flow_skips_summary(assist_host: ApplicationHost) -> None:
+    """0.32.5 — todo-builder completes without summary confirm; Start CTA first."""
+    started = assist_host.assist.start_scenario("operator-entry", {})
+    session_id = started["session_id"]
+    updated = assist_host.assist.dispatch(
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder"},
+    )
+    assert updated.get("status") == "complete"
+    assert updated.get("mutation", {}).get("confirm_step") is not True
+    assert "Ready to start" in str(updated.get("question") or "")
+    labels = [a.get("label") for a in (updated.get("actions") or []) if isinstance(a, dict)]
+    assert labels and "Todo Builder" in str(labels[0])

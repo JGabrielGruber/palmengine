@@ -2,7 +2,8 @@
 
 **Vision:** [docs/VISION-0.32.md](../../VISION-0.32.md)  
 **Design:** [2026-07-09-websocket-assist-portal-design.md](../specs/2026-07-09-websocket-assist-portal-design.md)  
-**Status:** 0.32.0–0.32.4 ✅ · 0.32.5+ open  
+**Status:** 0.32.0–0.32.5 ✅ · 0.32.6+ open  
+
 
 
 Delivery: commit when good enough. **Insert phases freely** if dogfood demands it.
@@ -79,7 +80,17 @@ Delivery: commit when good enough. **Insert phases freely** if dogfood demands i
 
 ---
 
-## Phase 0.32.5+ — Open field
+## Phase 0.32.5 — Human-first dogfood ✅
+
+| Work item | Notes |
+|-----------|--------|
+| Skip summary for demo intents | `todo-builder` / `compositional-parent` / `coconut-npc` → `__end__` |
+| Start {flow} CTA + WS auto-start | After operator-entry complete, chain `flows/{id}/create` (opt-out `auto_start=false`) |
+| Flows-path assist continuity | `handoff_ready`, scenario enricher, action merge on `flows/…/session` turns |
+| Summary **no** → backtrack | Wizard summary phase (not validation error) |
+| Portal action hygiene | Drop Send answer / Inspect / Resume; clear bind on fresh start |
+
+## Phase 0.32.6+ — Open field
 
 Candidates (unordered):
 
@@ -91,6 +102,7 @@ Candidates (unordered):
 - Job/wizard event bus (historical “stream everything”)  
 - Align Explorer assist workspace with WS (optional)  
 - Production hardening checklist  
+
 
 ---
 

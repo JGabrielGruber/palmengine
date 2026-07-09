@@ -18,6 +18,7 @@ from palm.patterns.wizard.flow.phases._base import (
     build_phase_prompt,
     clear_phase_prompt,
     is_affirmative,
+    is_negative,
 )
 from palm.patterns.wizard.flow.validation import (
     clear_validation_feedback,
@@ -113,10 +114,28 @@ class WizardSummaryLeaf(InteractiveLeaf):
             )
             return PatternStatus.WAITING_FOR_INPUT
 
+        # 0.32.5 — human "no" means go back, not validation failure
+        if is_negative(value):
+            clear_validation_feedback(state)
+            clear_phase_prompt(state, self._ctx.step.slug)
+            state.delete(WizardKeys.SUMMARY_ACK)
+            prev = max(0, int(self._ctx.step_index) - 1)
+            state.set(WizardKeys.BACKTRACK_TO, prev)
+            emit_wizard_event(
+                self._ctx.emit,
+                self._ctx.wizard_name,
+                WizardEventType.BACKTRACK_REQUESTED,
+                from_step=self._ctx.step.slug,
+                to_index=prev,
+                reason="summary_declined",
+            )
+            # RUNNING so the sequence yields; next tick applies BACKTRACK_TO
+            return PatternStatus.RUNNING
+
         if not is_affirmative(value):
             publish_validation_feedback(
                 state,
-                ("Please confirm the summary to continue.",),
+                ("Please confirm the summary to continue (yes), or say no to go back.",),
                 prompt_bundle=self._prompt_bundle(state, answers),
                 prompt_key=self.prompt_key(),
             )

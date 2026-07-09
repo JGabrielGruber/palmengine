@@ -33,7 +33,12 @@ class AssistSessionContext:
     invoke_tree: dict[str, Any] | None = None
     stored_mutation_gate: dict[str, Any] | None = None
 
-    def to_dict(self, *, view_format: str = "assistant") -> dict[str, Any]:
+    def to_dict(
+        self,
+        *,
+        view_format: str = "assistant",
+        include_input_schema: bool = False,
+    ) -> dict[str, Any]:
         fmt = normalize_view_format(view_format)
         if fmt == "verbose":
             return self._verbose_dict()
@@ -64,6 +69,7 @@ class AssistSessionContext:
             stored_mutation_gate=self.stored_mutation_gate,
             intent=intent,
             answers_preview=answers_preview,
+            include_input_schema=include_input_schema,
         )
         payload = build_operator_view(fmt, flat_view=flat, context=context)
         if fmt == "assistant":
@@ -96,8 +102,17 @@ class AssistSessionContext:
                     handoff_ready=self.handoff_ready,
                     waiting_for_input=self.waiting_for_input,
                 )
+            elif intent in (
+                "todo-builder",
+                "compositional-parent",
+                "coconut-npc",
+            ) and (self.handoff_ready or not self.waiting_for_input):
+                # 0.32.5 — human Start {flow} CTAs first; thin session verbs after
+                merged = merge_assistant_actions(extras_list, base, design_ctas)
+                merged = _prioritize_flow_handoff_actions(merged)
             else:
-                merged = merge_assistant_actions(base, extras_list, design_ctas)
+                # Enricher/human CTAs before generic session chrome
+                merged = merge_assistant_actions(extras_list, base, design_ctas)
             if merged:
                 payload["actions"] = merged
         if fmt == "powertool":
@@ -139,6 +154,36 @@ class AssistSessionContext:
         if self.compose_status is not None:
             merged["compose_status"] = self.compose_status
         return merged
+
+
+def _prioritize_flow_handoff_actions(actions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep Start {flow} / handoff first; drop noisy inspect/send for chat (0.32.5)."""
+    primary: list[dict[str, Any]] = []
+    secondary: list[dict[str, Any]] = []
+    drop_labels = {
+        "send answer",
+        "inspect session",
+        "resume session",
+        "inspect this session",
+    }
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        label = str(action.get("label") or "").lower()
+        if label in drop_labels:
+            continue
+        tool = str(action.get("tool") or "")
+        params = action.get("params") if isinstance(action.get("params"), dict) else {}
+        if (
+            label.startswith("start ")
+            or "hand off" in label
+            or tool == "palm_flows_create_session"
+            or (params.get("flow_id") and not params.get("session_id"))
+        ):
+            primary.append(action)
+        else:
+            secondary.append(action)
+    return primary + secondary
 
 
 def build_assist_session_context(

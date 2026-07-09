@@ -26,6 +26,14 @@ from palm.services.assist.views import (
 )
 
 
+# Demo flow intents → human labels (0.32.5 Portal / chat)
+_FLOW_INTENT_LABELS: dict[str, str] = {
+    "todo-builder": "Todo Builder",
+    "compositional-parent": "Compositional Parent",
+    "coconut-npc": "Coconut NPC",
+}
+
+
 def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, Any]:
     """Post-humanize operator-entry turns — catalog, design CTAs, handoff hints."""
     payload = dict(view)
@@ -70,12 +78,42 @@ def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, An
                 payload["hint"] = f"{hint} {extra}".strip() if hint else extra
         else:
             payload["actions"] = design_discovery_actions(intent=str(intent))
+    elif intent in _FLOW_INTENT_LABELS and (
+        payload.get("handoff_ready") or payload.get("status") == "complete"
+    ):
+        # 0.32.5 — primary human CTA: start the chosen demo flow (not only agent handoff)
+        label = _FLOW_INTENT_LABELS[str(intent)]
+        payload["question"] = f"Ready to start {label}."
+        payload["hint"] = f"Tap Start {label} (or say start) to begin."
+        payload["actions"] = post_terminal_flow_actions(intent=str(intent), label=label)
+        payload["handoff_ready"] = True
     elif payload.get("handoff_ready"):
-        extra = "Say handoff to start your flow."
+        extra = "Say handoff or start to open your flow."
         hint = str(payload.get("hint") or "")
-        if extra.lower() not in hint.lower():
+        if "handoff" not in hint.lower() and "start" not in hint.lower():
             payload["hint"] = f"{hint} {extra}".strip() if hint else extra
     return payload
+
+
+def post_terminal_flow_actions(*, intent: str, label: str | None = None) -> list[dict[str, Any]]:
+    """Human-first CTAs after choosing a demo flow (0.32.5)."""
+    from palm.services.assist.views import merge_assistant_actions
+
+    human = label or _FLOW_INTENT_LABELS.get(intent) or intent
+    return merge_assistant_actions(
+        [
+            {
+                "label": f"Start {human}",
+                "tool": "palm_flows_create_session",
+                "params": {"flow_id": intent},
+            },
+            {
+                "label": "Hand off to business flow",
+                "alias": "operator-entry/handoff",
+            },
+            {"label": "Start operator entry", "alias": "operator-entry/start"},
+        ]
+    )
 
 
 def _catalog_actions(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -191,6 +229,10 @@ OPERATOR_ENTRY_FLOW = FlowDefinition(
                         "create-flow": "__end__",
                         "improve-flow": "__end__",
                         "propose-resource": "__end__",
+                        # 0.32.5 — human-first: demo flows skip summary → start CTA / auto-handoff
+                        "todo-builder": "__end__",
+                        "compositional-parent": "__end__",
+                        "coconut-npc": "__end__",
                         "default": "summary",
                     }
                 },
