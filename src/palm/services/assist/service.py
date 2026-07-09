@@ -77,9 +77,14 @@ class AssistService(BaseService):
 
         if parsed.kind == AssistCommandKind.START_SCENARIO:
             assert parsed.scenario_id is not None
-            body = dict(params.get("body") or params)
+            body = _wizard_start_body(params)
             view_format = resolve_view_format(params)
-            return self.start_scenario(parsed.scenario_id, body, view_format=view_format)
+            return self.start_scenario(
+                parsed.scenario_id,
+                body,
+                view_format=view_format,
+                include_input_schema=_want_input_schema(params),
+            )
 
         if parsed.kind == AssistCommandKind.SCENARIO_INSPECT:
             assert parsed.scenario_id is not None
@@ -92,12 +97,16 @@ class AssistService(BaseService):
             return self.session(parsed.session_id).context(
                 view_format=view_format,
                 sync_gate=True,
-            ).to_dict(view_format=view_format)
+            ).to_dict(
+                view_format=view_format,
+                include_input_schema=_want_input_schema(params),
+            )
 
         if parsed.kind == AssistCommandKind.SESSION_VERB:
             assert parsed.session_id is not None
             assert parsed.verb is not None
             view_format = resolve_view_format(params)
+            include_input = _want_input_schema(params)
             handle = self.session(parsed.session_id)
             if parsed.verb == "input":
                 value = params.get("value", params.get("input"))
@@ -105,15 +114,17 @@ class AssistService(BaseService):
                     value,
                     params=params,
                     view_format=view_format,
-                ).to_dict(view_format=view_format)
+                ).to_dict(view_format=view_format, include_input_schema=include_input)
             if parsed.verb == "backtrack":
                 return handle.backtrack(params.get("to_step"), view_format=view_format).to_dict(
-                    view_format=view_format
+                    view_format=view_format,
+                    include_input_schema=include_input,
                 )
             if parsed.verb == "resume":
                 handle.resume()
                 return handle.context(view_format=view_format, sync_gate=True).to_dict(
-                    view_format=view_format
+                    view_format=view_format,
+                    include_input_schema=include_input,
                 )
             if parsed.verb == "cancel":
                 return handle.cancel()
@@ -166,6 +177,7 @@ class AssistService(BaseService):
         body: dict[str, Any],
         *,
         view_format: str = "assistant",
+        include_input_schema: bool = False,
     ) -> dict[str, Any]:
         contributor = scenario_by_id(scenario_id)
         if contributor is None:
@@ -179,7 +191,8 @@ class AssistService(BaseService):
             scenario_id=scenario_id,
         )
         return handle.context(view_format=view_format, sync_gate=True).to_dict(
-            view_format=view_format
+            view_format=view_format,
+            include_input_schema=include_input_schema,
         )
 
     def session(self, session_id: str) -> AssistSession:
@@ -445,6 +458,53 @@ class AssistService(BaseService):
 
     def wait_until_idle(self, *, timeout: float = 5.0) -> bool:
         return self.resolve_runtime().wait_until_idle(timeout=timeout)
+
+
+# Params that must not leak into flows.run_wizard() body (dispatch/meta only).
+_WIZARD_BODY_STRIP = frozenset(
+    {
+        "body",
+        "value",
+        "input",
+        "format",
+        "alias",
+        "path",
+        "session_id",
+        "instance_id",
+        "flow_id",
+        "scenario_id",
+        "include_input_schema",
+        "auto_start",
+        "collection_action",
+        "edit",
+        "query",
+        "q",
+        "limit",
+        "kind",
+    }
+)
+
+
+def _want_input_schema(params: dict[str, Any] | None) -> bool:
+    """True when Portal/WS asks for structured ``input`` widgets (0.32.6)."""
+    if not params:
+        return False
+    raw = params.get("include_input_schema")
+    if raw is True or raw == 1:
+        return True
+    if isinstance(raw, str) and raw.strip().lower() in {"1", "true", "yes", "on"}:
+        return True
+    return False
+
+
+def _wizard_start_body(params: dict[str, Any]) -> dict[str, Any]:
+    """Build run_wizard body without assist/dispatch meta keys (e.g. greeting ``value``)."""
+    nested = params.get("body")
+    if isinstance(nested, dict) and nested:
+        source = nested
+    else:
+        source = params
+    return {k: v for k, v in source.items() if k not in _WIZARD_BODY_STRIP}
 
 
 def _flow_id_from_view(view: dict[str, Any]) -> str | None:

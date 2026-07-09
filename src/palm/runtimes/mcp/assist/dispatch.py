@@ -274,12 +274,18 @@ def shape_dispatch_result(
     if prefix == "assist" and "session_id" in result:
         if fmt == "assistant" or result.get("question"):
             payload.update(result)
-            # 0.32.5 — Portal: rebuild input schema on assist turns when requested
+            # 0.32.6 — attach Portal ``input`` without re-humanizing (rebuild clobbered turns)
             if include_input_schema and fmt == "assistant" and "input" not in payload:
-                rebuilt = _rebuild_assist_with_input_schema(result)
-                if rebuilt is not None:
-                    payload.update(rebuilt)
-                    payload["path"] = path
+                schema = _input_schema_from_assist_turn(payload)
+                if schema is not None:
+                    payload["input"] = schema
+                else:
+                    # Last resort: full rebuild only when turn is not already assistant-shaped
+                    if not _is_assistant_shaped(result):
+                        rebuilt = _rebuild_assist_with_input_schema(result)
+                        if rebuilt is not None:
+                            payload.update(rebuilt)
+                            payload["path"] = path
             return payload
         if result.get("detail"):
             flat = _assist_session_flat(result)
@@ -613,8 +619,62 @@ def assist_routes_payload() -> dict[str, Any]:
     return build_assist_routes_catalog()
 
 
+def _is_assistant_shaped(result: dict[str, Any]) -> bool:
+    """True when result is already a humanized assist turn (not raw inspect)."""
+    if result.get("question") is not None and result.get("mutation") is not None:
+        return True
+    if isinstance(result.get("compose"), dict) and result.get("status") in {
+        "waiting",
+        "complete",
+        "failed",
+        "running",
+    }:
+        return True
+    return False
+
+
+def _input_schema_from_assist_turn(payload: dict[str, Any]) -> dict[str, Any] | None:
+    """Build Portal ``input`` from an already-humanized assist turn (0.32.6)."""
+    try:
+        from palm.services.assist.views import _build_input_schema
+    except Exception:
+        return None
+    compose = payload.get("compose") if isinstance(payload.get("compose"), dict) else {}
+    mutation = payload.get("mutation") if isinstance(payload.get("mutation"), dict) else {}
+    choices = payload.get("choices") if isinstance(payload.get("choices"), list) else None
+    status = payload.get("status")
+    step = compose.get("step") or mutation.get("step_slug")
+    field_type: str | None = None
+    step_kind = "input"
+    if mutation.get("confirm_step") or step in {"summary", "commit"}:
+        step_kind = "summary" if step != "commit" else "commit"
+        field_type = "confirm"
+    elif choices:
+        field_type = "choice"
+        step_kind = "input"
+    elif status == "waiting":
+        field_type = "text"
+    composed: dict[str, Any] = {
+        "status": status,
+        "step": step,
+        "slug": step,
+        "step_kind": step_kind,
+        "field_type": field_type,
+        "prompt": payload.get("question"),
+        "required": True,
+        "validation_error": payload.get("validation_error"),
+    }
+    if choices:
+        composed["choices"] = choices
+    return _build_input_schema(composed, choices=choices)
+
+
 def _rebuild_assist_with_input_schema(result: dict[str, Any]) -> dict[str, Any] | None:
-    """Re-humanize an assist session dict with Portal ``input`` widgets (0.32.5)."""
+    """Re-humanize a *flat inspect* dict with Portal ``input`` widgets.
+
+    Do not pass already-assistant-shaped turns here — use
+    :func:`_input_schema_from_assist_turn` instead (0.32.6).
+    """
     try:
         from palm.services.assist.views import build_assistant_view
     except Exception:

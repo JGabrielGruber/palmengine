@@ -285,6 +285,8 @@ def _handle_dispatch(
         params["session_id"] = state.session_id
     if not params.get("flow_id") and state.flow_id:
         params["flow_id"] = state.flow_id
+    # 0.32.6 — Portal needs structured input; service builds it when this is set
+    params.setdefault("include_input_schema", True)
 
     path_list: list[str] | None = None
     if isinstance(path_raw, list):

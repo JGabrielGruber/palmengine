@@ -12,6 +12,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.32.3 Portal input schema + continuity** — structured ``input`` (widget, field_type, choices, validation, collection) on **WebSocket** turns for Portal; **MCP omits** ``input`` by default (token budget); WS ``bind`` / auto-bind; hello auth mode; create re-inspects for first-turn schema.
 - **0.32.4 Portal dogfood shell** — static chat UI at ``GET /portal/`` (FAB + panel, choice chips, text/confirm/collection widgets from ``payload.input``); assets co-located under ``websocket/static/``; ``?open=1`` auto-connects WS Assist.
 - **0.32.5 Human-first Portal dogfood** — demo intents skip summary; terminal **Start {flow}** CTA; WS **auto-starts** todo/compositional/coconut after operator-entry complete; flows-path carries ``handoff_ready`` + scenario enricher; summary **no** backtracks; Portal drops agent chrome actions; bind clear on fresh start; assist turns can rebuild ``input`` schema for WS.
+- **0.32.6 Portal first-turn / lock fix** — ``include_input_schema`` threaded through AssistService; WS sets the flag; shape attaches ``input`` without re-humanizing (no empty question / read-only mutation); strip greeting ``value`` from ``run_wizard`` body; Portal keeps composer open while ``waiting``; regression test for ``value=Hi``.
 
 ## [0.31.5] — 2026-07-08
 

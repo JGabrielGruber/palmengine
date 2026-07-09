@@ -248,11 +248,23 @@
       fieldHost.appendChild(err);
     }
 
-    if (!payload.mutation || payload.mutation.mutations_allowed !== false) {
-      textInput.focus();
+    // Human-first: allow answers when waiting (or choices present), even if
+    // mutation gate is missing/stale — chips stay usable.
+    const waiting =
+      status === "waiting" ||
+      status === "running" ||
+      (choices && choices.length > 0);
+    const locked =
+      payload.mutation &&
+      payload.mutation.mutations_allowed === false &&
+      !waiting;
+    if (locked || status === "complete" || status === "failed") {
+      if (status === "complete" || status === "failed" || locked) {
+        textInput.disabled = true;
+        btnSend.disabled = status === "complete" || status === "failed" || locked;
+      }
     } else {
-      textInput.disabled = true;
-      btnSend.disabled = true;
+      textInput.focus();
     }
   }
 

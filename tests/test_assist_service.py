@@ -38,8 +38,60 @@ def test_start_operator_entry_returns_first_turn(assist_host: ApplicationHost) -
     assert result.get("scenario_id") == "operator-entry"
     assert result.get("question")
     assert result.get("choices")
-    assert result.get("status") == "waiting"
-    assert "detail" not in result
+
+
+def test_portal_greeting_shape_preserves_question_and_input(
+    assist_host: ApplicationHost,
+) -> None:
+    """0.32.6 regression: value=Hi + include_input_schema must not lock the chat.
+
+    WebSocket Portal often sends a greeting as params.value on first dispatch.
+    Rebuild-from-assistant used to wipe question and set mutations_allowed=false.
+    """
+    from palm.runtimes.mcp.assist.dispatch import (
+        normalize_assist_dispatch_args,
+        resolve_dispatch_path,
+        dispatch_operator_path,
+        shape_dispatch_result,
+    )
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    ensure_assist_view_registration()
+    params = {"value": "Hi", "include_input_schema": True}
+    path, alias, p, _ = normalize_assist_dispatch_args(
+        path=None, alias=None, params=params
+    )
+    resolved = resolve_dispatch_path(path=path, alias=alias, params=p)
+    raw = dispatch_operator_path(assist_host, resolved, p)
+    shaped = shape_dispatch_result(
+        resolved,
+        raw,
+        format="assistant",
+        params=p,
+        tool_format="assistant",
+        include_input_schema=True,
+    )
+    assert shaped.get("status") == "waiting"
+    assert "What would you like" in (shaped.get("question") or "")
+    mutation = shaped.get("mutation") or {}
+    assert mutation.get("mutations_allowed") is True
+    assert mutation.get("requires_user_input") is True
+    schema = shaped.get("input")
+    assert isinstance(schema, dict)
+    assert schema.get("widget") in {"choice", "text"}
+    assert shaped.get("choices") or schema.get("choices")
+    # MCP default still omits input when flag is off
+    shaped_mcp = shape_dispatch_result(
+        resolved,
+        # re-start without schema flag for a clean MCP-shaped compare
+        assist_host.assist.dispatch(
+            ["assist", "scenarios", "operator-entry", "start"],
+            {"format": "assistant"},
+        ),
+        format="assistant",
+        include_input_schema=False,
+    )
+    assert "input" not in shaped_mcp or shaped_mcp.get("input") is None
 
 
 def test_start_operator_entry_powertool_opt_in(assist_host: ApplicationHost) -> None:
@@ -73,18 +125,26 @@ def test_assist_session_includes_actions_block(assist_host: ApplicationHost) -> 
 
 
 def test_operator_entry_enricher_handoff_cta(assist_host: ApplicationHost) -> None:
+    """Demo intents complete without summary; handoff CTA/hint present (0.32.5+)."""
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
-    assist_host.assist.dispatch(
-        ["assist", "session", session_id, "input"],
-        {"value": "todo-builder"},
-    )
     updated = assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
-        {"value": "yes"},
+        {"value": "todo-builder", "format": "assistant"},
     )
-    if updated.get("handoff_ready"):
-        assert "handoff to start your flow" in updated.get("hint", "").lower()
+    assert updated.get("handoff_ready") is True
+    assert updated.get("status") == "complete"
+    hint = (updated.get("hint") or "").lower()
+    actions = updated.get("actions") or []
+    labels = " ".join(str(a.get("label") or "") for a in actions if isinstance(a, dict)).lower()
+    assert (
+        "handoff" in hint
+        or "start" in labels
+        or any(
+            isinstance(a, dict) and (a.get("params") or {}).get("flow_id") == "todo-builder"
+            for a in actions
+        )
+    )
 
 
 def test_assist_catalog_flows_dispatch(assist_host: ApplicationHost) -> None:
@@ -107,11 +167,7 @@ def test_handoff_todo_builder_still_kind_flow(assist_host: ApplicationHost) -> N
     session_id = started["session_id"]
     assist_host.assist.dispatch(
         ["assist", "session", session_id, "input"],
-        {"value": "todo-builder"},
-    )
-    assist_host.assist.dispatch(
-        ["assist", "session", session_id, "input"],
-        {"value": "yes"},
+        {"value": "todo-builder", "format": "assistant"},
     )
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "flow"

@@ -66,17 +66,15 @@ def test_operator_entry_inspect_alias_read_only(assist_host: ApplicationHost) ->
     assert payload.get("actions")
 
 
-def test_todo_builder_still_reaches_summary(assist_host: ApplicationHost) -> None:
+def test_todo_builder_skips_summary_for_human_first(assist_host: ApplicationHost) -> None:
+    """0.32.5+ — demo flow intents complete at intent (no summary gate)."""
     started = assist_host.assist.start_scenario("operator-entry", {})
     session_id = started["session_id"]
-    assist_host.assist.dispatch(
-        ["assist", "session", session_id, "input"],
-        {"value": "todo-builder"},
-    )
     ctx = assist_host.assist.dispatch(
-        ["assist", "session", session_id],
-        {"format": "assistant"},
+        ["assist", "session", session_id, "input"],
+        {"value": "todo-builder", "format": "assistant"},
     )
+    assert ctx.get("status") == "complete"
+    assert ctx.get("handoff_ready") is True
     step = (ctx.get("mutation") or {}).get("step_slug")
-    assert step == "summary"
-    assert ctx.get("mutation", {}).get("confirm_step") is True
+    assert step == "intent"

@@ -402,7 +402,8 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.32.3 | Input schema on turns + bind/reconnect + auth mode | ✅ Shipped |
 | 0.32.4 | Portal dogfood chat shell (`/portal/`) | ✅ Shipped |
 | 0.32.5 | Human-first dogfood (auto-start demos, summary no→back, action hygiene) | ✅ Shipped |
-| 0.32.6+ | Open (events, PWA polish, Android, …) | ⬜ Open |
+| 0.32.6 | Portal first-turn fix (input schema no longer clobbers assist turns) | ✅ Shipped |
+| 0.32.7+ | Open (events, PWA polish, Android, …) | ⬜ Open |
 
 **Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. WS live on `/ws/v1/assist`; Portal dogfood at `/portal/`.
 
