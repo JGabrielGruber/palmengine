@@ -15,6 +15,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.33.2 Chat policy out of WS** — auto-start, intro continue, action rewrite live in
   `assist.profiles` (`continuity`, `actions_chat`, `turn_meta`); WebSocket injects
   dispatch/shape callables only (no product policy in transport).
+- **0.33.3 MCP dispatch modular** — `dispatch.py` is a thin re-export; implementation in
+  `normalize.py`, `operator.py`, `rest_map.py`, `shape/{result,catalog,session,design,flow_create}.py`
+  (was ~1000 LOC single file).
 
 ## [0.32.10] — 2026-07-09
 
