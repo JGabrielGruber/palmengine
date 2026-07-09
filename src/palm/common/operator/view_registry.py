@@ -31,6 +31,8 @@ class OperatorViewContext:
     # 0.30.1 — intent visibility for design discovery CTAs (not full answers on the wire)
     intent: str | None = None
     answers_preview: dict[str, Any] | None = None
+    # 0.32.3 — Portal needs full input schema; MCP keeps it off for tokens (default)
+    include_input_schema: bool = False
 
 
 def normalize_view_format(format: str) -> str:

@@ -208,13 +208,24 @@ def test_assistant_to_dict_includes_actions() -> None:
     assert payload["actions"][0]["path"][0] == "assist"
 
 
-def test_assistant_view_includes_input_schema() -> None:
+def test_assistant_view_input_schema_opt_in_only() -> None:
+    """MCP keeps input schema off by default (tokens); Portal/WS opts in."""
     _setup()
+    bare = build_assistant_view(
+        _operator_entry_flat(),
+        context=OperatorViewContext(
+            session_id="inst-1",
+            flow_id="flow-palm-operator-entry",
+        ),
+    )
+    assert bare.get("input") is None
+
     payload = build_assistant_view(
         _operator_entry_flat(),
         context=OperatorViewContext(
             session_id="inst-1",
             flow_id="flow-palm-operator-entry",
+            include_input_schema=True,
         ),
     )
     schema = payload.get("input")

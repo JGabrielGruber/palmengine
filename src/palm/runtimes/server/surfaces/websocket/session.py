@@ -344,6 +344,7 @@ def _handle_dispatch(
             format=view_format,
             params=dispatch_params,
             tool_format=view_format,
+            include_input_schema=True,  # Portal dynamic widgets (not on MCP)
         )
         shaped = _rewrite_actions_for_websocket(shaped)
         # Refresh bind from turn payload for reconnect convenience

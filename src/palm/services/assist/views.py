@@ -245,10 +245,11 @@ def _humanize_assistant_view(
     if choices:
         payload["choices"] = choices
 
-    # 0.32.3 — structured input schema for Portal dynamic widgets
-    input_schema = _build_input_schema(composed, choices=choices)
-    if input_schema:
-        payload["input"] = input_schema
+    # 0.32.3 — structured input schema for Portal (opt-in; off by default for MCP tokens)
+    if getattr(context, "include_input_schema", False):
+        input_schema = _build_input_schema(composed, choices=choices)
+        if input_schema:
+            payload["input"] = input_schema
 
     refs = _refs_block(composed, context)
     if refs:

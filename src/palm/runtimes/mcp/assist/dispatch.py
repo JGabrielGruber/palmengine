@@ -226,8 +226,13 @@ def shape_dispatch_result(
     params: dict[str, Any] | None = None,
     tool_format: str | None = None,
     invoke_tree: dict[str, Any] | None = None,
+    include_input_schema: bool = False,
 ) -> dict[str, Any]:
-    """Shape domain dispatch results for MCP operator consumers."""
+    """Shape domain dispatch results for MCP operator consumers.
+
+    ``include_input_schema`` (default False) adds Portal ``input`` widgets.
+    Keep off for MCP token budgets; WebSocket Assist sets True.
+    """
     fmt = normalize_view_format(
         format or resolve_dispatch_format(path, params=params, tool_format=tool_format)
     )
@@ -297,6 +302,7 @@ def shape_dispatch_result(
                 flow_id=flat.get("flow_name") or flat.get("flow"),
                 path=path,
                 invoke_tree=invoke_tree,
+                include_input_schema=include_input_schema,
             )
         )
         return payload

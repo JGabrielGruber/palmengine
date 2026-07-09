@@ -240,7 +240,10 @@ Version field on hello so clients can evolve.
 
 #### `payload.input` — dynamic form schema (0.32.3)
 
-Present when the session is waiting for interactive input:
+**WebSocket / Portal only** by default (`include_input_schema=True` on the WS channel).  
+**MCP omits** this block to keep tokens low — agents still use `question` / `choices` / `hint`.
+
+Present on WS turns when the session is waiting for interactive input:
 
 ```json
 {
