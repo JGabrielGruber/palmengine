@@ -40,6 +40,69 @@ def test_start_operator_entry_returns_first_turn(assist_host: ApplicationHost) -
     assert result.get("choices")
 
 
+def test_ws_auto_start_binds_business_flow_id(assist_host: ApplicationHost) -> None:
+    """0.32.7 — after Todo Builder auto-start, bound.flow_id must be todo-builder.
+
+    Sticky operator-entry flow_id caused subsequent inputs to path as
+    flows/flow-palm-operator-entry/session/{todo-session}/input.
+    """
+    from palm.runtimes.server.surfaces.websocket.session import (
+        _ConnectionState,
+        handle_client_message,
+    )
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    ensure_assist_view_registration()
+    conn = _ConnectionState(headers={})
+    start = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "p1",
+            "format": "assistant",
+            "alias": "operator-entry/start",
+            "params": {},
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert start is not None and start["op"] == "turn"
+    sid = start["bound"]["session_id"]
+    fid = start["bound"]["flow_id"]
+    handoff = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "p2",
+            "format": "assistant",
+            "params": {
+                "value": "todo-builder",
+                "session_id": sid,
+                "flow_id": fid,
+            },
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert handoff is not None and handoff["op"] == "turn"
+    assert "todo-builder" in str(handoff["bound"]["flow_id"])
+    assert handoff["bound"]["session_id"] != sid
+    path = handoff["payload"].get("path") or []
+    assert path[:2] == ["flows", "todo-builder"]
+    # next answer uses bind only (no explicit flow_id)
+    nxt = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "p3",
+            "format": "assistant",
+            "params": {"value": "okay"},
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert nxt is not None and nxt["op"] == "turn"
+    npath = nxt["payload"].get("path") or []
+    assert npath[0] == "flows" and "todo-builder" in str(npath[1])
+
+
 def test_portal_greeting_shape_preserves_question_and_input(
     assist_host: ApplicationHost,
 ) -> None:

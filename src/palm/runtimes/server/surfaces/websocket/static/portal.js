@@ -26,6 +26,8 @@
     flowId: null,
     lastInput: null,
     connected: false,
+    /** true after we auto-open operator-entry on connect (human-first) */
+    bootstrapped: false,
   };
 
   function wsUrl() {
@@ -139,6 +141,19 @@
         if (msg.bound.flow_id) state.flowId = msg.bound.flow_id;
         setMeta();
       }
+      // Human-first: open with operator-entry menu — no need to type "Hello"
+      // Skip if reconnecting to an existing session or already bootstrapped.
+      if (!state.bootstrapped && !state.sessionId) {
+        state.bootstrapped = true;
+        appendBubble("sys", "Starting…");
+        send({
+          op: "dispatch",
+          id: nextId(),
+          format: "assistant",
+          alias: "operator-entry/start",
+          params: {},
+        });
+      }
       return;
     }
     if (op === "pong") return;
@@ -168,8 +183,15 @@
     if (payload.session_id) state.sessionId = payload.session_id;
     if (payload.instance_id && !state.sessionId) state.sessionId = payload.instance_id;
     const refs = payload.refs || {};
-    if (refs.flow_id) state.flowId = refs.flow_id;
-    if (payload.flow_id) state.flowId = payload.flow_id;
+    // Prefer path-derived flow (post auto-start) over sticky operator-entry bind
+    const path = payload.path;
+    if (Array.isArray(path) && path[0] === "flows" && path[1]) {
+      state.flowId = path[1];
+    } else if (refs.flow_id) {
+      state.flowId = refs.flow_id;
+    } else if (payload.flow_id) {
+      state.flowId = payload.flow_id;
+    }
 
     const q = payload.question || payload.hint || "";
     if (q) appendBubble("bot", q);
@@ -346,6 +368,7 @@
     appendBubble("sys", "Starting operator entry…");
     state.sessionId = null;
     state.flowId = null;
+    state.bootstrapped = true;
     setMeta();
     send({ op: "bind", id: nextId(), session_id: null, flow_id: null });
     send({

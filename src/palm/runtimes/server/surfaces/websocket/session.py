@@ -365,13 +365,15 @@ def _handle_dispatch(
         sid = shaped.get("session_id") or shaped.get("instance_id")
         if sid:
             state.session_id = str(sid)
-        flow = None
-        refs = shaped.get("refs")
-        if isinstance(refs, dict) and refs.get("flow_id"):
-            flow = refs.get("flow_id")
-        flow = flow or shaped.get("flow_id") or shaped.get("flow")
+        flow = _flow_id_from_turn(shaped)
         if flow:
             state.flow_id = str(flow)
+            # Keep refs honest for Portal clients that prefer refs over bound
+            refs = shaped.get("refs")
+            if not isinstance(refs, dict):
+                refs = {}
+                shaped["refs"] = refs
+            refs.setdefault("flow_id", state.flow_id)
         return {
             "op": "turn",
             "id": msg_id,
@@ -565,6 +567,13 @@ def _maybe_auto_start_handoff_flow(
             "scenario_id": shaped.get("scenario_id"),
             "intent": intent,
         }
+        # Ensure bind targets the *business* flow, not operator-entry
+        next_turn["flow_id"] = flow_id
+        refs = next_turn.get("refs")
+        if not isinstance(refs, dict):
+            refs = {}
+            next_turn["refs"] = refs
+        refs["flow_id"] = flow_id
         return next_turn
     except Exception:
         logger.debug("auto-start handoff flow failed for %s", flow_id, exc_info=True)
@@ -594,6 +603,23 @@ def _intent_from_turn(shaped: dict[str, Any]) -> str | None:
     compose = shaped.get("compose")
     if isinstance(compose, dict) and compose.get("intent"):
         return str(compose["intent"])
+    return None
+
+
+def _flow_id_from_turn(shaped: dict[str, Any]) -> str | None:
+    """Resolve flow id for WS bind — prefer path over sticky operator-entry bind."""
+    path = shaped.get("path")
+    if isinstance(path, list) and len(path) >= 2 and str(path[0]) == "flows":
+        # ["flows", flow_id, "session", …] or ["flows", flow_id, "create"]
+        candidate = str(path[1])
+        if candidate and candidate not in {"session", "create"}:
+            return candidate
+    refs = shaped.get("refs")
+    if isinstance(refs, dict) and refs.get("flow_id"):
+        return str(refs["flow_id"])
+    for key in ("flow_id", "flow"):
+        if shaped.get(key):
+            return str(shaped[key])
     return None
 
 
