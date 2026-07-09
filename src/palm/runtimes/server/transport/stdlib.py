@@ -88,6 +88,9 @@ def serve_app(
 def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
     class StdlibHttpHandler(BaseHTTPRequestHandler):
         server: ThreadingHTTPServer
+        # RFC6455 WebSocket opening handshake requires HTTP/1.1+.
+        # Python default is HTTP/1.0 — strict clients (YAAK, some proxies) reject it.
+        protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:
             return None
