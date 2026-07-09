@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **0.33.0 Assist modularity (scaffold)** — split presentation into `palm.services.assist.present/*`;
+  **tool vs chat** profiles under `profiles/`; handoff → `sessions/handoff.py`; helpers → `_params` / `_view_meta`.
+  Compat: `assist.views` re-exports. Vision: [VISION-0.33.md](docs/VISION-0.33.md).
+
 ## [0.32.10] — 2026-07-09
 
 **Bundled release since 0.31.5** — **WebSocket Assist** transport + **Portal dogfood chat** (0.32.0–0.32.10). Same Assist meta-dispatch brain as MCP; human real-time channel for floating UI / future PWA.

@@ -1,19 +1,21 @@
-"""Compat re-exports — implementation lives in ``palm.services.assist.present``."""
+"""Assist presentation pipeline — shared by tool and chat profiles."""
 
-from __future__ import annotations
-
-from palm.services.assist.present import (
-    DESIGN_DISCOVERY_INTENTS,
+from palm.services.assist.present.actions import (
     build_assistant_actions,
-    build_assistant_view,
+    merge_assistant_actions,
+)
+from palm.services.assist.present.design_actions import (
+    DESIGN_DISCOVERY_INTENTS,
     design_discovery_actions,
     design_discovery_hint,
-    ensure_assist_view_registration,
-    merge_assistant_actions,
     post_terminal_design_actions,
     prioritize_assistant_actions_for_design,
+)
+from palm.services.assist.present.format import (
+    ensure_assist_view_registration,
     resolve_view_format,
 )
+from palm.services.assist.present.pipeline import build_assistant_view
 
 __all__ = [
     "DESIGN_DISCOVERY_INTENTS",

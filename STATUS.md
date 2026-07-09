@@ -411,6 +411,18 @@ just mcp-inspector                       # MCP Inspector UI
 
 **Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. WS live on `/ws/v1/assist`; Portal dogfood at `/portal/`.
 
+### 0.33 — Assist modularity (tool vs chat, small files)
+
+**Vision:** [docs/VISION-0.33.md](docs/VISION-0.33.md)
+
+| Step | Focus | Status |
+|------|--------|--------|
+| 0.33.0 | Split `present/` + `profiles/` (tool/chat); handoff module; views re-export | ✅ Scaffold |
+| 0.33.1 | Façade leaf services: scenarios / sessions / catalog | ⬜ Open |
+| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | ⬜ Open |
+| 0.33.3 | Split MCP `dispatch` into `shape/*` | ⬜ Open |
+| 0.33.4 | Optional Bot façade (only if product needs persona/LLM) | ⬜ Optional |
+
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 
 

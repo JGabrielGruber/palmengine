@@ -9,9 +9,12 @@ from palm.common.cqrs.query import GetFlowQuery
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.services.base import BaseService
 from palm.common.services.errors import DefinitionNotFoundServiceError
+from palm.services.assist._params import want_input_schema, wizard_start_body
+from palm.services.assist._view_meta import flow_id_from_view, scenario_id_from_view
 from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
 from palm.services.assist.registry import list_scenario_rows, scenario_by_id
 from palm.services.assist.session import AssistSession
+from palm.services.assist.sessions.handoff import resolve_handoff
 from palm.services.assist.views import resolve_view_format
 from palm.services.definitions.flows import flow_catalog_row
 
@@ -23,7 +26,13 @@ if TYPE_CHECKING:
 
 
 class AssistService(BaseService):
-    """Meta-orchestration shell — composes definitions, execution, and system."""
+    """Meta-orchestration shell — composes definitions, execution, and system.
+
+    Layout (0.33+): presentation in ``assist.present``, profiles in
+    ``assist.profiles`` (tool vs chat), handoff in ``assist.sessions``.
+    Domain leaf services (scenarios / sessions / catalog) land in 0.33.1.
+    See ``docs/VISION-0.33.md``.
+    """
 
     def __init__(
         self,
@@ -77,13 +86,13 @@ class AssistService(BaseService):
 
         if parsed.kind == AssistCommandKind.START_SCENARIO:
             assert parsed.scenario_id is not None
-            body = _wizard_start_body(params)
+            body = wizard_start_body(params)
             view_format = resolve_view_format(params)
             return self.start_scenario(
                 parsed.scenario_id,
                 body,
                 view_format=view_format,
-                include_input_schema=_want_input_schema(params),
+                include_input_schema=want_input_schema(params),
             )
 
         if parsed.kind == AssistCommandKind.SCENARIO_INSPECT:
@@ -99,14 +108,14 @@ class AssistService(BaseService):
                 sync_gate=True,
             ).to_dict(
                 view_format=view_format,
-                include_input_schema=_want_input_schema(params),
+                include_input_schema=want_input_schema(params),
             )
 
         if parsed.kind == AssistCommandKind.SESSION_VERB:
             assert parsed.session_id is not None
             assert parsed.verb is not None
             view_format = resolve_view_format(params)
-            include_input = _want_input_schema(params)
+            include_input = want_input_schema(params)
             handle = self.session(parsed.session_id)
             if parsed.verb == "input":
                 value = params.get("value", params.get("input"))
@@ -197,8 +206,8 @@ class AssistService(BaseService):
 
     def session(self, session_id: str) -> AssistSession:
         view = self._system.inspect_instance(session_id)
-        flow_id = _flow_id_from_view(view)
-        scenario_id = _scenario_id_from_view(view, flow_id)
+        flow_id = flow_id_from_view(view)
+        scenario_id = scenario_id_from_view(view, flow_id)
         return AssistSession(
             self,
             flow_id=flow_id,
@@ -207,51 +216,7 @@ class AssistService(BaseService):
         )
 
     def handoff(self, session_id: str) -> dict[str, Any]:
-        handle = self.session(session_id)
-        ctx = handle.context()
-        assist_meta = _assist_metadata(self, handle.flow_id)
-        answers = _answers_from_view(ctx.detail)
-        intent = answers.get("intent")
-        handoff_map = assist_meta.get("handoff_map") or {}
-        target = handoff_map.get(intent) if intent is not None else None
-        if target is None and intent in (assist_meta.get("handoff_flows") or []):
-            target = intent
-        if target:
-            create_params = _create_params_from_answers(assist_meta, answers)
-            return {
-                "handoff": {
-                    "kind": "flow",
-                    "flow_id": target,
-                    "session_id": None,
-                    "create_params": create_params,
-                    "operator_hint": (
-                        f"Use palm_flows_create_session or POST /v1/api/flows/{target}/create"
-                    ),
-                }
-            }
-        # 0.30.3 — typed design handoff when metadata opts in and no flow target
-        design_intents = assist_meta.get("design_handoff_intents") or ()
-        if intent is not None and intent in design_intents:
-            return {"handoff": _design_handoff_payload(intent, answers, assist_meta)}
-
-        default_none_hint = (
-            "Assist session complete — no business flow handoff requested."
-        )
-        none_hints = assist_meta.get("handoff_none_hints") or {}
-        operator_hint = default_none_hint
-        if intent is not None and isinstance(none_hints, dict):
-            mapped = none_hints.get(intent)
-            if isinstance(mapped, str) and mapped.strip():
-                operator_hint = mapped
-        return {
-            "handoff": {
-                "kind": "none",
-                "flow_id": None,
-                "session_id": None,
-                "create_params": {},
-                "operator_hint": operator_hint,
-            }
-        }
+        return resolve_handoff(self, session_id)
 
     def doctor(self) -> dict[str, Any]:
         return self._system.doctor(self.resolve_runtime())
@@ -458,187 +423,6 @@ class AssistService(BaseService):
 
     def wait_until_idle(self, *, timeout: float = 5.0) -> bool:
         return self.resolve_runtime().wait_until_idle(timeout=timeout)
-
-
-# Params that must not leak into flows.run_wizard() body (dispatch/meta only).
-_WIZARD_BODY_STRIP = frozenset(
-    {
-        "body",
-        "value",
-        "input",
-        "format",
-        "alias",
-        "path",
-        "session_id",
-        "instance_id",
-        "flow_id",
-        "scenario_id",
-        "include_input_schema",
-        "auto_start",
-        "collection_action",
-        "edit",
-        "query",
-        "q",
-        "limit",
-        "kind",
-    }
-)
-
-
-def _want_input_schema(params: dict[str, Any] | None) -> bool:
-    """True when Portal/WS asks for structured ``input`` widgets (0.32.6)."""
-    if not params:
-        return False
-    raw = params.get("include_input_schema")
-    if raw is True or raw == 1:
-        return True
-    if isinstance(raw, str) and raw.strip().lower() in {"1", "true", "yes", "on"}:
-        return True
-    return False
-
-
-def _wizard_start_body(params: dict[str, Any]) -> dict[str, Any]:
-    """Build run_wizard body without assist/dispatch meta keys (e.g. greeting ``value``)."""
-    nested = params.get("body")
-    if isinstance(nested, dict) and nested:
-        source = nested
-    else:
-        source = params
-    return {k: v for k, v in source.items() if k not in _WIZARD_BODY_STRIP}
-
-
-def _flow_id_from_view(view: dict[str, Any]) -> str | None:
-    for key in ("flow_name", "flow_id"):
-        value = view.get(key)
-        if value is not None and str(value) not in {"", "flow"}:
-            return str(value)
-    progress = view.get("wizard_progress")
-    if isinstance(progress, dict):
-        wizard_name = progress.get("wizard_name")
-        if wizard_name:
-            return str(wizard_name)
-    pattern = view.get("pattern")
-    if isinstance(pattern, dict):
-        flow = pattern.get("flow")
-        if flow is not None and str(flow) not in {"", "flow"}:
-            return str(flow)
-    return None
-
-
-def _scenario_id_from_view(view: dict[str, Any], flow_id: str | None) -> str | None:
-    assist_meta = _assist_metadata_from_view(view)
-    scenario_id = assist_meta.get("scenario_id")
-    if scenario_id is not None:
-        return str(scenario_id)
-    if flow_id is not None:
-        normalized = flow_id.removeprefix("flow-")
-        for row in list_scenario_rows():
-            registered = str(row.get("flow_id") or "")
-            if registered in {flow_id, f"flow-{normalized}"} or registered.removeprefix("flow-") == normalized:
-                return str(row["scenario_id"])
-    return None
-
-
-def _assist_metadata_from_view(view: dict[str, Any]) -> dict[str, Any]:
-    pattern = view.get("pattern")
-    if isinstance(pattern, dict):
-        meta = pattern.get("metadata") or {}
-        if isinstance(meta, dict):
-            assist = meta.get("assist") or {}
-            if isinstance(assist, dict):
-                return assist
-    return {}
-
-
-def _assist_metadata(service: AssistService, flow_id: str | None) -> dict[str, Any]:
-    if flow_id is None:
-        return {}
-    flow = service.ask(GetFlowQuery(flow_id=flow_id))
-    if flow is None and not flow_id.startswith("flow-"):
-        flow = service.ask(GetFlowQuery(flow_id=f"flow-{flow_id}"))
-    if flow is None:
-        return {}
-    options = getattr(flow, "options", None) or {}
-    if not isinstance(options, dict):
-        return {}
-    metadata = options.get("metadata") or {}
-    if not isinstance(metadata, dict):
-        return {}
-    assist = metadata.get("assist") or {}
-    return assist if isinstance(assist, dict) else {}
-
-
-def _answers_from_view(view: dict[str, Any]) -> dict[str, Any]:
-    answers = view.get("answers")
-    if isinstance(answers, dict):
-        return answers
-    pattern = view.get("pattern")
-    if isinstance(pattern, dict):
-        nested = pattern.get("answers")
-        if isinstance(nested, dict):
-            return nested
-    return {}
-
-
-_DESIGN_ACTION_BY_INTENT: dict[str, str] = {
-    "create-flow": "publish_flow",
-    "improve-flow": "publish_flow",
-    "propose-resource": "publish_resource",
-}
-
-
-def _create_params_from_answers(
-    assist_meta: dict[str, Any],
-    answers: dict[str, Any],
-) -> dict[str, Any]:
-    """Map answer keys → create_params via assist metadata (0.30.3)."""
-    mapping = assist_meta.get("create_params_from_answers")
-    if not isinstance(mapping, dict) or not mapping:
-        return {}
-    params: dict[str, Any] = {}
-    for param_key, answer_key in mapping.items():
-        if not isinstance(param_key, str) or not isinstance(answer_key, str):
-            continue
-        if answer_key in answers and answers[answer_key] is not None:
-            params[param_key] = answers[answer_key]
-    return params
-
-
-def _design_handoff_payload(
-    intent: object,
-    answers: dict[str, Any],
-    assist_meta: dict[str, Any],
-) -> dict[str, Any]:
-    """Build ``kind: design`` handoff envelope (0.30.3)."""
-    intent_s = str(intent)
-    none_hints = assist_meta.get("handoff_none_hints") or {}
-    default_hint = (
-        "Use palm_design_publish_flow (or palm_design_publish_resource). "
-        "Treat unknown handoff kinds like none and always read operator_hint."
-    )
-    operator_hint = default_hint
-    if isinstance(none_hints, dict):
-        mapped = none_hints.get(intent_s)
-        if isinstance(mapped, str) and mapped.strip():
-            operator_hint = mapped
-
-    name_raw = answers.get("name_or_base")
-    name = str(name_raw).strip() if name_raw is not None and str(name_raw).strip() else None
-
-    payload: dict[str, Any] = {
-        "kind": "design",
-        "flow_id": None,
-        "session_id": None,
-        "create_params": {},
-        "intent": intent_s,
-        "design_action": _DESIGN_ACTION_BY_INTENT.get(intent_s, "propose_flow"),
-        "operator_hint": operator_hint,
-    }
-    if intent_s == "improve-flow" and name:
-        payload["base_flow_id"] = name
-    if intent_s in {"create-flow", "propose-resource"} and name:
-        payload["suggested_name"] = name
-    return payload
 
 
 __all__ = ["AssistService"]
