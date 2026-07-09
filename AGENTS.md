@@ -129,6 +129,7 @@ Follow these patterns. They exist so growth remains orderly.
 | New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |
+| WebSocket / Portal transport (0.32+) | `palm/runtimes/server/surfaces/websocket/` | Frames → shared assist dispatch; **no** new service domain; see [VISION-0.32](docs/VISION-0.32.md) |
 | MCP tool, resource, or prompt | `palm/runtimes/mcp/` + pattern or app `app.py` | Pattern: `register_mcp_contributor()`. App: `register_app_mcp_contributor()`. See [docs/MCP.md](docs/MCP.md) |
 | Cross-cutting coordination | `palm/common/<area>/` | executions, plans, hooks, persistence, etc. |
 | Definition revisioning (0.24+) | `palm/common/persistence/definition_repository.py`, `palm/definitions/`, `palm/instances/` | Append-only `publish_flow_revision`; instance `flow_revision` pin; see [VISION-0.24](docs/VISION-0.24.md) |
@@ -137,6 +138,7 @@ Follow these patterns. They exist so growth remains orderly.
 | Design Service (0.25+) | `palm/services/design/` | Propose/validate/impact/commit + auto-migrate atop revisions; layered with `DefinitionService` CRUD — see [VISION-0.25](docs/VISION-0.25.md), [ADR-008](docs/adr/008-design-service.md) |
 | Assist design entry (0.30+) | `palm/services/assist/` + operator-entry / design-entry scenarios | Surface create/improve flow from Assist without reimplementing Design — [VISION-0.30](docs/VISION-0.30.md) |
 | MCP meta-surface (0.31+) | `palm/runtimes/mcp/` surface profiles | Progressive disclosure: slim tool catalogs, assist-as-meta-execute, inventory measurement — [VISION-0.31](docs/VISION-0.31.md) |
+| WebSocket Assist / Portal (0.32+) | `palm/runtimes/server/surfaces/websocket/` | Human real-time Assist channel (same dispatch as MCP); Portal PWA client later — [VISION-0.32](docs/VISION-0.32.md) |
 | Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
 
 **Never:**
