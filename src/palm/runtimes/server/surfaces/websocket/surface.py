@@ -90,18 +90,44 @@ class WebSocketSurface(BaseSurface):
         )
 
     def _assist_http_hint(self, request: ServerRequest) -> ServerResponse:
-        del request
+        """Plain HTTP GET hit the WS path — upgrade headers missing/stripped."""
+        lower = {str(k).lower(): str(v) for k, v in (request.headers or {}).items()}
+        # Help diagnose reverse proxies (e.g. Cloudflare) that drop Upgrade
+        present = {
+            "upgrade": lower.get("upgrade"),
+            "connection": lower.get("connection"),
+            "sec-websocket-key": bool(lower.get("sec-websocket-key")),
+            "sec-websocket-version": lower.get("sec-websocket-version"),
+            "cf-ray": lower.get("cf-ray"),
+            "cdn-loop": lower.get("cdn-loop"),
+        }
+        missing = [
+            name
+            for name, ok in (
+                ("Upgrade: websocket", "websocket" in (present["upgrade"] or "").lower()),
+                (
+                    "Connection: …Upgrade…",
+                    "upgrade" in (present["connection"] or "").lower(),
+                ),
+                ("Sec-WebSocket-Key", present["sec-websocket-key"]),
+            )
+            if not ok
+        ]
         return ServerResponse(
             status=426,
             body={
                 "error": "upgrade_required",
                 "message": (
                     f"Use WebSocket upgrade on {ASSIST_WS_PATH} "
-                    "(Sec-WebSocket-Version: 13)."
+                    "(Sec-WebSocket-Version: 13). "
+                    "If this appears behind a tunnel/proxy, Upgrade headers "
+                    "were not forwarded to Palm."
                 ),
                 "assist_path": ASSIST_WS_PATH,
                 "protocol": PROTOCOL_VERSION,
                 "portal_path": "/portal/",
+                "handshake": present,
+                "missing": missing,
             },
             headers={"Upgrade": "websocket"},
         )
