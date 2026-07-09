@@ -36,19 +36,20 @@ def compact_wizard_inspect(
     if not isinstance(answers, dict):
         answers = {}
 
+    step_slug = wizard_view.get("current_step_slug") or prompt.get("step") or prompt.get("slug")
     payload: dict[str, Any] = {
         "instance_id": wizard_view.get("instance_id"),
         "job_id": wizard_view.get("job_id"),
         "flow": wizard_view.get("flow_name"),
         "status": wizard_view.get("status"),
-        "step": wizard_view.get("current_step_slug") or prompt.get("step"),
+        "step": step_slug,
         "step_kind": prompt.get("step_kind"),
         "field_type": prompt.get("field_type"),
         "next_actions": _compact_next_actions(wizard_view.get("next_actions")),
     }
 
     if "prompt" in fields:
-        payload["prompt"] = prompt.get("text") or prompt.get("title")
+        payload["prompt"] = prompt.get("text") or prompt.get("prompt") or prompt.get("title")
         payload["prompt_title"] = prompt.get("title")
 
     if "validation" in fields:
@@ -95,6 +96,24 @@ def compact_wizard_inspect(
     collection_field = prompt.get("collection_field")
     if collection_field:
         payload["collection_field"] = collection_field
+
+    # 0.32.3 — carry schema fields for Portal dynamic input
+    if "required" in prompt:
+        payload["required"] = bool(prompt.get("required"))
+    validation_rules = prompt.get("validation")
+    if isinstance(validation_rules, list) and validation_rules:
+        payload["validation_rules"] = validation_rules
+    for key in (
+        "item_fields",
+        "collection_key",
+        "min_items",
+        "label_field",
+        "resource_ref",
+        "step_index",
+        "slug",
+    ):
+        if prompt.get(key) is not None:
+            payload[key] = prompt[key]
 
     if wizard_view.get("committed"):
         payload["committed"] = True

@@ -118,6 +118,22 @@ def test_websocket_info_route_live(palm_server: ServerRuntime) -> None:
     assert body["protocol"] == PROTOCOL_VERSION
 
 
+def test_handle_bind_and_dispatch_uses_bound_session(palm_server: ServerRuntime) -> None:
+    from palm.runtimes.server.surfaces.websocket.session import _ConnectionState
+
+    ctx = palm_server.server_app.context  # type: ignore[union-attr]
+    conn = _ConnectionState(headers={})
+    bound = handle_client_message(
+        {"op": "bind", "id": "b1", "session_id": "inst-bound", "flow_id": "todo-builder"},
+        ctx=ctx,
+        conn=conn,
+    )
+    assert bound is not None
+    assert bound["op"] == "bound"
+    assert bound["session_id"] == "inst-bound"
+    assert conn.session_id == "inst-bound"
+
+
 def test_handle_dispatch_doctor_with_context(palm_server: ServerRuntime) -> None:
     ctx = palm_server.server_app.context  # type: ignore[union-attr]
     frame = handle_client_message(
@@ -141,6 +157,46 @@ def test_handle_dispatch_catalog_flows(palm_server: ServerRuntime) -> None:
     assert frame["op"] == "turn"
     payload = frame["payload"]
     assert payload.get("question") or payload.get("flow_count") is not None
+
+
+def test_dispatch_flow_turn_includes_input_schema(palm_server: ServerRuntime) -> None:
+    """Portal needs field_type/widget/choices on turns for dynamic inputs."""
+    from palm.definitions import FlowDefinition
+
+    flow = FlowDefinition(
+        name="ws-schema-demo",
+        pattern="wizard",
+        options={
+            "include_summary": False,
+            "steps": [
+                {
+                    "slug": "mood",
+                    "title": "Mood",
+                    "prompt": "Pick a mood",
+                    "field_type": "choice",
+                    "choices": ["happy", "sad"],
+                    "validation": [{"rule": "not_empty"}],
+                }
+            ],
+        },
+    )
+    palm_server.repository.save_flow(flow)
+    ctx = palm_server.server_app.context  # type: ignore[union-attr]
+    frame = handle_client_message(
+        {"op": "dispatch", "id": "f1", "params": {"flow_id": "ws-schema-demo"}},
+        ctx=ctx,
+    )
+    assert frame is not None
+    assert frame["op"] == "turn"
+    payload = frame["payload"]
+    assert payload.get("question")
+    schema = payload.get("input")
+    assert isinstance(schema, dict)
+    assert schema.get("field_type") == "choice"
+    assert schema.get("widget") == "choice"
+    assert schema.get("step") == "mood"
+    assert schema.get("choices")
+    assert frame.get("bound", {}).get("session_id") or payload.get("session_id")
 
 
 def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:

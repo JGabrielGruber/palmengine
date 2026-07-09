@@ -49,6 +49,18 @@ def build_compose_status(
         "job_id",
         "committed",
         "result",
+        # 0.32.3 Portal input schema
+        "required",
+        "validation_rules",
+        "item_fields",
+        "collection_key",
+        "min_items",
+        "label_field",
+        "resource_ref",
+        "step_index",
+        "slug",
+        "prompt_title",
+        "prompt",
     ):
         value = wizard_inspect.get(key)
         if value is not None:

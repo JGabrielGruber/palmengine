@@ -9,6 +9,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.32 WebSocket Assist & Portal backend (foundation)** — [VISION-0.32.md](docs/VISION-0.32.md); design [spec](docs/superpowers/specs/2026-07-09-websocket-assist-portal-design.md) + open-ended [plan](docs/superpowers/plans/2026-07-09-websocket-assist-portal-0.32.md). Assist-first WS protocol draft for Portal PWA / future mobile; docs-only in 0.32.0.
 - **0.32.1 WebSocket transport MVP** — pure-Python RFC6455 on stdlib HTTP; `GET /ws/v1/assist` upgrade; server `hello` + client `ping`/`pong`; `GET /v1/surfaces/websocket` reports `live`.
 - **0.32.2 WebSocket assist channel** — `dispatch` frames use the same path/alias/params spine as MCP `palm_assist` and return assistant `turn` payloads; peer-tool actions rewritten for WS clients.
+- **0.32.3 Portal input schema + continuity** — assistant turns include structured ``input`` (widget, field_type, choices, validation, collection fields); WS ``bind`` / auto-bind ``session_id``+``flow_id``; hello reports auth mode; create re-inspects for first-turn schema.
 
 ## [0.31.5] — 2026-07-08
 

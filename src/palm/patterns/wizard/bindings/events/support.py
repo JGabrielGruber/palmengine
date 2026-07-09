@@ -66,7 +66,34 @@ def build_prompt_bundle(
         "choices": list(step.choices),
         "step_index": step_index,
         "step_kind": step.step_kind,
+        # 0.32.3 — Portal/dynamic input schema
+        "required": bool(step.required),
     }
+    if step.validation:
+        bundle["validation"] = [
+            {"rule": rule.rule, "params": dict(rule.params or {})}
+            for rule in step.validation
+        ]
+    if step.step_kind == "collection" and step.item_fields:
+        bundle["item_fields"] = [
+            {
+                "slug": f.slug,
+                "field_type": f.field_type,
+                "required": bool(f.required),
+                "choices": list(f.choices or ()),
+                "title": f.title,
+                "prompt": f.prompt,
+            }
+            for f in step.item_fields
+        ]
+        if step.collection_key:
+            bundle["collection_key"] = step.collection_key
+        if step.min_items is not None:
+            bundle["min_items"] = step.min_items
+        if step.label_field:
+            bundle["label_field"] = step.label_field
+    if step.resource_ref:
+        bundle["resource_ref"] = step.resource_ref
     bundle.update(extra)
     return enrich_prompt_bundle(
         state,

@@ -208,6 +208,23 @@ def test_assistant_to_dict_includes_actions() -> None:
     assert payload["actions"][0]["path"][0] == "assist"
 
 
+def test_assistant_view_includes_input_schema() -> None:
+    _setup()
+    payload = build_assistant_view(
+        _operator_entry_flat(),
+        context=OperatorViewContext(
+            session_id="inst-1",
+            flow_id="flow-palm-operator-entry",
+        ),
+    )
+    schema = payload.get("input")
+    assert isinstance(schema, dict)
+    assert schema.get("field_type") == "choice"
+    assert schema.get("widget") == "choice"
+    assert schema.get("interactive") is True
+    assert schema.get("choices")
+
+
 def test_waiting_turn_gets_send_answer_cta() -> None:
     _setup()
     payload = build_assistant_view(

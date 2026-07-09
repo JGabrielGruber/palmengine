@@ -238,6 +238,42 @@ Version field on hello so clients can evolve.
 
 `payload` is exactly (or a strict subset of) what MCP `palm_assist` returns after shaping — **Portal must not depend on MCP tool names** in `actions`; prefer `alias` / `params` that the client can re-dispatch over WS.
 
+#### `payload.input` — dynamic form schema (0.32.3)
+
+Present when the session is waiting for interactive input:
+
+```json
+{
+  "kind": "field",
+  "step": "mood",
+  "step_kind": "input",
+  "field_type": "choice",
+  "widget": "choice",
+  "required": true,
+  "title": "Mood",
+  "prompt": "Pick a mood",
+  "choices": [{"n": 1, "label": "Happy", "value": "happy"}],
+  "validation": [{"rule": "not_empty", "params": {}}],
+  "interactive": true
+}
+```
+
+| `widget` | Portal UI |
+|----------|-----------|
+| `text` | Free-text input |
+| `choice` | Buttons / select from `choices` |
+| `confirm` | Yes/no |
+| `collection` | Collection editor (`item_fields`, `collection_phase`) |
+
+Non-interactive steps may set `"interactive": false` with `kind` `resource` / `transform`.
+
+#### Continuity (0.32.3)
+
+- Client may `{"op":"bind","session_id":"…","flow_id":"…"}` → server `{"op":"bound",…}`.
+- Subsequent `dispatch` frames inherit bound ids when omitted.
+- Server `turn` may include `"bound": {"session_id", "flow_id"}`.
+- Hello may include `"auth": {"mode": "open"|"bearer"}`.
+
 **Portal action handling rule:**
 
 - If action has `alias` or `params` suitable for dispatch → send new `dispatch` frame.

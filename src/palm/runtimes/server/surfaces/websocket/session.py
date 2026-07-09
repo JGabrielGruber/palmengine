@@ -39,7 +39,7 @@ def run_assist_websocket(
     headers: dict[str, str] | None = None,
 ) -> None:
     """Blocking assist channel after HTTP upgrade has completed."""
-    del headers  # reserved for auth in 0.32.3
+    conn = _ConnectionState(headers=headers or {})
     reader = FrameReader(rfile)
     version = _palm_version()
     _send_json(
@@ -51,7 +51,8 @@ def run_assist_websocket(
             "version": version,
             "channel": "assist",
             "path": ASSIST_WS_PATH,
-            "ops": ["hello", "ping", "dispatch"],
+            "ops": ["hello", "ping", "dispatch", "bind"],
+            "auth": {"mode": conn.auth_mode, "subject": conn.subject},
         },
     )
 
@@ -134,22 +135,48 @@ def run_assist_websocket(
             )
             continue
 
-        response = handle_client_message(message, ctx=ctx)
+        response = handle_client_message(message, ctx=ctx, conn=conn)
         if response is None:
             continue
         _send_json(wfile, response)
+
+
+class _ConnectionState:
+    """Per-connection bind state (0.32.3 continuity)."""
+
+    def __init__(self, *, headers: dict[str, str]) -> None:
+        self.session_id: str | None = None
+        self.flow_id: str | None = None
+        self.client: str | None = None
+        lower = {k.lower(): v for k, v in headers.items()}
+        auth = lower.get("authorization", "")
+        if auth.lower().startswith("bearer ") and auth[7:].strip():
+            self.auth_mode = "bearer"
+            self.subject = auth[7:].strip()[:64]
+        else:
+            self.auth_mode = "open"
+            self.subject = lower.get("x-palm-subject") or "anonymous"
 
 
 def handle_client_message(
     message: dict[str, Any],
     *,
     ctx: ServerContext | None = None,
+    conn: _ConnectionState | None = None,
 ) -> dict[str, Any] | None:
     """Handle one client JSON message; return server frame or None."""
     op = message.get("op")
     msg_id = message.get("id")
+    state = conn or _ConnectionState(headers={})
 
     if op == "hello":
+        if message.get("client") is not None:
+            state.client = str(message.get("client"))
+        # Optional bind on hello for reconnect
+        if message.get("session_id"):
+            state.session_id = str(message["session_id"])
+        if message.get("flow_id"):
+            state.flow_id = str(message["flow_id"])
         return {
             "op": "hello",
             "id": msg_id,
@@ -158,15 +185,23 @@ def handle_client_message(
             "version": _palm_version(),
             "channel": "assist",
             "ack": True,
-            "client": message.get("client"),
-            "ops": ["hello", "ping", "dispatch"],
+            "client": state.client or message.get("client"),
+            "ops": ["hello", "ping", "dispatch", "bind"],
+            "bound": {
+                "session_id": state.session_id,
+                "flow_id": state.flow_id,
+            },
+            "auth": {"mode": state.auth_mode},
         }
 
     if op == "ping":
         return {"op": "pong", "id": msg_id}
 
+    if op == "bind":
+        return _handle_bind(message, state)
+
     if op == "dispatch":
-        return _handle_dispatch(message, ctx=ctx)
+        return _handle_dispatch(message, ctx=ctx, conn=state)
 
     return {
         "op": "error",
@@ -178,13 +213,38 @@ def handle_client_message(
     }
 
 
+def _handle_bind(
+    message: dict[str, Any],
+    conn: _ConnectionState,
+) -> dict[str, Any]:
+    """Bind session_id / flow_id for reconnect continuity (0.32.3)."""
+    msg_id = message.get("id")
+    if message.get("session_id") is not None:
+        sid = str(message["session_id"]).strip()
+        conn.session_id = sid or None
+    if message.get("flow_id") is not None:
+        fid = str(message["flow_id"]).strip()
+        conn.flow_id = fid or None
+    if message.get("clear") in (True, "true", "1", 1):
+        conn.session_id = None
+        conn.flow_id = None
+    return {
+        "op": "bound",
+        "id": msg_id,
+        "session_id": conn.session_id,
+        "flow_id": conn.flow_id,
+    }
+
+
 def _handle_dispatch(
     message: dict[str, Any],
     *,
     ctx: ServerContext | None,
+    conn: _ConnectionState | None = None,
 ) -> dict[str, Any]:
     """Run assist meta-dispatch (same spine as MCP palm_assist) → turn/error."""
     msg_id = message.get("id")
+    state = conn or _ConnectionState(headers={})
     if ctx is None:
         return {
             "op": "error",
@@ -214,6 +274,11 @@ def _handle_dispatch(
     for key in ("value", "input", "session_id", "flow_id", "body", "query", "q"):
         if key in message and key not in params:
             params[key] = message[key]
+    # 0.32.3 — fill from connection bind when client omits ids
+    if not params.get("session_id") and state.session_id:
+        params["session_id"] = state.session_id
+    if not params.get("flow_id") and state.flow_id:
+        params["flow_id"] = state.flow_id
 
     path_list: list[str] | None = None
     if isinstance(path_raw, list):
@@ -252,6 +317,27 @@ def _handle_dispatch(
         )
         raw = dispatch_operator_path(ctx, resolved, dispatch_params)
         view_format = str(message.get("format") or "assistant")
+        # After create, re-inspect so first turn includes input schema (Portal)
+        if (
+            view_format == "assistant"
+            and len(resolved) >= 2
+            and resolved[0] == "flows"
+            and resolved[-1] == "create"
+            and isinstance(raw, dict)
+            and raw.get("session_id")
+        ):
+            flow_id = resolved[1]
+            session_id = str(raw["session_id"])
+            inspect_path = ["flows", flow_id, "session", session_id]
+            try:
+                raw = dispatch_operator_path(
+                    ctx,
+                    inspect_path,
+                    {"format": "assistant"},
+                )
+                resolved = inspect_path
+            except Exception:
+                logger.debug("ws create re-inspect failed; using create envelope", exc_info=True)
         shaped = shape_dispatch_result(
             resolved,
             raw,
@@ -260,10 +346,25 @@ def _handle_dispatch(
             tool_format=view_format,
         )
         shaped = _rewrite_actions_for_websocket(shaped)
+        # Refresh bind from turn payload for reconnect convenience
+        sid = shaped.get("session_id") or shaped.get("instance_id")
+        if sid:
+            state.session_id = str(sid)
+        flow = None
+        refs = shaped.get("refs")
+        if isinstance(refs, dict) and refs.get("flow_id"):
+            flow = refs.get("flow_id")
+        flow = flow or shaped.get("flow_id") or shaped.get("flow")
+        if flow:
+            state.flow_id = str(flow)
         return {
             "op": "turn",
             "id": msg_id,
             "payload": shaped,
+            "bound": {
+                "session_id": state.session_id,
+                "flow_id": state.flow_id,
+            },
         }
     except ValueError as exc:
         return {
