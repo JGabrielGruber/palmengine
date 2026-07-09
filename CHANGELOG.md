@@ -4,30 +4,41 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added
+## [0.34.5] — 2026-07-09
 
-- **0.34 Assist operator remote** — [VISION-0.34.md](docs/VISION-0.34.md). No Bot; finish Assist as menu + open + chat L0.
-  - **0.34.1 Chat L0** — design intents (`improve-flow` / `create-flow` / `propose-resource`) **auto-start design-entry**
-    (pre-answer intent); design handoff CTAs; **confirm Yes/No** choices in humanize.
-  - **0.34.2 Menu** — `assist/menu` (+ alias) browse/search/page (`section`, `query`, `cursor`, `limit`);
-    chat `input.widget=menu` + choices `open:kind:id`.
-  - **0.34.3 Open** — `assist/open` (+ alias); normalize routes `value=open:flow:…` to open (not session input).
-  - **0.34.4 Portal menu shell** — header **Menu**, in-panel search, `open:` chips without sticky session;
-    operator-entry **Browse all flows**; richer waiting-session labels.
-  - **0.34.5** — Portal menu **typeahead debounce** (350ms, silent); waiting list/catalog as **Resume chips**
-    (`open:session:…`); open session attaches `flow_id` + continue CTA.
-- **0.33.0 Assist modularity (scaffold)** — split presentation into `palm.services.assist.present/*`;
-  **tool vs chat** profiles under `profiles/`; handoff → `sessions/handoff.py`; helpers → `_params` / `_view_meta`.
-  Compat: `assist.views` re-exports. Vision: [VISION-0.33.md](docs/VISION-0.33.md).
-- **0.33.1 Execution-shaped leafs** — `AssistService.scenarios` / `.sessions` / `.catalog`;
-  domain work lives in small services; façade `dispatch` + stable public methods delegate.
-  Discover → `catalog/discover.py`.
-- **0.33.2 Chat policy out of WS** — auto-start, intro continue, action rewrite live in
-  `assist.profiles` (`continuity`, `actions_chat`, `turn_meta`); WebSocket injects
-  dispatch/shape callables only (no product policy in transport).
-- **0.33.3 MCP dispatch modular** — `dispatch.py` is a thin re-export; implementation in
-  `normalize.py`, `operator.py`, `rest_map.py`, `shape/{result,catalog,session,design,flow_create}.py`
-  (was ~1000 LOC single file).
+**Bundled release since 0.32.10** — **Assist modularity** (0.33) + **operator remote** menu/open/chat L0 (0.34). No Bot; Assist is the navigation remote; Portal/MCP are clients.
+
+**Checklist:** [RELEASE-0.34.5.md](RELEASE-0.34.5.md) · **Vision:** [VISION-0.33](docs/VISION-0.33.md) · [VISION-0.34](docs/VISION-0.34.md)
+
+### Added — Assist modularity (0.33)
+
+- **0.33.0** — `present/*` presentation pipeline; **tool vs chat** `profiles/`; handoff → `sessions/handoff.py`; views re-export compat.
+- **0.33.1** — Execution-shaped leafs: `AssistService.scenarios` / `.sessions` / `.catalog`.
+- **0.33.2** — Chat policy (auto-start demos, intro continue, action rewrite) in `assist.profiles`; WS injects dispatch/shape only.
+- **0.33.3** — MCP assist dispatch modular (`normalize`, `operator`, `shape/*`).
+
+### Added — Operator remote (0.34)
+
+- **0.34.1 Chat L0** — design intents auto-start **design-entry**; confirm **Yes/No** choices; design handoff CTAs.
+- **0.34.2–0.34.3** — `assist/menu` browse/search/page; `assist/open` + `open:kind:id` normalize routing.
+- **0.34.4** — Portal menu shell (Menu, search, open tokens); **Browse all flows** CTAs.
+- **0.34.5** — Menu typeahead debounce; waiting **Resume** chips; open session `flow_id` polish.
+- **Open fix** — `open:flow:…` re-inspects first turn (question + input, not raw `WAITING_FOR_INPUT`).
+
+### Changed
+
+- Assist is Execution-shaped (façade + subdomains); chat continuity no longer lives in WebSocket transport.
+- Bot deferred: use menu/open + chat profile instead of a second brain.
+
+### Try it
+
+```bash
+uv pip install 'palmengine==0.34.5'   # or uv sync from tag
+just palm-server
+# Portal: http://127.0.0.1:8080/portal/?open=1
+# Menu → Flows → open a flow → first wizard prompt
+# WS: wss?://host/ws/v1/assist
+```
 
 ## [0.32.10] — 2026-07-09
 

@@ -1,8 +1,8 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.32.10`
+**Current Version:** `0.34.5`
 **Last Updated:** July 9, 2026
-**Maturity:** Wizard Experience · MCP operator adapter · Assist design entry · **WebSocket Assist + Portal dogfood** · **`palm_assist`** primary weak-LLM surface.
+**Maturity:** Wizard Experience · MCP operator adapter · Assist design entry · **WebSocket Assist + Portal dogfood** · **Assist operator remote** (menu/open) · **`palm_assist`** primary weak-LLM surface.
 
 ## Quick Overview
 

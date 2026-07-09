@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.32.10` — WebSocket Assist + Portal dogfood chat · MCP meta-surface (`PALM_MCP_SURFACE=assist`) · [CHANGELOG.md](CHANGELOG.md) · [RELEASE-0.32.10.md](RELEASE-0.32.10.md) · [VISION-0.32.md](docs/VISION-0.32.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.34.5` — Assist modularity + operator remote (menu/open) · Portal dogfood · WebSocket Assist · [CHANGELOG.md](CHANGELOG.md) · [RELEASE-0.34.5.md](RELEASE-0.34.5.md) · [VISION-0.34.md](docs/VISION-0.34.md) · [docs/MCP.md](docs/MCP.md)
 
 ---
 
