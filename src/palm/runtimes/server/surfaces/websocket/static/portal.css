@@ -21,11 +21,17 @@
 html, body {
   margin: 0;
   min-height: 100%;
+  min-height: 100dvh;
   background:
     radial-gradient(1200px 600px at 10% -10%, rgba(20, 184, 166, 0.15), transparent 50%),
     radial-gradient(900px 500px at 100% 0%, rgba(59, 130, 246, 0.12), transparent 45%),
     var(--bg);
   color: var(--text);
+  /* Filled by portal.js from visualViewport (keyboard-safe) */
+  --vv-height: 100dvh;
+  --vv-offset-top: 0px;
+  --vv-offset-left: 0px;
+  --keyboard-inset: 0px;
 }
 
 .muted { color: var(--muted); font-size: 12px; }
@@ -54,7 +60,8 @@ html, body {
   right: 22px;
   bottom: 92px;
   width: min(400px, calc(100vw - 24px));
-  height: min(640px, calc(100vh - 120px));
+  height: min(640px, calc(100dvh - 120px));
+  max-height: calc(var(--vv-height, 100dvh) - 24px);
   background: rgba(17, 24, 39, 0.96);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius);
@@ -317,14 +324,39 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
 }
 
 @media (max-width: 480px) {
+  /*
+   * Full-bleed panel clipped to visualViewport so soft keyboard does not cover
+   * the message list / choice chips (vv-* set from portal.js).
+   */
   .panel {
-    right: 0;
-    bottom: 0;
+    left: var(--vv-offset-left, 0px);
+    top: var(--vv-offset-top, 0px);
+    right: auto;
+    bottom: auto;
     width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: var(--vv-height, 100dvh);
+    max-height: var(--vv-height, 100dvh);
     border-radius: 0;
   }
-  .fab { right: 16px; bottom: 16px; }
+  .fab {
+    right: 16px;
+    /* Sit above home indicator; when panel open FAB is under panel anyway */
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  .composer {
+    /* Safe area + keep composer above gesture bar when keyboard closed */
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+  .log {
+    /* Prefer flex shrink over overflowing under keyboard */
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+  .chip {
+    /* Larger hit targets when tapping without keyboard open */
+    min-height: 40px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,7 +1,8 @@
 /**
- * Palm Portal dogfood (0.32.10) — floating chat over WebSocket Assist.
+ * Palm Portal dogfood (0.32.11) — floating chat over WebSocket Assist.
  * Renders payload.input for dynamic widgets; dispatches path/alias/params frames.
  * Intro auto-continue: separate intro_banner bubble + real step question.
+ * Mobile: no autofocus (keyboard covers chips); visualViewport sizes panel.
  */
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -34,6 +35,41 @@
     /** true while waiting for a turn after dispatch */
     pending: false,
   };
+
+  /** True on touch / coarse pointer phones — avoid stealing focus. */
+  function isMobileUi() {
+    try {
+      return (
+        window.matchMedia("(max-width: 480px)").matches ||
+        window.matchMedia("(pointer: coarse)").matches
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /**
+   * Size the panel to the *visible* viewport so the chat log sits above the
+   * soft keyboard (iOS/Android browsers shrink visualViewport when keyboard opens).
+   */
+  function syncVisualViewport() {
+    const vv = window.visualViewport;
+    const root = document.documentElement;
+    if (!vv) {
+      root.style.setProperty("--vv-height", `${window.innerHeight}px`);
+      root.style.setProperty("--vv-offset-top", "0px");
+      root.style.setProperty("--vv-offset-left", "0px");
+      root.style.setProperty("--keyboard-inset", "0px");
+      return;
+    }
+    const keyboardInset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    root.style.setProperty("--vv-height", `${Math.round(vv.height)}px`);
+    root.style.setProperty("--vv-offset-top", `${Math.round(vv.offsetTop)}px`);
+    root.style.setProperty("--vv-offset-left", `${Math.round(vv.offsetLeft)}px`);
+    root.style.setProperty("--keyboard-inset", `${Math.round(keyboardInset)}px`);
+    // Keep latest messages in view when keyboard resizes the pane
+    if (!panel.hidden) scrollLogToEnd();
+  }
 
   // Meta: keep text + activity indicator
   meta.innerHTML =
@@ -387,9 +423,9 @@
     if (locked || status === "complete" || status === "failed") {
       textInput.disabled = true;
       btnSend.disabled = true;
-    } else {
-      textInput.focus();
     }
+    // No autofocus: on mobile it pops the keyboard over chips/log.
+    // Desktop: focus only when user already typed in the field this session.
   }
 
   const NOISE_ACTIONS = new Set([
@@ -514,13 +550,39 @@
     panel.hidden = !panel.hidden;
     if (!panel.hidden) {
       connect();
-      textInput.focus();
+      syncVisualViewport();
+      // Desktop only: focus composer when opening (mobile keeps chips usable)
+      if (!isMobileUi()) {
+        try {
+          textInput.focus({ preventScroll: true });
+        } catch (_) {
+          /* ignore */
+        }
+      }
       scrollLogToEnd();
     }
   };
 
+  // Soft keyboard / browser chrome — resize panel to visible area
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", syncVisualViewport);
+    window.visualViewport.addEventListener("scroll", syncVisualViewport);
+  }
+  window.addEventListener("resize", syncVisualViewport);
+  syncVisualViewport();
+
+  // After user focuses the field themselves, keep log pinned above keyboard
+  textInput.addEventListener("focus", () => {
+    // Delay so keyboard animation finishes
+    setTimeout(() => {
+      syncVisualViewport();
+      scrollLogToEnd();
+    }, 300);
+  });
+
   if (new URLSearchParams(location.search).get("open") === "1") {
     panel.hidden = false;
     connect();
+    syncVisualViewport();
   }
 })();
