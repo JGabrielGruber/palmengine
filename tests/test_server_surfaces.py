@@ -74,8 +74,10 @@ def test_health_reports_runtime_and_surfaces(server: ServerRuntime) -> None:
 
 def test_extension_surface_info_endpoints(server: ServerRuntime) -> None:
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/websocket")
-    assert status == 501
-    assert payload["status"] == "planned"
+    assert status == 200
+    assert payload["status"] == "live"
+    assert payload.get("assist_path") == "/ws/v1/assist"
+    assert payload.get("portal_path") == "/portal/"
     assert "message" in payload
 
     status, payload = _request(server.base_url, "GET", "/v1/surfaces/mcp")

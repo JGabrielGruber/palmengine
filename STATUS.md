@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.31.5`
-**Last Updated:** July 8, 2026
+**Last Updated:** July 9, 2026
 **Maturity:** Wizard Experience · MCP operator adapter · Assist design entry + local KV/file resources · **`palm_assist`** primary weak-LLM surface.
 
 ## Quick Overview
@@ -400,10 +400,10 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.32.1 | Real WebSocket transport MVP (hello/ping on `/ws/v1/assist`) | ✅ Shipped |
 | 0.32.2 | Assist channel (dispatch ↔ turn frames) | ✅ Shipped |
 | 0.32.3 | Input schema on turns + bind/reconnect + auth mode | ✅ Shipped |
-| 0.32.4 | Portal dogfood chat shell | ⬜ Open |
+| 0.32.4 | Portal dogfood chat shell (`/portal/`) | ✅ Shipped |
 | 0.32.5+ | Open (events, PWA polish, Android, …) | ⬜ Open |
 
-**Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. Stub `WebSocketSurface` remains until 0.32.1.
+**Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. WS live on `/ws/v1/assist`; Portal dogfood at `/portal/`.
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 

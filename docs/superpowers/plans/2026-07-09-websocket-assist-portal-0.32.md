@@ -2,7 +2,8 @@
 
 **Vision:** [docs/VISION-0.32.md](../../VISION-0.32.md)  
 **Design:** [2026-07-09-websocket-assist-portal-design.md](../specs/2026-07-09-websocket-assist-portal-design.md)  
-**Status:** 0.32.0–0.32.3 ✅ · 0.32.4 open  
+**Status:** 0.32.0–0.32.4 ✅ · 0.32.5+ open  
+
 
 Delivery: commit when good enough. **Insert phases freely** if dogfood demands it.
 
@@ -65,14 +66,14 @@ Delivery: commit when good enough. **Insert phases freely** if dogfood demands i
 
 ---
 
-## Phase 0.32.4 — Portal dogfood shell
+## Phase 0.32.4 — Portal dogfood shell ✅
 
 | Work item | Notes |
 |-----------|--------|
-| Lightweight UI | `examples/portal/` or similar |
-| Floating panel CSS | Product feel without full app |
-| manifest (optional) | PWA install later |
-| Docs | How to run Portal against local server |
+| Lightweight UI | `palm/runtimes/server/surfaces/websocket/static/` (served at `/portal/`) |
+| Floating panel CSS | FAB + chat panel; dynamic widgets from `payload.input` |
+| manifest (optional) | `manifest.webmanifest` (install polish later) |
+| Docs | `just palm-server` → open `http://127.0.0.1:8080/portal/?open=1` |
 
 **Not required:** polished branding, offline SW, store listing.
 
@@ -100,8 +101,10 @@ Candidates (unordered):
 websocat ws://127.0.0.1:8080/ws/v1/assist
 # send hello / dispatch JSON lines
 
-# After 0.32.2
-# open dogfood HTML, run operator-entry
+# After 0.32.4 — Portal dogfood
+just palm-server   # or: uv run palm server
+# browser: http://127.0.0.1:8080/portal/?open=1
+# Start → operator-entry; chips use payload.input / actions
 ```
 
 ---

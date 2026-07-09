@@ -116,6 +116,50 @@ def test_websocket_info_route_live(palm_server: ServerRuntime) -> None:
     assert body["status"] == "live"
     assert body["assist_path"] == ASSIST_WS_PATH
     assert body["protocol"] == PROTOCOL_VERSION
+    assert body.get("portal_path") == "/portal/"
+
+
+def test_portal_static_index_and_assets(palm_server: ServerRuntime) -> None:
+    """0.32.4 — dogfood Portal shell is served from the server surface."""
+    import urllib.error
+    import urllib.request
+
+    base = palm_server.base_url
+    with urllib.request.urlopen(f"{base}/portal", timeout=5) as resp:
+        html = resp.read().decode()
+        assert resp.headers.get_content_type() in ("text/html", "application/xhtml+xml")
+    assert "Palm Portal" in html
+    assert "/portal/portal.js" in html
+
+    with urllib.request.urlopen(f"{base}/portal/portal.js", timeout=5) as resp:
+        js = resp.read().decode()
+        ctype = resp.headers.get_content_type()
+    assert "javascript" in ctype or ctype == "application/octet-stream"
+    assert "WebSocket" in js
+    assert "payload.input" in js or "lastInput" in js
+
+    with urllib.request.urlopen(f"{base}/portal/portal.css", timeout=5) as resp:
+        css = resp.read().decode()
+    assert ".fab" in css or "panel" in css
+
+    with urllib.request.urlopen(f"{base}/portal/manifest.webmanifest", timeout=5) as resp:
+        manifest = resp.read().decode()
+        ctype = resp.headers.get_content_type()
+    assert "manifest" in ctype or ctype == "application/json"
+    assert "Palm" in manifest or "portal" in manifest.lower()
+
+    with pytest.raises(urllib.error.HTTPError) as exc_info:
+        urllib.request.urlopen(f"{base}/portal/does-not-exist.js", timeout=5)
+    assert exc_info.value.code == 404
+
+
+def test_portal_file_response_rejects_traversal() -> None:
+    from palm.runtimes.server.surfaces.websocket.static import portal_file_response
+
+    assert portal_file_response("../surface.py") is None
+    assert portal_file_response("..") is None
+    assert portal_file_response("index.html") is not None
+    assert portal_file_response("portal.js") is not None
 
 
 def test_handle_bind_and_dispatch_uses_bound_session(palm_server: ServerRuntime) -> None:
@@ -199,6 +243,34 @@ def test_dispatch_flow_turn_includes_input_schema(palm_server: ServerRuntime) ->
     assert frame.get("bound", {}).get("session_id") or payload.get("session_id")
 
 
+def _read_server_frame_from_buf(sock: socket.socket, buf: bytearray) -> tuple[int, bytes]:
+    """Parse one unmasked server frame, using leftover handshake bytes first."""
+
+    def need(n: int) -> None:
+        while len(buf) < n:
+            chunk = sock.recv(max(4096, n - len(buf)))
+            if not chunk:
+                raise ConnectionError("closed")
+            buf.extend(chunk)
+
+    need(2)
+    opcode = buf[0] & 0x0F
+    length = buf[1] & 0x7F
+    hdr = 2
+    if length == 126:
+        need(4)
+        length = struct.unpack("!H", bytes(buf[2:4]))[0]
+        hdr = 4
+    elif length == 127:
+        need(10)
+        length = struct.unpack("!Q", bytes(buf[2:10]))[0]
+        hdr = 10
+    need(hdr + length)
+    data = bytes(buf[hdr : hdr + length])
+    del buf[: hdr + length]
+    return opcode, data
+
+
 def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
     h, port = palm_server.host, palm_server.port
     key = base64.b64encode(os.urandom(16)).decode("ascii")
@@ -215,17 +287,20 @@ def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
     sock = socket.create_connection((h, port), timeout=5)
     try:
         sock.sendall(req)
-        buf = b""
-        while b"\r\n\r\n" not in buf:
+        raw = bytearray()
+        while b"\r\n\r\n" not in raw:
             chunk = sock.recv(4096)
             if not chunk:
                 break
-            buf += chunk
-        assert b"101" in buf.split(b"\r\n", 1)[0]
+            raw.extend(chunk)
+        header, _, rest = bytes(raw).partition(b"\r\n\r\n")
+        assert b"101" in header.split(b"\r\n", 1)[0]
         accept_expected = websocket_accept_key(key)
-        assert accept_expected.encode() in buf
+        assert accept_expected.encode() in header
+        # Hello may already be buffered after the HTTP response body boundary.
+        frame_buf = bytearray(rest)
 
-        opcode, payload = _read_server_frame(sock)
+        opcode, payload = _read_server_frame_from_buf(sock, frame_buf)
         assert opcode == OP_TEXT
         hello = json.loads(payload.decode())
         assert hello["op"] == "hello"
@@ -233,7 +308,7 @@ def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
         assert hello["channel"] == "assist"
 
         sock.sendall(_mask_client_frame(json.dumps({"op": "ping", "id": "p1"}).encode()))
-        opcode, payload = _read_server_frame(sock)
+        opcode, payload = _read_server_frame_from_buf(sock, frame_buf)
         pong = json.loads(payload.decode())
         assert pong["op"] == "pong"
         assert pong["id"] == "p1"
@@ -246,7 +321,7 @@ def test_websocket_assist_hello_roundtrip(palm_server: ServerRuntime) -> None:
                 ).encode()
             )
         )
-        opcode, payload = _read_server_frame(sock)
+        opcode, payload = _read_server_frame_from_buf(sock, frame_buf)
         turn = json.loads(payload.decode())
         assert turn["op"] == "turn"
         assert turn["id"] == "doc1"

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>Palm Portal — Assist</title>
+  <link rel="stylesheet" href="/portal/portal.css" />
+  <link rel="manifest" href="/portal/manifest.webmanifest" />
+</head>
+<body>
+  <div id="fab" class="fab" title="Open Palm Portal" aria-label="Open Palm Portal">🌴</div>
+
+  <div id="panel" class="panel" hidden>
+    <header class="panel-header">
+      <div class="brand">
+        <span class="logo">🌴</span>
+        <div>
+          <strong>Palm Portal</strong>
+          <div id="conn-status" class="muted">disconnected</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="btn-start" class="ghost">Start</button>
+        <button type="button" id="btn-min" class="ghost" aria-label="Minimize">—</button>
+      </div>
+    </header>
+
+    <div id="meta" class="meta muted"></div>
+    <div id="log" class="log" role="log" aria-live="polite"></div>
+
+    <form id="composer" class="composer">
+      <div id="choices" class="choices"></div>
+      <div id="field-host" class="field-host"></div>
+      <div class="composer-row">
+        <input id="text-input" type="text" autocomplete="off" placeholder="Type an answer…" />
+        <button type="submit" id="btn-send">Send</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/portal/portal.js"></script>
+</body>
+</html>

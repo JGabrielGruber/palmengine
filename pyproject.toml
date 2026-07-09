@@ -98,6 +98,7 @@ exclude = [
 ]
 artifacts = [
     "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
+    "src/palm/runtimes/server/surfaces/websocket/static/**/*",
     "src/palm/runtimes/mcp/data/llms.txt",
     "src/palm/runtimes/mcp/data/mcp.txt",
     "src/palm/runtimes/mcp/data/skills/palm/**/*",
