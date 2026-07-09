@@ -361,6 +361,11 @@ def _handle_dispatch(
             if chained is not None:
                 shaped = chained
                 shaped = _rewrite_actions_for_websocket(shaped)
+            # 0.32.8 — skip introduction ack (banner kept on next step)
+            advanced = _maybe_auto_continue_introduction(ctx, shaped, dispatch_params)
+            if advanced is not None:
+                shaped = advanced
+                shaped = _rewrite_actions_for_websocket(shaped)
         # Refresh bind from turn payload for reconnect convenience
         sid = shaped.get("session_id") or shaped.get("instance_id")
         if sid:
@@ -621,6 +626,87 @@ def _flow_id_from_turn(shaped: dict[str, Any]) -> str | None:
         if shaped.get(key):
             return str(shaped[key])
     return None
+
+
+def _is_introduction_turn(shaped: dict[str, Any]) -> bool:
+    """True when the active step is a non-interactive welcome/intro."""
+    schema = shaped.get("input") if isinstance(shaped.get("input"), dict) else {}
+    step_kind = str(schema.get("step_kind") or "").lower()
+    if step_kind in {"introduction", "intro"}:
+        return True
+    compose = shaped.get("compose") if isinstance(shaped.get("compose"), dict) else {}
+    step = str(compose.get("step") or schema.get("step") or "").lower()
+    if step in {"intro", "introduction", "welcome"}:
+        return True
+    mutation = shaped.get("mutation") if isinstance(shaped.get("mutation"), dict) else {}
+    slug = str(mutation.get("step_slug") or "").lower()
+    return slug in {"intro", "introduction", "welcome"}
+
+
+def _maybe_auto_continue_introduction(
+    ctx: object,
+    shaped: dict[str, Any],
+    params: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Advance past introduction steps so humans land on real work (0.32.8).
+
+    Introduction leaves still wait for input in the wizard engine; empty value
+    is a valid ack. Portal should not force "okay" / free text on a welcome.
+    Opt out: ``params.auto_continue_intro=false``.
+    """
+    if params.get("auto_continue_intro") is False:
+        return None
+    if str(shaped.get("status") or "") not in {"waiting", "WAITING_FOR_INPUT"}:
+        return None
+    if not _is_introduction_turn(shaped):
+        return None
+    session_id = shaped.get("session_id") or shaped.get("instance_id")
+    flow_id = _flow_id_from_turn(shaped)
+    if not session_id or not flow_id:
+        return None
+    intro_text = str(shaped.get("question") or "").strip()
+    try:
+        from palm.runtimes.mcp.assist.dispatch import (
+            dispatch_operator_path,
+            shape_dispatch_result,
+        )
+
+        input_path = ["flows", str(flow_id), "session", str(session_id), "input"]
+        # Empty string is a valid introduction ack (required=False on step)
+        raw = dispatch_operator_path(
+            ctx,
+            input_path,
+            {"value": "", "format": "assistant", "include_input_schema": True},
+        )
+        next_turn = shape_dispatch_result(
+            input_path,
+            raw,
+            format="assistant",
+            params={"format": "assistant", "include_input_schema": True},
+            tool_format="assistant",
+            include_input_schema=True,
+        )
+        # Keep welcome copy as a soft banner on the first real step
+        if intro_text:
+            next_q = str(next_turn.get("question") or "").strip()
+            if next_q and intro_text not in next_q:
+                next_turn["question"] = f"{intro_text}\n\n{next_q}"
+            elif not next_q:
+                next_turn["question"] = intro_text
+            next_turn["intro_banner"] = intro_text
+        # Preserve handoff_from if we chained from operator-entry
+        if shaped.get("handoff_from") and not next_turn.get("handoff_from"):
+            next_turn["handoff_from"] = shaped["handoff_from"]
+        next_turn.setdefault("flow_id", flow_id)
+        refs = next_turn.get("refs")
+        if not isinstance(refs, dict):
+            refs = {}
+            next_turn["refs"] = refs
+        refs.setdefault("flow_id", flow_id)
+        return next_turn
+    except Exception:
+        logger.debug("auto-continue introduction failed", exc_info=True)
+        return None
 
 
 def _send_json(wfile: object, payload: dict[str, Any]) -> None:

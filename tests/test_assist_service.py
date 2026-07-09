@@ -40,6 +40,57 @@ def test_start_operator_entry_returns_first_turn(assist_host: ApplicationHost) -
     assert result.get("choices")
 
 
+def test_ws_auto_continues_introduction_to_real_step(
+    assist_host: ApplicationHost,
+) -> None:
+    """0.32.8 — intro welcome should not force a free-text ack on Portal."""
+    from palm.runtimes.server.surfaces.websocket.session import (
+        _ConnectionState,
+        handle_client_message,
+    )
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    ensure_assist_view_registration()
+    conn = _ConnectionState(headers={})
+    # operator-entry → todo-builder auto-start → should land on todos, not intro
+    start = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "p1",
+            "format": "assistant",
+            "alias": "operator-entry/start",
+            "params": {},
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert start is not None and start["op"] == "turn"
+    handoff = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "p2",
+            "format": "assistant",
+            "params": {
+                "value": "todo-builder",
+                "session_id": start["bound"]["session_id"],
+                "flow_id": start["bound"]["flow_id"],
+            },
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert handoff is not None and handoff["op"] == "turn"
+    payload = handoff["payload"]
+    step = (payload.get("compose") or {}).get("step")
+    assert step == "todos", f"expected todos after intro auto-continue, got {step!r}"
+    assert payload.get("status") == "waiting"
+    # welcome banner still visible for humans
+    q = payload.get("question") or ""
+    assert "todo" in q.lower() or "Welcome" in q or "build" in q.lower()
+    schema = payload.get("input") or {}
+    assert schema.get("step_kind") == "collection" or schema.get("kind") == "collection"
+
+
 def test_ws_auto_start_binds_business_flow_id(assist_host: ApplicationHost) -> None:
     """0.32.7 — after Todo Builder auto-start, bound.flow_id must be todo-builder.
 

@@ -14,6 +14,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.32.5 Human-first Portal dogfood** — demo intents skip summary; terminal **Start {flow}** CTA; WS **auto-starts** todo/compositional/coconut after operator-entry complete; flows-path carries ``handoff_ready`` + scenario enricher; summary **no** backtracks; Portal drops agent chrome actions; bind clear on fresh start; assist turns can rebuild ``input`` schema for WS.
 - **0.32.6 Portal first-turn / lock fix** — ``include_input_schema`` threaded through AssistService; WS sets the flag; shape attaches ``input`` without re-humanizing (no empty question / read-only mutation); strip greeting ``value`` from ``run_wizard`` body; Portal keeps composer open while ``waiting``; regression test for ``value=Hi``.
 - **0.32.7 Portal open + bind** — on WS ``hello``, Portal auto-starts operator-entry (no need to type Hello); after demo auto-start, ``bound.flow_id`` / ``refs.flow_id`` track the business flow (not sticky operator-entry).
+- **0.32.8 Auto-continue introduction** — WebSocket Assist advances past ``introduction`` steps (empty ack) and keeps the welcome text as a banner on the first real step (e.g. Todo Builder lands on the collection menu). Opt out: ``auto_continue_intro=false``.
 
 ## [0.31.5] — 2026-07-08
 
