@@ -1,4 +1,4 @@
-"""Chat continuity flags and demo-flow intents (profile contract)."""
+"""Chat continuity flags and auto-start intent sets (profile contract)."""
 
 from __future__ import annotations
 
@@ -12,6 +12,17 @@ CHAT_AUTO_START_INTENTS = frozenset(
         "coconut-npc",
     }
 )
+
+# Operator-entry design intents → design-entry scenario (0.34.1)
+CHAT_DESIGN_AUTO_START_INTENTS = frozenset(
+    {
+        "create-flow",
+        "improve-flow",
+        "propose-resource",
+    }
+)
+
+CHAT_DESIGN_SCENARIO_ID = "design-entry"
 
 
 def wants_auto_start(params: dict[str, Any] | None, *, default: bool = True) -> bool:
@@ -42,6 +53,8 @@ def wants_auto_continue_intro(params: dict[str, Any] | None, *, default: bool = 
 
 __all__ = [
     "CHAT_AUTO_START_INTENTS",
+    "CHAT_DESIGN_AUTO_START_INTENTS",
+    "CHAT_DESIGN_SCENARIO_ID",
     "wants_auto_continue_intro",
     "wants_auto_start",
 ]

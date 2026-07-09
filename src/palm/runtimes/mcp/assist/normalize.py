@@ -59,6 +59,14 @@ def normalize_assist_dispatch_args(
             cleaned = [clean_dispatch_str(segment) for segment in nested]
             path = [segment for segment in cleaned if segment] or None
 
+    # 0.34 — menu chip values open:kind:id always route to assist/open
+    open_value = clean_dispatch_str(params.get("value")) or clean_dispatch_str(
+        params.get("input")
+    )
+    if not alias and not path and open_value and open_value.startswith("open:"):
+        path = ["assist", "open"]
+        params.setdefault("value", open_value)
+
     if not alias and not path:
         session_id = clean_dispatch_str(params.get("session_id")) or clean_dispatch_str(
             params.get("instance_id")

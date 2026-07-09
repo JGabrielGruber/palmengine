@@ -34,6 +34,18 @@ def discover(query: str = "", *, limit: int = 12) -> dict[str, Any]:
             "call": 'palm_assist(alias="assist/doctor")',
         },
         {
+            "alias": "assist/menu",
+            "kind": "alias",
+            "summary": "Browse/search/page flows and scenarios (0.34)",
+            "call": 'palm_assist(alias="assist/menu", params={section: "flows"})',
+        },
+        {
+            "alias": "assist/open",
+            "kind": "alias",
+            "summary": "Open a flow/scenario/session by id",
+            "call": 'palm_assist(alias="assist/open", params={kind: "flow", id: "todo-builder"})',
+        },
+        {
             "alias": "design/publish",
             "kind": "alias",
             "summary": "One-shot publish flow definition (params.body)",

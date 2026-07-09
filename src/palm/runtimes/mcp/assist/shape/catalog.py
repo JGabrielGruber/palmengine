@@ -5,6 +5,31 @@ from __future__ import annotations
 from typing import Any
 
 
+def shape_menu_assistant(result: dict[str, Any]) -> dict[str, Any]:
+    """Pass through structured menu page for chat/tool consumers (0.34)."""
+    if not isinstance(result, dict):
+        return {
+            "status": "ok",
+            "question": "Menu unavailable.",
+            "hint": "Retry assist/menu.",
+        }
+    out = dict(result)
+    out.setdefault("status", "ok")
+    if out.get("choices") and not out.get("input"):
+        out["input"] = {
+            "kind": "menu",
+            "widget": "menu",
+            "choices": out.get("choices"),
+            "items": out.get("items"),
+            "section": out.get("section"),
+            "has_more": out.get("has_more"),
+            "next_cursor": out.get("next_cursor"),
+            "interactive": True,
+            "field_type": "choice",
+        }
+    return out
+
+
 def shape_discover_assistant(result: dict[str, Any]) -> dict[str, Any]:
     """Short discover turn — progressive disclosure without a second MCP tool."""
     hits = result.get("hits") if isinstance(result.get("hits"), list) else []

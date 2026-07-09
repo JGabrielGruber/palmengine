@@ -421,7 +421,19 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.33.1 | Façade leaf services: scenarios / sessions / catalog | ✅ Shipped |
 | 0.33.2 | Move chat auto-policy out of WS into `profiles/` | ✅ Shipped |
 | 0.33.3 | Split MCP `dispatch` into `shape/*` | ✅ Shipped |
-| 0.33.4 | Optional Bot façade (only if product needs persona/LLM) | ⬜ Optional |
+| 0.33.4 | Optional Bot façade (only if product needs persona/LLM) | ⬜ Deferred (use menu remote first) |
+
+### 0.34 — Assist operator remote (menu + open + chat L0)
+
+**Vision:** [docs/VISION-0.34.md](docs/VISION-0.34.md)
+
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 0.34.0 | Vision — no Bot; Assist = remote + TV guide | ✅ |
+| 0.34.1 | Chat L0: design auto-start → design-entry; confirm Yes/No; design CTAs | ✅ |
+| 0.34.2 | Menu protocol: `assist/menu` browse/search/page | ✅ |
+| 0.34.3 | `assist/open` + `open:kind:id` normalize; aliases | ✅ |
+| 0.34.4+ | Portal menu shell polish; richer waiting chips | ⬜ Open |
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 

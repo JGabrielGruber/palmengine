@@ -5,13 +5,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.services.assist.catalog.discover import discover as run_discover
+from palm.services.assist.catalog.menu import menu_for_assist
+from palm.services.assist.catalog.open import open_from_params
 
 if TYPE_CHECKING:
     from palm.services.assist.service import AssistService
 
 
 class AssistCatalogService:
-    """Read-only / health surface for operators (tool-friendly)."""
+    """Read-only / health / menu surface for operators (tool-friendly)."""
 
     def __init__(self, assist: AssistService) -> None:
         self._assist = assist
@@ -42,6 +44,25 @@ class AssistCatalogService:
 
     def discover(self, query: str = "", *, limit: int = 12) -> dict[str, Any]:
         return run_discover(query, limit=limit)
+
+    def menu(
+        self,
+        *,
+        section: str = "root",
+        query: str = "",
+        cursor: object | None = None,
+        limit: object | None = None,
+    ) -> dict[str, Any]:
+        return menu_for_assist(
+            self._assist,
+            section=section,
+            query=query,
+            cursor=cursor,
+            limit=limit,
+        )
+
+    def open(self, params: dict[str, Any] | None = None) -> Any:
+        return open_from_params(self._assist, params)
 
 
 __all__ = ["AssistCatalogService"]

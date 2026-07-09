@@ -1,6 +1,6 @@
 # VISION 0.33 — Assist modularity (tool vs chat, small files)
 
-**Status:** in progress (0.33.0–0.33.1 scaffolded)  
+**Status:** shipped (0.33.0–0.33.3); Bot deferred → use 0.34 menu remote  
 **Depends on:** 0.32 WebSocket Assist / Portal  
 **Goal:** Split Assist like Execution — façade + subdomains + **tool** / **chat** profiles. Prefer many small modules over god files.
 

@@ -14,6 +14,7 @@ from palm.runtimes.mcp.assist.shape.catalog import (
     shape_discover_assistant,
     shape_doctor_assistant,
     shape_flows_catalog_assistant,
+    shape_menu_assistant,
     shape_waiting_assistant,
 )
 from palm.runtimes.mcp.assist.shape.design import (
@@ -113,6 +114,22 @@ def shape_dispatch_result(
     if "handoff" in result:
         payload.update(result)
         return payload
+
+    if prefix == "assist" and (
+        path[-1:] == ["menu"]
+        or (len(path) >= 2 and path[-2] == "menu")
+        or path[-2:] == ["catalog", "menu"]
+    ):
+        if result.get("kind") == "menu" or result.get("items") is not None:
+            payload.update(shape_menu_assistant(result))
+            return payload
+
+    if prefix == "assist" and path[-1:] == ["open"]:
+        # open may return a session view or a menu page
+        if result.get("kind") == "menu" or result.get("items") is not None:
+            payload.update(shape_menu_assistant(result))
+            return payload
+        # fall through to session shaping below
 
     if prefix == "assist" and path[-1:] == ["discover"] and "hits" in result:
         if fmt == "assistant":

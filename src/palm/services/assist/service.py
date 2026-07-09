@@ -157,6 +157,29 @@ class AssistService(BaseService):
                 limit_i = 12
             return self._catalog.discover(str(query), limit=limit_i)
 
+        if parsed.kind == AssistCommandKind.MENU:
+            section = (
+                params.get("section")
+                or params.get("menu")
+                or params.get("value")
+                or "root"
+            )
+            # path assist/menu/{section}
+            segs = [str(s) for s in path]
+            if "menu" in segs:
+                idx = segs.index("menu")
+                if idx + 1 < len(segs) and segs[idx + 1] not in {"", "start"}:
+                    section = segs[idx + 1]
+            return self._catalog.menu(
+                section=str(section or "root"),
+                query=str(params.get("query") or params.get("q") or ""),
+                cursor=params.get("cursor"),
+                limit=params.get("limit"),
+            )
+
+        if parsed.kind == AssistCommandKind.OPEN:
+            return self._catalog.open(params)
+
         raise RuntimeError(f"unhandled assist command: {parsed}")
 
     # --- stable public API (delegates) ------------------------------------
@@ -204,6 +227,21 @@ class AssistService(BaseService):
 
     def discover(self, query: str = "", *, limit: int = 12) -> dict[str, Any]:
         return self._catalog.discover(query, limit=limit)
+
+    def menu(
+        self,
+        *,
+        section: str = "root",
+        query: str = "",
+        cursor: object | None = None,
+        limit: object | None = None,
+    ) -> dict[str, Any]:
+        return self._catalog.menu(
+            section=section, query=query, cursor=cursor, limit=limit
+        )
+
+    def open(self, params: dict[str, Any] | None = None) -> Any:
+        return self._catalog.open(params)
 
     def invoke_tree(self, session_id: str) -> dict[str, Any]:
         return self._sessions.invoke_tree(session_id)

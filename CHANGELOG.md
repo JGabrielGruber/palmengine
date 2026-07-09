@@ -6,6 +6,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Added
 
+- **0.34 Assist operator remote** — [VISION-0.34.md](docs/VISION-0.34.md). No Bot; finish Assist as menu + open + chat L0.
+  - **0.34.1 Chat L0** — design intents (`improve-flow` / `create-flow` / `propose-resource`) **auto-start design-entry**
+    (pre-answer intent); design handoff CTAs; **confirm Yes/No** choices in humanize.
+  - **0.34.2 Menu** — `assist/menu` (+ alias) browse/search/page (`section`, `query`, `cursor`, `limit`);
+    chat `input.widget=menu` + choices `open:kind:id`.
+  - **0.34.3 Open** — `assist/open` (+ alias); normalize routes `value=open:flow:…` to open (not session input).
 - **0.33.0 Assist modularity (scaffold)** — split presentation into `palm.services.assist.present/*`;
   **tool vs chat** profiles under `profiles/`; handoff → `sessions/handoff.py`; helpers → `_params` / `_view_meta`.
   Compat: `assist.views` re-exports. Vision: [VISION-0.33.md](docs/VISION-0.33.md).

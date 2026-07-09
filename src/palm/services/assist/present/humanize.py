@@ -226,6 +226,18 @@ def humanize_assistant_view(
         payload["operator_mode"] = operator_mode
 
     choices = humanize_choices(composed.get("choices"))
+    # 0.34.1 — confirm steps always expose Yes/No for chat chips
+    field_type = str(composed.get("field_type") or "").lower()
+    step_kind = str(composed.get("step_kind") or "").lower()
+    if not choices and (
+        field_type == "confirm" or step_kind in {"summary", "commit"}
+    ):
+        choices = humanize_choices(
+            [
+                {"label": "Yes", "value": "yes"},
+                {"label": "No", "value": "no"},
+            ]
+        )
     if choices:
         payload["choices"] = choices
 

@@ -17,6 +17,8 @@ class AssistCommandKind(Enum):
     CATALOG_FLOWS = "catalog_flows"
     CATALOG_WAITING = "catalog_waiting"
     DISCOVER = "discover"
+    MENU = "menu"
+    OPEN = "open"
 
 
 _SESSION_VERBS = frozenset(
@@ -69,6 +71,16 @@ def parse_assist_command(path: list[str] | tuple[str, ...]) -> ParsedAssistComma
         return ParsedAssistCommand(kind=AssistCommandKind.CATALOG_WAITING)
     if segments == ("discover",):
         return ParsedAssistCommand(kind=AssistCommandKind.DISCOVER)
+    if segments == ("menu",) or (
+        len(segments) == 2 and segments[0] == "menu"
+    ) or (
+        len(segments) == 2 and segments[0] == "catalog" and segments[1] == "menu"
+    ):
+        return ParsedAssistCommand(kind=AssistCommandKind.MENU)
+    if segments == ("open",) or (
+        len(segments) == 2 and segments[0] == "catalog" and segments[1] == "open"
+    ):
+        return ParsedAssistCommand(kind=AssistCommandKind.OPEN)
     if len(segments) >= 2 and segments[0] == "session":
         session_id = segments[1]
         if len(segments) == 2:
