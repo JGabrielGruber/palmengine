@@ -561,12 +561,8 @@ def _maybe_auto_start_handoff_flow(
             tool_format="assistant",
             include_input_schema=True,
         )
-        # Soft handoff banner
-        prior_q = shaped.get("question")
-        if prior_q and not str(next_turn.get("question") or "").startswith("Started"):
-            banner = f"Started {flow_id}."
-            q = next_turn.get("question")
-            next_turn["question"] = f"{banner} {q}".strip() if q else banner
+        # Soft handoff note for Portal (separate bubble via intro_banner after intro skip)
+        next_turn.setdefault("intro_banner", f"Started {flow_id}.")
         next_turn["handoff_from"] = {
             "session_id": shaped.get("session_id"),
             "scenario_id": shaped.get("scenario_id"),
@@ -664,7 +660,15 @@ def _maybe_auto_continue_introduction(
     flow_id = _flow_id_from_turn(shaped)
     if not session_id or not flow_id:
         return None
-    intro_text = str(shaped.get("question") or "").strip()
+    # Build a human intro bubble: prior handoff note + introduction copy
+    banner_parts: list[str] = []
+    prior_banner = str(shaped.get("intro_banner") or "").strip()
+    if prior_banner:
+        banner_parts.append(prior_banner)
+    intro_q = str(shaped.get("question") or "").strip()
+    if intro_q and intro_q not in banner_parts:
+        banner_parts.append(intro_q)
+    intro_text = "\n\n".join(banner_parts)
     try:
         from palm.runtimes.mcp.assist.dispatch import (
             dispatch_operator_path,
@@ -686,15 +690,15 @@ def _maybe_auto_continue_introduction(
             tool_format="assistant",
             include_input_schema=True,
         )
-        # Keep welcome copy as a soft banner on the first real step
+        # Keep welcome as a separate chat bubble (Portal), not merged into question.
+        # Client renders intro_banner first, then the real step question (0.32.10).
         if intro_text:
-            next_q = str(next_turn.get("question") or "").strip()
-            if next_q and intro_text not in next_q:
-                next_turn["question"] = f"{intro_text}\n\n{next_q}"
-            elif not next_q:
-                next_turn["question"] = intro_text
             next_turn["intro_banner"] = intro_text
-        # Preserve handoff_from if we chained from operator-entry
+            # If re-inspect lost the real prompt, fall back to intro only once
+            if not str(next_turn.get("question") or "").strip():
+                next_turn["question"] = intro_text
+                next_turn.pop("intro_banner", None)
+        # Preserve handoff_from if we chained from operator-entry / auto-start
         if shaped.get("handoff_from") and not next_turn.get("handoff_from"):
             next_turn["handoff_from"] = shaped["handoff_from"]
         next_turn.setdefault("flow_id", flow_id)

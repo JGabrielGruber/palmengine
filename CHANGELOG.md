@@ -16,6 +16,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.32.7 Portal open + bind** — on WS ``hello``, Portal auto-starts operator-entry (no need to type Hello); after demo auto-start, ``bound.flow_id`` / ``refs.flow_id`` track the business flow (not sticky operator-entry).
 - **0.32.8 Auto-continue introduction** — WebSocket Assist advances past ``introduction`` steps (empty ack) and keeps the welcome text as a banner on the first real step (e.g. Todo Builder lands on the collection menu). Opt out: ``auto_continue_intro=false``.
 - **0.32.9 Optional Skip + cleanup** — collection field prompts carry active-field ``required``; optional fields expose ``skip_allowed`` + Portal **Skip** chip; empty/skip tokens accepted; finish blurb includes collection item counts; ``handoff_ready`` no longer set on ordinary business-flow complete.
+- **0.32.10 Portal chat polish** — auto-continue keeps ``intro_banner`` separate from step ``question`` (two bot bubbles); themed scrollbar; reliable end-scroll; typing/pending indicator while waiting for a turn; composer lock during dispatch.
 
 ## [0.31.5] — 2026-07-08
 

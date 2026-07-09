@@ -1,6 +1,7 @@
 /**
- * Palm Portal dogfood (0.32.4) — floating chat over WebSocket Assist.
+ * Palm Portal dogfood (0.32.10) — floating chat over WebSocket Assist.
  * Renders payload.input for dynamic widgets; dispatches path/alias/params frames.
+ * Intro auto-continue: separate intro_banner bubble + real step question.
  */
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -18,6 +19,8 @@
   const btnMin = $("btn-min");
 
   const messages = [];
+  let typingEl = null;
+  let pendingTimer = null;
 
   const state = {
     ws: null,
@@ -28,7 +31,15 @@
     connected: false,
     /** true after we auto-open operator-entry on connect (human-first) */
     bootstrapped: false,
+    /** true while waiting for a turn after dispatch */
+    pending: false,
   };
+
+  // Meta: keep text + activity indicator
+  meta.innerHTML =
+    '<span class="activity" aria-live="polite"><span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span><span class="activity-label">Palm is thinking…</span></span><span class="meta-text"></span>';
+  const metaText = meta.querySelector(".meta-text");
+  const activityLabel = meta.querySelector(".activity-label");
 
   function wsUrl() {
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
@@ -47,15 +58,80 @@
     const parts = [];
     if (state.sessionId) parts.push(`session ${state.sessionId.slice(0, 12)}…`);
     if (state.flowId) parts.push(`flow ${state.flowId}`);
-    meta.textContent = parts.join(" · ");
+    metaText.textContent = parts.join(" · ");
   }
 
-  function appendBubble(kind, text) {
+  function scrollLogToEnd() {
+    // Double rAF so layout/animations settle before scroll
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const last = log.lastElementChild;
+        if (last && typeof last.scrollIntoView === "function") {
+          last.scrollIntoView({ block: "end", behavior: "smooth" });
+        } else {
+          log.scrollTop = log.scrollHeight;
+        }
+      });
+    });
+  }
+
+  function appendBubble(kind, text, extraClass) {
     const el = document.createElement("div");
-    el.className = `bubble ${kind}`;
+    el.className = `bubble ${kind}${extraClass ? ` ${extraClass}` : ""}`;
     el.textContent = text;
     log.appendChild(el);
-    log.scrollTop = log.scrollHeight;
+    scrollLogToEnd();
+    return el;
+  }
+
+  function showTyping(label) {
+    hideTyping();
+    typingEl = document.createElement("div");
+    typingEl.className = "bubble typing";
+    typingEl.setAttribute("aria-label", label || "Waiting for response");
+    typingEl.innerHTML =
+      '<span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>' +
+      `<span>${label || "Palm is thinking…"}</span>`;
+    log.appendChild(typingEl);
+    scrollLogToEnd();
+  }
+
+  function hideTyping() {
+    if (typingEl && typingEl.parentNode) {
+      typingEl.parentNode.removeChild(typingEl);
+    }
+    typingEl = null;
+  }
+
+  function setPending(pending, label) {
+    state.pending = !!pending;
+    if (pendingTimer) {
+      clearTimeout(pendingTimer);
+      pendingTimer = null;
+    }
+    if (pending) {
+      meta.classList.add("busy");
+      form.classList.add("busy");
+      btnSend.classList.add("busy");
+      btnSend.disabled = true;
+      btnSend.textContent = "…";
+      textInput.disabled = true;
+      choicesEl.querySelectorAll("button").forEach((b) => {
+        b.disabled = true;
+      });
+      if (activityLabel) activityLabel.textContent = label || "Palm is thinking…";
+      // Slight delay so fast turns don't flash the indicator
+      pendingTimer = setTimeout(() => {
+        if (state.pending) showTyping(label || "Palm is thinking…");
+      }, 120);
+    } else {
+      meta.classList.remove("busy");
+      form.classList.remove("busy");
+      btnSend.classList.remove("busy");
+      btnSend.textContent = "Send";
+      hideTyping();
+      // re-enable handled by renderInput
+    }
   }
 
   function connect() {
@@ -70,7 +146,6 @@
       state.connected = true;
       setStatus("connected", true);
       appendBubble("sys", "Connected to Palm Assist");
-      // optional reconnect bind
       if (state.sessionId) {
         send({
           op: "bind",
@@ -83,6 +158,7 @@
 
     ws.onclose = () => {
       state.connected = false;
+      setPending(false);
       setStatus("disconnected", false);
       appendBubble("sys", "Disconnected");
     };
@@ -98,6 +174,7 @@
         messages.push(msg);
         console.log(messages);
       } catch {
+        setPending(false);
         appendBubble("error", "Invalid frame from server");
         return;
       }
@@ -118,6 +195,9 @@
     state.ws.send(JSON.stringify(obj));
     messages.push(obj);
     console.log(messages);
+    if (obj.op === "dispatch") {
+      setPending(true, "Palm is thinking…");
+    }
   }
 
   function dispatch(partial) {
@@ -127,7 +207,6 @@
       format: "assistant",
       ...partial,
     };
-    // ensure params object
     if (!frame.params) frame.params = {};
     send(frame);
   }
@@ -141,8 +220,6 @@
         if (msg.bound.flow_id) state.flowId = msg.bound.flow_id;
         setMeta();
       }
-      // Human-first: open with operator-entry menu — no need to type "Hello"
-      // Skip if reconnecting to an existing session or already bootstrapped.
       if (!state.bootstrapped && !state.sessionId) {
         state.bootstrapped = true;
         appendBubble("sys", "Starting…");
@@ -165,11 +242,20 @@
       return;
     }
     if (op === "error") {
+      setPending(false);
       const err = msg.error || {};
       appendBubble("error", `${err.code || "error"}: ${err.message || "unknown"}`);
+      // restore input if we still have a schema
+      if (state.lastInput) {
+        renderInput({ input: state.lastInput, status: "waiting", mutation: { mutations_allowed: true } });
+      } else {
+        textInput.disabled = false;
+        btnSend.disabled = false;
+      }
       return;
     }
     if (op === "turn") {
+      setPending(false);
       if (msg.bound) {
         if (msg.bound.session_id) state.sessionId = msg.bound.session_id;
         if (msg.bound.flow_id) state.flowId = msg.bound.flow_id;
@@ -183,7 +269,6 @@
     if (payload.session_id) state.sessionId = payload.session_id;
     if (payload.instance_id && !state.sessionId) state.sessionId = payload.instance_id;
     const refs = payload.refs || {};
-    // Prefer path-derived flow (post auto-start) over sticky operator-entry bind
     const path = payload.path;
     if (Array.isArray(path) && path[0] === "flows" && path[1]) {
       state.flowId = path[1];
@@ -193,8 +278,19 @@
       state.flowId = payload.flow_id;
     }
 
-    const q = payload.question || payload.hint || "";
-    if (q) appendBubble("bot", q);
+    // 0.32.10 — separate intro bubble, then real step question (no merged dump)
+    const banner = (payload.intro_banner || "").trim();
+    let question = (payload.question || "").trim();
+    if (banner) {
+      appendBubble("bot", banner, "banner");
+      // Drop accidental prefix if server still merged banner into question
+      if (question.startsWith(banner)) {
+        question = question.slice(banner.length).replace(/^\s*\n+/, "").trim();
+      }
+    }
+    if (question) appendBubble("bot", question);
+    else if (!banner && payload.hint) appendBubble("bot", String(payload.hint));
+
     if (payload.validation_error) {
       appendBubble("error", String(payload.validation_error));
     }
@@ -202,6 +298,7 @@
     state.lastInput = payload.input || null;
     renderInput(payload);
     renderActions(payload.actions || []);
+    scrollLogToEnd();
   }
 
   function renderInput(payload) {
@@ -210,6 +307,7 @@
     textInput.value = "";
     textInput.disabled = false;
     btnSend.disabled = false;
+    btnSend.textContent = "Send";
 
     const schema = payload.input;
     const status = payload.status;
@@ -217,7 +315,6 @@
     if (status === "complete" || status === "failed") {
       textInput.placeholder = "Session finished";
       textInput.disabled = true;
-      // still allow action chips below
     }
 
     const choices = (schema && schema.choices) || payload.choices || [];
@@ -257,9 +354,7 @@
           : schema?.collection_phase
             ? `Collection (${schema.collection_phase})…`
             : "add / done / item text…";
-      if (optional) {
-        addSkipChip(schema);
-      }
+      if (optional) addSkipChip(schema);
       if (schema?.error) {
         const err = document.createElement("div");
         err.className = "field-error";
@@ -281,8 +376,6 @@
       fieldHost.appendChild(err);
     }
 
-    // Human-first: allow answers when waiting (or choices present), even if
-    // mutation gate is missing/stale — chips stay usable.
     const waiting =
       status === "waiting" ||
       status === "running" ||
@@ -292,10 +385,8 @@
       payload.mutation.mutations_allowed === false &&
       !waiting;
     if (locked || status === "complete" || status === "failed") {
-      if (status === "complete" || status === "failed" || locked) {
-        textInput.disabled = true;
-        btnSend.disabled = status === "complete" || status === "failed" || locked;
-      }
+      textInput.disabled = true;
+      btnSend.disabled = true;
     } else {
       textInput.focus();
     }
@@ -309,7 +400,6 @@
   ]);
 
   function renderActions(actions) {
-    // Append secondary action chips after choice chips (human-first: drop agent chrome)
     for (const action of actions) {
       if (!action || typeof action !== "object") continue;
       const label = action.label || "Action";
@@ -324,12 +414,11 @@
   }
 
   function runAction(action) {
+    if (state.pending) return;
     const frame = { op: "dispatch", id: nextId(), format: "assistant" };
     if (action.alias) frame.alias = action.alias;
     if (action.path) frame.path = action.path;
     frame.params = { ...(action.params || {}) };
-    const label = String(action.label || "").toLowerCase();
-    // Fresh starts: do not drag prior session into a new operator-entry / flow create
     const freshStart =
       action.alias === "operator-entry/start" ||
       action.alias === "design-entry/start" ||
@@ -338,7 +427,6 @@
       state.sessionId = null;
       state.flowId = frame.params.flow_id || null;
       setMeta();
-      // bind clear so server does not re-inject old session
       send({ op: "bind", id: nextId(), session_id: null, flow_id: frame.params.flow_id || null });
     } else {
       if (!frame.params.session_id && state.sessionId) {
@@ -355,7 +443,6 @@
   function isOptionalInput(schema) {
     if (!schema) return false;
     if (schema.required === false || schema.skip_allowed) return true;
-    // Fallback: active item field marked optional
     const active = schema.collection_field;
     const fields = schema.item_fields;
     if (active && Array.isArray(fields)) {
@@ -375,14 +462,14 @@
   }
 
   function submitValue(value) {
+    if (state.pending) return;
     let v = String(value ?? "").trim();
     const optional = isOptionalInput(state.lastInput);
-    // Human skip synonyms → empty (server also normalizes optional skips)
     if (optional && /^(skip|none|n\/a|na|-|pass|empty)$/i.test(v)) {
       v = "";
     }
     if (!v && !optional) {
-      return; // required field — ignore blank send
+      return;
     }
     appendBubbleUser(v || "Skip");
     const params = { value: v };
@@ -398,10 +485,12 @@
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (state.pending) return;
     submitValue(textInput.value);
   });
 
   btnStart.onclick = () => {
+    if (state.pending) return;
     appendBubble("sys", "Starting operator entry…");
     state.sessionId = null;
     state.flowId = null;
@@ -426,10 +515,10 @@
     if (!panel.hidden) {
       connect();
       textInput.focus();
+      scrollLogToEnd();
     }
   };
 
-  // Auto-open when ?open=1
   if (new URLSearchParams(location.search).get("open") === "1") {
     panel.hidden = false;
     connect();

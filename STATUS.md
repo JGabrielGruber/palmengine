@@ -406,7 +406,8 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.32.7 | Portal auto-open operator-entry + correct bind after auto-start | ✅ Shipped |
 | 0.32.8 | Auto-continue introduction steps (land on real work) | ✅ Shipped |
 | 0.32.9 | Optional field Skip + schema required fix + finish blurb | ✅ Shipped |
-| 0.32.10+ | Open (events, PWA polish, Android, …) | ⬜ Open |
+| 0.32.10 | Portal UX: split intro/menu bubbles, themed scroll, pending state | ✅ Shipped |
+| 0.32.11+ | Open (edit UX, events, PWA, Android, …) | ⬜ Open |
 
 **Theme:** Human real-time transport for Assist — same meta-dispatch as MCP — toward floating **Portal** PWA and later mobile assistant. WS live on `/ws/v1/assist`; Portal dogfood at `/portal/`.
 

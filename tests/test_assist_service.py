@@ -133,9 +133,13 @@ def test_ws_auto_continues_introduction_to_real_step(
     step = (payload.get("compose") or {}).get("step")
     assert step == "todos", f"expected todos after intro auto-continue, got {step!r}"
     assert payload.get("status") == "waiting"
-    # welcome banner still visible for humans
+    # 0.32.10 — intro is a separate banner; question is the real menu prompt
+    banner = payload.get("intro_banner") or ""
     q = payload.get("question") or ""
-    assert "todo" in q.lower() or "Welcome" in q or "build" in q.lower()
+    assert banner, "expected intro_banner for Portal split bubbles"
+    assert "build" in banner.lower() or "Started" in banner or "todo" in banner.lower()
+    assert "Manage your todos" in q or "todo" in q.lower()
+    assert banner not in q  # not merged into one dump
     schema = payload.get("input") or {}
     assert schema.get("step_kind") == "collection" or schema.get("kind") == "collection"
 
