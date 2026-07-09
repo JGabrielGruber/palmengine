@@ -2,6 +2,7 @@
 
 0.32.1: hello + ping/pong.
 0.32.2: ``dispatch`` → same spine as MCP ``palm_assist`` → ``turn`` frames.
+0.33.2: chat continuity (auto-start / intro / action rewrite) in assist.profiles.
 """
 
 from __future__ import annotations
@@ -308,6 +309,8 @@ def _handle_dispatch(
             resolve_dispatch_path,
             shape_dispatch_result,
         )
+        from palm.services.assist.profiles.continuity import apply_chat_continuity
+        from palm.services.assist.profiles.turn_meta import flow_id_from_turn
         from palm.services.assist.views import ensure_assist_view_registration
 
         ensure_assist_view_registration()
@@ -354,26 +357,28 @@ def _handle_dispatch(
             tool_format=view_format,
             include_input_schema=True,  # Portal dynamic widgets (not on MCP)
         )
-        shaped = _rewrite_actions_for_websocket(shaped)
-        # 0.32.5 — human-first: auto-start demo flow after operator-entry complete
+        # 0.33.2 — chat policy lives in assist.profiles (transport only injects dispatch)
         if view_format == "assistant":
-            chained = _maybe_auto_start_handoff_flow(ctx, shaped, dispatch_params)
-            if chained is not None:
-                shaped = chained
-                shaped = _rewrite_actions_for_websocket(shaped)
-            # 0.32.8 — skip introduction ack (banner kept on next step)
-            advanced = _maybe_auto_continue_introduction(ctx, shaped, dispatch_params)
-            if advanced is not None:
-                shaped = advanced
-                shaped = _rewrite_actions_for_websocket(shaped)
+
+            def _dispatch(path: list[str], p: dict[str, Any]) -> Any:
+                return dispatch_operator_path(ctx, path, p)
+
+            def _shape(path: list[str], result: Any, **kwargs: Any) -> dict[str, Any]:
+                return shape_dispatch_result(path, result, **kwargs)
+
+            shaped = apply_chat_continuity(
+                shaped,
+                dispatch_params,
+                dispatch=_dispatch,
+                shape=_shape,
+            )
         # Refresh bind from turn payload for reconnect convenience
         sid = shaped.get("session_id") or shaped.get("instance_id")
         if sid:
             state.session_id = str(sid)
-        flow = _flow_id_from_turn(shaped)
+        flow = flow_id_from_turn(shaped)
         if flow:
             state.flow_id = str(flow)
-            # Keep refs honest for Portal clients that prefer refs over bound
             refs = shaped.get("refs")
             if not isinstance(refs, dict):
                 refs = {}
@@ -404,313 +409,6 @@ def _handle_dispatch(
                 "message": str(exc) or exc.__class__.__name__,
             },
         }
-
-
-_PORTAL_NOISE_LABELS = frozenset(
-    {
-        "send answer",
-        "inspect session",
-        "resume session",
-        "inspect this session",
-    }
-)
-
-
-def _rewrite_actions_for_websocket(payload: dict[str, Any]) -> dict[str, Any]:
-    """Map peer MCP tool actions to dispatch-friendly alias/params for Portal."""
-    actions = payload.get("actions")
-    if not isinstance(actions, list):
-        return payload
-    rewritten: list[dict[str, Any]] = []
-    for action in actions:
-        if not isinstance(action, dict):
-            continue
-        item = dict(action)
-        label = str(item.get("label") or "").strip()
-        # 0.32.5 — drop agent chrome that confuses human chat
-        if label.lower() in _PORTAL_NOISE_LABELS:
-            continue
-        tool = str(item.get("tool") or "")
-        # Prefer alias/path already set
-        if item.get("alias") or item.get("path"):
-            item.pop("tool", None)
-            rewritten.append(item)
-            continue
-        if tool in {"", "palm_assist"}:
-            # Keep params for client re-dispatch over WS
-            item.pop("tool", None)
-            if not item.get("params") and not item.get("alias"):
-                continue
-            rewritten.append(item)
-            continue
-        if tool == "palm_flows_create_session":
-            params = dict(item.get("params") or {})
-            flow_id = params.get("flow_id")
-            if flow_id:
-                rewritten.append(
-                    {
-                        "label": item.get("label") or "Run flow",
-                        "params": {"flow_id": flow_id},
-                    }
-                )
-            continue
-        if tool == "palm_flows_session_resume":
-            rewritten.append(
-                {
-                    "label": item.get("label") or "Resume",
-                    "alias": "flows/session-resume",
-                    "params": dict(item.get("params") or {}),
-                }
-            )
-            continue
-        if tool in {"palm_design_publish_flow", "palm_design_publish_resource"}:
-            alias = (
-                "design/publish"
-                if "flow" in tool
-                else "design/publish-resource"
-            )
-            rewritten.append(
-                {
-                    "label": item.get("label") or "Publish",
-                    "alias": alias,
-                    "params": dict(item.get("params") or {}),
-                }
-            )
-            continue
-        if tool == "palm_system_doctor":
-            rewritten.append(
-                {
-                    "label": item.get("label") or "Doctor",
-                    "alias": "assist/doctor",
-                }
-            )
-            continue
-        # Drop unknown peer tools — Portal only speaks dispatch frames
-        if tool.startswith("palm_"):
-            continue
-        rewritten.append(item)
-    out = dict(payload)
-    if rewritten:
-        out["actions"] = rewritten
-    elif "actions" in out:
-        out.pop("actions", None)
-    return out
-
-
-_DEMO_FLOW_INTENTS = frozenset(
-    {"todo-builder", "compositional-parent", "coconut-npc"}
-)
-
-
-def _maybe_auto_start_handoff_flow(
-    ctx: object,
-    shaped: dict[str, Any],
-    params: dict[str, Any],
-) -> dict[str, Any] | None:
-    """If operator-entry completed with a demo flow intent, start that flow.
-
-    Human-first Portal: pick Todo Builder → land in Todo Builder, not a dead end.
-    Opt out with params.auto_start=false.
-    """
-    if params.get("auto_start") is False:
-        return None
-    status = str(shaped.get("status") or "")
-    if status not in {"complete", "SUCCEEDED", "success"}:
-        return None
-    if not shaped.get("handoff_ready") and not _intent_from_turn(shaped):
-        return None
-    intent = _intent_from_turn(shaped)
-    if intent not in _DEMO_FLOW_INTENTS:
-        return None
-    # Prefer explicit Start {flow} action params
-    flow_id = intent
-    try:
-        from palm.runtimes.mcp.assist.dispatch import (
-            dispatch_operator_path,
-            shape_dispatch_result,
-        )
-
-        raw = dispatch_operator_path(
-            ctx,
-            ["flows", flow_id, "create"],
-            {"format": "assistant"},
-        )
-        # Re-inspect for first-turn input schema
-        session_id = None
-        if isinstance(raw, dict):
-            session_id = raw.get("session_id") or raw.get("instance_id")
-        if session_id:
-            inspect_path = ["flows", flow_id, "session", str(session_id)]
-            try:
-                raw = dispatch_operator_path(
-                    ctx,
-                    inspect_path,
-                    {"format": "assistant"},
-                )
-                resolved = inspect_path
-            except Exception:
-                resolved = ["flows", flow_id, "create"]
-                logger.debug("auto-start re-inspect failed", exc_info=True)
-        else:
-            resolved = ["flows", flow_id, "create"]
-        next_turn = shape_dispatch_result(
-            resolved,
-            raw,
-            format="assistant",
-            params={"format": "assistant"},
-            tool_format="assistant",
-            include_input_schema=True,
-        )
-        # Soft handoff note for Portal (separate bubble via intro_banner after intro skip)
-        next_turn.setdefault("intro_banner", f"Started {flow_id}.")
-        next_turn["handoff_from"] = {
-            "session_id": shaped.get("session_id"),
-            "scenario_id": shaped.get("scenario_id"),
-            "intent": intent,
-        }
-        # Ensure bind targets the *business* flow, not operator-entry
-        next_turn["flow_id"] = flow_id
-        refs = next_turn.get("refs")
-        if not isinstance(refs, dict):
-            refs = {}
-            next_turn["refs"] = refs
-        refs["flow_id"] = flow_id
-        return next_turn
-    except Exception:
-        logger.debug("auto-start handoff flow failed for %s", flow_id, exc_info=True)
-        return None
-
-
-def _intent_from_turn(shaped: dict[str, Any]) -> str | None:
-    summary = shaped.get("answers_summary")
-    if isinstance(summary, str) and "intent=" in summary:
-        part = summary.split("intent=", 1)[-1].split(",", 1)[0].strip()
-        if part:
-            return part
-    # actions: Start Todo Builder with flow_id
-    for action in shaped.get("actions") or []:
-        if not isinstance(action, dict):
-            continue
-        params = action.get("params") or {}
-        if isinstance(params, dict) and params.get("flow_id"):
-            fid = str(params["flow_id"])
-            if fid in _DEMO_FLOW_INTENTS:
-                return fid
-        label = str(action.get("label") or "").lower()
-        if label.startswith("start "):
-            for intent in _DEMO_FLOW_INTENTS:
-                if intent.replace("-", " ") in label or intent in label:
-                    return intent
-    compose = shaped.get("compose")
-    if isinstance(compose, dict) and compose.get("intent"):
-        return str(compose["intent"])
-    return None
-
-
-def _flow_id_from_turn(shaped: dict[str, Any]) -> str | None:
-    """Resolve flow id for WS bind — prefer path over sticky operator-entry bind."""
-    path = shaped.get("path")
-    if isinstance(path, list) and len(path) >= 2 and str(path[0]) == "flows":
-        # ["flows", flow_id, "session", …] or ["flows", flow_id, "create"]
-        candidate = str(path[1])
-        if candidate and candidate not in {"session", "create"}:
-            return candidate
-    refs = shaped.get("refs")
-    if isinstance(refs, dict) and refs.get("flow_id"):
-        return str(refs["flow_id"])
-    for key in ("flow_id", "flow"):
-        if shaped.get(key):
-            return str(shaped[key])
-    return None
-
-
-def _is_introduction_turn(shaped: dict[str, Any]) -> bool:
-    """True when the active step is a non-interactive welcome/intro."""
-    schema = shaped.get("input") if isinstance(shaped.get("input"), dict) else {}
-    step_kind = str(schema.get("step_kind") or "").lower()
-    if step_kind in {"introduction", "intro"}:
-        return True
-    compose = shaped.get("compose") if isinstance(shaped.get("compose"), dict) else {}
-    step = str(compose.get("step") or schema.get("step") or "").lower()
-    if step in {"intro", "introduction", "welcome"}:
-        return True
-    mutation = shaped.get("mutation") if isinstance(shaped.get("mutation"), dict) else {}
-    slug = str(mutation.get("step_slug") or "").lower()
-    return slug in {"intro", "introduction", "welcome"}
-
-
-def _maybe_auto_continue_introduction(
-    ctx: object,
-    shaped: dict[str, Any],
-    params: dict[str, Any],
-) -> dict[str, Any] | None:
-    """Advance past introduction steps so humans land on real work (0.32.8).
-
-    Introduction leaves still wait for input in the wizard engine; empty value
-    is a valid ack. Portal should not force "okay" / free text on a welcome.
-    Opt out: ``params.auto_continue_intro=false``.
-    """
-    if params.get("auto_continue_intro") is False:
-        return None
-    if str(shaped.get("status") or "") not in {"waiting", "WAITING_FOR_INPUT"}:
-        return None
-    if not _is_introduction_turn(shaped):
-        return None
-    session_id = shaped.get("session_id") or shaped.get("instance_id")
-    flow_id = _flow_id_from_turn(shaped)
-    if not session_id or not flow_id:
-        return None
-    # Build a human intro bubble: prior handoff note + introduction copy
-    banner_parts: list[str] = []
-    prior_banner = str(shaped.get("intro_banner") or "").strip()
-    if prior_banner:
-        banner_parts.append(prior_banner)
-    intro_q = str(shaped.get("question") or "").strip()
-    if intro_q and intro_q not in banner_parts:
-        banner_parts.append(intro_q)
-    intro_text = "\n\n".join(banner_parts)
-    try:
-        from palm.runtimes.mcp.assist.dispatch import (
-            dispatch_operator_path,
-            shape_dispatch_result,
-        )
-
-        input_path = ["flows", str(flow_id), "session", str(session_id), "input"]
-        # Empty string is a valid introduction ack (required=False on step)
-        raw = dispatch_operator_path(
-            ctx,
-            input_path,
-            {"value": "", "format": "assistant", "include_input_schema": True},
-        )
-        next_turn = shape_dispatch_result(
-            input_path,
-            raw,
-            format="assistant",
-            params={"format": "assistant", "include_input_schema": True},
-            tool_format="assistant",
-            include_input_schema=True,
-        )
-        # Keep welcome as a separate chat bubble (Portal), not merged into question.
-        # Client renders intro_banner first, then the real step question (0.32.10).
-        if intro_text:
-            next_turn["intro_banner"] = intro_text
-            # If re-inspect lost the real prompt, fall back to intro only once
-            if not str(next_turn.get("question") or "").strip():
-                next_turn["question"] = intro_text
-                next_turn.pop("intro_banner", None)
-        # Preserve handoff_from if we chained from operator-entry / auto-start
-        if shaped.get("handoff_from") and not next_turn.get("handoff_from"):
-            next_turn["handoff_from"] = shaped["handoff_from"]
-        next_turn.setdefault("flow_id", flow_id)
-        refs = next_turn.get("refs")
-        if not isinstance(refs, dict):
-            refs = {}
-            next_turn["refs"] = refs
-        refs.setdefault("flow_id", flow_id)
-        return next_turn
-    except Exception:
-        logger.debug("auto-continue introduction failed", exc_info=True)
-        return None
 
 
 def _send_json(wfile: object, payload: dict[str, Any]) -> None:

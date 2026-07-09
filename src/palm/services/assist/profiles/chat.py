@@ -1,52 +1,27 @@
-"""Chat profile — Portal / WS humans: input schema, quiet actions."""
+"""Chat profile — Portal / WS humans: input schema, quiet actions, continuity."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from palm.services.assist.profiles.base import AssistProfile, RenderOptions
-
-# Agent chrome to hide in floating chat (also filtered client-side).
-_CHAT_DROP_LABELS = frozenset(
-    {
-        "inspect session",
-        "send answer",
-        "resume session",
-        "open child session",
-    }
+from palm.services.assist.profiles.actions_chat import (
+    filter_chat_noise_actions,
+    rewrite_actions_for_chat,
 )
+from palm.services.assist.profiles.base import AssistProfile, RenderOptions
+from palm.services.assist.profiles.continuity import apply_chat_continuity
+
+# Back-compat alias used by older imports
+filter_chat_actions = filter_chat_noise_actions
 
 
 def chat_render_options(**overrides: Any) -> RenderOptions:
     return RenderOptions.for_chat(**overrides)
 
 
-def filter_chat_actions(actions: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-    """Keep human-primary CTAs; drop operator-tool noise."""
-    if not actions:
-        return []
-    out: list[dict[str, Any]] = []
-    for action in actions:
-        if not isinstance(action, dict):
-            continue
-        label = str(action.get("label") or "").strip().lower()
-        if label in _CHAT_DROP_LABELS:
-            continue
-        # Drop bare "Send answer" path duplicates; keep Start / Hand off / Cancel / Go back
-        out.append(dict(action))
-    return out
-
-
 def apply_chat_action_policy(payload: dict[str, Any]) -> dict[str, Any]:
-    """Mutate a shaped turn for chat: filter actions when present."""
-    actions = payload.get("actions")
-    if isinstance(actions, list):
-        filtered = filter_chat_actions(actions)
-        if filtered:
-            payload["actions"] = filtered
-        else:
-            payload.pop("actions", None)
-    return payload
+    """Mutate a shaped turn for chat: rewrite + filter actions when present."""
+    return rewrite_actions_for_chat(payload)
 
 
 PROFILE = AssistProfile.CHAT
@@ -54,6 +29,9 @@ PROFILE = AssistProfile.CHAT
 __all__ = [
     "PROFILE",
     "apply_chat_action_policy",
+    "apply_chat_continuity",
     "chat_render_options",
     "filter_chat_actions",
+    "filter_chat_noise_actions",
+    "rewrite_actions_for_chat",
 ]

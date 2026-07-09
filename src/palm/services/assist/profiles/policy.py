@@ -1,8 +1,4 @@
-"""Chat continuity policy hooks (auto-start / intro) — migrate off WS here over time.
-
-WS still owns the live implementation in 0.32; these constants document the contract
-and give a single import path for 0.33.2+.
-"""
+"""Chat continuity flags and demo-flow intents (profile contract)."""
 
 from __future__ import annotations
 

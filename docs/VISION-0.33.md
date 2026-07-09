@@ -103,7 +103,7 @@ assist.dispatch(path, params, profile="chat")  # explicit later
 |------|------|--------|
 | 0.33.0 | File map + VISION; split `present/` from `views.py` | ✅ |
 | 0.33.1 | Façade leafs: scenarios / sessions / catalog | ✅ |
-| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | next |
+| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | ✅ |
 | 0.33.3 | Split MCP `dispatch` into `shape/*` | |
 | 0.33.4 | Optional Bot façade only if product needs persona/LLM | optional |
 

@@ -12,6 +12,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.33.1 Execution-shaped leafs** — `AssistService.scenarios` / `.sessions` / `.catalog`;
   domain work lives in small services; façade `dispatch` + stable public methods delegate.
   Discover → `catalog/discover.py`.
+- **0.33.2 Chat policy out of WS** — auto-start, intro continue, action rewrite live in
+  `assist.profiles` (`continuity`, `actions_chat`, `turn_meta`); WebSocket injects
+  dispatch/shape callables only (no product policy in transport).
 
 ## [0.32.10] — 2026-07-09
 

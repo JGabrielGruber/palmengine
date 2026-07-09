@@ -419,7 +419,7 @@ just mcp-inspector                       # MCP Inspector UI
 |------|--------|--------|
 | 0.33.0 | Split `present/` + `profiles/` (tool/chat); handoff module; views re-export | ✅ Scaffold |
 | 0.33.1 | Façade leaf services: scenarios / sessions / catalog | ✅ Shipped |
-| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | ⬜ Open |
+| 0.33.2 | Move chat auto-policy out of WS into `profiles/` | ✅ Shipped |
 | 0.33.3 | Split MCP `dispatch` into `shape/*` | ⬜ Open |
 | 0.33.4 | Optional Bot façade (only if product needs persona/LLM) | ⬜ Optional |
 
