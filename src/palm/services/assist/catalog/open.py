@@ -11,6 +11,17 @@ if TYPE_CHECKING:
     from palm.services.assist.service import AssistService
 
 
+def _as_mapping(result: Any) -> Any:
+    if result is None:
+        return None
+    if isinstance(result, dict):
+        return dict(result)
+    if hasattr(result, "to_dict"):
+        data = result.to_dict()
+        return dict(data) if isinstance(data, dict) else data
+    return result
+
+
 def parse_open_token(value: str) -> tuple[str, str] | None:
     """Parse ``open:kind:id`` choice values from menu chips."""
     text = (value or "").strip()
@@ -60,14 +71,46 @@ def open_target(
         )
 
     if kind_s in {"flow", "flows"}:
-        body = {"format": view_format}
+        body: dict[str, Any] = {"format": view_format}
         if include_input:
             body["include_input_schema"] = True
-        # Prefer execution create via façade host path through execution service
-        return assist.execution.flows.dispatch(
-            ["flows", tid, "create"],
-            body,
+        # Create then re-inspect so chat gets question + input schema (0.34.5+)
+        created = _as_mapping(
+            assist.execution.flows.dispatch(
+                ["flows", tid, "create"],
+                body,
+            )
         )
+        session_id = None
+        if isinstance(created, dict):
+            session_id = created.get("session_id") or created.get("instance_id")
+        if session_id:
+            inspect_path = ["flows", tid, "session", str(session_id)]
+            try:
+                inspected = _as_mapping(
+                    assist.execution.flows.dispatch(
+                        inspect_path,
+                        {
+                            "format": view_format,
+                            **({"include_input_schema": True} if include_input else {}),
+                        },
+                    )
+                )
+                if isinstance(inspected, dict):
+                    inspected.setdefault("flow_id", tid)
+                    refs = inspected.get("refs")
+                    if not isinstance(refs, dict):
+                        refs = {}
+                        inspected["refs"] = refs
+                    refs.setdefault("flow_id", tid)
+                    # Help shapers treat this as a flow session even under path assist/open
+                    inspected["_open_flow_path"] = inspect_path
+                return inspected
+            except Exception:
+                if isinstance(created, dict):
+                    created.setdefault("flow_id", tid)
+                return created
+        return created
 
     if kind_s in {"scenario", "scenarios"}:
         body = wizard_start_body(params)

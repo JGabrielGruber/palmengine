@@ -129,6 +129,64 @@ def shape_dispatch_result(
         if result.get("kind") == "menu" or result.get("items") is not None:
             payload.update(shape_menu_assistant(result))
             return payload
+        # Flow create/inspect via open — shape as flow session (not raw create envelope)
+        flow_id = result.get("flow_id") or result.get("flow") or result.get("flow_name")
+        session_id = result.get("session_id") or result.get("instance_id")
+        open_path = result.get("_open_flow_path")
+        if (
+            fmt == "assistant"
+            and session_id
+            and (flow_id or looks_like_session(["flows", str(flow_id or "x"), "session", str(session_id)], result)
+                 or result.get("status")
+                 or result.get("detail")
+                 or result.get("question") is not None)
+        ):
+            # Prefer full flow session shaping when we have enough structure
+            if looks_like_session(
+                list(open_path) if isinstance(open_path, list) else ["flows", str(flow_id or "x"), "session", str(session_id)],
+                result,
+            ) or result.get("detail") or result.get("prompt") or result.get("compose"):
+                flat = flatten_session_view(raw)
+                ensure_flow_session_flat(
+                    flat,
+                    list(open_path)
+                    if isinstance(open_path, list)
+                    else ["flows", str(flow_id or flat.get("flow_name") or "x"), "session", str(session_id)],
+                )
+                if flow_id:
+                    flat.setdefault("flow_name", flow_id)
+                    flat.setdefault("flow", flow_id)
+                payload.update(
+                    shape_flow_session_view(
+                        flat,
+                        format=fmt,
+                        session_id=str(session_id),
+                        flow_id=str(flow_id or flat.get("flow_name") or flat.get("flow") or ""),
+                        path=list(open_path)
+                        if isinstance(open_path, list)
+                        else ["flows", str(flow_id or "x"), "session", str(session_id)],
+                        invoke_tree=invoke_tree,
+                        include_input_schema=include_input_schema,
+                    )
+                )
+                payload["path"] = path
+                if flow_id:
+                    payload.setdefault("flow_id", flow_id)
+                    refs = payload.get("refs") if isinstance(payload.get("refs"), dict) else {}
+                    refs.setdefault("flow_id", flow_id)
+                    payload["refs"] = refs
+                payload.pop("_open_flow_path", None)
+                return payload
+            if not result.get("question"):
+                # Minimal create envelope — still better than raw WAITING_FOR_INPUT
+                payload.update(
+                    shape_flow_create_assistant(
+                        result,
+                        path=["flows", str(flow_id or "flow"), "create"],
+                    )
+                )
+                payload["path"] = path
+                return payload
         # fall through to session shaping below
 
     if prefix == "assist" and path[-1:] == ["discover"] and "hits" in result:

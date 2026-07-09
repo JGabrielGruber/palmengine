@@ -17,6 +17,35 @@ from palm.services.assist.profiles.policy import (
 from palm.common.operator.view_registry import OperatorViewContext
 
 
+def test_open_flow_returns_humanized_first_turn(host) -> None:
+    """0.34.5+ — open:flow must not return raw WAITING_FOR_INPUT without question."""
+    from palm.runtimes.mcp.assist.dispatch import shape_dispatch_result
+
+    raw = host.assist.open(
+        {
+            "kind": "flow",
+            "id": "todo-builder",
+            "format": "assistant",
+            "include_input_schema": True,
+        }
+    )
+    if hasattr(raw, "to_dict"):
+        raw = raw.to_dict()
+    assert isinstance(raw, dict)
+    assert raw.get("session_id") or raw.get("instance_id")
+    shaped = shape_dispatch_result(
+        ["assist", "open"],
+        raw,
+        format="assistant",
+        params={"format": "assistant", "include_input_schema": True},
+        include_input_schema=True,
+    )
+    assert shaped.get("question"), f"expected question, got keys={list(shaped)}"
+    assert shaped.get("status") != "WAITING_FOR_INPUT"
+    assert str(shaped.get("status") or "").lower() in {"waiting", "running"}
+    assert shaped.get("input") or shaped.get("choices")
+
+
 def test_parse_menu_and_open_paths() -> None:
     assert parse_assist_command(["assist", "menu"]).kind == AssistCommandKind.MENU
     assert parse_assist_command(["menu", "flows"]).kind == AssistCommandKind.MENU
