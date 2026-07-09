@@ -158,6 +158,7 @@ def _build_input_schema(
             return None
 
     widget = _widget_for_field(str(field_type or "text"), step_kind=str(step_kind))
+    required = _resolve_field_required(composed)
     schema = {
         "kind": "field",
         "step": composed.get("step") or composed.get("slug"),
@@ -165,7 +166,7 @@ def _build_input_schema(
         "step_kind": step_kind,
         "field_type": field_type or "text",
         "widget": widget,
-        "required": bool(composed.get("required", True)),
+        "required": required,
         "title": composed.get("prompt_title"),
         "prompt": composed.get("prompt"),
         "interactive": True,
@@ -187,10 +188,32 @@ def _build_input_schema(
             schema["min_items"] = composed["min_items"]
         if composed.get("label_field") is not None:
             schema["label_field"] = composed["label_field"]
+        # Portal: explicit skip affordance for optional fields
+        if required is False and composed.get("collection_phase") == "field":
+            schema["skip_allowed"] = True
+            schema["skip_value"] = ""
+            schema["skip_label"] = "Skip"
     if composed.get("validation_error"):
         schema["error"] = composed["validation_error"]
     # Drop nulls
     return {k: v for k, v in schema.items() if v is not None}
+
+
+def _resolve_field_required(composed: dict[str, Any]) -> bool:
+    """Prefer active collection field required over parent step required."""
+    active = composed.get("collection_field")
+    item_fields = composed.get("item_fields")
+    if active and isinstance(item_fields, list):
+        for field in item_fields:
+            if not isinstance(field, dict):
+                continue
+            if str(field.get("slug") or "") == str(active):
+                if "required" in field:
+                    return bool(field.get("required"))
+                break
+    if "required" in composed:
+        return bool(composed.get("required"))
+    return True
 
 
 def _widget_for_field(field_type: str, *, step_kind: str) -> str:
@@ -302,15 +325,24 @@ def _apply_terminal_blurb(payload: dict[str, Any], composed: dict[str, Any]) -> 
     status = str(payload.get("status") or "")
     summary = _slim_answer_summary(composed.get("answers_preview"))
     if status == "complete":
-        if not payload.get("question"):
-            if summary:
+        # Prefer richer summary even when a thin question was pre-filled
+        if summary:
+            thin = str(payload.get("question") or "")
+            if (
+                not thin
+                or thin.startswith("Finished. Answers: intro=")
+                or thin == "Flow finished successfully."
+            ):
                 payload["question"] = f"Finished. Answers: {summary}"
-            else:
-                payload["question"] = "Flow finished successfully."
-        if not payload.get("hint"):
-            payload["hint"] = "Session complete — no further input."
-        if summary and not payload.get("answers_summary"):
             payload["answers_summary"] = summary
+        elif not payload.get("question"):
+            payload["question"] = "Flow finished successfully."
+        if not payload.get("handoff_ready"):
+            payload["hint"] = (
+                "Session complete — start another flow or return to operator entry."
+            )
+        elif not payload.get("hint"):
+            payload["hint"] = "Session complete — no further input."
     elif status == "failed":
         if not payload.get("question"):
             payload["question"] = "Flow failed."
@@ -319,7 +351,7 @@ def _apply_terminal_blurb(payload: dict[str, Any], composed: dict[str, Any]) -> 
             payload["hint"] = str(err) if err else "Inspect the session or start a new run."
 
 
-def _slim_answer_summary(preview: object, *, max_keys: int = 6, max_len: int = 120) -> str:
+def _slim_answer_summary(preview: object, *, max_keys: int = 6, max_len: int = 160) -> str:
     """Compact key=value line for terminal turns (token-thrifty)."""
     if not isinstance(preview, dict) or not preview:
         return ""
@@ -329,9 +361,29 @@ def _slim_answer_summary(preview: object, *, max_keys: int = 6, max_len: int = 1
             parts.append("…")
             break
         value = preview[key]
-        if isinstance(value, (dict, list)):
-            continue  # skip nested blobs (resources, collections)
-        text = str(value)
+        if isinstance(value, list):
+            # 0.32.9 — surface collection size + first labels (human finish line)
+            labels: list[str] = []
+            for item in value[:3]:
+                if isinstance(item, dict):
+                    label = item.get("title") or item.get("name") or item.get("label")
+                    if label is not None:
+                        labels.append(str(label)[:24])
+                elif item is not None:
+                    labels.append(str(item)[:24])
+            if labels:
+                text = f"{len(value)} item(s): {', '.join(labels)}"
+                if len(value) > 3:
+                    text += "…"
+            else:
+                text = f"{len(value)} item(s)"
+            parts.append(f"{key}={text}")
+            continue
+        if isinstance(value, dict):
+            continue  # skip nested blobs (resources)
+        text = str(value).strip()
+        if not text:
+            continue  # skip empty intro acks etc.
         if len(text) > 40:
             text = text[:40] + "…"
         parts.append(f"{key}={text}")
@@ -462,6 +514,10 @@ def _hint_text(composed: dict[str, Any]) -> str:
     if phase == "menu":
         return "Say add, edit, remove, or done."
     if phase == "field":
+        if _resolve_field_required(composed) is False:
+            return "Optional — enter a value, or Skip / leave empty."
+        if composed.get("field_type") == "choice" or composed.get("choices"):
+            return "Pick a choice or type a value."
         return "Enter text for this item."
     if phase in {"select_item", "remove_confirm"}:
         return "Reply with item number or label."

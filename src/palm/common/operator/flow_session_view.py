@@ -94,6 +94,15 @@ def _scenario_id_from_flat(flat: dict[str, Any]) -> str | None:
 
 
 def _handoff_ready_from_flat(flat: dict[str, Any]) -> bool:
+    """True only for assist-scenario handoff moments — not every finished flow.
+
+    Business flows (todo-builder, …) complete without handoff; treating all
+    SUCCEEDED/summary turns as handoff-ready poisoned Portal finish chrome (0.32.9).
+    """
+    scenario_id = _scenario_id_from_flat(flat)
+    intent = _intent_from_flat(flat)
+    if not scenario_id and not intent:
+        return False
     status = str(flat.get("status") or "")
     if status in {"SUCCEEDED", "complete", "SUCCESS"}:
         return True
@@ -150,7 +159,8 @@ def _merge_assist_session_actions(
         "SUCCEEDED",
         "SUCCESS",
     }
-    ready = handoff_ready or succeeded
+    # handoff_ready already scenario/intent-gated in _handoff_ready_from_flat
+    ready = bool(handoff_ready)
     ctx = AssistSessionContext(
         session_id=session_id,
         scenario_id=scenario_id,
@@ -177,6 +187,11 @@ def _merge_assist_session_actions(
         out["actions"] = merged
     if ready:
         out["handoff_ready"] = True
+    elif succeeded:
+        # Business flow done — clear accidental handoff chrome
+        out["handoff_ready"] = False
+        if not out.get("actions"):
+            out["actions"] = [{"label": "Start operator entry", "alias": "operator-entry/start"}]
     if scenario_id and not out.get("scenario_id"):
         out["scenario_id"] = scenario_id
     return out

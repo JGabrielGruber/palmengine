@@ -249,9 +249,17 @@
         choicesEl.appendChild(chip);
       }
     } else if (widget === "collection") {
-      textInput.placeholder = schema?.collection_phase
-        ? `Collection (${schema.collection_phase})…`
-        : "add / done / item text…";
+      const optional = schema?.required === false || schema?.skip_allowed;
+      textInput.placeholder = optional
+        ? "Optional — type a value or Skip"
+        : schema?.collection_phase === "field"
+          ? "Enter value…"
+          : schema?.collection_phase
+            ? `Collection (${schema.collection_phase})…`
+            : "add / done / item text…";
+      if (optional) {
+        addSkipChip(schema);
+      }
       if (schema?.error) {
         const err = document.createElement("div");
         err.className = "field-error";
@@ -260,7 +268,10 @@
       }
     } else {
       textInput.placeholder =
-        schema?.required === false ? "Optional answer…" : "Type an answer…";
+        schema?.required === false ? "Optional — type or Skip" : "Type an answer…";
+      if (schema?.required === false || schema?.skip_allowed) {
+        addSkipChip(schema);
+      }
     }
 
     if (schema?.error && widget !== "collection") {
@@ -341,13 +352,39 @@
     send(frame);
   }
 
-  function submitValue(value) {
-    const v = String(value ?? "").trim();
-    if (!v && state.lastInput?.required !== false) {
-      // allow empty only when not required
-      if (state.lastInput?.required !== false) return;
+  function isOptionalInput(schema) {
+    if (!schema) return false;
+    if (schema.required === false || schema.skip_allowed) return true;
+    // Fallback: active item field marked optional
+    const active = schema.collection_field;
+    const fields = schema.item_fields;
+    if (active && Array.isArray(fields)) {
+      const f = fields.find((x) => x && x.slug === active);
+      if (f && f.required === false) return true;
     }
-    appendBubbleUser(v || "(empty)");
+    return false;
+  }
+
+  function addSkipChip(schema) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip secondary";
+    chip.textContent = (schema && schema.skip_label) || "Skip";
+    chip.onclick = () => submitValue(schema?.skip_value != null ? schema.skip_value : "");
+    choicesEl.appendChild(chip);
+  }
+
+  function submitValue(value) {
+    let v = String(value ?? "").trim();
+    const optional = isOptionalInput(state.lastInput);
+    // Human skip synonyms → empty (server also normalizes optional skips)
+    if (optional && /^(skip|none|n\/a|na|-|pass|empty)$/i.test(v)) {
+      v = "";
+    }
+    if (!v && !optional) {
+      return; // required field — ignore blank send
+    }
+    appendBubbleUser(v || "Skip");
     const params = { value: v };
     if (state.sessionId) params.session_id = state.sessionId;
     if (state.flowId) params.flow_id = state.flowId;

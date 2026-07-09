@@ -40,6 +40,55 @@ def test_start_operator_entry_returns_first_turn(assist_host: ApplicationHost) -
     assert result.get("choices")
 
 
+def test_optional_collection_field_schema_and_skip(
+    assist_host: ApplicationHost,
+) -> None:
+    """0.32.9 — due_date required=false + empty/skip advances to priority."""
+    from palm.runtimes.server.surfaces.websocket.session import (
+        _ConnectionState,
+        handle_client_message,
+    )
+    from palm.services.assist.views import ensure_assist_view_registration
+
+    ensure_assist_view_registration()
+    conn = _ConnectionState(headers={})
+    for frame in (
+        {"op": "dispatch", "id": "1", "format": "assistant", "params": {"flow_id": "todo-builder"}},
+        {
+            "op": "dispatch",
+            "id": "2",
+            "format": "assistant",
+            "params": {"value": "Add a new item"},
+        },
+        {
+            "op": "dispatch",
+            "id": "3",
+            "format": "assistant",
+            "params": {"value": "Buy milk"},
+        },
+    ):
+        resp = handle_client_message(frame, ctx=assist_host, conn=conn)
+        assert resp is not None and resp["op"] == "turn"
+    due = resp["payload"]["input"]
+    assert due.get("collection_field") == "due_date"
+    assert due.get("required") is False
+    assert due.get("skip_allowed") is True
+    assert "Optional" in (resp["payload"].get("hint") or "")
+    skip = handle_client_message(
+        {
+            "op": "dispatch",
+            "id": "4",
+            "format": "assistant",
+            "params": {"value": "skip"},
+        },
+        ctx=assist_host,
+        conn=conn,
+    )
+    assert skip is not None and skip["op"] == "turn"
+    assert (skip["payload"].get("input") or {}).get("collection_field") == "priority"
+    assert not skip["payload"].get("validation_error")
+
+
 def test_ws_auto_continues_introduction_to_real_step(
     assist_host: ApplicationHost,
 ) -> None:

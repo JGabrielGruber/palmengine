@@ -202,13 +202,36 @@ def field_as_step(field: CollectionFieldConfig) -> WizardStepConfig:
     )
 
 
+_OPTIONAL_SKIP_TOKENS = frozenset(
+    {
+        "",
+        "-",
+        "—",
+        "skip",
+        "none",
+        "n/a",
+        "na",
+        "null",
+        "nil",
+        "pass",
+        "empty",
+        "leave empty",
+        "no date",
+        "no due date",
+    }
+)
+
+
 def normalize_optional_field_value(field: CollectionFieldConfig, value: Any) -> Any:
+    """Coerce empty / skip tokens to None for optional collection fields."""
     if field.required:
         return value
     if value is None:
         return None
-    if isinstance(value, str) and value.strip() == "":
-        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped.lower() in _OPTIONAL_SKIP_TOKENS:
+            return None
     return value
 
 
