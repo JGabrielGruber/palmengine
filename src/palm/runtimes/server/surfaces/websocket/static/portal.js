@@ -49,26 +49,96 @@
   }
 
   /**
-   * Size the panel to the *visible* viewport so the chat log sits above the
-   * soft keyboard (iOS/Android browsers shrink visualViewport when keyboard opens).
+   * Pin the panel to visualViewport so the composer stays above the soft keyboard.
+   * Prefer inline geometry over CSS vars — more reliable on Android WebViews.
+   * Never use Element.scrollIntoView here (it can scroll the document and hide the input).
    */
   function syncVisualViewport() {
     const vv = window.visualViewport;
     const root = document.documentElement;
+    const mobile = isMobileUi();
+
     if (!vv) {
       root.style.setProperty("--vv-height", `${window.innerHeight}px`);
       root.style.setProperty("--vv-offset-top", "0px");
       root.style.setProperty("--vv-offset-left", "0px");
+      root.style.setProperty("--vv-width", `${window.innerWidth}px`);
       root.style.setProperty("--keyboard-inset", "0px");
+      clearPanelViewportStyles();
       return;
     }
+
+    const top = Math.round(vv.offsetTop);
+    const left = Math.round(vv.offsetLeft);
+    const height = Math.round(vv.height);
+    const width = Math.round(vv.width);
     const keyboardInset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-    root.style.setProperty("--vv-height", `${Math.round(vv.height)}px`);
-    root.style.setProperty("--vv-offset-top", `${Math.round(vv.offsetTop)}px`);
-    root.style.setProperty("--vv-offset-left", `${Math.round(vv.offsetLeft)}px`);
+
+    root.style.setProperty("--vv-height", `${height}px`);
+    root.style.setProperty("--vv-offset-top", `${top}px`);
+    root.style.setProperty("--vv-offset-left", `${left}px`);
+    root.style.setProperty("--vv-width", `${width}px`);
     root.style.setProperty("--keyboard-inset", `${Math.round(keyboardInset)}px`);
-    // Keep latest messages in view when keyboard resizes the pane
+
+    if (mobile && !panel.hidden) {
+      // Direct styles beat CSS cascade / vh quirks when keyboard is open
+      panel.style.position = "fixed";
+      panel.style.top = `${top}px`;
+      panel.style.left = `${left}px`;
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      panel.style.width = `${width}px`;
+      panel.style.height = `${height}px`;
+      panel.style.maxHeight = `${height}px`;
+      panel.style.borderRadius = "0";
+      // Lock document so scrollIntoView / focus cannot pan the page under the keyboard
+      root.classList.add("portal-keyboard-lock");
+      document.body.classList.add("portal-keyboard-lock");
+    } else {
+      clearPanelViewportStyles();
+      root.classList.remove("portal-keyboard-lock");
+      document.body.classList.remove("portal-keyboard-lock");
+    }
+
+    // Only scroll the log pane — keep composer (flex footer) painted at bottom
     if (!panel.hidden) scrollLogToEnd();
+  }
+
+  function clearPanelViewportStyles() {
+    [
+      "position",
+      "top",
+      "left",
+      "right",
+      "bottom",
+      "width",
+      "height",
+      "maxHeight",
+      "borderRadius",
+    ].forEach((prop) => {
+      panel.style[prop] = "";
+    });
+  }
+
+  /** Ensure composer stays in the painted panel (not under keyboard). */
+  function ensureComposerVisible() {
+    syncVisualViewport();
+    // Composer is flex-shrink:0 at panel bottom — just pin log scroll
+    scrollLogToEnd();
+    // If the focused control is somehow off-panel, nudge only within log/composer
+    try {
+      const active = document.activeElement;
+      if (active && form.contains(active) && typeof active.getBoundingClientRect === "function") {
+        const pr = panel.getBoundingClientRect();
+        const ar = active.getBoundingClientRect();
+        if (ar.bottom > pr.bottom - 4 || ar.top < pr.top) {
+          // Re-sync; do not scrollIntoView (scrolls the page on Android)
+          syncVisualViewport();
+        }
+      }
+    } catch (_) {
+      /* ignore */
+    }
   }
 
   // Meta: keep text + activity indicator
@@ -98,15 +168,11 @@
   }
 
   function scrollLogToEnd() {
-    // Double rAF so layout/animations settle before scroll
+    // Only the log scroller — never Element.scrollIntoView (pans document on mobile
+    // and hides the composer under the soft keyboard).
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const last = log.lastElementChild;
-        if (last && typeof last.scrollIntoView === "function") {
-          last.scrollIntoView({ block: "end", behavior: "smooth" });
-        } else {
-          log.scrollTop = log.scrollHeight;
-        }
+        log.scrollTop = log.scrollHeight;
       });
     });
   }
@@ -544,6 +610,7 @@
 
   btnMin.onclick = () => {
     panel.hidden = true;
+    syncVisualViewport(); // drop keyboard-lock + inline panel geometry
   };
 
   fab.onclick = () => {
@@ -560,6 +627,8 @@
         }
       }
       scrollLogToEnd();
+    } else {
+      syncVisualViewport();
     }
   };
 
@@ -571,13 +640,23 @@
   window.addEventListener("resize", syncVisualViewport);
   syncVisualViewport();
 
-  // After user focuses the field themselves, keep log pinned above keyboard
-  textInput.addEventListener("focus", () => {
-    // Delay so keyboard animation finishes
+  // User focused the field: after keyboard animates, re-pin panel so input is visible
+  const onComposerFocus = () => {
+    // Several ticks — Android keyboard height settles late
+    ensureComposerVisible();
+    setTimeout(ensureComposerVisible, 100);
+    setTimeout(ensureComposerVisible, 350);
+    setTimeout(ensureComposerVisible, 600);
+  };
+  textInput.addEventListener("focus", onComposerFocus);
+  form.addEventListener("focusin", onComposerFocus);
+
+  textInput.addEventListener("blur", () => {
     setTimeout(() => {
-      syncVisualViewport();
-      scrollLogToEnd();
-    }, 300);
+      if (!form.contains(document.activeElement)) {
+        syncVisualViewport();
+      }
+    }, 100);
   });
 
   if (new URLSearchParams(location.search).get("open") === "1") {

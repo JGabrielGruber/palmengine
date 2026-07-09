@@ -31,7 +31,22 @@ html, body {
   --vv-height: 100dvh;
   --vv-offset-top: 0px;
   --vv-offset-left: 0px;
+  --vv-width: 100vw;
   --keyboard-inset: 0px;
+}
+
+/* When panel is open on mobile: prevent document pan that hides the composer */
+html.portal-keyboard-lock,
+html.portal-keyboard-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+html.portal-keyboard-lock body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: var(--vv-height, 100dvh);
 }
 
 .muted { color: var(--muted); font-size: 12px; }
@@ -73,6 +88,13 @@ html, body {
   backdrop-filter: blur(10px);
 }
 .panel[hidden] { display: none !important; }
+
+/* Header / meta / composer never collapse when log needs space */
+.panel-header,
+.meta,
+.composer {
+  flex-shrink: 0;
+}
 
 .panel-header {
   display: flex;
@@ -139,7 +161,8 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
 }
 
 .log {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0; /* allow shrink so composer stays visible */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 14px;
@@ -150,6 +173,7 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
   /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  -webkit-overflow-scrolling: touch;
 }
 /* WebKit themed scrollbar */
 .log::-webkit-scrollbar {
@@ -262,8 +286,11 @@ button.ghost:hover { color: var(--text); background: rgba(255,255,255,0.05); }
 .composer {
   border-top: 1px solid var(--panel-border);
   padding: 10px 12px 12px;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(15, 23, 42, 0.92);
   transition: opacity 0.15s ease;
+  /* Stay painted as the panel footer (above keyboard when panel = visualViewport) */
+  position: relative;
+  z-index: 2;
 }
 .composer.busy {
   opacity: 0.85;
