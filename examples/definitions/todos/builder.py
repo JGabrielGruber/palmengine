@@ -52,8 +52,8 @@ TODO_BUILDER_FLOW = FlowDefinition(
                 "slug": "intro",
                 "title": "Welcome",
                 "prompt": (
-                    "Build a todo list. On finish, Palm runs transform + resource "
-                    "steps to persist kv facts for Analytics (palm-todos)."
+                    "Build a todo list. On finish, Palm persists the list to kv "
+                    "(palm-todos). Priority analytics is a virtual view at query time."
                 ),
                 "step_kind": "introduction",
                 "required": False,
@@ -106,28 +106,11 @@ TODO_BUILDER_FLOW = FlowDefinition(
                 ],
             },
             {
-                "slug": "rollup_priority",
-                "title": "Roll up by priority",
-                "prompt": "count_by priority → todos_by_priority",
-                "step_kind": "transform",
-                "source_key": "todos",
-                "target_key": "todos_by_priority",
-                "rule": "count_by",
-                "options": {"field": "priority"},
-            },
-            {
                 "slug": "save_todos",
                 "title": "Save todos",
                 "prompt": "Persist list to kv (put-palm-todos)",
                 "step_kind": "resource",
                 "resource_ref": "put-palm-todos",
-            },
-            {
-                "slug": "save_priority_view",
-                "title": "Save priority view",
-                "prompt": "Persist rollup to kv (put-palm-todos-by-priority)",
-                "step_kind": "resource",
-                "resource_ref": "put-palm-todos-by-priority",
             },
         ],
     },

@@ -1,10 +1,7 @@
 """
-Todo analytics refresh — **definition-only** flow (no Python rebuild hook).
+Todo analytics — optional operator inspect of stored palm-todos.
 
-1. Load ``palm-todos``
-2. Extract list (``jsonpath_extract`` path=value)
-3. ``count_by`` priority
-4. Put ``put-palm-todos-by-priority``
+Priority rollup is a **virtual** analytics view (no rebuild flow required).
 
 ::
 
@@ -26,11 +23,10 @@ TODO_ANALYTICS_FLOW = FlowDefinition(
         "steps": [
             {
                 "slug": "intro",
-                "title": "Refresh todo analytics",
+                "title": "Todo analytics",
                 "prompt": (
-                    "Palm dogfood — reload stored todos and rebuild the published "
-                    "priority view with transform count_by + resource put "
-                    "(no custom commit code)."
+                    "Load stored todos for inspection. Priority counts are computed "
+                    "virtually via Analytics (palm-todos-by-priority) — no second put."
                 ),
                 "step_kind": "introduction",
                 "required": False,
@@ -43,33 +39,6 @@ TODO_ANALYTICS_FLOW = FlowDefinition(
                 "resource_ref": "palm-todos",
                 "output_key": "todo_payload",
             },
-            {
-                "slug": "extract_items",
-                "title": "Extract todo rows",
-                "prompt": "jsonpath_extract value → todos",
-                "step_kind": "transform",
-                "source_key": "todo_payload",
-                "target_key": "todos",
-                "rule": "jsonpath_extract",
-                "options": {"path": "value", "default": []},
-            },
-            {
-                "slug": "rollup_priority",
-                "title": "Roll up by priority",
-                "prompt": "count_by priority → todos_by_priority",
-                "step_kind": "transform",
-                "source_key": "todos",
-                "target_key": "todos_by_priority",
-                "rule": "count_by",
-                "options": {"field": "priority"},
-            },
-            {
-                "slug": "save_priority_view",
-                "title": "Save priority view",
-                "prompt": "put-palm-todos-by-priority",
-                "step_kind": "resource",
-                "resource_ref": "put-palm-todos-by-priority",
-            },
         ],
     },
 )
@@ -80,7 +49,7 @@ TODO_ANALYTICS_PROCESS = ProcessDefinition(
     flows=[TODO_ANALYTICS_FLOW],
     metadata={
         "example": True,
-        "description": "Definition-only rebuild of palm-todos-by-priority",
+        "description": "Inspect palm-todos; virtual priority view via Analytics",
     },
 )
 

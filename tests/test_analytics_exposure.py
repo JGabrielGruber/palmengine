@@ -109,3 +109,45 @@ def test_to_dict_omits_empties() -> None:
     assert d["kind"] == "view"
     assert "row_path" not in d
     assert "refresh" not in d
+
+
+def test_parse_virtual_view_source_and_transform() -> None:
+    exp = parse_analytics_exposure(
+        {
+            "analytics": {
+                "published": True,
+                "kind": "view",
+                "source": "palm-todos",
+                "materialize": False,
+                "transform": {"op": "count_by", "field": "priority"},
+            }
+        }
+    )
+    assert exp.published is True
+    assert exp.source == "palm-todos"
+    assert exp.materialize is False
+    assert exp.is_virtual is True
+    assert exp.transform == {"op": "count_by", "field": "priority"}
+
+
+def test_source_without_materialize_defaults_virtual() -> None:
+    exp = parse_analytics_exposure(
+        {
+            "analytics": {
+                "published": True,
+                "source": "palm-todos",
+                "transform": {"op": "count_by", "field": "priority"},
+            }
+        }
+    )
+    assert exp.materialize is False
+    assert exp.is_virtual is True
+
+
+def test_materialize_defaults_true_without_source() -> None:
+    exp = parse_analytics_exposure(
+        {"analytics": {"published": True, "kind": "view", "derived_from": ["palm-todos"]}}
+    )
+    assert exp.source is None
+    assert exp.materialize is True
+    assert exp.is_virtual is False

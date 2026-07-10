@@ -1,7 +1,4 @@
-"""Parse ``ResourceDefinition.metadata.analytics`` exposure (0.35.1).
-
-Known keys only; unknown keys ignored. Missing/invalid ``analytics`` → unpublished defaults.
-"""
+"""Parse ``ResourceDefinition.metadata.analytics`` exposure (0.35–0.36)."""
 
 from __future__ import annotations
 
@@ -20,6 +17,10 @@ _KNOWN_KEYS = frozenset(
         "row_path",
         "refresh",
         "virtual_steps",
+        "source",
+        "transform",
+        "materialize",
+        "fields",
     }
 )
 _KINDS = frozenset({"fact", "view"})
@@ -37,15 +38,24 @@ class AnalyticsExposure:
     row_path: str | None = None
     refresh: dict[str, Any] = field(default_factory=dict)
     virtual_steps: tuple[Any, ...] = ()
+    source: str | None = None
+    transform: dict[str, Any] = field(default_factory=dict)
+    materialize: bool = True
+    fields: tuple[dict[str, Any], ...] = ()
     unknown_keys: tuple[str, ...] = ()
 
+    @property
+    def is_virtual(self) -> bool:
+        """True when query should load ``source`` and apply ``transform``."""
+        return bool(self.source) and not self.materialize and bool(self.transform)
+
     def to_dict(self) -> dict[str, Any]:
-        """JSON-friendly describe surface (omits empty optional fields)."""
         out: dict[str, Any] = {
             "published": self.published,
             "kind": self.kind,
             "derived_from": list(self.derived_from),
             "default_profile": self.default_profile,
+            "materialize": self.materialize,
         }
         if self.row_path:
             out["row_path"] = self.row_path
@@ -53,6 +63,12 @@ class AnalyticsExposure:
             out["refresh"] = dict(self.refresh)
         if self.virtual_steps:
             out["virtual_steps"] = list(self.virtual_steps)
+        if self.source:
+            out["source"] = self.source
+        if self.transform:
+            out["transform"] = dict(self.transform)
+        if self.fields:
+            out["fields"] = [dict(f) for f in self.fields]
         if self.unknown_keys:
             out["unknown_keys"] = list(self.unknown_keys)
         return out
@@ -63,12 +79,6 @@ def parse_analytics_exposure(
     *,
     strict: bool = False,
 ) -> AnalyticsExposure:
-    """Parse ``metadata.analytics`` into :class:`AnalyticsExposure`.
-
-    * Absent or non-dict ``analytics`` → unpublished defaults.
-    * Unknown keys recorded in ``unknown_keys`` and ignored for semantics.
-    * Invalid field types: lenient defaults unless ``strict=True`` (then ``ValueError``).
-    """
     if not isinstance(metadata, dict):
         return AnalyticsExposure()
     raw = metadata.get("analytics")
@@ -80,7 +90,6 @@ def parse_analytics_exposure(
         return AnalyticsExposure()
 
     unknown = tuple(sorted(k for k in raw if k not in _KNOWN_KEYS))
-
     published = _bool(raw.get("published"), default=False, field="published", strict=strict)
     kind = _kind(raw.get("kind"), strict=strict)
     derived = _str_list(raw.get("derived_from"), field="derived_from", strict=strict)
@@ -88,6 +97,17 @@ def parse_analytics_exposure(
     row_path = _optional_str(raw.get("row_path"), field="row_path", strict=strict)
     refresh = _dict(raw.get("refresh"), field="refresh", strict=strict)
     steps = _any_list(raw.get("virtual_steps"), field="virtual_steps", strict=strict)
+    source = _optional_str(raw.get("source"), field="source", strict=strict)
+    transform = _dict(raw.get("transform"), field="transform", strict=strict)
+    fields = _field_entries(raw.get("fields"), strict=strict)
+
+    if "materialize" in raw:
+        materialize = _bool(
+            raw.get("materialize"), default=True, field="materialize", strict=strict
+        )
+    else:
+        # Virtual by default when source is set; otherwise materialize (legacy).
+        materialize = source is None
 
     return AnalyticsExposure(
         published=published,
@@ -97,12 +117,15 @@ def parse_analytics_exposure(
         row_path=row_path,
         refresh=refresh,
         virtual_steps=steps,
+        source=source,
+        transform=transform,
+        materialize=materialize,
+        fields=fields,
         unknown_keys=unknown,
     )
 
 
 def is_analytics_published(metadata: dict[str, Any] | None) -> bool:
-    """True when exposure marks the resource as analytics-published."""
     return parse_analytics_exposure(metadata).published
 
 
@@ -180,6 +203,22 @@ def _any_list(value: Any, *, field: str, strict: bool) -> tuple[Any, ...]:
     if strict:
         raise ValueError(f"analytics.{field} must be a list")
     return ()
+
+
+def _field_entries(value: Any, *, strict: bool) -> tuple[dict[str, Any], ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list):
+        if strict:
+            raise ValueError("analytics.fields must be a list")
+        return ()
+    out: list[dict[str, Any]] = []
+    for item in value:
+        if isinstance(item, dict) and item.get("name"):
+            out.append(dict(item))
+        elif strict:
+            raise ValueError("analytics.fields entries must be objects with name")
+    return tuple(out)
 
 
 __all__ = [

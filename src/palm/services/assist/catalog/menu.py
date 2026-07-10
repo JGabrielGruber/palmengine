@@ -37,6 +37,13 @@ _ROOT_ITEMS: list[dict[str, Any]] = [
         "open": {"kind": "section", "id": "scenarios"},
     },
     {
+        "id": "datasets",
+        "kind": "section",
+        "label": "Analytics datasets",
+        "summary": "Published resources for AnalyticsService",
+        "open": {"kind": "section", "id": "datasets"},
+    },
+    {
         "id": "operator-entry",
         "kind": "scenario",
         "label": "Operator entry",
@@ -353,6 +360,21 @@ def menu_for_assist(
             title="Scenarios",
         )
 
+    if sec in {"datasets", "dataset", "analytics"}:
+        items = _dataset_menu_items(assist)
+        page = build_menu_page(
+            section="datasets",
+            query=query,
+            cursor=cursor,
+            limit=limit,
+            items=items,
+            title="Analytics datasets",
+        )
+        page["hint"] = (
+            "Published analytics datasets. Query via AnalyticsService or GET /analytics/."
+        )
+        return page
+
     # Unknown section → root with note
     page = build_menu_page(
         section="root",
@@ -362,8 +384,41 @@ def menu_for_assist(
         items=list(_ROOT_ITEMS),
         title="Palm menu",
     )
-    page["hint"] = f"Unknown section {sec!r}. Showing home. Try flows, waiting, scenarios."
+    page["hint"] = (
+        f"Unknown section {sec!r}. Showing home. "
+        "Try flows, waiting, scenarios, datasets."
+    )
     return page
+
+
+def _dataset_menu_items(assist: AssistService) -> list[dict[str, Any]]:
+    """List published analytics datasets via definitions (public API)."""
+    from palm.services.analytics.datasets import list_datasets
+
+    rows: list[dict[str, Any]] = []
+    try:
+        rows = list_datasets(assist.definitions, published_only=True) or []
+    except Exception:
+        rows = []
+
+    items: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        ds = str(row.get("dataset") or row.get("name") or "").strip()
+        if not ds:
+            continue
+        kind = row.get("kind") or "fact"
+        items.append(
+            {
+                "id": ds,
+                "kind": "dataset",
+                "label": f"{ds} · {kind}",
+                "summary": str(row.get("default_profile") or "table"),
+                "open": {"kind": "dataset", "id": ds},
+            }
+        )
+    return items
 
 
 __all__ = [

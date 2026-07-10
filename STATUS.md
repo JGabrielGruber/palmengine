@@ -463,7 +463,7 @@ just mcp-inspector                       # MCP Inspector UI
 
 | Train | Focus | Status |
 |-------|--------|--------|
-| 0.36 | Virtual views, schema roles, doctor, assist datasets | ⬜ Vision |
+| 0.36 | Virtual views, schema roles, doctor, assist datasets | ✅ Shipped |
 | 0.37 | WorkIntent + triggers + resource.changed + drain | ⬜ Vision |
 | 0.38 | Journal / offsets / redrive | ⬜ Vision |
 | 0.39 | DashboardDefinition | ⬜ Vision |

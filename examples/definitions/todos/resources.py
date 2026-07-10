@@ -86,15 +86,20 @@ PALM_TODOS_BY_PRIORITY = ResourceDefinition(
         "default": [],
     },
     metadata={
-        "description": "Todos counted by priority (materialized via flow + count_by)",
+        "description": "Todos by priority — virtual view (count_by on palm-todos)",
         "tags": ["palm", "todo", "bi", "view"],
         "analytics": {
             "published": True,
             "kind": "view",
+            "source": "palm-todos",
+            "materialize": False,
+            "transform": {"op": "count_by", "field": "priority"},
             "derived_from": ["palm-todos"],
             "default_profile": "series",
-            "row_path": "value",
-            "refresh": {"flow_id": "todo-analytics"},
+            "fields": [
+                {"name": "priority", "role": "dimension"},
+                {"name": "count", "role": "measure", "type": "integer"},
+            ],
         },
     },
 )

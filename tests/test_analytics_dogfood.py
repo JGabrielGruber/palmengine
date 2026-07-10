@@ -38,7 +38,8 @@ def test_todo_package_materialize_and_query() -> None:
             series={"x_field": "priority", "y_fields": ["count"]},
         )
         assert series["status"] == "ok", series
-        assert series["lineage"]["derived_from"] == ["palm-todos"]
+        assert series["meta"].get("virtual") is True
+        assert "palm-todos" in (series["lineage"].get("derived_from") or [])
 
 
 def test_bootstrap_loads_todos_and_coconut_packs() -> None:
