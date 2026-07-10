@@ -138,6 +138,7 @@ just mcp-inspector                       # MCP Inspector UI
 ```
 
 ## Areas Under Active Improvement
+- **0.35 BI data plane** — analytics service + present profiles + thin dashboard ([VISION-0.35](docs/VISION-0.35.md))
 - WebSocket runtime surface for live wizard/job streaming
 - Explorer inline validation for collection field errors
 - Saga-style compensation patterns beyond single-resource undo
@@ -445,7 +446,7 @@ just mcp-inspector                       # MCP Inspector UI
 | Step | Deliverable | Status |
 |------|-------------|--------|
 | 0.35.0 | Design consensus + VISION foundation | ✅ |
-| 0.35.1 | Exposure parse (`metadata.analytics`) | ⬜ |
+| 0.35.1 | Exposure parse (`metadata.analytics`) | ✅ |
 | 0.35.2 | AnalyticsService skeleton + gates + normalize | ⬜ |
 | 0.35.3 | Present profiles table/series/kpi | ⬜ |
 | 0.35.4a | Host / ServerContext wire | ⬜ |
