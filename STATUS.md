@@ -456,19 +456,35 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.35.7 | Palm dogfood: todo-builder kv + todo-analytics flow + datasets | ✅ |
 | 0.35.8+ | Absorbed into 0.36+ charter (virtual views, triggers, work intents) | → 0.36 |
 
-### 0.36+ — Reactive platform evolution
+### 0.36–0.39 — Reactive platform foundations (shipped in 0.39.0)
 
-**Vision:** [docs/VISION-0.36.md](docs/VISION-0.36.md)  
-**Theme:** Virtual analytics views · definition triggers (schedule / on_flow / on_resource) · WorkIntent enqueue-when-triggered, run-when-able · event journal (not tiered-KV-as-Kafka) · DashboardDefinition later. **No fat WorkEngine in core.**
+**Vision:** [docs/VISION-0.36.md](docs/VISION-0.36.md) (§12a landed vs open)  
+**Release:** [RELEASE-0.39.0.md](../RELEASE-0.39.0.md)
 
 | Train | Focus | Status |
 |-------|--------|--------|
-| 0.36 | Virtual views, schema roles, doctor, assist datasets | ✅ Shipped |
-| 0.37 | WorkIntent + triggers + resource.changed + drain | ✅ Foundation |
-| 0.38 | Journal / offsets / redrive | ✅ Foundation |
-| 0.39 | DashboardDefinition + render + UI | ✅ Foundation |
+| 0.36 | Virtual views, schema roles, doctor, assist datasets | ✅ |
+| 0.37 | WorkIntent + triggers + resource.changed + drain | ✅ Foundation (polish open) |
+| 0.38 | Journal / offsets / redrive | ✅ Foundation (polish open) |
+| 0.39 | DashboardDefinition + system ops datasets | ✅ Foundation |
 
-**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
+**Open debt (→ 0.40):** example `metadata.triggers` dogfood · continuous drain · debounce/depth · journal consumer wiring · doctor control_plane · durable dashboards · assist open:dataset — see [VISION-0.40](docs/VISION-0.40.md).
+
+### 0.40+ — Compositional mesh & reactive completion
+
+**Vision:** [docs/VISION-0.40.md](docs/VISION-0.40.md)  
+**Theme:** Palm→Palm first (provider + jobs + resources). Reactive = journal + WorkIntent + triggers. **WS/SSE push is P2 transport**, not the composition core.
+
+| Train | Focus | Status |
+|-------|--------|--------|
+| 0.40 | Close 0.37–0.38 debt; trigger dogfood; optional continuous drain; remote system analytics | ⬜ Vision |
+| 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ⬜ Vision |
+| 0.42 | Event stream protocol + `/ws/v1/events` (or SSE); Portal live strip; **palm provider event consumer** | ⬜ Vision |
+| 0.43+ | Mesh authz, multi-worker fan-out | ⬜ Later |
+
+**Priority reminder:** P0 invoke/wait/resources · P1 journal+WorkIntent dogfood · P2 realtime WS for humans **and** provider.
+
+**Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) · Assist remote 0.34 · Portal/WS 0.32.
 
 
 ## Useful Links

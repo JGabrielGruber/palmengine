@@ -4,9 +4,9 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Vision / architecture charter (not fully implemented) |
-| **Date** | 2026-07-10 |
-| **Ship baseline** | 0.35.x — Assist remote, analytics exposure, definition packs, todos dogfood |
+| **Status** | Charter — **foundations landed in 0.36–0.39**; polish/debt open (see §12a). **Forward plan:** [VISION-0.40](VISION-0.40.md) |
+| **Date** | 2026-07-10 (status refresh with 0.39.0 cut) |
+| **Ship baseline** | **0.39.0** — analytics + work/journal foundations + dashboards + palm system inspect |
 | **Depends on** | [VISION-0.33](VISION-0.33.md) · [VISION-0.34](VISION-0.34.md) · [VISION-0.35](VISION-0.35.md) · [ADR-001](adr/001-compositional-power-resources.md) · [ADR-011](adr/011-local-document-resources.md) · [AGENTS.md](../AGENTS.md) |
 | **Spirit** | Embrace necessary complexity for **decade-scale robustness**; never accidental complexity |
 

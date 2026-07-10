@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Docs
+
+- **0.40+ charter** — [VISION-0.40](docs/VISION-0.40.md): composition-first mesh; 0.36–0.39 open debt; trains 0.40–0.42 (triggers dogfood → durable UX → event transport / provider consumer). [VISION-0.36](docs/VISION-0.36.md) §12a landed vs open.
+
 ## [0.39.0] — 2026-07-10
 
 **Bundled release since 0.34.5** — **Analytics data plane** (0.35–0.36) · **WorkIntent / triggers / journal** (0.37–0.38) · **Dashboards** (0.39) · **Palm provider system inspect** + ops datasets.
