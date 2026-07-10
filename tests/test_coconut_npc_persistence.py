@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import palm.providers  # noqa: F401 — register providers
-from examples.definitions.coconut_npc import COCONUT_NPC_FLOW
-from examples.definitions.coconut_resources import (
+from examples.definitions.coconut.npc import COCONUT_NPC_FLOW
+from examples.definitions.coconut.resources import (
     LOAD_COCONUT_PLAYER,
     SAVE_COCONUT_PLAYER,
     register_definitions as register_coconut_resources,

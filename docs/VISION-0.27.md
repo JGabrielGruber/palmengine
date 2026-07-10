@@ -5,7 +5,7 @@
 **Status:** Planned (post **0.26.0**)  
 **Depends on:** [0.25 Design Service](VISION-0.25.md) ✅ · [0.26 CQRS parity](superpowers/plans/2026-07-08-cqrs-bus-parity-and-0.26.md) ✅  
 **ADR:** [010-prompt-state-interpolation.md](adr/010-prompt-state-interpolation.md) · **Plan:** [compositional-design-parity-0.27.md](superpowers/plans/2026-07-08-compositional-design-parity-0.27.md)  
-**Reference flow:** `examples/definitions/coconut_npc.py` (`coconut-npc`)
+**Reference flow:** `examples/definitions/coconut/npc.py` (`coconut-npc`)
 
 ---
 
@@ -143,4 +143,4 @@ Extension remains **registry-based** — design contributors per pattern/provide
 - Compositional Power: [VISION-0.12.md](VISION-0.12.md)
 - Design Service: [VISION-0.25.md](VISION-0.25.md) · [ADR-008](adr/008-design-service.md)
 - CQRS parity: [ADR-009](adr/009-service-cqrs-contributors.md)
-- Examples: [examples/README.md](../examples/README.md) · `examples/definitions/coconut_npc.py`
+- Examples: [examples/README.md](../examples/README.md) · `examples/definitions/coconut/npc.py`

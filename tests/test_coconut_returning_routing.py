@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from examples.definitions.coconut_npc import (
+from examples.definitions.coconut.npc import (
     COCONUT_NPC_FLOW,
     RETURNING_TOPIC_BY_REPUTATION,
 )
-from examples.definitions.coconut_resources import LOAD_COCONUT_PLAYER, SAVE_COCONUT_PLAYER
+from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER, SAVE_COCONUT_PLAYER
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine

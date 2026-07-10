@@ -1,31 +1,39 @@
 # Palm examples
 
-Runnable flow and process definitions for learning and manual testing. The CLI loads every `*.py` file in `definitions/` on startup via `ApplicationHost` (collapsed `all_in_one` profile).
+Runnable flow and process definitions for learning and manual testing.  
+`ApplicationHost` loads **definition packs** under `definitions/` on startup.
 
 ## Layout
 
 ```
 examples/
 ├── definitions/
-│   ├── onboard.py           # Onboarding wizard
-│   ├── data_ingestion.py    # Dataset registration + ETL stub
-│   ├── approval_workflow.py # Spend approval
-│   ├── quick_wizard.py      # Minimal two-step demo
-│   ├── schema_wizard.py     # Flow + per-step state schemas
-│   ├── parallel_demo.py     # Parallel branches + sub-workflows
-│   ├── todo_builder.py      # Collection step + todo list schemas
-│   ├── migrate_instance_demo.py  # Definition revision migration (0.24.3)
-│   ├── coconut_npc.py       # Branching wizard reference (hub menu + routing)
-│   ├── coconut_resources.py # KV resources for coconut cross-session persistence (0.28+)
-│   └── transform_*.py       # Transform rule demos
-└── full_demo.py             # ApplicationHost end-to-end script
+│   ├── coconut/             # Pack: resources first, then npc flow (__init__ order)
+│   │   ├── __init__.py
+│   │   ├── resources.py
+│   │   └── npc.py
+│   ├── todos/               # Pack: resources → todo-builder → todo-analytics
+│   │   ├── __init__.py
+│   │   ├── resources.py
+│   │   ├── builder.py
+│   │   └── analytics.py
+│   ├── onboard.py           # Flat single-file demos (still supported)
+│   ├── data_ingestion.py
+│   ├── approval_workflow.py
+│   ├── transform_*.py
+│   └── …
+└── full_demo.py
 ```
 
-Each definition module exposes `register_definitions(repository)` which:
+**Preferred:** multi-file **packages** with ordered `__init__.py`  
+(`resources` before flows that `resource_ref` them). Relative imports only.
 
-1. Optionally registers **commit handlers** on `default_commit_registry()`
-2. Optionally registers **compensation handlers** on `default_compensation_registry()` (undo on commit failure)
-3. Persists flows and processes via `repository.save_flow` / `save_process`
+**Legacy:** flat `*.py` with `register_definitions(repository)`.
+
+Each pack/module’s `register_definitions` may:
+
+1. Register **commit / compensation** handlers  
+2. `repository.save_flow` / `save_process` / `save_resource`
 
 ## Running examples
 

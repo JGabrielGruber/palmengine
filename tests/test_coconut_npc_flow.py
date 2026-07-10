@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from examples.definitions.coconut_npc import COCONUT_NPC_FLOW
+from examples.definitions.coconut.npc import COCONUT_NPC_FLOW
 from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
 from palm.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
 from palm.patterns.wizard.bindings.design import validate_wizard_design_proposal

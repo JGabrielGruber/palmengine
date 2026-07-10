@@ -12,7 +12,7 @@ from palm.common.operator.resource_remediation import (
     resource_invoke_remediation,
 )
 from palm.common.resource import resource_definition_resolver
-from examples.definitions.coconut_resources import LOAD_COCONUT_PLAYER
+from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER
 from palm.common.resource.preflight import (
     build_resource_preflight,
     resource_preflight_issues,

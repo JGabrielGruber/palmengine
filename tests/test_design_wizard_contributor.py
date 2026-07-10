@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from examples.definitions.coconut_npc import COCONUT_NPC_FLOW
+from examples.definitions.coconut.npc import COCONUT_NPC_FLOW
 from examples.definitions.transform_example import TRANSFORM_EXAMPLE_FLOW
 from palm.patterns.wizard.bindings.design import (
     normalize_wizard_step,

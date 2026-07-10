@@ -88,4 +88,4 @@ sub-wizards ([ADR-001](001-compositional-power-resources.md)); coconut’s need 
 
 - [ADR-001](001-compositional-power-resources.md) — compositional sub-flows via `palm` provider
 - [ADR-011](011-local-document-resources.md) — coconut KV persistence
-- `examples/definitions/coconut_npc.py` — reference consumer
+- `examples/definitions/coconut/npc.py` — reference consumer

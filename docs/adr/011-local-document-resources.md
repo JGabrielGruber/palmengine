@@ -57,5 +57,5 @@ Resource providers already adapt external systems through `ResourceEngine` ([ADR
 
 - [VISION-0.28.md](../VISION-0.28.md)
 - [document-kv-providers-design.md](../superpowers/specs/2026-07-08-document-kv-providers-design.md)
-- `examples/definitions/coconut_resources.py`
+- `examples/definitions/coconut/resources.py`
 - `src/palm/common/resource/document_storage.py`

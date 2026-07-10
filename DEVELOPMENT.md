@@ -479,10 +479,26 @@ Tests: `tests/test_wizard_collection.py`, `tests/test_collection_selection.py`.
 
 ## Adding example definitions
 
-1. Add `examples/definitions/<name>.py`.
-2. Implement `register_definitions(repository)`.
-3. Register commit handlers on `default_commit_registry()` when using `commit_hook`.
-4. Run `palm doctor` to confirm catalog counts.
+**Preferred (multi-file packs):** a package under `examples/definitions/<name>/`:
+
+```text
+examples/definitions/todos/
+  __init__.py       # ordered register_definitions() — resources then flows
+  resources.py
+  builder.py
+  analytics.py
+```
+
+1. Create the package with `__init__.py` that calls submodules in dependency order
+   (resources before flows that `resource_ref` them).
+2. Each module may expose its own `register_definitions` for tests; the package
+   `__init__` is what bootstrap loads.
+3. Use relative imports inside the pack (`from .resources import …`).
+4. Register commit handlers in the flow module’s `register_definitions`.
+5. Run `palm doctor` to confirm catalog counts.
+
+**Legacy (single file):** `examples/definitions/<name>.py` with
+`register_definitions(repository)` still works (flat demos).
 
 ## Adding a storage backend
 

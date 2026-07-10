@@ -40,7 +40,7 @@ Tables, charts, and KPIs are **present profiles** — pure reshape functions ins
 | Transforms | `TransformEngine` + transform catalog (incl. `enrich_resource`) | Pipeline materialization / field shaping — **not** on resource invoke |
 | Pipeline pattern | `palm/patterns/pipeline/` | Ordered transform steps; ETL / materialization spine |
 | Local durable store | `kv` / `file` providers (ADR-011) | Facts can materialize into KV/file without a warehouse |
-| Coconut dogfood | `examples/definitions/coconut_resources.py` | Write path for durable resources |
+| Coconut dogfood | `examples/definitions/coconut/resources.py` | Write path for durable resources |
 | Assist profiles | `palm/services/assist/profiles/` (`tool` \| `chat`) | Philosophy only: alternate presentation — **not** pure DTO reshape |
 | Execution façade | `palm/services/execution/service.py` | Thin façade + leaf services |
 | Design | `palm/services/design/` | Publish resource definitions (incl. `publish-resource`) |
@@ -686,7 +686,7 @@ Existing fields (`src/palm/definitions/resource.py`): `name`, `provider`, `actio
 
 ### Materialized sample dogfood (0.35.5)
 
-Mirror `examples/definitions/coconut_resources.py` registration:
+Mirror `examples/definitions/coconut/resources.py` registration:
 
 ```python
 # examples/definitions/analytics_dogfood.py
@@ -976,7 +976,7 @@ No blocking product open questions for implementation start.
 | `src/palm/app/host/application_host.py` | `_wire_cqrs` |
 | `src/palm/app/settings.py` | `PalmSettings` |
 | `src/palm/services/_apps.py` | `INSTALLED_SERVICES` (design not listed; analytics optional) |
-| `examples/definitions/coconut_resources.py` | register_definitions pattern |
+| `examples/definitions/coconut/resources.py` | register_definitions pattern |
 | [STATUS.md](STATUS.md) | Update at 0.35.0 |
 
 ---

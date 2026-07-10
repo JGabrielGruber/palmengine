@@ -2,7 +2,7 @@
 
 **Load when:** building multi-topic wizards, dialogue-style loops, or revising `coconut-npc`.
 
-**Reference flow:** `coconut-npc` (`palm flow start coconut-npc` · `examples/definitions/coconut_npc.py`)
+**Reference flow:** `coconut-npc` (`palm flow start coconut-npc` · `examples/definitions/coconut/npc.py`)
 
 ---
 

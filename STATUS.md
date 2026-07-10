@@ -318,7 +318,7 @@ just mcp-inspector                       # MCP Inspector UI
 **Vision:** [docs/VISION-0.27.md](docs/VISION-0.27.md)  
 **ADR:** [docs/adr/010-prompt-state-interpolation.md](docs/adr/010-prompt-state-interpolation.md)  
 **Plan:** [docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md](docs/superpowers/plans/2026-07-08-compositional-design-parity-0.27.md)  
-**Reference flow:** `coconut-npc` ([examples/definitions/coconut_npc.py](examples/definitions/coconut_npc.py))
+**Reference flow:** `coconut-npc` ([examples/definitions/coconut/](examples/definitions/coconut/))
 
 | Phase | Theme | Status |
 |-------|-------|--------|

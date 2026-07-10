@@ -15,6 +15,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.35.5** — `examples/definitions/analytics_dogfood.py`: materialize sales fact + revenue view into `kv`; query table/series/kpi.
 - **0.35.6** — Static dogfood UI `GET /analytics/` (table + canvas chart); paints REST only.
 - **0.35.7** — **Palm** analytics dogfood (not sales BI): `todo-builder` commit → `kv` (`palm-todos` + `palm-todos-by-priority`); flow **`todo-analytics`** load+rebuild; `/analytics` presents definition-backed datasets.
+- **Examples packs** — bootstrap loads `examples/definitions/<pack>/` via ordered `__init__.py` (`coconut/`, `todos/`); removed glue `analytics_dogfood.py` and sibling-import hacks.
 
 ## [0.34.5] — 2026-07-09
 

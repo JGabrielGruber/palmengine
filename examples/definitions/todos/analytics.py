@@ -1,17 +1,12 @@
 """
-Todo analytics interaction flow (0.35 dogfood).
+Todo analytics interaction flow — load stored todos and rebuild published views.
 
-Resources alone are not the product — this wizard **loads** stored todos and
-**rebuilds** the priority view so operators exercise definitions end-to-end:
+Resources alone are not the product; this flow is the operator path that
+**uses** the definitions.
 
-1. Load ``palm-todos`` (resource step)
-2. Confirm rebuild of ``palm-todos-by-priority``
-3. Commit writes the view (and re-puts fact)
+::
 
-```bash
-palm flow start todo-analytics
-# /analytics/ → palm-todos · palm-todos-by-priority
-```
+    palm flow start todo-analytics
 """
 
 from __future__ import annotations
@@ -24,28 +19,7 @@ from palm.patterns.wizard.bindings.compensation.handler import (
     default_commit_registry,
 )
 
-import importlib.util
-import sys
-from pathlib import Path
-
-
-def _import_sibling(stem: str):
-    path = Path(__file__).resolve().parent / f"{stem}.py"
-    name = f"palm_example_definitions_{stem}"
-    if name in sys.modules:
-        return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load {path}")
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[name] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_todo_resources = _import_sibling("todo_resources")
-priority_rollup = _todo_resources.priority_rollup
-register_todo_resources = _todo_resources.register_definitions
+from .resources import priority_rollup
 
 TODO_ANALYTICS_FLOW = FlowDefinition(
     id="flow-todo-analytics",
@@ -94,7 +68,6 @@ TODO_ANALYTICS_PROCESS = ProcessDefinition(
 def _items_from_store(store: Any) -> list[dict[str, Any]]:
     if not isinstance(store, dict):
         return []
-    # Provider envelope shapes: value.items or items after binding
     value = store.get("value") if "value" in store else store
     if isinstance(value, dict):
         items = value.get("items")
@@ -136,7 +109,7 @@ def _rebuild_todo_analytics(ctx: object) -> CommitResult:
 
 
 def register_definitions(repository: object) -> None:
-    register_todo_resources(repository)
+    """Register flow/process + commit hook only (resources via package ``__init__``)."""
     default_commit_registry().register(
         "rebuild_todo_analytics", _rebuild_todo_analytics
     )
@@ -146,3 +119,10 @@ def register_definitions(repository: object) -> None:
         save_flow(TODO_ANALYTICS_FLOW)
     if callable(save_process):
         save_process(TODO_ANALYTICS_PROCESS)
+
+
+__all__ = [
+    "TODO_ANALYTICS_FLOW",
+    "TODO_ANALYTICS_PROCESS",
+    "register_definitions",
+]

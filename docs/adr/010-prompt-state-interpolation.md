@@ -44,4 +44,4 @@ Dogfooding the **`coconut-npc`** reference flow (branching wizard built via MCP 
 
 - [VISION-0.27.md](../VISION-0.27.md)
 - [VISION-0.12.md](../VISION-0.12.md) — resource param binding
-- `examples/definitions/coconut_npc.py`
+- `examples/definitions/coconut/npc.py`
