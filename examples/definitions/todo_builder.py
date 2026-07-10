@@ -21,10 +21,28 @@ from palm.patterns.wizard.bindings.compensation.handler import (
     default_commit_registry,
 )
 
-from examples.definitions.todo_resources import (
-    priority_rollup,
-    register_definitions as register_todo_resources,
-)
+import importlib.util
+import sys
+from pathlib import Path
+
+
+def _import_sibling(stem: str):
+    path = Path(__file__).resolve().parent / f"{stem}.py"
+    name = f"palm_example_definitions_{stem}"
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load {path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_todo_resources = _import_sibling("todo_resources")
+priority_rollup = _todo_resources.priority_rollup
+register_todo_resources = _todo_resources.register_definitions
 
 TODO_ITEM_SCHEMA = {
     "type": "object",
