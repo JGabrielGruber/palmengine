@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added — BI data plane vision (0.35.0)
+
+- **0.35.0** — [VISION-0.35](docs/VISION-0.35.md): BI **exposure** spine (sources → pipelines → published resources → AnalyticsService → present profiles → thin dashboard). Profiles mirror Assist *philosophy* (`raw`|`table`|`series`|`kpi`), not a second brain. Materialize-first; published-only + read-action allowlist. Implementation ladder 0.35.1–0.35.6.
+
 ## [0.34.5] — 2026-07-09
 
 **Bundled release since 0.32.10** — **Assist modularity** (0.33) + **operator remote** menu/open/chat L0 (0.34). No Bot; Assist is the navigation remote; Portal/MCP are clients.

@@ -437,6 +437,23 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.34.5 | Menu typeahead debounce; waiting resume chips + open session polish | ✅ |
 | 0.34.6+ | Optional: cache menu pages; offline | ⬜ Open |
 
+### 0.35 — BI data plane (exposure, not entry)
+
+**Vision:** [docs/VISION-0.35.md](docs/VISION-0.35.md)  
+**Theme:** Published resources + AnalyticsService + present profiles (`raw`|`table`|`series`|`kpi`) + thin `/analytics` surface. **No Bot, no warehouse, no Portal-as-BI.** Materialize-first dogfood.
+
+| Step | Deliverable | Status |
+|------|-------------|--------|
+| 0.35.0 | Design consensus + VISION foundation | ✅ |
+| 0.35.1 | Exposure parse (`metadata.analytics`) | ⬜ |
+| 0.35.2 | AnalyticsService skeleton + gates + normalize | ⬜ |
+| 0.35.3 | Present profiles table/series/kpi | ⬜ |
+| 0.35.4a | Host / ServerContext wire | ⬜ |
+| 0.35.4b | REST `/v1/api/analytics/*` | ⬜ |
+| 0.35.5 | Example materialize fact+view dogfood | ⬜ |
+| 0.35.6 | Static `/analytics` table+chart dogfood | ⬜ |
+| 0.35.7+ | DashboardDefinition, schedule refresh, filters | ⬜ Open |
+
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 
 
