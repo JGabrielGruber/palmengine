@@ -449,7 +449,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.35.1 | Exposure parse (`metadata.analytics`) | ✅ |
 | 0.35.2 | AnalyticsService skeleton + gates + normalize | ✅ |
 | 0.35.3 | Present profiles table/series/kpi | ✅ |
-| 0.35.4a | Host / ServerContext wire | ⬜ |
+| 0.35.4a | Host / ServerContext wire | ✅ |
 | 0.35.4b | REST `/v1/api/analytics/*` | ⬜ |
 | 0.35.5 | Example materialize fact+view dogfood | ⬜ |
 | 0.35.6 | Static `/analytics` table+chart dogfood | ⬜ |

@@ -12,6 +12,7 @@ from palm.common.cqrs.query import Query
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
+from palm.services.analytics import AnalyticsService
 from palm.services.assist import AssistService
 from palm.services.definitions import DefinitionService
 from palm.services.design import DesignService
@@ -91,6 +92,11 @@ class ServerContext:
                 proposals=create_proposal_repository(runtime.storage),
                 runtime=runtime,
             )
+            self._analytics = AnalyticsService(
+                definitions=definitions,
+                providers=self._execution.providers,
+                **bus_kw,
+            )
             from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
             from palm.services.design.contributors import wire_builtin_design_contributors
 
@@ -107,6 +113,7 @@ class ServerContext:
             self._execution = host.execution
             self._assist = host.assist
             self._design = host.design
+            self._analytics = host.analytics
 
     @property
     def runtime(self) -> BaseRuntime:
@@ -160,6 +167,12 @@ class ServerContext:
             return self._host.design
         return self._design
 
+    @property
+    def analytics(self) -> AnalyticsService:
+        if self._host is not None:
+            return self._host.analytics
+        return self._analytics
+
     def execute(self, command: Command) -> Any:
         return self._command_bus.dispatch(command)
 
@@ -179,3 +192,4 @@ class ServerContext:
         self._execution = host.execution
         self._assist = host.assist
         self._design = host.design
+        self._analytics = host.analytics

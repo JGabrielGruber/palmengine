@@ -117,6 +117,7 @@ class ApplicationHost:
         self._execution: Any | None = None
         self._assist: Any | None = None
         self._design: Any | None = None
+        self._analytics: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -167,6 +168,11 @@ class ApplicationHost:
     def design(self):
         """Design service API — propose/validate/impact/commit revisions."""
         return self._design
+
+    @property
+    def analytics(self):
+        """Analytics service API — BI describe/query (0.35)."""
+        return self._analytics
 
     @property
     def router(self) -> RuntimeRouter:
@@ -560,6 +566,24 @@ class ApplicationHost:
             definitions=self._definitions,
             proposals=create_proposal_repository(self._app.storage),
             runtime_resolver=self._resolve_execution_runtime,
+        )
+        from palm.services.analytics import AnalyticsService
+
+        settings = self.settings
+        allow_unpub = bool(settings.analytics_allow_unpublished)
+        if settings.analytics_allow_unpublished_with_server:
+            allow_unpub = True
+        self._analytics = AnalyticsService(
+            definitions=self._definitions,
+            providers=self._execution.providers,
+            commands=self._command_bus,
+            queries=self._query_bus,
+            schemas=self._schema_registry,
+            allow_unpublished=allow_unpub,
+            default_limit=int(settings.analytics_default_limit),
+            max_limit=int(settings.analytics_max_limit),
+            max_response_bytes=int(settings.analytics_max_response_bytes),
+            enabled=bool(settings.analytics_enabled),
         )
         from palm.services._cqrs_wiring import wire_all_service_cqrs
         from palm.services.design.contributors import wire_builtin_design_contributors
