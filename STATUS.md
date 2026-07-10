@@ -452,7 +452,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.35.4a | Host / ServerContext wire | ✅ |
 | 0.35.4b | REST `/v1/api/analytics/*` | ✅ |
 | 0.35.5 | Example materialize fact+view dogfood | ✅ |
-| 0.35.6 | Static `/analytics` table+chart dogfood | ⬜ |
+| 0.35.6 | Static `/analytics` table+chart dogfood | ✅ |
 | 0.35.7+ | DashboardDefinition, schedule refresh, filters | ⬜ Open |
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.

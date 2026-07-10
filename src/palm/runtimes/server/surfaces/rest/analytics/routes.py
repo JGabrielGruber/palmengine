@@ -1,11 +1,13 @@
-"""Analytics REST routes under ``/v1/api/analytics``."""
+"""Analytics REST routes under ``/v1/api/analytics`` + static ``/analytics`` dogfood."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.rest.analytics import handlers
+from palm.runtimes.server.surfaces.rest.analytics.static import analytics_file_response
 from palm.runtimes.server.surfaces.rest.bindings import bind_handler
 from palm.runtimes.server.surfaces.rest.prefix import API_PREFIX
 
@@ -54,6 +56,25 @@ _HANDLERS = {
 }
 
 
+def _static_index(_ctx: Any, _request: ServerRequest) -> ServerResponse:
+    resp = analytics_file_response("index.html")
+    if resp is None:
+        return ServerResponse(status=404, body={"error": "analytics_ui_missing"})
+    return resp
+
+
+def _static_asset(
+    _ctx: Any,
+    _request: ServerRequest,
+    *,
+    asset: str = "",
+) -> ServerResponse:
+    resp = analytics_file_response(asset or "index.html")
+    if resp is None:
+        return ServerResponse(status=404, body={"error": "not_found", "path": asset})
+    return resp
+
+
 def register_analytics_routes(
     registry: RouteRegistry,
     ctx: ServerContext,
@@ -68,6 +89,19 @@ def register_analytics_routes(
             handler=bind_handler(ctx, fn),
             surface=surface,
             auth_required=entry.auth_required,
+        )
+    # Dogfood UI (no auth — same as Portal shell; API still requires subject)
+    for path, handler in (
+        ("/analytics", _static_index),
+        ("/analytics/", _static_index),
+        ("/analytics/{asset}", _static_asset),
+    ):
+        registry.register(
+            method="GET",
+            path=path,
+            handler=bind_handler(ctx, handler),
+            surface=surface,
+            auth_required=False,
         )
 
 
