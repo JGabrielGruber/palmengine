@@ -10,6 +10,10 @@ from palm.core.resource.result import ProviderResult
 from palm.providers.palm.bindings.recursion.guard import PalmRecursionError
 from palm.providers.palm.exceptions import PalmProviderError, PalmTimeoutError
 from palm.providers.palm.flow.coordinator import PalmInvokeCoordinator
+from palm.providers.palm.bindings.resource.system_inspect import (
+    invoke_system_read,
+    is_system_read_action,
+)
 from palm.providers.palm.flow.params import PalmInvokeParams
 from palm.providers.palm.flow.target import parse_target
 
@@ -32,30 +36,41 @@ def invoke_action(
     )
     invoke_params = inject_parent_job_from_state(invoke_params, execution_state)
 
-    if action == "fetch":
-        return fetch_job(coordinator, name, action, invoke_params, resource_id=resource_id)
+    action_s = str(action or "").strip()
+    if action_s == "fetch":
+        return fetch_job(
+            coordinator, name, action_s, invoke_params, resource_id=resource_id
+        )
+
+    if is_system_read_action(action_s):
+        return invoke_system_read(
+            name=name,
+            action=action_s,
+            params=invoke_params,
+            resource_id=resource_id,
+        )
 
     try:
         target = parse_target(
-            action=action,
+            action=action_s,
             resource_id=resource_id,
             params=invoke_params.as_target_dict(),
         )
     except ValueError as exc:
-        return _fail(name, action, str(exc), resource_id=resource_id)
+        return _fail(name, action_s, str(exc), resource_id=resource_id)
 
     try:
-        payload = coordinator.invoke(action, target, invoke_params)
+        payload = coordinator.invoke(action_s, target, invoke_params)
     except PalmRecursionError as exc:
-        return _fail(name, action, str(exc), resource_id=resource_id)
+        return _fail(name, action_s, str(exc), resource_id=resource_id)
     except PalmTimeoutError as exc:
-        return _fail(name, action, str(exc), resource_id=resource_id)
+        return _fail(name, action_s, str(exc), resource_id=resource_id)
     except PalmProviderError as exc:
-        return _fail(name, action, str(exc), resource_id=resource_id)
+        return _fail(name, action_s, str(exc), resource_id=resource_id)
 
     return ProviderResult.ok(
         payload,
-        action=action,
+        action=action_s,
         provider=name,
         resource_id=resource_id or target.ref,
         mode="remote" if invoke_params.is_remote else "local",

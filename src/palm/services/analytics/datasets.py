@@ -22,6 +22,12 @@ READ_ACTION_ALLOWLIST = frozenset(
         "fetch",
         "read",
         "exists",
+        # palm provider system inspect
+        "list_jobs",
+        "list_instances",
+        "list_waiting",
+        "list_flows",
+        "list_resources",
     }
 )
 

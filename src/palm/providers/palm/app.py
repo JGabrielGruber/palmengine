@@ -29,7 +29,18 @@ class PalmProviderApp(ProviderApp):
         "instances",
         "runtimes.server",
     )
-    actions = ("submit_flow", "submit_process", "invoke_resource", "fetch")
+    actions = (
+        "submit_flow",
+        "submit_process",
+        "invoke_resource",
+        "fetch",
+        # system inspect (local + remote) — analytics-friendly tabular reads
+        "list_jobs",
+        "list_instances",
+        "list_waiting",
+        "list_flows",
+        "list_resources",
+    )
     registry_hooks = ("provider_registry", "runtime_binding", "runtime_accessor")
 
     def ready(self) -> None:
