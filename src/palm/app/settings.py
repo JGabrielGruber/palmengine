@@ -67,6 +67,13 @@ class PalmSettings(BaseSettings):
     resource_cache_results: bool = False
     resource_cache_ttl_seconds: float = 60.0
     resource_cache_max_entries: int = 256
+    # 0.35 analytics (BI exposure) — host wires AnalyticsService from these knobs
+    analytics_enabled: bool = True
+    analytics_allow_unpublished: bool = False
+    analytics_allow_unpublished_with_server: bool = False
+    analytics_default_limit: int = 1000
+    analytics_max_limit: int = 10_000
+    analytics_max_response_bytes: int = 2_000_000
 
     @classmethod
     def for_tests(
