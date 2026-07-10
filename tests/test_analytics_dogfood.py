@@ -1,58 +1,83 @@
-"""0.35.5 — analytics dogfood materialize + query."""
+"""Palm analytics dogfood — todos fact/view after materialize (and commit path)."""
 
 from __future__ import annotations
 
-from examples.definitions.analytics_dogfood import (
-    SEED_SALES_ROWS,
-    materialize_analytics_dogfood,
-    register_definitions,
+from examples.definitions.todo_builder import register_definitions as register_todo_builder
+from examples.definitions.todo_resources import (
+    SEED_TODO_ROWS,
+    materialize_todo_analytics,
 )
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.roles import HostProfile
 from palm.app.settings import PalmSettings
 
 
-def test_materialize_and_query_fact_and_view() -> None:
+def test_todo_analytics_materialize_and_query() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
         profile=HostProfile.all_in_one(),
     ) as host:
-        register_definitions(host.app.repository())
-        result = materialize_analytics_dogfood(host.execution.providers)
-        assert result["fact_rows"] == len(SEED_SALES_ROWS)
+        register_todo_builder(host.app.repository())
+        result = materialize_todo_analytics(host.execution.providers)
+        assert result["todo_rows"] == len(SEED_TODO_ROWS)
         assert result["fact_put"].get("success") is True
         assert result["view_put"].get("success") is True
 
         names = {r["dataset"] for r in host.analytics.list_datasets()}
-        assert "sales-facts-daily" in names
-        assert "sales-revenue-by-day" in names
+        assert "palm-todos" in names
+        assert "palm-todos-by-priority" in names
+        assert "sales-facts-daily" not in names
 
         table = host.analytics.query(
-            "sales-facts-daily",
+            "palm-todos",
             profile="table",
-            select=["day", "revenue", "orders"],
+            select=["title", "priority"],
         )
         assert table["status"] == "ok", table
-        assert table["data"]["columns"] == ["day", "revenue", "orders"]
-        assert len(table["data"]["rows"]) == 3
         assert table["lineage"]["kind"] == "fact"
+        assert len(table["data"]["rows"]) == len(SEED_TODO_ROWS)
 
         series = host.analytics.query(
-            "sales-revenue-by-day",
+            "palm-todos-by-priority",
             profile="series",
-            series={"x_field": "day", "y_fields": ["revenue"]},
+            series={"x_field": "priority", "y_fields": ["count"]},
         )
         assert series["status"] == "ok", series
         assert series["lineage"]["kind"] == "view"
-        assert series["lineage"]["derived_from"] == ["sales-facts-daily"]
-        points = series["data"]["series"][0]["points"]
-        assert points[0][0] == "2026-07-01"
-        assert points[0][1] == 1200.5
+        assert series["lineage"]["derived_from"] == ["palm-todos"]
 
-        kpi = host.analytics.query(
-            "sales-revenue-by-day",
-            profile="kpi",
-            kpi={"field": "revenue", "agg": "sum"},
+
+def test_todo_builder_commit_persists_kv() -> None:
+    with ApplicationHost(
+        settings=PalmSettings.for_tests(load_examples=False),
+        profile=HostProfile.all_in_one(),
+    ) as host:
+        register_todo_builder(host.app.repository())
+        from palm.patterns.wizard.bindings.compensation.handler import (
+            CommitContext,
+            default_commit_registry,
         )
-        assert kpi["status"] == "ok"
-        assert kpi["data"]["value"] == 1200.5 + 980.0 + 1505.25
+        from palm.states import BlackboardState
+
+        engine = host.app.runtime().resource
+        if not engine.is_initialized:
+            engine.initialize()
+        ctx = CommitContext(
+            wizard_name="todo-builder",
+            state=BlackboardState({}),
+            answers={
+                "todos": [
+                    {"title": "A", "priority": "high"},
+                    {"title": "B", "priority": "low"},
+                ]
+            },
+            hook_name="persist_todo_list",
+            resource_engine=engine,
+        )
+        result = default_commit_registry().run("persist_todo_list", ctx)
+        assert result.ok, result.error
+        assert result.data.get("persisted") is True
+
+        q = host.analytics.query("palm-todos", profile="table")
+        assert q["status"] == "ok"
+        assert q["meta"]["row_count"] == 2
