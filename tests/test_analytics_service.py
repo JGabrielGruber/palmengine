@@ -172,10 +172,23 @@ def test_allow_unpublished() -> None:
     assert out["data"]["rows"] == [[1]]
 
 
-def test_series_not_yet() -> None:
+def test_query_series_and_kpi() -> None:
+    payload = [
+        {"day": "d1", "revenue": 10},
+        {"day": "d2", "revenue": 30},
+    ]
     svc = _svc(
         {"sales": _pub("sales")},
-        {"sales": {"success": True, "data": [], "error": None}},
+        {"sales": {"success": True, "data": payload, "error": None}},
     )
-    out = svc.query("sales", profile="series")
-    assert out["code"] == "profile_not_implemented"
+    s = svc.query(
+        "sales",
+        profile="series",
+        series={"x_field": "day", "y_fields": ["revenue"]},
+    )
+    assert s["status"] == "ok"
+    assert s["data"]["series"][0]["points"][-1] == ["d2", 30]
+    k = svc.query("sales", profile="kpi", kpi={"field": "revenue", "agg": "sum"})
+    assert k["status"] == "ok"
+    assert k["data"]["value"] == 40.0
+    assert k["data"]["delta"] is None

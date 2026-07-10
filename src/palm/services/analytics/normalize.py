@@ -89,23 +89,6 @@ def estimate_bytes(obj: Any) -> int:
         return len(str(obj).encode("utf-8"))
 
 
-def present_raw(payload: Any) -> dict[str, Any]:
-    return {"payload": payload}
-
-
-def present_table(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """Minimal table profile (0.35.2); series/kpi grow in 0.35.3."""
-    columns: list[str] = []
-    seen: set[str] = set()
-    for row in rows:
-        for k in row:
-            if k not in seen:
-                seen.add(k)
-                columns.append(k)
-    body_rows = [[row.get(c) for c in columns] for row in rows]
-    return {"columns": columns, "rows": body_rows}
-
-
 __all__ = [
     "apply_limit",
     "apply_select",
@@ -113,6 +96,4 @@ __all__ = [
     "dotted_get",
     "estimate_bytes",
     "extract_payload",
-    "present_raw",
-    "present_table",
 ]

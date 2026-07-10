@@ -21,9 +21,8 @@ from palm.services.analytics.normalize import (
     coerce_rows,
     estimate_bytes,
     extract_payload,
-    present_raw,
-    present_table,
 )
+from palm.services.analytics.present.pipeline import present
 
 _PROFILES = frozenset({"raw", "table", "series", "kpi"})
 
@@ -95,6 +94,8 @@ class AnalyticsService(BaseService):
         params: dict[str, Any] | None = None,
         select: list[str] | None = None,
         limit: int | None = None,
+        series: dict[str, Any] | None = None,
+        kpi: dict[str, Any] | None = None,
         runtime_name: str | None = None,
     ) -> dict[str, Any]:
         """Gate → invoke → normalize (rows→select→limit) → present."""
@@ -105,12 +106,6 @@ class AnalyticsService(BaseService):
                 dataset,
                 f"Unknown profile {profile!r}",
                 code="invalid_profile",
-            )
-        if profile_s in {"series", "kpi"}:
-            return self._error(
-                dataset,
-                f"Profile {profile_s!r} ships in 0.35.3",
-                code="profile_not_implemented",
             )
 
         try:
@@ -145,7 +140,7 @@ class AnalyticsService(BaseService):
         payload = extract_payload(envelope, row_path=exposure.row_path)
 
         if profile_s == "raw":
-            data = present_raw(payload)
+            data = present("raw", payload=payload)
             size = estimate_bytes(data)
             if size > self._max_response_bytes:
                 return self._error(
@@ -182,7 +177,7 @@ class AnalyticsService(BaseService):
                 f"Response too large ({size} > {self._max_response_bytes})",
                 code="response_too_large",
             )
-        data = present_table(rows)
+        data = present(profile_s, rows=rows, series=series, kpi=kpi)
         present_ms = int((time.perf_counter() - t1) * 1000)
         return self._ok(
             name,

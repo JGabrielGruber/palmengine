@@ -8,7 +8,8 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 - **0.35.0** — [VISION-0.35](docs/VISION-0.35.md): BI **exposure** spine (sources → pipelines → published resources → AnalyticsService → present profiles → thin dashboard). Profiles mirror Assist *philosophy* (`raw`|`table`|`series`|`kpi`), not a second brain. Materialize-first; published-only + read-action allowlist. Implementation ladder 0.35.1–0.35.6.
 - **0.35.1** — `palm.services.analytics.exposure`: `parse_analytics_exposure` / `AnalyticsExposure` / `is_analytics_published` (known keys; unknown ignored; lenient + `strict=`).
-- **0.35.2** — `AnalyticsService` (`list_datasets` / `describe` / `query`): published gate, read-action allowlist, normalize (rows→select→limit→table|raw), PalmSettings analytics knobs. series/kpi deferred to 0.35.3.
+- **0.35.2** — `AnalyticsService` (`list_datasets` / `describe` / `query`): published gate, read-action allowlist, normalize (rows→select→limit→table|raw), PalmSettings analytics knobs.
+- **0.35.3** — Present profiles `raw`|`table`|`series`|`kpi` under `analytics/present/`; query accepts `series`/`kpi` options.
 
 ## [0.34.5] — 2026-07-09
 
