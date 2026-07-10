@@ -454,7 +454,19 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.35.5 | Example materialize fact+view dogfood | ✅ |
 | 0.35.6 | Static `/analytics` table+chart dogfood | ✅ |
 | 0.35.7 | Palm dogfood: todo-builder kv + todo-analytics flow + datasets | ✅ |
-| 0.35.8+ | DashboardDefinition, schedule refresh, filters | ⬜ Open |
+| 0.35.8+ | Absorbed into 0.36+ charter (virtual views, triggers, work intents) | → 0.36 |
+
+### 0.36+ — Reactive platform evolution
+
+**Vision:** [docs/VISION-0.36.md](docs/VISION-0.36.md)  
+**Theme:** Virtual analytics views · definition triggers (schedule / on_flow / on_resource) · WorkIntent enqueue-when-triggered, run-when-able · event journal (not tiered-KV-as-Kafka) · DashboardDefinition later. **No fat WorkEngine in core.**
+
+| Train | Focus | Status |
+|-------|--------|--------|
+| 0.36 | Virtual views, schema roles, doctor, assist datasets | ⬜ Vision |
+| 0.37 | WorkIntent + triggers + resource.changed + drain | ⬜ Vision |
+| 0.38 | Journal / offsets / redrive | ⬜ Vision |
+| 0.39 | DashboardDefinition | ⬜ Vision |
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.
 
