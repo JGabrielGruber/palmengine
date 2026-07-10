@@ -12,6 +12,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.35.3** — Present profiles `raw`|`table`|`series`|`kpi` under `analytics/present/`; query accepts `series`/`kpi` options.
 - **0.35.4a** — `ApplicationHost.analytics` + `ServerContext.analytics` (standalone, host, `attach_host`); settings knobs applied on host.
 - **0.35.4b** — REST `GET/POST /v1/api/analytics/datasets|query` (auth required); error map 404/403/502.
+- **0.35.5** — `examples/definitions/analytics_dogfood.py`: materialize sales fact + revenue view into `kv`; query table/series/kpi.
 
 ## [0.34.5] — 2026-07-09
 
