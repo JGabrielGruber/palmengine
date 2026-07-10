@@ -19,6 +19,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.36+ charter** — [VISION-0.36](docs/VISION-0.36.md): reactive platform (virtual views, triggers, WorkIntent run-when-able, event journal); long-horizon beyond 0.35.
 - **0.36** — Virtual analytics views (`source` + `transform` + `materialize`); `describe` field roles; doctor `resource_preflight.analytics`; assist menu **datasets**; todos `palm-todos-by-priority` is virtual `count_by`.
 - **0.37 foundation** — Pure `WorkIntent` (core); `WorkIntentStore` + coalesce; trigger parse/registry; `resource.changed` on mutating provider invoke; `WorkDrainService` + `host.tick_work()` (run-when-able).
+- **0.38 foundation** — `EventJournal` (append/read_after/consume offsets); `wire_event_journal` interceptor; compact key for `resource.changed`; `host.control_plane_status()` / `redrive_journal()`.
 
 ## [0.34.5] — 2026-07-09
 

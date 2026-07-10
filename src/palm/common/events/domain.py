@@ -27,6 +27,12 @@ CRITICAL_EVENT_TYPES: frozenset[str] = frozenset(
         "job.status_changed",
         "job.completed",
         "wizard.completed",
+        "resource.changed",
+        "flow.session.succeeded",
+        "flow.session.failed",
+        "work.intent.enqueued",
+        "work.intent.succeeded",
+        "work.intent.failed",
     }
 )
 

@@ -465,7 +465,7 @@ just mcp-inspector                       # MCP Inspector UI
 |-------|--------|--------|
 | 0.36 | Virtual views, schema roles, doctor, assist datasets | ✅ Shipped |
 | 0.37 | WorkIntent + triggers + resource.changed + drain | ✅ Foundation |
-| 0.38 | Journal / offsets / redrive | ⬜ Vision |
+| 0.38 | Journal / offsets / redrive | ✅ Foundation |
 | 0.39 | DashboardDefinition | ⬜ Vision |
 
 **Also tracked:** [weak-LLM deferred](docs/superpowers/specs/2026-07-01-assistant-weak-llm-improvements-design.md) — `palm-compose-guide`, process handoff · **0.23.2** mutation gate (local). WebSocket assist stream **moves into 0.32**.

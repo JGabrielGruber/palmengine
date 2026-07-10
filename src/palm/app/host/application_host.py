@@ -119,6 +119,7 @@ class ApplicationHost:
         self._design: Any | None = None
         self._analytics: Any | None = None
         self._work_drain: Any | None = None
+        self._event_journal: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -179,6 +180,11 @@ class ApplicationHost:
     def work_drain(self):
         """WorkIntent drain (0.37) — run-when-able deferred flows."""
         return self._work_drain
+
+    @property
+    def event_journal(self):
+        """Append-only event journal (0.38) — offsets + redrive."""
+        return self._event_journal
 
     @property
     def router(self) -> RuntimeRouter:
@@ -593,6 +599,7 @@ class ApplicationHost:
             enabled=bool(settings.analytics_enabled),
         )
         self._wire_work_drain()
+        self._wire_event_journal()
         from palm.services._cqrs_wiring import wire_all_service_cqrs
         from palm.services.design.contributors import wire_builtin_design_contributors
 
@@ -756,6 +763,55 @@ class ApplicationHost:
             n += self._work_drain.tick_schedules()
         n += self._work_drain.tick(limit=limit)
         return n
+
+    def control_plane_status(self) -> dict[str, Any]:
+        """Pending work + journal lag for doctor/ops (0.38)."""
+        work_pending = 0
+        if self._work_drain is not None:
+            work_pending = self._work_drain.store.pending_count()
+        journal_status: dict[str, Any] = {}
+        if self._event_journal is not None:
+            journal_status = self._event_journal.status(
+                consumers=["work_drain", "webhooks", "projections"]
+            )
+        outbox_pending = 0
+        if self._outbox_service is not None:
+            outbox_pending = self._outbox_service.store.pending_count()
+        return {
+            "work_pending": work_pending,
+            "outbox_pending": outbox_pending,
+            "journal": journal_status,
+        }
+
+    def redrive_journal(
+        self,
+        *,
+        from_offset: int = 0,
+        to_offset: int | None = None,
+        event_types: list[str] | None = None,
+        limit: int = 100,
+    ) -> list[dict[str, Any]]:
+        """Replay journal entries for operator tooling (does not move consumer offsets)."""
+        if self._event_journal is None:
+            return []
+        types = frozenset(event_types) if event_types else None
+        entries = self._event_journal.redrive(
+            from_offset=from_offset,
+            to_offset=to_offset,
+            event_types=types,
+            limit=limit,
+        )
+        return [e.to_dict() for e in entries]
+
+    def _wire_event_journal(self) -> None:
+        if not self._app.storage.is_initialized:
+            return
+        if not self._event.is_initialized:
+            return
+        from palm.common.events import wire_event_journal
+
+        journal, _sub = wire_event_journal(self._event, self._app.storage)
+        self._event_journal = journal
 
     def _start_outbox_service(self) -> None:
         if not self._app.storage.is_initialized:
