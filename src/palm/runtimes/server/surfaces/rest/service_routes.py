@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from palm.runtimes.server.surfaces.rest.analytics.routes import register_analytics_routes
 from palm.runtimes.server.surfaces.rest.assist.routes import register_assist_routes
 from palm.runtimes.server.surfaces.rest.definitions.routes import register_definitions_routes
 from palm.runtimes.server.surfaces.rest.design.routes import register_design_routes
@@ -26,6 +27,7 @@ def register_service_routes(
     """Register definitions, flows, and system routes from runtime-owned tables."""
     register_definitions_routes(registry, ctx, surface=surface)
     register_design_routes(registry, ctx, surface=surface)
+    register_analytics_routes(registry, ctx, surface=surface)
     register_assist_routes(registry, ctx, surface=surface)
     register_flow_routes(registry, ctx, surface=surface)
     register_process_routes(registry, ctx, surface=surface)

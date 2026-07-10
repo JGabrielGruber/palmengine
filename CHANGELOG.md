@@ -11,6 +11,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.35.2** — `AnalyticsService` (`list_datasets` / `describe` / `query`): published gate, read-action allowlist, normalize (rows→select→limit→table|raw), PalmSettings analytics knobs.
 - **0.35.3** — Present profiles `raw`|`table`|`series`|`kpi` under `analytics/present/`; query accepts `series`/`kpi` options.
 - **0.35.4a** — `ApplicationHost.analytics` + `ServerContext.analytics` (standalone, host, `attach_host`); settings knobs applied on host.
+- **0.35.4b** — REST `GET/POST /v1/api/analytics/datasets|query` (auth required); error map 404/403/502.
 
 ## [0.34.5] — 2026-07-09
 
