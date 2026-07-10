@@ -42,6 +42,12 @@ def test_local_list_flows_and_analytics() -> None:
         assert "palm-system-jobs" in names
         assert "palm-system-instances" in names
 
+        per_flow = host.analytics.query(
+            "palm-system-instances-per-flow", profile="table"
+        )
+        assert per_flow["status"] == "ok", per_flow
+        assert per_flow["meta"].get("virtual") is True
+
         dash = host.analytics.render_dashboard("palm-system")
         assert dash["status"] == "ok", dash
-        assert len(dash["tiles"]) >= 3
+        assert len(dash["tiles"]) >= 4

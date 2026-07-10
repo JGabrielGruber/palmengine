@@ -66,6 +66,33 @@ PALM_SYSTEM_RESOURCES = _sys(
     title="Resource catalog",
 )
 
+# Virtual view: instances grouped by flow_name (analytics query-time count_by)
+PALM_SYSTEM_INSTANCES_PER_FLOW = ResourceDefinition(
+    id="resource-palm-system-instances-per-flow",
+    name="palm-system-instances-per-flow",
+    provider=_PALM,
+    action="list_instances",  # catalog identity; virtual path never invokes this action
+    resource_id="list_instances",
+    params={},
+    metadata={
+        "description": "Instance counts per flow (virtual view over palm-system-instances)",
+        "tags": ["palm", "system", "ops", "bi", "view"],
+        "analytics": {
+            "published": True,
+            "kind": "view",
+            "source": "palm-system-instances",
+            "materialize": False,
+            "transform": {"op": "count_by", "field": "flow_name"},
+            "derived_from": ["palm-system-instances"],
+            "default_profile": "series",
+            "fields": [
+                {"name": "flow_name", "role": "dimension"},
+                {"name": "count", "role": "measure", "type": "integer"},
+            ],
+        },
+    },
+)
+
 
 def register_definitions(repository: object) -> None:
     save = getattr(repository, "save_resource", None)
@@ -77,6 +104,7 @@ def register_definitions(repository: object) -> None:
         PALM_SYSTEM_INSTANCES,
         PALM_SYSTEM_FLOWS,
         PALM_SYSTEM_RESOURCES,
+        PALM_SYSTEM_INSTANCES_PER_FLOW,
     ):
         save(res)
 
@@ -84,6 +112,7 @@ def register_definitions(repository: object) -> None:
 __all__ = [
     "PALM_SYSTEM_FLOWS",
     "PALM_SYSTEM_INSTANCES",
+    "PALM_SYSTEM_INSTANCES_PER_FLOW",
     "PALM_SYSTEM_JOBS",
     "PALM_SYSTEM_RESOURCES",
     "PALM_SYSTEM_WAITING",

@@ -4,24 +4,34 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Added — BI data plane vision (0.35.0)
+## [0.39.0] — 2026-07-10
 
-- **0.35.0** — [VISION-0.35](docs/VISION-0.35.md): BI **exposure** spine (sources → pipelines → published resources → AnalyticsService → present profiles → thin dashboard). Profiles mirror Assist *philosophy* (`raw`|`table`|`series`|`kpi`), not a second brain. Materialize-first; published-only + read-action allowlist. Implementation ladder 0.35.1–0.35.6.
-- **0.35.1** — `palm.services.analytics.exposure`: `parse_analytics_exposure` / `AnalyticsExposure` / `is_analytics_published` (known keys; unknown ignored; lenient + `strict=`).
-- **0.35.2** — `AnalyticsService` (`list_datasets` / `describe` / `query`): published gate, read-action allowlist, normalize (rows→select→limit→table|raw), PalmSettings analytics knobs.
-- **0.35.3** — Present profiles `raw`|`table`|`series`|`kpi` under `analytics/present/`; query accepts `series`/`kpi` options.
-- **0.35.4a** — `ApplicationHost.analytics` + `ServerContext.analytics` (standalone, host, `attach_host`); settings knobs applied on host.
-- **0.35.4b** — REST `GET/POST /v1/api/analytics/datasets|query` (auth required); error map 404/403/502.
-- **0.35.5** — `examples/definitions/analytics_dogfood.py`: materialize sales fact + revenue view into `kv`; query table/series/kpi.
-- **0.35.6** — Static dogfood UI `GET /analytics/` (table + canvas chart); paints REST only.
-- **0.35.7** — **Palm** analytics dogfood (not sales BI): `todo-builder` commit → `kv` (`palm-todos` + `palm-todos-by-priority`); flow **`todo-analytics`** load+rebuild; `/analytics` presents definition-backed datasets.
-- **Examples packs** — bootstrap loads `examples/definitions/<pack>/` via ordered `__init__.py` (`coconut/`, `todos/`); removed glue `analytics_dogfood.py` and sibling-import hacks.
-- **0.36+ charter** — [VISION-0.36](docs/VISION-0.36.md): reactive platform (virtual views, triggers, WorkIntent run-when-able, event journal); long-horizon beyond 0.35.
-- **0.36** — Virtual analytics views (`source` + `transform` + `materialize`); `describe` field roles; doctor `resource_preflight.analytics`; assist menu **datasets**; todos `palm-todos-by-priority` is virtual `count_by`.
-- **0.37 foundation** — Pure `WorkIntent` (core); `WorkIntentStore` + coalesce; trigger parse/registry; `resource.changed` on mutating provider invoke; `WorkDrainService` + `host.tick_work()` (run-when-able).
-- **0.38 foundation** — `EventJournal` (append/read_after/consume offsets); `wire_event_journal` interceptor; compact key for `resource.changed`; `host.control_plane_status()` / `redrive_journal()`.
-- **0.39 foundation** — `DashboardDefinition` / `DashboardTile`; registry + `render_dashboard`; REST dashboards; static UI dashboard mode; todos `palm-todos` dashboard; [ADR-014](docs/adr/014-dashboard-definitions.md).
-- **Palm provider system inspect** — `list_jobs` / `list_instances` / `list_waiting` / `list_flows` / `list_resources` (local + remote); analytics allowlist; pack `examples/definitions/system/` + `palm-system` dashboard.
+**Bundled release since 0.34.5** — **Analytics data plane** (0.35–0.36) · **WorkIntent / triggers / journal** (0.37–0.38) · **Dashboards** (0.39) · **Palm provider system inspect** + ops datasets.
+
+**Checklist:** [RELEASE-0.39.0.md](RELEASE-0.39.0.md) · **Vision:** [VISION-0.35](docs/VISION-0.35.md) · [VISION-0.36](docs/VISION-0.36.md)
+
+### Added — Analytics data plane (0.35–0.36)
+
+- **0.35** — `AnalyticsService` (list/describe/query), published resources, present profiles `raw|table|series|kpi`, REST `/v1/api/analytics/*`, static `/analytics/`, todos dogfood + definition packs (`coconut/`, `todos/`).
+- **0.36** — Virtual views (`source` + `transform` + `materialize`); `count_by`; field roles on describe; doctor analytics preflight; assist menu **datasets**; `palm-todos-by-priority` virtual.
+
+### Added — Reactive control plane (0.37–0.38)
+
+- **0.37** — Pure `WorkIntent`; durable store + coalesce; triggers parse/registry; `resource.changed` on mutating invoke; `WorkDrainService` + `host.tick_work()` (run-when-able).
+- **0.38** — `EventJournal` (offsets, consume, compact keys, redrive); `host.control_plane_status()` / `redrive_journal()`.
+
+### Added — Dashboards & system ops (0.39 + provider)
+
+- **0.39** — `DashboardDefinition` / `DashboardTile`; render loop; REST dashboards; UI dashboard mode; [ADR-014](docs/adr/014-dashboard-definitions.md).
+- **Palm provider** — system-read actions `list_jobs|instances|waiting|flows|resources` (local + remote).
+- **Pack `system/`** — ops datasets + dashboard **`palm-system`** + virtual **`palm-system-instances-per-flow`** (`count_by` `flow_name`).
+
+### Upgrade notes
+
+- Non-breaking for existing MCP/REST flows; new optional surfaces only.
+- Hello/version reports **0.39.0**.
+- Work drain is **explicit** (`tick_work`); not a continuous Kafka consumer.
+- Dashboard registry is in-process (reloaded with example packs on host start).
 
 ## [0.34.5] — 2026-07-09
 

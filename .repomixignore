@@ -1,14 +1,14 @@
 **/*.log
 tmp/
 archive/
-docs/
+# docs/
 # src/palm/runtimes/server/surfaces/ssr/
-tests/
+# tests/
 repomix.config.json
 
 # src/palm/runtimes/cli/
 # src/palm/storages/
 
-README.md
-ARCHITECTURE.md
-DEVELOPMENT.md
+# README.md
+# ARCHITECTURE.md
+# DEVELOPMENT.md

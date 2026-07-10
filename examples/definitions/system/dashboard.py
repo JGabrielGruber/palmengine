@@ -33,6 +33,21 @@ SYSTEM_OPS_DASHBOARD = DashboardDefinition(
             limit=50,
         ),
         DashboardTile(
+            id="instances_per_flow-table",
+            dataset="palm-system-instances-per-flow",
+            profile="table",
+            title="Instances per flow",
+            limit=50,
+        ),
+        DashboardTile(
+            id="instances_per_flow_graph",
+            dataset="palm-system-instances-per-flow",
+            profile="series",
+            title="Instances per flow graph",
+            series={"x_field": "flow_name", "y_fields": ["count"]},
+            limit=50,
+        ),
+        DashboardTile(
             id="flows",
             dataset="palm-system-flows",
             profile="table",
