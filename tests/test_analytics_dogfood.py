@@ -1,4 +1,4 @@
-"""Palm todos analytics dogfood — package ``examples.definitions.todos``."""
+"""Todos pack — materialize + query; bootstrap package load."""
 
 from __future__ import annotations
 
@@ -10,11 +10,6 @@ from examples.definitions.todos.resources import (
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.roles import HostProfile
 from palm.app.settings import PalmSettings
-from palm.patterns.wizard.bindings.compensation.handler import (
-    CommitContext,
-    default_commit_registry,
-)
-from palm.states import BlackboardState
 
 
 def test_todo_package_materialize_and_query() -> None:
@@ -46,37 +41,7 @@ def test_todo_package_materialize_and_query() -> None:
         assert series["lineage"]["derived_from"] == ["palm-todos"]
 
 
-def test_todo_builder_commit_persists_kv() -> None:
-    with ApplicationHost(
-        settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.all_in_one(),
-    ) as host:
-        register_todos(host.app.repository())
-        engine = host.app.runtime().resource
-        if not engine.is_initialized:
-            engine.initialize()
-        ctx = CommitContext(
-            wizard_name="todo-builder",
-            state=BlackboardState({}),
-            answers={
-                "todos": [
-                    {"title": "A", "priority": "high"},
-                    {"title": "B", "priority": "low"},
-                ]
-            },
-            hook_name="persist_todo_list",
-            resource_engine=engine,
-        )
-        result = default_commit_registry().run("persist_todo_list", ctx)
-        assert result.ok, result.error
-        assert result.data.get("persisted") is True
-        q = host.analytics.query("palm-todos", profile="table")
-        assert q["status"] == "ok"
-        assert q["meta"]["row_count"] == 2
-
-
-def test_bootstrap_loads_definition_packages() -> None:
-    """Packages under examples/definitions/ register via ordered __init__."""
+def test_bootstrap_loads_todos_and_coconut_packs() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=True),
         profile=HostProfile.all_in_one(),

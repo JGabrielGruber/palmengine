@@ -1,8 +1,10 @@
 """
-Todo analytics interaction flow — load stored todos and rebuild published views.
+Todo analytics refresh — **definition-only** flow (no Python rebuild hook).
 
-Resources alone are not the product; this flow is the operator path that
-**uses** the definitions.
+1. Load ``palm-todos``
+2. Extract list (``jsonpath_extract`` path=value)
+3. ``count_by`` priority
+4. Put ``put-palm-todos-by-priority``
 
 ::
 
@@ -11,15 +13,7 @@ Resources alone are not the product; this flow is the operator path that
 
 from __future__ import annotations
 
-from typing import Any
-
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard.bindings.compensation.handler import (
-    CommitResult,
-    default_commit_registry,
-)
-
-from .resources import priority_rollup
 
 TODO_ANALYTICS_FLOW = FlowDefinition(
     id="flow-todo-analytics",
@@ -27,28 +21,54 @@ TODO_ANALYTICS_FLOW = FlowDefinition(
     pattern="wizard",
     options={
         "include_summary": True,
-        "include_commit": True,
-        "commit_hook": "rebuild_todo_analytics",
+        "include_commit": False,
         "allow_backtrack": True,
         "steps": [
             {
                 "slug": "intro",
-                "title": "Palm todo analytics",
+                "title": "Refresh todo analytics",
                 "prompt": (
-                    "Palm dogfood analytics — not a business BI demo. "
-                    "Load todos persisted by todo-builder, then rebuild the "
-                    "published priority view for /analytics and AnalyticsService."
+                    "Palm dogfood — reload stored todos and rebuild the published "
+                    "priority view with transform count_by + resource put "
+                    "(no custom commit code)."
                 ),
                 "step_kind": "introduction",
                 "required": False,
             },
             {
                 "slug": "load_todos",
-                "title": "Load stored todos",
-                "prompt": "Fetch palm-todos from kv",
+                "title": "Load palm-todos",
+                "prompt": "kv get → todo_payload",
                 "step_kind": "resource",
                 "resource_ref": "palm-todos",
-                "output_key": "todo_store",
+                "output_key": "todo_payload",
+            },
+            {
+                "slug": "extract_items",
+                "title": "Extract todo rows",
+                "prompt": "jsonpath_extract value → todos",
+                "step_kind": "transform",
+                "source_key": "todo_payload",
+                "target_key": "todos",
+                "rule": "jsonpath_extract",
+                "options": {"path": "value", "default": []},
+            },
+            {
+                "slug": "rollup_priority",
+                "title": "Roll up by priority",
+                "prompt": "count_by priority → todos_by_priority",
+                "step_kind": "transform",
+                "source_key": "todos",
+                "target_key": "todos_by_priority",
+                "rule": "count_by",
+                "options": {"field": "priority"},
+            },
+            {
+                "slug": "save_priority_view",
+                "title": "Save priority view",
+                "prompt": "put-palm-todos-by-priority",
+                "step_kind": "resource",
+                "resource_ref": "put-palm-todos-by-priority",
             },
         ],
     },
@@ -60,59 +80,12 @@ TODO_ANALYTICS_PROCESS = ProcessDefinition(
     flows=[TODO_ANALYTICS_FLOW],
     metadata={
         "example": True,
-        "description": "Interactive refresh of palm-todos analytics views",
+        "description": "Definition-only rebuild of palm-todos-by-priority",
     },
 )
 
 
-def _items_from_store(store: Any) -> list[dict[str, Any]]:
-    if not isinstance(store, dict):
-        return []
-    value = store.get("value") if "value" in store else store
-    if isinstance(value, dict):
-        items = value.get("items")
-        if isinstance(items, list):
-            return [i for i in items if isinstance(i, dict)]
-    items = store.get("items")
-    if isinstance(items, list):
-        return [i for i in items if isinstance(i, dict)]
-    return []
-
-
-def _rebuild_todo_analytics(ctx: object) -> CommitResult:
-    answers = getattr(ctx, "answers", {}) or {}
-    items = _items_from_store(answers.get("todo_store"))
-    if not items:
-        return CommitResult.failure(
-            "No todos loaded — run todo-builder first or seed materialize_todo_analytics"
-        )
-    fact = {"items": items, "count": len(items)}
-    view = {"items": priority_rollup(items)}
-    engine = getattr(ctx, "resource_engine", None)
-    if engine is None:
-        return CommitResult.failure("ResourceEngine not available")
-    if not getattr(engine, "is_initialized", True):
-        engine.initialize()
-    put_fact = engine.invoke("put-palm-todos", params={"value": fact})
-    if not put_fact.success:
-        return CommitResult.failure(put_fact.error or "put palm-todos failed")
-    put_view = engine.invoke("put-palm-todos-by-priority", params={"value": view})
-    if not put_view.success:
-        return CommitResult.failure(put_view.error or "put priority view failed")
-    return CommitResult.success(
-        {
-            "count": len(items),
-            "priority_rollup": view["items"],
-            "datasets": ["palm-todos", "palm-todos-by-priority"],
-        }
-    )
-
-
 def register_definitions(repository: object) -> None:
-    """Register flow/process + commit hook only (resources via package ``__init__``)."""
-    default_commit_registry().register(
-        "rebuild_todo_analytics", _rebuild_todo_analytics
-    )
     save_flow = getattr(repository, "save_flow", None)
     save_process = getattr(repository, "save_process", None)
     if callable(save_flow):

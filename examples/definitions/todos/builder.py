@@ -1,7 +1,13 @@
 """
-Todo list builder — collection wizard with durable kv + Palm analytics publish.
+Todo builder — **definition-only** persist path.
 
-Commit invokes resource **names** registered by ``todos.resources`` (no cross-glue).
+After the collection step, the wizard:
+
+1. ``count_by`` priority → ``todos_by_priority``
+2. ``put-palm-todos`` (resource) from ``state.todos``
+3. ``put-palm-todos-by-priority`` from ``state.todos_by_priority``
+
+No commit hooks. Same pattern as coconut resource steps.
 
 ::
 
@@ -11,12 +17,6 @@ Commit invokes resource **names** registered by ``todos.resources`` (no cross-gl
 from __future__ import annotations
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard.bindings.compensation.handler import (
-    CommitResult,
-    default_commit_registry,
-)
-
-from .resources import priority_rollup
 
 TODO_ITEM_SCHEMA = {
     "type": "object",
@@ -45,18 +45,15 @@ TODO_BUILDER_FLOW = FlowDefinition(
     },
     options={
         "include_summary": True,
-        "include_commit": True,
-        "commit_hook": "persist_todo_list",
+        "include_commit": False,
         "allow_backtrack": True,
         "steps": [
             {
                 "slug": "intro",
                 "title": "Welcome",
                 "prompt": (
-                    "Let's build your todo list. You'll add items one at a time, "
-                    "then review everything before saving. "
-                    "On commit, Palm persists the list to kv and refreshes "
-                    "published analytics datasets (palm-todos)."
+                    "Build a todo list. On finish, Palm runs transform + resource "
+                    "steps to persist kv facts for Analytics (palm-todos)."
                 ),
                 "step_kind": "introduction",
                 "required": False,
@@ -65,8 +62,7 @@ TODO_BUILDER_FLOW = FlowDefinition(
                 "slug": "todos",
                 "title": "Todo List",
                 "prompt": (
-                    "Manage your todos — add items, edit/remove by number or title "
-                    "search, then continue."
+                    "Manage your todos — add items, edit/remove, then continue."
                 ),
                 "step_kind": "collection",
                 "collection_key": "todos",
@@ -109,6 +105,30 @@ TODO_BUILDER_FLOW = FlowDefinition(
                     },
                 ],
             },
+            {
+                "slug": "rollup_priority",
+                "title": "Roll up by priority",
+                "prompt": "count_by priority → todos_by_priority",
+                "step_kind": "transform",
+                "source_key": "todos",
+                "target_key": "todos_by_priority",
+                "rule": "count_by",
+                "options": {"field": "priority"},
+            },
+            {
+                "slug": "save_todos",
+                "title": "Save todos",
+                "prompt": "Persist list to kv (put-palm-todos)",
+                "step_kind": "resource",
+                "resource_ref": "put-palm-todos",
+            },
+            {
+                "slug": "save_priority_view",
+                "title": "Save priority view",
+                "prompt": "Persist rollup to kv (put-palm-todos-by-priority)",
+                "step_kind": "resource",
+                "resource_ref": "put-palm-todos-by-priority",
+            },
         ],
     },
 )
@@ -119,58 +139,12 @@ TODO_BUILDER_PROCESS = ProcessDefinition(
     flows=[TODO_BUILDER_FLOW],
     metadata={
         "example": True,
-        "description": "Dynamic todo list with durable kv and Palm analytics",
+        "description": "Todo collection + definition-only kv/analytics publish",
     },
 )
 
 
-def _persist_todo_list(ctx: object) -> CommitResult:
-    answers = getattr(ctx, "answers", {}) or {}
-    todos = answers.get("todos")
-    if not isinstance(todos, list) or not todos:
-        return CommitResult.failure("Todo list is empty")
-
-    items = [t for t in todos if isinstance(t, dict)]
-    if not items:
-        return CommitResult.failure("Todo list is empty")
-
-    fact = {"items": items, "count": len(items)}
-    view = {"items": priority_rollup(items)}
-    engine = getattr(ctx, "resource_engine", None)
-    persisted = False
-    if engine is not None:
-        if not getattr(engine, "is_initialized", False):
-            engine.initialize()
-        put_fact = engine.invoke("put-palm-todos", params={"value": fact})
-        if not put_fact.success:
-            return CommitResult.failure(
-                put_fact.error or "Failed to persist todos to kv"
-            )
-        put_view = engine.invoke(
-            "put-palm-todos-by-priority", params={"value": view}
-        )
-        if not put_view.success:
-            return CommitResult.failure(
-                put_view.error or "Failed to persist priority view"
-            )
-        persisted = True
-
-    return CommitResult.success(
-        {
-            "todos": items,
-            "count": len(items),
-            "persisted": persisted,
-            "analytics": {
-                "datasets": ["palm-todos", "palm-todos-by-priority"],
-                "priority_rollup": view["items"],
-            },
-        }
-    )
-
-
 def register_definitions(repository: object) -> None:
-    """Register flow/process + commit hook only (resources via package ``__init__``)."""
-    default_commit_registry().register("persist_todo_list", _persist_todo_list)
     save_flow = getattr(repository, "save_flow", None)
     save_process = getattr(repository, "save_process", None)
     if callable(save_flow):

@@ -6,6 +6,7 @@ from palm.common.transforms.registration import register_transform
 from palm.common.transforms.rules.calculate import CalculateRule
 from palm.common.transforms.rules.callable_rule import CallableRule
 from palm.common.transforms.rules.conditional import ConditionalRule
+from palm.common.transforms.rules.count_by import CountByRule
 from palm.common.transforms.rules.csv_dump import CsvDumpRule
 from palm.common.transforms.rules.csv_load import CsvLoadRule
 from palm.common.transforms.rules.date_format import DateFormatRule
@@ -32,6 +33,7 @@ def register_builtin_rules() -> None:
     register_transform("rename_field", RenameFieldRule)
     register_transform("map_fields", MapFieldsRule)
     register_transform("filter_items", FilterItemsRule)
+    register_transform("count_by", CountByRule)
     register_transform("callable", CallableRule)
     register_transform("string_format", StringFormatRule)
     register_transform("jsonpath_extract", JsonpathExtractRule)

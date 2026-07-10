@@ -1,17 +1,15 @@
 """
-Todos example pack — durable list wizard + Palm analytics dogfood.
+Todos pack — definition-only durable list + analytics refresh.
 
-Registration order:
+Order: **resources → builder → analytics** (resource_ref by name).
 
-1. **resources** — kv put/get + published analytics datasets  
-2. **builder** — ``todo-builder`` flow (commit → persist)  
-3. **analytics** — ``todo-analytics`` flow (load + rebuild views)
+Flows use resource + transform steps only (``count_by``, no commit hooks).
 
 ::
 
     palm flow start todo-builder
     palm flow start todo-analytics
-    # GET /analytics/ → palm-todos, palm-todos-by-priority
+    # GET /analytics/ → palm-todos · palm-todos-by-priority
 """
 
 from __future__ import annotations
@@ -27,7 +25,6 @@ __all__ = [
 
 
 def register_definitions(repository: object) -> None:
-    """Register todo resources, then builder, then analytics interaction flow."""
     resources.register_definitions(repository)
     builder.register_definitions(repository)
     analytics.register_definitions(repository)
