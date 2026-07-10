@@ -118,6 +118,7 @@ class ApplicationHost:
         self._assist: Any | None = None
         self._design: Any | None = None
         self._analytics: Any | None = None
+        self._work_drain: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -173,6 +174,11 @@ class ApplicationHost:
     def analytics(self):
         """Analytics service API — BI describe/query (0.35)."""
         return self._analytics
+
+    @property
+    def work_drain(self):
+        """WorkIntent drain (0.37) — run-when-able deferred flows."""
+        return self._work_drain
 
     @property
     def router(self) -> RuntimeRouter:
@@ -548,6 +554,7 @@ class ApplicationHost:
                 **bus_kw,
                 runtime_resolver=self._resolve_execution_runtime,
                 definitions=self._definitions,
+                event_engine=self._event,
             ),
             processes=ProcessExecutionService(
                 **bus_kw,
@@ -585,6 +592,7 @@ class ApplicationHost:
             max_response_bytes=int(settings.analytics_max_response_bytes),
             enabled=bool(settings.analytics_enabled),
         )
+        self._wire_work_drain()
         from palm.services._cqrs_wiring import wire_all_service_cqrs
         from palm.services.design.contributors import wire_builtin_design_contributors
 
@@ -702,6 +710,52 @@ class ApplicationHost:
         options = dict(merged)
         options["scheduler"] = "queued"
         return options
+
+    def _wire_work_drain(self) -> None:
+        """WorkIntent queue + trigger attach (0.37). Drain is explicit via tick()."""
+        if not self._app.storage.is_initialized:
+            return
+        from palm.app.host.work_drain_service import WorkDrainService
+
+        def _submit(flow_id: str, payload: dict[str, Any]) -> Any:
+            # Non-interactive start; wait for idle when possible
+            return self._execution.flows.run_wizard(
+                {"flow_name": flow_id, "metadata": dict(payload or {})}
+            )
+
+        self._work_drain = WorkDrainService(
+            self._app.storage,
+            submit_flow=_submit,
+            event_engine=self._event,
+            able=lambda: self._started,
+        )
+        if self._event.is_initialized:
+            self._work_drain.attach_events(self._event)
+        # Load triggers from flow catalog (metadata when available)
+        try:
+            rows = self._definitions.list_flows() or []
+            def _meta(name: str) -> dict[str, Any] | None:
+                try:
+                    detail = self._definitions.get_flow(name, verbose=True)
+                except Exception:
+                    return None
+                if isinstance(detail, dict):
+                    return detail.get("metadata") or detail.get("options")
+                return None
+
+            self._work_drain.reload_triggers(rows, get_metadata=_meta)
+        except Exception:
+            pass
+
+    def tick_work(self, *, limit: int = 10, schedules: bool = True) -> int:
+        """Process due WorkIntents (and optional schedule triggers). Returns count."""
+        if self._work_drain is None:
+            return 0
+        n = 0
+        if schedules:
+            n += self._work_drain.tick_schedules()
+        n += self._work_drain.tick(limit=limit)
+        return n
 
     def _start_outbox_service(self) -> None:
         if not self._app.storage.is_initialized:

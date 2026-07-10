@@ -27,11 +27,13 @@ class ProviderExecutionService(BaseService):
         runtime: BaseRuntime | None = None,
         runtime_resolver: Callable[[str | None], BaseRuntime] | None = None,
         definitions: Any | None = None,
+        event_engine: Any | None = None,
     ) -> None:
         super().__init__(commands=commands, queries=queries, schemas=schemas)
         self._runtime = runtime
         self._runtime_resolver = runtime_resolver
         self._definitions = definitions
+        self._event_engine = event_engine
 
     def resolve_runtime(self, runtime_name: str | None = None) -> BaseRuntime:
         if self._runtime_resolver is not None:
@@ -82,7 +84,48 @@ class ProviderExecutionService(BaseService):
             state=_resolve_state(state),
             resource_id=resource_id,
         )
-        return enrich_provider_result(_provider_result_body(result))
+        body = enrich_provider_result(_provider_result_body(result))
+        self._emit_resource_changed(resource_ref, action=action, body=body, result=result)
+        return body
+
+    def _emit_resource_changed(
+        self,
+        resource_ref: str,
+        *,
+        action: str | None,
+        body: dict[str, Any],
+        result: ProviderResult,
+    ) -> None:
+        if self._event_engine is None or not body.get("success"):
+            return
+        meta = body.get("metadata") if isinstance(body.get("metadata"), dict) else {}
+        resolved = str(
+            action or meta.get("action") or result.metadata.get("action") or ""
+        ).lower()
+        if resolved not in _MUTATING_ACTIONS:
+            return
+        if not getattr(self._event_engine, "is_initialized", True):
+            try:
+                self._event_engine.initialize()
+            except Exception:
+                return
+        try:
+            self._event_engine.emit(
+                "resource.changed",
+                resource_ref=resource_ref,
+                action=resolved,
+                resource_id=meta.get("resource_id") or result.metadata.get("resource_id"),
+                provider=meta.get("provider") or result.metadata.get("provider"),
+                definition_name=meta.get("definition_name")
+                or result.metadata.get("definition_name"),
+            )
+        except Exception:
+            return
+
+
+_MUTATING_ACTIONS = frozenset(
+    {"put", "delete", "write", "create", "update", "upsert", "remove"}
+)
 
 
 def _resolve_state(raw: Any) -> BlackboardState | None:
