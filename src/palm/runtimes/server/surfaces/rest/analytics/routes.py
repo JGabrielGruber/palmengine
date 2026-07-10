@@ -47,12 +47,43 @@ ROUTES: tuple[RouteEntry, ...] = (
         "query",
         auth_required=True,
     ),
+    RouteEntry(
+        "list_dashboards",
+        "GET",
+        f"{API_PREFIX}/analytics/dashboards",
+        "list_dashboards",
+        auth_required=True,
+    ),
+    RouteEntry(
+        "get_dashboard",
+        "GET",
+        f"{API_PREFIX}/analytics/dashboards/{{dashboard}}",
+        "get_dashboard",
+        auth_required=True,
+    ),
+    RouteEntry(
+        "render_dashboard",
+        "GET",
+        f"{API_PREFIX}/analytics/dashboards/{{dashboard}}/render",
+        "render_dashboard",
+        auth_required=True,
+    ),
+    RouteEntry(
+        "render_dashboard_post",
+        "POST",
+        f"{API_PREFIX}/analytics/dashboards/{{dashboard}}/render",
+        "render_dashboard",
+        auth_required=True,
+    ),
 )
 
 _HANDLERS = {
     "list_datasets": handlers.list_datasets,
     "describe_dataset": handlers.describe_dataset,
     "query": handlers.query,
+    "list_dashboards": handlers.list_dashboards,
+    "get_dashboard": handlers.get_dashboard,
+    "render_dashboard": handlers.render_dashboard,
 }
 
 

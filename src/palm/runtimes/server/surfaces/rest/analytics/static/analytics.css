@@ -50,3 +50,6 @@ th, td { text-align: left; padding: 0.4rem 0.55rem; border-bottom: 1px solid var
 th { color: var(--accent); font-weight: 600; position: sticky; top: 0; background: var(--card); }
 #error, .error { color: var(--err); font-size: 0.9rem; }
 canvas { width: 100%; max-width: 100%; height: auto; background: var(--bg); border-radius: 6px; }
+.tiles { display: grid; gap: 1rem; }
+.tile h3 { margin: 0 0 0.5rem; font-size: 0.95rem; color: var(--accent); }
+.tile .err { color: var(--err); font-size: 0.85rem; }

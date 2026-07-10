@@ -79,6 +79,65 @@ def query(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ok(payload)
 
 
+def list_dashboards(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+    try:
+        rows = ctx.analytics.list_dashboards()
+    except AnalyticsDisabledError as exc:
+        return _from_analytics_error(exc)
+    return ok({"dashboards": rows, "count": len(rows)})
+
+
+def get_dashboard(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    dashboard: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+    name = str(dashboard or "").strip()
+    if not name:
+        return errors.bad_request("dashboard is required")
+    try:
+        payload = ctx.analytics.get_dashboard(name)
+    except AnalyticsError as exc:
+        return _from_analytics_error(exc)
+    if payload.get("status") == "error":
+        return _from_query_error(payload)
+    return ok(payload)
+
+
+def render_dashboard(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    dashboard: str,
+) -> ServerResponse:
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+    name = str(dashboard or "").strip()
+    if not name:
+        return errors.bad_request("dashboard is required")
+    params = None
+    if request.method.upper() == "POST":
+        body = _json_object(request)
+        if isinstance(body, ServerResponse):
+            return body
+        params = body.get("params") if isinstance(body.get("params"), dict) else None
+    try:
+        payload = ctx.analytics.render_dashboard(name, params=params)
+    except AnalyticsError as exc:
+        return _from_analytics_error(exc)
+    if payload.get("status") == "error":
+        return _from_query_error(payload)
+    return ok(payload)
+
+
 def _from_analytics_error(exc: AnalyticsError) -> ServerResponse:
     return error_response(
         exc.http_status,
@@ -92,12 +151,14 @@ def _from_query_error(payload: dict[str, Any]) -> ServerResponse:
     message = str(payload.get("error") or "query failed")
     status = {
         "dataset_not_found": 404,
+        "dashboard_not_found": 404,
         "analytics_action_not_allowed": 403,
         "invalid_profile": 400,
         "profile_not_implemented": 400,
         "response_too_large": 413,
         "invoke_failed": 502,
         "analytics_disabled": 503,
+        "virtual_transform_failed": 400,
     }.get(code, 400)
     return error_response(
         status,

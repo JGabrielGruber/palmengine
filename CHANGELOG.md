@@ -20,6 +20,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - **0.36** — Virtual analytics views (`source` + `transform` + `materialize`); `describe` field roles; doctor `resource_preflight.analytics`; assist menu **datasets**; todos `palm-todos-by-priority` is virtual `count_by`.
 - **0.37 foundation** — Pure `WorkIntent` (core); `WorkIntentStore` + coalesce; trigger parse/registry; `resource.changed` on mutating provider invoke; `WorkDrainService` + `host.tick_work()` (run-when-able).
 - **0.38 foundation** — `EventJournal` (append/read_after/consume offsets); `wire_event_journal` interceptor; compact key for `resource.changed`; `host.control_plane_status()` / `redrive_journal()`.
+- **0.39 foundation** — `DashboardDefinition` / `DashboardTile`; registry + `render_dashboard`; REST dashboards; static UI dashboard mode; todos `palm-todos` dashboard; [ADR-014](docs/adr/014-dashboard-definitions.md).
 
 ## [0.34.5] — 2026-07-09
 

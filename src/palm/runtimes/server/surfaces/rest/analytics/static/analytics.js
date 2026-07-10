@@ -1,12 +1,14 @@
 /**
- * Palm Analytics dogfood (0.35.6) — paint table + chart from REST only.
- * No joins; no Assist. Prefer series profile for chart when available.
+ * Palm Analytics (0.39) — dashboards + single-dataset dogfood.
+ * Consumes REST only; no joins.
  */
 (() => {
   const $ = (id) => document.getElementById(id);
+  const dashboardEl = $("dashboard");
   const datasetEl = $("dataset");
   const metaEl = $("meta");
   const errEl = $("error");
+  const tilesEl = $("tiles");
   const thead = $("table").querySelector("thead");
   const tbody = $("table").querySelector("tbody");
   const canvas = $("chart");
@@ -38,40 +40,20 @@
     return data;
   }
 
-  async function refreshList() {
-    showError("");
-    const data = await api("GET", "/v1/api/analytics/datasets");
-    const rows = data.datasets || [];
-    datasetEl.innerHTML = "";
-    if (!rows.length) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "(no published datasets — materialize dogfood first)";
-      datasetEl.appendChild(opt);
-      metaEl.textContent = "0 datasets";
-      return;
-    }
-    for (const r of rows) {
-      const opt = document.createElement("option");
-      opt.value = r.dataset;
-      opt.textContent = `${r.dataset} · ${r.kind || "?"} · ${r.default_profile || "table"}`;
-      datasetEl.appendChild(opt);
-    }
-    metaEl.textContent = `${rows.length} published dataset(s)`;
-  }
-
-  function renderTable(payload) {
-    thead.innerHTML = "";
-    tbody.innerHTML = "";
-    const cols = payload.columns || [];
-    const rows = payload.rows || [];
+  function renderTableInto(tableEl, payload) {
+    const th = tableEl.querySelector("thead");
+    const tb = tableEl.querySelector("tbody");
+    th.innerHTML = "";
+    tb.innerHTML = "";
+    const cols = (payload && payload.columns) || [];
+    const rows = (payload && payload.rows) || [];
     const trh = document.createElement("tr");
     for (const c of cols) {
-      const th = document.createElement("th");
-      th.textContent = c;
-      trh.appendChild(th);
+      const cell = document.createElement("th");
+      cell.textContent = c;
+      trh.appendChild(cell);
     }
-    thead.appendChild(trh);
+    th.appendChild(trh);
     for (const row of rows) {
       const tr = document.createElement("tr");
       for (let i = 0; i < cols.length; i++) {
@@ -79,19 +61,19 @@
         td.textContent = row[i] == null ? "" : String(row[i]);
         tr.appendChild(td);
       }
-      tbody.appendChild(tr);
+      tb.appendChild(tr);
     }
   }
 
-  function renderChartFromSeries(data) {
-    const ctx = canvas.getContext("2d");
-    const w = canvas.width;
-    const h = canvas.height;
+  function renderChartOn(canvasEl, data) {
+    const ctx = canvasEl.getContext("2d");
+    const w = canvasEl.width;
+    const h = canvasEl.height;
     ctx.clearRect(0, 0, w, h);
-    const series = (data.series && data.series[0]) || null;
+    const series = (data && data.series && data.series[0]) || null;
     if (!series || !series.points || !series.points.length) {
       ctx.fillStyle = "#8b9bb4";
-      ctx.fillText("No series points", 16, 24);
+      ctx.fillText("No series", 16, 24);
       return;
     }
     const pts = series.points;
@@ -127,18 +109,108 @@
     const cols = payload.columns || [];
     const rows = payload.rows || [];
     if (cols.length < 2 || !rows.length) {
-      renderChartFromSeries({ series: [] });
+      renderChartOn(canvas, { series: [] });
       return;
     }
-    const points = rows.map((r) => [r[0], r[1]]);
-    renderChartFromSeries({ series: [{ name: cols[1], points }] });
+    renderChartOn(canvas, {
+      series: [{ name: cols[1], points: rows.map((r) => [r[0], r[1]]) }],
+    });
   }
 
-  async function loadSelected() {
+  async function refreshLists() {
+    showError("");
+    const [ds, dash] = await Promise.all([
+      api("GET", "/v1/api/analytics/datasets"),
+      api("GET", "/v1/api/analytics/dashboards"),
+    ]);
+    datasetEl.innerHTML = "";
+    for (const r of ds.datasets || []) {
+      const opt = document.createElement("option");
+      opt.value = r.dataset;
+      opt.textContent = `${r.dataset} · ${r.kind || "?"}`;
+      datasetEl.appendChild(opt);
+    }
+    dashboardEl.innerHTML = "";
+    const rows = dash.dashboards || [];
+    if (!rows.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "(no dashboards registered)";
+      dashboardEl.appendChild(opt);
+    }
+    for (const r of rows) {
+      const opt = document.createElement("option");
+      opt.value = r.name;
+      opt.textContent = `${r.title || r.name} (${r.tile_count || 0} tiles)`;
+      dashboardEl.appendChild(opt);
+    }
+    const q = new URLSearchParams(location.search).get("dashboard");
+    if (q && [...dashboardEl.options].some((o) => o.value === q)) {
+      dashboardEl.value = q;
+    }
+    metaEl.textContent = `${(ds.datasets || []).length} dataset(s) · ${rows.length} dashboard(s)`;
+  }
+
+  async function loadDashboard() {
+    showError("");
+    tilesEl.innerHTML = "";
+    const name = dashboardEl.value;
+    if (!name) {
+      showError("No dashboard selected");
+      return;
+    }
+    const data = await api(
+      "GET",
+      `/v1/api/analytics/dashboards/${encodeURIComponent(name)}/render`
+    );
+    if (data.status !== "ok") throw new Error(data.error || "render failed");
+    metaEl.textContent = `${data.dashboard.title || name} · ${data.tiles.length} tiles`;
+    for (const block of data.tiles) {
+      const tile = block.tile || {};
+      const result = block.result || {};
+      const card = document.createElement("section");
+      card.className = "card tile";
+      const h = document.createElement("h3");
+      h.textContent = tile.title || tile.dataset || tile.id;
+      card.appendChild(h);
+      if (result.status !== "ok") {
+        const e = document.createElement("p");
+        e.className = "err";
+        e.textContent = result.error || "query failed";
+        card.appendChild(e);
+        tilesEl.appendChild(card);
+        continue;
+      }
+      const profile = tile.profile || result.profile;
+      if (profile === "kpi") {
+        const p = document.createElement("p");
+        const d = result.data || {};
+        p.textContent = `${d.label || "KPI"}: ${d.value}`;
+        card.appendChild(p);
+      } else if (profile === "series") {
+        const c = document.createElement("canvas");
+        c.width = 640;
+        c.height = 200;
+        card.appendChild(c);
+        renderChartOn(c, result.data || {});
+      } else {
+        const wrap = document.createElement("div");
+        wrap.className = "table-wrap";
+        const table = document.createElement("table");
+        table.innerHTML = "<thead></thead><tbody></tbody>";
+        wrap.appendChild(table);
+        card.appendChild(wrap);
+        renderTableInto(table, result.data || {});
+      }
+      tilesEl.appendChild(card);
+    }
+  }
+
+  async function loadDataset() {
     showError("");
     const ds = datasetEl.value;
     if (!ds) {
-      showError("No dataset selected");
+      showError("No dataset");
       return;
     }
     const table = await api("POST", "/v1/api/analytics/query", {
@@ -146,17 +218,15 @@
       profile: "table",
       limit: 100,
     });
-    if (table.status !== "ok") throw new Error(table.error || "table query failed");
-    renderTable(table.data || {});
-    metaEl.textContent = `${ds} · table rows=${table.meta?.row_count ?? "?"} · kind=${table.lineage?.kind || "?"}`;
-
+    if (table.status !== "ok") throw new Error(table.error || "failed");
+    renderTableInto($("table"), table.data || {});
     try {
       const series = await api("POST", "/v1/api/analytics/query", {
         dataset: ds,
         profile: "series",
         limit: 100,
       });
-      if (series.status === "ok") renderChartFromSeries(series.data || {});
+      if (series.status === "ok") renderChartOn(canvas, series.data || {});
       else renderChartFromTable(table.data || {});
     } catch {
       renderChartFromTable(table.data || {});
@@ -164,11 +234,18 @@
   }
 
   $("btn-refresh").addEventListener("click", () => {
-    refreshList().catch((e) => showError(String(e.message || e)));
+    refreshLists().catch((e) => showError(String(e.message || e)));
   });
   $("btn-load").addEventListener("click", () => {
-    loadSelected().catch((e) => showError(String(e.message || e)));
+    loadDashboard().catch((e) => showError(String(e.message || e)));
+  });
+  $("btn-load-ds").addEventListener("click", () => {
+    loadDataset().catch((e) => showError(String(e.message || e)));
   });
 
-  refreshList().catch((e) => showError(String(e.message || e)));
+  refreshLists()
+    .then(() => {
+      if (dashboardEl.value) return loadDashboard();
+    })
+    .catch((e) => showError(String(e.message || e)));
 })();

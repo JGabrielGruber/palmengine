@@ -14,11 +14,12 @@ Flows use resource + transform steps only (``count_by``, no commit hooks).
 
 from __future__ import annotations
 
-from . import analytics, builder, resources
+from . import analytics, builder, dashboard, resources
 
 __all__ = [
     "analytics",
     "builder",
+    "dashboard",
     "resources",
     "register_definitions",
 ]
@@ -28,3 +29,4 @@ def register_definitions(repository: object) -> None:
     resources.register_definitions(repository)
     builder.register_definitions(repository)
     analytics.register_definitions(repository)
+    dashboard.register_definitions(repository)

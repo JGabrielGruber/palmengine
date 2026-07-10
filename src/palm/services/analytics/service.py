@@ -58,6 +58,35 @@ class AnalyticsService(BaseService):
         self._require_enabled()
         return list_datasets(self._definitions, published_only=published_only)
 
+    def list_dashboards(self) -> list[dict[str, Any]]:
+        self._require_enabled()
+        from palm.services.analytics.dashboards import list_dashboards
+
+        return list_dashboards()
+
+    def get_dashboard(self, name: str) -> dict[str, Any]:
+        self._require_enabled()
+        from palm.services.analytics.dashboards import get_dashboard
+
+        dash = get_dashboard(name)
+        if dash is None:
+            return {
+                "status": "error",
+                "dashboard": name,
+                "error": f"Dashboard not found: {name}",
+                "code": "dashboard_not_found",
+            }
+        return {"status": "ok", "dashboard": dash.to_dict()}
+
+    def render_dashboard(
+        self, name: str, *, params: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Query all tiles for a dashboard definition."""
+        self._require_enabled()
+        from palm.services.analytics.dashboards import render_dashboard
+
+        return render_dashboard(self, name, params=params)
+
     def describe(self, dataset: str) -> dict[str, Any]:
         self._require_enabled()
         detail, exposure = resolve_dataset(
