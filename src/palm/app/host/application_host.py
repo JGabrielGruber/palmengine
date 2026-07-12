@@ -603,6 +603,7 @@ class ApplicationHost:
             max_response_bytes=int(settings.analytics_max_response_bytes),
             enabled=bool(settings.analytics_enabled),
         )
+        self._assist.bind_analytics(self._analytics)
         self._wire_work_drain()
         self._wire_event_journal()
         from palm.services._cqrs_wiring import wire_all_service_cqrs

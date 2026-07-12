@@ -371,7 +371,8 @@ def menu_for_assist(
             title="Analytics datasets",
         )
         page["hint"] = (
-            "Published analytics datasets. Query via AnalyticsService or GET /analytics/."
+            "Pick a dataset chip (open:dataset:…) for describe + preview, "
+            "or use GET /v1/api/analytics/*."
         )
         return page
 

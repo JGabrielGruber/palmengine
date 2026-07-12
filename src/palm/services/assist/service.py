@@ -47,6 +47,7 @@ class AssistService(BaseService):
         system: SystemService,
         runtime: BaseRuntime | None = None,
         runtime_resolver: Callable[[str | None], BaseRuntime] | None = None,
+        analytics: Any | None = None,
     ) -> None:
         super().__init__(commands=commands, queries=queries, schemas=schemas)
         self._definitions = definitions
@@ -54,6 +55,7 @@ class AssistService(BaseService):
         self._system = system
         self._runtime = runtime
         self._runtime_resolver = runtime_resolver
+        self._analytics = analytics
         self._scenarios = AssistScenarioService(self)
         self._sessions = AssistSessionService(self)
         self._catalog = AssistCatalogService(self)
@@ -78,6 +80,15 @@ class AssistService(BaseService):
     @property
     def definitions(self) -> DefinitionService:
         return self._definitions
+
+    @property
+    def analytics(self) -> Any | None:
+        """Optional AnalyticsService (0.40.4 — open:dataset / describe)."""
+        return self._analytics
+
+    def bind_analytics(self, analytics: Any | None) -> None:
+        """Attach analytics after host wiring (order-independent)."""
+        self._analytics = analytics
 
     @property
     def execution(self) -> ExecutionService:

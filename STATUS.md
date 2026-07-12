@@ -477,10 +477,11 @@ just mcp-inspector                       # MCP Inspector UI
 
 | Train | Focus | Status |
 |-------|--------|--------|
-| 0.40 | Close 0.37–0.38 debt; trigger dogfood; optional continuous drain; remote system analytics | 🔄 0.40.3 |
+| 0.40 | Close 0.37–0.38 debt; trigger dogfood; optional continuous drain; remote system analytics | 🔄 0.40.4 |
 | 0.40.1 | Todos pack `metadata.triggers` / options.triggers dogfood · reload_work_triggers | ✅ |
 | 0.40.2 | Continuous work drain (opt-in) · debounce · depth limits | ✅ |
 | 0.40.3 | Journal named consumers · doctor control_plane | ✅ |
+| 0.40.4 | Assist open:dataset + virtual filter/limit/sort | ✅ |
 | 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ⬜ Vision |
 | 0.42 | Event stream protocol + `/ws/v1/events` (or SSE); Portal live strip; **palm provider event consumer** | ⬜ Vision |
 | 0.43+ | Mesh authz, multi-worker fan-out | ⬜ Later |

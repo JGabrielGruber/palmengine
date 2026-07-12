@@ -168,6 +168,9 @@ def open_target(
                     view["actions"] = actions
         return view
 
+    if kind_s in {"dataset", "datasets", "analytics"}:
+        return _open_dataset(assist, tid, params)
+
     if kind_s in {"alias", "path"}:
         # Resolve via assist dispatch of alias-like path segments is caller's job;
         # here we map common aliases to concrete opens.
@@ -190,6 +193,174 @@ def open_target(
     raise ValueError(f"unsupported open kind: {kind_s!r}")
 
 
+def _open_dataset(
+    assist: AssistService,
+    dataset: str,
+    params: dict[str, Any],
+) -> dict[str, Any]:
+    """Describe (+ optional preview query) a published analytics dataset (0.40.4)."""
+    name = (dataset or "").strip()
+    analytics = getattr(assist, "analytics", None)
+    profile = str(params.get("profile") or "table").strip() or "table"
+    want_preview = str(params.get("preview") or params.get("query") or "1").lower() not in {
+        "0",
+        "false",
+        "no",
+        "off",
+    }
+    preview_limit = 20
+    try:
+        preview_limit = max(1, min(100, int(params.get("limit") or 20)))
+    except (TypeError, ValueError):
+        preview_limit = 20
+
+    if analytics is None:
+        # Fallback: resolve definition only (no query path)
+        from palm.services.analytics.datasets import resolve_dataset
+
+        try:
+            detail, exposure = resolve_dataset(assist.definitions, name)
+        except Exception as exc:
+            return {
+                "path": ["assist", "open", "dataset", name],
+                "status": "error",
+                "kind": "dataset",
+                "dataset": name,
+                "error": str(exc),
+                "question": f"Dataset {name!r} unavailable.",
+                "hint": "Publish the resource with metadata.analytics.published=true.",
+            }
+        return {
+            "path": ["assist", "open", "dataset", name],
+            "status": "ok",
+            "kind": "dataset",
+            "dataset": name,
+            "describe": {
+                "dataset": name,
+                "kind": exposure.kind,
+                "default_profile": exposure.default_profile,
+                "exposure": exposure.to_public_dict(),
+                "resource": {
+                    "name": detail.get("name"),
+                    "provider": detail.get("provider"),
+                    "action": detail.get("action"),
+                },
+            },
+            "question": f"Dataset {name} ({exposure.kind}). AnalyticsService not bound — describe only.",
+            "hint": "Wire host analytics or use GET /v1/api/analytics/datasets/{name}.",
+            "actions": [
+                {
+                    "label": "Analytics datasets",
+                    "alias": "assist/menu",
+                    "params": {"section": "datasets"},
+                }
+            ],
+        }
+
+    try:
+        desc = analytics.describe(name)
+    except Exception as exc:
+        return {
+            "path": ["assist", "open", "dataset", name],
+            "status": "error",
+            "kind": "dataset",
+            "dataset": name,
+            "error": str(exc),
+            "question": f"Could not describe {name!r}: {exc}",
+            "hint": "Check publication and read action allowlist.",
+            "actions": [
+                {
+                    "label": "Analytics datasets",
+                    "alias": "assist/menu",
+                    "params": {"section": "datasets"},
+                }
+            ],
+        }
+
+    out: dict[str, Any] = {
+        "path": ["assist", "open", "dataset", name],
+        "status": "ok",
+        "kind": "dataset",
+        "dataset": name,
+        "describe": desc if isinstance(desc, dict) else {"raw": desc},
+        "question": _dataset_question(name, desc if isinstance(desc, dict) else {}),
+        "hint": "Preview uses AnalyticsService.query. Menu · datasets for more.",
+        "actions": [
+            {
+                "label": "Query table",
+                "alias": "assist/open",
+                "params": {
+                    "kind": "dataset",
+                    "id": name,
+                    "profile": "table",
+                    "preview": "1",
+                },
+            },
+            {
+                "label": "Query series",
+                "alias": "assist/open",
+                "params": {
+                    "kind": "dataset",
+                    "id": name,
+                    "profile": "series",
+                    "preview": "1",
+                },
+            },
+            {
+                "label": "Analytics datasets",
+                "alias": "assist/menu",
+                "params": {"section": "datasets"},
+            },
+            {
+                "label": "Menu home",
+                "alias": "assist/menu",
+                "params": {},
+            },
+        ],
+    }
+
+    if want_preview:
+        try:
+            preview = analytics.query(
+                name,
+                profile=profile,
+                limit=preview_limit,
+            )
+            if isinstance(preview, dict):
+                out["preview"] = preview
+                out["profile"] = profile
+                # Surface a short row count for chat
+                data = preview.get("data") if isinstance(preview.get("data"), dict) else preview
+                if isinstance(data, dict) and "rows" in data:
+                    out["hint"] = (
+                        f"Preview profile={profile!r} · {len(data.get('rows') or [])} row(s) "
+                        f"(limit {preview_limit})."
+                    )
+        except Exception as exc:
+            out["preview_error"] = str(exc)
+            out["hint"] = f"Describe ok; preview failed: {exc}"
+
+    return out
+
+
+def _dataset_question(name: str, desc: dict[str, Any]) -> str:
+    kind = desc.get("kind") or desc.get("exposure", {}).get("kind") if isinstance(
+        desc.get("exposure"), dict
+    ) else desc.get("kind")
+    fields = desc.get("fields") or []
+    nfields = len(fields) if isinstance(fields, list) else 0
+    bits = [f"Dataset **{name}**"]
+    if kind:
+        bits.append(f"kind={kind}")
+    if nfields:
+        bits.append(f"{nfields} field(s)")
+    if desc.get("virtual") or (
+        isinstance(desc.get("exposure"), dict) and desc["exposure"].get("source")
+    ):
+        bits.append("virtual view")
+    return " · ".join(bits)
+
+
 def open_from_params(assist: AssistService, params: dict[str, Any] | None) -> Any:
     """Open from dispatch params (kind/id or value=open:…)."""
     params = dict(params or {})
@@ -206,6 +377,8 @@ def open_from_params(assist: AssistService, params: dict[str, Any] | None) -> An
         kind, tid = "scenario", params.get("scenario_id")
     if not kind and params.get("session_id"):
         kind, tid = "session", params.get("session_id")
+    if not kind and params.get("dataset"):
+        kind, tid = "dataset", params.get("dataset")
     if not kind or not tid:
         raise ValueError(
             "open requires kind+id, or value like open:flow:todo-builder, "
