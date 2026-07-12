@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+
+- **0.40.1** — Example **trigger dogfood**: `todo-analytics` `options.triggers` on `put-palm-todos` / `palm-todos` → WorkIntent; `host.reload_work_triggers()`; still drain via `tick_work()`.
+
 ### Docs
 
 - **0.40+ charter** — [VISION-0.40](docs/VISION-0.40.md): composition-first mesh; 0.36–0.39 open debt; trains 0.40–0.42 (triggers dogfood → durable UX → event transport / provider consumer). [VISION-0.36](docs/VISION-0.36.md) §12a landed vs open.

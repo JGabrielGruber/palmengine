@@ -8,6 +8,8 @@ Flows use resource + transform steps only (``count_by``, no commit hooks).
 ::
 
     palm flow start todo-builder
+    # put-palm-todos → resource.changed → WorkIntent(todo-analytics)
+    host.tick_work()   # 0.40.1 — run-when-able
     palm flow start todo-analytics
     # GET /analytics/ → palm-todos · palm-todos-by-priority
 """

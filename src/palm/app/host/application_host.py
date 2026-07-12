@@ -738,21 +738,33 @@ class ApplicationHost:
         )
         if self._event.is_initialized:
             self._work_drain.attach_events(self._event)
-        # Load triggers from flow catalog (metadata when available)
+        # Load triggers from flow catalog (after examples/definitions already loaded)
+        self.reload_work_triggers()
+
+    def reload_work_triggers(self) -> int:
+        """Reload definition triggers into the work drain (after design/example load)."""
+        if self._work_drain is None:
+            return 0
         try:
             rows = self._definitions.list_flows() or []
+
             def _meta(name: str) -> dict[str, Any] | None:
                 try:
                     detail = self._definitions.get_flow(name, verbose=True)
                 except Exception:
                     return None
-                if isinstance(detail, dict):
-                    return detail.get("metadata") or detail.get("options")
-                return None
+                if not isinstance(detail, dict):
+                    return None
+                # Prefer explicit metadata; else options (examples put triggers there).
+                meta = detail.get("metadata")
+                if isinstance(meta, dict) and meta.get("triggers"):
+                    return meta
+                opts = detail.get("options")
+                return opts if isinstance(opts, dict) else meta
 
-            self._work_drain.reload_triggers(rows, get_metadata=_meta)
+            return int(self._work_drain.reload_triggers(rows, get_metadata=_meta) or 0)
         except Exception:
-            pass
+            return 0
 
     def tick_work(self, *, limit: int = 10, schedules: bool = True) -> int:
         """Process due WorkIntents (and optional schedule triggers). Returns count."""

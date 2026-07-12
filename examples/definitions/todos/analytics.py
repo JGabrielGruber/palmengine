@@ -12,6 +12,30 @@ from __future__ import annotations
 
 from palm.definitions import FlowDefinition, ProcessDefinition
 
+# 0.40.1 — on put of the list (write resource used by todo-builder), enqueue this flow.
+# Host: resource.changed → WorkIntent → tick_work() runs when able.
+_TODO_ANALYTICS_TRIGGERS = [
+    {
+        "kind": "on_resource",
+        "resource": "put-palm-todos",
+        "actions": ["put"],
+        "work": {
+            "flow_id": "todo-analytics",
+            "coalesce_key": "on_resource:put-palm-todos:todo-analytics",
+        },
+    },
+    # Alias if invoke uses the published fact ref with a put action
+    {
+        "kind": "on_resource",
+        "resource": "palm-todos",
+        "actions": ["put"],
+        "work": {
+            "flow_id": "todo-analytics",
+            "coalesce_key": "on_resource:palm-todos:todo-analytics",
+        },
+    },
+]
+
 TODO_ANALYTICS_FLOW = FlowDefinition(
     id="flow-todo-analytics",
     name="todo-analytics",
@@ -20,13 +44,16 @@ TODO_ANALYTICS_FLOW = FlowDefinition(
         "include_summary": True,
         "include_commit": False,
         "allow_backtrack": True,
+        # FlowDefinition has no top-level metadata; triggers live in options (host parses options).
+        "triggers": _TODO_ANALYTICS_TRIGGERS,
         "steps": [
             {
                 "slug": "intro",
                 "title": "Todo analytics",
                 "prompt": (
                     "Load stored todos for inspection. Priority counts are computed "
-                    "virtually via Analytics (palm-todos-by-priority) — no second put."
+                    "virtually via Analytics (palm-todos-by-priority) — no second put. "
+                    "Auto-enqueued after put-palm-todos (0.40.1); host.tick_work() runs it."
                 ),
                 "step_kind": "introduction",
                 "required": False,
@@ -50,6 +77,7 @@ TODO_ANALYTICS_PROCESS = ProcessDefinition(
     metadata={
         "example": True,
         "description": "Inspect palm-todos; virtual priority view via Analytics",
+        "triggers": _TODO_ANALYTICS_TRIGGERS,
     },
 )
 

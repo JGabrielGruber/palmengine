@@ -437,7 +437,18 @@ Bootstrap loads packages first, then flat `*.py` demos ([DEVELOPMENT.md](../DEVE
 | 0.39.2 | Thin dashboard surface (replace dogfood HTML gradually) |
 | 0.39.3 | Design propose/validate dashboard (optional) |
 
-*Years beyond:* multi-tenant ACL, warehouse federation, Bot-on-contracts — only after the above spine is boring.
+### 12a. Landed vs open (as of 0.39.0)
+
+| Train | Landed (foundation) | Still open / polish |
+|-------|---------------------|---------------------|
+| **0.36** | Virtual views, field roles, doctor analytics, assist datasets, todos virtual priority | More transform ops; richer field-role inference; assist `open:dataset` deep link |
+| **0.37** | WorkIntent, store+coalesce, trigger parse/registry, `resource.changed`, `tick_work()` | Continuous drain loop; debounce/storm tests; example packs with `metadata.triggers`; depth limits dogfood |
+| **0.38** | EventJournal, offsets, compact keys, redrive, control_plane_status | Named consumers production wiring (webhooks/projections on journal); doctor embeds control_plane; multi-worker fan-out |
+| **0.39** | DashboardDefinition, render, REST, UI, todos + system dashboards | Durable dashboard registry; design-time authoring (0.39.3); system dashboard polish |
+
+**Also shipped alongside charter:** Palm provider **system-read** actions + pack `system/` + virtual `palm-system-instances-per-flow`.
+
+**Forward trains (0.40+):** composition-first distributed Palm, event contract hardening, optional WS push — see **[VISION-0.40](VISION-0.40.md)**.
 
 ---
 

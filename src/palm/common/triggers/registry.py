@@ -90,8 +90,11 @@ class TriggerRegistry:
             if event_type != "resource.changed":
                 return None
             ref = str(payload.get("resource_ref") or "")
+            def_name = str(payload.get("definition_name") or "")
+            want = str(spec.resource or "")
             action = str(payload.get("action") or "").lower()
-            if ref != (spec.resource or ""):
+            # Match invoke ref or definition name (put-palm-todos vs palm-todos)
+            if want and ref != want and def_name != want:
                 return None
             if spec.actions and action not in spec.actions:
                 return None
@@ -101,6 +104,7 @@ class TriggerRegistry:
                 payload={
                     "trigger": "on_resource",
                     "resource_ref": ref,
+                    "definition_name": def_name or None,
                     "action": action,
                 },
                 coalesce_key=spec.coalesce_key,

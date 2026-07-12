@@ -130,7 +130,7 @@ Foundation that **already exists** and must be extended, not replaced: virtual a
 | Step | Deliverable |
 |------|-------------|
 | **0.40.0** | This vision + STATUS |
-| **0.40.1** | Example pack triggers (e.g. system or todos metadata → WorkIntent on `resource.changed` / schedule) |
+| **0.40.1** | ✅ Example pack triggers — `todo-analytics` `on_resource` put-palm-todos / palm-todos → WorkIntent; `host.reload_work_triggers()` |
 | **0.40.2** | Optional continuous `WorkDrainService` loop; debounce/depth tests |
 | **0.40.3** | Journal: named consumer helpers for webhooks/projections; doctor `control_plane` section |
 | **0.40.4** | Assist dataset open/describe; extra virtual ops if needed for system views |
