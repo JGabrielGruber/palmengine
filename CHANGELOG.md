@@ -6,6 +6,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Added
 
+- **0.40.3** — Journal named consumers (`work_drain` / `webhooks` / `projections`); `consume_for_*` helpers; doctor **`control_plane`** section + lag soft issues.
 - **0.40.2** — Optional continuous **WorkDrain** (`PALM_ENABLE_WORK_DRAIN_SERVICE`); trigger **debounce**; **max_depth** drop counter; coalesce storm tests.
 - **0.40.1** — Example **trigger dogfood**: `todo-analytics` `options.triggers` on `put-palm-todos` / `palm-todos` → WorkIntent; `host.reload_work_triggers()`; still drain via `tick_work()`.
 

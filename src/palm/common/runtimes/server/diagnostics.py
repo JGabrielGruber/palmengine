@@ -9,7 +9,11 @@ from palm.core.registry import pattern_registry, provider_registry, storage_regi
 from palm.core.transform.registry import transform_registry
 
 
-def build_doctor_report(runtime: Any) -> dict[str, Any]:
+def build_doctor_report(
+    runtime: Any,
+    *,
+    control_plane: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Assemble a compact engine health report without Rich CLI output."""
     issues: list[str] = []
 
@@ -52,6 +56,33 @@ def build_doctor_report(runtime: Any) -> dict[str, Any]:
 
         issues.extend(resource_preflight_issues(resource_preflight))
 
+    cp = control_plane if isinstance(control_plane, dict) else {}
+    if not cp:
+        # ServerRuntime.host is bind address; prefer host_bridge / application_host
+        for attr in ("application_host", "host_bridge", "_host_bridge", "host"):
+            host = getattr(runtime, attr, None)
+            if host is not None and hasattr(host, "control_plane_status"):
+                try:
+                    cp = dict(host.control_plane_status() or {})
+                except Exception:
+                    cp = {}
+                break
+
+    # Soft issues from control plane lag / backlog
+    if cp:
+        work_pending = int(cp.get("work_pending") or 0)
+        if work_pending > 50:
+            issues.append(f"work_pending={work_pending} (WorkIntent backlog)")
+        journal = cp.get("journal") if isinstance(cp.get("journal"), dict) else {}
+        consumers = journal.get("consumers") if isinstance(journal, dict) else {}
+        if isinstance(consumers, dict):
+            for name, row in consumers.items():
+                if not isinstance(row, dict):
+                    continue
+                lag = int(row.get("lag") or 0)
+                if lag > 100:
+                    issues.append(f"journal consumer {name!r} lag={lag}")
+
     return {
         "status": "ok" if not issues else "degraded",
         "version": __version__,
@@ -64,6 +95,12 @@ def build_doctor_report(runtime: Any) -> dict[str, Any]:
         "registries": registries,
         "resource_count": resource_count,
         "resource_preflight": resource_preflight,
+        "control_plane": cp or {
+            "work_pending": 0,
+            "work_drain_running": False,
+            "outbox_pending": 0,
+            "journal": {},
+        },
         "jobs": {
             "total": len(jobs),
             "waiting_for_input": waiting,

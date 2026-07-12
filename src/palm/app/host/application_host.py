@@ -786,14 +786,20 @@ class ApplicationHost:
         return n
 
     def control_plane_status(self) -> dict[str, Any]:
-        """Pending work + journal lag for doctor/ops (0.38)."""
+        """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
+        from palm.common.events.consumers import (
+            DEFAULT_JOURNAL_CONSUMERS,
+            journal_consumer_status,
+        )
+
         work_pending = 0
         if self._work_drain is not None:
             work_pending = self._work_drain.store.pending_count()
         journal_status: dict[str, Any] = {}
         if self._event_journal is not None:
-            journal_status = self._event_journal.status(
-                consumers=["work_drain", "webhooks", "projections"]
+            journal_status = journal_consumer_status(
+                self._event_journal,
+                consumers=list(DEFAULT_JOURNAL_CONSUMERS),
             )
         outbox_pending = 0
         if self._outbox_service is not None:
@@ -809,7 +815,52 @@ class ApplicationHost:
             "work_dropped_depth": dropped,
             "outbox_pending": outbox_pending,
             "journal": journal_status,
+            "journal_consumers": list(DEFAULT_JOURNAL_CONSUMERS),
         }
+
+    def drain_journal_webhooks(
+        self,
+        *,
+        limit: int = 50,
+        on_entry: Any | None = None,
+    ) -> int:
+        """Catch-up webhooks consumer from journal (0.40.3). Returns entries processed."""
+        if self._event_journal is None:
+            return 0
+        from palm.common.events.consumers import consume_for_webhooks
+
+        count = 0
+
+        def _handler(entry: Any) -> None:
+            nonlocal count
+            count += 1
+            if on_entry is not None:
+                on_entry(entry)
+
+        consume_for_webhooks(self._event_journal, _handler, limit=limit)
+        return count
+
+    def drain_journal_projections(
+        self,
+        *,
+        limit: int = 50,
+        on_entry: Any | None = None,
+    ) -> int:
+        """Catch-up projections consumer from journal (0.40.3)."""
+        if self._event_journal is None:
+            return 0
+        from palm.common.events.consumers import consume_for_projections
+
+        count = 0
+
+        def _handler(entry: Any) -> None:
+            nonlocal count
+            count += 1
+            if on_entry is not None:
+                on_entry(entry)
+
+        consume_for_projections(self._event_journal, _handler, limit=limit)
+        return count
 
     def redrive_journal(
         self,

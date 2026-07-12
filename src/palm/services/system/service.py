@@ -18,12 +18,31 @@ from palm.common.services.base import BaseService
 from palm.common.services.errors import InstanceNotFoundServiceError
 
 
+def _application_host_from(runtime: Any) -> Any | None:
+    """Resolve ApplicationHost (ServerRuntime.host is the bind address string)."""
+    for attr in ("application_host", "host_bridge", "_host_bridge"):
+        cand = getattr(runtime, attr, None)
+        if cand is not None and hasattr(cand, "control_plane_status"):
+            return cand
+    cand = getattr(runtime, "host", None)
+    if cand is not None and hasattr(cand, "control_plane_status"):
+        return cand
+    return None
+
+
 class SystemService(BaseService):
     """Debug and inspect surface — composes CQRS into business-shaped methods."""
 
     def doctor(self, runtime: Any) -> dict[str, Any]:
-        """Engine health report for operators."""
-        return build_doctor_report(runtime)
+        """Engine health report for operators (includes control_plane when host-backed)."""
+        control_plane = None
+        host = _application_host_from(runtime)
+        if host is not None and hasattr(host, "control_plane_status"):
+            try:
+                control_plane = host.control_plane_status()
+            except Exception:
+                control_plane = None
+        return build_doctor_report(runtime, control_plane=control_plane)
 
     def list_jobs(
         self,
