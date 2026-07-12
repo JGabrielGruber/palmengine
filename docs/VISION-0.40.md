@@ -134,7 +134,7 @@ Foundation that **already exists** and must be extended, not replaced: virtual a
 | **0.40.2** | ✅ Continuous drain opt-in (`PALM_ENABLE_WORK_DRAIN_SERVICE`); debounce + depth storm guards |
 | **0.40.3** | ✅ Journal consumers (`webhooks`/`projections`/`work_drain`); doctor `control_plane` |
 | **0.40.4** | ✅ `open:dataset` describe+preview; virtual ops `filter_eq` / `limit` / `sort_by` |
-| **0.40.5** | Remote Palm system datasets dogfood doc + one integration test (`remote_url`) |
+| **0.40.5** | ✅ Remote system analytics dogfood (`remote_url`) + test + system/README |
 
 ### 0.41 — Durable presentation & schedules
 

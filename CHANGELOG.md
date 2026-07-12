@@ -6,6 +6,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Added
 
+- **0.40.5** — Remote system analytics dogfood: `params.remote_url` on `palm-system-*` query; [system/README](examples/definitions/system/README.md); integration test.
 - **0.40.4** — Assist **`open:dataset`** (describe + preview query); Assist binds AnalyticsService; virtual view ops **`filter_eq` / `limit` / `sort_by`**.
 - **0.40.3** — Journal named consumers (`work_drain` / `webhooks` / `projections`); `consume_for_*` helpers; doctor **`control_plane`** section + lag soft issues.
 - **0.40.2** — Optional continuous **WorkDrain** (`PALM_ENABLE_WORK_DRAIN_SERVICE`); trigger **debounce**; **max_depth** drop counter; coalesce storm tests.

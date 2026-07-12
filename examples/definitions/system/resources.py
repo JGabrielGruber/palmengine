@@ -1,8 +1,8 @@
 """
 Published system datasets — ``provider: palm`` system-read actions.
 
-Same resources work against a remote Palm via params.remote_url on invoke
-or by overriding resource params when querying.
+Same resources work against a remote Palm via ``params.remote_url`` on
+analytics query / provider invoke (see ``README.md`` · 0.40.5).
 """
 
 from __future__ import annotations
