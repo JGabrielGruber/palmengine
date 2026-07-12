@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from palm.common.triggers.parse import TriggerSpec, parse_triggers
@@ -14,6 +15,7 @@ class TriggerRegistry:
     def __init__(self) -> None:
         self._specs: list[tuple[str, TriggerSpec]] = []  # (owner_flow_name, spec)
         self._schedule_last: dict[str, float] = {}
+        self._debounce_last: dict[str, float] = {}  # coalesce_key → last enqueue ts
 
     def reload_from_flow_rows(
         self,
@@ -50,14 +52,38 @@ class TriggerRegistry:
                 count += 1
         return count
 
-    def on_event(self, event_type: str, payload: dict[str, Any]) -> list[WorkIntent]:
+    def on_event(
+        self,
+        event_type: str,
+        payload: dict[str, Any],
+        *,
+        now_ts: float | None = None,
+    ) -> list[WorkIntent]:
         et = str(event_type or "")
+        now = time.time() if now_ts is None else float(now_ts)
+        parent_depth = int(payload.get("depth") or payload.get("work_depth") or 0)
         out: list[WorkIntent] = []
         for _owner, spec in self._specs:
-            intent = self._match(spec, et, payload)
-            if intent is not None:
-                out.append(intent)
+            intent = self._match(spec, et, payload, parent_depth=parent_depth)
+            if intent is None:
+                continue
+            if not self._debounce_allows(spec, intent, now=now):
+                continue
+            out.append(intent)
         return out
+
+    def _debounce_allows(
+        self, spec: TriggerSpec, intent: WorkIntent, *, now: float
+    ) -> bool:
+        debounce = float(spec.debounce_seconds or 0)
+        if debounce <= 0:
+            return True
+        key = intent.coalesce_key or f"{spec.kind}:{spec.work_flow_id}"
+        last = self._debounce_last.get(key)
+        if last is not None and (now - last) < debounce:
+            return False
+        self._debounce_last[key] = now
+        return True
 
     def due_schedules(self, *, now_ts: float) -> list[WorkIntent]:
         """Emit intents for schedule triggers whose interval has elapsed."""
@@ -84,8 +110,14 @@ class TriggerRegistry:
         return out
 
     def _match(
-        self, spec: TriggerSpec, event_type: str, payload: dict[str, Any]
+        self,
+        spec: TriggerSpec,
+        event_type: str,
+        payload: dict[str, Any],
+        *,
+        parent_depth: int = 0,
     ) -> WorkIntent | None:
+        depth = int(parent_depth) + 1
         if spec.kind == "on_resource":
             if event_type != "resource.changed":
                 return None
@@ -106,8 +138,10 @@ class TriggerRegistry:
                     "resource_ref": ref,
                     "definition_name": def_name or None,
                     "action": action,
+                    "depth": depth,
                 },
                 coalesce_key=spec.coalesce_key,
+                depth=depth,
             )
 
         if spec.kind == "on_flow":
@@ -131,8 +165,9 @@ class TriggerRegistry:
             return WorkIntent(
                 kind="run_flow",
                 target=spec.work_flow_id,
-                payload={"trigger": "on_flow", "source_flow": flow_id},
+                payload={"trigger": "on_flow", "source_flow": flow_id, "depth": depth},
                 coalesce_key=spec.coalesce_key,
+                depth=depth,
             )
 
         return None

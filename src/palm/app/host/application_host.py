@@ -276,12 +276,17 @@ class ApplicationHost:
             primary=self._app.primary_name,
         )
         self._started = True
+        if self.settings.enable_work_drain_service and self._work_drain is not None:
+            self._work_drain.start_background()
         return self
 
     def shutdown(self) -> None:
         """Stop services, projections, and all runtimes."""
         if not self._started:
             return
+
+        if self._work_drain is not None:
+            self._work_drain.stop_background()
 
         if self._outbox_service is not None:
             self._outbox_service.stop()
@@ -730,11 +735,15 @@ class ApplicationHost:
                 {"flow_name": flow_id, "metadata": dict(payload or {})}
             )
 
+        settings = self.settings
         self._work_drain = WorkDrainService(
             self._app.storage,
             submit_flow=_submit,
             event_engine=self._event,
             able=lambda: self._started,
+            max_depth=int(settings.work_drain_max_depth),
+            poll_interval=float(settings.work_drain_poll_interval),
+            batch_size=int(settings.work_drain_batch_size),
         )
         if self._event.is_initialized:
             self._work_drain.attach_events(self._event)
@@ -789,8 +798,15 @@ class ApplicationHost:
         outbox_pending = 0
         if self._outbox_service is not None:
             outbox_pending = self._outbox_service.store.pending_count()
+        bg = False
+        dropped = 0
+        if self._work_drain is not None:
+            bg = bool(self._work_drain.is_running)
+            dropped = int(self._work_drain.dropped_depth_count)
         return {
             "work_pending": work_pending,
+            "work_drain_running": bg,
+            "work_dropped_depth": dropped,
             "outbox_pending": outbox_pending,
             "journal": journal_status,
         }

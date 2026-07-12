@@ -468,7 +468,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.38 | Journal / offsets / redrive | ✅ Foundation (polish open) |
 | 0.39 | DashboardDefinition + system ops datasets | ✅ Foundation |
 
-**Open debt (→ 0.40):** ~~example triggers dogfood~~ (0.40.1) · continuous drain · debounce/depth · journal consumer wiring · doctor control_plane · durable dashboards · assist open:dataset — see [VISION-0.40](docs/VISION-0.40.md).
+**Open debt (→ 0.40):** ~~example triggers~~ (0.40.1) · ~~continuous drain / debounce / depth~~ (0.40.2) · journal consumer wiring · doctor control_plane · durable dashboards · assist open:dataset — see [VISION-0.40](docs/VISION-0.40.md).
 
 ### 0.40+ — Compositional mesh & reactive completion
 
@@ -477,8 +477,9 @@ just mcp-inspector                       # MCP Inspector UI
 
 | Train | Focus | Status |
 |-------|--------|--------|
-| 0.40 | Close 0.37–0.38 debt; trigger dogfood; optional continuous drain; remote system analytics | 🔄 0.40.1 |
+| 0.40 | Close 0.37–0.38 debt; trigger dogfood; optional continuous drain; remote system analytics | 🔄 0.40.2 |
 | 0.40.1 | Todos pack `metadata.triggers` / options.triggers dogfood · reload_work_triggers | ✅ |
+| 0.40.2 | Continuous work drain (opt-in) · debounce · depth limits | ✅ |
 | 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ⬜ Vision |
 | 0.42 | Event stream protocol + `/ws/v1/events` (or SSE); Portal live strip; **palm provider event consumer** | ⬜ Vision |
 | 0.43+ | Mesh authz, multi-worker fan-out | ⬜ Later |

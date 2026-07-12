@@ -19,6 +19,7 @@ _TODO_ANALYTICS_TRIGGERS = [
         "kind": "on_resource",
         "resource": "put-palm-todos",
         "actions": ["put"],
+        "debounce": 2.0,
         "work": {
             "flow_id": "todo-analytics",
             "coalesce_key": "on_resource:put-palm-todos:todo-analytics",
@@ -29,6 +30,7 @@ _TODO_ANALYTICS_TRIGGERS = [
         "kind": "on_resource",
         "resource": "palm-todos",
         "actions": ["put"],
+        "debounce": 2.0,
         "work": {
             "flow_id": "todo-analytics",
             "coalesce_key": "on_resource:palm-todos:todo-analytics",

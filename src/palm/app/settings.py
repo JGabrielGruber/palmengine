@@ -54,6 +54,11 @@ class PalmSettings(BaseSettings):
     enable_outbox_service: bool = True
     outbox_poll_interval: float = 0.5
     enable_event_outbox: bool = True
+    # 0.40.2 — optional continuous WorkIntent drain (default: explicit tick_work only)
+    enable_work_drain_service: bool = False
+    work_drain_poll_interval: float = 1.0
+    work_drain_batch_size: int = 10
+    work_drain_max_depth: int = 8
     rebuild_projections_on_startup: bool = True
     projection_rebuild_batch_size: int = 100
     projection_rebuild_max_instances: int = 5000
