@@ -1,8 +1,8 @@
 """
-Published system datasets — ``provider: palm`` system-read actions.
+Published **local** system datasets — ``provider: palm`` system-read actions.
 
-Same resources work against a remote Palm via ``params.remote_url`` on
-analytics query / provider invoke (see ``README.md`` · 0.40.5).
+Remote / origin Palms are separate ResourceDefinitions (see ``origin_resources.py``)
+with ``params.remote_url`` on the **definition**, not on analytics query params.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def _sys(
         provider=_PALM,
         action=action,
         resource_id=action,
-        params={},
+        params={},  # local coordinator; no remote_url
         metadata={
             "description": title,
             "tags": ["palm", "system", "ops", "bi"],
@@ -43,27 +43,27 @@ def _sys(
 PALM_SYSTEM_JOBS = _sys(
     "palm-system-jobs",
     "list_jobs",
-    title="Jobs on this (or remote) Palm",
+    title="Jobs on this Palm (local)",
 )
 PALM_SYSTEM_WAITING = _sys(
     "palm-system-waiting",
     "list_waiting",
-    title="Jobs waiting for input",
+    title="Jobs waiting for input (local)",
 )
 PALM_SYSTEM_INSTANCES = _sys(
     "palm-system-instances",
     "list_instances",
-    title="Durable instances",
+    title="Durable instances (local)",
 )
 PALM_SYSTEM_FLOWS = _sys(
     "palm-system-flows",
     "list_flows",
-    title="Flow catalog",
+    title="Flow catalog (local)",
 )
 PALM_SYSTEM_RESOURCES = _sys(
     "palm-system-resources",
     "list_resources",
-    title="Resource catalog",
+    title="Resource catalog (local)",
 )
 
 # Virtual view: instances grouped by flow_name (analytics query-time count_by)
@@ -71,7 +71,7 @@ PALM_SYSTEM_INSTANCES_PER_FLOW = ResourceDefinition(
     id="resource-palm-system-instances-per-flow",
     name="palm-system-instances-per-flow",
     provider=_PALM,
-    action="list_instances",  # catalog identity; virtual path never invokes this action
+    action="list_instances",
     resource_id="list_instances",
     params={},
     metadata={
