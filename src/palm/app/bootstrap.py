@@ -122,7 +122,12 @@ def load_definitions_for_repository(
 
 
 def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
-    """Resolve a :class:`~palm.app.host.roles.HostProfile` from application settings."""
+    """Resolve a :class:`~palm.app.host.roles.HostProfile` from application settings.
+
+    Always applies ``server_host`` / ``server_port`` from settings so
+    ``PALM_SERVER_HOST`` / ``PALM_SERVER_PORT`` win over dataclass defaults
+    (presets like ``server`` and ``all_in_one`` used to ignore them).
+    """
     if settings.host_profile:
         profile = HostProfile.from_preset(settings.host_profile)
     elif settings.host_roles:
@@ -140,6 +145,8 @@ def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
         profile,
         enable_outbox_service=settings.enable_outbox_service,
         outbox_poll_interval=settings.outbox_poll_interval,
+        server_host=settings.server_host,
+        server_port=settings.server_port,
     )
 
 

@@ -11,6 +11,7 @@ import sys
 
 from palm.app import HostProfile, run_host
 from palm.app.session import create_console
+from palm.app.settings import PalmSettings
 from palm.runtimes.cli.commands.registry import build_registry
 from palm.runtimes.cli.shared.args import CliInvocation, build_parser, invocation_from_namespace
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
@@ -29,7 +30,7 @@ def main(argv: list[str] | None = None) -> int:
         from palm.runtimes.cli.shared.args import settings_from_invocation
 
         settings = settings_from_invocation(inv)
-        profile = _host_profile_from_invocation(inv)
+        profile = _host_profile_from_invocation(inv, settings)
         run_host(profile, settings=settings)
         return 0
 
@@ -63,19 +64,24 @@ def main(argv: list[str] | None = None) -> int:
     return exit_code
 
 
-def _host_profile_from_invocation(inv: CliInvocation) -> HostProfile:
+def _host_profile_from_invocation(
+    inv: CliInvocation,
+    settings: PalmSettings | None = None,
+) -> HostProfile:
+    """Build a host profile; bind host/port fall back to :class:`PalmSettings`."""
+    cfg = settings if settings is not None else PalmSettings()
     cmd = (inv.host_cmd or "all-in-one").replace("-", "_")
     if cmd in {"all_in_one", "allinone"}:
         return HostProfile.all_in_one()
     if cmd == "master":
         return HostProfile.master_only()
     if cmd == "worker":
-        count = inv.host_workers if inv.host_workers is not None else 1
+        count = inv.host_workers if inv.host_workers is not None else cfg.worker_count
         return HostProfile.worker_only(count=count)
     if cmd == "server":
         return HostProfile.server_only(
-            host=inv.host_bind or "127.0.0.1",
-            port=inv.host_port or 8080,
+            host=inv.host_bind if inv.host_bind is not None else cfg.server_host,
+            port=inv.host_port if inv.host_port is not None else cfg.server_port,
         )
     raise ValueError(f"Unknown host subcommand: {inv.host_cmd!r}")
 

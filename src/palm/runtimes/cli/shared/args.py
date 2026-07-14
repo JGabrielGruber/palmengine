@@ -232,8 +232,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of daemon worker runtimes (default: 1)",
     )
     server_p = host_sub.add_parser("server", help="HTTP API with queued job driving")
-    server_p.add_argument("--host", default=None, help="Bind host (default: 127.0.0.1)")
-    server_p.add_argument("--port", type=int, default=None, help="Bind port (default: 8080)")
+    server_p.add_argument(
+        "--host",
+        default=None,
+        help="Bind host (default: PALM_SERVER_HOST / PalmSettings.server_host)",
+    )
+    server_p.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="Bind port (default: PALM_SERVER_PORT / PalmSettings.server_port)",
+    )
 
     return parser
 

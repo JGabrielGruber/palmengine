@@ -41,6 +41,24 @@ def test_host_profile_server_bind() -> None:
     assert profile.server_port == 9000
 
 
+def test_host_profile_server_uses_palm_settings() -> None:
+    inv = CliInvocation(command="host", host_cmd="server")
+    settings = PalmSettings.for_tests()
+    settings.server_host = "0.0.0.0"
+    settings.server_port = 8090
+    profile = _host_profile_from_invocation(inv, settings)
+    assert profile.server_host == "0.0.0.0"
+    assert profile.server_port == 8090
+
+
+def test_host_profile_server_cli_overrides_settings() -> None:
+    inv = CliInvocation(command="host", host_cmd="server", host_port=9001)
+    settings = PalmSettings.for_tests()
+    settings.server_port = 8090
+    profile = _host_profile_from_invocation(inv, settings)
+    assert profile.server_port == 9001
+
+
 def test_main_host_all_in_one_starts_host() -> None:
     captured: dict[str, object] = {}
 
