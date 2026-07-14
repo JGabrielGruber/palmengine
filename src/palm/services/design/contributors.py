@@ -22,6 +22,22 @@ def wire_builtin_design_contributors() -> None:
 
         for hook in iter_provider_design_contributor_hooks():
             hook()
+        # 0.41.2 — dashboard tile validation
+        from palm.services.analytics.dashboard_design import (
+            validate_dashboard_design_proposal,
+        )
+        from palm.services.design.registry import (
+            DesignContributor,
+            register_design_contributor,
+        )
+
+        register_design_contributor(
+            DesignContributor(
+                contributor_id="dashboard",
+                validate=validate_dashboard_design_proposal,
+                summary="Dashboard tile structure and profile validation (0.41)",
+            ),
+        )
         _wired = True
 
 

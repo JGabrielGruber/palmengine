@@ -120,3 +120,47 @@ Menu → **Analytics datasets** → `open:dataset:origin-system-flows`
 - Same `items` envelope local vs origin.
 - Multiple origins = multiple resource sets (`staging-system-flows`, …).
 - Realtime event stream to the provider is **0.42** (P2); today is request/response.
+
+## Design: propose / publish dashboard (0.41.2)
+
+Dashboards are first-class design artifacts. Commit **registers** the definition
+(durable via 0.41 store) — no instance migration.
+
+```python
+host.design.publish_dashboard({
+    "name": "my-ops",
+    "title": "My ops board",
+    "tiles": [
+        {"id": "flows", "dataset": "palm-system-flows", "profile": "table", "limit": 50},
+        {
+            "id": "per-flow",
+            "dataset": "palm-system-instances-per-flow",
+            "profile": "series",
+            "series": {"x_field": "flow_name", "y_fields": ["count"]},
+        },
+    ],
+})
+# → /analytics/?dashboard=my-ops
+```
+
+Origin-bound board (datasets must already be registered as **resources**):
+
+```python
+register_origin_system_resources(repo, "http://b:8090")
+host.design.publish_dashboard({
+    "name": "origin-ops",
+    "tiles": [
+        {"id": "f", "dataset": "origin-system-flows", "profile": "table"},
+    ],
+})
+```
+
+REST:
+
+```http
+POST /v1/api/design/dashboards/publish
+X-Palm-Subject: dev
+{"name":"my-ops","tiles":[{"id":"t1","dataset":"palm-system-flows","profile":"table"}]}
+```
+
+Dispatch aliases: `design/propose-dashboard`, `design/publish-dashboard`.

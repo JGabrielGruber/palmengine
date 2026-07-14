@@ -115,6 +115,41 @@ def _handle_publish_flow(
     return service.publish_flow(payload, base_flow_id=base_flow_id)
 
 
+
+_PROPOSE_DASHBOARD_SKIP = frozenset(
+    {"base_name", "body", "commit_token", "input_token"},
+)
+
+
+def _handle_propose_dashboard(
+    service: DesignService,
+    params: dict[str, Any],
+    _capture: dict[str, str],
+) -> Any:
+    body = dict(params.get("body") or params)
+    base_name = params.get("base_name") or params.get("base_dashboard_name")
+    payload = {
+        key: value
+        for key, value in body.items()
+        if key not in _PROPOSE_DASHBOARD_SKIP
+    }
+    return service.propose_dashboard(payload, base_name=base_name)
+
+
+def _handle_publish_dashboard(
+    service: DesignService,
+    params: dict[str, Any],
+    _capture: dict[str, str],
+) -> Any:
+    body = dict(params.get("body") or params)
+    base_name = params.get("base_name") or params.get("base_dashboard_name")
+    payload = {
+        key: value
+        for key, value in body.items()
+        if key not in _PROPOSE_DASHBOARD_SKIP
+    }
+    return service.publish_dashboard(payload, base_name=base_name)
+
 def _handle_publish_resource(
     service: DesignService,
     params: dict[str, Any],
@@ -141,6 +176,8 @@ _DISPATCH_HANDLERS: dict[str, DispatchHandler] = {
     "discard_proposal": _handle_discard_proposal,
     "publish_flow": _handle_publish_flow,
     "publish_resource": _handle_publish_resource,
+    "propose_dashboard": _handle_propose_dashboard,
+    "publish_dashboard": _handle_publish_dashboard,
 }
 
 

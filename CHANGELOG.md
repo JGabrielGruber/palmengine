@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.41.0–0.41.2 — Durable dashboards, schedules, design publish
+- Design `propose_dashboard` / `publish_dashboard` + REST `/v1/api/design/dashboards`
+- Tile validation contributor; system README design + origin story
+
 ### 0.41.0–0.41.1 — Durable dashboards & schedules
 - Storage-backed dashboard registry (`palm:dashboard:*`); host attaches on start
 - `ScheduleRegistry` durable `next_fire_at`; work drain `tick_schedules` uses it

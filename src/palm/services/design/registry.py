@@ -73,6 +73,16 @@ _registry: tuple[CommandSpec, ...] = (
         ("design", "publish-resource"),
         "One-shot propose → impact → commit a resource (weak-LLM path)",
     ),
+    CommandSpec(
+        "propose_dashboard",
+        ("design", "propose-dashboard"),
+        "Create a design proposal from a dashboard body (0.41)",
+    ),
+    CommandSpec(
+        "publish_dashboard",
+        ("design", "publish-dashboard"),
+        "One-shot propose → validate → commit a dashboard (0.41)",
+    ),
 )
 
 _DESIGN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
@@ -80,6 +90,8 @@ _DESIGN_MCP_ALIASES: dict[str, tuple[str, ...]] = {
     "design/propose-resource": ("design", "propose-resource"),
     "design/publish": ("design", "publish"),
     "design/publish-resource": ("design", "publish-resource"),
+    "design/propose-dashboard": ("design", "propose-dashboard"),
+    "design/publish-dashboard": ("design", "publish-dashboard"),
     "design/list": ("design", "proposals"),
     "design/get": ("design", "proposals", "{proposal_id}"),
     "design/validate": ("design", "proposals", "{proposal_id}", "validate"),

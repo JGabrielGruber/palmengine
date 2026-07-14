@@ -47,6 +47,56 @@ def propose_flow(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
     return ok(payload)
 
 
+def propose_dashboard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    """POST /v1/api/design/dashboards — propose dashboard definition (0.41.2)."""
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+    base = body.get("base_name") or body.get("base_dashboard_name")
+    proposal_body = {
+        k: v
+        for k, v in body.items()
+        if k not in {"base_name", "base_dashboard_name"}
+    }
+    try:
+        payload = ctx.design.propose_dashboard(
+            proposal_body,
+            base_name=str(base) if base is not None else None,
+        )
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+    return ok(payload)
+
+
+def publish_dashboard(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
+    """POST /v1/api/design/dashboards/publish — one-shot dashboard (0.41.2)."""
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+    body = _json_object(request)
+    if isinstance(body, ServerResponse):
+        return body
+    base = body.get("base_name") or body.get("base_dashboard_name")
+    proposal_body = {
+        k: v
+        for k, v in body.items()
+        if k not in {"base_name", "base_dashboard_name"}
+    }
+    try:
+        payload = ctx.design.publish_dashboard(
+            proposal_body,
+            base_name=str(base) if base is not None else None,
+        )
+    except DesignCommitRejectedServiceError as exc:
+        return errors.conflict(str(exc))
+    except (TypeError, ValueError, KeyError) as exc:
+        return errors.bad_request(str(exc))
+    return ok(payload)
+
+
 def get_proposal(
     ctx: ServerContext,
     request: ServerRequest,

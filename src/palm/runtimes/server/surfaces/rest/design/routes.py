@@ -33,6 +33,20 @@ ROUTES: tuple[RouteEntry, ...] = (
         auth_required=True,
     ),
     RouteEntry(
+        "propose_dashboard",
+        "POST",
+        f"{API_PREFIX}/design/dashboards",
+        "propose_dashboard",
+        auth_required=True,
+    ),
+    RouteEntry(
+        "publish_dashboard",
+        "POST",
+        f"{API_PREFIX}/design/dashboards/publish",
+        "publish_dashboard",
+        auth_required=True,
+    ),
+    RouteEntry(
         "get_proposal",
         "GET",
         f"{API_PREFIX}/design/proposals/{{proposal_id}}",
@@ -70,6 +84,8 @@ ROUTES: tuple[RouteEntry, ...] = (
 _HANDLERS = {
     "list_proposals": handlers.list_proposals,
     "propose_flow": handlers.propose_flow,
+    "propose_dashboard": handlers.propose_dashboard,
+    "publish_dashboard": handlers.publish_dashboard,
     "get_proposal": handlers.get_proposal,
     "discard_proposal": handlers.discard_proposal,
     "validate_proposal": handlers.validate_proposal,

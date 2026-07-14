@@ -114,6 +114,34 @@ class DesignService(BaseService):
             "validation": validation,
         }
 
+    def propose_dashboard(
+        self,
+        body: dict[str, Any],
+        *,
+        base_name: str | None = None,
+    ) -> dict[str, Any]:
+        """Store a dashboard proposal (0.41) — commit registers durable dashboard."""
+        from palm.services.analytics.dashboard_design import resolve_dashboard_name
+
+        # Normalize envelope
+        payload = dict(body)
+        if payload.get("kind") is None and "tiles" in payload:
+            payload = {**payload, "kind": "dashboard"}
+        name = resolve_dashboard_name(payload, base_name=base_name)
+        proposal = self._proposals.create(
+            payload,
+            kind="dashboard",
+            flow_id=name,  # catalog name for list filters
+            base_flow_id=base_name,
+        )
+        validation = self.validate_proposal(proposal.proposal_id, dry_run=True)
+        proposal.validation = validation
+        self._proposals.save(proposal)
+        return {
+            "proposal": proposal.to_dict(),
+            "validation": validation,
+        }
+
     def get_proposal(self, proposal_id: str) -> dict[str, Any]:
         try:
             return self._proposals.get(proposal_id).to_dict()
@@ -129,6 +157,13 @@ class DesignService(BaseService):
         ok, blockers = run_design_validators(proposal.body, context=self)
         if proposal.kind == "resource":
             catalog_validation = self._validate_resource_catalog(proposal.body)
+        elif proposal.kind == "dashboard":
+            catalog_validation = self._validate_dashboard_catalog(proposal.body)
+            ok = ok and bool(catalog_validation.get("valid", False))
+            # surface structural blockers from catalog into blockers list
+            for b in catalog_validation.get("blockers") or []:
+                if b not in blockers:
+                    blockers.append(str(b))
         else:
             runtime = self._resolve_runtime()
             try:
@@ -158,6 +193,26 @@ class DesignService(BaseService):
         proposal = self._proposals.get(proposal_id)
         if proposal.kind == "resource":
             return self._analyze_resource_proposal_impact(proposal)
+        if proposal.kind == "dashboard":
+            from palm.services.analytics.dashboard_design import resolve_dashboard_name
+
+            name = resolve_dashboard_name(proposal.body) or proposal.flow_id or "dashboard"
+            impact = {
+                "kind": "dashboard",
+                "dashboard": name,
+                "summary": {
+                    "total": 0,
+                    "note": "Dashboards have no instance migration; commit registers tiles only.",
+                },
+            }
+            proposal.impact = impact
+            self._proposals.save(proposal)
+            valid = bool((proposal.validation or {}).get("valid"))
+            mutation = build_commit_mutation_block(proposal_id, valid=valid)
+            if mutation is not None:
+                impact = dict(impact)
+                impact["mutation"] = mutation
+            return impact
         flow_id = resolve_proposal_flow_id(proposal)
         if not flow_id:
             raise DesignCommitRejectedServiceError(
@@ -227,6 +282,8 @@ class DesignService(BaseService):
 
         if proposal.kind == "resource":
             return self._commit_resource_proposal(proposal_id, proposal)
+        if proposal.kind == "dashboard":
+            return self._commit_dashboard_proposal(proposal_id, proposal)
 
         intent = resolve_publish_intent(
             body=proposal.body,
@@ -397,6 +454,80 @@ class DesignService(BaseService):
             "impact_summary": (impact.get("summary") if isinstance(impact, dict) else None),
             "hint": "Resource published. Reference it from flow steps via resource_ref.",
             "result": committed,
+        }
+
+    def publish_dashboard(
+        self,
+        body: dict[str, Any],
+        *,
+        base_name: str | None = None,
+    ) -> dict[str, Any]:
+        """One-shot propose → validate → commit dashboard (0.41.2)."""
+        proposed = self.propose_dashboard(body, base_name=base_name)
+        proposal = proposed.get("proposal") or {}
+        proposal_id = str(proposal.get("proposal_id") or "")
+        validation = proposed.get("validation") or {}
+        if not validation.get("valid"):
+            return {
+                "status": "blocked",
+                "stage": "validate",
+                "proposal_id": proposal_id,
+                "proposal": proposal,
+                "validation": validation,
+                "hint": "Fix tile/dataset blockers, then publish_dashboard again.",
+            }
+        impact = self.analyze_proposal_impact(proposal_id)
+        mutation = impact.get("mutation") if isinstance(impact, dict) else None
+        commit_token = None
+        if isinstance(mutation, dict):
+            commit_token = mutation.get("commit_token") or mutation.get("input_token")
+        committed = self.commit_proposal(
+            proposal_id,
+            commit_token=str(commit_token) if commit_token else None,
+        )
+        name = committed.get("dashboard") or committed.get("name")
+        return {
+            "status": "committed",
+            "stage": "commit",
+            "proposal_id": proposal_id,
+            "dashboard": name,
+            "hint": f"Open /analytics/?dashboard={name}",
+            "result": committed,
+        }
+
+    def _validate_dashboard_catalog(self, body: dict[str, Any]) -> dict[str, Any]:
+        from palm.services.analytics.dashboard_design import validate_dashboard_body
+
+        ok, blockers, dash = validate_dashboard_body(body, known_datasets=None)
+        # optional strict dataset check if analytics available later
+        return {
+            "valid": ok,
+            "blockers": blockers,
+            "dashboard": dash.name if dash is not None else None,
+            "tile_count": len(dash.tiles) if dash is not None else 0,
+        }
+
+    def _commit_dashboard_proposal(self, proposal_id: str, proposal: Any) -> dict[str, Any]:
+        from palm.services.analytics.dashboard_design import validate_dashboard_body
+        from palm.services.analytics.dashboards import register_dashboard
+
+        ok, blockers, dash = validate_dashboard_body(proposal.body, known_datasets=None)
+        if not ok or dash is None:
+            raise DesignCommitRejectedServiceError(
+                proposal_id,
+                "dashboard validation failed",
+                blockers=blockers,
+            )
+        register_dashboard(dash, persist=True)
+        proposal.status = "committed"
+        proposal.flow_id = dash.name
+        proposal.committed_revision = 1
+        self._proposals.save(proposal)
+        return {
+            "proposal_id": proposal_id,
+            "status": "committed",
+            "dashboard": dash.name,
+            "definition": dash.to_dict(),
         }
 
     def _auto_migrate_compatible_instances(
