@@ -119,7 +119,7 @@ def register_events_routes(registry: RouteRegistry, ctx: ServerContext, *, surfa
         registry.register(
             method=entry.method,
             path=entry.path,
-            handler=bind_handler(_HANDLERS[entry.handler_name], ctx),
+            handler=bind_handler(ctx, _HANDLERS[entry.handler_name]),
             surface=surface,
             auth_required=entry.auth_required,
         )
