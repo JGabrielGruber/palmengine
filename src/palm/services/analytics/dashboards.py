@@ -1,4 +1,4 @@
-"""In-process dashboard registry + render (0.39)."""
+"""Dashboard registry + render (0.39) with durable store hook (0.41)."""
 
 from __future__ import annotations
 
@@ -8,24 +8,61 @@ from typing import TYPE_CHECKING, Any
 from palm.definitions.dashboard import DashboardDefinition, DashboardTile
 
 if TYPE_CHECKING:
+    from palm.core.storage import StorageEngine
+    from palm.services.analytics.dashboard_store import DashboardStore
     from palm.services.analytics.service import AnalyticsService
 
 _lock = threading.RLock()
 _by_name: dict[str, DashboardDefinition] = {}
+_store: DashboardStore | None = None
 
 
-def register_dashboard(dashboard: DashboardDefinition) -> None:
+def attach_dashboard_store(storage: StorageEngine | None) -> int:
+    """Bind durable store and load existing dashboards. Return count loaded."""
+    global _store
+    from palm.services.analytics.dashboard_store import DashboardStore
+
+    with _lock:
+        if storage is None:
+            _store = None
+            return 0
+        _store = DashboardStore(storage)
+        return _store.load_into_registry()
+
+
+def register_dashboard(
+    dashboard: DashboardDefinition,
+    *,
+    persist: bool = True,
+) -> None:
     with _lock:
         _by_name[dashboard.name] = dashboard
+        if persist and _store is not None:
+            _store.save(dashboard)
 
 
 def get_dashboard(name: str) -> DashboardDefinition | None:
     with _lock:
-        return _by_name.get(str(name or "").strip())
+        hit = _by_name.get(str(name or "").strip())
+        if hit is not None:
+            return hit
+        if _store is not None:
+            loaded = _store.get(str(name or "").strip())
+            if loaded is not None:
+                _by_name[loaded.name] = loaded
+                return loaded
+        return None
 
 
 def list_dashboards() -> list[dict[str, Any]]:
     with _lock:
+        # merge store names not yet in memory
+        if _store is not None:
+            for name in _store.list_names():
+                if name not in _by_name:
+                    d = _store.get(name)
+                    if d is not None:
+                        _by_name[d.name] = d
         return [
             {
                 "name": d.name,
@@ -39,7 +76,7 @@ def list_dashboards() -> list[dict[str, Any]]:
 
 
 def clear_dashboards() -> None:
-    """Test helper."""
+    """Test helper — memory only (does not wipe storage)."""
     with _lock:
         _by_name.clear()
 
@@ -83,17 +120,23 @@ def render_dashboard(
     }
 
 
-def register_dashboard_from_dict(data: dict[str, Any]) -> DashboardDefinition:
+def register_dashboard_from_dict(
+    data: dict[str, Any],
+    *,
+    persist: bool = True,
+) -> DashboardDefinition:
     dash = DashboardDefinition.from_dict(data)
-    register_dashboard(dash)
+    register_dashboard(dash, persist=persist)
     return dash
 
 
 __all__ = [
+    "attach_dashboard_store",
     "clear_dashboards",
     "get_dashboard",
     "list_dashboards",
     "register_dashboard",
     "register_dashboard_from_dict",
     "render_dashboard",
+    "DashboardTile",
 ]

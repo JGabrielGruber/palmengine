@@ -604,6 +604,7 @@ class ApplicationHost:
             enabled=bool(settings.analytics_enabled),
         )
         self._assist.bind_analytics(self._analytics)
+        self._wire_dashboard_store()
         self._wire_work_drain()
         self._wire_event_journal()
         from palm.services._cqrs_wiring import wire_all_service_cqrs
@@ -724,6 +725,14 @@ class ApplicationHost:
         options["scheduler"] = "queued"
         return options
 
+    def _wire_dashboard_store(self) -> None:
+        """0.41 — durable dashboard definitions on host storage."""
+        if not self._app.storage.is_initialized:
+            return
+        from palm.services.analytics.dashboards import attach_dashboard_store
+
+        attach_dashboard_store(self._app.storage)
+
     def _wire_work_drain(self) -> None:
         """WorkIntent queue + trigger attach (0.37). Drain is explicit via tick()."""
         if not self._app.storage.is_initialized:
@@ -810,10 +819,18 @@ class ApplicationHost:
         if self._work_drain is not None:
             bg = bool(self._work_drain.is_running)
             dropped = int(self._work_drain.dropped_depth_count)
+        schedules: list[dict[str, Any]] = []
+        if self._work_drain is not None:
+            try:
+                schedules = list(self._work_drain.schedules.list_entries())
+            except Exception:
+                schedules = []
         return {
             "work_pending": work_pending,
             "work_drain_running": bg,
             "work_dropped_depth": dropped,
+            "schedules": schedules,
+            "schedule_count": len(schedules),
             "outbox_pending": outbox_pending,
             "journal": journal_status,
             "journal_consumers": list(DEFAULT_JOURNAL_CONSUMERS),

@@ -7,6 +7,7 @@ import time
 from typing import TYPE_CHECKING, Any, Callable
 
 from palm.common.triggers.registry import TriggerRegistry
+from palm.common.work.schedule import ScheduleRegistry
 from palm.common.work.store import WorkIntentStore
 from palm.core.event import Event
 from palm.core.work import WorkIntent
@@ -35,6 +36,7 @@ class WorkDrainService:
         batch_size: int = 10,
     ) -> None:
         self._store = WorkIntentStore(storage)
+        self._schedules = ScheduleRegistry(storage, self._store)
         self._submit_flow = submit_flow
         self._event_engine = event_engine
         self._able = able or (lambda: True)
@@ -51,6 +53,10 @@ class WorkDrainService:
     @property
     def store(self) -> WorkIntentStore:
         return self._store
+
+    @property
+    def schedules(self) -> ScheduleRegistry:
+        return self._schedules
 
     @property
     def triggers(self) -> TriggerRegistry:
@@ -86,9 +92,12 @@ class WorkDrainService:
         *,
         get_metadata: Any = None,
     ) -> int:
-        return self._triggers.reload_from_flow_rows(
+        n = self._triggers.reload_from_flow_rows(
             flow_rows, get_metadata=get_metadata
         )
+        # Durable schedules (0.41) — next_fire survives restart
+        self._schedules.load_from_flow_rows(flow_rows, get_metadata=get_metadata)
+        return n
 
     def enqueue(self, intent: WorkIntent) -> str:
         if intent.depth > self._max_depth:
@@ -97,10 +106,8 @@ class WorkDrainService:
         return self._store.enqueue(intent)
 
     def tick_schedules(self) -> int:
-        intents = self._triggers.due_schedules(now_ts=time.time())
-        for intent in intents:
-            self.enqueue(intent)
-        return len(intents)
+        """Fire durable interval schedules into the work queue."""
+        return len(self._schedules.tick(limit=self._batch_size))
 
     def tick(self, *, limit: int | None = None) -> int:
         """Claim and execute due work. Returns number of intents processed."""

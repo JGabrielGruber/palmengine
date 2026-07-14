@@ -2,7 +2,7 @@
 
 **Current Version:** `0.39.0`
 **Last Updated:** July 10, 2026
-**Maturity:** Wizard · MCP · Assist remote · Portal/WS · **Analytics + dashboards** · **WorkIntent / journal foundations** · Palm provider system inspect.
+**Maturity:** Wizard · MCP · Assist remote · Portal/WS · **Analytics + dashboards** · **WorkIntent / journal foundations · **0.41 durable dashboards + schedules**** · Palm provider system inspect.
 
 ## Quick Overview
 

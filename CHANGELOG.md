@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.41.0–0.41.1 — Durable dashboards & schedules
+- Storage-backed dashboard registry (`palm:dashboard:*`); host attaches on start
+- `ScheduleRegistry` durable `next_fire_at`; work drain `tick_schedules` uses it
+- Doctor/control_plane includes schedule entries
+
+## [Unreleased]
+
 ### Added
 
 - **0.40.5** — Remote system analytics dogfood: `params.remote_url` on `palm-system-*` query; [system/README](examples/definitions/system/README.md); integration test.
