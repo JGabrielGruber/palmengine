@@ -267,10 +267,34 @@ def wait_for_job_remote(
     poll_interval: float = 0.05,
     retries: int = 2,
     wait_mode: WaitMode = WaitMode.UNTIL_TERMINAL,
+    prefer_events: bool = True,
 ) -> dict[str, Any]:
-    """Poll remote job status until the configured wait policy is satisfied."""
+    """Wait until remote job satisfies *wait_mode*.
+
+    0.42: when the origin exposes ``/v1/api/events/journal``, use journal
+    signals between status fetches (fewer GET /jobs polls). Falls back to
+    pure status polling if the events API is missing or fails.
+    """
     deadline = time.monotonic() + timeout
     last: dict[str, Any] = {"job_id": job_id, "status": "unknown"}
+    events_client = None
+    if prefer_events:
+        try:
+            from palm.providers.palm.events_client import PalmEventsClient
+
+            events_client = PalmEventsClient(
+                base_url,
+                token=token,
+                timeout=min(timeout, 30.0),
+            )
+            # best-effort catalog probe — ignore failures
+            try:
+                events_client.catalog()
+            except Exception:
+                events_client = None
+        except Exception:
+            events_client = None
+
     while time.monotonic() < deadline:
         last = get_job_remote(
             base_url,
@@ -281,6 +305,23 @@ def wait_for_job_remote(
         )
         if _remote_job_ready(last, wait_mode):
             return last
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        if events_client is not None:
+            try:
+                events_client.wait_for_job(
+                    job_id,
+                    timeout=min(poll_interval * 4, remaining),
+                    poll_interval=poll_interval,
+                    terminal_only=True,
+                )
+                # signal received — re-fetch job for authoritative status
+                continue
+            except TimeoutError:
+                pass
+            except Exception:
+                events_client = None  # disable events path for rest of wait
         time.sleep(poll_interval)
     raise PalmTimeoutError(_format_remote_wait_timeout(job_id, last, wait_mode, timeout))
 
