@@ -130,6 +130,10 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             from palm.runtimes.server.surfaces.websocket.frames import (
                 websocket_accept_key,
             )
+            from palm.runtimes.server.surfaces.websocket.events_session import (
+                EVENTS_WS_PATH,
+                run_events_websocket,
+            )
             from palm.runtimes.server.surfaces.websocket.session import (
                 ASSIST_WS_PATH,
                 run_assist_websocket,
@@ -141,8 +145,14 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             raw_path = self.path or ""
             parsed = urlparse(raw_path)
             path = (parsed.path or "/").rstrip("/") or "/"
-            target = ASSIST_WS_PATH.rstrip("/") or "/"
-            if path != target:
+            assist_target = ASSIST_WS_PATH.rstrip("/") or "/"
+            events_target = EVENTS_WS_PATH.rstrip("/") or "/"
+            channel = None
+            if path == assist_target:
+                channel = "assist"
+            elif path == events_target:
+                channel = "events"
+            if channel is None:
                 return False
 
             # Stamp every response on this route so tunnel deploy can be verified
@@ -164,10 +174,12 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
                     {
                         "error": "upgrade_required",
                         "message": (
-                            f"Use WebSocket upgrade on {ASSIST_WS_PATH} "
+                            f"Use WebSocket upgrade on {path} "
                             "(Sec-WebSocket-Version: 13)."
                         ),
                         "assist_path": ASSIST_WS_PATH,
+                        "events_path": EVENTS_WS_PATH,
+                        "channel": channel,
                         "diag": diag,
                         "palm_version": palm_version,
                         "raw_path": raw_path,
@@ -214,12 +226,20 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
 
             ctx = getattr(app, "context", None)
             try:
-                run_assist_websocket(
-                    rfile=self.rfile,
-                    wfile=self.wfile,
-                    ctx=ctx,
-                    headers=headers,
-                )
+                if channel == "events":
+                    run_events_websocket(
+                        rfile=self.rfile,
+                        wfile=self.wfile,
+                        ctx=ctx,
+                        headers=headers,
+                    )
+                else:
+                    run_assist_websocket(
+                        rfile=self.rfile,
+                        wfile=self.wfile,
+                        ctx=ctx,
+                        headers=headers,
+                    )
             except Exception:
                 pass
             return True

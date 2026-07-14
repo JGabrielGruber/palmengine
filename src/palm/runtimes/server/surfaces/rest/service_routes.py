@@ -8,6 +8,7 @@ from palm.runtimes.server.surfaces.rest.analytics.routes import register_analyti
 from palm.runtimes.server.surfaces.rest.assist.routes import register_assist_routes
 from palm.runtimes.server.surfaces.rest.definitions.routes import register_definitions_routes
 from palm.runtimes.server.surfaces.rest.design.routes import register_design_routes
+from palm.runtimes.server.surfaces.rest.events.routes import register_events_routes
 from palm.runtimes.server.surfaces.rest.execution.flows.routes import register_flow_routes
 from palm.runtimes.server.surfaces.rest.execution.processes.routes import register_process_routes
 from palm.runtimes.server.surfaces.rest.execution.providers.routes import register_provider_routes
@@ -33,6 +34,7 @@ def register_service_routes(
     register_process_routes(registry, ctx, surface=surface)
     register_provider_routes(registry, ctx, surface=surface)
     register_system_routes(registry, ctx, surface=surface)
+    register_events_routes(registry, ctx, surface=surface)
 
 
 __all__ = ["register_service_routes"]

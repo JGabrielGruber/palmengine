@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.surface import BaseSurface
+from palm.runtimes.server.surfaces.websocket.events_session import EVENTS_WS_PATH
 from palm.runtimes.server.surfaces.websocket.session import (
     ASSIST_WS_PATH,
     PROTOCOL_VERSION,
@@ -52,6 +53,12 @@ class WebSocketSurface(BaseSurface):
         )
         registry.register(
             method="GET",
+            path=EVENTS_WS_PATH,
+            handler=self._events_http_hint,
+            surface=self.name,
+        )
+        registry.register(
+            method="GET",
             path="/portal",
             handler=self._portal_index,
             surface=self.name,
@@ -78,14 +85,35 @@ class WebSocketSurface(BaseSurface):
                 "status": "live",
                 "protocol": PROTOCOL_VERSION,
                 "message": (
-                    "WebSocket Assist + Portal dogfood. "
-                    f"WS: {ASSIST_WS_PATH} · UI: /portal/"
+                    "WebSocket Assist + Events + Portal. "
+                    f"Assist: {ASSIST_WS_PATH} · Events: {EVENTS_WS_PATH} · UI: /portal/"
                 ),
-                "detail": "0.32.4 Portal dogfood — input schema on WS turns.",
+                "detail": "0.42 events channel separate from Assist chat.",
                 "mount_prefix": self.mount_prefix,
                 "assist_path": ASSIST_WS_PATH,
+                "events_path": EVENTS_WS_PATH,
                 "portal_path": "/portal/",
                 "ops": ["hello", "ping", "dispatch", "bind"],
+                "events_ops": ["hello", "subscribe", "unsubscribe", "ping"],
+            },
+        )
+
+    def _events_http_hint(self, request: ServerRequest) -> ServerResponse:
+        del request
+        from palm import __version__ as palm_version
+
+        return ServerResponse(
+            status=426,
+            body={
+                "error": "upgrade_required",
+                "message": f"Use WebSocket upgrade on {EVENTS_WS_PATH}",
+                "events_path": EVENTS_WS_PATH,
+                "diag": "surface-fallback-events",
+                "palm_version": palm_version,
+                "hint": (
+                    'After hello, send {"op":"subscribe","types":["resource.changed"],'
+                    '"since_offset":0}'
+                ),
             },
         )
 
