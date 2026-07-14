@@ -16,10 +16,13 @@ from palm.providers.palm.exceptions import (
 from palm.providers.palm.flow.coordinator import PalmInvokeCoordinator
 from palm.providers.palm.flow.params import PalmInvokeParams
 from palm.providers.palm.events_client import PalmEventsClient
+from palm.providers.palm.events_ws import PalmEventsWebSocketClient, http_base_to_ws_url
 from palm.providers.palm.provider import PalmProvider
 
 __all__ = [
     "PalmEventsClient",
+    "PalmEventsWebSocketClient",
+    "http_base_to_ws_url",
     "PalmInvokeCoordinator",
     "PalmInvokeParams",
     "PalmLocalError",

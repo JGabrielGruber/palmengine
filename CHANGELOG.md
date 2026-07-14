@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.42.3 — Native WebSocket events client (palm provider)
+- `PalmEventsWebSocketClient` for `/ws/v1/events` (stdlib RFC6455)
+- Client-masked frames; subscribe + live wait helpers
+
+
 ### 0.41.0–0.41.2 — Durable dashboards, schedules, design publish
 - Design `propose_dashboard` / `publish_dashboard` + REST `/v1/api/design/dashboards`
 - Tile validation contributor; system README design + origin story

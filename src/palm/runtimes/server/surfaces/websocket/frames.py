@@ -40,35 +40,60 @@ def is_websocket_upgrade(headers: dict[str, str]) -> bool:
     return "websocket" in upgrade and "upgrade" in connection and bool(key)
 
 
-def encode_frame(payload: bytes | str, *, opcode: int = OP_TEXT) -> bytes:
-    """Encode a server→client frame (unmasked)."""
+def encode_frame(
+    payload: bytes | str,
+    *,
+    opcode: int = OP_TEXT,
+    mask: bool = False,
+) -> bytes:
+    """Encode a WebSocket frame. Server→client is unmasked; clients must mask."""
+    import os
+
     data = payload.encode("utf-8") if isinstance(payload, str) else bytes(payload)
     header = bytearray()
     header.append(0x80 | (opcode & 0x0F))  # FIN + opcode
     n = len(data)
+    mask_bit = 0x80 if mask else 0
     if n < 126:
-        header.append(n)
+        header.append(mask_bit | n)
     elif n < (1 << 16):
-        header.append(126)
+        header.append(mask_bit | 126)
         header.extend(struct.pack("!H", n))
     else:
-        header.append(127)
+        header.append(mask_bit | 127)
         header.extend(struct.pack("!Q", n))
+    if mask:
+        key = os.urandom(4)
+        header.extend(key)
+        data = bytes(b ^ key[i % 4] for i, b in enumerate(data))
     return bytes(header) + data
 
 
-def encode_text(payload: str, *, opcode: int = OP_TEXT) -> bytes:
-    """Encode a server→client text frame (unmasked)."""
-    return encode_frame(payload, opcode=opcode)
+def encode_text(payload: str, *, opcode: int = OP_TEXT, mask: bool = False) -> bytes:
+    """Encode a text frame (set ``mask=True`` for client→server)."""
+    return encode_frame(payload, opcode=opcode, mask=mask)
 
 
-def encode_close(code: int = 1000, reason: str = "") -> bytes:
+def encode_client_text(payload: str) -> bytes:
+    """Client→server text frame (masked, RFC6455)."""
+    return encode_text(payload, mask=True)
+
+
+def encode_close(code: int = 1000, reason: str = "", *, mask: bool = False) -> bytes:
     body = struct.pack("!H", code) + reason.encode("utf-8")
-    return encode_frame(body, opcode=OP_CLOSE)
+    return encode_frame(body, opcode=OP_CLOSE, mask=mask)
 
 
-def encode_pong(payload: bytes = b"") -> bytes:
-    return encode_frame(payload, opcode=OP_PONG)
+def encode_client_close(code: int = 1000, reason: str = "") -> bytes:
+    return encode_close(code, reason, mask=True)
+
+
+def encode_pong(payload: bytes = b"", *, mask: bool = False) -> bytes:
+    return encode_frame(payload, opcode=OP_PONG, mask=mask)
+
+
+def encode_client_ping(payload: bytes = b"") -> bytes:
+    return encode_frame(payload, opcode=OP_PING, mask=True)
 
 
 class FrameReader:
@@ -110,7 +135,11 @@ __all__ = [
     "OP_PING",
     "OP_PONG",
     "OP_TEXT",
+    "encode_client_close",
+    "encode_client_ping",
+    "encode_client_text",
     "encode_close",
+    "encode_frame",
     "encode_pong",
     "encode_text",
     "is_websocket_upgrade",
