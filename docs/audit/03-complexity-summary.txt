@@ -1,0 +1,89 @@
+# Complexity summary — SHA 8413d0e
+## CC grade distribution (radon cc)
+   3535  - A (
+    454  - B (
+    162  - C (
+     26  - D (
+     12  - E (
+     10  - F (
+
+## Average complexity (tail)
+
+4199 blocks (classes, functions, methods) analyzed.
+Average complexity: A (3.4941652774470113)
+
+## Worst blocks (rank C/D/E/F)
+F 70:0 shape_dispatch_result - F (112)
+F 16:0 map_dispatch_to_rest - F (65)
+F 89:0 render_status_dashboard - F (62)
+F 39:0 open_target - F (49)
+F 226:0 menu_for_assist - F (49)
+F 85:0 dispatch_system - F (44)
+F 22:0 run_doctor - F (44)
+F 36:0 normalize_assist_dispatch_args - F (43)
+F 95:0 _local_list - F (42)
+F 18:0 render_job_panel - F (42)
+F 28:0 _invocation_to_line - E (40)
+F 37:0 validate_dashboard_body - E (39)
+F 61:0 _parse_one - E (38)
+M 103:4 AssistService.dispatch - E (37)
+F 45:0 dispatch_definitions - E (36)
+F 20:0 compact_wizard_inspect - E (34)
+F 132:0 _validate_value - E (34)
+F 33:0 ensure_browse_menu_actions - E (33)
+F 246:0 _handle_dispatch - E (32)
+F 63:0 _context_completions - E (31)
+F 44:0 parse_assist_command - E (31)
+F 37:0 build_input_schema - E (31)
+F 124:0 shape_waiting_assistant - D (30)
+M 116:4 AnalyticsService.query - D (29)
+F 29:0 resolve_wizard_collection_action - D (29)
+F 77:0 rewrite_actions_for_chat - D (28)
+F 12:0 build_doctor_report - D (28)
+F 206:0 _handle_subscribe - D (27)
+F 133:0 _step_from_mapping - D (27)
+M 248:4 ResourcePages.invoke_post - D (26)
+
+## Lowest maintainability index (MI rank B/C)
+
+## xenon violations (modules/functions over threshold)
+ERROR:xenon:module 'src/palm/services/analytics/dashboard_design.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/analytics/virtual.py' has a rank of D
+ERROR:xenon:module 'src/palm/services/analytics/schema_roles.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/analytics/present/pipeline.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/analytics/present/profiles/series.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/design/impact_scan.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/profiles/continuity.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/profiles/turn_meta.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/profiles/actions_chat.py' has a rank of D
+ERROR:xenon:module 'src/palm/services/assist/catalog/open.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/catalog/discover.py' has a rank of D
+ERROR:xenon:module 'src/palm/services/assist/present/actions.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/present/humanize.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/present/input_schema.py' has a rank of C
+ERROR:xenon:module 'src/palm/services/assist/sessions/handoff.py' has a rank of C
+ERROR:xenon:module 'src/palm/backends/behavior_tree/runner.py' has a rank of C
+ERROR:xenon:module 'src/palm/providers/palm/bindings/resource/system_inspect.py' has a rank of C
+ERROR:xenon:module 'src/palm/providers/rest/bindings/transport/http.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/server/surfaces/websocket/events_session.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/server/surfaces/websocket/session.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/mcp/assist/operator.py' has a rank of D
+ERROR:xenon:module 'src/palm/runtimes/mcp/assist/normalize.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/mcp/assist/rest_map.py' has a rank of E
+ERROR:xenon:module 'src/palm/runtimes/mcp/assist/shape/catalog.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/mcp/assist/shape/result.py' has a rank of E
+ERROR:xenon:module 'src/palm/runtimes/cli/commands/doctor.py' has a rank of D
+ERROR:xenon:module 'src/palm/runtimes/cli/commands/views.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/cli/shared/dispatch.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/cli/tui/prompt.py' has a rank of C
+ERROR:xenon:module 'src/palm/runtimes/cli/tui/display.py' has a rank of D
+ERROR:xenon:module 'src/palm/common/transforms/rules/_jsonpath.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/transforms/rules/enrich_resource.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/resource/design_validation.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/triggers/parse.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/collection_input.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/choice_input.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/compact.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/result_summary.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/compose_status.py' has a rank of C
+ERROR:xenon:module 'src/palm/common/operator/flow_session_view.py' has a rank of C

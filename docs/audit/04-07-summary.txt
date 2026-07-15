@@ -1,0 +1,66 @@
+# Dead-code & security summary — SHA 8413d0e
+## vulture @80 — count: 2
+### by type
+      1 unused variable
+      1 unused import
+### first 40 @80
+src/palm/common/runtimes/server/protocol.py:11: unused import 'Awaitable' (90% confidence)
+src/palm/runtimes/cli/tui/completion.py:25: unused variable 'complete_event' (100% confidence)
+
+## autoflake would-change files: 0
+src/palm/instances/__init__.py: No issues detected!
+src/palm/services/analytics/normalize.py: No issues detected!
+src/palm/services/analytics/present/profiles/table.py: No issues detected!
+src/palm/services/execution/flows/session.py: No issues detected!
+src/palm/services/design/bindings/cqrs/schemas.py: No issues detected!
+src/palm/services/assist/profiles/__init__.py: No issues detected!
+src/palm/services/assist/catalog/open.py: No issues detected!
+src/palm/core/behavior_tree/exceptions.py: No issues detected!
+src/palm/core/behavior_tree/nodes/composite/parallel_node.py: No issues detected!
+src/palm/core/transform/engine.py: No issues detected!
+src/palm/runtimes/server/surfaces/websocket/static.py: No issues detected!
+src/palm/runtimes/server/surfaces/ssr/explorer/fetch.py: No issues detected!
+src/palm/runtimes/server/surfaces/ssr/studio/assets.py: No issues detected!
+src/palm/runtimes/server/surfaces/rest/surface.py: No issues detected!
+src/palm/runtimes/server/surfaces/rest/doc_examples.py: No issues detected!
+src/palm/runtimes/mcp/contributors.py: No issues detected!
+src/palm/runtimes/mcp/data/__init__.py: No issues detected!
+src/palm/runtimes/mcp/providers/tools.py: No issues detected!
+src/palm/runtimes/mcp/assist/normalize.py: No issues detected!
+src/palm/runtimes/cli/cli.py: No issues detected!
+
+## bandit issues (severity>=medium, confidence>=medium)
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/app/host/inbound_service.py:452:17
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/common/events/external.py:76:13
+>> Issue: [B324:hashlib] Use of weak SHA1 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   Location: src/palm/common/websocket/frames.py:28:13
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/providers/palm/events_client.py:69:17
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/providers/palm/events_client.py:84:13
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/providers/palm/flow/remote/client.py:41:13
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/providers/rest/bindings/transport/http.py:37:17
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   Location: src/palm/runtimes/mcp/rest_client.py:435:17
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B324:hashlib] Use of weak SHA1 hash for security. Consider usedforsecurity=False
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+	Total lines of code: 63848
+	Total lines skipped (#nosec): 0

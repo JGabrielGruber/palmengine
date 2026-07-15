@@ -1,0 +1,65 @@
+# Inventory & size census — SHA 8413d0e
+
+src/palm files: 814
+src/palm LOC:   75564
+tests files:    265
+tests LOC:      30894
+
+## Per-layer (src/palm/*)
+LAYER             FILES      LOC
+runtimes            200    22540
+common              188    18001
+services            111    10372
+patterns            118     9419
+core                 76     5627
+app                  21     4167
+providers            68     4029
+definitions           6      525
+storages             14      448
+instances             4      256
+backends              3       80
+states                3       72
+utils                 1        5
+__pycache__           0        0
+
+## Largest 40 files (LOC)
+   1170 src/palm/app/host/application_host.py
+    992 src/palm/runtimes/server/surfaces/ssr/explorer/components.py
+    941 src/palm/runtimes/server/surfaces/ssr/explorer/forms.py
+    871 src/palm/runtimes/mcp/in_process.py
+    725 src/palm/app/host/inbound_service.py
+    708 src/palm/common/persistence/definition_repository.py
+    697 src/palm/services/design/service.py
+    694 src/palm/common/resource/document_storage.py
+    604 src/palm/runtimes/server/surfaces/rest/doc_examples.py
+    502 src/palm/patterns/wizard/flow/phases/resource.py
+    482 src/palm/patterns/wizard/flow/validation.py
+    478 src/palm/runtimes/cli/shared/job_inspect.py
+    476 src/palm/runtimes/cli/commands/dashboard.py
+    475 src/palm/runtimes/mcp/rest_client.py
+    448 src/palm/patterns/_registry.py
+    437 src/palm/common/executions/executor.py
+    434 src/palm/runtimes/server/surfaces/websocket/session.py
+    430 src/palm/services/assist/catalog/menu.py
+    400 src/palm/runtimes/server/surfaces/ssr/explorer/actions.py
+    399 src/palm/services/assist/catalog/open.py
+    398 src/palm/core/orchestration/engine.py
+    393 src/palm/runtimes/server/surfaces/rest/definitions/handlers.py
+    389 src/palm/providers/palm/flow/remote/client.py
+    385 src/palm/common/runtimes/server/cqrs.py
+    381 src/palm/patterns/wizard/bindings/definitions/builder.py
+    380 src/palm/app/app.py
+    378 src/palm/app/host/cqrs_wiring.py
+    356 src/palm/common/runtimes/base.py
+    351 src/palm/core/transform/engine.py
+    348 src/palm/services/analytics/service.py
+    344 src/palm/common/managers/instance_manager.py
+    343 src/palm/runtimes/mcp/assist/shape/result.py
+    337 src/palm/runtimes/server/surfaces/ssr/explorer/pages/resources.py
+    332 src/palm/providers/palm/events_ws.py
+    325 src/palm/common/resource/inbound.py
+    325 src/palm/common/cqrs/schema_bootstrap.py
+    323 src/palm/core/resource/engine.py
+    317 src/palm/common/cqrs/projections/instance_index.py
+    310 src/palm/patterns/wizard/bindings/cqrs/projection.py
+    309 src/palm/runtimes/server/surfaces/rest/docs.py

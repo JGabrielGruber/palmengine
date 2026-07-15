@@ -1,0 +1,36 @@
+# Documentation drift
+## Version sources of truth
+7:version = "0.45.8"
+124:target-version = "py311"
+138:python_version = "3.11"
+14:Public API version: ``palm.__version__`` (currently 0.45.8).
+21:__version__ = "0.45.8"
+
+## Version stamps in key docs (first version-looking token)
+ARCHITECTURE.md    0.13.13
+STATUS.md          0.39.0
+README.md          0.34.5
+DEVELOPMENT.md     0.16.5
+SCOPE.md           0.13.0
+AGENTS.md          0.45.8
+
+## ADR files
+001-compositional-power-resources.md
+002-pattern-apps-and-common-boundaries.md
+003-provider-apps.md
+004-cqrs-schemas-service-layer.md
+005-service-domain-api.md
+006-assist-domain.md
+007-definition-revisioning.md
+008-design-service.md
+009-service-cqrs-contributors.md
+010-prompt-state-interpolation.md
+011-local-document-resources.md
+012-wizard-branch-step.md
+014-dashboard-definitions.md
+
+## Root markdown sprawl
+RELEASE-*.md:   28
+MIGRATION-*.md: 14
+root *.md total:50
+CHANGELOG size: 82149 CHANGELOG.md

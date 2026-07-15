@@ -1,0 +1,107 @@
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.13
+Working... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:04
+Run started:2026-07-15 14:14:27.768815+00:00
+
+Test results:
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/app/host/inbound_service.py:452:17
+451	        try:
+452	            with urlopen(req, timeout=15.0) as resp:
+453	                raw = resp.read().decode("utf-8")
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/common/events/external.py:76:13
+75	        request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+76	        with urllib.request.urlopen(request, timeout=self._timeout) as response:
+77	            if response.status >= 400:
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak SHA1 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b324_hashlib.html
+   Location: src/palm/common/websocket/frames.py:28:13
+27	    """Compute ``Sec-WebSocket-Accept`` from the client key."""
+28	    digest = hashlib.sha1((sec_websocket_key.strip() + WS_GUID).encode("utf-8")).digest()
+29	    return base64.b64encode(digest).decode("ascii")
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/providers/palm/events_client.py:69:17
+68	        try:
+69	            with urlopen(req, timeout=self.timeout) as resp:
+70	                body = json.loads(resp.read().decode("utf-8"))
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/providers/palm/events_client.py:84:13
+83	        req = Request(url, headers={"Accept": "application/json"}, method="GET")
+84	        with urlopen(req, timeout=self.timeout) as resp:
+85	            body = json.loads(resp.read().decode("utf-8"))
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/providers/palm/flow/remote/client.py:41:13
+40	    try:
+41	        with urllib.request.urlopen(req, timeout=timeout) as resp:
+42	            raw = resp.read().decode("utf-8")
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/providers/rest/bindings/transport/http.py:37:17
+36	            )
+37	            with urllib.request.urlopen(req, timeout=timeout) as resp:
+38	                raw = resp.read().decode("utf-8")
+
+--------------------------------------------------
+>> Issue: [B310:blacklist] Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-22 (https://cwe.mitre.org/data/definitions/22.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b310-urllib-urlopen
+   Location: src/palm/runtimes/mcp/rest_client.py:435:17
+434	        try:
+435	            with urllib.request.urlopen(request, timeout=30) as response:
+436	                raw = response.read().decode("utf-8")
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 63848
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 1
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 59
+		Medium: 8
+		High: 1
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 1
+		Medium: 7
+		High: 60
+Files skipped (0):

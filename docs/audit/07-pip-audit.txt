@@ -1,0 +1,9 @@
+Installed 29 packages in 13ms
+Found 1 known vulnerability in 1 package
+Name              Version ID                  Fix Versions
+----------------- ------- ------------------- ------------
+pydantic-settings 2.14.1  GHSA-4xgf-cpjx-pc3j 2.14.2
+
+Name       Skip Reason
+---------- --------------------------------------------------------------------------
+palmengine Dependency not found on PyPI and could not be audited: palmengine (0.45.8)

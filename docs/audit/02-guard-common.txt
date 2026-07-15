@@ -1,0 +1,10 @@
+.......F.....                                                            [100%]
+=================================== FAILURES ===================================
+E   AssertionError: assert ('submit_flow...stances', ...) == ('submit_flow...rce', 'fetch')
+      
+      Left contains 5 more items, first extra item: 'list_jobs'
+      Use -v to get more diff
+/home/jgabrielgruber/Projects/palm/tests/test_modular_apps.py:62: AssertionError: assert ('submit_flow...stances', ...) == ('submit_flow...rce', 'fetch')
+=========================== short test summary info ============================
+FAILED tests/test_modular_apps.py::test_palm_provider_app_manifest - Assertio...
+guard-common exit: 1

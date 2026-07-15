@@ -1,0 +1,29 @@
+# Deferred (function-local) palm imports — indented import lines
+TOTAL indented palm imports: 595
+
+## Top 25 files by deferred-import count
+     34 src/palm/runtimes/mcp/in_process.py
+     29 src/palm/app/host/application_host.py
+     14 src/palm/app/app.py
+     12 src/palm/common/__init__.py
+      9 src/palm/runtimes/server/surfaces/ssr/explorer/forms.py
+      9 src/palm/patterns/_registry.py
+      9 src/palm/common/hooks/instance_persistence.py
+      9 src/palm/app/host/cqrs_wiring.py
+      8 src/palm/runtimes/server/surfaces/ssr/explorer/components.py
+      8 src/palm/runtimes/mcp/rest_client.py
+      7 src/palm/services/design/service.py
+      7 src/palm/runtimes/server/surfaces/ssr/explorer/fetch.py
+      6 src/palm/runtimes/cli/commands/dashboard.py
+      5 src/palm/services/assist/service.py
+      5 src/palm/runtimes/server/surfaces/websocket/session.py
+      5 src/palm/patterns/wizard/bindings/definitions/config.py
+      5 src/palm/patterns/wizard/bindings/definitions/builder.py
+      5 src/palm/common/hooks/state_snapshot.py
+      5 src/palm/common/cqrs/schemas.py
+      5 src/palm/app/host/inbound_service.py
+      4 src/palm/services/execution/flows/service.py
+      4 src/palm/services/design/contributors.py
+      4 src/palm/services/_cqrs_wiring.py
+      4 src/palm/services/assist/catalog/open.py
+      4 src/palm/services/analytics/dashboards.py

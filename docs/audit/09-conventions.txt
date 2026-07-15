@@ -1,0 +1,91 @@
+# Conventions — SHA 8413d0e
+## ruff statistics (project config)
+61	I001  	[*] Import block is un-sorted or un-formatted
+25	F401  	[*] `datetime.UTC` imported but unused
+15	RUF100	[*] Unused `noqa` directive (non-enabled: `BLE001`)
+10	UP038 	[*] Use `X | Y` in `isinstance` call instead of `(X, Y)`
+ 8	UP035 	[*] Import from `collections.abc` instead: `Callable`
+ 5	E402  	[ ] Module level import not at top of file
+ 3	F841  	[*] Local variable `registry` is assigned to but never used
+ 2	RUF002	[ ] Docstring contains ambiguous `–` (EN DASH). Did you mean `-` (HYPHEN-MINUS)?
+ 1	B010  	[*] Do not call `setattr` with a constant attribute value. It is not any safer than normal property access.
+ 1	B905  	[*] `zip()` without an explicit `strict=` parameter
+ 1	E741  	[ ] Ambiguous variable name: `l`
+ 1	F541  	[*] f-string without any placeholders
+ 1	UP041 	[*] Replace aliased errors with `TimeoutError`
+
+## Magic list-limit literals (limit=200/100/50/20/10)
+24
+src/palm/services/assist/catalog/menu.py:279:        rows = assist.list_waiting(limit=200) or []
+src/palm/services/assist/scenarios/service.py:82:            limit=50,
+src/palm/runtimes/server/surfaces/ssr/explorer/pages/instances.py:71:        instances = self._ctx.fetch.list_instances(limit=50)
+src/palm/runtimes/server/surfaces/ssr/explorer/pages/jobs.py:30:        jobs = self._ctx.fetch.list_jobs(limit=50)
+src/palm/runtimes/server/surfaces/ssr/explorer/pages/resources.py:52:        invocation_rows = self._ctx.fetch.list_resource_invocation_rows(limit=100)
+src/palm/runtimes/server/surfaces/ssr/explorer/pages/resources.py:132:        invocation_rows = self._ctx.fetch.list_resource_invocation_rows(limit=100)
+src/palm/runtimes/server/surfaces/rest/events/routes.py:72:        limit = 100
+src/palm/runtimes/mcp/in_process.py:346:        params = PaginationParams(limit=100, offset=0)
+src/palm/runtimes/mcp/in_process.py:413:        params = PaginationParams(limit=100, offset=0)
+src/palm/runtimes/mcp/in_process.py:427:        params = PaginationParams(limit=100, offset=0)
+src/palm/runtimes/mcp/in_process.py:729:        params = PaginationParams(limit=100, offset=0)
+src/palm/runtimes/cli/commands/dashboard.py:320:    instance_limit = 50 if options.full else None
+src/palm/common/events/outbox.py:182:            count = self.process_batch(limit=50, replay_handlers=replay_handlers)
+src/palm/app/host/inbound_service.py:373:                    events = client.poll(types=types, limit=50)
+
+## Hardcoded host/port (127.0.0.1 / :8080 / 0.0.0.0)
+15
+src/palm/runtimes/server/runtime.py:44:        host: str = "127.0.0.1",
+src/palm/runtimes/server/runtime.py:194:    host: str = "127.0.0.1",
+src/palm/providers/palm/events_ws.py:34:    """``http://host:8080`` → ``ws://host:8080/ws/v1/events``."""
+src/palm/providers/palm/events_ws.py:90:        host = parsed.hostname or "127.0.0.1"
+src/palm/runtimes/server/surfaces/rest/doc_examples.py:16:DEFAULT_BASE_URL = "http://localhost:8080"
+src/palm/runtimes/server/surfaces/rest/doc_examples.py:320:            "explorer": "http://localhost:8080/explorer/instances/inst-abc123",
+src/palm/runtimes/server/surfaces/rest/doc_examples.py:340:            "explorer": "http://localhost:8080/explorer/instances/inst-abc123",
+src/palm/runtimes/mcp/config.py:35:        base_url = os.environ.get("PALM_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+src/palm/runtimes/mcp/in_process.py:62:    runtime = ServerRuntime(host="127.0.0.1", port=0)
+src/palm/runtimes/mcp/providers/tools.py:15:        'palm_providers_invoke(resource_ref="check-health", params={"base_url": "http://127.0.0.1:8080"})',
+src/palm/app/app.py:360:                host=str(options.pop("host", "127.0.0.1")),
+src/palm/app/settings.py:52:    server_host: str = "127.0.0.1"
+src/palm/app/host/roles.py:27:    server_host: str = "127.0.0.1"
+src/palm/app/host/roles.py:73:        host: str = "127.0.0.1",
+src/palm/app/host/roles.py:106:        server_host: str = "127.0.0.1",
+
+## Leading-underscore modules in src/palm
+src/palm/common/transforms/_apps.py
+src/palm/common/transforms/rules/_dates.py
+src/palm/common/transforms/rules/_formats.py
+src/palm/common/transforms/rules/_helpers.py
+src/palm/common/transforms/rules/_jsonpath.py
+src/palm/common/transforms/rules/_math.py
+src/palm/patterns/_apps.py
+src/palm/patterns/_registry.py
+src/palm/patterns/wizard/flow/collection/phases/_base.py
+src/palm/patterns/wizard/flow/phases/_base.py
+src/palm/providers/_apps.py
+src/palm/providers/_registry.py
+src/palm/runtimes/cli/__main__.py
+src/palm/runtimes/mcp/__main__.py
+src/palm/services/_apps.py
+src/palm/services/assist/_params.py
+src/palm/services/assist/_view_meta.py
+src/palm/services/_cqrs_registry.py
+src/palm/services/_cqrs_wiring.py
+src/palm/storages/_apps.py
+
+## Broad exception handlers (except Exception)
+163
+     13 src/palm/app/host/application_host.py
+      9 src/palm/app/host/inbound_service.py
+      7 src/palm/runtimes/server/surfaces/ssr/explorer/actions.py
+      6 src/palm/services/assist/profiles/continuity.py
+      6 src/palm/runtimes/server/surfaces/websocket/events_session.py
+      6 src/palm/runtimes/mcp/in_process.py
+      5 src/palm/services/assist/catalog/open.py
+      5 src/palm/runtimes/cli/commands/assist.py
+      4 src/palm/runtimes/cli/commands/input.py
+      4 src/palm/common/hooks/instance_persistence.py
+      3 src/palm/runtimes/server/surfaces/websocket/session.py
+      3 src/palm/runtimes/cli/commands/doctor.py
+
+## noqa / type: ignore density
+noqa:        35
+type: ignore:28

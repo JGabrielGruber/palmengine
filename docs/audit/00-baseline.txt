@@ -1,0 +1,30 @@
+# Technical-debt audit — baseline
+# Everything in docs/audit/ is pinned to this commit.
+
+commit_sha:   8413d0e68b9c78741649b59508c7b1ce665ceb0f (8413d0e)
+branch:       master
+worktree:     clean (git status --porcelain empty at audit start)
+date:         2026-07-15
+palm_version: 0.45.8  (pyproject.toml:7, src/palm/__init__.py:21)
+
+## Environment
+python:  3.12.13  (uv run python --version)
+uv:      0.11.16
+just:    1.51.0
+
+## Audit tool availability (run via `uvx` / `uv run --with`, NOT installed in project)
+vulture, radon, xenon, bandit, pip-audit, autoflake, pydeps — all resolvable via uvx.
+pytest-cov — NOT in the base .venv; requires `uv run --with pytest-cov` or `uv sync --group dev`.
+NOTE: `just audit` / `just complexity` / `just refactor` reference these tools but pyproject
+declares none of them (only pre-commit) → those recipes fail on a fresh checkout. (FINDING: ci-tooling)
+
+## How to regenerate
+Re-run each Step command from TECH-DEBT.md "Methodology & reproducibility appendix" on this SHA.
+Guard scripts are authoritative:  `uv run python scripts/guard_core.py`  ·  `just guard-common`.
+
+## Gate status at baseline (all run on master @ 8413d0e)
+guard-core (scripts/guard_core.py) ............ PASS (exit 0) — core purity intact
+guard-common (3 boundary test files) .......... FAIL (exit 1) — test_modular_apps.py::test_palm_provider_app_manifest
+ruff check src/palm ........................... FAIL (exit 1) — ~133 findings (25 F401, 61 I001, ...)
+xenon --max-average A --max-modules B src/palm  FAIL (exit 1) — ~40 modules over threshold
+pip-audit ..................................... 1 vuln (pydantic-settings 2.14.1 → fix 2.14.2)

@@ -1,0 +1,26 @@
+# CI / tooling / process gaps
+## .github/workflows
+total 12
+drwxr-xr-x 2 jgabrielgruber jgabrielgruber 4096 jun 10 14:54 .
+drwxr-xr-x 4 jgabrielgruber jgabrielgruber 4096 jun 10 14:54 ..
+-rw-r--r-- 1 jgabrielgruber jgabrielgruber 1045 jun 10 14:54 publish.yml
+
+## pre-commit config present?
+ABSENT (.pre-commit-config.yaml missing)
+
+## coverage threshold (cov-fail-under) in pyproject?
+NONE — no coverage gate
+
+## audit tool deps declared in pyproject? (vulture/radon/xenon/bandit/pip-audit/autoflake)
+50:    "pre-commit>=3.7,<4.0",
+64:    "pre-commit>=3.7,<4.0",
+
+## pytest markers declared
+151:addopts = "-ra -q --strict-markers"
+152:markers = [
+153-    "slow: multi-session, filesystem, or full CLI bootstrap (skip with --fast)",
+154-    "integration: host/CQRS path needing full recovery wiring",
+155-]
+156-
+157-[tool.palm]
+158-default_session_ttl = 3600

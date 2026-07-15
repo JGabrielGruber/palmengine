@@ -1,0 +1,2 @@
+[OK] Core architecture rules respected
+guard-core exit: 0

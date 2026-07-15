@@ -1,0 +1,43 @@
+# Churn — file touch frequency, last 400 commits, src/palm *.py, excluding __init__.py
+     38 src/palm/app/host/application_host.py
+     21 src/palm/app/host/cqrs_wiring.py
+     20 src/palm/runtimes/mcp/in_process.py
+     19 src/palm/services/assist/views.py
+     19 src/palm/runtimes/mcp/assist/dispatch.py
+     18 src/palm/runtimes/server/surfaces/rest/routes.py
+     17 src/palm/runtimes/server/surfaces/rest/doc_examples.py
+     16 src/palm/services/assist/service.py
+     16 src/palm/runtimes/server/surfaces/rest/route_table.py
+     16 src/palm/runtimes/cli_pkg/display.py
+     16 src/palm/patterns/wizard/builder.py
+     16 src/palm/common/runtimes/server/context.py
+     15 src/palm/runtimes/mcp/rest_client.py
+     15 src/palm/runtimes/cli_pkg/commands/registry.py
+     15 src/palm/core/orchestration/engine.py
+     14 src/palm/runtimes/server/surfaces/ssr/explorer/forms.py
+     14 src/palm/common/runtimes/server/cqrs.py
+     14 src/palm/common/cqrs/query.py
+     14 src/palm/app/settings.py
+     14 src/palm/app/bootstrap.py
+     13 src/palm/runtimes/server/surfaces/ssr/explorer/components.py
+     13 src/palm/runtimes/server/surfaces/ssr/explorer/actions.py
+     13 src/palm/runtimes/mcp/server.py
+     13 src/palm/runtimes/embedded.py
+     13 src/palm/runtimes/cli.py
+     13 src/palm/runtimes/base.py
+     13 src/palm/patterns/wizard/tree.py
+     13 src/palm/executions/executor.py
+     13 src/palm/common/runtimes/base.py
+     13 src/palm/app/app.py
+
+# Churn incl __init__.py (top 10, for reference)
+     38 src/palm/app/host/application_host.py
+     22 src/palm/core/__init__.py
+     21 src/palm/app/host/cqrs_wiring.py
+     20 src/palm/runtimes/mcp/in_process.py
+     19 src/palm/services/assist/views.py
+     19 src/palm/runtimes/mcp/assist/dispatch.py
+     18 src/palm/runtimes/server/surfaces/rest/routes.py
+     17 src/palm/runtimes/server/surfaces/rest/doc_examples.py
+     16 src/palm/services/assist/service.py
+     16 src/palm/runtimes/server/surfaces/rest/route_table.py

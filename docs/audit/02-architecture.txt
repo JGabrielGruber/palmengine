@@ -1,0 +1,53 @@
+# Architecture & coupling — SHA 8413d0e
+
+## Inward-arrow violations (TOP-LEVEL imports, non-indented)
+### services/ importing palm.runtimes (forbidden: services must not import runtimes)
+-- count: 0
+
+### common/ importing palm.patterns (forbidden: no pattern-specific logic in common)
+src/palm/common/interactive_runtime.py:12:import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
+src/palm/common/interactive_runtime.py:16:from palm.patterns._registry import InteractiveRuntimeHooks, get_interactive_runtime
+src/palm/common/child_wait.py:7:import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
+src/palm/common/child_wait.py:9:from palm.patterns._registry import ChildWaitHooks, get_child_wait_hooks
+src/palm/common/cqrs/catalog.py:7:import palm.patterns  # noqa: F401 — ensure pattern contributors are registered
+src/palm/common/cqrs/catalog.py:38:from palm.patterns._registry import iter_cqrs_contributors
+src/palm/common/runtimes/server/cqrs.py:9:import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
+src/palm/common/runtimes/server/cqrs.py:43:from palm.patterns._registry import iter_cqrs_contributors
+src/palm/common/patterns/builder.py:9:import palm.patterns  # noqa: F401 — autoload installed pattern apps
+src/palm/common/patterns/builder.py:16:from palm.patterns._registry import get_builder
+src/palm/common/runtimes/base.py:13:import palm.patterns  # — register patterns
+-- count: 11
+
+### common/ importing palm.runtimes (top-level; note common/runtimes is internal)
+-- count: 0
+
+### services/ importing palm.app (services should sit below app)
+-- count: 0
+
+### patterns/ importing palm.services / palm.runtimes / palm.app (should stay low)
+-- count: 0
+
+## God-object: ApplicationHost method/class census
+application_host.py total 'def ': 88
+application_host.py 'def ' (any): 89
+application_host.py classes: 1
+application_host.py properties (@property): 29
+application_host.py _wire_ methods: 5
+
+## Observability trio — status method definitions
+899:    def event_plane_status(self) -> dict[str, Any]:
+939:    def ops_status(self) -> dict[str, Any]:
+987:    def control_plane_status(self) -> dict[str, Any]:
+
+## Magic-string bus identities
+901:        orchestration_bus = "host_fallback"
+906:                orchestration_bus = "runtime"
+915:                    if row.get("mode") == "internal"
+920:            "orchestration_bus": orchestration_bus,
+921:            "host_coordination_bus": "host",
+924:            "journal_bus": "host",
+
+## Deprecated alias in status
+298:        if self._work_drain_background_enabled() and self._work_drain is not None:
+302:    def _work_drain_background_enabled(self) -> bool:
+1026:            "work_drain_background": bg,

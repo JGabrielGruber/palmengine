@@ -1,0 +1,42 @@
+# Placeholder / not-implemented / TODO markers in src/palm
+## Counts
+NotImplementedError: 0
+TODO:                9
+FIXME:               0
+HACK/XXX:            6
+placeholder:         41
+
+## Samples (NotImplemented / not implemented yet)
+src/palm/common/transforms/rules/parquet_load.py:32:            f"{self.rule_name} is not implemented yet — use json_load/csv_load or "
+
+## Samples (placeholder)
+src/palm/core/resource/invocation.py:1:"""Resource invocation specs and state placeholder binding."""
+src/palm/core/resource/invocation.py:11:_STATE_PLACEHOLDER = re.compile(r"^\{\{\s*state\.([a-zA-Z0-9_.-]+)\s*\}\}$")
+src/palm/core/resource/invocation.py:77:    """Bind ``{{ state.path }}`` placeholders in strings, dicts, and lists."""
+src/palm/core/resource/invocation.py:82:        match = _STATE_PLACEHOLDER.match(stripped)
+src/palm/core/resource/invocation.py:99:    """Return a copy of ``params`` with state placeholders bound."""
+src/palm/core/resource/invocation.py:110:    """Bind ``{{ state.* }}`` and ``{param}`` placeholders in a resource id template."""
+src/palm/runtimes/server/surfaces/ssr/explorer/schemas.py:70:        "x-placeholder": "Choose a flow…",
+src/palm/runtimes/server/surfaces/ssr/explorer/schemas.py:98:                    "description": "How many placeholder steps the test wizard should run",
+src/palm/core/resource/engine.py:73:        ``{{ state.key }}`` placeholders in params and ``resource_id``.
+src/palm/core/orchestration/mode/unconfigured_mode.py:2:UnconfiguredMode — placeholder until :meth:`~palm.core.orchestration.engine.OrchestrationEngine.initialize` sets a real mode.
+src/palm/providers/graphql/provider.py:1:"""GraphQL resource provider — schema-driven API access (placeholder)."""
+src/palm/runtimes/server/surfaces/ssr/explorer/components.py:121:    placeholder: str = "Search resources…",
+src/palm/runtimes/server/surfaces/ssr/explorer/components.py:129:        f'<input type="search" name="q" value="{escape(query)}" placeholder="{escape(placeholder)}" '
+src/palm/providers/postgres/provider.py:1:"""Postgres resource provider — relational data access (placeholder)."""
+src/palm/runtimes/server/surfaces/ssr/example_pages.py:41:            f'{link_card("/explorer/examples/wizard-preview", "Wizard preview stub", "Placeholder for step-by-step wizard UI.")}'
+src/palm/runtimes/server/surfaces/ssr/example_pages.py:42:            f'{link_card("/explorer/examples/dashboard", "Dashboard stub", "Placeholder for live job board HTML.")}'
+src/palm/runtimes/server/surfaces/ssr/explorer/resource_helpers.py:204:    """Show how ``{{ state.* }}`` placeholders would resolve."""
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:86:        f'placeholder="Number, choice name, or text" autocomplete="off" />'
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:389:        f'placeholder="{{&quot;customer_id&quot;: &quot;42&quot;}}">{escape(state_text)}</textarea>'
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:390:        '<span class="field-hint">Used to resolve <code>{{ state.key }}</code> placeholders in params.</span>'
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:872:        placeholder = spec.get("x-placeholder")
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:873:        if placeholder:
+src/palm/runtimes/server/surfaces/ssr/explorer/forms.py:875:            options.append(f'<option value=""{selected}>{escape(placeholder)}</option>')
+src/palm/runtimes/mcp/surface.py:27:    # Placeholder for future experiments (same as full until used)
+src/palm/common/transforms/catalog.py:34:    "parquet_load": "Placeholder for Parquet — register a custom rule with pyarrow",
+src/palm/common/transforms/rules/parquet_load.py:1:"""Parquet loader placeholder — extension point for future binary format support."""
+src/palm/common/transforms/rules/parquet_load.py:13:    Placeholder for Parquet ingestion.
+src/palm/common/resource/binding.py:16:    ``{{ state.* }}`` placeholder binding.
+src/palm/common/operator/prompt_binding.py:13:    Interpolate ``{{ state.path }}`` placeholders in wizard ``prompt`` / ``title`` strings.
+src/palm/common/operator/path_match.py:10:    """Return captured placeholder values when ``segments`` matches ``pattern``."""

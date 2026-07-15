@@ -1,0 +1,40 @@
+# Untested adapter confirmation
+## Source files: postgres/mongodb/graphql providers+storages
+src/palm/providers/graphql/app.py
+src/palm/providers/graphql/__init__.py
+src/palm/providers/graphql/provider.py
+src/palm/providers/graphql/registry.py
+src/palm/providers/postgres/app.py
+src/palm/providers/postgres/__init__.py
+src/palm/providers/postgres/provider.py
+src/palm/providers/postgres/registry.py
+src/palm/storages/mongodb/backend.py
+src/palm/storages/mongodb/__init__.py
+src/palm/storages/mongodb/registry.py
+src/palm/storages/postgres/backend.py
+src/palm/storages/postgres/__init__.py
+src/palm/storages/postgres/registry.py
+
+## Tests mentioning these adapters (behavioral?)
+### postgres
+tests/test_modular_apps.py
+### mongo
+tests/test_filesystem_storage.py
+tests/test_modular_apps.py
+tests/test_storage.py
+### graphql
+tests/test_modular_apps.py
+
+## urlopen usage + scheme validation nearby
+9
+src/palm/providers/palm/events_client.py:14:from urllib.request import Request, urlopen
+src/palm/providers/palm/events_client.py:69:            with urlopen(req, timeout=self.timeout) as resp:
+src/palm/providers/palm/events_client.py:84:        with urlopen(req, timeout=self.timeout) as resp:
+src/palm/providers/palm/flow/remote/client.py:41:        with urllib.request.urlopen(req, timeout=timeout) as resp:
+src/palm/providers/rest/bindings/transport/http.py:37:            with urllib.request.urlopen(req, timeout=timeout) as resp:
+src/palm/runtimes/mcp/rest_client.py:435:            with urllib.request.urlopen(request, timeout=30) as response:
+src/palm/common/events/external.py:76:        with urllib.request.urlopen(request, timeout=self._timeout) as response:
+src/palm/app/host/inbound_service.py:11:from urllib.request import Request, urlopen
+src/palm/app/host/inbound_service.py:452:            with urlopen(req, timeout=15.0) as resp:
+
+## Do any guard schemes? (allow http/https only)

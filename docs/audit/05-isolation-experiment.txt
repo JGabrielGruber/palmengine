@@ -1,0 +1,14 @@
+# Isolation experiment — each failing file run ALONE
+test_conversation_replay_inspect_guard.py        NO-SUMMARY: FAILED tests/test_conversation_replay_inspect_guard.py::test_inspect_only_path_stays_at_catalog_not_summary
+test_design_contributor_hooks.py                 NO-SUMMARY: FAILED tests/test_design_contributor_hooks.py::test_custom_hook_registers_via_wire
+test_design_dispatch.py                          NO-SUMMARY: FAILED tests/test_design_dispatch.py::test_resolve_design_command_covers_registry
+test_flows_dispatch.py                           NO-SUMMARY: FAILED tests/test_flows_dispatch.py::test_dispatch_session_context - Attribut...
+test_mcp_phase3.py                               NO-SUMMARY: FAILED tests/test_mcp_phase3.py::test_palm_wizard_collection_action_assistant_format
+test_mcp_tools.py                                NO-SUMMARY: FAILED tests/test_mcp_tools.py::test_palm_flows_session_input_coerces_confirm
+test_modular_apps.py                             NO-SUMMARY: FAILED tests/test_modular_apps.py::test_palm_provider_app_manifest - Assertio...
+test_palm_provider.py                            NO-SUMMARY: FAILED tests/test_palm_provider.py::test_palm_provider_remote_submit_flow - a...
+test_rest_api_routes.py                          NO-SUMMARY: FAILED tests/test_rest_api_routes.py::test_get_session_context_via_command_path
+test_server_docs.py                              NO-SUMMARY: FAILED tests/test_server_docs.py::test_every_route_has_curl_and_response_example
+test_server_studio.py                            NO-SUMMARY: FAILED tests/test_server_studio.py::test_studio_save_process_registers_in_repository
+test_server_wizard_resume.py                     NO-SUMMARY: FAILED tests/test_server_wizard_resume.py::test_session_resume_child_wait_polls_nested_child
+test_server_wizards.py                           NO-SUMMARY: FAILED tests/test_server_wizards.py::test_session_backtrack_explicit_target

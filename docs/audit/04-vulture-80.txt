@@ -1,0 +1,2 @@
+src/palm/common/runtimes/server/protocol.py:11: unused import 'Awaitable' (90% confidence)
+src/palm/runtimes/cli/tui/completion.py:25: unused variable 'complete_event' (100% confidence)
