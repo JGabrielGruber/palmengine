@@ -63,7 +63,7 @@ package re-exports its public surface from `__init__`.
 ## Slices (feature-per-patch; public API frozen)
 
 Executed by **impact ÷ blast-radius**, not the seam numbers — front-load the low-risk extractions. Each
-lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC tracked: **1164 → 816** so far.
+lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC tracked: **1164 → 671** so far.
 
 | Patch | Scope | Status | MIGRATION? |
 |---|---|---|---|
@@ -71,10 +71,10 @@ lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC track
 | **0.48.1** | Seam 3 — `app/host/observability.py::HostObservability` (1164→1040) | ✅ | no |
 | **0.48.2** | Seam 1 — `app/host/services/` — 6 core services build via a dependency-ordered `HostServiceRegistry` (1040→985) | ✅ | no |
 | **0.48.3** | Seam 4 — `app/host/workplane/` — `WorkPlaneCoordinator` (work-drain/inbound/journal wiring + ops) + folds in the flat `inbound_service`/`work_drain_service` (985→816) | ✅ | no |
+| **0.48.4** | Seam 5 — `app/host/lifecycle/` — `RuntimeSpawner` (spawn runtimes) + `RecoveryCoordinator` (worker readiness, compensation, outbox/webhook, projection rebuild) (816→671) | ✅ | no |
 | next | **Dead-accessor removal** — careful cross-codebase zero-consumer proof (vulture over-flags public API), then remove | — | **yes** |
 | next | Seam 2 — `_wire_cqrs` projection + CQRS-contributor unification → a root-agnostic `ctx` pipeline driver | — | no |
 | next | Seam 6 — relocate `ServerContext` onto that pipeline, out of `common` (**PD-013**); ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
-| next | Seam 5 — `RuntimeSpawner`/`RecoveryCoordinator`; `__init__` slot reduction; narrow the 13 `except Exception` (PD-024) | — | no |
 
 *(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
 provider type from `app/host` is an upward edge; the composition root owning the provider list is the

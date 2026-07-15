@@ -13,6 +13,7 @@ from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
 from palm.app.host.cqrs_wiring import wire_command_bus, wire_query_bus
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
+from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
 from palm.app.host.observability import HostObservability
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
@@ -52,9 +53,8 @@ from palm.common.cqrs.query import (
     ListJobStatusQuery,
     Query,
 )
-from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.cqrs.schemas import build_schema_registry
-from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
+from palm.common.events.external import WebhookDispatcher
 from palm.common.patterns._registry import get_projection_factory, registered_projection_factories
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
@@ -111,12 +111,8 @@ class ApplicationHost:
         self._pattern_projections: dict[str, Any] = {}
         self._resource_projection: ResourceInvocationProjection | None = None
         self._job_board_projection: JobStatusBoardProjection | None = None
-        self._outbox_service: OutboxBackgroundService | None = None
-        self._compensation: CompensationCoordinator | None = None
         self._worker_coordinator: WorkerCoordinator | None = None
-        self._webhook_dispatcher: WebhookDispatcher | None = None
         self._event_recorder = HostEventRecorder()
-        self._last_recovery: dict[str, Any] | None = None
         self._schema_registry: Any | None = None
         self._system: Any | None = None
         self._definitions: Any | None = None
@@ -128,6 +124,8 @@ class ApplicationHost:
         self._signal_stop = threading.Event()
         self._observability = HostObservability(self)
         self._workplane = WorkPlaneCoordinator(self)
+        self._spawner = RuntimeSpawner(self)
+        self._recovery = RecoveryCoordinator(self)
 
     @property
     def app(self) -> PalmApp:
@@ -240,11 +238,11 @@ class ApplicationHost:
 
     @property
     def outbox_service(self) -> OutboxBackgroundService | None:
-        return self._outbox_service
+        return self._recovery.outbox_service
 
     @property
     def compensation(self) -> CompensationCoordinator | None:
-        return self._compensation
+        return self._recovery.compensation
 
     @property
     def compensation_registry(self):
@@ -252,7 +250,7 @@ class ApplicationHost:
 
     @property
     def webhook_dispatcher(self) -> WebhookDispatcher | None:
-        return self._webhook_dispatcher
+        return self._recovery.webhook_dispatcher
 
     @property
     def event_recorder(self) -> HostEventRecorder:
@@ -260,7 +258,7 @@ class ApplicationHost:
 
     @property
     def last_recovery(self) -> dict[str, Any] | None:
-        return self._last_recovery
+        return self._recovery.last_recovery
 
     @property
     def is_started(self) -> bool:
@@ -287,12 +285,12 @@ class ApplicationHost:
         self._event_recorder.attach(self._event)
         self._worker_coordinator = WorkerCoordinator(self.profile, self._event)
         merged = runtime_start_options(self.settings, **options)
-        self._spawn_runtimes(merged)
+        self._spawner.spawn_runtimes(merged)
         self._app.load_definitions()
         self._wire_cqrs()
         self._start_server_surface()
         self._attach_projections()
-        self._recover()
+        self._recovery.recover()
 
         self._event.emit(
             HostEventType.STARTED,
@@ -325,14 +323,7 @@ class ApplicationHost:
         except Exception:
             pass
 
-        if self._outbox_service is not None:
-            self._outbox_service.stop()
-            self._outbox_service = None
-
-        if self._compensation is not None:
-            self._compensation.shutdown()
-            self._compensation = None
-
+        self._recovery.stop()
         self._event_recorder.shutdown()
         self._projection_manager.shutdown()
         self._event.emit(HostEventType.SHUTDOWN, primary=self._app.primary_name)
@@ -598,108 +589,6 @@ class ApplicationHost:
         self._projection_manager.attach(self._event)
         self._projection_manager.attach_runtimes(self._app)
 
-    def _recover(self) -> None:
-        recovery: dict[str, Any] = {}
-
-        coordinator = self._worker_coordinator or WorkerCoordinator(self.profile, self._event)
-        self._worker_coordinator = coordinator
-        workers_ready = coordinator.wait_until_ready(
-            self._app,
-            timeout=self.settings.worker_ready_timeout,
-        )
-        recovery["workers_ready"] = workers_ready
-        recovery["workers"] = list(coordinator.registered_workers)
-
-        if self.settings.enable_compensation:
-            self._compensation = CompensationCoordinator(
-                default_compensation_registry(),
-                self._event,
-            )
-            self._compensation.attach(self._event)
-            self._compensation.attach_runtimes(self._app)
-
-        if self.profile.master and self.profile.enable_outbox_service:
-            self._start_outbox_service()
-            if self._outbox_service is not None:
-                recovery["outbox_pending"] = self._outbox_service.store.pending_count()
-
-        if self.settings.rebuild_projections_on_startup:
-            report = self._projection_manager.rebuild_all(
-                policy=ProjectionRebuildPolicy(
-                    batch_size=self.settings.projection_rebuild_batch_size,
-                    max_instances=self.settings.projection_rebuild_max_instances,
-                    skip_if_fresh=self.settings.projection_rebuild_skip_if_fresh,
-                )
-            )
-            recovery["projections"] = report.to_dict()
-
-        if recovery:
-            self._last_recovery = dict(recovery)
-            self._event.emit(HostEventType.RECOVERED, **recovery)
-
-    def _spawn_runtimes(self, merged: dict[str, Any]) -> None:
-        profile = self.profile
-        has_primary = False
-
-        if profile.uses_collapsed_runtime:
-            runtime = self._app.create_runtime(
-                "embedded",
-                name="main",
-                autostart=True,
-                set_primary=True,
-                **self._command_options(merged),
-            )
-            self._emit_runtime_registered("main", "embedded", runtime)
-            return
-
-        if profile.master:
-            runtime = self._app.create_runtime(
-                "embedded",
-                name="command",
-                autostart=True,
-                set_primary=not has_primary,
-                **self._command_options(merged),
-            )
-            has_primary = True
-            self._emit_runtime_registered("command", "embedded", runtime)
-
-        if profile.worker and not profile.server:
-            for index in range(profile.worker_count):
-                name = "worker" if index == 0 else f"worker-{index}"
-                runtime = self._app.create_runtime(
-                    "daemon",
-                    name=name,
-                    autostart=True,
-                    set_primary=not has_primary,
-                    **self._worker_options(merged),
-                )
-                has_primary = True
-                self._emit_runtime_registered(name, "daemon", runtime)
-
-        if profile.server:
-            options = self._worker_options(merged)
-            options["http"] = False
-            runtime = self._app.create_runtime(
-                "server",
-                name="server",
-                autostart=True,
-                set_primary=not has_primary,
-                host=profile.server_host,
-                port=profile.server_port,
-                **options,
-            )
-            self._emit_runtime_registered("server", "server", runtime)
-
-    def _command_options(self, merged: dict[str, Any]) -> dict[str, Any]:
-        options = dict(merged)
-        options.setdefault("scheduler", "inline")
-        return options
-
-    def _worker_options(self, merged: dict[str, Any]) -> dict[str, Any]:
-        options = dict(merged)
-        options["scheduler"] = "queued"
-        return options
-
     def _wire_dashboard_store(self) -> None:
         """0.41 — durable dashboard definitions on host storage."""
         if not self._app.storage.is_initialized:
@@ -754,41 +643,6 @@ class ApplicationHost:
             to_offset=to_offset,
             event_types=event_types,
             limit=limit,
-        )
-
-    def _start_outbox_service(self) -> None:
-        if not self._app.storage.is_initialized:
-            return
-        dispatcher = self._build_webhook_dispatcher()
-        self._outbox_service = OutboxBackgroundService(
-            self._app.storage,
-            self._event,
-            poll_interval=self.profile.outbox_poll_interval,
-            external_dispatcher=dispatcher,
-        )
-        self._outbox_service.start(recover=self.profile.outbox_recover_on_startup)
-
-    def _build_webhook_dispatcher(self) -> WebhookDispatcher | None:
-        if not self.settings.enable_webhook_dispatcher:
-            return None
-        if not self.settings.webhook_urls:
-            return None
-        self._webhook_dispatcher = WebhookDispatcher(
-            webhook_targets_from_urls(
-                self.settings.webhook_urls,
-                event_types=self.settings.webhook_event_types or None,
-            )
-        )
-        return self._webhook_dispatcher
-
-    def _emit_runtime_registered(self, name: str, kind: str, runtime: BaseRuntime) -> None:
-        if self._worker_coordinator is not None:
-            self._worker_coordinator.note_runtime(name, kind)
-        self._event.emit(
-            HostEventType.RUNTIME_REGISTERED,
-            name=name,
-            kind=kind,
-            scheduler=runtime.orchestration.scheduler.__class__.__name__,
         )
 
     def _require_started(self) -> None:

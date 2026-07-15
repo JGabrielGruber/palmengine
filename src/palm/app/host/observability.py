@@ -128,8 +128,8 @@ class HostObservability:
                 consumers=list(DEFAULT_JOURNAL_CONSUMERS),
             )
         outbox_pending = 0
-        if host._outbox_service is not None:
-            outbox_pending = host._outbox_service.store.pending_count()
+        if host.outbox_service is not None:
+            outbox_pending = host.outbox_service.store.pending_count()
         bg = False
         dropped = 0
         if host.work_drain is not None:
