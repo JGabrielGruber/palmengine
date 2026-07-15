@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.services._cqrs_registry import wire_service_cqrs_contributors
+from palm.common.cqrs.service_contributors import wire_service_cqrs_contributors
 from palm.services.definitions.bindings.cqrs.wiring import DefinitionsWireContext
 from palm.services.design.bindings.cqrs.contributor import DesignWireContext
 

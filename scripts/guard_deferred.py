@@ -20,7 +20,7 @@ from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
 MAX_FUNCTION_LOCAL = 235  # ratcheted at 0.47.6 (storage backend polymorphism); 287→…→235
-MAX_UPWARD = 16  # ratcheted at 0.47.6 (common→storages inverted via keys_with_prefix); 35→…→16 — target 0
+MAX_UPWARD = 15  # ratcheted at 0.47.7a (CQRS contributor registry relocated to common); 35→…→15 — target 0
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {

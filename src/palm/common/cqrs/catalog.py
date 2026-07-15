@@ -33,8 +33,8 @@ from palm.common.cqrs.query import (
     ListProcessesQuery,
     ListResourceInvocationsQuery,
 )
+from palm.common.cqrs.service_contributors import iter_service_cqrs_contributors
 from palm.common.patterns._registry import iter_cqrs_contributors
-from palm.services._cqrs_registry import iter_service_cqrs_contributors
 
 CatalogMode = Literal["host", "standalone"]
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.services._cqrs_registry import ServiceCqrsContributor, register_service_cqrs_contributor
+from palm.common.cqrs.service_contributors import ServiceCqrsContributor, register_service_cqrs_contributor
 from palm.services.definitions.bindings.cqrs.registry import (
     DEFINITIONS_COMMAND_TYPES,
     DEFINITIONS_QUERY_TYPES,

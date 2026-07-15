@@ -64,7 +64,7 @@ def build_schema_registry() -> CqrsSchemaRegistry:
         for query_type, schema in contributor.query_schemas.items():
             registry.register_query(query_type, schema)
     import palm.services.design.bindings.cqrs.contributor  # noqa: F401
-    from palm.services._cqrs_registry import iter_service_cqrs_contributors
+    from palm.common.cqrs.service_contributors import iter_service_cqrs_contributors
 
     for contributor in iter_service_cqrs_contributors():
         for command_type, schema in contributor.command_schemas.items():
