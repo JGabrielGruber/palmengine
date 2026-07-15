@@ -23,6 +23,7 @@ PUBLIC_EVENT_TYPES: frozenset[str] = frozenset(
         "work.intent.failed",
         "job.completed",
         "job.status_changed",
+        "inbound.received",
     }
 )
 
@@ -34,6 +35,7 @@ COMPOSITION_EVENT_TYPES: frozenset[str] = frozenset(
         "flow.session.failed",
         "job.completed",
         "job.status_changed",
+        "inbound.received",
     }
 )
 
@@ -100,6 +102,12 @@ _CATALOG: tuple[EventTypeInfo, ...] = (
         "job.status_changed",
         "orchestration",
         "Job status transition",
+        composition=True,
+    ),
+    EventTypeInfo(
+        "inbound.received",
+        "inbound",
+        "Inbound resource signal accepted (webhook/stream); WorkIntent may follow",
         composition=True,
     ),
 )

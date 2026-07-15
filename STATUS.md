@@ -483,9 +483,10 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.40.3 | Journal named consumers · doctor control_plane | ✅ |
 | 0.40.4 | Assist open:dataset + virtual filter/limit/sort | ✅ |
 | 0.40.5 | Remote system datasets dogfood + remote_url test | ✅ |
-| 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ⬜ Vision |
-| 0.42 | Event stream protocol + `/ws/v1/events` (or SSE); Portal live strip; **palm provider event consumer** | ⬜ Vision |
-| 0.43+ | Mesh authz, multi-worker fan-out | ⬜ Later |
+| 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ✅ foundation |
+| 0.42 | Event stream + journal wait + provider WS client | ✅ foundation |
+| 0.43 | **Inbound resources** (`metadata.inbound` → WorkIntent) | ✅ foundation |
+| 0.44+ | Mesh authz, multi-worker fan-out, poll inbound polish | ⬜ Later |
 
 **Priority reminder:** P0 invoke/wait/resources · P1 journal+WorkIntent dogfood · P2 realtime WS for humans **and** provider.
 

@@ -12,6 +12,7 @@ from palm.runtimes.server.surfaces.rest.events.routes import register_events_rou
 from palm.runtimes.server.surfaces.rest.execution.flows.routes import register_flow_routes
 from palm.runtimes.server.surfaces.rest.execution.processes.routes import register_process_routes
 from palm.runtimes.server.surfaces.rest.execution.providers.routes import register_provider_routes
+from palm.runtimes.server.surfaces.rest.inbound.routes import register_inbound_routes
 from palm.runtimes.server.surfaces.rest.system.routes import register_system_routes
 
 if TYPE_CHECKING:
@@ -35,6 +36,7 @@ def register_service_routes(
     register_provider_routes(registry, ctx, surface=surface)
     register_system_routes(registry, ctx, surface=surface)
     register_events_routes(registry, ctx, surface=surface)
+    register_inbound_routes(registry, ctx, surface=surface)
 
 
 __all__ = ["register_service_routes"]

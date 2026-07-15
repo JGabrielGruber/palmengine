@@ -120,6 +120,7 @@ class ApplicationHost:
         self._analytics: Any | None = None
         self._work_drain: Any | None = None
         self._event_journal: Any | None = None
+        self._inbound: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
 
@@ -185,6 +186,11 @@ class ApplicationHost:
     def event_journal(self):
         """Append-only event journal (0.38) — offsets + redrive."""
         return self._event_journal
+
+    @property
+    def inbound(self):
+        """Inbound resource bindings (0.43) — webhook/stream → WorkIntent."""
+        return self._inbound
 
     @property
     def router(self) -> RuntimeRouter:
@@ -287,6 +293,19 @@ class ApplicationHost:
 
         if self._work_drain is not None:
             self._work_drain.stop_background()
+
+        if self._inbound is not None:
+            try:
+                self._inbound.stop()
+            except Exception:
+                pass
+
+        try:
+            from palm.services.analytics.dashboards import attach_dashboard_store
+
+            attach_dashboard_store(None)
+        except Exception:
+            pass
 
         if self._outbox_service is not None:
             self._outbox_service.stop()
@@ -607,6 +626,7 @@ class ApplicationHost:
         self._wire_dashboard_store()
         self._wire_work_drain()
         self._wire_event_journal()
+        self._wire_inbound()
         from palm.services._cqrs_wiring import wire_all_service_cqrs
         from palm.services.design.contributors import wire_builtin_design_contributors
 
@@ -760,6 +780,35 @@ class ApplicationHost:
         # Load triggers from flow catalog (after examples/definitions already loaded)
         self.reload_work_triggers()
 
+    def _wire_inbound(self) -> None:
+        """Inbound resource bindings (0.43) — metadata.inbound → WorkIntent."""
+        if self._work_drain is None:
+            return
+        from palm.app.host.inbound_service import InboundBindingService
+
+        def _list() -> list[dict[str, Any]]:
+            try:
+                return list(self._definitions.list_resources() or [])
+            except Exception:
+                return []
+
+        def _get(name: str) -> dict[str, Any] | None:
+            try:
+                return self._definitions.get_resource(name)
+            except Exception:
+                return None
+
+        def _enqueue(intent: Any) -> str:
+            return self._work_drain.enqueue(intent)
+
+        self._inbound = InboundBindingService(
+            enqueue=_enqueue,
+            event_engine=self._event,
+            list_resources=_list,
+            get_resource=_get,
+        )
+        self.reload_inbound_bindings()
+
     def reload_work_triggers(self) -> int:
         """Reload definition triggers into the work drain (after design/example load)."""
         if self._work_drain is None:
@@ -782,6 +831,17 @@ class ApplicationHost:
                 return opts if isinstance(opts, dict) else meta
 
             return int(self._work_drain.reload_triggers(rows, get_metadata=_meta) or 0)
+        except Exception:
+            return 0
+
+    def reload_inbound_bindings(self) -> int:
+        """Rescan resources with metadata.inbound (0.43)."""
+        if self._inbound is None:
+            return 0
+        try:
+            n = int(self._inbound.reload_from_definitions() or 0)
+            self._inbound.start_streams()
+            return n
         except Exception:
             return 0
 
@@ -825,6 +885,12 @@ class ApplicationHost:
                 schedules = list(self._work_drain.schedules.list_entries())
             except Exception:
                 schedules = []
+        inbound_bindings: list[dict[str, Any]] = []
+        if self._inbound is not None:
+            try:
+                inbound_bindings = list(self._inbound.list_bindings())
+            except Exception:
+                inbound_bindings = []
         return {
             "work_pending": work_pending,
             "work_drain_running": bg,
@@ -834,6 +900,8 @@ class ApplicationHost:
             "outbox_pending": outbox_pending,
             "journal": journal_status,
             "journal_consumers": list(DEFAULT_JOURNAL_CONSUMERS),
+            "inbound_bindings": inbound_bindings,
+            "inbound_count": len(inbound_bindings),
         }
 
     def drain_journal_webhooks(

@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.43 — Inbound as a Resource capability
+- **`metadata.inbound`** on `ResourceDefinition` (no separate definition kind)
+- `parse_inbound_spec` · `InboundBindingService` (webhook + palm stream)
+- REST `POST/GET /v1/api/inbound…` → WorkIntent (202); doctor `control_plane.inbound_*`
+- Event `inbound.received`; pack `examples/definitions/inbound_demo/`
+- Vision: [VISION-0.43](docs/VISION-0.43.md)
+
 ### 0.42.3 — Native WebSocket events client (palm provider)
 - `PalmEventsWebSocketClient` for `/ws/v1/events` (stdlib RFC6455)
 - Client-masked frames; subscribe + live wait helpers
