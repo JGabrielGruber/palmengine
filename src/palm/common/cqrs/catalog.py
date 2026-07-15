@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-import palm.services.definitions.bindings.cqrs.contributor
-import palm.services.design.bindings.cqrs.contributor  # noqa: F401
 from palm.common.cqrs.command import (
     CancelJobCommand,
     MigrateInstanceCommand,

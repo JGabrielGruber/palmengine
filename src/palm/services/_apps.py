@@ -8,6 +8,7 @@ from __future__ import annotations
 
 INSTALLED_SERVICES: tuple[str, ...] = (
     "definitions",
+    "design",
     "execution",
     "system",
     "assist",
