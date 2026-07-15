@@ -18,6 +18,8 @@
 | 0.45.1 | A | metadata/state, seed_state, append_item, put_resource |
 | 0.45.2 | C | same-process inbound (internal mode or on_event) |
 | 0.45.3 | B | system watchdog definitions + coconut slice |
+| 0.45.4 | D | runtime event bus + ingress self-skip + persist batch fix |
+| 0.45.5+ | — | hygiene train (see VISION Phase D follow-on table) |
 
 ---
 
@@ -79,7 +81,7 @@
 ### Task 7: internal inbound mode
 
 - [x] `mode: internal` on `metadata.inbound`
-- [x] `InboundBindingService` subscribes to host `EventEngine` (`*`)
+- [x] `InboundBindingService` subscribes to runtime `EventEngine` (`*`) — corrected in 0.45.4
 - [x] `event_types` filter; envelope + WorkIntent without loopback
 - [x] `tests/test_inbound_internal_0_45_2.py`
 
@@ -101,4 +103,30 @@
 
 ### Task 11: Release 0.45.3
 
-- [ ] Version + commit
+- [x] Version + commit
+
+---
+
+# 0.45.4 — Phase D: Server dogfood fixes (shipped)
+
+### Task 12: Runtime orchestration bus
+
+- [x] `ApplicationHost._runtime_event_engine()` — inbound + work-drain triggers
+- [x] Tests emit on `runtime.event`, not host coordination bus
+
+### Task 13: Watchdog correctness
+
+- [x] Ingress skip self-referential `job.completed`
+- [x] `event_watch`: `persist_log` `batch: false`, `debounce_seconds: 0`
+- [x] Multi-event list tail test; ingress self-skip test
+
+### Task 14: Release 0.45.4
+
+- [x] Version `0.45.4` + docs (VISION Phase D, 0.45.5+ backlog)
+- [x] `pytest tests/test_*_0_45*.py`
+
+---
+
+# 0.45.5+ — Hygiene (planned)
+
+See **0.45.5+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).

@@ -18,12 +18,22 @@ analytics datasets + dashboards.
 
 Dashboard: **`palm-system`** (includes **Event watch tail** tile)
 
-### Event watchdog (0.45.3)
+### Event watchdog (0.45.3–0.45.4)
 
-In-process ingress — no `PALM_ORIGIN_URL` loopback. Loop guards:
+In-process ingress — no `PALM_ORIGIN_URL` loopback. **0.45.4** wires internal inbound to the runtime orchestration bus and fixes pipeline persist (`batch: false` on `persist_log`).
 
-- **Ingress:** `event_types` excludes `resource.changed` / `inbound.received` (kv put would recurse).
+Loop guards:
+
+- **Ingress:** `event_types` excludes `resource.changed` / `inbound.received`; engine skips self `job.completed` for the watch flow.
 - **Pipeline:** `conditional` + `passthrough` drops rows for owned resources and this flow's own completions.
+
+Read tail via provider invoke (not `/v1/api/resources/...`):
+
+```bash
+curl -s http://127.0.0.1:8080/v1/api/providers/kv/palm-system-event-log/invoke \
+  -H 'Content-Type: application/json' -H 'X-Palm-Subject: dev' \
+  -d '{"action":"get"}'
+```
 
 ```bash
 just palm-server

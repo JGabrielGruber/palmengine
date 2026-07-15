@@ -112,7 +112,7 @@ def test_internal_inbound_on_host_without_loopback() -> None:
         bindings = host.inbound.list_bindings()
         assert any(b.get("mode") == "internal" and b.get("status") == "listening" for b in bindings)
 
-        host._event.emit(
+        host._app.runtime().event.emit(
             "resource.changed",
             resource_ref="palm-todos",
             action="put",
@@ -127,12 +127,11 @@ def test_internal_inbound_on_host_without_loopback() -> None:
             host.work_drain.tick(limit=10)
         host._execution.flows.wait_until_idle(timeout=5.0)
 
-        target_job = None
-        for inst in host.system.list_instances(limit=20):
-            job = host.app.runtime().get_job(inst["job_id"])
-            if job.metadata.get("flow") == "internal-react":
-                target_job = job
-                break
+        jobs = host.app.runtime().orchestration.list_jobs()
+        target_job = next(
+            (job for job in jobs if job.metadata.get("flow") == "internal-react"),
+            None,
+        )
         assert target_job is not None
         assert target_job.status.value == "SUCCEEDED"
         assert target_job.state.get("action") == "put"

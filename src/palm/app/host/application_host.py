@@ -196,6 +196,19 @@ class ApplicationHost:
     def router(self) -> RuntimeRouter:
         return self._router
 
+    def _runtime_event_engine(self) -> EventEngine:
+        """Orchestration bus — ``job.completed`` and peers emit here, not on host coordination bus."""
+        try:
+            runtime = self._app.runtime()
+            engine = runtime.event
+            if engine.is_initialized:
+                return engine
+        except Exception:
+            pass
+        if not self._event.is_initialized:
+            self._event.initialize()
+        return self._event
+
     @property
     def projections(self) -> ProjectionManager:
         return self._projection_manager
@@ -781,14 +794,15 @@ class ApplicationHost:
         self._work_drain = WorkDrainService(
             self._app.storage,
             submit_flow=_submit,
-            event_engine=self._event,
+            event_engine=self._runtime_event_engine(),
             able=lambda: self._started,
             max_depth=int(settings.work_drain_max_depth),
             poll_interval=float(settings.work_drain_poll_interval),
             batch_size=int(settings.work_drain_batch_size),
         )
-        if self._event.is_initialized:
-            self._work_drain.attach_events(self._event)
+        job_events = self._runtime_event_engine()
+        if job_events.is_initialized:
+            self._work_drain.attach_events(job_events)
         # Load triggers from flow catalog (after examples/definitions already loaded)
         self.reload_work_triggers()
 
@@ -827,7 +841,7 @@ class ApplicationHost:
 
         self._inbound = InboundBindingService(
             enqueue=_enqueue,
-            event_engine=self._event,
+            event_engine=self._runtime_event_engine(),
             list_resources=_list,
             get_resource=_get,
             invoke_resource=_invoke,

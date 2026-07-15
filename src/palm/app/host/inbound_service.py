@@ -242,6 +242,8 @@ class InboundBindingService:
         for binding in bindings:
             try:
                 envelope = self._event_to_envelope(binding, event)
+                if self._should_skip_internal_signal(binding, envelope):
+                    continue
                 self._signal(binding, envelope, source="internal")
             except Exception as exc:
                 with self._lock:
@@ -255,6 +257,23 @@ class InboundBindingService:
         if not types:
             return True
         return event_type in types
+
+    @staticmethod
+    def _should_skip_internal_signal(
+        binding: InboundBinding,
+        envelope: dict[str, Any],
+    ) -> bool:
+        """Skip self-referential ``job.completed`` (pipeline filters are too late)."""
+        if envelope.get("type") != "job.completed":
+            return False
+        target = binding.spec.work.target
+        if not target:
+            return False
+        payload = envelope.get("payload")
+        if not isinstance(payload, dict):
+            return False
+        flow = payload.get("flow") or payload.get("flow_name")
+        return str(flow or "") == target
 
     def _event_to_envelope(self, binding: InboundBinding, event: Any) -> dict[str, Any]:
         payload = (

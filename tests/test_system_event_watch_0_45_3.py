@@ -56,6 +56,11 @@ def _drain_all(host: ApplicationHost) -> None:
     host._execution.flows.wait_until_idle(timeout=10.0)
 
 
+def _emit_job_completed(host: ApplicationHost, **payload: object) -> None:
+    """Emit on the runtime orchestration bus (where real jobs publish)."""
+    host._app.runtime().event.emit("job.completed", **payload)
+
+
 def test_event_watch_definitions_parse() -> None:
     inbound = (PALM_SYSTEM_EVENTS_WATCH.metadata or {}).get("inbound") or {}
     assert inbound.get("mode") == "internal"
@@ -85,8 +90,8 @@ def test_watch_records_external_job_completed() -> None:
     host.start()
     try:
         _register_watch(host)
-        host._event.emit(
-            "job.completed",
+        _emit_job_completed(
+            host,
             job_id="job-ext-1",
             flow="quick",
             status="SUCCEEDED",
@@ -99,18 +104,56 @@ def test_watch_records_external_job_completed() -> None:
         host.shutdown()
 
 
+def test_watch_appends_multiple_events_as_list() -> None:
+    """persist_log must use batch=false so put_resource writes the list, not per-item."""
+    settings = PalmSettings.for_tests(load_examples=False)
+    host = ApplicationHost(settings=settings)
+    host.start()
+    try:
+        _register_watch(host)
+        host.invoke_resource(
+            "palm-system-event-log",
+            action="put",
+            params={"value": []},
+        )
+        for job_id, flow in (("job-a", "quick"), ("job-b", "onboard")):
+            _emit_job_completed(
+                host,
+                job_id=job_id,
+                flow=flow,
+                status="SUCCEEDED",
+            )
+            _drain_all(host)
+            # isolate kv tail from other tests (memory backend is process-global)
+            if job_id == "job-a":
+                raw = host.invoke_resource("palm-system-event-log", action="get")
+                value = (raw.data or {}).get("value")
+                assert isinstance(value, list)
+                assert len(value) == 1
+
+        raw = host.invoke_resource("palm-system-event-log", action="get")
+        assert raw.success
+        value = (raw.data or {}).get("value")
+        assert isinstance(value, list), f"expected list tail in kv, got {type(value).__name__}"
+        assert len(value) >= 2
+        job_ids = {row.get("job_id") for row in value if isinstance(row, dict)}
+        assert {"job-a", "job-b"} <= job_ids
+    finally:
+        host.shutdown()
+
+
 def test_watch_ignores_self_flow_completion() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(settings=settings)
     host.start()
     try:
         _register_watch(host)
-        host._event.emit("job.completed", job_id="job-a", flow="quick", status="SUCCEEDED")
+        _emit_job_completed(host, job_id="job-a", flow="quick", status="SUCCEEDED")
         _drain_all(host)
         count_after_external = len(_log_events(host))
 
-        host._event.emit(
-            "job.completed",
+        _emit_job_completed(
+            host,
             job_id="job-self",
             flow=_WATCH_FLOW,
             status="SUCCEEDED",
@@ -121,13 +164,44 @@ def test_watch_ignores_self_flow_completion() -> None:
         host.shutdown()
 
 
+def test_watch_ingress_skips_self_job_completed() -> None:
+    settings = PalmSettings.for_tests(load_examples=False)
+    host = ApplicationHost(settings=settings)
+    host.start()
+    try:
+        _register_watch(host)
+        host.invoke_resource(
+            "palm-system-event-log",
+            action="put",
+            params={"value": []},
+        )
+        _emit_job_completed(
+            host,
+            job_id="job-self-ingress",
+            flow=_WATCH_FLOW,
+            status="SUCCEEDED",
+        )
+        _drain_all(host)
+        pending = [
+            intent
+            for intent in host.work_drain.store.list_pending(limit=20)
+            if intent.target == _WATCH_FLOW
+        ]
+        assert pending == []
+        assert host.invoke_resource("palm-system-event-log", action="get").data.get(
+            "value"
+        ) in ([], None)
+    finally:
+        host.shutdown()
+
+
 def test_resource_changed_does_not_enqueue_watch() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(settings=settings)
     host.start()
     try:
         _register_watch(host)
-        host._event.emit(
+        host._app.runtime().event.emit(
             "resource.changed",
             resource_ref="palm-system-event-log",
             action="put",

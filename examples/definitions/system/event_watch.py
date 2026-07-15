@@ -96,7 +96,7 @@ PALM_SYSTEM_EVENTS_WATCH = ResourceDefinition(
             "event_types": ["job.completed", "flow.session.succeeded"],
             "store_resource": "palm-system-event-inbox",
             "store_action": "put",
-            "debounce_seconds": 0.5,
+            "debounce_seconds": 0,
             "work": {
                 "flow_id": _WATCH_FLOW,
                 "coalesce_key": "palm-system-events-watch",
@@ -191,6 +191,7 @@ PALM_SYSTEM_WATCH_EVENT_FLOW = FlowDefinition(
                 "source_key": "events",
                 "target_key": "events",
                 "rule": "put_resource",
+                "batch": False,
                 "options": {
                     "resource": "palm-system-event-log",
                     "action": "put",
