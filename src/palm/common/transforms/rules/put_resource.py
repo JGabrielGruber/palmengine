@@ -63,7 +63,10 @@ class PutResourceRule(BaseTransformRule):
                 invoke_result.error or f"{self.rule_name} invocation failed",
             )
 
-        result_value = invoke_result.data if invoke_result.data is not None else value
+        if action == "put":
+            result_value = value
+        else:
+            result_value = invoke_result.data if invoke_result.data is not None else value
         return context.advance(
             self.rule_name,
             result_value,

@@ -10,10 +10,11 @@ Registration order: **resources first**, then flow/process (resource_ref by name
 
 from __future__ import annotations
 
-from . import npc, resources
+from . import npc, profile_pipeline, resources
 
 __all__ = [
     "npc",
+    "profile_pipeline",
     "resources",
     "register_definitions",
 ]
@@ -22,4 +23,5 @@ __all__ = [
 def register_definitions(repository: object) -> None:
     """Register coconut resources, then the npc flow/process."""
     resources.register_definitions(repository)
+    profile_pipeline.register_definitions(repository)
     npc.register_definitions(repository)

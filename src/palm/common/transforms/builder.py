@@ -125,6 +125,7 @@ def build_transform_leaves(
     steps: Sequence[TransformStepSpec | Mapping[str, Any]],
     *,
     engine: TransformEngine | None = None,
+    resource_engine: ResourceEngine | None = None,
 ) -> list[TransformLeaf]:
     """Build transform leaves from specs or mapping dicts."""
     shared = engine if engine is not None else TransformEngine()
@@ -133,5 +134,7 @@ def build_transform_leaves(
     leaves: list[TransformLeaf] = []
     for step in steps:
         spec = step if isinstance(step, TransformStepSpec) else transform_step_from_mapping(step)
-        leaves.append(build_transform_leaf(spec, engine=shared))
+        leaves.append(
+            build_transform_leaf(spec, engine=shared, resource_engine=resource_engine)
+        )
     return leaves

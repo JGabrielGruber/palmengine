@@ -54,6 +54,13 @@ SYSTEM_OPS_DASHBOARD = DashboardDefinition(
             title="Flows",
             limit=100,
         ),
+        DashboardTile(
+            id="event_log",
+            dataset="palm-system-event-log",
+            profile="table",
+            title="Event watch tail",
+            limit=50,
+        ),
     ],
     metadata={"example": True, "pack": "system"},
 )

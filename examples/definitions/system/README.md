@@ -13,8 +13,22 @@ analytics datasets + dashboards.
 | `palm-system-flows` | `list_flows` | |
 | `palm-system-resources` | `list_resources` | |
 | `palm-system-instances-per-flow` | virtual | `count_by` on `flow_name` |
+| `palm-system-event-log` | kv get | event watch tail (table) |
+| `palm-system-events-watch` | internal inbound | `job.completed`, `flow.session.succeeded` only |
 
-Dashboard: **`palm-system`**
+Dashboard: **`palm-system`** (includes **Event watch tail** tile)
+
+### Event watchdog (0.45.3)
+
+In-process ingress — no `PALM_ORIGIN_URL` loopback. Loop guards:
+
+- **Ingress:** `event_types` excludes `resource.changed` / `inbound.received` (kv put would recurse).
+- **Pipeline:** `conditional` + `passthrough` drops rows for owned resources and this flow's own completions.
+
+```bash
+just palm-server
+# doctor inbound_bindings · dashboard palm-system · tile event_log
+```
 
 ```bash
 just palm-server

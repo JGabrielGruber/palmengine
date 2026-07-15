@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode, SequenceNode
 from palm.core.context import BaseState
+from palm.core.resource.engine import ResourceEngine
 from palm.core.transform.engine import TransformEngine
 from palm.patterns.pipeline.bindings.behavior_tree.tree import build_pipeline_tree
 from palm.patterns.pipeline.bindings.definitions.config import PipelineConfig
@@ -24,12 +25,14 @@ class PipelinePattern(BasePattern):
         name: str = "pipeline",
         config: PipelineConfig | None = None,
         transform_engine: TransformEngine | None = None,
+        resource_engine: ResourceEngine | None = None,
     ) -> None:
         super().__init__(name=name)
         if config is None:
             raise ValueError("PipelinePattern requires a PipelineConfig")
         self._config = config
         self._engine = transform_engine if transform_engine is not None else TransformEngine()
+        self._resource_engine = resource_engine
         self._seeded = False
         self._root: RootNode
         self._sequence: SequenceNode
@@ -37,6 +40,7 @@ class PipelinePattern(BasePattern):
             name,
             config,
             engine=self._engine,
+            resource_engine=self._resource_engine,
         )
 
     @property

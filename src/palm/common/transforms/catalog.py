@@ -19,7 +19,7 @@ TRANSFORM_CATALOG: dict[str, str] = {
     "date_format": "Format dates/datetimes/ISO strings with strftime patterns",
     "date_parse": "Parse date strings into ISO date or datetime strings",
     "lookup": "Map a key through a static lookup table with optional default",
-    "conditional": "Return then/else values based on equals, numeric, or truthy predicates",
+    "conditional": "Return then/else or passthrough input based on field predicates",
     "json_load": "Parse JSON text or bytes into dict/list",
     "json_dump": "Serialize dict/list to a JSON string",
     "csv_load": "Parse CSV text into a list of row dicts (header-aware)",

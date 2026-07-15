@@ -31,7 +31,7 @@ class ConditionalRule(BaseTransformRule):
         return instance
 
     def apply(self, context: TransformContext, **options: Any) -> TransformContext:
-        if "then" not in options:
+        if not options.get("passthrough") and "then" not in options:
             raise TransformApplicationError(f"{self.rule_name} requires then=")
         else_value = options.get("else")
 
@@ -48,11 +48,14 @@ class ConditionalRule(BaseTransformRule):
             subject = value
 
         matched = _matches(subject, value if field else None, options)
-        result = options["then"] if matched else else_value
+        if options.get("passthrough"):
+            result = value if matched else else_value
+        else:
+            result = options["then"] if matched else else_value
         return context.advance(
             self.rule_name,
             result,
-            meta={"matched": matched, "field": field},
+            meta={"matched": matched, "field": field, "passthrough": bool(options.get("passthrough"))},
         )
 
 

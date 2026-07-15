@@ -18,11 +18,14 @@ def build(
     pattern_cls: type[BasePattern],
 ) -> BasePattern:
     """Instantiate a pipeline pattern from a flow definition."""
-    del context
     if not issubclass(pattern_cls, PipelinePattern):
         raise DefinitionBuildError("Registry entry for 'pipeline' is not PipelinePattern")
     try:
         config = PipelineConfig.from_options(flow.options)
     except ValueError as exc:
         raise DefinitionBuildError(str(exc)) from exc
-    return pattern_cls(name=flow.name, config=config)
+    return pattern_cls(
+        name=flow.name,
+        config=config,
+        resource_engine=context.resource_engine,
+    )

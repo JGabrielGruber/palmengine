@@ -12,10 +12,11 @@ not an analytics query param.
 
 from __future__ import annotations
 
-from . import dashboard, origin_dashboard, origin_resources, resources
+from . import dashboard, event_watch, origin_dashboard, origin_resources, resources
 
 __all__ = [
     "dashboard",
+    "event_watch",
     "origin_dashboard",
     "origin_resources",
     "resources",
@@ -25,6 +26,7 @@ __all__ = [
 
 def register_definitions(repository: object) -> None:
     resources.register_definitions(repository)
+    event_watch.register_definitions(repository)
     origin_names = origin_resources.register_origin_from_env(repository)
     dashboard.register_definitions(repository)
     if origin_names:

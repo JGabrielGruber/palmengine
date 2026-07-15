@@ -1,6 +1,6 @@
 # VISION 0.45 — Reactive data plane
 
-**Status:** 0.45.1 data plane shipped · 0.45.2 internal inbound shipped · 0.45.3 examples next
+**Status:** 0.45.1–0.45.3 shipped (data plane, internal inbound, system watchdog + coconut pipeline slice)
 **Builds on:** [VISION-0.44](VISION-0.44.md) (inbound store, poll, stream, work drain)
 
 ## Problem
