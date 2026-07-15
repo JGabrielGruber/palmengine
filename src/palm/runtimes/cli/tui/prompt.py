@@ -4,8 +4,8 @@ REPL prompt styling — context-rich prompt with compact scope/branch suffixes.
 
 from __future__ import annotations
 
-from palm.runtimes.cli.shared.context import CliContext
 from palm.common.job_inspection import inspect_job
+from palm.runtimes.cli.shared.context import CliContext
 
 
 def build_repl_prompt(ctx: CliContext) -> str:

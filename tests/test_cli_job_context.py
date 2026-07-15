@@ -7,17 +7,17 @@ from io import StringIO
 
 from rich.console import Console
 
+from palm.common.job_inspection import (
+    format_step_context,
+    inspect_job,
+    inspect_job_json,
+)
 from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.behavior_tree import PatternStatus
 from palm.core.event import EventEngine
 from palm.definitions import FlowDefinition
 from palm.patterns.parallel.pattern import ParallelPattern
 from palm.runtimes.cli.commands.registry import build_registry
-from palm.common.job_inspection import (
-    format_step_context,
-    inspect_job,
-    inspect_job_json,
-)
 from palm.states import BlackboardState
 
 

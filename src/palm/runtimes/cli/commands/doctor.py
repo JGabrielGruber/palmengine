@@ -7,12 +7,12 @@ from __future__ import annotations
 from typing import Any
 
 from palm import __version__
+from palm.common.job_inspection import inspect_job
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.transform.registry import transform_registry
 from palm.runtimes.cli.commands.views import render_definition_catalog, render_instance_table
 from palm.runtimes.cli.shared.context import CliContext
 from palm.runtimes.cli.shared.instance_ops import is_terminal_status
-from palm.common.job_inspection import inspect_job
 from palm.runtimes.cli.shared.runtime_display import format_runtime_line
 from palm.runtimes.cli.shared.settings import is_durable_storage
 from palm.runtimes.cli.shared.startup import format_persistence_notice

@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from palm.common.cqrs.service_contributors import ServiceCqrsContributor, register_service_cqrs_contributor
+from palm.common.cqrs.service_contributors import (
+    ServiceCqrsContributor,
+    register_service_cqrs_contributor,
+)
 from palm.services.design.bindings.cqrs.registry import DESIGN_COMMAND_TYPES, DESIGN_QUERY_TYPES
 from palm.services.design.bindings.cqrs.schemas import (
     DESIGN_COMMAND_SCHEMAS,

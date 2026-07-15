@@ -4,8 +4,8 @@ TUI context rendering — Rich markup for scopes, branches, and validation.
 
 from __future__ import annotations
 
-from palm.core.orchestration import Job
 from palm.common.job_inspection import format_step_context, inspect_job
+from palm.core.orchestration import Job
 
 __all__ = ["context_lines", "format_step_context"]
 
