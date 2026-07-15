@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
 from palm.common.patterns._registry import ChildWaitHooks, get_child_wait_hooks
 from palm.core.orchestration import Job
 

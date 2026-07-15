@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     CancelJobCommand,

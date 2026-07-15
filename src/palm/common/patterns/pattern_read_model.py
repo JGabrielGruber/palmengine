@@ -14,7 +14,6 @@ def build_pattern_read_model(
     **kwargs: Any,
 ) -> dict[str, Any]:
     """Dispatch a registered pattern read-model builder."""
-    import palm.patterns  # noqa: F401 — ensure bridge hooks are registered
     from palm.common.patterns._registry import get_read_model_builder
 
     builder = get_read_model_builder(pattern)

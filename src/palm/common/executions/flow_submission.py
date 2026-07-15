@@ -117,7 +117,6 @@ def prepare_resume_submission(
 
 
 def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
-    import palm.patterns  # noqa: F401 — register pattern extension hooks
     from palm.common.patterns._registry import get_submission_metadata
 
     enricher = get_submission_metadata(flow.pattern)

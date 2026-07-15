@@ -6,7 +6,6 @@ Dispatches to per-pattern builders registered in ``palm.patterns.<app>.builder``
 
 from __future__ import annotations
 
-import palm.patterns  # noqa: F401 — autoload installed pattern apps
 from palm.common.exceptions import DefinitionBuildError
 from palm.common.patterns._registry import get_builder
 from palm.common.patterns.build_context import PatternBuildContext

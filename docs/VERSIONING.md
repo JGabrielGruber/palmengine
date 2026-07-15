@@ -40,7 +40,7 @@ Palm is pre-1.0, so the SemVer `MAJOR` slot stays `0` and stability guarantees a
 - `STATUS.md` updated; `CHANGELOG.md` section
 
 **Per slice-commit**
-- Commit `feat(0.X): <summary>` (or `fix(0.X):` / `refactor(0.X):`) — one focused change; cite the tracked item (e.g. "closes PD-004"). **No version bump.**
+- Commit `feat(0.X.N): <summary>` (or `fix(0.X.N):` / `refactor(0.X.N):`) — **keep the patch id** as the logical slice label; a `b`/`c` suffix is fine for sub-slices (e.g. `0.47.5c`). One focused change; cite the tracked item (e.g. "closes PD-004"). **No `just bump-version`** — the codebase version advances only at the embedded release.
 - **Green `just check`** / `just ci` (lint + test + guards) — enforced in CI.
 
 **Per embedded release (a minor or a patch-group)**
