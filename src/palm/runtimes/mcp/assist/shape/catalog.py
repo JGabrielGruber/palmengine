@@ -149,7 +149,6 @@ def shape_waiting_assistant(
         sid_s = str(sid)
         flow = row.get("flow_name") or row.get("flow_id") or row.get("flow")
         step = row.get("step") or row.get("current_step") or row.get("step_slug")
-        status = row.get("status")
         entry = {
             k: row[k]
             for k in (
@@ -220,7 +219,7 @@ def shape_waiting_assistant(
     }
     if choices:
         items = []
-        for s, c in zip(slim, choices):
+        for s, c in zip(slim, choices, strict=False):
             iid = str(s.get("instance_id") or s.get("session_id") or "")
             items.append(
                 {

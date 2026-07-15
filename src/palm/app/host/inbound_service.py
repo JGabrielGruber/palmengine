@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -14,7 +15,7 @@ from palm.common.resource.inbound import InboundSpec, parse_inbound_spec
 from palm.core.work import WorkIntent
 
 if TYPE_CHECKING:
-    from palm.core.event import Event, EventEngine
+    from palm.core.event import EventEngine
     from palm.core.event.subscription import Subscription
 
 _DEFAULT_POLL_INTERVAL = 5.0

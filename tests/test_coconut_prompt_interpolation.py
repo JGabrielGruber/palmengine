@@ -7,7 +7,6 @@ from examples.definitions.coconut.resources import (
     LOAD_COCONUT_PLAYER,
     SAVE_COCONUT_PLAYER,
 )
-
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from palm.common.transforms.registration import register_transform
+from palm.common.transforms.rules.append_item import AppendItemRule
 from palm.common.transforms.rules.calculate import CalculateRule
 from palm.common.transforms.rules.callable_rule import CallableRule
 from palm.common.transforms.rules.conditional import ConditionalRule
@@ -18,10 +19,9 @@ from palm.common.transforms.rules.json_load import JsonLoadRule
 from palm.common.transforms.rules.jsonpath_extract import JsonpathExtractRule
 from palm.common.transforms.rules.jsonpath_set import JsonpathSetRule
 from palm.common.transforms.rules.lookup import LookupRule
-from palm.common.transforms.rules.append_item import AppendItemRule
 from palm.common.transforms.rules.map_fields import MapFieldsRule
-from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.common.transforms.rules.parquet_load import ParquetLoadRule
+from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.common.transforms.rules.rename_field import RenameFieldRule
 from palm.common.transforms.rules.string_format import StringFormatRule
 from palm.common.transforms.rules.toml_load import TomlLoadRule

@@ -8,8 +8,9 @@ import pytest
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
+from palm.common.operator.view_registry import OperatorViewContext
 from palm.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
-from palm.services.assist.catalog.menu import build_menu_page, menu_for_assist
+from palm.services.assist.catalog.menu import build_menu_page
 from palm.services.assist.catalog.open import parse_open_token
 from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
 from palm.services.assist.present.humanize import humanize_assistant_view
@@ -20,7 +21,6 @@ from palm.services.assist.profiles.continuity import (
 from palm.services.assist.profiles.policy import (
     CHAT_DESIGN_AUTO_START_INTENTS,
 )
-from palm.common.operator.view_registry import OperatorViewContext
 
 
 @pytest.fixture

@@ -10,8 +10,8 @@ from palm.common.cqrs.query import (
     GetFlowQuery,
     ListFlowsQuery,
 )
-from palm.common.persistence.definition_impact import analyze_definition_impact
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
+from palm.common.persistence.definition_impact import analyze_definition_impact
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.definitions import FlowDefinition

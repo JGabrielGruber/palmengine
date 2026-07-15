@@ -11,8 +11,11 @@ from palm.app.settings import PalmSettings
 from palm.common.operator.path_match import match_command_path
 from palm.services.design.dispatch import _DISPATCH_HANDLERS
 from palm.services.design.grammar import resolve_design_command
-from palm.services.design.registry import design_commands, resolve_design_mcp_alias
-from palm.services.design.registry import clear_design_contributors
+from palm.services.design.registry import (
+    clear_design_contributors,
+    design_commands,
+    resolve_design_mcp_alias,
+)
 
 
 @pytest.fixture

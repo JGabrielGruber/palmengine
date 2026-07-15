@@ -6,12 +6,11 @@ from typing import Any
 
 from palm.common.operator.compact import compact_job_inspect
 from palm.common.operator.input_coercion import resolve_mcp_job_input
+from palm.common.operator.process_submit import validate_process_submit
 from palm.common.operator.snapshots import diff_snapshot_states
 from palm.common.operator.waiting_jobs import slim_waiting_job_row
-from palm.common.operator.process_submit import validate_process_submit
-from palm.runtimes.mcp.rest_client import PalmRestError
 from palm.runtimes.mcp.descriptions import tool_description
-from palm.runtimes.mcp.submit_body import submit_body
+from palm.runtimes.mcp.rest_client import PalmRestError
 
 _PALM_SYSTEM_DOCTOR_DESC = tool_description(
     "palm_system_doctor",

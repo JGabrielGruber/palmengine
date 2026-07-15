@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from palm.common.executions.flow_submission import prepare_flow_submission
-from palm.common.persistence.instance_sync import build_instance_from_job
-from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.patterns import PatternBuildContext
+from palm.common.persistence.definition_repository import DefinitionRepository
+from palm.common.persistence.instance_sync import build_instance_from_job
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
 from palm.states import BlackboardState

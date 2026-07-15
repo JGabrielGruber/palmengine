@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from examples.definitions.system.event_watch import _WATCH_FLOW, register_definitions as register_event_watch
+from examples.definitions.system.event_watch import _WATCH_FLOW
+from examples.definitions.system.event_watch import register_definitions as register_event_watch
 from palm.app import ApplicationHost, PalmSettings
 from tests.helpers.event_plane import emit_orchestration_event, runtime_event_engine
 

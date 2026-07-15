@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.3 — Lint gate green (T1)
+`ruff check src/palm tests examples` now passes (was ~133 findings). Closes **PD-004**.
+- Auto-fixed I001/F401/RUF100/UP035/UP038/B010/B905/F541/UP041 across ~90 files (import sorting, unused imports, modernizations).
+- Manual: removed 3 dead locals, de-ambiguated a variable name (`l`→`lbl`), fixed 2 en-dashes in docstrings, added `# noqa: E402` to 5 guard-pattern (importorskip/setup) imports.
+- Suite still green (0 failures). Intentionally **not** in this slice: `ruff format` (335-file whole-repo reformat) and `mypy --strict` (379 errors, entangled with the `ApplicationHost` Any-typing → T2). mypy will run as a **report-only** CI job; xenon/complexity (PD-005) is deferred to the complexity themes.
+
 ### 0.46.2 — Green the test suite (T1)
 Fixed all **22** pre-existing failures on master (the suite was red and undetected — no CI). Full suite green. Closes **PD-002**, **PD-003**.
 - **Prod fixes** (tests correctly caught real bugs, not just stale assertions):

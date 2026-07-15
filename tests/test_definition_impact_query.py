@@ -12,9 +12,9 @@ from palm.common.persistence.definition_migration import (
 
 def setup_function() -> None:
     migration_registry.clear()
-from palm.common.persistence.definition_repository import DefinitionRepository
-from palm.definitions import FlowDefinition
-from palm.instances import ProcessInstance
+from palm.common.persistence.definition_repository import DefinitionRepository  # noqa: E402
+from palm.definitions import FlowDefinition  # noqa: E402
+from palm.instances import ProcessInstance  # noqa: E402
 
 
 def _repo_with_revisions() -> DefinitionRepository:

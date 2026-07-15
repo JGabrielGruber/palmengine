@@ -45,7 +45,7 @@ def _default_field(rows: list[dict[str, Any]]) -> str | None:
         for k, v in row.items():
             if isinstance(v, bool):
                 continue
-            if isinstance(v, (int, float)):
+            if isinstance(v, int | float):
                 return k
     if rows:
         return next(iter(rows[0]), None)
@@ -60,7 +60,7 @@ def _numbers(rows: list[dict[str, Any]], key: str) -> list[float]:
         v = row[key]
         if v is None or isinstance(v, bool):
             continue
-        if isinstance(v, (int, float)):
+        if isinstance(v, int | float):
             out.append(float(v))
         elif isinstance(v, str):
             try:

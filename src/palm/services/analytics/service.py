@@ -1,4 +1,4 @@
-"""AnalyticsService — thin BI query/present (0.35–0.36)."""
+"""AnalyticsService — thin BI query/present (0.35-0.36)."""
 
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ class AnalyticsService(BaseService):
                 lineage_extra = {}
         except AnalyticsError as exc:
             return self._error(name, str(exc), code=exc.code)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return self._error(name, str(exc), code="invoke_failed")
 
         if not isinstance(envelope, dict):

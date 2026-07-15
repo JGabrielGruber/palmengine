@@ -39,7 +39,7 @@ def doctor(ctx: ServerContext, request: ServerRequest) -> Any:
     runtime = ctx.runtime
     if ctx.host is not None and not hasattr(runtime, "application_host"):
         try:
-            setattr(runtime, "application_host", ctx.host)
+            runtime.application_host = ctx.host
         except Exception:
             pass
     return ok(ctx.system.doctor(runtime))

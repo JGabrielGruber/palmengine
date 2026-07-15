@@ -263,7 +263,7 @@ def _bool(raw: Any, *, default: bool, field: str, strict: bool) -> bool:
         return default
     if isinstance(raw, bool):
         return raw
-    if isinstance(raw, (int, float)) and raw in (0, 1):
+    if isinstance(raw, int | float) and raw in (0, 1):
         return bool(raw)
     if isinstance(raw, str):
         low = raw.strip().lower()
@@ -304,7 +304,7 @@ def _str_tuple(raw: Any, *, field: str, strict: bool) -> tuple[str, ...]:
     if isinstance(raw, str):
         parts = [p.strip() for p in raw.split(",") if p.strip()]
         return tuple(parts)
-    if isinstance(raw, (list, tuple)):
+    if isinstance(raw, list | tuple):
         out: list[str] = []
         for item in raw:
             s = str(item).strip()

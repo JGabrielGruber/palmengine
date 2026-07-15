@@ -30,7 +30,7 @@ def resource_invoke_remediation(
     if "not found" in lowered or "unknown resource" in lowered:
         return (
             "Use a definition name from palm://definitions/resources "
-            f"(not palm:// URIs). Check palm_system_doctor resource_preflight."
+            "(not palm:// URIs). Check palm_system_doctor resource_preflight."
         )
 
     if "unsupported action" in lowered:

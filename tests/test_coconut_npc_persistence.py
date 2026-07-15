@@ -7,12 +7,12 @@ from examples.definitions.coconut.npc import COCONUT_NPC_FLOW
 from examples.definitions.coconut.resources import (
     LOAD_COCONUT_PLAYER,
     SAVE_COCONUT_PLAYER,
+)
+from examples.definitions.coconut.resources import (
     register_definitions as register_coconut_resources,
 )
-
 from palm.common.resource.document_storage import (
     build_memory_key,
-    clear_memory_kv_store,
     get_memory_kv_store,
 )
 from palm.core.orchestration import JobStatus

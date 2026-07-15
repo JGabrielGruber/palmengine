@@ -24,8 +24,8 @@ _MAX_REPLAY_TOOL_CALLS = 18
 
 @pytest.fixture
 def replay_server_ctx():
-    from palm.app.bootstrap import load_definitions_for_repository
     import examples.definitions.operator_entry as operator_entry
+    from palm.app.bootstrap import load_definitions_for_repository
 
     shutdown_in_process_runtime()
     settings = PalmSettings.for_tests(load_examples=True)

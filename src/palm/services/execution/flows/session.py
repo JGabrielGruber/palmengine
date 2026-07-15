@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Any
 from palm.common.child_wait import resume_child_wait_for_instance
 from palm.common.cqrs.command import CancelJobCommand
 from palm.common.exceptions import InstanceNotFoundError
-from palm.common.operator.flows_session_input import flatten_session_read_model
 from palm.common.interactive_runtime import (
     provide_interactive_input_for_instance,
     request_interactive_backtrack_for_instance,
     resolve_interactive_job,
 )
+from palm.common.operator.flows_session_input import flatten_session_read_model
 from palm.core.orchestration import JobStatus
 from palm.patterns._registry import enrich_session_view
 from palm.services.execution.flows.schemas import SessionContext, build_session_context

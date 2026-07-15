@@ -127,12 +127,12 @@ def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
             the transport or the surface answered.
             """
             from palm import __version__ as palm_version
-            from palm.runtimes.server.surfaces.websocket.frames import (
-                websocket_accept_key,
-            )
             from palm.runtimes.server.surfaces.websocket.events_session import (
                 EVENTS_WS_PATH,
                 run_events_websocket,
+            )
+            from palm.runtimes.server.surfaces.websocket.frames import (
+                websocket_accept_key,
             )
             from palm.runtimes.server.surfaces.websocket.session import (
                 ASSIST_WS_PATH,

@@ -8,11 +8,11 @@ from unittest.mock import MagicMock
 import pytest
 
 from palm.common.transforms import autoload
+from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.core.exceptions import TransformApplicationError
 from palm.core.resource.result import ProviderResult
 from palm.core.transform.base import TransformMode
 from palm.core.transform.engine import TransformEngine
-from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.core.transform.registry import transform_registry
 from tests.core.fakes import TestState
 

@@ -5,15 +5,16 @@ Next-fire times live on StorageEngine so restarts do not reset intervals.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from palm.core.work import WorkIntent
 
 if TYPE_CHECKING:
-    from palm.core.storage import StorageEngine
     from palm.common.work.store import WorkIntentStore
+    from palm.core.storage import StorageEngine
 
 SCHEDULE_PREFIX = "palm:schedule:entry:"
 SCHEDULE_INDEX = "palm:schedule:index"

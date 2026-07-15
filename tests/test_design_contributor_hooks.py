@@ -11,7 +11,10 @@ from palm.patterns._registry import (
     iter_design_contributor_hooks,
     register_design_contributor_hook,
 )
-from palm.services.design.contributors import reset_design_contributor_wiring, wire_builtin_design_contributors
+from palm.services.design.contributors import (
+    reset_design_contributor_wiring,
+    wire_builtin_design_contributors,
+)
 from palm.services.design.registry import clear_design_contributors, iter_design_contributors
 
 

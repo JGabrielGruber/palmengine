@@ -25,7 +25,6 @@ from palm.services.assist.views import (
     post_terminal_design_actions,
 )
 
-
 # Demo flow intents → human labels (0.32.5 Portal / chat)
 _FLOW_INTENT_LABELS: dict[str, str] = {
     "todo-builder": "Todo Builder",

@@ -96,7 +96,7 @@ def inbound_post(
             status=400,
             body={"error": "missing_resource", "message": "resource_name required"},
         )
-    body = request.body if isinstance(request.body, (dict, list)) else {}
+    body = request.body if isinstance(request.body, dict | list) else {}
     headers = {str(k): str(v) for k, v in (request.headers or {}).items()}
     try:
         result = svc.handle_webhook(name, body=body, headers=headers)

@@ -10,7 +10,11 @@ from palm.app.assist_registry import (
     iter_app_assist_contributors,
     register_app_assist_contributor,
 )
-from palm.services.assist.registry import AssistContributor, clear_assist_contributors, scenario_by_id
+from palm.services.assist.registry import (
+    AssistContributor,
+    clear_assist_contributors,
+    scenario_by_id,
+)
 
 
 @pytest.fixture(autouse=True)

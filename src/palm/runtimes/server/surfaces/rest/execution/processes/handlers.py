@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.exceptions import PlanNotFoundError
+from palm.common.runtimes.server.protocol import ServerResponse
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import accepted, created
@@ -14,8 +15,6 @@ from palm.runtimes.server.surfaces.rest.schemas import (
     SUBMIT_PLANS_BODY,
     prepare_plans_variant_errors,
 )
-
-from palm.common.runtimes.server.protocol import ServerResponse
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

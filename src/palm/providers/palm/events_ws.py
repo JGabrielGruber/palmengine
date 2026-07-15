@@ -12,7 +12,8 @@ import socket
 import ssl
 import threading
 import time
-from typing import Any, Callable, Iterator
+from collections.abc import Callable, Iterator
+from typing import Any
 from urllib.parse import urlparse
 
 from palm.common.websocket.frames import (
@@ -278,7 +279,7 @@ class PalmEventsWebSocketClient:
         while True:
             try:
                 opcode, payload = self._reader.read_frame()
-            except (TimeoutError, socket.timeout):
+            except TimeoutError:
                 raise TimeoutError("websocket recv timeout") from None
             except ConnectionError:
                 self._closed = True

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from palm.common.cqrs.command import CancelJobCommand, ProvideInputCommand
-from palm.services.execution.flows import flow_command_from_body
 from palm.common.cqrs.query import GetJobStatusQuery
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -20,6 +19,7 @@ from palm.runtimes.server.surfaces.rest.schemas import (
     submit_job_variant_errors,
 )
 from palm.runtimes.server.surfaces.rest.validation import parse_list_jobs_query
+from palm.services.execution.flows import flow_command_from_body
 
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext

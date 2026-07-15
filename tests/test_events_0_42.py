@@ -10,7 +10,6 @@ from palm.common.events.catalog import (
 from palm.common.events.journal import EventJournal
 from palm.core.storage import StorageEngine
 from palm.providers.palm.events_client import PalmEventsClient
-from palm.runtimes.server.runtime import ServerRuntime
 
 
 def _storage() -> StorageEngine:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from palm.services._cqrs_registry import ServiceCqrsContributor, register_service_cqrs_contributor
 from palm.services.design.bindings.cqrs.registry import DESIGN_COMMAND_TYPES, DESIGN_QUERY_TYPES

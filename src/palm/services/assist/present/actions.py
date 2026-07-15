@@ -107,7 +107,7 @@ def merge_assistant_actions(
                 continue
             path = action.get("path")
             path_key: Any
-            if isinstance(path, (list, tuple)):
+            if isinstance(path, list | tuple):
                 path_key = tuple(path)
             else:
                 path_key = path

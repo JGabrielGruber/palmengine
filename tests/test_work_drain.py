@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from palm.app.host.work_drain_service import WorkDrainService
+from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.core.work import WorkIntent
 from palm.services.execution.providers.service import ProviderExecutionService
-from palm.common.cqrs.bus import CommandBus, QueryBus
-from palm.common.cqrs.schemas import CqrsSchemaRegistry
 
 
 def _storage() -> StorageEngine:

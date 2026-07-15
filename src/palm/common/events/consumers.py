@@ -12,7 +12,8 @@ Consumers advance **their own** offsets via :meth:`EventJournal.consume`.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from palm.common.events.journal import EventJournal, JournalEntry
 

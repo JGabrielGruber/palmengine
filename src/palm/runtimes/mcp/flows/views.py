@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.runtimes.server.surfaces.rest.responses import flatten_session_context, session_context_body
+from palm.runtimes.server.surfaces.rest.responses import (
+    flatten_session_context,
+    session_context_body,
+)
 
 
 def flatten_session_view(ctx: Any) -> dict[str, Any]:

@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.exceptions import DefinitionNotFoundError, InstanceMigrationError, InstanceNotFoundError
+from palm.common.exceptions import (
+    DefinitionNotFoundError,
+    InstanceMigrationError,
+    InstanceNotFoundError,
+)
 from palm.common.persistence.definition_migration import MigrationContext, resolve_migration_rule
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.persistence.instance_migration_metadata import MIGRATION_METADATA_KEYS

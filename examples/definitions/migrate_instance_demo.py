@@ -29,7 +29,10 @@ from __future__ import annotations
 from typing import Any
 
 from palm.common.managers.instance_manager import InstanceManager
-from palm.common.persistence.definition_migration import CallableMigrationRule, register_migration_rule
+from palm.common.persistence.definition_migration import (
+    CallableMigrationRule,
+    register_migration_rule,
+)
 from palm.common.persistence.instance_migration import migrate_instance
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.definitions import FlowDefinition, ProcessDefinition

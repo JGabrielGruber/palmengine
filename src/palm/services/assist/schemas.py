@@ -77,9 +77,8 @@ class AssistSessionContext:
                 build_assistant_actions,
                 design_discovery_actions,
                 merge_assistant_actions,
+                prioritize_assistant_actions_for_design,
             )
-
-            from palm.services.assist.views import prioritize_assistant_actions_for_design
 
             base = build_assistant_actions(self)
             extras = payload.get("actions")

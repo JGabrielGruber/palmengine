@@ -61,7 +61,7 @@ def _looks_numeric(rows: list[dict[str, Any]], key: str) -> bool:
             continue
         if isinstance(v, bool):
             return False
-        if isinstance(v, (int, float)):
+        if isinstance(v, int | float):
             return True
         if isinstance(v, str):
             try:

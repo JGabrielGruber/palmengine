@@ -9,8 +9,8 @@ import pytest
 
 from examples.definitions.system.event_watch import PALM_SYSTEM_WATCH_EVENT_FLOW
 from palm.common.patterns import build_pattern
-from palm.common.transforms import autoload
 from palm.common.patterns.build_context import PatternBuildContext
+from palm.common.transforms import autoload
 from palm.common.transforms.builder import build_transform_leaf, transform_step_from_mapping
 from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.core import PatternStatus

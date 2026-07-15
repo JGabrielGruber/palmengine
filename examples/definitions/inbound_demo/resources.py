@@ -6,7 +6,6 @@ import os
 
 from palm.definitions import ResourceDefinition
 
-
 INBOUND_INBOX = ResourceDefinition(
     id="resource-inbound-inbox",
     name="inbound-inbox",

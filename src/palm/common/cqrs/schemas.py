@@ -53,7 +53,7 @@ class CqrsSchemaRegistry:
 
 def build_schema_registry() -> CqrsSchemaRegistry:
     """Build a registry from core schemas and pattern CQRS contributors."""
-    import palm.patterns  # noqa: F401 — ensure pattern contributors are registered
+    import palm.patterns  # — ensure pattern contributors are registered
     from palm.common.cqrs.schema_bootstrap import register_core_schemas
     from palm.patterns._registry import iter_cqrs_contributors
 

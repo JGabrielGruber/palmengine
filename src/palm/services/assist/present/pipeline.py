@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.common.operator.compose_status import build_compose_status
 from palm.common.operator.compact import compact_wizard_inspect
+from palm.common.operator.compose_status import build_compose_status
 from palm.common.operator.view_registry import OperatorViewContext
 from palm.services.assist.present.actions import default_turn_actions
 from palm.services.assist.present.flatten import (

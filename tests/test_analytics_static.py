@@ -45,5 +45,5 @@ def test_analytics_index_and_assets(server: ServerRuntime) -> None:
     try:
         urllib.request.urlopen(f"{server.base_url}/analytics/../secrets", timeout=5)
         raise AssertionError("expected 404")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         assert "404" in str(exc) or getattr(exc, "code", None) == 404

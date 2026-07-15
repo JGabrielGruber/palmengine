@@ -16,7 +16,7 @@ def test_server_profile_starts_work_drain_without_env() -> None:
     host.start()
     try:
         assert host.profile.enable_work_drain_service is True
-        assert host._work_drain_background_enabled() is True  # noqa: SLF001
+        assert host._work_drain_background_enabled() is True
         assert host.work_drain is not None
         assert host.work_drain.is_running is True
     finally:
@@ -32,7 +32,7 @@ def test_all_in_one_profile_does_not_auto_drain() -> None:
     host.start()
     try:
         assert host.profile.enable_work_drain_service is False
-        assert host._work_drain_background_enabled() is False  # noqa: SLF001
+        assert host._work_drain_background_enabled() is False
         assert host.work_drain is not None
         assert host.work_drain.is_running is False
     finally:

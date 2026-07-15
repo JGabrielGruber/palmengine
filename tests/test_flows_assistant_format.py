@@ -12,10 +12,10 @@ import pytest
 fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
-from palm.common.operator.view_registry import clear_operator_view_builders
-from palm.runtimes.mcp.assist.dispatch import shape_dispatch_result
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
 from palm.common.operator.flow_session_view import shape_flow_session_view  # noqa: E402
+from palm.common.operator.view_registry import clear_operator_view_builders  # noqa: E402
+from palm.runtimes.mcp.assist.dispatch import shape_dispatch_result  # noqa: E402
+from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
 from palm.runtimes.mcp.in_process import (  # noqa: E402
     PalmInProcessBackend,
     shutdown_in_process_runtime,

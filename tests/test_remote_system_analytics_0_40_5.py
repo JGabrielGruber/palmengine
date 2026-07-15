@@ -52,7 +52,7 @@ def test_analytics_origin_resources_not_query_params() -> None:
             assert q.get("meta", {}).get("row_count", 0) >= 1
             if "name" in cols:
                 ni = cols.index("name")
-                found = {str(r[ni]) for r in rows if isinstance(r, (list, tuple))}
+                found = {str(r[ni]) for r in rows if isinstance(r, list | tuple)}
             else:
                 found = {str(r) for r in rows}
             assert "remote-dogfood-flow" in found, (found, cols, q)

@@ -129,10 +129,10 @@ def test_poll_mode_invokes_pull_resource() -> None:
         invoke_resource=_invoke,
     )
     svc.reload_from_definitions()
-    envelope = svc._poll_once(svc.resolve("poll-res"))  # noqa: SLF001
+    envelope = svc._poll_once(svc.resolve("poll-res"))
     assert envelope is not None
     assert envelope["source"] == "poll"
-    intent_id, meta = svc._signal(svc.resolve("poll-res"), envelope, source="poll")  # noqa: SLF001
+    intent_id, meta = svc._signal(svc.resolve("poll-res"), envelope, source="poll")
     assert intent_id == "intent-poll-1"
     assert invoke_calls == [("poll-res", "get")]
     assert enqueued[0].target == "react"
@@ -175,7 +175,7 @@ def test_store_envelope_invokes_inbox() -> None:
             "definition": {},
         },
     )()
-    meta = svc._store_envelope(binding, {"payload": {"id": 1}})  # noqa: SLF001
+    meta = svc._store_envelope(binding, {"payload": {"id": 1}})
     assert meta["stored"] is True
     invoke.assert_called_once()
     call = invoke.call_args

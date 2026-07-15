@@ -21,7 +21,7 @@ def test_http_base_to_ws_url() -> None:
 
 def _host_base_url(host: ApplicationHost) -> str:
     app = host.app
-    reg = app._runtimes  # noqa: SLF001
+    reg = app._runtimes
     handle = reg.get("server")
     rt = handle.runtime
     url = getattr(rt, "base_url", None)

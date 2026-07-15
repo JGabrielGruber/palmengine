@@ -8,7 +8,6 @@ import pytest
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
-from palm.core.orchestration import JobStatus
 
 
 @pytest.fixture
@@ -39,7 +38,7 @@ def test_operator_entry_handoff_recommends_flow(assist_host: ApplicationHost) ->
     assert updated.get("status") == "complete"
     assert updated.get("handoff_ready") is True
     labels = [a.get("label") for a in (updated.get("actions") or []) if isinstance(a, dict)]
-    assert any(isinstance(l, str) and "Todo Builder" in l for l in labels)
+    assert any(isinstance(lbl, str) and "Todo Builder" in lbl for lbl in labels)
     handoff = assist_host.assist.handoff(session_id)
     assert handoff["handoff"]["kind"] == "flow"
     assert handoff["handoff"]["flow_id"] == "todo-builder"

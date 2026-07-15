@@ -58,7 +58,7 @@ def invoke_system_read(
             provider=name,
             resource_id=resource_id,
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return ProviderResult.fail(
             str(exc),
             action=action_s,
@@ -228,7 +228,7 @@ def _remote_list(action: str, params: PalmInvokeParams) -> list[dict[str, Any]]:
     if qs:
         path = f"{path}?{'&'.join(qs)}"
 
-    code, payload = remote_client._request_with_retry(  # noqa: SLF001 — shared client
+    code, payload = remote_client._request_with_retry(  # — shared client
         base,
         "GET",
         path,

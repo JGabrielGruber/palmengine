@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import threading
-import time
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from palm.common.triggers.registry import TriggerRegistry
 from palm.common.work.schedule import ScheduleRegistry
@@ -124,7 +124,7 @@ class WorkDrainService:
                     raise ValueError(f"unsupported work kind {intent.kind!r}")
                 self._store.ack(intent.id)
                 done += 1
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 self._store.fail(intent.id, str(exc))
         return done
 

@@ -126,7 +126,6 @@ def test_run_flow_dispatches_submit_flow_command() -> None:
         status: Any = field(default_factory=lambda: type("S", (), {"value": "RUNNING"})())
         metadata: dict[str, str] = field(default_factory=lambda: {"instance_id": "inst-1"})
 
-    registry = CqrsSchemaRegistry()
     commands = _CommandBusStub(job=_Job())
     runtime = _RuntimeStub()
     svc = _flow_service(

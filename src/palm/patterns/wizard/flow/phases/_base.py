@@ -173,7 +173,7 @@ def queue_step_route(state: BaseState, step: WizardStepConfig, value: Any) -> No
             state.set(WizardKeys.JUMP_TO_STEP, str(target))
             return
     complete_on = params.get("complete_on")
-    if isinstance(complete_on, (list, tuple)):
+    if isinstance(complete_on, list | tuple):
         normalized = {str(item).lower() for item in complete_on}
         if str(value).lower() in normalized:
             state.set(WizardKeys.JUMP_TO_STEP, "__end__")

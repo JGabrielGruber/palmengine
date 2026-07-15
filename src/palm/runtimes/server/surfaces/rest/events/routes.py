@@ -11,6 +11,7 @@ from palm.runtimes.server.surfaces.rest.bindings import bind_handler
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.prefix import API_PREFIX
 from palm.runtimes.server.surfaces.rest.responses import ok
+
 if TYPE_CHECKING:
     from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry

@@ -10,8 +10,8 @@ from palm.common.cqrs.command import (
     SubmitPlansCommand,
     SubmitProcessCommand,
 )
-from palm.core.orchestration import Job
 from palm.common.services.base import BaseService
+from palm.core.orchestration import Job
 from palm.services.execution.processes.grammar import ProcessCommandKind, parse_process_command
 
 if TYPE_CHECKING:

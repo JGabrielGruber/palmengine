@@ -12,7 +12,11 @@ from palm.common.cqrs.query import (
     ListFlowsQuery,
     ListProcessesQuery,
 )
-from palm.common.exceptions import DefinitionNotFoundError, InstanceMigrationError, InstanceNotFoundError
+from palm.common.exceptions import (
+    DefinitionNotFoundError,
+    InstanceMigrationError,
+    InstanceNotFoundError,
+)
 from palm.common.resource.catalog import ResourceCatalog
 from palm.common.runtimes.server.plans import prepare_flow_from_body
 from palm.common.services.base import BaseService

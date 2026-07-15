@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from palm.common.cqrs import CommandBus
-from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.orchestration import JobStatus
 from palm.services.execution.flows.schemas import SessionContext

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+
 class PublishAction(str, Enum):
     """How ``commit_proposal`` should publish a validated proposal."""
 

@@ -15,10 +15,10 @@ from palm.common.cqrs.query import (
     Query,
 )
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
-from palm.services.definitions import DefinitionService
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.definitions.flow import FlowDefinition
 from palm.definitions.process import ProcessDefinition
+from palm.services.definitions import DefinitionService
 
 
 class _QueryBusStub:

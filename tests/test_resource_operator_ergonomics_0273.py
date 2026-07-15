@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 import palm.providers  # noqa: F401 — register providers
+from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER
 from palm.common import DefinitionRepository
 from palm.common.operator.compact import compact_wizard_inspect
 from palm.common.operator.resource_remediation import (
@@ -12,7 +11,6 @@ from palm.common.operator.resource_remediation import (
     resource_invoke_remediation,
 )
 from palm.common.resource import resource_definition_resolver
-from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER
 from palm.common.resource.preflight import (
     build_resource_preflight,
     resource_preflight_issues,
@@ -21,7 +19,7 @@ from palm.common.resource.preflight import (
 from palm.common.runtimes.server.diagnostics import build_doctor_report
 from palm.core.behavior_tree import PatternStatus
 from palm.core.resource import ResourceEngine
-from palm.definitions import FlowDefinition, ResourceDefinition
+from palm.definitions import ResourceDefinition
 from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig

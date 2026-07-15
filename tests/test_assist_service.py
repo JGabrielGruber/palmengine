@@ -8,7 +8,6 @@ import pytest
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
-from palm.core.orchestration import JobStatus
 
 
 @pytest.fixture
@@ -216,9 +215,9 @@ def test_portal_greeting_shape_preserves_question_and_input(
     Rebuild-from-assistant used to wipe question and set mutations_allowed=false.
     """
     from palm.runtimes.mcp.assist.dispatch import (
+        dispatch_operator_path,
         normalize_assist_dispatch_args,
         resolve_dispatch_path,
-        dispatch_operator_path,
         shape_dispatch_result,
     )
     from palm.services.assist.views import ensure_assist_view_registration
@@ -286,7 +285,6 @@ def test_assist_doctor_returns_report(assist_host: ApplicationHost) -> None:
 
 def test_assist_session_includes_actions_block(assist_host: ApplicationHost) -> None:
     started = assist_host.assist.start_scenario("operator-entry", {})
-    session_id = started["session_id"]
     assert "actions" in started
     assert any(action.get("label") == "Send answer" for action in started["actions"])
 

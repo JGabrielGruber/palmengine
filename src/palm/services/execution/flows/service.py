@@ -12,10 +12,10 @@ from palm.common.job_context import instance_id_for_job
 from palm.common.operator.flows_session_input import flatten_session_read_model
 from palm.common.services.base import BaseService
 from palm.common.services.errors import DefinitionNotFoundServiceError
+from palm.patterns._registry import enrich_session_view
 from palm.services.definitions.flows import flow_catalog_row
 from palm.services.execution.flows.grammar import FlowCommandKind, parse_flow_command
 from palm.services.execution.flows.schemas import SessionContext, build_session_context
-from palm.patterns._registry import enrich_session_view
 from palm.services.execution.flows.session import FlowSession
 
 if TYPE_CHECKING:

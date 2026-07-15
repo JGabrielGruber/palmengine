@@ -13,8 +13,9 @@ from palm.common.services.errors import (
     DesignProposalNotFoundServiceError,
     InstanceMigrationServiceError,
 )
-from palm.services.design.commit_gate import build_commit_mutation_block, enforce_commit_token
 from palm.services.definitions.parsers import parse_resource
+from palm.services.design.commit_gate import build_commit_mutation_block, enforce_commit_token
+from palm.services.design.dispatch import dispatch_design_command
 from palm.services.design.envelope import (
     PublishAction,
     extract_resource_dict,
@@ -30,7 +31,6 @@ from palm.services.design.proposal import (
     resolve_proposal_flow_id,
     resolve_proposal_resource_id,
 )
-from palm.services.design.dispatch import dispatch_design_command
 from palm.services.design.registry import run_design_validators
 
 if TYPE_CHECKING:

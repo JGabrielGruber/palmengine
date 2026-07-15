@@ -54,9 +54,8 @@ def test_design_proposal_demo_pipeline_commits_and_migrates(demo_host: Applicati
 
 
 def test_design_proposal_demo_register_definitions_publishes_meta_flow() -> None:
-    from palm.common.persistence.definition_repository import DefinitionRepository
-
     from examples.definitions import design_proposal_demo
+    from palm.common.persistence.definition_repository import DefinitionRepository
 
     repository = DefinitionRepository()
     design_proposal_demo.register_definitions(repository)
@@ -105,8 +104,8 @@ def test_design_proposal_demo_commit_handler_preview(demo_host: ApplicationHost)
 
 
 def test_wizard_and_pipeline_design_hooks_registered() -> None:
-    from palm.patterns.wizard.app import wizard_app
     from palm.patterns.pipeline.app import pipeline_app
+    from palm.patterns.wizard.app import wizard_app
 
     wizard_app.register()
     pipeline_app.register()

@@ -8,8 +8,10 @@ import pytest
 
 from examples.definitions.coconut.profile_pipeline import COCONUT_PROFILE_PIPELINE
 from examples.definitions.system.event_watch import (
-    PALM_SYSTEM_EVENTS_WATCH,
     _WATCH_FLOW,
+    PALM_SYSTEM_EVENTS_WATCH,
+)
+from examples.definitions.system.event_watch import (
     register_definitions as register_event_watch,
 )
 from palm.app import ApplicationHost, PalmSettings

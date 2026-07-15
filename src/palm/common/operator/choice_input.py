@@ -7,7 +7,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-
 _ACTION_KEYWORDS: dict[str, tuple[str, ...]] = {
     "add": ("add a new item", "add"),
     "edit": ("edit an item", "edit"),

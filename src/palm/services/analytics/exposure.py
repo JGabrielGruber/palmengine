@@ -1,4 +1,4 @@
-"""Parse ``ResourceDefinition.metadata.analytics`` exposure (0.35–0.36)."""
+"""Parse ``ResourceDefinition.metadata.analytics`` exposure (0.35-0.36)."""
 
 from __future__ import annotations
 

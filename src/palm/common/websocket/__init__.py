@@ -1,12 +1,12 @@
 """Shared WebSocket primitives (RFC6455) for server and provider clients."""
 
 from palm.common.websocket.frames import (
-    FrameReader,
     OP_CLOSE,
     OP_PING,
     OP_PONG,
     OP_TEXT,
     WS_GUID,
+    FrameReader,
     encode_client_close,
     encode_client_ping,
     encode_client_text,

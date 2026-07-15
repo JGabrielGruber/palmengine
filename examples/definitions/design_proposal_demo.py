@@ -38,13 +38,18 @@ from typing import Any
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
-from palm.common.managers.instance_manager import InstanceManager
-from palm.common.persistence.definition_migration import CallableMigrationRule, register_migration_rule
-from palm.common.persistence.instance_repository import InstanceRepository
 from palm.common.exceptions import DefinitionNotFoundError
+from palm.common.persistence.definition_migration import (
+    CallableMigrationRule,
+    register_migration_rule,
+)
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.instances import ProcessInstance
-from palm.patterns.wizard.bindings.compensation.handler import CommitContext, CommitResult, default_commit_registry
+from palm.patterns.wizard.bindings.compensation.handler import (
+    CommitContext,
+    CommitResult,
+    default_commit_registry,
+)
 
 FLOW_ID = "design-demo-flow"
 _HOST_BY_STORAGE_ID: dict[int, ApplicationHost] = {}

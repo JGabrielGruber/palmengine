@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.assist import register_assist_tools
+from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.contributors import register_app_mcp_tools, register_pattern_mcp_tools
 from palm.runtimes.mcp.definitions import register_definitions_tools
 from palm.runtimes.mcp.design import register_design_tools

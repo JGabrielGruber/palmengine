@@ -25,7 +25,11 @@ from palm.services.design.envelope import (
 )
 from palm.services.design.factory import create_proposal_repository
 from palm.services.design.proposal import DesignProposalRepository
-from palm.services.design.registry import DesignContributor, clear_design_contributors, register_design_contributor
+from palm.services.design.registry import (
+    DesignContributor,
+    clear_design_contributors,
+    register_design_contributor,
+)
 from palm.services.design.storage_proposal_repository import StorageDesignProposalRepository
 
 
@@ -134,7 +138,7 @@ def test_storage_proposal_repository_persists_across_instances() -> None:
 
 def test_host_uses_storage_backed_proposals_when_storage_ready(design_host: ApplicationHost) -> None:
     repo = create_proposal_repository(design_host.storage)
-    assert isinstance(repo, (StorageDesignProposalRepository, DesignProposalRepository))
+    assert isinstance(repo, StorageDesignProposalRepository | DesignProposalRepository)
 
 
 def test_commit_auto_migrates_compatible_instances(design_host: ApplicationHost) -> None:

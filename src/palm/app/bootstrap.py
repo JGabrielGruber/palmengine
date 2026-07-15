@@ -56,8 +56,6 @@ def load_definition_modules(
     Package import path is ``examples.definitions.<name>`` when the root is
     ``…/examples/definitions``; otherwise ``<name>`` with the root on ``sys.path``.
     """
-    import importlib
-    import sys
 
     loaded = 0
     seen: set[Path] = set()
