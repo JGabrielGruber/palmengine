@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.app.host.work_drain_service import WorkDrainService
+from palm.app.host.workplane.work_drain_service import WorkDrainService
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.event import EventEngine

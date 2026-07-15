@@ -62,16 +62,23 @@ package re-exports its public surface from `__init__`.
 
 ## Slices (feature-per-patch; public API frozen)
 
-| Patch | Scope | MIGRATION? |
-|---|---|---|
-| **0.48.0** | Plan (this doc) + [ADR-018](adr/018-application-host-decomposition.md) + **characterization tests** pinning the 3 status reports' JSON shape and the degrade-to-fallback branches (the missing coverage) — so every later move is provably behavior-preserving | — |
-| **0.48.1** | Seam 3 — `HostObservability`; optionally drop the `work_drain_background` deprecated alias | **yes** if alias dropped |
-| **0.48.2** | Seam 1 — `HostServiceRegistry` + move the 6 core service constructions out of `_wire_cqrs` into dependency-ordered `ServiceProvider`s built by `build_all(ctx)`. *(Merged with 2a: scaffolding-without-use is dead code. Dead-accessor removal deferred — it needs a careful cross-codebase zero-consumer proof + MIGRATION, and vulture over-flags public API; it becomes its own slice.)* | no |
-| **0.48.3** | Seam 2a′ — services **ship** their own `ServiceProvider` (register on import, django-app style) instead of the host holding the provider list; dead-accessor removal | **yes** (accessor removal) |
-| **0.48.4** | Seam 2b — projection + CQRS contributor unification; `_wire_cqrs` collapses to the `ctx` pipeline driver | no |
-| **0.48.5** | Seam 6 — relocate `ServerContext` onto the shared pipeline, out of `common` (PD-013); ratchet `MAX_UPWARD` down | **yes** (import path) |
-| **0.48.6** | Seam 4 — `WorkPlaneCoordinator` | **yes** if dead journal/tick methods removed |
-| **0.48.7** | Seam 5 — `RuntimeSpawner`/`RecoveryCoordinator`; `__init__` slot reduction; narrow the 13 `except Exception` (touches PD-024) | no |
+Executed by **impact ÷ blast-radius**, not the seam numbers — front-load the low-risk extractions. Each
+lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC tracked: **1164 → 816** so far.
+
+| Patch | Scope | Status | MIGRATION? |
+|---|---|---|---|
+| **0.48.0** | Plan + [ADR-018](adr/018-application-host-decomposition.md) + characterization tests pinning the 3 status reports + fallback branches | ✅ | — |
+| **0.48.1** | Seam 3 — `app/host/observability.py::HostObservability` (1164→1040) | ✅ | no |
+| **0.48.2** | Seam 1 — `app/host/services/` — 6 core services build via a dependency-ordered `HostServiceRegistry` (1040→985) | ✅ | no |
+| **0.48.3** | Seam 4 — `app/host/workplane/` — `WorkPlaneCoordinator` (work-drain/inbound/journal wiring + ops) + folds in the flat `inbound_service`/`work_drain_service` (985→816) | ✅ | no |
+| next | **Dead-accessor removal** — careful cross-codebase zero-consumer proof (vulture over-flags public API), then remove | — | **yes** |
+| next | Seam 2 — `_wire_cqrs` projection + CQRS-contributor unification → a root-agnostic `ctx` pipeline driver | — | no |
+| next | Seam 6 — relocate `ServerContext` onto that pipeline, out of `common` (**PD-013**); ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
+| next | Seam 5 — `RuntimeSpawner`/`RecoveryCoordinator`; `__init__` slot reduction; narrow the 13 `except Exception` (PD-024) | — | no |
+
+*(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
+provider type from `app/host` is an upward edge; the composition root owning the provider list is the
+layering-correct design.)*
 
 **Invariant:** `host.execute`, `host.ask`, `host.start`, `host.shutdown`, `submit_flow`/`submit_process`/
 `provide_input`/`resume_process`/`invoke_resource`, the thin service accessors, and `run_host` keep

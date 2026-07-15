@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from palm.app.host.work_drain_service import WorkDrainService
+from palm.app.host.workplane.work_drain_service import WorkDrainService
 from palm.common.triggers import TriggerRegistry
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine

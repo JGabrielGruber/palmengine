@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 224  # ratcheted at 0.48.1 (HostObservability extraction hoisted status imports); 287→…→224
+MAX_FUNCTION_LOCAL = 219  # ratcheted at 0.48.3 (WorkPlaneCoordinator hoisted wiring/journal imports); 287→…→219
 MAX_UPWARD = 5  # ratcheted at 0.47.9a; remaining 5 are sanctioned composition-root/lazy seams (see ADR-017)
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.

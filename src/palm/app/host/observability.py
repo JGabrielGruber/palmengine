@@ -42,10 +42,10 @@ class HostObservability:
         except Exception:
             pass
         internal_bindings = 0
-        if host._inbound is not None:
+        if host.inbound is not None:
             try:
                 internal_bindings = sum(
-                    1 for row in host._inbound.list_bindings() if row.get("mode") == "internal"
+                    1 for row in host.inbound.list_bindings() if row.get("mode") == "internal"
                 )
             except Exception:
                 internal_bindings = 0
@@ -119,12 +119,12 @@ class HostObservability:
         """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
         host = self._host
         work_pending = 0
-        if host._work_drain is not None:
-            work_pending = host._work_drain.store.pending_count()
+        if host.work_drain is not None:
+            work_pending = host.work_drain.store.pending_count()
         journal_status: dict[str, Any] = {}
-        if host._event_journal is not None:
+        if host.event_journal is not None:
             journal_status = journal_consumer_status(
-                host._event_journal,
+                host.event_journal,
                 consumers=list(DEFAULT_JOURNAL_CONSUMERS),
             )
         outbox_pending = 0
@@ -132,19 +132,19 @@ class HostObservability:
             outbox_pending = host._outbox_service.store.pending_count()
         bg = False
         dropped = 0
-        if host._work_drain is not None:
-            bg = bool(host._work_drain.is_running)
-            dropped = int(host._work_drain.dropped_depth_count)
+        if host.work_drain is not None:
+            bg = bool(host.work_drain.is_running)
+            dropped = int(host.work_drain.dropped_depth_count)
         schedules: list[dict[str, Any]] = []
-        if host._work_drain is not None:
+        if host.work_drain is not None:
             try:
-                schedules = list(host._work_drain.schedules.list_entries())
+                schedules = list(host.work_drain.schedules.list_entries())
             except Exception:
                 schedules = []
         inbound_bindings: list[dict[str, Any]] = []
-        if host._inbound is not None:
+        if host.inbound is not None:
             try:
-                inbound_bindings = list(host._inbound.list_bindings())
+                inbound_bindings = list(host.inbound.list_bindings())
             except Exception:
                 inbound_bindings = []
         return {

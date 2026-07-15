@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from examples.definitions.todos.analytics import TODO_ANALYTICS_FLOW
-from palm.app.host.work_drain_service import WorkDrainService
+from palm.app.host.workplane.work_drain_service import WorkDrainService
 from palm.common.triggers import parse_triggers
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine

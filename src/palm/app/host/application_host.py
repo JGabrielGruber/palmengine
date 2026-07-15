@@ -19,6 +19,7 @@ from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
 from palm.app.host.services import HostServiceContext, core_service_registry
 from palm.app.host.workers import WorkerCoordinator
+from palm.app.host.workplane import WorkPlaneCoordinator
 from palm.app.settings import PalmSettings
 from palm.common.compensation import (
     CompensationCoordinator,
@@ -123,12 +124,10 @@ class ApplicationHost:
         self._assist: Any | None = None
         self._design: Any | None = None
         self._analytics: Any | None = None
-        self._work_drain: Any | None = None
-        self._event_journal: Any | None = None
-        self._inbound: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
         self._observability = HostObservability(self)
+        self._workplane = WorkPlaneCoordinator(self)
 
     @property
     def app(self) -> PalmApp:
@@ -186,17 +185,17 @@ class ApplicationHost:
     @property
     def work_drain(self):
         """WorkIntent drain (0.37) — run-when-able deferred flows."""
-        return self._work_drain
+        return self._workplane.work_drain
 
     @property
     def event_journal(self):
         """Append-only event journal (0.38) — offsets + redrive."""
-        return self._event_journal
+        return self._workplane.event_journal
 
     @property
     def inbound(self):
         """Inbound resource bindings (0.43) — webhook/stream → WorkIntent."""
-        return self._inbound
+        return self._workplane.inbound
 
     @property
     def router(self) -> RuntimeRouter:
@@ -301,8 +300,8 @@ class ApplicationHost:
             primary=self._app.primary_name,
         )
         self._started = True
-        if self._work_drain_background_enabled() and self._work_drain is not None:
-            self._work_drain.start_background()
+        if self._work_drain_background_enabled():
+            self._workplane.start_background()
         return self
 
     def _work_drain_background_enabled(self) -> bool:
@@ -316,14 +315,8 @@ class ApplicationHost:
         if not self._started:
             return
 
-        if self._work_drain is not None:
-            self._work_drain.stop_background()
-
-        if self._inbound is not None:
-            try:
-                self._inbound.stop()
-            except Exception:
-                pass
+        self._workplane.stop_background()
+        self._workplane.stop_inbound()
 
         try:
             from palm.services.analytics.dashboards import attach_dashboard_store
@@ -589,9 +582,9 @@ class ApplicationHost:
         self._analytics = built["analytics"]
         self._assist.bind_analytics(self._analytics)
         self._wire_dashboard_store()
-        self._wire_work_drain()
-        self._wire_event_journal()
-        self._wire_inbound()
+        self._workplane.wire_work_drain()
+        self._workplane.wire_event_journal()
+        self._workplane.wire_inbound()
         wire_builtin_design_contributors()
         wire_all_service_cqrs(
             self._command_bus,
@@ -715,128 +708,17 @@ class ApplicationHost:
 
         attach_dashboard_store(self._app.storage)
 
-    def _wire_work_drain(self) -> None:
-        """WorkIntent queue + trigger attach (0.37). Drain is explicit via tick()."""
-        if not self._app.storage.is_initialized:
-            return
-        from palm.app.host.work_drain_service import WorkDrainService
-
-        def _submit(flow_id: str, payload: dict[str, Any]) -> Any:
-            body = dict(payload or {})
-            seed = body.pop("_seed_state", None)
-            submit_body: dict[str, Any] = {
-                "flow_name": flow_id,
-                "metadata": body,
-            }
-            if seed is not None:
-                submit_body["state"] = seed
-            return self._execution.flows.submit_flow_body(submit_body)
-
-        settings = self.settings
-        self._work_drain = WorkDrainService(
-            self._app.storage,
-            submit_flow=_submit,
-            event_engine=self._runtime_event_engine(),
-            able=lambda: self._started,
-            max_depth=int(settings.work_drain_max_depth),
-            poll_interval=float(settings.work_drain_poll_interval),
-            batch_size=int(settings.work_drain_batch_size),
-        )
-        job_events = self._runtime_event_engine()
-        if job_events.is_initialized:
-            self._work_drain.attach_events(job_events)
-        # Load triggers from flow catalog (after examples/definitions already loaded)
-        self.reload_work_triggers()
-
-    def _wire_inbound(self) -> None:
-        """Inbound resource bindings (0.43) — metadata.inbound → WorkIntent."""
-        if self._work_drain is None:
-            return
-        from palm.app.host.inbound_service import InboundBindingService
-
-        def _list() -> list[dict[str, Any]]:
-            try:
-                return list(self._definitions.list_resources() or [])
-            except Exception:
-                return []
-
-        def _get(name: str) -> dict[str, Any] | None:
-            try:
-                return self._definitions.get_resource(name)
-            except Exception:
-                return None
-
-        def _enqueue(intent: Any) -> str:
-            return self._work_drain.enqueue(intent)
-
-        def _invoke(
-            resource_ref: str,
-            *,
-            action: str | None = None,
-            params: dict[str, Any] | None = None,
-        ) -> Any:
-            return self.invoke_resource(
-                resource_ref,
-                action=action,
-                params=params,
-            )
-
-        self._inbound = InboundBindingService(
-            enqueue=_enqueue,
-            event_engine=self._runtime_event_engine(),
-            list_resources=_list,
-            get_resource=_get,
-            invoke_resource=_invoke,
-        )
-        self.reload_inbound_bindings()
-
     def reload_work_triggers(self) -> int:
         """Reload definition triggers into the work drain (after design/example load)."""
-        if self._work_drain is None:
-            return 0
-        try:
-            rows = self._definitions.list_flows() or []
-
-            def _meta(name: str) -> dict[str, Any] | None:
-                try:
-                    detail = self._definitions.get_flow(name, verbose=True)
-                except Exception:
-                    return None
-                if not isinstance(detail, dict):
-                    return None
-                # Prefer explicit metadata; else options (examples put triggers there).
-                meta = detail.get("metadata")
-                if isinstance(meta, dict) and meta.get("triggers"):
-                    return meta
-                opts = detail.get("options")
-                return opts if isinstance(opts, dict) else meta
-
-            return int(self._work_drain.reload_triggers(rows, get_metadata=_meta) or 0)
-        except Exception:
-            return 0
+        return self._workplane.reload_work_triggers()
 
     def reload_inbound_bindings(self) -> int:
         """Rescan resources with metadata.inbound (0.43)."""
-        if self._inbound is None:
-            return 0
-        try:
-            n = int(self._inbound.reload_from_definitions() or 0)
-            self._inbound.start_workers()
-            return n
-        except Exception:
-            return 0
+        return self._workplane.reload_inbound_bindings()
 
     def tick_work(self, *, limit: int = 10, schedules: bool = True) -> int:
         """Process due WorkIntents (and optional schedule triggers). Returns count."""
-        if self._inbound is not None:
-            self._inbound.flush_debounced()
-        if self._work_drain is None:
-            return 0
-        n = 0
-        if schedules:
-            n += self._work_drain.tick_schedules()
-        n += self._work_drain.tick(limit=limit)
-        return n
+        return self._workplane.tick_work(limit=limit, schedules=schedules)
 
     def event_plane_status(self) -> dict[str, Any]:
         """Which EventEngine each reactive surface uses (0.45.5 doctor contract)."""
@@ -850,49 +732,13 @@ class ApplicationHost:
         """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
         return self._observability.control_plane_status()
 
-    def drain_journal_webhooks(
-        self,
-        *,
-        limit: int = 50,
-        on_entry: Any | None = None,
-    ) -> int:
+    def drain_journal_webhooks(self, *, limit: int = 50, on_entry: Any | None = None) -> int:
         """Catch-up webhooks consumer from journal (0.40.3). Returns entries processed."""
-        if self._event_journal is None:
-            return 0
-        from palm.common.events.consumers import consume_for_webhooks
+        return self._workplane.drain_journal_webhooks(limit=limit, on_entry=on_entry)
 
-        count = 0
-
-        def _handler(entry: Any) -> None:
-            nonlocal count
-            count += 1
-            if on_entry is not None:
-                on_entry(entry)
-
-        consume_for_webhooks(self._event_journal, _handler, limit=limit)
-        return count
-
-    def drain_journal_projections(
-        self,
-        *,
-        limit: int = 50,
-        on_entry: Any | None = None,
-    ) -> int:
+    def drain_journal_projections(self, *, limit: int = 50, on_entry: Any | None = None) -> int:
         """Catch-up projections consumer from journal (0.40.3)."""
-        if self._event_journal is None:
-            return 0
-        from palm.common.events.consumers import consume_for_projections
-
-        count = 0
-
-        def _handler(entry: Any) -> None:
-            nonlocal count
-            count += 1
-            if on_entry is not None:
-                on_entry(entry)
-
-        consume_for_projections(self._event_journal, _handler, limit=limit)
-        return count
+        return self._workplane.drain_journal_projections(limit=limit, on_entry=on_entry)
 
     def redrive_journal(
         self,
@@ -903,26 +749,12 @@ class ApplicationHost:
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """Replay journal entries for operator tooling (does not move consumer offsets)."""
-        if self._event_journal is None:
-            return []
-        types = frozenset(event_types) if event_types else None
-        entries = self._event_journal.redrive(
+        return self._workplane.redrive_journal(
             from_offset=from_offset,
             to_offset=to_offset,
-            event_types=types,
+            event_types=event_types,
             limit=limit,
         )
-        return [e.to_dict() for e in entries]
-
-    def _wire_event_journal(self) -> None:
-        if not self._app.storage.is_initialized:
-            return
-        if not self._event.is_initialized:
-            return
-        from palm.common.events import wire_event_journal
-
-        journal, _sub = wire_event_journal(self._event, self._app.storage)
-        self._event_journal = journal
 
     def _start_outbox_service(self) -> None:
         if not self._app.storage.is_initialized:

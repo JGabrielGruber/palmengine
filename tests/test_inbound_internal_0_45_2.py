@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.app import ApplicationHost, PalmSettings
-from palm.app.host.inbound_service import InboundBindingService
+from palm.app.host.workplane.inbound_service import InboundBindingService
 from palm.common.resource.inbound import parse_inbound_spec
 from palm.core.event import EventEngine
 from palm.core.work import WorkIntent
