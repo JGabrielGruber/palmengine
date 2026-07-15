@@ -4,6 +4,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.47.1 — Deferred-import ratchet (T3)
+- `scripts/guard_deferred.py` — AST fitness function: counts runtime function-local `palm` imports (excludes `TYPE_CHECKING`), classifies by layer direction, and fails if the total (**287**) or upward/cycle-forcing (**35**) ceiling is exceeded. Wired into `just check` / `just ci` as `just guard-deferred`. Locks the graph so nothing regresses while 0.47 cuts the seams; the ceilings only ratchet down toward 0. Zero behavior change.
+
 ### 0.47.0 — Open T3: import-cycle cleanup (plan)
 Opens the 0.47 minor (theme **T3**, the dependency root for the T2 `ApplicationHost` decomposition).
 - `docs/VISION-0.47.md` — de-cycling plan. **AST-verified reframing:** the audit's "595 deferred imports" = **310 `TYPE_CHECKING`** (the correct pattern, not debt) + **287 runtime**, of which only **~35 are upward/cycle-forcing** across ~8 seams. Slices `0.47.1`–`0.47.8`, driving upward function-local imports 35 → 0.

@@ -35,7 +35,7 @@ hygiene:
 # -----------------------------------------------------------------------------
 # 2. Quality & Checking (the most used group)
 # -----------------------------------------------------------------------------
-check: lint typecheck test-quick guard-core guard-common
+check: lint typecheck test-quick guard-core guard-common guard-deferred
 
 full-check: format lint typecheck test-full audit guard-core demo-full
 
@@ -86,6 +86,11 @@ guard-core:
 guard-common:
     @echo "🔒 Checking palm.common pattern boundary..."
     uv run pytest -q tests/test_common_boundary.py tests/test_provider_boundary.py tests/test_modular_apps.py --tb=short
+
+# Deferred-import ratchet (T3 / PD-012) — function-local palm imports may only decrease.
+guard-deferred:
+    @echo "🔒 Checking deferred-import ratchet (T3 / PD-012)..."
+    uv run python scripts/guard_deferred.py
 
 sync-version:
     @echo "🔄 Syncing version to documentation surfaces..."
@@ -246,6 +251,7 @@ prepr: full-check
 ci:
     uv run {{ci_flags}} ruff check src/palm/ tests/ examples/
     uv run {{ci_flags}} python scripts/guard_core.py
+    uv run {{ci_flags}} python scripts/guard_deferred.py
     uv run {{ci_flags}} pytest -q --cov=src/palm --cov-report=term
     @echo "── mypy (report-only, non-blocking — see TECH-DEBT PD-005 / T2) ──"
     uv run {{ci_flags}} mypy src/palm/ || echo "⚠  mypy not clean yet (report-only)"
