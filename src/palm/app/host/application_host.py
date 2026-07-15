@@ -17,6 +17,7 @@ from palm.app.host.observability import HostObservability
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
+from palm.app.host.services import HostServiceContext, core_service_registry
 from palm.app.host.workers import WorkerCoordinator
 from palm.app.settings import PalmSettings
 from palm.common.compensation import (
@@ -65,17 +66,7 @@ from palm.patterns.wizard.bindings.cqrs.queries import (
     ListWizardProgressQuery,
 )
 from palm.services._cqrs_wiring import wire_all_service_cqrs
-from palm.services.analytics import AnalyticsService
-from palm.services.assist import AssistService
-from palm.services.definitions import DefinitionService
-from palm.services.design import DesignService
 from palm.services.design.contributors import wire_builtin_design_contributors
-from palm.services.design.factory import create_proposal_repository
-from palm.services.execution import ExecutionService
-from palm.services.execution.flows import FlowExecutionService
-from palm.services.execution.processes import ProcessExecutionService
-from palm.services.execution.providers import ProviderExecutionService
-from palm.services.system import SystemService
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -580,69 +571,22 @@ class ApplicationHost:
             instance_manager=self._app.instance_manager,
         )
         self._schema_registry = build_schema_registry()
-        self._system = SystemService(
-            commands=self._command_bus,
-            queries=self._query_bus,
+        service_ctx = HostServiceContext(
+            command_bus=self._command_bus,
+            query_bus=self._query_bus,
             schemas=self._schema_registry,
+            app=self._app,
+            event=self._event,
+            settings=self.settings,
+            resolve_execution_runtime=self._resolve_execution_runtime,
         )
-        self._definitions = DefinitionService(
-            commands=self._command_bus,
-            queries=self._query_bus,
-            schemas=self._schema_registry,
-            repository=self._app.repository(),
-        )
-        bus_kw = {
-            "commands": self._command_bus,
-            "queries": self._query_bus,
-            "schemas": self._schema_registry,
-        }
-        flows = FlowExecutionService(
-            **bus_kw,
-            system=self._system,
-            runtime_resolver=self._resolve_execution_runtime,
-        )
-        self._execution = ExecutionService(
-            flows=flows,
-            providers=ProviderExecutionService(
-                **bus_kw,
-                runtime_resolver=self._resolve_execution_runtime,
-                definitions=self._definitions,
-                event_engine=self._event,
-            ),
-            processes=ProcessExecutionService(
-                **bus_kw,
-                runtime_resolver=self._resolve_execution_runtime,
-            ),
-        )
-        self._assist = AssistService(
-            **bus_kw,
-            definitions=self._definitions,
-            execution=self._execution,
-            system=self._system,
-            runtime_resolver=self._resolve_execution_runtime,
-        )
-        self._design = DesignService(
-            **bus_kw,
-            definitions=self._definitions,
-            proposals=create_proposal_repository(self._app.storage),
-            runtime_resolver=self._resolve_execution_runtime,
-        )
-        settings = self.settings
-        allow_unpub = bool(settings.analytics_allow_unpublished)
-        if settings.analytics_allow_unpublished_with_server:
-            allow_unpub = True
-        self._analytics = AnalyticsService(
-            definitions=self._definitions,
-            providers=self._execution.providers,
-            commands=self._command_bus,
-            queries=self._query_bus,
-            schemas=self._schema_registry,
-            allow_unpublished=allow_unpub,
-            default_limit=int(settings.analytics_default_limit),
-            max_limit=int(settings.analytics_max_limit),
-            max_response_bytes=int(settings.analytics_max_response_bytes),
-            enabled=bool(settings.analytics_enabled),
-        )
+        built = core_service_registry().build_all(service_ctx)
+        self._system = built["system"]
+        self._definitions = built["definitions"]
+        self._execution = built["execution"]
+        self._assist = built["assist"]
+        self._design = built["design"]
+        self._analytics = built["analytics"]
         self._assist.bind_analytics(self._analytics)
         self._wire_dashboard_store()
         self._wire_work_drain()

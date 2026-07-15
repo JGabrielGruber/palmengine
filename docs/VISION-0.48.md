@@ -27,6 +27,14 @@ hand-written accessors.
 new `preflight_registry` / `session_view_registry` — are all "domains register downward on import;
 a driver drains the registry." Seams 1–2 generalize that same shape to service construction and wiring.
 
+## Layout — modular, not flat
+
+Each seam lands as a **concern-based subpackage** under `app/host/`, not another flat file — keeping `app/`
+consistent with palm's django-apps/registry structure. E.g. `app/host/services/{registry,providers}.py`
+(seam 1); later seams add `app/host/workplane/`, `app/host/lifecycle/`, `app/host/wiring/`, folding today's
+flat `inbound_service.py`/`work_drain_service.py`/`cqrs_wiring.py` into the package that owns them. Each
+package re-exports its public surface from `__init__`.
+
 ## Extraction seams (composition, not inheritance)
 
 1. **`HostServiceRegistry`** — replaces the 29 lazy `@property` slots. A typed
@@ -58,8 +66,8 @@ a driver drains the registry." Seams 1–2 generalize that same shape to service
 |---|---|---|
 | **0.48.0** | Plan (this doc) + [ADR-018](adr/018-application-host-decomposition.md) + **characterization tests** pinning the 3 status reports' JSON shape and the degrade-to-fallback branches (the missing coverage) — so every later move is provably behavior-preserving | — |
 | **0.48.1** | Seam 3 — `HostObservability`; optionally drop the `work_drain_background` deprecated alias | **yes** if alias dropped |
-| **0.48.2** | Seam 1 — `HostServiceRegistry` scaffolding + remove dead accessors | **yes** (accessor removal) |
-| **0.48.3** | Seam 2a — services ship `ServiceProvider`; `_wire_cqrs` service-construction → `registry.build_all(ctx)` | no |
+| **0.48.2** | Seam 1 — `HostServiceRegistry` + move the 6 core service constructions out of `_wire_cqrs` into dependency-ordered `ServiceProvider`s built by `build_all(ctx)`. *(Merged with 2a: scaffolding-without-use is dead code. Dead-accessor removal deferred — it needs a careful cross-codebase zero-consumer proof + MIGRATION, and vulture over-flags public API; it becomes its own slice.)* | no |
+| **0.48.3** | Seam 2a′ — services **ship** their own `ServiceProvider` (register on import, django-app style) instead of the host holding the provider list; dead-accessor removal | **yes** (accessor removal) |
 | **0.48.4** | Seam 2b — projection + CQRS contributor unification; `_wire_cqrs` collapses to the `ctx` pipeline driver | no |
 | **0.48.5** | Seam 6 — relocate `ServerContext` onto the shared pipeline, out of `common` (PD-013); ratchet `MAX_UPWARD` down | **yes** (import path) |
 | **0.48.6** | Seam 4 — `WorkPlaneCoordinator` | **yes** if dead journal/tick methods removed |
