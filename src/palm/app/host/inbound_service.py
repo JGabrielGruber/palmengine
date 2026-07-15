@@ -14,7 +14,8 @@ from palm.common.resource.inbound import InboundSpec, parse_inbound_spec
 from palm.core.work import WorkIntent
 
 if TYPE_CHECKING:
-    from palm.core.event import EventEngine
+    from palm.core.event import Event, EventEngine
+    from palm.core.event.subscription import Subscription
 
 _DEFAULT_POLL_INTERVAL = 5.0
 _BACKGROUND_MODES = frozenset({"stream", "poll"})
@@ -54,7 +55,7 @@ class InboundBinding:
 
 
 class InboundBindingService:
-    """Scan resources with metadata.inbound; webhook + background stream/poll workers."""
+    """Scan resources with metadata.inbound; webhook, stream/poll workers, internal bus."""
 
     def __init__(
         self,
@@ -77,6 +78,7 @@ class InboundBindingService:
         self._worker_threads: dict[str, threading.Thread] = {}
         self._worker_stop = threading.Event()
         self._started = False
+        self._internal_subscription: Subscription | None = None
 
     def reload_from_definitions(self) -> int:
         """Rescan definition catalog for inbound-enabled resources."""
@@ -158,10 +160,10 @@ class InboundBindingService:
         }
 
     def start_workers(self) -> int:
-        """Start background workers for mode=stream and mode=poll bindings."""
+        """Start stream/poll workers and in-process internal event listeners."""
         self._worker_stop.clear()
         self._started = True
-        n = 0
+        n = self._start_internal_listeners()
         with self._lock:
             items = list(self._bindings.items())
         for name, binding in items:
@@ -191,6 +193,7 @@ class InboundBindingService:
         return self.start_workers()
 
     def stop(self) -> None:
+        self._stop_internal_listeners()
         self._worker_stop.set()
         self._started = False
         for t in list(self._worker_threads.values()):
@@ -200,6 +203,75 @@ class InboundBindingService:
             for b in self._bindings.values():
                 if b.status == "listening":
                     b.status = "stopped"
+
+    def _start_internal_listeners(self) -> int:
+        """Subscribe to host EventEngine for mode=internal bindings (0.45.2)."""
+        self._stop_internal_listeners()
+        if self._event is None:
+            return 0
+        with self._lock:
+            internal = [
+                b for b in self._bindings.values() if b.spec.mode == "internal"
+            ]
+        if not internal:
+            return 0
+
+        def _on_event(event: Any) -> None:
+            self._dispatch_internal_event(event)
+
+        self._internal_subscription = self._event.subscribe("*", _on_event)
+        with self._lock:
+            for binding in internal:
+                binding.status = "listening"
+                binding.last_error = None
+        return len(internal)
+
+    def _stop_internal_listeners(self) -> None:
+        if self._internal_subscription is not None:
+            self._internal_subscription.unsubscribe()
+            self._internal_subscription = None
+
+    def _dispatch_internal_event(self, event: Any) -> None:
+        event_type = str(getattr(event, "type", "") or "")
+        with self._lock:
+            bindings = [
+                b
+                for b in self._bindings.values()
+                if b.spec.mode == "internal" and self._matches_event_types(b, event_type)
+            ]
+        for binding in bindings:
+            try:
+                envelope = self._event_to_envelope(binding, event)
+                self._signal(binding, envelope, source="internal")
+            except Exception as exc:
+                with self._lock:
+                    if binding.resource_name in self._bindings:
+                        self._bindings[binding.resource_name].last_error = str(exc)
+                        self._bindings[binding.resource_name].status = "error"
+
+    @staticmethod
+    def _matches_event_types(binding: InboundBinding, event_type: str) -> bool:
+        types = binding.spec.event_types
+        if not types:
+            return True
+        return event_type in types
+
+    def _event_to_envelope(self, binding: InboundBinding, event: Any) -> dict[str, Any]:
+        payload = (
+            event.enriched_payload()
+            if hasattr(event, "enriched_payload")
+            else dict(getattr(event, "payload", None) or {})
+        )
+        return {
+            "type": getattr(event, "type", None),
+            "payload": payload,
+            "event_id": getattr(event, "id", None),
+            "resource": binding.resource_name,
+            "provider": binding.provider,
+            "mode": "internal",
+            "source": "internal",
+            "transport": "in-process",
+        }
 
     def _stream_loop(self, resource_name: str) -> None:
         binding = self.resolve(resource_name)
@@ -502,7 +574,7 @@ class InboundBindingService:
             if b is not None:
                 b.signal_count += 1
                 b.last_signal_at = datetime.now(UTC).isoformat()
-                if source in ("stream", "poll"):
+                if source in ("stream", "poll", "internal"):
                     b.status = "listening"
                 b.last_error = store_meta.get("store_error") or None
 

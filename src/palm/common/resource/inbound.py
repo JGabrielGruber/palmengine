@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-InboundMode = Literal["webhook", "stream", "poll"]
+InboundMode = Literal["webhook", "stream", "poll", "internal"]
 
 _KNOWN_KEYS = frozenset(
     {
@@ -24,7 +24,7 @@ _KNOWN_KEYS = frozenset(
         "event_types",
     }
 )
-_MODES = frozenset({"webhook", "stream", "poll"})
+_MODES = frozenset({"webhook", "stream", "poll", "internal"})
 
 
 @dataclass(frozen=True, slots=True)

@@ -74,23 +74,14 @@
 
 ---
 
-# 0.45.2 — Phase C: Same-process ingress
+# 0.45.2 — Phase C: Same-process ingress (shipped)
 
-### Task 7: internal inbound mode (preferred)
+### Task 7: internal inbound mode
 
-**Files:** [inbound.py](../../../src/palm/common/resource/inbound.py), [inbound_service.py](../../../src/palm/app/host/inbound_service.py)
-
-- [ ] Parse `mode: internal`
-- [ ] Subscribe EventEngine; normalize to same envelope as stream
-- [ ] Test: event emitted in-process → WorkIntent without HTTP
-
-**Fallback Task 7b:** `on_event` trigger in [triggers/parse.py](../../../src/palm/common/triggers/parse.py) if internal mode blocked
-
-### Task 8: Release 0.45.2
-
-- [ ] Tests green
-- [ ] Update VISION status
-- [ ] Version + commit
+- [x] `mode: internal` on `metadata.inbound`
+- [x] `InboundBindingService` subscribes to host `EventEngine` (`*`)
+- [x] `event_types` filter; envelope + WorkIntent without loopback
+- [x] `tests/test_inbound_internal_0_45_2.py`
 
 ---
 

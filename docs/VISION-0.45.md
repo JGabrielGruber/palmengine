@@ -1,6 +1,6 @@
 # VISION 0.45 — Reactive data plane
 
-**Status:** Planning (0.45.0 docs) → implementation 0.45.1+
+**Status:** 0.45.1 data plane shipped · 0.45.2 internal inbound shipped · 0.45.3 examples next
 **Builds on:** [VISION-0.44](VISION-0.44.md) (inbound store, poll, stream, work drain)
 
 ## Problem
