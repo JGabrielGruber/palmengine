@@ -323,6 +323,8 @@ class PalmInProcessBackend:
                 command.flow,
                 by_id=command.by_id,
                 job_id=command.job_id,
+                metadata=command.metadata,
+                state=command.state,
             )
             view = session.status()
         except (TypeError, ValueError, KeyError) as exc:

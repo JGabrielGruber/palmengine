@@ -123,6 +123,7 @@ class FlowExecutionService(BaseService):
         *,
         by_id: bool = False,
         job_id: str | None = None,
+        state: Any = None,
         metadata: dict[str, Any] | None = None,
     ) -> FlowSession:
         """Submit a flow and return a session on the new instance."""
@@ -131,6 +132,7 @@ class FlowExecutionService(BaseService):
                 flow=flow,
                 by_id=by_id,
                 job_id=job_id,
+                state=state,
                 metadata=metadata or {},
             )
         )
@@ -216,25 +218,35 @@ class FlowExecutionService(BaseService):
         return super().dispatch(command)
 
 
+def _submission_extras(body: dict[str, Any]) -> tuple[dict[str, Any], Any]:
+    metadata = dict(body["metadata"]) if isinstance(body.get("metadata"), dict) else {}
+    return metadata, body.get("state")
+
+
 def flow_command_from_body(body: dict[str, Any]) -> SubmitFlowCommand:
     """Build :class:`SubmitFlowCommand` from REST/MCP-style submission bodies."""
+    metadata, state = _submission_extras(body)
     if "flow" in body and isinstance(body["flow"], dict):
         payload = dict(body["flow"])
         if body.get("job_id") is not None:
             payload["job_id"] = body["job_id"]
-        return SubmitFlowCommand(flow=payload)
+        return SubmitFlowCommand(flow=payload, metadata=metadata, state=state)
     if "wizard" in body:
         return SubmitFlowCommand(
             flow={
                 "wizard": body["wizard"],
                 **({"job_id": body["job_id"]} if body.get("job_id") is not None else {}),
-            }
+            },
+            metadata=metadata,
+            state=state,
         )
     if "flow_name" in body:
         return SubmitFlowCommand(
             flow=str(body["flow_name"]),
             by_id=bool(body.get("by_id", False)),
             job_id=_optional_str(body.get("job_id")),
+            metadata=metadata,
+            state=state,
         )
     raise ValueError("expected 'flow', 'wizard', or 'flow_name' in request body")
 

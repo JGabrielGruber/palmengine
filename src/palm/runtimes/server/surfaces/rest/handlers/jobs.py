@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.cqrs.command import CancelJobCommand, ProvideInputCommand, SubmitFlowCommand
+from palm.common.cqrs.command import CancelJobCommand, ProvideInputCommand
+from palm.services.execution.flows import flow_command_from_body
 from palm.common.cqrs.query import GetJobStatusQuery
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -71,7 +72,7 @@ def submit_job(ctx: ServerContext, request: ServerRequest) -> ServerResponse:
         return body
 
     try:
-        job = ctx.execute(_flow_command_from_body(body))
+        job = ctx.execute(flow_command_from_body(body))
     except (TypeError, ValueError, KeyError) as exc:
         return errors.bad_request(str(exc))
     except Exception as exc:
@@ -129,27 +130,4 @@ def provide_input(ctx: ServerContext, request: ServerRequest, *, job_id: str) ->
     )
 
 
-def _flow_command_from_body(body: dict[str, Any]) -> SubmitFlowCommand:
-    if "flow" in body and isinstance(body["flow"], dict):
-        payload = dict(body["flow"])
-        if body.get("job_id") is not None:
-            payload["job_id"] = body["job_id"]
-        return SubmitFlowCommand(flow=payload)
-    if "wizard" in body:
-        return SubmitFlowCommand(
-            flow={
-                "wizard": body["wizard"],
-                **({"job_id": body["job_id"]} if body.get("job_id") is not None else {}),
-            }
-        )
-    if "flow_name" in body:
-        return SubmitFlowCommand(
-            flow=str(body["flow_name"]),
-            by_id=bool(body.get("by_id", False)),
-            job_id=_optional_str(body.get("job_id")),
-        )
-    raise ValueError("expected 'flow', 'wizard', or 'flow_name' in request body")
 
-
-def _optional_str(value: object | None) -> str | None:
-    return str(value) if value is not None else None

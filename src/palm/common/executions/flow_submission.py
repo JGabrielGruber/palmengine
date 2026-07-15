@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from palm.common.executions.job_state import coerce_job_state
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
 from palm.common.persistence.instance_sync import prepare_resume_state
@@ -55,7 +56,8 @@ def prepare_flow_submission(
 ) -> FlowSubmission:
     """Build a pattern executable and job metadata from a flow definition."""
     executable = build_pattern(flow, context=build_ctx)
-    job_state = state if state is not None else BlackboardState()
+    coerced = coerce_job_state(state)
+    job_state = coerced if coerced is not None else BlackboardState()
     bind_flow_state_schema(
         flow,
         job_state,
