@@ -20,7 +20,8 @@
 | 0.45.3 | B | system watchdog definitions + coconut slice |
 | 0.45.4 | D | runtime event bus + ingress self-skip + persist batch fix |
 | 0.45.5 | E | event plane contract (EVENT-PLANE.md, doctor, flow.session.*) |
-| 0.45.6+ | — | hygiene train (see VISION Phase D follow-on table) |
+| 0.45.6 | F | work-drain submit_flow_body, debounce defer, declarative skip |
+| 0.45.7+ | — | hygiene train (see VISION Phase F follow-on table) |
 
 ---
 
@@ -150,6 +151,26 @@
 
 ---
 
-# 0.45.6+ — Hygiene (planned)
+# 0.45.6 — Work-drain / inbound ergonomics
 
-See **0.45.5+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).
+### Task 18: submit_flow_body + drain wiring
+
+- [x] `FlowExecutionService.submit_flow_body()`; `run_wizard` delegates
+- [x] Work drain `_submit` uses `submit_flow_body` not `run_wizard`
+
+### Task 19: Inbound debounce defer + declarative skip
+
+- [x] `flush_debounced()`; trailing defer merges latest envelope
+- [x] `skip_self` / `skip_flows` / `skip_event_types` on `InboundSpec`
+- [x] `tick_work()` flushes deferred inbound
+
+### Task 20: Release 0.45.6
+
+- [x] Version `0.45.6` + WORK-DRAIN.md coalesce section
+- [x] `pytest tests/test_inbound_work_drain_0_45_6.py tests/test_*_0_45*.py`
+
+---
+
+# 0.45.7+ — Hygiene (planned)
+
+See **0.45.7+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).

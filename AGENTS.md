@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.45.5 — event plane contract; see [docs/VISION-0.45.md](docs/VISION-0.45.md), [docs/EVENT-PLANE.md](docs/EVENT-PLANE.md))
+**Last updated:** July 2026 (0.45.6 — work-drain/inbound ergonomics; see [docs/VISION-0.45.md](docs/VISION-0.45.md), [docs/WORK-DRAIN.md](docs/WORK-DRAIN.md))
 
 ---
 

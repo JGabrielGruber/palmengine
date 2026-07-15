@@ -788,7 +788,7 @@ class ApplicationHost:
             }
             if seed is not None:
                 submit_body["state"] = seed
-            return self._execution.flows.run_wizard(submit_body)
+            return self._execution.flows.submit_flow_body(submit_body)
 
         settings = self.settings
         self._work_drain = WorkDrainService(
@@ -886,6 +886,8 @@ class ApplicationHost:
 
     def tick_work(self, *, limit: int = 10, schedules: bool = True) -> int:
         """Process due WorkIntents (and optional schedule triggers). Returns count."""
+        if self._inbound is not None:
+            self._inbound.flush_debounced()
         if self._work_drain is None:
             return 0
         n = 0

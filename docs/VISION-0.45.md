@@ -1,6 +1,6 @@
 # VISION 0.45 — Reactive data plane
 
-**Status:** 0.45.1–0.45.5 shipped (data plane, internal inbound, watchdog dogfood, runtime-bus + persist fixes, event plane contract)
+**Status:** 0.45.1–0.45.6 shipped (data plane, watchdog dogfood, event plane, work-drain/inbound ergonomics)
 **Builds on:** [VISION-0.44](VISION-0.44.md) (inbound store, poll, stream, work drain)
 
 ## Problem
@@ -27,7 +27,7 @@ Inbound → WorkIntent → flow works, but the **data plane** has holes that for
 | **0.45.3** | Phase B — system event-watch definitions + coconut pipeline migration slice |
 | **0.45.4** | Phase D — watchdog **works on `palm host server`** (runtime event bus, ingress self-skip, `persist_log` batch) |
 | **0.45.5** | Event plane contract — [EVENT-PLANE.md](EVENT-PLANE.md), doctor `event_plane`, emit `flow.session.*`, test helpers |
-| **0.45.6** | Work-drain ergonomics — `submit_flow` naming, debounce defer-vs-drop, coalesce semantics |
+| **0.45.6** | Work-drain ergonomics — `submit_flow_body`, debounce defer, declarative `skip_self`/`skip_flows` |
 | **0.45.7** | Transform safety — `put_resource` list persist defaults; real-flow integration test |
 | **0.45.8** | Ops dogfood — example-root isolation in tests, invoke route docs, durable log guidance |
 
@@ -141,12 +141,21 @@ Invoke tail: `POST /v1/api/providers/kv/palm-system-event-log/invoke` with `{"ac
 | Ingress skip for session events | `InboundBindingService` | Same self-flow storm as `job.completed` |
 | Test helpers | `tests/helpers/event_plane.py` | Forbid `host.event.emit` in orchestration contract tests |
 
-## 0.45.6+ — hygiene train (code-smell backlog)
+## Phase F (0.45.6) — work-drain / inbound ergonomics
+
+| Deliverable | Where | Why |
+|-------------|--------|-----|
+| `submit_flow_body` | `FlowExecutionService`, work-drain `_submit` | `run_wizard` name lied for pipeline/trigger submits |
+| Debounce defer | `InboundBindingService.flush_debounced` | In-window signals merged, not dropped |
+| Declarative skip | `metadata.inbound.skip_self` / `skip_flows` | Engine hardcode → definition-owned loop guards |
+| Coalesce docs | [WORK-DRAIN.md](WORK-DRAIN.md) | `coalesce_key` vs `coalesce_field` footgun |
+
+## 0.45.7+ — hygiene train (code-smell backlog)
 
 | Version | Theme | Targets |
 |---------|--------|---------|
 | **0.45.5** | **Event plane contract** *(shipped)* | [EVENT-PLANE.md](EVENT-PLANE.md); `event_plane` in doctor/control_plane; `OrchestrationEngine` emits `flow.session.succeeded`/`failed`; ingress skip for session events; `tests.helpers.event_plane` |
-| **0.45.6** | **Work-drain / inbound** | Rename work-drain `run_wizard` → `submit_flow`; debounce **defer** (merge payload) vs drop; declarative `inbound.skip_flows` / `skip_self` instead of engine hardcode; coalesce_key vs per-event `coalesce_field` docs |
+| **0.45.6** | **Work-drain / inbound** *(shipped)* | `submit_flow_body` for drain; inbound debounce **defer** + `flush_debounced`; `skip_self`/`skip_flows`/`skip_event_types`; [WORK-DRAIN.md](WORK-DRAIN.md) coalesce docs |
 | **0.45.7** | **Transform safety** | `put_resource` safe default for list persistence (no silent per-item batch); catalog/docs for `TransformLeaf` batch heuristics |
 | **0.45.8** | **Ops dogfood** | Test isolation from cwd `examples/definitions`; REST invoke path discoverability; `control_plane` key consistency; server profile guidance for durable event-log storage |
 

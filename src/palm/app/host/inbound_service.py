@@ -74,6 +74,9 @@ class InboundBindingService:
         self._bindings: dict[str, InboundBinding] = {}
         self._path_index: dict[str, str] = {}  # path slug → resource name
         self._debounce_until: dict[str, float] = {}
+        self._debounce_pending: dict[
+            str, tuple[InboundBinding, dict[str, Any], str]
+        ] = {}
         self._lock = threading.RLock()
         self._worker_threads: dict[str, threading.Thread] = {}
         self._worker_stop = threading.Event()
@@ -263,15 +266,15 @@ class InboundBindingService:
         binding: InboundBinding,
         envelope: dict[str, Any],
     ) -> bool:
-        """Skip self-referential orchestration signals (pipeline filters are too late)."""
-        if envelope.get("type") not in (
-            "job.completed",
-            "flow.session.succeeded",
-            "flow.session.failed",
-        ):
+        """Declarative loop guard for internal orchestration events (0.45.6)."""
+        spec = binding.spec
+        event_type = str(envelope.get("type") or "")
+        if event_type not in spec.skip_event_types:
             return False
-        target = binding.spec.work.target
-        if not target:
+        skip_targets: set[str] = set(spec.skip_flows)
+        if spec.skip_self and spec.work.target:
+            skip_targets.add(spec.work.target)
+        if not skip_targets:
             return False
         payload = envelope.get("payload")
         if not isinstance(payload, dict):
@@ -281,7 +284,7 @@ class InboundBindingService:
             or payload.get("flow_name")
             or payload.get("flow_id")
         )
-        return str(flow or "") == target
+        return str(flow or "") in skip_targets
 
     def _event_to_envelope(self, binding: InboundBinding, event: Any) -> dict[str, Any]:
         payload = (
@@ -416,6 +419,7 @@ class InboundBindingService:
                     if resource_name in self._bindings:
                         self._bindings[resource_name].last_error = str(exc)
                         self._bindings[resource_name].status = "error"
+            self.flush_debounced()
             self._worker_stop.wait(interval)
 
     def _poll_once(self, binding: InboundBinding) -> dict[str, Any] | None:
@@ -543,6 +547,23 @@ class InboundBindingService:
             }
         return {"stored": True, "store_resource": store_name, "store_action": action}
 
+    def flush_debounced(self) -> int:
+        """Enqueue deferred inbound signals after debounce quiet period (0.45.6)."""
+        now = time.monotonic()
+        with self._lock:
+            due_keys = [k for k, until in self._debounce_until.items() if now >= until]
+        flushed = 0
+        for key in due_keys:
+            with self._lock:
+                pending = self._debounce_pending.pop(key, None)
+                self._debounce_until.pop(key, None)
+            if pending is None:
+                continue
+            binding, envelope, source = pending
+            self._enqueue_intent(binding, envelope, source=source)
+            flushed += 1
+        return flushed
+
     def _signal(
         self,
         binding: InboundBinding,
@@ -550,18 +571,38 @@ class InboundBindingService:
         *,
         source: str,
     ) -> tuple[str, dict[str, Any]]:
-        from datetime import UTC, datetime
-
         spec = binding.spec
         store_meta = self._store_envelope(binding, envelope)
 
         if spec.debounce_seconds > 0 and source != "poll":
             key = binding.resource_name
             now = time.monotonic()
-            until = self._debounce_until.get(key, 0.0)
-            if now < until:
-                return "", store_meta
-            self._debounce_until[key] = now + spec.debounce_seconds
+            with self._lock:
+                self._debounce_pending[key] = (binding, envelope, source)
+                self._debounce_until[key] = now + spec.debounce_seconds
+            self.flush_debounced()
+            return "", store_meta
+
+        intent_id = self._enqueue_intent(
+            binding,
+            envelope,
+            source=source,
+            store_meta=store_meta,
+        )
+        return intent_id, store_meta
+
+    def _enqueue_intent(
+        self,
+        binding: InboundBinding,
+        envelope: dict[str, Any],
+        *,
+        source: str,
+        store_meta: dict[str, Any] | None = None,
+    ) -> str:
+        from datetime import UTC, datetime
+
+        spec = binding.spec
+        meta = dict(store_meta or {})
 
         coalesce = spec.coalesce_key
         if not coalesce and spec.coalesce_field:
@@ -580,7 +621,7 @@ class InboundBindingService:
             "inbound_resource": binding.resource_name,
             "inbound": envelope,
             "source": source,
-            **store_meta,
+            **meta,
         }
         if spec.work.seed_state:
             from palm.common.work.seed_state import resolve_seed_state
@@ -603,7 +644,7 @@ class InboundBindingService:
                 b.last_signal_at = datetime.now(UTC).isoformat()
                 if source in ("stream", "poll", "internal"):
                     b.status = "listening"
-                b.last_error = store_meta.get("store_error") or None
+                b.last_error = meta.get("store_error") or None
 
         if self._event is not None:
             try:
@@ -613,12 +654,12 @@ class InboundBindingService:
                     source=source,
                     intent_id=intent_id or None,
                     work_target=target,
-                    stored=store_meta.get("stored"),
-                    store_resource=store_meta.get("store_resource"),
+                    stored=meta.get("stored"),
+                    store_resource=meta.get("store_resource"),
                 )
             except Exception:
                 pass
-        return intent_id or "", store_meta
+        return intent_id or ""
 
 
 def _definition_metadata(detail: dict[str, Any]) -> dict[str, Any]:

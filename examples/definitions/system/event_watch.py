@@ -93,6 +93,7 @@ PALM_SYSTEM_EVENTS_WATCH = ResourceDefinition(
         "inbound": {
             "enabled": True,
             "mode": "internal",
+            "skip_self": True,
             "event_types": ["job.completed", "flow.session.succeeded"],
             "store_resource": "palm-system-event-inbox",
             "store_action": "put",

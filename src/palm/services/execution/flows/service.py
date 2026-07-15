@@ -109,10 +109,15 @@ class FlowExecutionService(BaseService):
         """Return a handle bound to a durable session."""
         return FlowSession(self, flow_id=flow_id, session_id=session_id)
 
-    def run_wizard(self, body: dict[str, Any]) -> FlowSession:
-        """Submit a wizard flow and return a session on the new instance."""
+    def submit_flow_body(self, body: dict[str, Any]) -> Any:
+        """Submit any flow from a REST-shaped body and wait until idle (work drain, triggers)."""
         job = self.dispatch_command(flow_command_from_body(body))
         self.wait_until_idle()
+        return job
+
+    def run_wizard(self, body: dict[str, Any]) -> FlowSession:
+        """Submit a wizard flow and return a session on the new instance."""
+        job = self.submit_flow_body(body)
         session_id = instance_id_for_job(job)
         flow_id = _flow_id_from_body(body)
         return self.session(flow_id, session_id)

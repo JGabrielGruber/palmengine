@@ -79,6 +79,22 @@ signal (webhook, resource.changed, schedule)
 
 Inbound specifically: [inbound_demo README](../examples/definitions/inbound_demo/README.md) · [VISION-0.43](VISION-0.43.md).
 
+## Flow submission (0.45.6)
+
+Work drain calls `FlowExecutionService.submit_flow_body()` — not `run_wizard()`. Both accept REST-shaped bodies (`flow_name`, `metadata`, `state`); `run_wizard` wraps the same path but returns an interactive `FlowSession`.
+
+## Inbound coalesce vs debounce (0.45.6)
+
+| Knob | Scope | Behavior |
+|------|--------|----------|
+| `coalesce_key` | WorkIntent store | One pending intent per key; **latest payload wins** on re-enqueue (burst collapse) |
+| `coalesce_field` | Per-event | Builds key `inbound:{resource}:{field_value}` from envelope payload — separate intents per distinct field value |
+| `debounce_seconds` | Inbound signal | **Defer** (trailing): signals in-window update pending envelope; after quiet period `flush_debounced()` enqueues **once** with latest payload. Poll mode uses debounce as poll interval instead. |
+
+Loop guards (internal inbound): `skip_self` (default `true`) skips orchestration events for the bound `work.flow_id`; `skip_flows` adds more; `skip_event_types` defaults to `job.completed` + `flow.session.*`.
+
+Explicit / server drain should call `host.tick_work()` — it flushes deferred inbound before claiming WorkIntents.
+
 ## Not the same as
 
 - **Outbox** — reliable external delivery of events (webhooks to third parties)

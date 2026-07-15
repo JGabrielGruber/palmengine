@@ -22,7 +22,16 @@ _KNOWN_KEYS = frozenset(
         "store_action",
         "store_resource",
         "event_types",
+        "skip_self",
+        "skip_flows",
+        "skip_event_types",
     }
+)
+
+_DEFAULT_SKIP_EVENT_TYPES = (
+    "job.completed",
+    "flow.session.succeeded",
+    "flow.session.failed",
 )
 _MODES = frozenset({"webhook", "stream", "poll", "internal"})
 
@@ -70,6 +79,9 @@ class InboundSpec:
     store_action: str | None = None  # action on store_resource (default: resource action or put)
     store_resource: str | None = None  # inbox resource — persist envelope before WorkIntent (0.44)
     event_types: tuple[str, ...] = ()
+    skip_self: bool = True
+    skip_flows: tuple[str, ...] = ()
+    skip_event_types: tuple[str, ...] = _DEFAULT_SKIP_EVENT_TYPES
     unknown_keys: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
@@ -97,6 +109,12 @@ class InboundSpec:
             out["store_resource"] = self.store_resource
         if self.event_types:
             out["event_types"] = list(self.event_types)
+        if not self.skip_self:
+            out["skip_self"] = False
+        if self.skip_flows:
+            out["skip_flows"] = list(self.skip_flows)
+        if self.skip_event_types != _DEFAULT_SKIP_EVENT_TYPES:
+            out["skip_event_types"] = list(self.skip_event_types)
         if self.unknown_keys:
             out["unknown_keys"] = list(self.unknown_keys)
         return out
@@ -146,6 +164,13 @@ def parse_inbound_spec(
         raw.get("store_resource"), field="store_resource", strict=strict
     )
     event_types = _str_tuple(raw.get("event_types"), field="event_types", strict=strict)
+    skip_self = _bool(raw.get("skip_self"), default=True, field="skip_self", strict=strict)
+    skip_flows = _str_tuple(raw.get("skip_flows"), field="skip_flows", strict=strict)
+    skip_event_types = _str_tuple(
+        raw.get("skip_event_types"), field="skip_event_types", strict=strict
+    )
+    if not skip_event_types:
+        skip_event_types = _DEFAULT_SKIP_EVENT_TYPES
 
     if enabled and not work.target:
         if strict:
@@ -167,6 +192,9 @@ def parse_inbound_spec(
         store_action=store_action,
         store_resource=store_resource,
         event_types=event_types,
+        skip_self=skip_self,
+        skip_flows=skip_flows,
+        skip_event_types=skip_event_types,
         unknown_keys=unknown,
     )
 
