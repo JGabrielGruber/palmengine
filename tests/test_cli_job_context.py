@@ -13,7 +13,7 @@ from palm.core.event import EventEngine
 from palm.definitions import FlowDefinition
 from palm.patterns.parallel.pattern import ParallelPattern
 from palm.runtimes.cli.commands.registry import build_registry
-from palm.runtimes.cli.shared.job_inspect import (
+from palm.common.job_inspection import (
     format_step_context,
     inspect_job,
     inspect_job_json,

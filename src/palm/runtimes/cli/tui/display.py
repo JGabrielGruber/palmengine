@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.job_inspection import inspect_job
 from palm.core.orchestration import Job, JobStatus
 from palm.patterns.parallel.pattern import ParallelPattern
 from palm.patterns.wizard.pattern import WizardPattern
-from palm.runtimes.cli.shared.job_inspect import inspect_job
 from palm.runtimes.cli.tui.context import context_lines
 
 _TERMINAL = frozenset({JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED})
@@ -24,7 +24,7 @@ def render_job_panel(
     """Render an interactive or terminal panel for any input-capable pattern."""
     from rich.panel import Panel
 
-    from palm.runtimes.cli.shared.job_inspect import instance_id_for_job
+    from palm.common.job_context import instance_id_for_job
 
     iid = instance_id or instance_id_for_job(job)
     ctx = inspect_job(job)

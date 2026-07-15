@@ -14,7 +14,7 @@ from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
-from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+from palm.common.job_inspection import inspect_job_json
 from palm.runtimes.server import ServerRuntime
 from palm.states import BlackboardState
 

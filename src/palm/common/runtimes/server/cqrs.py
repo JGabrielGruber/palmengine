@@ -231,7 +231,7 @@ class StandaloneQueryHandlers:
             instance_id=instance_id,
             job_id=query.job_id,
         )
-        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+        from palm.common.job_inspection import inspect_job_json
 
         return build_job_context(
             job,

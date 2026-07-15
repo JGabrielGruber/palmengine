@@ -4,21 +4,26 @@ ParallelPattern — run multiple sub-workflows with scoped isolation and merge.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from palm.core.behavior_tree import BasePattern, ParallelNode, PatternStatus, RootNode
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventEngine
 from palm.core.exceptions import StateValidationError
-from palm.core.orchestration.input_capable import InputCapable, StepInspectable
+from palm.core.orchestration.input_capable import InputCapable, JobInspectable, StepInspectable
 from palm.patterns.parallel.bindings.behavior_tree.tree import build_parallel_tree
 from palm.patterns.parallel.bindings.context.keys import ParallelKeys
 from palm.patterns.parallel.bindings.definitions.config import ParallelConfig
+from palm.patterns.parallel.bindings.inspection import inspect_parallel_job
 from palm.patterns.parallel.flow.branch import BranchRunner
 from palm.patterns.parallel.flow.merge import get_branch_results, merge_branch_results
 
+if TYPE_CHECKING:
+    from palm.common.job_inspection import JobContext
+    from palm.core.orchestration import Job
 
-class ParallelPattern(BasePattern, InputCapable, StepInspectable):
+
+class ParallelPattern(BasePattern, InputCapable, StepInspectable, JobInspectable):
     """
     Execute branches in parallel (interleaved ticks) with per-branch scopes.
 
@@ -116,6 +121,9 @@ class ParallelPattern(BasePattern, InputCapable, StepInspectable):
 
     def branch_runners(self) -> dict[str, BranchRunner]:
         return dict(self._runners)
+
+    def inspect_job(self, job: Job) -> JobContext:
+        return inspect_parallel_job(self, job)
 
     def _emit_branch_waiting(self, state: BaseState) -> None:
         if self._event_engine is None:

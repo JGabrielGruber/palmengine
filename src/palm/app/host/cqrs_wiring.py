@@ -295,7 +295,7 @@ class HostQueryHandlers:
             GetResourceInvocationsQuery(job_id=query.job_id, instance_id=instance_id)
         )
         resource_invocations = resource_row.to_dict() if resource_row is not None else None
-        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+        from palm.common.job_inspection import inspect_job_json
 
         return build_job_context(
             job,

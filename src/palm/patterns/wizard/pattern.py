@@ -4,16 +4,22 @@ WizardPattern — thin orchestrator over a behavior-tree of wizard phases.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from palm.core.behavior_tree import BasePattern, PatternStatus, RootNode
 from palm.core.context import BaseState, ContextEngine
 from palm.core.event import EventContext, EventEngine
+from palm.core.orchestration.input_capable import JobInspectable
 from palm.core.resource import ResourceEngine
 from palm.patterns.wizard.bindings.behavior_tree.backtrack import (
     WizardSequenceNode,
     request_backtrack,
 )
+from palm.patterns.wizard.bindings.inspection import inspect_wizard_job
+
+if TYPE_CHECKING:
+    from palm.common.job_inspection import JobContext
+    from palm.core.orchestration import Job
 from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
 from palm.patterns.wizard.bindings.compensation.handler import (
     CommitRegistry,
@@ -24,7 +30,7 @@ from palm.patterns.wizard.bindings.definitions.config import WizardConfig
 from palm.patterns.wizard.flow.phases._base import provide_wizard_input
 
 
-class WizardPattern(BasePattern):
+class WizardPattern(BasePattern, JobInspectable):
     """
     Interactive wizard driven entirely by its behavior tree.
 
@@ -106,6 +112,9 @@ class WizardPattern(BasePattern):
     def answers(self, state: BaseState) -> dict[str, Any]:
         raw = state.get(WizardKeys.ANSWERS)
         return dict(raw) if isinstance(raw, dict) else {}
+
+    def inspect_job(self, job: Job) -> JobContext:
+        return inspect_wizard_job(self, job)
 
     def is_committed(self, state: BaseState) -> bool:
         return bool(state.get(WizardKeys.COMMITTED))

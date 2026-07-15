@@ -22,7 +22,7 @@ def build_invoke_tree(
     """Build a parent → child invoke stack rooted at the queried instance."""
     from palm.common.exceptions import InstanceNotFoundError
     from palm.common.interactive_runtime import resolve_interactive_job
-    from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+    from palm.common.job_inspection import inspect_job_json
 
     try:
         runtime.get_instance(instance_id)

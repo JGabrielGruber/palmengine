@@ -112,7 +112,7 @@ def prune_terminal_instances(ctx: CliContext, *, dry_run: bool = False) -> list[
 
 
 def summary_to_dict(summary: InstanceSummary) -> dict[str, Any]:
-    from palm.runtimes.cli.shared.job_inspect import format_step_context
+    from palm.common.job_inspection import format_step_context
 
     return {
         "instance_id": summary.instance_id,

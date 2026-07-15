@@ -77,7 +77,7 @@ def test_start_alias_schema_onboard(cli_ctx) -> None:
 def test_flow_start_todo_builder(cli_ctx) -> None:
     import shlex
 
-    from palm.runtimes.cli.shared.job_inspect import inspect_job
+    from palm.common.job_inspection import inspect_job
 
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "flow start todo-builder") == 0
@@ -112,7 +112,7 @@ def test_flow_start_todo_builder(cli_ctx) -> None:
 
 
 def test_flow_start_parallel_demo(cli_ctx) -> None:
-    from palm.runtimes.cli.shared.job_inspect import inspect_job
+    from palm.common.job_inspection import inspect_job
 
     reg = build_registry()
     assert reg.dispatch(cli_ctx, "flow start parallel-demo") == 0

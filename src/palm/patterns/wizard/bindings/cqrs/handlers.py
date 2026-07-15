@@ -153,7 +153,7 @@ def get_wizard_status(query: GetWizardStatusQuery, ctx: Any) -> dict[str, Any] |
             job = ctx._runtime.get_job(job_id)
         job_status = job.status.value
         job_result = job.result
-        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+        from palm.common.job_inspection import inspect_job_json
 
         inspected = inspect_job_json(job)
         if inspected.get("pattern") == "wizard":

@@ -10,7 +10,7 @@ from palm.common.resource.catalog import ResourceCatalog
 from palm.core.orchestration import Job, JobStatus
 from palm.runtimes.cli.shared.flow_labels import flow_detail_label
 from palm.runtimes.cli.shared.instance_ops import short_instance_id, status_emoji
-from palm.runtimes.cli.shared.job_inspect import format_step_context, inspect_job
+from palm.common.job_inspection import format_step_context, inspect_job
 from palm.runtimes.cli.tui.display import render_job_panel
 
 

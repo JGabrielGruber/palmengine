@@ -19,8 +19,8 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 234  # ratcheted at 0.47.7b (CQRS contributor autoload; dropped side-effect import); 287→…→234
-MAX_UPWARD = 14  # ratcheted at 0.47.7b (services register CQRS contributors on package import); 35→…→14 — target 0
+MAX_FUNCTION_LOCAL = 233  # ratcheted at 0.47.8 (job_inspect inverted to JobInspectable); 287→…→233
+MAX_UPWARD = 10  # ratcheted at 0.47.8 (patterns own inspect_job; shell is pattern-agnostic); 35→…→10 — target 0
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {

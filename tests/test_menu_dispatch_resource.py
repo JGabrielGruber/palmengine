@@ -10,7 +10,7 @@ from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
 from palm.patterns.wizard import WizardKeys
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+from palm.common.job_inspection import inspect_job_json
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.runtimes.server.surfaces.ssr.explorer.forms import wizard_input_form
 

@@ -100,7 +100,7 @@ def _render_instance_status(ctx: CliContext, ref: str) -> int:
     view = ctx.get_instance_status_view(instance_id)
     job = ctx.job_for_instance(instance_id)
     if ctx.output_format == "json":
-        from palm.runtimes.cli.shared.job_inspect import inspect_job_json
+        from palm.common.job_inspection import inspect_job_json
 
         payload: dict[str, object] = {
             "instance_id": instance_id,
