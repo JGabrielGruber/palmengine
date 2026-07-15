@@ -282,9 +282,16 @@ class ApplicationHost:
             primary=self._app.primary_name,
         )
         self._started = True
-        if self.settings.enable_work_drain_service and self._work_drain is not None:
+        if self._work_drain_background_enabled() and self._work_drain is not None:
             self._work_drain.start_background()
         return self
+
+    def _work_drain_background_enabled(self) -> bool:
+        """True when continuous WorkIntent drain should run (settings or host profile)."""
+        return bool(
+            self.settings.enable_work_drain_service
+            or self.profile.enable_work_drain_service
+        )
 
     def shutdown(self) -> None:
         """Stop services, projections, and all runtimes."""

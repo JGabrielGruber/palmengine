@@ -54,7 +54,7 @@ class PalmSettings(BaseSettings):
     enable_outbox_service: bool = True
     outbox_poll_interval: float = 0.5
     enable_event_outbox: bool = True
-    # 0.40.2 — optional continuous WorkIntent drain (default: explicit tick_work only)
+    # 0.40.2 — continuous WorkIntent drain; ``host server`` profile enables by default (0.44.1)
     enable_work_drain_service: bool = False
     work_drain_poll_interval: float = 1.0
     work_drain_batch_size: int = 10

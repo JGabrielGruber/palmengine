@@ -487,6 +487,7 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.42 | Event stream + journal wait + provider WS client | ✅ foundation |
 | 0.43 | **Inbound resources** (`metadata.inbound` → WorkIntent) | ✅ foundation |
 | 0.44 | Inbound **store inbox**, **poll** mode, WS stream transport | ✅ 0.44.0 |
+| 0.44.1 | Inbound demo README · [WORK-DRAIN.md](docs/WORK-DRAIN.md) · server profile drain default | ✅ |
 | 0.45+ | Mesh authz, multi-worker fan-out | ⬜ Later |
 
 **Priority reminder:** P0 invoke/wait/resources · P1 journal+WorkIntent dogfood · P2 realtime WS for humans **and** provider.

@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.44.1 — Inbound demo docs + server profile work drain default
+- `examples/definitions/inbound_demo/README.md` — webhook dogfood + debug curls
+- `docs/WORK-DRAIN.md` — WorkIntent drain (explicit vs background, env, ops)
+- **`host server` profile** enables background work drain by default (`HostProfile.enable_work_drain_service`)
+
 ### 0.44.0 — Inbound store inbox, poll mode, WS stream
 - Wire ``store_resource`` / ``store_action`` — persist envelope via resource invoke before WorkIntent
 - ``mode=poll`` background worker (HTTP GET ``url`` or pull-invoke listening resource)

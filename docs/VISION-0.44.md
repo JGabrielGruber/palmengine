@@ -1,6 +1,6 @@
 # VISION 0.44 — Inbound polish (store, poll, stream)
 
-**Status:** Implementation (0.44.0)  
+**Status:** Implementation (0.44.x)
 **Builds on:** [VISION-0.43](VISION-0.43.md)
 
 ## Deliverables
@@ -24,6 +24,8 @@ metadata:
 ```
 
 WorkIntent payload gains `stored`, `store_resource`, `store_action`, or `store_error`.
+
+**0.44.1:** `host server` enables background work drain by default — see [WORK-DRAIN.md](WORK-DRAIN.md) and [inbound_demo README](../examples/definitions/inbound_demo/README.md).
 
 ## Non-goals (0.44)
 
