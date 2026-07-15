@@ -355,7 +355,7 @@ class StandaloneQueryHandlers:
             "instance_id": instance_id or instance_id_for_job(job),
             "status": job.status.value,
             "step": _safe_wizard_step(self._runtime, resolved_job_id),
-            "answers": self._runtime.wizard_answers(resolved_job_id),
+            "answers": _safe_wizard_answers(self._runtime, resolved_job_id),
         }
 
 
@@ -383,3 +383,11 @@ def _safe_wizard_step(runtime: BaseRuntime, job_id: str) -> str | None:
         return runtime.current_wizard_step(job_id)
     except TypeError:
         return None
+
+
+def _safe_wizard_answers(runtime: BaseRuntime, job_id: str) -> dict[str, Any]:
+    # Non-wizard (e.g. etl) instances are not StepInspectable; inspect must not crash.
+    try:
+        return runtime.wizard_answers(job_id)
+    except TypeError:
+        return {}

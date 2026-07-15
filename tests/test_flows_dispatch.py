@@ -90,7 +90,11 @@ def _service(
         queries=queries or _QueryBusStub(),
         schemas=registry,
         system=system,  # type: ignore[arg-type]
-        runtime=type("R", (), {"wait_until_idle": lambda self, timeout=5.0: True})(),  # type: ignore[arg-type]
+        runtime=type(
+            "R",
+            (),
+            {"wait_until_idle": lambda self, timeout=5.0: True, "instances": None},
+        )(),  # type: ignore[arg-type]
     )
 
 

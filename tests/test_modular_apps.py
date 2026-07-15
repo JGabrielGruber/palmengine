@@ -59,7 +59,17 @@ def test_palm_provider_app_manifest() -> None:
     app = get_provider_app("palm")
     assert app is not None
     assert app.palm_layers
-    assert app.actions == ("submit_flow", "submit_process", "invoke_resource", "fetch")
+    assert app.actions == (
+        "submit_flow",
+        "submit_process",
+        "invoke_resource",
+        "fetch",
+        "list_jobs",
+        "list_instances",
+        "list_waiting",
+        "list_flows",
+        "list_resources",
+    )
     assert "runtime_binding" in app.registry_hooks
 
 

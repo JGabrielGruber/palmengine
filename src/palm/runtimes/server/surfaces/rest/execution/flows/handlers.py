@@ -112,7 +112,7 @@ def session_input(
             ["flows", flow_id, "session", session_id, "input"],
             input_params,
         )
-    except InstanceNotFoundError:
+    except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     except MutationRejectedError as exc:
         return errors.input_rejected(str(exc))
@@ -149,7 +149,7 @@ def session_backtrack(
             ["flows", flow_id, "session", session_id, "backtrack"],
             {"to_step": body.get("to_step")},
         )
-    except InstanceNotFoundError:
+    except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     except TypeError as exc:
         return errors.bad_request(str(exc))
@@ -174,7 +174,7 @@ def session_resume(
         ctx_obj = ctx.execution.flows.dispatch(
             ["flows", flow_id, "session", session_id, "resume"],
         )
-    except InstanceNotFoundError:
+    except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
@@ -197,7 +197,7 @@ def session_resume_child_wait(
         ctx_obj = ctx.execution.flows.dispatch(
             ["flows", flow_id, "session", session_id, "resume-child-wait"],
         )
-    except InstanceNotFoundError:
+    except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))
@@ -220,7 +220,7 @@ def session_cancel(
         result = ctx.execution.flows.dispatch(
             ["flows", flow_id, "session", session_id, "cancel"],
         )
-    except InstanceNotFoundError:
+    except (InstanceNotFoundError, InstanceNotFoundServiceError):
         return errors.wizard_not_found(session_id)
     except RuntimeError as exc:
         return errors.input_rejected(str(exc))

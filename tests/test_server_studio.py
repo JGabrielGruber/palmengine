@@ -175,7 +175,7 @@ def test_studio_save_process_registers_in_repository(server: ServerRuntime) -> N
     assert payload["saved"] is True
     assert payload["process"]["name"] == "studio-saved-process"
 
-    status, listed = _json(server.base_url, "GET", "/v1/processes")
+    status, listed = _json(server.base_url, "GET", "/v1/api/definitions/processes")
     assert status == 200
     assert any(row["process_id"] == "studio-saved-process" for row in listed["processes"])
 

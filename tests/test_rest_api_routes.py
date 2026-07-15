@@ -97,8 +97,8 @@ def test_get_session_context_via_command_path(server: ServerRuntime) -> None:
     )
     assert status == 200
     assert isinstance(body, dict)
-    assert body.get("session_id") == session_id
-    assert "next_commands" in body
+    assert body.get("instance_id") == session_id
+    assert "next_actions" in body
 
 
 def test_legacy_instances_path_not_mounted(server: ServerRuntime) -> None:

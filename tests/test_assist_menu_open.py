@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
+import pytest
+
+from palm.app import ApplicationHost, HostProfile
+from palm.app.settings import PalmSettings
 from palm.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
 from palm.services.assist.catalog.menu import build_menu_page, menu_for_assist
 from palm.services.assist.catalog.open import parse_open_token
@@ -15,6 +21,16 @@ from palm.services.assist.profiles.policy import (
     CHAT_DESIGN_AUTO_START_INTENTS,
 )
 from palm.common.operator.view_registry import OperatorViewContext
+
+
+@pytest.fixture
+def host() -> Iterator[ApplicationHost]:
+    """Started host WITH example definitions (todo-builder) — overrides the no-examples conftest host."""
+    settings = PalmSettings.for_tests(load_examples=True)
+    application_host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    application_host.start()
+    yield application_host
+    application_host.shutdown()
 
 
 def test_open_flow_returns_humanized_first_turn(host) -> None:

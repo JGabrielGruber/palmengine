@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.46.1 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.46.2 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 

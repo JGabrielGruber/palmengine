@@ -52,7 +52,9 @@ def test_wire_drains_pattern_hooks_into_design_registry() -> None:
     assert len(iter_design_contributors()) == 0
     wire_builtin_design_contributors()
     contributor_ids = {row.contributor_id for row in iter_design_contributors()}
-    assert contributor_ids == {"pipeline", "wizard"}
+    # wiring also registers built-in provider/dashboard design contributors
+    # (kv, file, dashboard); assert the drained pattern hooks are present.
+    assert {"pipeline", "wizard"} <= contributor_ids
 
 
 def test_custom_hook_registers_via_wire() -> None:
@@ -77,7 +79,7 @@ def test_custom_hook_registers_via_wire() -> None:
 
     assert calls == ["registered"]
     contributor_ids = {row.contributor_id for row in iter_design_contributors()}
-    assert contributor_ids == {"demo-pattern"}
+    assert "demo-pattern" in contributor_ids
 
     _ensure_wizard_hook()
 

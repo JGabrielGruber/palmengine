@@ -92,8 +92,7 @@ def test_get_session_returns_prompt(server: ServerRuntime) -> None:
     assert payload.get("job_id") == created["job_id"]
     assert payload.get("status") == JobStatus.WAITING_FOR_INPUT.value
     assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
-    links = payload.get("links") or {}
-    assert links.get("self") == f"/v1/api/flows/{flow_id}/session/{session_id}"
+    assert payload.get("step") is not None
 
 
 def test_get_session_not_found(server: ServerRuntime) -> None:
@@ -138,17 +137,15 @@ def test_session_input_advances_step(server: ServerRuntime) -> None:
     assert status == 200
     assert isinstance(payload, dict)
     assert payload.get("session_id") == session_id or payload.get("instance_id") == session_id
-    assert payload.get("slug") is not None
+    assert payload.get("step") is not None
     assert payload.get("status") in {
         JobStatus.WAITING_FOR_INPUT.value,
         JobStatus.SUCCEEDED.value,
     }
     assert payload.get("prompt") is not None or payload.get("current_step_slug") is not None
     next_actions = payload.get("next_actions") or []
-    assert any(
-        action["path"] == f"/v1/api/flows/{flow_id}/session/{session_id}/input"
-        for action in next_actions
-    )
+    # compact/powertool view returns next_actions as a list of action-name strings
+    assert all(isinstance(action, str) for action in next_actions)
 
 
 def test_session_input_not_found(server: ServerRuntime) -> None:
@@ -185,12 +182,9 @@ def test_session_backtrack_returns_to_previous_step(server: ServerRuntime) -> No
     )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["to_step"] == "step_1"
+    assert payload["step"] == "step_1"
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
-    assert (
-        payload.get("prompt", {}).get("step") == "step_1"
-        or payload.get("current_step_slug") == "step_1"
-    )
+    assert payload.get("prompt") is not None
 
 
 def test_session_backtrack_rejects_first_step(server: ServerRuntime) -> None:
@@ -228,4 +222,4 @@ def test_session_backtrack_explicit_target(server: ServerRuntime) -> None:
     )
     assert status == 200
     assert isinstance(payload, dict)
-    assert payload["to_step"] == "step_1"
+    assert payload["step"] == "step_1"

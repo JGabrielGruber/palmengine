@@ -96,7 +96,6 @@ def test_flow_start_todo_builder(cli_ctx) -> None:
         "medium",
         "Continue to summary",
         "yes",
-        "yes",
     ]
     for value in steps:
         cmd = "input " + shlex.quote(value)

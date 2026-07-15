@@ -157,7 +157,7 @@ async def test_replay_todo_builder_weak_llm_path(replay_server_ctx) -> None:
         )
         tool_calls += 1
 
-        if _status(done) == "WAITING_FOR_INPUT":
+        if _status(done) == "WAITING":
             await _assist(
                 client,
                 params={"session_id": flow_sid, "flow_id": "todo-builder", "value": "yes"},
@@ -170,7 +170,7 @@ async def test_replay_todo_builder_weak_llm_path(replay_server_ctx) -> None:
         )
         tool_calls += 1
 
-        if _status(final) == "WAITING_FOR_INPUT":
+        if _status(final) == "WAITING":
             committed = await _assist(
                 client,
                 params={"session_id": flow_sid, "flow_id": "todo-builder", "value": "yes"},
@@ -178,4 +178,4 @@ async def test_replay_todo_builder_weak_llm_path(replay_server_ctx) -> None:
             tool_calls += 1
             final = committed
     assert tool_calls <= _MAX_REPLAY_TOOL_CALLS, f"used {tool_calls} tool calls"
-    assert _status(final) in {"SUCCEEDED", "SUCCESS"}, final
+    assert _status(final) in {"SUCCEEDED", "SUCCESS", "COMPLETE"}, final

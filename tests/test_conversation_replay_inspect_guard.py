@@ -78,7 +78,7 @@ async def test_inspect_only_path_stays_at_catalog_not_summary(
         token = inspect.data.get("mutation", {}).get("input_token")
         await client.call_tool(
             "palm_assist",
-            {"params": {"session_id": session_id, "value": "3", "input_token": token}},
+            {"params": {"session_id": session_id, "value": "inspect-only", "input_token": token}},
         )
         after = await client.call_tool(
             "palm_flows_session",

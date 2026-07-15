@@ -184,5 +184,4 @@ def test_session_resume_child_wait_polls_nested_child(server: ServerRuntime) -> 
         or payload.get("instance_id") == parent_instance_id
     )
     assert payload["status"] == JobStatus.WAITING_FOR_INPUT.value
-    prompt = payload.get("prompt") or {}
-    assert prompt.get("waiting_for_child") is True
+    assert payload.get("waiting_for_child") is True

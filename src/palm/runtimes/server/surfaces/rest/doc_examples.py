@@ -459,6 +459,48 @@ RESPONSE_EXAMPLES: dict[str, Any] = {
         "resource": {"resource_ref": "health/check"},
     },
     "delete_resource": {"deleted": True, "kind": "resource", "resource_ref": "health/check"},
+    "list_scenarios": {
+        "scenarios": [
+            {"scenario_id": "operator-entry", "summary": "Guided create/improve a flow"},
+        ],
+        "pagination": {"limit": 50, "offset": 0, "count": 1, "total": 1, "has_more": False},
+    },
+    "describe_scenario": {
+        "scenario_id": "operator-entry",
+        "summary": "Guided create/improve a flow",
+        "actions": [],
+    },
+    "start_scenario": {
+        "session_id": "inst-abc123",
+        "scenario_id": "operator-entry",
+        "status": "WAITING_FOR_INPUT",
+    },
+    "session_handoff": {
+        "session_id": "inst-abc123",
+        "handoff": "operator",
+        "status": "WAITING_FOR_INPUT",
+    },
+    "migrate_instance": {"migrated": True, "instance_id": "inst-abc123", "flow_revision": 2},
+    "list_proposals": {
+        "proposals": [{"proposal_id": "prop-abc123", "kind": "flow", "status": "open"}],
+    },
+    "propose_flow": {"proposal": {"proposal_id": "prop-abc123", "kind": "flow", "status": "open"}},
+    "propose_dashboard": {
+        "proposal": {"proposal_id": "prop-abc123", "kind": "dashboard", "status": "open"},
+    },
+    "publish_dashboard": {"proposal_id": "prop-abc123", "revision": 1, "committed": True},
+    "get_proposal": {"proposal_id": "prop-abc123", "kind": "flow", "status": "open"},
+    "discard_proposal": {"discarded": True, "proposal_id": "prop-abc123"},
+    "validate_proposal": {"valid": True, "issues": []},
+    "analyze_proposal_impact": {
+        "target_revision": 2,
+        "changes": [{"path": "steps", "kind": "modified"}],
+    },
+    "analyze_flow_impact": {
+        "target_revision": 2,
+        "changes": [{"path": "steps", "kind": "modified"}],
+    },
+    "commit_proposal": {"revision": 2, "committed": True},
 }
 
 _RESPONSE_ALIASES: dict[str, str] = {
@@ -469,6 +511,7 @@ _RESPONSE_ALIASES: dict[str, str] = {
     "submit_job": "create_session",
     "provide_input": "session_input",
     "invoke_resource": "invoke_provider",
+    "catalog_flows": "list_flows",
 }
 
 QUERY_HINTS: dict[str, str] = {

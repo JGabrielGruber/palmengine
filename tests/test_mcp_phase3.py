@@ -111,7 +111,7 @@ async def test_palm_wizard_collection_action_assistant_format(phase3_server) -> 
             {"instance_id": "inst-1", "action": "add", "format": "assistant"},
         )
     assert result.data.get("status") == "waiting"
-    assert result.data.get("hint") == "Enter text for this item."
+    assert result.data.get("hint") == "Pick a choice or type a value."
     assert "operator_hint" not in result.data
 
 

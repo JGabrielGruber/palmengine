@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.2 — Green the test suite (T1)
+Fixed all **22** pre-existing failures on master (the suite was red and undetected — no CI). Full suite green. Closes **PD-002**, **PD-003**.
+- **Prod fixes** (tests correctly caught real bugs, not just stale assertions):
+  - `flows/{id}/session/{id}/*` handlers (input, backtrack, resume, resume-child-wait, cancel) now catch `InstanceNotFoundServiceError` → return a clean 404 instead of crashing the request thread.
+  - `common/runtimes/server/cqrs.py` guards `wizard_answers` (`_safe_wizard_answers`) so inspecting a non-wizard (etl) instance no longer raises `TypeError` → 400.
+- **Test/fake/doc updates** to current contracts: compact "powertool" session view (`instance_id`/`step`/top-level `waiting_for_child`), `_FakeRestClient.flows_session_input(input_token=…)`, `include_commit=False` todo-builder flow, normalized assist statuses (`waiting`/`complete`), design-contributor + palm-manifest registry growth, todo-builder example loading; **+15 REST route response examples** (docs-as-code).
+
 ### 0.46.1 — Security: pydantic-settings CVE (T1)
 - Bump `pydantic-settings` floor to `>=2.14.2` (was `>=2.2`) — fixes GHSA-4xgf-cpjx-pc3j; `pip-audit` now clean. Closes **PD-028**.
 

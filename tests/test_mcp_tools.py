@@ -69,6 +69,8 @@ class _FakeRestClient:
         flow_id: str,
         session_id: str,
         value: Any,
+        *,
+        input_token: str | None = None,
     ) -> dict[str, Any]:
         self.calls.append(("flows_session_input", flow_id, session_id, value))
         ctx = self.flows_get_session(flow_id, session_id)
