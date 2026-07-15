@@ -22,8 +22,9 @@ class TransformLeaf(LeafNode):
 
     Supports a single ``rule``, an ordered ``chain`` of rules, and batch mode.
     When ``batch`` is ``None`` (default), list inputs use per-item processing for
-    single-mode rules and whole-list processing for batch-mode rules. Set
-    ``batch=True`` or ``batch=False`` to override.
+    single-mode rules and whole-list processing for batch-mode rules (e.g.
+    ``put_resource``, ``filter_items``). Set ``batch=True`` or ``batch=False``
+    to override. See ``docs/TRANSFORMS.md``.
 
     Reads and writes respect ``scoped`` when a state scope is active. Output may
     be validated against :meth:`~palm.core.context.BaseState.effective_schema`.

@@ -21,7 +21,8 @@
 | 0.45.4 | D | runtime event bus + ingress self-skip + persist batch fix |
 | 0.45.5 | E | event plane contract (EVENT-PLANE.md, doctor, flow.session.*) |
 | 0.45.6 | F | work-drain submit_flow_body, debounce defer, declarative skip |
-| 0.45.7+ | — | hygiene train (see VISION Phase F follow-on table) |
+| 0.45.7 | G | put_resource BATCH mode + TRANSFORMS.md |
+| 0.45.8+ | — | hygiene train (see VISION Phase G follow-on table) |
 
 ---
 
@@ -171,6 +172,23 @@
 
 ---
 
-# 0.45.7+ — Hygiene (planned)
+# 0.45.7 — Transform safety
 
-See **0.45.7+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).
+**Docs:** [docs/TRANSFORMS.md](../../TRANSFORMS.md)
+
+### Task 21: put_resource list persist
+
+- [x] `PutResourceRule.mode = BATCH`
+- [x] Remove `batch: false` from event-watch `persist_log`
+- [x] `tests/test_transform_safety_0_45_7.py` (TransformLeaf + full pipeline tick)
+
+### Task 22: Release 0.45.7
+
+- [x] Version `0.45.7` + catalog/docs
+- [x] `pytest tests/test_transform_safety_0_45_7.py tests/test_*_0_45*.py`
+
+---
+
+# 0.45.8+ — Hygiene (planned)
+
+See **0.45.8+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).

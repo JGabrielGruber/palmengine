@@ -106,7 +106,7 @@ def test_watch_records_external_job_completed() -> None:
 
 
 def test_watch_appends_multiple_events_as_list() -> None:
-    """persist_log must use batch=false so put_resource writes the list, not per-item."""
+    """put_resource (BATCH mode) must persist the full list tail, not per-item puts."""
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(settings=settings)
     host.start()

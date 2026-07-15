@@ -6,7 +6,7 @@ from typing import Any, ClassVar
 
 from palm.core.exceptions import TransformApplicationError
 from palm.core.resource.observability import resource_correlation
-from palm.core.transform.base import BaseTransformRule, TransformContext
+from palm.core.transform.base import BaseTransformRule, TransformContext, TransformMode
 
 
 class PutResourceRule(BaseTransformRule):
@@ -17,6 +17,7 @@ class PutResourceRule(BaseTransformRule):
     """
 
     name: ClassVar[str] = "put_resource"
+    mode: ClassVar[TransformMode] = TransformMode.BATCH
 
     @classmethod
     def from_options(cls, **options: Any) -> PutResourceRule:

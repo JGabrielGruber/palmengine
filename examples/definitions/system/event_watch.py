@@ -192,7 +192,6 @@ PALM_SYSTEM_WATCH_EVENT_FLOW = FlowDefinition(
                 "source_key": "events",
                 "target_key": "events",
                 "rule": "put_resource",
-                "batch": False,
                 "options": {
                     "resource": "palm-system-event-log",
                     "action": "put",

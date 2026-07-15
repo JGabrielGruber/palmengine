@@ -8,7 +8,10 @@ TRANSFORM_CATALOG: dict[str, str] = {
     "rename_field": "Rename one key in a mapping",
     "map_fields": "Remap multiple keys in a mapping",
     "append_item": "Append an item to a list in state (cap, dedup, prepend)",
-    "put_resource": "Persist state data via resource invoke (default put)",
+    "put_resource": (
+        "Persist state data via resource invoke (default put); BATCH mode — "
+        "list sources persist as one value, not per-item"
+    ),
     "filter_items": "Filter a list of mappings by field predicates",
     "callable": "Apply a Python callable to a value or list",
     "string_format": "Template, case, and inline date formatting for strings",
