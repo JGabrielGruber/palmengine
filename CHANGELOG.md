@@ -4,6 +4,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.1 — Security: pydantic-settings CVE (T1)
+- Bump `pydantic-settings` floor to `>=2.14.2` (was `>=2.2`) — fixes GHSA-4xgf-cpjx-pc3j; `pip-audit` now clean. Closes **PD-028**.
+
 ### 0.46.0 — Debt-paydown line opens: versioning convention + T1 plan
 - `docs/VERSIONING.md` — canonical versioning & release convention: one theme per minor; `0.X.0` plans (a `VISION-0.X.md`), `0.X.N` ships one slice; green `just check` gated in CI
 - `docs/VISION-0.46.md` — 0.46 = TECH-DEBT **T1 · Safety Net** (green the red suite → wire CI → coverage/complexity gates); slices `0.46.1`–`0.46.5`

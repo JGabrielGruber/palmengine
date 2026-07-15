@@ -240,6 +240,8 @@ tracker** — flip items as they close. Order follows the dependency roots above
 Exact minor numbers beyond 0.46 are assigned when each theme starts. Security / one-line quick-wins may land
 early regardless of theme.
 
+**Closed:** PD-028 ✅ (0.46.1 — pydantic-settings CVE bump).
+
 ---
 
 ## Accepted trade-offs (logged, not defects)
