@@ -22,7 +22,7 @@
 | 0.45.5 | E | event plane contract (EVENT-PLANE.md, doctor, flow.session.*) |
 | 0.45.6 | F | work-drain submit_flow_body, debounce defer, declarative skip |
 | 0.45.7 | G | put_resource BATCH mode + TRANSFORMS.md |
-| 0.45.8+ | — | hygiene train (see VISION Phase G follow-on table) |
+| 0.45.8 | H | ops dogfood (OPS.md, invoke shortcut, test isolation) |
 
 ---
 
@@ -189,6 +189,21 @@
 
 ---
 
-# 0.45.8+ — Hygiene (planned)
+# 0.45.8 — Ops dogfood
 
-See **0.45.8+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).
+**Docs:** [docs/OPS.md](../../OPS.md)
+
+### Task 23: Test isolation + invoke
+
+- [x] `all_definition_roots` skips cwd when `load_example_definitions=false`
+- [x] `POST /v1/api/resources/{resource_ref}/invoke`
+
+### Task 24: control_plane ops
+
+- [x] `ops_status()` + `work_drain_background` alias
+- [x] CLI doctor Ops table
+
+### Task 25: Release 0.45.8
+
+- [x] Version `0.45.8` + docs
+- [x] `pytest tests/test_ops_dogfood_0_45_8.py`

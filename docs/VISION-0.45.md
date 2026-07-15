@@ -1,6 +1,6 @@
 # VISION 0.45 — Reactive data plane
 
-**Status:** 0.45.1–0.45.7 shipped (data plane, watchdog dogfood, event plane, work-drain, transform safety)
+**Status:** 0.45.1–0.45.8 shipped (reactive data plane hygiene train complete)
 **Builds on:** [VISION-0.44](VISION-0.44.md) (inbound store, poll, stream, work drain)
 
 ## Problem
@@ -29,7 +29,7 @@ Inbound → WorkIntent → flow works, but the **data plane** has holes that for
 | **0.45.5** | Event plane contract — [EVENT-PLANE.md](EVENT-PLANE.md), doctor `event_plane`, emit `flow.session.*`, test helpers |
 | **0.45.6** | Work-drain ergonomics — `submit_flow_body`, debounce defer, declarative `skip_self`/`skip_flows` |
 | **0.45.7** | Transform safety — `put_resource` BATCH mode, [TRANSFORMS.md](TRANSFORMS.md), pipeline integration test |
-| **0.45.8** | Ops dogfood — example-root isolation in tests, invoke route docs, durable log guidance |
+| **0.45.8** | Ops dogfood — cwd example isolation, `/resources/.../invoke`, control_plane `ops`, [OPS.md](OPS.md) |
 
 Phase C before Phase B so the watchdog example does **not** ship on loopback/WS self-connect. **0.45.4** closes Phase B on a real server — internal inbound listens on the **runtime orchestration** bus (`runtime.event`), not the host coordination bus.
 
@@ -166,7 +166,16 @@ Invoke tail: `POST /v1/api/providers/kv/palm-system-event-log/invoke` with `{"ac
 | **0.45.5** | **Event plane contract** *(shipped)* | [EVENT-PLANE.md](EVENT-PLANE.md); `event_plane` in doctor/control_plane; `OrchestrationEngine` emits `flow.session.succeeded`/`failed`; ingress skip for session events; `tests.helpers.event_plane` |
 | **0.45.6** | **Work-drain / inbound** *(shipped)* | `submit_flow_body` for drain; inbound debounce **defer** + `flush_debounced`; `skip_self`/`skip_flows`/`skip_event_types`; [WORK-DRAIN.md](WORK-DRAIN.md) coalesce docs |
 | **0.45.7** | **Transform safety** *(shipped)* | `put_resource` `TransformMode.BATCH`; [TRANSFORMS.md](TRANSFORMS.md); event-watch drops `batch: false` workaround |
-| **0.45.8** | **Ops dogfood** | Test isolation from cwd `examples/definitions`; REST invoke path discoverability; `control_plane` key consistency; server profile guidance for durable event-log storage |
+| **0.45.8** | **Ops dogfood** *(shipped)* | `load_examples=false` skips cwd; `POST /v1/api/resources/{ref}/invoke`; `ops` + `work_drain_background` alias; [OPS.md](OPS.md) |
+
+## Phase H (0.45.8) — ops dogfood
+
+| Deliverable | Where | Why |
+|-------------|--------|-----|
+| Cwd example isolation | `all_definition_roots()` | Tests bled `palm-system-events-watch` from repo cwd |
+| Resource invoke shortcut | REST `invoke_resource` | `/v1/api/resources/.../invoke` 404 footgun |
+| `control_plane.ops` | `ApplicationHost.ops_status()` | Invoke templates + durable tail hints |
+| `work_drain_background` | alias of `work_drain_running` | Scripts guessed wrong key |
 
 ## Non-goals (0.45.x)
 

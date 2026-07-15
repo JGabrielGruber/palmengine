@@ -27,13 +27,21 @@ Loop guards:
 - **Ingress:** `event_types` excludes `resource.changed` / `inbound.received`; engine skips self `job.completed` for the watch flow.
 - **Pipeline:** `conditional` + `passthrough` drops rows for owned resources and this flow's own completions.
 
-Read tail via provider invoke (not `/v1/api/resources/...`):
+Read tail via resource invoke (0.45.8 shortcut) or explicit provider path:
 
 ```bash
+# shortcut — provider resolved from definition
+curl -s http://127.0.0.1:8080/v1/api/resources/palm-system-event-log/invoke \
+  -H 'Content-Type: application/json' -H 'X-Palm-Subject: dev' \
+  -d '{"action":"get"}'
+
+# explicit provider
 curl -s http://127.0.0.1:8080/v1/api/providers/kv/palm-system-event-log/invoke \
   -H 'Content-Type: application/json' -H 'X-Palm-Subject: dev' \
   -d '{"action":"get"}'
 ```
+
+**Durable tail:** default dev server uses memory storage — restart clears the log. For ops dogfood use `PALM_STORAGE_BACKEND=filesystem` (see [docs/OPS.md](../../../docs/OPS.md)).
 
 ```bash
 just palm-server

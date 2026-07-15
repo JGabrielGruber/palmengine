@@ -31,10 +31,18 @@ ROUTES: tuple[RouteEntry, ...] = (
         "invoke_provider",
         auth_required=True,
     ),
+    RouteEntry(
+        "invoke_resource",
+        "POST",
+        f"{API_PREFIX}/resources/{{resource_ref}}/invoke",
+        "invoke_resource",
+        auth_required=True,
+    ),
 )
 
 _HANDLERS = {
     "invoke_provider": handlers.invoke_provider,
+    "invoke_resource": handlers.invoke_resource,
 }
 
 

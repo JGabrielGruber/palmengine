@@ -149,6 +149,29 @@ def run_doctor(ctx: CliContext) -> int:
     elif not summaries:
         console.print("[dim]No process instances yet — try[/] [cyan]flow start onboard[/]")
 
+    if hasattr(host, "ops_status"):
+        try:
+            ops = host.ops_status()
+        except Exception:
+            ops = {}
+        if ops:
+            ops_table = Table(title="Ops", show_lines=True)
+            ops_table.add_column("Item", style="cyan")
+            ops_table.add_column("Value", style="green")
+            ops_table.add_row("invoke (short)", str(ops.get("invoke_route_short", "—")))
+            ops_table.add_row("storage", str(ops.get("storage_backend", "—")))
+            ops_table.add_row(
+                "durable storage",
+                "yes" if ops.get("storage_durable") else "no",
+            )
+            if ops.get("event_log_durable") is False:
+                ops_table.add_row("event log", "[yellow]memory (amnesiac)[/]")
+            console.print(ops_table)
+            for key in ("event_log_note", "server_profile_hint"):
+                note = ops.get(key)
+                if note:
+                    console.print(f"[dim]{note}[/]")
+
     if hasattr(host, "event_plane_status"):
         try:
             ep = host.event_plane_status()

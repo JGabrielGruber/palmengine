@@ -94,12 +94,13 @@ def package_definition_roots(settings: PalmSettings) -> list[Path]:
 
 
 def all_definition_roots(settings: PalmSettings) -> list[Path]:
-    """Merge configured, cwd, and packaged definition directories."""
+    """Merge configured, optional cwd, and packaged definition directories."""
     roots: list[Path] = []
     if settings.data_dir is not None:
         roots.append(settings.data_dir / "definitions")
-    roots.append(Path.cwd() / "examples" / "definitions")
-    roots.extend(package_definition_roots(settings))
+    if settings.load_example_definitions:
+        roots.append(Path.cwd() / "examples" / "definitions")
+        roots.extend(package_definition_roots(settings))
     # Preserve order while deduplicating
     unique: list[Path] = []
     seen: set[Path] = set()

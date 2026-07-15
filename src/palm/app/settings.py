@@ -130,9 +130,6 @@ class PalmSettings(BaseSettings):
         roots: list[Path] = []
         if self.data_dir is not None:
             roots.append(self.data_dir / "definitions")
-        roots.extend(
-            [
-                Path.cwd() / "examples" / "definitions",
-            ]
-        )
+        if self.load_example_definitions:
+            roots.append(Path.cwd() / "examples" / "definitions")
         return roots

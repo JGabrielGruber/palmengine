@@ -42,4 +42,32 @@ def invoke_provider(
     return ok(payload)
 
 
-__all__ = ["invoke_provider"]
+def invoke_resource(
+    ctx: ServerContext,
+    request: ServerRequest,
+    *,
+    resource_ref: str,
+) -> ServerResponse:
+    """Shortcut invoke by resource ref only (resolves provider from definition)."""
+    auth_error = require_auth(ctx, request)
+    if auth_error is not None:
+        return auth_error
+
+    body: dict[str, Any] = dict(request.body) if isinstance(request.body, dict) else {}
+    try:
+        payload = ctx.execution.providers.invoke(
+            resource_ref,
+            action=body.get("action"),
+            params=body.get("params"),
+            state=body.get("state"),
+            resource_id=body.get("resource_id"),
+        )
+    except ValueError as exc:
+        return errors.bad_request(str(exc))
+    except Exception as exc:
+        return errors.submit_failed(str(exc))
+
+    return ok(payload)
+
+
+__all__ = ["invoke_provider", "invoke_resource"]

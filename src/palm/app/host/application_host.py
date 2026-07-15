@@ -936,6 +936,54 @@ class ApplicationHost:
             ),
         }
 
+    def ops_status(self) -> dict[str, Any]:
+        """Operator ergonomics — invoke routes, storage, event-log durability (0.45.8)."""
+        from palm.app.cli_settings import is_durable_storage
+        from palm.common.resource.document_storage import resolve_kv_backend
+
+        storage = self._app.storage
+        backend_name = storage.backend_name if storage is not None else None
+        durable = is_durable_storage(backend_name)
+        event_log_durable: bool | None = None
+        event_log_note: str | None = None
+        try:
+            described = self._definitions.get_resource("palm-system-event-log")
+        except Exception:
+            described = None
+        if isinstance(described, dict):
+            params = described.get("params") if isinstance(described.get("params"), dict) else {}
+            kv_param = str((params or {}).get("backend") or "auto")
+            try:
+                resolved = resolve_kv_backend(
+                    kv_param,
+                    storage=storage,
+                    storage_backend_name=backend_name,
+                )
+                event_log_durable = resolved != "memory"
+            except ValueError:
+                event_log_durable = False
+            if event_log_durable is False:
+                event_log_note = (
+                    "palm-system-event-log resolves to memory kv; use "
+                    "PALM_STORAGE_BACKEND=filesystem or params.backend=storage "
+                    "for durable ops tail"
+                )
+        server_hint: str | None = None
+        if self.profile.server and not durable:
+            server_hint = (
+                "server profile: set PALM_STORAGE_BACKEND=filesystem (or postgres) "
+                "so instances, kv tails, and work queue survive restart"
+            )
+        return {
+            "invoke_route": "POST /v1/api/providers/{provider}/{resource_ref}/invoke",
+            "invoke_route_short": "POST /v1/api/resources/{resource_ref}/invoke",
+            "storage_backend": backend_name,
+            "storage_durable": durable,
+            "event_log_durable": event_log_durable,
+            "event_log_note": event_log_note,
+            "server_profile_hint": server_hint,
+        }
+
     def control_plane_status(self) -> dict[str, Any]:
         """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
         from palm.common.events.consumers import (
@@ -975,6 +1023,7 @@ class ApplicationHost:
         return {
             "work_pending": work_pending,
             "work_drain_running": bg,
+            "work_drain_background": bg,
             "work_dropped_depth": dropped,
             "schedules": schedules,
             "schedule_count": len(schedules),
@@ -984,6 +1033,7 @@ class ApplicationHost:
             "inbound_bindings": inbound_bindings,
             "inbound_count": len(inbound_bindings),
             "event_plane": self.event_plane_status(),
+            "ops": self.ops_status(),
         }
 
     def drain_journal_webhooks(
