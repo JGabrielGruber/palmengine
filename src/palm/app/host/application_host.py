@@ -13,6 +13,7 @@ from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
 from palm.app.host.cqrs_wiring import wire_command_bus, wire_query_bus
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
+from palm.app.host.observability import HostObservability
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
@@ -136,6 +137,7 @@ class ApplicationHost:
         self._inbound: Any | None = None
         self._started = False
         self._signal_stop = threading.Event()
+        self._observability = HostObservability(self)
 
     @property
     def app(self) -> PalmApp:
@@ -894,141 +896,15 @@ class ApplicationHost:
 
     def event_plane_status(self) -> dict[str, Any]:
         """Which EventEngine each reactive surface uses (0.45.5 doctor contract)."""
-        orchestration_bus = "host_fallback"
-        try:
-            runtime = self._app.runtime()
-            engine = runtime.event
-            if engine is not None and engine.is_initialized:
-                orchestration_bus = "runtime"
-        except Exception:
-            pass
-        internal_bindings = 0
-        if self._inbound is not None:
-            try:
-                internal_bindings = sum(
-                    1 for row in self._inbound.list_bindings() if row.get("mode") == "internal"
-                )
-            except Exception:
-                internal_bindings = 0
-        return {
-            "orchestration_bus": orchestration_bus,
-            "host_coordination_bus": "host",
-            "inbound_internal_bus": orchestration_bus,
-            "work_drain_bus": orchestration_bus,
-            "journal_bus": "host",
-            "internal_inbound_bindings": internal_bindings,
-            "orchestration_event_types": [
-                "job.completed",
-                "flow.session.succeeded",
-                "flow.session.failed",
-            ],
-            "note": (
-                "Orchestration events emit on runtime.event when the runtime is "
-                "started; host.event is coordination only (host.started, journal, "
-                "outbox). Internal inbound and work-drain subscribe to the "
-                "orchestration bus."
-            ),
-        }
+        return self._observability.event_plane_status()
 
     def ops_status(self) -> dict[str, Any]:
         """Operator ergonomics — invoke routes, storage, event-log durability (0.45.8)."""
-        from palm.app.cli_settings import is_durable_storage
-        from palm.common.resource.document_storage import resolve_kv_backend
-
-        storage = self._app.storage
-        backend_name = storage.backend_name if storage is not None else None
-        durable = is_durable_storage(backend_name)
-        event_log_durable: bool | None = None
-        event_log_note: str | None = None
-        try:
-            described = self._definitions.get_resource("palm-system-event-log")
-        except Exception:
-            described = None
-        if isinstance(described, dict):
-            params = described.get("params") if isinstance(described.get("params"), dict) else {}
-            kv_param = str((params or {}).get("backend") or "auto")
-            try:
-                resolved = resolve_kv_backend(
-                    kv_param,
-                    storage=storage,
-                    storage_backend_name=backend_name,
-                )
-                event_log_durable = resolved != "memory"
-            except ValueError:
-                event_log_durable = False
-            if event_log_durable is False:
-                event_log_note = (
-                    "palm-system-event-log resolves to memory kv; use "
-                    "PALM_STORAGE_BACKEND=filesystem or params.backend=storage "
-                    "for durable ops tail"
-                )
-        server_hint: str | None = None
-        if self.profile.server and not durable:
-            server_hint = (
-                "server profile: set PALM_STORAGE_BACKEND=filesystem (or postgres) "
-                "so instances, kv tails, and work queue survive restart"
-            )
-        return {
-            "invoke_route": "POST /v1/api/providers/{provider}/{resource_ref}/invoke",
-            "invoke_route_short": "POST /v1/api/resources/{resource_ref}/invoke",
-            "storage_backend": backend_name,
-            "storage_durable": durable,
-            "event_log_durable": event_log_durable,
-            "event_log_note": event_log_note,
-            "server_profile_hint": server_hint,
-        }
+        return self._observability.ops_status()
 
     def control_plane_status(self) -> dict[str, Any]:
         """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
-        from palm.common.events.consumers import (
-            DEFAULT_JOURNAL_CONSUMERS,
-            journal_consumer_status,
-        )
-
-        work_pending = 0
-        if self._work_drain is not None:
-            work_pending = self._work_drain.store.pending_count()
-        journal_status: dict[str, Any] = {}
-        if self._event_journal is not None:
-            journal_status = journal_consumer_status(
-                self._event_journal,
-                consumers=list(DEFAULT_JOURNAL_CONSUMERS),
-            )
-        outbox_pending = 0
-        if self._outbox_service is not None:
-            outbox_pending = self._outbox_service.store.pending_count()
-        bg = False
-        dropped = 0
-        if self._work_drain is not None:
-            bg = bool(self._work_drain.is_running)
-            dropped = int(self._work_drain.dropped_depth_count)
-        schedules: list[dict[str, Any]] = []
-        if self._work_drain is not None:
-            try:
-                schedules = list(self._work_drain.schedules.list_entries())
-            except Exception:
-                schedules = []
-        inbound_bindings: list[dict[str, Any]] = []
-        if self._inbound is not None:
-            try:
-                inbound_bindings = list(self._inbound.list_bindings())
-            except Exception:
-                inbound_bindings = []
-        return {
-            "work_pending": work_pending,
-            "work_drain_running": bg,
-            "work_drain_background": bg,
-            "work_dropped_depth": dropped,
-            "schedules": schedules,
-            "schedule_count": len(schedules),
-            "outbox_pending": outbox_pending,
-            "journal": journal_status,
-            "journal_consumers": list(DEFAULT_JOURNAL_CONSUMERS),
-            "inbound_bindings": inbound_bindings,
-            "inbound_count": len(inbound_bindings),
-            "event_plane": self.event_plane_status(),
-            "ops": self.ops_status(),
-        }
+        return self._observability.control_plane_status()
 
     def drain_journal_webhooks(
         self,
