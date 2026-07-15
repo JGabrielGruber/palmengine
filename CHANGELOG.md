@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.0 — Debt-paydown line opens: versioning convention + T1 plan
+- `docs/VERSIONING.md` — canonical versioning & release convention: one theme per minor; `0.X.0` plans (a `VISION-0.X.md`), `0.X.N` ships one slice; green `just check` gated in CI
+- `docs/VISION-0.46.md` — 0.46 = TECH-DEBT **T1 · Safety Net** (green the red suite → wire CI → coverage/complexity gates); slices `0.46.1`–`0.46.5`
+- `TECH-DEBT.md` — themes→minors roadmap over the debt register (`PD-001…031`); baseline metrics in `docs/audit/`, decision in `docs/adr/015`
+- `AGENTS.md` — new explicit rules: CI-green `just check`, no new god-objects, test doubles must contract-match prod, gated placeholders, deferred-import discipline
+- Note: `just docs-check` is currently red on master (skill/mcp-data mirror drift, PD-031) — to be greened in a 0.46 patch
+
 ### 0.44.1 — Inbound demo docs + server profile work drain default
 - `examples/definitions/inbound_demo/README.md` — webhook dogfood + debug curls
 - `docs/WORK-DRAIN.md` — WorkIntent drain (explicit vs background, env, ops)

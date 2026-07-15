@@ -2,7 +2,7 @@
 
 **Purpose**: How an AI agent should interact with Palm efficiently through MCP tools and resources.
 
-**Version**: 0.26.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
+**Version**: 0.46.0 · **Resource**: `palm://agent/guide` · **Full inventory**: `docs/MCP.md` · **Project context**: `docs/llms.txt`
 
 **Audience**: Grok, Cursor, Claude, and other agents using `call_connected_tool` / `CallMcpTool` + Palm MCP.
 
@@ -40,6 +40,9 @@ PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp   # stdio → services, no RES
 | Variable | Default (this repo) | Purpose |
 |----------|---------------------|---------|
 | `PALM_MCP_IN_PROCESS` | `1` in `.grok/config.toml` | In-process services (no HTTP) |
+| `PALM_MCP_SURFACE` | `full` (default) | Tool catalog: `full` · `assist` (palm_assist only) · `core` (assist+system). See 0.31.1. |
+
+**Assist-only (0.31.2):** when surface is `assist`, use aliases only — `assist/doctor`, `assist/catalog/flows`, `assist/catalog/waiting`, `flows/session-resume`, `design/publish`, `params={flow_id}` / `{body}`.
 | `PALM_LLMS_TXT` | `docs/mcp.txt` | Content for `palm://agent/guide` |
 | `PALM_BASE_URL` | `http://127.0.0.1:8080` | REST target when in-process is off |
 
@@ -49,13 +52,14 @@ Grok: `.grok/config.toml` — in-process + `docs/mcp.txt`. Remote proxy: `PALM_M
 
 ## 3. Recommended Starting Pattern
 
+**Progressive docs (0.31.3):** read `palm://agent/card` first — not this entire file.
+
 ```text
 palm_assist()                                    → operator-entry (0.21.7 default)
-palm_assist(alias="operator-entry/start")        → explicit operator entry
-palm_assist(params={"session_id": id, "value": "yes"})  → continue assist session
+palm_assist(params={flow_id: "coconut-npc"})     → start a flow
+palm_assist(params={"session_id": id, "flow_id", "value": "yes"})  → continue
+palm_assist(alias="assist/doctor")               → health / resource preflight
 ```
-
-Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand off.
 
 **View modes (0.20–0.21)**:
 - **Assistant** — `question`, `choices`, `hint`, `actions` (default on assist paths)
@@ -90,6 +94,12 @@ Then follow choices (Todo Builder, Compositional Parent, Inspect Only) and hand 
 | `onboard` / `schema-onboard` | Onboarding | `flows/onboard/create` |
 | `resource-customer-wizard` | Resource loading | Needs pre-registered resources |
 | `compositional-parent` | Nested workflows | Via operator-entry |
+| *(design)* create / improve flow | Catalog writes via Design Service | `palm_design_publish_flow` or `palm_assist(params={body})` (0.30.4–0.30.5) |
+| *(design)* design-entry scenario | Guided Design discovery shell | `design-entry/start` (0.30.2+) |
+| *(design)* handoff | Typed design handoff after create/improve | `kind: design` + `design_action` (0.30.3+); always read `operator_hint` |
+| Run a flow | Interactive session | `palm_assist(params={flow_id: "coconut-npc"})` then `value` (0.30.6+) |
+| Resources in flows | KV/file/REST steps (e.g. coconut) | Auto-run when possible; resume + doctor CTAs on failure (0.30.6+) |
+| Publish resource def | Catalog write for resource_ref | `palm_design_publish_resource` or operator-entry `propose-resource` |
 
 Discovery: `palm_flows_list()` · Catalog: `palm://definitions/flows` · Routes: `palm://assist/routes`
 

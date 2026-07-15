@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.25.0 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** Weak-LLM MCP ergonomics (0.21.7+) · assistant expansion (0.21) · `palm_assist` stable MCP proxy (0.19)
+**Version:** 0.46.0 (PyPI) · trunk 0.32 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** WebSocket Assist + Portal dogfood (0.32) · MCP meta-surface (0.31) · weak-LLM Assist (0.21–0.30)
 
 ## Philosophy
 
@@ -67,7 +67,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 | **Definition revisions (0.24)** | Append-only flow revisions; `flow_revision` pin; `GET flow?revision=`; impact + migrate |
 | **Providers REST (0.16)** | `POST /v1/api/providers/{provider}/{resource_ref}/invoke` |
 | **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
-| **MCP (0.16)** | Per-domain tools (`palm_flows_*`, `palm_system_*`, `palm_definitions_*`, `palm_providers_invoke`); see `docs/MCP.md` |
+| **MCP (0.16–0.31)** | Prefer **`palm_assist`**; `PALM_MCP_SURFACE=assist` for one-tool hosts; L1 `palm://agent/card`; discover via `alias=assist/discover`; full domain tools optional — `docs/MCP.md` |
 | **Service layer (0.16)** | `host.system`, `host.definitions`, `host.execution.flows`, `host.execution.providers` |
 | **Assist (0.18)** | `host.assist` · REST `/v1/api/assist/…` · `palm-operator-entry` scenario · handoff → flows |
 | **palm_assist (0.19)** | Single MCP tool: `path` / `alias` / `params` dispatch · resource `palm://assist/routes` |
@@ -132,41 +132,34 @@ Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/mcp.t
 9. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
 10. **`actions` block (0.21.4)** — on assistant turns; prefer structured `path`/`alias` over parsing `hint` for next steps.
 
-### Typical session (0.21.7 — weak-LLM friendly `palm_assist`)
+### Typical session (0.31 — assist-first / weak-LLM)
 
 ```
-palm_assist()                                          → operator-entry first turn (0.21.7 default)
-palm_assist(params={"session_id": id, "value": "yes"}) → inferred assist input (0.21.7)
-palm_assist(alias="operator-entry/start")              → question + choices + session_id
-palm_assist(path=["assist","session",id,"input"], params={"value":"todo-builder"})
-palm_assist(alias="operator-entry/handoff", params={"session_id": id})
-palm_assist(path=["flows","todo-builder","create"])    → powertool business session
-palm_assist(params={session_id, flow_id, value})       → flows input (0.21.10 inference)
-palm_assist(params={session_id, flow_id, collection_action: "add", value: "title"})
-palm_assist(params={session_id, flow_id, edit: {item_index: 0, priority: "low"}})
-# Powertool opt-in on assist: format="powertool"
-# Legacy equivalent: palm_flows_create_session(flow_id="todo-builder")
-# Catalog: palm://assist/routes · aliases: flows/session-input, flows/session
+# Progressive docs: palm://agent/card first (not full guide)
+palm_assist(alias="assist/discover", params={query: "run"})  # optional route search
+palm_assist()                                                → operator-entry
+palm_assist(params={flow_id: "coconut-npc"})                 → start flow (assistant)
+palm_assist(params={session_id, flow_id, value: "…"})        → continue
+palm_assist(params={body: {name, pattern, options.steps}})   → one-shot publish
+palm_assist(alias="assist/doctor")                           → health / resource preflight
+# With PALM_MCP_SURFACE=assist these are the only tool calls needed
+# Power users on surface=full may still use palm_flows_* / palm_design_*
 ```
 
-### Tool cheat sheet
+### Tool cheat sheet (prefer palm_assist)
 
 | Need | Tool / resource |
 |------|-----------------|
-| MCP operator guide | `palm://agent/guide` (`docs/mcp.txt`) |
-| Agent skill | `palm://agent/skill` |
-| Skill references | `palm://agent/references/*` |
+| Operator card (L1) | `palm://agent/card` |
+| Full guide (L2) | `palm://agent/guide` (`docs/mcp.txt`) |
+| Agent skill (L2) | `palm://agent/skill` |
+| Discover routes | `palm_assist(alias="assist/discover")` |
+| Start / drive wizard | `palm_assist(params={flow_id})` / `{session_id, flow_id, value}` |
+| List flows / waiting | `assist/catalog/flows` · `assist/catalog/waiting` |
+| Publish flow | `palm_assist(params={body})` or `design/publish` |
+| Doctor | `assist/doctor` |
+| Routes catalog | `palm://assist/routes` |
 | Project context | `docs/llms.txt` (this file) |
-| Flow catalog | `palm://definitions/flows` |
-| Start wizard | `palm_assist` path/alias or `palm_flows_create_session` |
-| Command catalog | `palm://assist/routes` |
-| Current step | `palm_flows_session` (powertool) or `format="assistant"` opt-in |
-| Send answer | `palm_flows_session_input(input=…)` |
-| Parent/child stack | `palm://instances/{id}/tree`, `palm_flows_compose_status` |
-| Collection UI | `palm_wizard_collection_action` |
-| Dry-run flow | `palm_definitions_validate_flow` |
-| Revision impact | `palm_definitions_analyze_impact` |
-| Instance migration | `palm_definitions_migrate_instance` (dry_run then apply) |
 | Health | `palm_system_doctor` |
 | Read catalogs / guide | `palm://definitions/*`, `palm://agent/guide` (FetchMcpResource) |
 | Invoke resource definition | `palm_providers_invoke` (definition name, not `palm://`) |

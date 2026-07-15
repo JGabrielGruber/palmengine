@@ -6,7 +6,7 @@ For AI coding agents and human developers
 *“Palm grows where the sun meets the sea.”*  
 Orchestration should feel alive, truthful, and humane. Structure must serve clarity and longevity, never become a cage.
 
-**Last updated:** July 2026 (0.45.8 — ops dogfood; see [docs/VISION-0.45.md](docs/VISION-0.45.md), [docs/OPS.md](docs/OPS.md))
+**Last updated:** July 2026 (0.46.0 — debt-paydown line opens with **T1 · Safety Net**; see [docs/VERSIONING.md](docs/VERSIONING.md), [docs/VISION-0.46.md](docs/VISION-0.46.md), [TECH-DEBT.md](TECH-DEBT.md))
 
 ---
 
@@ -164,6 +164,9 @@ Documentation is not optional. It is part of the system.
 - `docs/llms.txt` should be maintained as broader project context for AI agents.
 - `docs/MCP.md` is the canonical guide for agent development with Palm MCP (setup, workflows, tool inventory).
 - When updating the website (`docs/index.html`), structured data (JSON-LD) and feature highlights must reflect current capabilities.
+- **`TECH-DEBT.md`** (repo root) is the single source of truth for known technical debt — peer to `STATUS.md`. Add new items as `PD-NNN`; close them as fixed. Do not let it go stale.
+- **`docs/VERSIONING.md`** defines the versioning & release convention: **one theme per minor**, `X.0` plans (a `VISION-0.X.md`), `X.N` executes one slice each. Read it before opening a new minor.
+- **Docs-sync is gated:** `just docs-check` must pass. Note that `ARCHITECTURE.md` / `DEVELOPMENT.md` / `SCOPE.md` are **not** auto-synced by `scripts/sync_version.py` today — update their stamps by hand (or extend `SYNC_TARGETS`).
 
 **Rule:** If the code and the documentation diverge, the documentation debt must be treated as seriously as a bug.
 
@@ -182,6 +185,12 @@ Documentation is not optional. It is part of the system.
 - [ ] Backward compatibility or clear deprecation path considered
 - [ ] `palm doctor` and example flows still work (when relevant)
 - [ ] `just guard-common` passes (no pattern-specific logic in `palm.common`)
+- [ ] **`just check` is green in CI**, not only locally — lint, typecheck, test-quick, guard-core, guard-common. A red gate blocks merge. *(the enforcement gap that let the 0.45 suite rot — see TECH-DEBT PD-001/002)*
+- [ ] **No new god-objects** — a class/module that mixes lifecycle + wiring + domain + presentation is a defect; extract role/subsystem objects instead of accreting onto `ApplicationHost` & friends *(PD-009)*
+- [ ] **Test doubles contract-match production** — fakes/stubs are validated against the real interface (a `Protocol`/ABC or a contract test), never hand-drifted. A fake lagging a prod signature is a bug *(PD-003)*
+- [ ] **Experimental / placeholder capabilities are gated** behind an explicit flag, not silently registered as installed *(PD-023)*
+- [ ] **No new function-local ("deferred") imports** added solely to dodge an import cycle without a comment justifying why — prefer fixing the layering *(PD-012)*
+- [ ] Changes are scoped to a single patch per `docs/VERSIONING.md` (`feat(0.X.N): …`, one slice, cite the item)
 
 ---
 
