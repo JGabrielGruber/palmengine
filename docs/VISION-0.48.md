@@ -73,20 +73,22 @@ lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC track
 | **0.48.3** | Seam 4 — `app/host/workplane/` — `WorkPlaneCoordinator` (work-drain/inbound/journal wiring + ops) + folds in the flat `inbound_service`/`work_drain_service` (985→816) | ✅ | no |
 | **0.48.4** | Seam 5 — `app/host/lifecycle/` — `RuntimeSpawner` (spawn runtimes) + `RecoveryCoordinator` (worker readiness, compensation, outbox/webhook, projection rebuild) (816→671) | ✅ | no |
 | **0.48.5** | Seam 2a — `app/host/wiring/` — projection build+register extracted to root-agnostic `build_host_projections`/`register_host_projections` (671→663) | ✅ | no |
+| **0.48.6** | Seam 2b — **broke the latent cycle** (below): lazy composition-root exports in `common/runtimes/server/__init__` (PEP 562), then folded `cqrs_wiring.py` into `app/host/wiring/cqrs.py`. Wiring package now complete + order-independent | ✅ | no |
 | next | **Dead-accessor removal** — careful cross-codebase zero-consumer proof (vulture over-flags public API), then remove | — | **yes** |
-| next | Seam 6 — relocate `ServerContext` out of `common` (**PD-013**), **break the latent cycle** (below), fold `cqrs_wiring` into `wiring/`, then unify the `ctx` pipeline; ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
+| next | Seam 6 — relocate `ServerContext` out of `common` → `runtimes/server/` (**PD-013**, architectural — cycle already gone); kills the 2 remaining `context→services` upward edges, ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
 
 *(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
 provider type from `app/host` is an upward edge; the composition root owning the provider list is the
 layering-correct design.)*
 
-**⚠ Latent import cycle (found in 0.48.5), for seam 6 to fix:**
-`services.definitions.service` → `common.runtimes.server.plans` → (`server/__init__` eagerly imports
-`server.app`) → `server.context.ServerContext` → `services.definitions` (partial). It only stays quiet
-because `app/host/cqrs_wiring.py` (which pulls the server chain) sorts *before* `app/host/services` and
-pre-loads it. That's why folding `cqrs_wiring` into `wiring/` (which sorts *after* `services`) is deferred
-to seam 6 — relocating `ServerContext` so `context` no longer imports `services` removes the cycle at its
-root, after which the move is safe and the ordering no longer matters.
+**✅ Latent import cycle (found in 0.48.5) — FIXED in 0.48.6.**
+`services.definitions.service` → `common.runtimes.server.plans` → (`server/__init__` eagerly imported
+`server.app`/`context`) → `ServerContext` → `services.definitions` (partial). It only stayed quiet because
+`cqrs_wiring` happened to sort before `services` and pre-load the chain. Fixed at the root by making the
+composition-root exports (`ServerApp`/`ServerContext`/`ServerWebhookBridge`) **lazy** in
+`common/runtimes/server/__init__` — importing server *infra* (`.plans`, `.middleware`) no longer pulls the
+service layer, order-independent. This de-risks the eventual `ServerContext` relocation (seam 6), which is
+now purely architectural (kill 2 upward edges + put the composition root in `runtimes`), not a cycle fix.
 
 **Invariant:** `host.execute`, `host.ask`, `host.start`, `host.shutdown`, `submit_flow`/`submit_process`/
 `provide_input`/`resume_process`/`invoke_resource`, the thin service accessors, and `run_host` keep

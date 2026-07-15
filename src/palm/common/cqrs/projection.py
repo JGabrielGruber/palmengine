@@ -5,7 +5,7 @@ To add a projection:
 
 1. Subclass :class:`Projection` in ``palm/common/cqrs/projections/``.
 2. Register it on the host :class:`~palm.common.cqrs.projection.ProjectionManager`.
-3. Expose read methods through a query handler in :mod:`palm.app.host.cqrs_wiring`.
+3. Expose read methods through a query handler in :mod:`palm.app.host.wiring.cqrs`.
 4. Subscribe to domain events via :meth:`ProjectionManager.attach` (done for each
    runtime and the host bus during :meth:`~palm.app.host.ApplicationHost.start`).
 """

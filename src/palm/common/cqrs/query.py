@@ -3,7 +3,7 @@ Query types — read-side requests served from projections or fallbacks.
 
 Add a query dataclass, a handler that reads one or more projections (or
 authoritative stores for snapshots), and register both on the host
-:class:`~palm.common.cqrs.bus.QueryBus` via :mod:`palm.app.host.cqrs_wiring`.
+:class:`~palm.common.cqrs.bus.QueryBus` via :mod:`palm.app.host.wiring.cqrs`.
 """
 
 from __future__ import annotations

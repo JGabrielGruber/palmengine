@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Self
 
 from palm.app.app import PalmApp
 from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
-from palm.app.host.cqrs_wiring import wire_command_bus, wire_query_bus
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
 from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
@@ -19,7 +18,12 @@ from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
 from palm.app.host.services import HostServiceContext, core_service_registry
-from palm.app.host.wiring import build_host_projections, register_host_projections
+from palm.app.host.wiring import (
+    build_host_projections,
+    register_host_projections,
+    wire_command_bus,
+    wire_query_bus,
+)
 from palm.app.host.workers import WorkerCoordinator
 from palm.app.host.workplane import WorkPlaneCoordinator
 from palm.app.settings import PalmSettings
