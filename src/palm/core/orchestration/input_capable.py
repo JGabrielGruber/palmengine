@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 from palm.core.context import BaseState
 
 if TYPE_CHECKING:
-    from palm.common.job_inspection import JobContext
     from palm.core.orchestration.job import Job
 
 
@@ -38,6 +37,10 @@ class JobInspectable(Protocol):
     knows this capability — each pattern owns the extraction of its own scopes,
     branches, prompts, and schemas. No pattern-specific branching lives in the
     shared inspector.
+
+    Returns a ``palm.common.job_inspection.JobContext``; annotated ``Any`` here
+    because ``core`` must not import ``common`` (guard_core). Concrete pattern
+    implementations narrow the return to ``JobContext``.
     """
 
-    def inspect_job(self, job: Job) -> JobContext: ...
+    def inspect_job(self, job: Job) -> Any: ...
