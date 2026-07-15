@@ -1,7 +1,7 @@
 """
 Transform rule registration helpers for patterns and extensions.
 
-Mirrors :mod:`palm.patterns._registry` — explicit ``register_transform(name, cls)``
+Mirrors :mod:`palm.common.patterns._registry` — explicit ``register_transform(name, cls)``
 at bootstrap time, with an optional decorator for class-based rules.
 """
 

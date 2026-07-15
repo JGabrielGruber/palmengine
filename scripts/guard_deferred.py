@@ -20,7 +20,7 @@ from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
 MAX_FUNCTION_LOCAL = 254  # ratcheted at 0.47.4 (application_host _wire_cqrs hoist); 287→267→254
-MAX_UPWARD = 35  # of those, imports into a strictly higher layer (cycle-forcing) — target 0
+MAX_UPWARD = 24  # ratcheted at 0.47.5 (registry reads repointed to common); was 35 — target 0
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {

@@ -16,7 +16,7 @@ from palm.common.cqrs.query import (
 def handle_inspect_instance(query: InspectInstanceQuery, ctx: Any) -> dict[str, Any] | None:
     """Resolve a rich instance view via pattern CQRS contributors, then fall back."""
     import palm.patterns  # noqa: F401 — ensure contributors are registered
-    from palm.patterns._registry import iter_cqrs_contributors
+    from palm.common.patterns._registry import iter_cqrs_contributors
 
     for contributor in iter_cqrs_contributors():
         status_query = contributor.instance_status_query

@@ -3,7 +3,7 @@ Sync orchestration jobs with durable ``ProcessInstance`` records.
 
 Generic snapshot and instance shell logic only. Pattern-specific field
 extraction and resume restoration register via
-:mod:`palm.patterns._registry` (e.g. wizard hooks in
+:mod:`palm.common.patterns._registry` (e.g. wizard hooks in
 ``palm.patterns.wizard.bindings.instances.persistence``).
 """
 
@@ -103,7 +103,7 @@ def prepare_resume_state(
 def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
     """Resolve optional step slug and runtime position via the pattern registry."""
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-    from palm.patterns._registry import get_instance_fields
+    from palm.common.patterns._registry import get_instance_fields
 
     fields_fn = get_instance_fields(pattern)
     if fields_fn is None:
@@ -116,6 +116,6 @@ ResumeHandler = Callable[[ProcessInstance, Any, BlackboardState], BlackboardStat
 
 def _resume_handler(pattern: str) -> ResumeHandler | None:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-    from palm.patterns._registry import get_resume_handler
+    from palm.common.patterns._registry import get_resume_handler
 
     return get_resume_handler(pattern)

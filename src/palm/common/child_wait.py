@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
+from palm.common.patterns._registry import ChildWaitHooks, get_child_wait_hooks
 from palm.core.orchestration import Job
-from palm.patterns._registry import ChildWaitHooks, get_child_wait_hooks
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -24,7 +24,7 @@ def _child_wait_hooks(job: Job) -> ChildWaitHooks:
 
 def bound_runtime() -> Any | None:
     """Return the in-process runtime used for compositional palm invokes."""
-    from palm.providers._registry import get_bound_runtime
+    from palm.common.providers._registry import get_bound_runtime
 
     return get_bound_runtime()
 

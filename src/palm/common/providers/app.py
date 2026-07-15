@@ -26,7 +26,7 @@ class ProviderApp(ABC):
 
     def register(self) -> None:
         """Register this app and invoke :meth:`ready` once."""
-        from palm.providers._registry import register_provider_app
+        from palm.common.providers._registry import register_provider_app
 
         register_provider_app(self)
         self.ready()

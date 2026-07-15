@@ -25,7 +25,7 @@ class PatternApp(ABC):
 
     def register(self) -> None:
         """Register this app and invoke :meth:`ready` once."""
-        from palm.patterns._registry import register_pattern_app
+        from palm.common.patterns._registry import register_pattern_app
 
         register_pattern_app(self)
         self.ready()

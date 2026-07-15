@@ -1,7 +1,7 @@
 """
 Interactive runtime helpers — resolve instances, deliver input, and request backtrack.
 
-Dispatches pattern-specific logic through :mod:`palm.patterns._registry` so this
+Dispatches pattern-specific logic through :mod:`palm.common.patterns._registry` so this
 module stays free of pattern-package imports.
 """
 
@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING, Any
 
 import palm.patterns  # noqa: F401 — ensure pattern bridge hooks are registered
 from palm.common.exceptions import InstanceNotFoundError
+from palm.common.patterns._registry import InteractiveRuntimeHooks, get_interactive_runtime
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns._registry import InteractiveRuntimeHooks, get_interactive_runtime
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime

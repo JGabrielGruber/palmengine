@@ -8,12 +8,12 @@ from __future__ import annotations
 
 import palm.patterns  # noqa: F401 — autoload installed pattern apps
 from palm.common.exceptions import DefinitionBuildError
+from palm.common.patterns._registry import get_builder
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.core.behavior_tree import BasePattern
 from palm.core.event import EventEngine
 from palm.core.registry import pattern_registry
 from palm.definitions.flow import FlowDefinition
-from palm.patterns._registry import get_builder
 
 __all__ = ["build_pattern"]
 

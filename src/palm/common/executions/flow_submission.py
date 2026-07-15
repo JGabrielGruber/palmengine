@@ -2,7 +2,7 @@
 Flow submission preparation — definitions to orchestration-ready payloads.
 
 Pattern-specific metadata enrichment registers via
-:mod:`palm.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.bindings.instances.submission``).
+:mod:`palm.common.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.bindings.instances.submission``).
 """
 
 from __future__ import annotations
@@ -118,7 +118,7 @@ def prepare_resume_submission(
 
 def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
     import palm.patterns  # noqa: F401 — register pattern extension hooks
-    from palm.patterns._registry import get_submission_metadata
+    from palm.common.patterns._registry import get_submission_metadata
 
     enricher = get_submission_metadata(flow.pattern)
     if enricher is None:

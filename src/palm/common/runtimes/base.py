@@ -199,7 +199,7 @@ class BaseRuntime:
         self.orchestration.start()
         self._started = True
 
-        from palm.providers._registry import get_runtime_binding
+        from palm.common.providers._registry import get_runtime_binding
 
         bind_runtime = get_runtime_binding()
         if bind_runtime is not None:
@@ -210,7 +210,7 @@ class BaseRuntime:
         if not self._started:
             return
 
-        from palm.providers._registry import get_runtime_unbinding
+        from palm.common.providers._registry import get_runtime_unbinding
 
         unbind_runtime = get_runtime_unbinding()
         if unbind_runtime is not None:

@@ -37,10 +37,10 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
+from palm.common.patterns._registry import iter_cqrs_contributors
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns._registry import iter_cqrs_contributors
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
