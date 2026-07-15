@@ -232,3 +232,7 @@ archive/
 data/*
 !data/
 !data/.gitkeep
+
+# NeonRoot local CI vault — hot/cold storage + built image tarballs.
+# The tracked source of the image is ci/Containerfile; the vault itself is local.
+.neonroot/

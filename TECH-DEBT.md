@@ -240,7 +240,7 @@ tracker** — flip items as they close. Order follows the dependency roots above
 Exact minor numbers beyond 0.46 are assigned when each theme starts. Security / one-line quick-wins may land
 early regardless of theme.
 
-**Closed:** PD-028 (0.46.1 — CVE bump) · **PD-002, PD-003** (0.46.2 — full test suite green, 22→0; +2 latent prod bugs fixed: session_input 404, non-wizard inspect guard) · **PD-004** (0.46.3 — ruff lint gate green).
+**Closed:** PD-028 (0.46.1 — CVE bump) · **PD-002, PD-003** (0.46.2 — full test suite green, 22→0; +2 latent prod bugs fixed: session_input 404, non-wizard inspect guard) · **PD-004** (0.46.3 — ruff lint gate green) · **PD-001, PD-006, PD-007** (0.46.4 — CI gate via NeonRoot hermetic sandbox `just ci-sandbox`, pre-commit hooks, audit dep group; ADR-016; mypy stays report-only pending T2).
 
 ---
 

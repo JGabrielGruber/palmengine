@@ -1,0 +1,25 @@
+# Fast local gate, installed by `just setup` (`pre-commit install`).
+# Runs on `git commit` over STAGED files only — the full suite runs in CI
+# (`just ci` / `just ci-sandbox`), never here. Uses the project's pinned tools
+# via `uv run`, so hook and project versions never drift (PD-006).
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (lint, autofix)
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: guard-core
+        name: core purity guard (palm/core imports nothing outward)
+        entry: uv run python scripts/guard_core.py
+        language: system
+        pass_filenames: false
+        files: ^src/palm/core/.*\.py$

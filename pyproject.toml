@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.46.3"
+version = "0.46.4"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -48,6 +48,16 @@ dev = [
     "ruff>=0.4,<0.5",
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
+]
+# Audit toolchain — used by `just audit` / `just complexity` / `just refactor`
+# (previously referenced but undeclared, so those recipes failed on a fresh checkout — PD-007).
+audit = [
+    "vulture>=2.11",
+    "radon>=6.0",
+    "xenon>=0.9",
+    "bandit>=1.7",
+    "pip-audit>=2.7",
+    "autoflake>=2.3",
 ]
 
 [project.optional-dependencies]

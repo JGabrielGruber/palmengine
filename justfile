@@ -10,6 +10,7 @@ set export
 package := "palmengine"
 dist_dir := "dist"
 palm_data_dir := env_var_or_default('PALM_DATA_DIR', 'data')
+ci_flags := "--extra cli --extra mcp --group dev"
 
 # Default: show help
 default:
@@ -237,6 +238,38 @@ release-prep:
 # -----------------------------------------------------------------------------
 prepr: full-check
     @echo "🎉 Palm quality gates passed — ready for release review!"
+
+# -----------------------------------------------------------------------------
+# 8a. CI gate (PD-001) — runs the full green suite; mypy is report-only (PD-005/T2)
+# -----------------------------------------------------------------------------
+# The canonical CI check. Runs WITH cli+mcp extras (matches the green baseline).
+ci:
+    uv run {{ci_flags}} ruff check src/palm/ tests/ examples/
+    uv run {{ci_flags}} python scripts/guard_core.py
+    uv run {{ci_flags}} pytest -q
+    @echo "── mypy (report-only, non-blocking — see TECH-DEBT PD-005 / T2) ──"
+    uv run {{ci_flags}} mypy src/palm/ || echo "⚠  mypy not clean yet (report-only)"
+
+# Build/refresh the local NeonRoot palm-ci image from ci/Containerfile (one-time / on tool bumps).
+ci-image:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p .neonroot
+    neonroot vault add palm-ci "$PWD/.neonroot" 2>/dev/null || true
+    neonroot image create palm-ci --template minimal --vault palm-ci 2>/dev/null || true
+    cp ci/Containerfile .neonroot/images/palm-ci/Containerfile
+    neonroot image build palm-ci --vault palm-ci
+    echo "✅ palm-ci image built — now run: just ci-sandbox"
+
+# Hermetic CI in a NeonRoot sandbox — seeds ONLY git-tracked files (no stale data/ or .venv).
+ci-sandbox:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    seed="$(mktemp -d)"
+    trap 'rm -rf "$seed"' EXIT
+    git archive HEAD | tar -x -C "$seed"
+    neonroot spawn palm-ci-run --image palm-ci --vault palm-ci --sandbox --seed "$seed" -- just ci
+    echo "✅ hermetic CI passed in a NeonRoot sandbox"
 
 clean: clean-dist
     @mkdir -p {{palm_data_dir}}

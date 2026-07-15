@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.4 — CI gate: sovereign hermetic checks via NeonRoot (T1)
+Closes **PD-001** (no CI gate), **PD-006** (pre-commit), **PD-007** (audit deps undeclared). See [ADR-016](docs/adr/016-ci-gate.md).
+- **`just ci`** — the gate: `ruff check` + `guard_core.py` + the full suite (`pytest -q` with `--extra cli --extra mcp --group dev`, incl. MCP tests) all **blocking**; **`mypy` report-only** (379 errors ride the T2 refactor — PD-005).
+- **`just ci-sandbox`** — runs `just ci` in a throwaway NeonRoot `palm-ci` container seeded from `git archive HEAD` (**git-tracked files only** — no stale `data/`/`.venv`). Sovereign, offline, hermetic. `ci/Containerfile` (Arch + git + just + uv, `UV_PYTHON=3.12`) is the tracked image source; `just ci-image` builds it; the `.neonroot/` vault is git-ignored.
+- **`.pre-commit-config.yaml`** — ruff check/format + core-purity guard on staged files, via the project's pinned tools (`uv run`).
+- **`[dependency-groups] audit`** — pins vulture/radon/xenon/bandit/pip-audit/autoflake so `just audit`/`complexity`/`refactor` run on a fresh checkout.
+
 ### 0.46.3 — Lint gate green (T1)
 `ruff check src/palm tests examples` now passes (was ~133 findings). Closes **PD-004**.
 - Auto-fixed I001/F401/RUF100/UP035/UP038/B010/B905/F541/UP041 across ~90 files (import sorting, unused imports, modernizations).

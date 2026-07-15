@@ -1,0 +1,17 @@
+# palm CI image (NeonRoot) — hermetic check runner.
+#
+# Arch base + git + just + uv. uv provisions the Python interpreter at run time
+# (UV_PYTHON below), so the image stays small and every run resolves deps the
+# same way. This file is the source of truth; `just ci-image` copies it into the
+# local `.neonroot` vault and builds it. Rebuild after changing tool versions.
+FROM docker.io/library/archlinux:latest
+
+RUN pacman -Syu --noconfirm --needed git just uv ca-certificates && \
+    pacman -Scc --noconfirm
+
+# Pin the interpreter uv provisions at run time — 3.12 has wheels for all deps
+# (palm requires >=3.11; avoids source-building pydantic-core on a rolling python).
+ENV UV_PYTHON=3.12
+
+WORKDIR /workspace
+CMD ["/bin/bash"]
