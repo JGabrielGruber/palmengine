@@ -63,7 +63,7 @@ package re-exports its public surface from `__init__`.
 ## Slices (feature-per-patch; public API frozen)
 
 Executed by **impact ÷ blast-radius**, not the seam numbers — front-load the low-risk extractions. Each
-lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC tracked: **1164 → 671** so far.
+lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC tracked: **1164 → 663** so far.
 
 | Patch | Scope | Status | MIGRATION? |
 |---|---|---|---|
@@ -72,13 +72,21 @@ lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC track
 | **0.48.2** | Seam 1 — `app/host/services/` — 6 core services build via a dependency-ordered `HostServiceRegistry` (1040→985) | ✅ | no |
 | **0.48.3** | Seam 4 — `app/host/workplane/` — `WorkPlaneCoordinator` (work-drain/inbound/journal wiring + ops) + folds in the flat `inbound_service`/`work_drain_service` (985→816) | ✅ | no |
 | **0.48.4** | Seam 5 — `app/host/lifecycle/` — `RuntimeSpawner` (spawn runtimes) + `RecoveryCoordinator` (worker readiness, compensation, outbox/webhook, projection rebuild) (816→671) | ✅ | no |
+| **0.48.5** | Seam 2a — `app/host/wiring/` — projection build+register extracted to root-agnostic `build_host_projections`/`register_host_projections` (671→663) | ✅ | no |
 | next | **Dead-accessor removal** — careful cross-codebase zero-consumer proof (vulture over-flags public API), then remove | — | **yes** |
-| next | Seam 2 — `_wire_cqrs` projection + CQRS-contributor unification → a root-agnostic `ctx` pipeline driver | — | no |
-| next | Seam 6 — relocate `ServerContext` onto that pipeline, out of `common` (**PD-013**); ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
+| next | Seam 6 — relocate `ServerContext` out of `common` (**PD-013**), **break the latent cycle** (below), fold `cqrs_wiring` into `wiring/`, then unify the `ctx` pipeline; ratchet `MAX_UPWARD` ≤3 | — | **yes** (import path) |
 
 *(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
 provider type from `app/host` is an upward edge; the composition root owning the provider list is the
 layering-correct design.)*
+
+**⚠ Latent import cycle (found in 0.48.5), for seam 6 to fix:**
+`services.definitions.service` → `common.runtimes.server.plans` → (`server/__init__` eagerly imports
+`server.app`) → `server.context.ServerContext` → `services.definitions` (partial). It only stays quiet
+because `app/host/cqrs_wiring.py` (which pulls the server chain) sorts *before* `app/host/services` and
+pre-loads it. That's why folding `cqrs_wiring` into `wiring/` (which sorts *after* `services`) is deferred
+to seam 6 — relocating `ServerContext` so `context` no longer imports `services` removes the cycle at its
+root, after which the move is safe and the ordering no longer matters.
 
 **Invariant:** `host.execute`, `host.ask`, `host.start`, `host.shutdown`, `submit_flow`/`submit_process`/
 `provide_input`/`resume_process`/`invoke_resource`, the thin service accessors, and `run_host` keep

@@ -19,6 +19,7 @@ from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import HostProfile
 from palm.app.host.router import RuntimeRouter
 from palm.app.host.services import HostServiceContext, core_service_registry
+from palm.app.host.wiring import build_host_projections, register_host_projections
 from palm.app.host.workers import WorkerCoordinator
 from palm.app.host.workplane import WorkPlaneCoordinator
 from palm.app.settings import PalmSettings
@@ -55,7 +56,6 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.events.external import WebhookDispatcher
-from palm.common.patterns._registry import get_projection_factory, registered_projection_factories
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.patterns.wizard.bindings.cqrs.projection import (
@@ -526,24 +526,12 @@ class ApplicationHost:
         return self._app.runtime(resolved)
 
     def _wire_cqrs(self) -> None:
-        import palm.patterns  # noqa: F401 — ensure pattern projection factories are registered
-
-        self._instance_projection = InstanceIndexProjection(
-            self._app.storage,
-            self._app.instance_manager,
-        )
-        self._resource_projection = ResourceInvocationProjection(self._app.storage)
-        self._job_board_projection = JobStatusBoardProjection(self._app.storage)
-        self._pattern_projections = {}
-        for pattern_name in registered_projection_factories():
-            factory = get_projection_factory(pattern_name)
-            if factory is not None:
-                self._pattern_projections[pattern_name] = factory(self._app.storage)
-        self._projection_manager.register(self._instance_projection)
-        for projection in self._pattern_projections.values():
-            self._projection_manager.register(projection)
-        self._projection_manager.register(self._resource_projection)
-        self._projection_manager.register(self._job_board_projection)
+        projections = build_host_projections(self._app.storage, self._app.instance_manager)
+        register_host_projections(self._projection_manager, projections)
+        self._instance_projection = projections.instance
+        self._resource_projection = projections.resource
+        self._job_board_projection = projections.job_board
+        self._pattern_projections = projections.patterns
         wire_command_bus(self._command_bus, self._app, self._router)
         wire_query_bus(
             self._query_bus,
