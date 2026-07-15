@@ -246,7 +246,7 @@ prepr: full-check
 ci:
     uv run {{ci_flags}} ruff check src/palm/ tests/ examples/
     uv run {{ci_flags}} python scripts/guard_core.py
-    uv run {{ci_flags}} pytest -q
+    uv run {{ci_flags}} pytest -q --cov=src/palm --cov-report=term
     @echo "── mypy (report-only, non-blocking — see TECH-DEBT PD-005 / T2) ──"
     uv run {{ci_flags}} mypy src/palm/ || echo "⚠  mypy not clean yet (report-only)"
 

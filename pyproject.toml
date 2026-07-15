@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "palmengine"
-version = "0.46.4"
+version = "0.46.5"
 description = "Palm Engine — lightweight orchestration for multi-step transactional workflows"
 readme = "README.md"
 license = {text = "MIT"}
@@ -45,6 +45,7 @@ dev = [
     "pytest>=9.0.3,<10.0",
     "pytest-asyncio>=0.26,<2.0",
     "pytest-xdist>=3.6,<4.0",
+    "pytest-cov>=5.0,<6.0",
     "ruff>=0.4,<0.5",
     "mypy>=1.10,<2.0",
     "pre-commit>=3.7,<4.0",
@@ -163,6 +164,15 @@ markers = [
     "slow: multi-session, filesystem, or full CLI bootstrap (skip with --fast)",
     "integration: host/CQRS path needing full recovery wiring",
 ]
+
+[tool.coverage.run]
+source = ["src/palm"]
+
+[tool.coverage.report]
+# CI coverage floor (PD-008) — set just below the ~80% green-suite baseline so
+# `just ci` fails on a regression without being brittle. Raise it as coverage climbs.
+fail_under = 78
+skip_covered = true
 
 [tool.palm]
 default_session_ttl = 3600

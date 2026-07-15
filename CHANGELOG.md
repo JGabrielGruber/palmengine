@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.46.5 — Coverage floor (T1 complete)
+Closes **PD-008** — the last T1 item. The safety net is now in place: green suite + green lint + CI-enforced + coverage-gated.
+- `just ci` runs the suite with `--cov=src/palm`; `[tool.coverage.report] fail_under = 78` gates against regression (current **80.33%**). `pytest-cov` added to the `dev` group.
+
 ### 0.46.4 — CI gate: sovereign hermetic checks via NeonRoot (T1)
 Closes **PD-001** (no CI gate), **PD-006** (pre-commit), **PD-007** (audit deps undeclared). See [ADR-016](docs/adr/016-ci-gate.md).
 - **`just ci`** — the gate: `ruff check` + `guard_core.py` + the full suite (`pytest -q` with `--extra cli --extra mcp --group dev`, incl. MCP tests) all **blocking**; **`mypy` report-only** (379 errors ride the T2 refactor — PD-005).

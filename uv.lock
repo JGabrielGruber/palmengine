@@ -1234,7 +1234,7 @@ wheels = [
 
 [[package]]
 name = "palmengine"
-version = "0.46.4"
+version = "0.46.5"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -1284,6 +1284,7 @@ dev = [
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
 ]
@@ -1326,6 +1327,7 @@ dev = [
     { name = "pre-commit", specifier = ">=3.7,<4.0" },
     { name = "pytest", specifier = ">=9.0.3,<10.0" },
     { name = "pytest-asyncio", specifier = ">=0.26,<2.0" },
+    { name = "pytest-cov", specifier = ">=5.0,<6.0" },
     { name = "pytest-xdist", specifier = ">=3.6,<4.0" },
     { name = "ruff", specifier = ">=0.4,<0.5" },
 ]

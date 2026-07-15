@@ -229,7 +229,7 @@ tracker** — flip items as they close. Order follows the dependency roots above
 
 | Minor | Theme | Status | Notes |
 |---|---|---|---|
-| **0.46** | **T1 — Safety net (green suite + CI)** | 🔜 planned · [VISION-0.46](docs/VISION-0.46.md) | Dependency root; must land first. Slices PD-001/002/003/004/005/006/007/008 + PD-028 |
+| **0.46** | **T1 — Safety net (green suite + CI)** | ✅ done · [VISION-0.46](docs/VISION-0.46.md) | Dependency root, landed 0.46.0–0.46.5. Green suite + lint + hermetic CI + coverage floor |
 | next | T3 — deferred-import / cycle cleanup | queued | Precedes T2 (PD-009 depends-on PD-012) |
 | next | T2 — ApplicationHost decomposition | queued | After T3 |
 | next | T5 — observability unification | queued | Likely breaks API → `MIGRATION` doc |
@@ -240,7 +240,7 @@ tracker** — flip items as they close. Order follows the dependency roots above
 Exact minor numbers beyond 0.46 are assigned when each theme starts. Security / one-line quick-wins may land
 early regardless of theme.
 
-**Closed:** PD-028 (0.46.1 — CVE bump) · **PD-002, PD-003** (0.46.2 — full test suite green, 22→0; +2 latent prod bugs fixed: session_input 404, non-wizard inspect guard) · **PD-004** (0.46.3 — ruff lint gate green) · **PD-001, PD-006, PD-007** (0.46.4 — CI gate via NeonRoot hermetic sandbox `just ci-sandbox`, pre-commit hooks, audit dep group; ADR-016; mypy stays report-only pending T2).
+**Closed:** PD-028 (0.46.1 — CVE bump) · **PD-002, PD-003** (0.46.2 — full test suite green, 22→0; +2 latent prod bugs fixed: session_input 404, non-wizard inspect guard) · **PD-004** (0.46.3 — ruff lint gate green) · **PD-001, PD-006, PD-007** (0.46.4 — CI gate via NeonRoot hermetic sandbox `just ci-sandbox`, pre-commit hooks, audit dep group; ADR-016; mypy stays report-only pending T2) · **PD-008** (0.46.5 — coverage floor `fail_under=78`, current 80.33%). **T1 complete.**
 
 ---
 
