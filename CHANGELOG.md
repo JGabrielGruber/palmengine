@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.43.1 — Fix server startup circular import (0.42.3 regression)
+- Move RFC6455 WebSocket frame codec to ``palm.common.websocket.frames``
+- ``PalmEventsWebSocketClient`` no longer imports ``palm.runtimes.server`` at provider autoload
+- Server shim re-exports ``palm.runtimes.server.surfaces.websocket.frames`` for compatibility
+
 ### 0.43 — Inbound as a Resource capability
 - **`metadata.inbound`** on `ResourceDefinition` (no separate definition kind)
 - `parse_inbound_spec` · `InboundBindingService` (webhook + palm stream)

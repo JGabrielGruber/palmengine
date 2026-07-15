@@ -15,7 +15,7 @@ import time
 from typing import Any, Callable, Iterator
 from urllib.parse import urlparse
 
-from palm.runtimes.server.surfaces.websocket.frames import (
+from palm.common.websocket.frames import (
     OP_CLOSE,
     OP_PING,
     OP_PONG,
