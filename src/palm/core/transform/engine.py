@@ -183,8 +183,9 @@ class TransformEngine(BasePalmEngine):
                 f"Source key {source_key!r} is missing or null",
             )
 
-        result = self.apply_auto(name, raw, state=state, **options)
         destination = target_key or source_key
+        rule_options = {**options, "_target_key": destination}
+        result = self.apply_auto(name, raw, state=state, **rule_options)
         writes: list[tuple[str, Any]] = [(destination, result.value)]
         self.write_state_value(
             state,
@@ -228,14 +229,15 @@ class TransformEngine(BasePalmEngine):
                 f"Source key {source_key!r} is missing or null",
             )
 
+        destination = target_key or source_key
+        chain_options = {**shared_options, "_target_key": destination}
         result = self.apply_chain(
             names,
             raw,
             state=state,
             options_by_rule=options_by_rule,
-            **shared_options,
+            **chain_options,
         )
-        destination = target_key or source_key
         writes: list[tuple[str, Any]] = [(destination, result.value)]
         self.write_state_value(
             state,

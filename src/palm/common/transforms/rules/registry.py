@@ -18,7 +18,9 @@ from palm.common.transforms.rules.json_load import JsonLoadRule
 from palm.common.transforms.rules.jsonpath_extract import JsonpathExtractRule
 from palm.common.transforms.rules.jsonpath_set import JsonpathSetRule
 from palm.common.transforms.rules.lookup import LookupRule
+from palm.common.transforms.rules.append_item import AppendItemRule
 from palm.common.transforms.rules.map_fields import MapFieldsRule
+from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.common.transforms.rules.parquet_load import ParquetLoadRule
 from palm.common.transforms.rules.rename_field import RenameFieldRule
 from palm.common.transforms.rules.string_format import StringFormatRule
@@ -32,6 +34,8 @@ def register_builtin_rules() -> None:
     """Register built-in common rules (idempotent via ``transform_registry``)."""
     register_transform("rename_field", RenameFieldRule)
     register_transform("map_fields", MapFieldsRule)
+    register_transform("append_item", AppendItemRule)
+    register_transform("put_resource", PutResourceRule)
     register_transform("filter_items", FilterItemsRule)
     register_transform("count_by", CountByRule)
     register_transform("callable", CallableRule)
