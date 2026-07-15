@@ -486,7 +486,8 @@ just mcp-inspector                       # MCP Inspector UI
 | 0.41 | Durable dashboards; schedule/cron; design dashboard optional | ✅ foundation |
 | 0.42 | Event stream + journal wait + provider WS client | ✅ foundation |
 | 0.43 | **Inbound resources** (`metadata.inbound` → WorkIntent) | ✅ foundation |
-| 0.44+ | Mesh authz, multi-worker fan-out, poll inbound polish | ⬜ Later |
+| 0.44 | Inbound **store inbox**, **poll** mode, WS stream transport | ✅ 0.44.0 |
+| 0.45+ | Mesh authz, multi-worker fan-out | ⬜ Later |
 
 **Priority reminder:** P0 invoke/wait/resources · P1 journal+WorkIntent dogfood · P2 realtime WS for humans **and** provider.
 

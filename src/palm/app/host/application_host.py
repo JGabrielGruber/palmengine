@@ -801,11 +801,24 @@ class ApplicationHost:
         def _enqueue(intent: Any) -> str:
             return self._work_drain.enqueue(intent)
 
+        def _invoke(
+            resource_ref: str,
+            *,
+            action: str | None = None,
+            params: dict[str, Any] | None = None,
+        ) -> Any:
+            return self.invoke_resource(
+                resource_ref,
+                action=action,
+                params=params,
+            )
+
         self._inbound = InboundBindingService(
             enqueue=_enqueue,
             event_engine=self._event,
             list_resources=_list,
             get_resource=_get,
+            invoke_resource=_invoke,
         )
         self.reload_inbound_bindings()
 
@@ -840,7 +853,7 @@ class ApplicationHost:
             return 0
         try:
             n = int(self._inbound.reload_from_definitions() or 0)
-            self._inbound.start_streams()
+            self._inbound.start_workers()
             return n
         except Exception:
             return 0

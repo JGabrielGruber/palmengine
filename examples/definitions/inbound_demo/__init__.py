@@ -13,7 +13,11 @@ def register_definitions(repository: object) -> None:
     publish_resource = getattr(repository, "publish_resource_revision", None)
     publish_flow = getattr(repository, "publish_flow_revision", None)
 
-    for res in (resources.INBOUND_WEBHOOK_DEMO, resources.ORIGIN_EVENTS_INBOUND):
+    for res in (
+        resources.INBOUND_INBOX,
+        resources.INBOUND_WEBHOOK_DEMO,
+        resources.ORIGIN_EVENTS_INBOUND,
+    ):
         if callable(publish_resource):
             publish_resource(res)
         elif callable(save_resource):

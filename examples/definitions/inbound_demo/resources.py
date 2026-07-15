@@ -7,6 +7,19 @@ import os
 from palm.definitions import ResourceDefinition
 
 
+INBOUND_INBOX = ResourceDefinition(
+    id="resource-inbound-inbox",
+    name="inbound-inbox",
+    provider="kv",
+    action="put",
+    resource_id="inbound/inbox",
+    params={"namespace": "palm", "backend": "auto"},
+    metadata={
+        "description": "Durable inbox for inbound webhook envelopes (0.44 store_resource)",
+        "tags": ["inbound", "inbox", "kv"],
+    },
+)
+
 INBOUND_WEBHOOK_DEMO = ResourceDefinition(
     id="resource-inbound-webhook-demo",
     name="inbound-webhook-demo",
@@ -23,6 +36,8 @@ INBOUND_WEBHOOK_DEMO = ResourceDefinition(
             "path": "inbound-webhook-demo",
             "secret_header": "X-Palm-Inbound-Secret",
             "secret_param": "inbound_secret",
+            "store_resource": "inbound-inbox",
+            "store_action": "put",
             "work": {"kind": "run_flow", "flow_id": "on-inbound-webhook"},
             "coalesce_field": "id",
             "debounce_seconds": 0,
@@ -57,4 +72,4 @@ def _origin_events() -> ResourceDefinition:
 
 ORIGIN_EVENTS_INBOUND = _origin_events()
 
-__all__ = ["INBOUND_WEBHOOK_DEMO", "ORIGIN_EVENTS_INBOUND"]
+__all__ = ["INBOUND_INBOX", "INBOUND_WEBHOOK_DEMO", "ORIGIN_EVENTS_INBOUND"]

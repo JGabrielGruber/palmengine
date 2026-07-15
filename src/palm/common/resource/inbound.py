@@ -64,8 +64,8 @@ class InboundSpec:
     coalesce_key: str | None = None
     coalesce_field: str | None = None
     debounce_seconds: float = 0.0
-    store_action: str | None = None
-    store_resource: str | None = None
+    store_action: str | None = None  # action on store_resource (default: resource action or put)
+    store_resource: str | None = None  # inbox resource — persist envelope before WorkIntent (0.44)
     event_types: tuple[str, ...] = ()
     unknown_keys: tuple[str, ...] = ()
 

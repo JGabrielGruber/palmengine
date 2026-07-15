@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.44.0 — Inbound store inbox, poll mode, WS stream
+- Wire ``store_resource`` / ``store_action`` — persist envelope via resource invoke before WorkIntent
+- ``mode=poll`` background worker (HTTP GET ``url`` or pull-invoke listening resource)
+- Stream prefers WebSocket transport; HTTP journal poll fallback
+- ``inbound_demo`` pack adds ``inbound-inbox`` resource; Vision: [VISION-0.44](docs/VISION-0.44.md)
+
 ### 0.43.1 — Fix server startup circular import (0.42.3 regression)
 - Move RFC6455 WebSocket frame codec to ``palm.common.websocket.frames``
 - ``PalmEventsWebSocketClient`` no longer imports ``palm.runtimes.server`` at provider autoload

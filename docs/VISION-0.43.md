@@ -27,6 +27,7 @@ signal (webhook | stream | poll)
 | `secret_param` / `secret_header` | Optional shared secret from `params` |
 | `event_types` | Stream filter |
 | `coalesce_field` / `debounce_seconds` | Storm control |
+| `store_resource` / `store_action` | Inbox persist before WorkIntent — see [VISION-0.44](VISION-0.44.md) |
 
 ## Surfaces
 
