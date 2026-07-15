@@ -34,6 +34,7 @@ class InboundWork:
     kind: str = "run_flow"
     flow_id: str = ""
     process_id: str = ""
+    seed_state: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         out: dict[str, Any] = {"kind": self.kind}
@@ -41,6 +42,8 @@ class InboundWork:
             out["flow_id"] = self.flow_id
         if self.process_id:
             out["process_id"] = self.process_id
+        if self.seed_state:
+            out["seed_state"] = dict(self.seed_state)
         return out
 
     @property
@@ -183,10 +186,37 @@ def _work(raw: Any, *, strict: bool) -> InboundWork:
     kind = str(raw.get("kind") or "run_flow").strip() or "run_flow"
     flow_id = str(raw.get("flow_id") or raw.get("target") or "").strip()
     process_id = str(raw.get("process_id") or "").strip()
+    seed_state = _seed_state_map(raw.get("seed_state"), strict=strict)
     if kind == "run_process" and not process_id and flow_id:
         process_id = flow_id
         flow_id = ""
-    return InboundWork(kind=kind, flow_id=flow_id, process_id=process_id)
+    return InboundWork(
+        kind=kind,
+        flow_id=flow_id,
+        process_id=process_id,
+        seed_state=seed_state,
+    )
+
+
+def _seed_state_map(raw: Any, *, strict: bool) -> dict[str, str]:
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        if strict:
+            raise ValueError("metadata.inbound.work.seed_state must be an object")
+        return {}
+    out: dict[str, str] = {}
+    for key, value in raw.items():
+        if not isinstance(key, str):
+            if strict:
+                raise ValueError("metadata.inbound.work.seed_state keys must be strings")
+            continue
+        if value is None:
+            continue
+        path = str(value).strip()
+        if path:
+            out[key] = path
+    return out
 
 
 def _mode(raw: Any, *, strict: bool) -> InboundMode:

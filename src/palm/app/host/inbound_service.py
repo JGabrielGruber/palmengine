@@ -477,15 +477,22 @@ class InboundBindingService:
 
         kind = spec.work.kind if spec.work.kind in ("run_flow", "run_process") else "run_flow"
         target = spec.work.target
+        payload: dict[str, Any] = {
+            "inbound_resource": binding.resource_name,
+            "inbound": envelope,
+            "source": source,
+            **store_meta,
+        }
+        if spec.work.seed_state:
+            from palm.common.work.seed_state import resolve_seed_state
+
+            seeded = resolve_seed_state(spec.work.seed_state, payload)
+            if seeded:
+                payload["_seed_state"] = seeded
         intent = WorkIntent(
             kind=kind,
             target=target,
-            payload={
-                "inbound_resource": binding.resource_name,
-                "inbound": envelope,
-                "source": source,
-                **store_meta,
-            },
+            payload=payload,
             coalesce_key=coalesce,
         )
         intent_id = self._enqueue(intent)

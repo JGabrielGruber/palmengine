@@ -767,10 +767,15 @@ class ApplicationHost:
         from palm.app.host.work_drain_service import WorkDrainService
 
         def _submit(flow_id: str, payload: dict[str, Any]) -> Any:
-            # Non-interactive start; wait for idle when possible
-            return self._execution.flows.run_wizard(
-                {"flow_name": flow_id, "metadata": dict(payload or {})}
-            )
+            body = dict(payload or {})
+            seed = body.pop("_seed_state", None)
+            submit_body: dict[str, Any] = {
+                "flow_name": flow_id,
+                "metadata": body,
+            }
+            if seed is not None:
+                submit_body["state"] = seed
+            return self._execution.flows.run_wizard(submit_body)
 
         settings = self.settings
         self._work_drain = WorkDrainService(
