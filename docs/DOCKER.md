@@ -2,7 +2,7 @@
 
 Run Palm as a **long-lived host server** with filesystem storage, Explorer UI, REST API, and optional HTTP MCP — without installing Python on the host.
 
-**Version:** 0.46.5 · **Compose file:** [`docker-compose.yml`](../docker-compose.yml) · **Image:** [`Dockerfile`](../Dockerfile)
+**Version:** 0.47.0 · **Compose file:** [`docker-compose.yml`](../docker-compose.yml) · **Image:** [`Dockerfile`](../Dockerfile)
 
 ---
 

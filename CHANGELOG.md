@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.47.0 — Open T3: import-cycle cleanup (plan)
+Opens the 0.47 minor (theme **T3**, the dependency root for the T2 `ApplicationHost` decomposition).
+- `docs/VISION-0.47.md` — de-cycling plan. **AST-verified reframing:** the audit's "595 deferred imports" = **310 `TYPE_CHECKING`** (the correct pattern, not debt) + **287 runtime**, of which only **~35 are upward/cycle-forcing** across ~8 seams. Slices `0.47.1`–`0.47.8`, driving upward function-local imports 35 → 0.
+- `docs/VISION-0.48.md` — forward plan for T2 (`ApplicationHost` → 5 composition seams, < 350 LOC), which 0.47 unblocks.
+- `TECH-DEBT.md` — PD-012 metric corrected; roadmap → 0.47 / 0.48.
+
 ### 0.46.5 — Coverage floor (T1 complete)
 Closes **PD-008** — the last T1 item. The safety net is now in place: green suite + green lint + CI-enforced + coverage-gated.
 - `just ci` runs the suite with `--cov=src/palm`; `[tool.coverage.report] fail_under = 78` gates against regression (current **80.33%**). `pytest-cov` added to the `dev` group.

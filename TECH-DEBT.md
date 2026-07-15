@@ -68,7 +68,7 @@ Effort XS/S/M/L/XL. Conf = confidence. Full evidence in the per-item blocks belo
 | PD-003 | Test doubles drift from prod signatures | T1 | test-coverage | S2 | layer | S | 8 | confirmed |
 | PD-018 | Three overlapping observability APIs + magic-string buses | T5 | architecture | S2 | layer | M | 5 | confirmed |
 | PD-009 | `ApplicationHost` god-object (1170 LOC / 89 methods) | T2 | architecture | S1 | systemic | XL | 4 | confirmed |
-| PD-012 | 595 deferred imports masking circular deps | T3 | architecture | S2 | systemic | L | 4 | confirmed |
+| PD-012 | ~35 upward import cycles (of 287 runtime deferrals; the "595" grep incl. 310 TYPE_CHECKING) | T3 | architecture | S2 | systemic | M | 5 | confirmed |
 | PD-010 | `cqrs_wiring` composition-root coupling | T2 | architecture | S2 | layer | L | 3 | confirmed |
 | PD-013 | Dual `server/` trees (common vs runtimes) | T3 | architecture | S3 | layer | M | 3 | confirmed |
 | PD-014 | assist/MCP + CLI complexity hotspots (CC≤112) | T4 | complexity | S2 | layer | L | 3 | confirmed |
@@ -144,9 +144,9 @@ Effort XS/S/M/L/XL. Conf = confidence. Full evidence in the per-item blocks belo
 ### T3 — Deferred imports as a layering escape valve
 
 **PD-012 — 595 deferred imports masking circular deps.** `S2 · systemic · Effort L · Explicit-Boundaries, Minimal-Magic`
-- Evidence: 595 function-local `from palm.` / `import palm.` lines (02-deferred-imports.txt); top: `mcp/in_process.py` 34, `application_host.py` 29, `app/app.py` 14, `common/__init__.py` 12. Corroborated by the ruff `patterns/wizard I001` waiver and CHANGELOG startup-cycle fixes.
-- Risk: the real dependency graph is hidden; import order becomes load-bearing; refactors trip latent cycles.
-- Direction: map cycles (`uvx pydeps --show-cycles`), then hoist imports by inverting a few dependencies (interfaces in `core`/`common`, side-effect registration via explicit `ready()` rather than import).
+- Evidence (**refined during 0.47 planning, AST-verified**): the raw 595 grep = **310 `TYPE_CHECKING`** imports (the *correct* cross-layer-type pattern, not debt) + **287 runtime function-local**; of the 287, only **~35 are upward / cycle-forcing** across ~8 seams. `common/__init__.py`'s "12" and `patterns/_registry.py`'s "9" are all `TYPE_CHECKING` — the exemplars, not debt. One 81-module SCC sits above `core` (guard-core holds). Full analysis + slice plan: [docs/VISION-0.47.md](docs/VISION-0.47.md).
+- Risk: the real dependency graph is hidden; import order is load-bearing; **blocks the T2 `ApplicationHost` decomposition** (its 29 wiring imports must hoist first).
+- Direction: relocate registry *data* below `common`; explicit `ready()`/autoload instead of `import`-for-side-effect; move misplaced `common/runtimes/server/*` (also fixes PD-013); a `scripts/guard_deferred.py` ratchet + no-new-upward-edge fitness function. Metric to drive to 0 = **upward function-local imports (35)**.
 
 **PD-013 — Dual `server/` trees.** `S3 · layer · Effort M` — both `src/palm/common/runtimes/server/` and `src/palm/runtimes/server/` exist (two `transport/`, `ssr/`, `surface.py`, `cqrs.py`) (04-duplicate-basenames.txt), blurring the "thin surface vs shared infra" boundary. Direction: document the split crisply or consolidate.
 
@@ -230,8 +230,8 @@ tracker** — flip items as they close. Order follows the dependency roots above
 | Minor | Theme | Status | Notes |
 |---|---|---|---|
 | **0.46** | **T1 — Safety net (green suite + CI)** | ✅ done · [VISION-0.46](docs/VISION-0.46.md) | Dependency root, landed 0.46.0–0.46.5. Green suite + lint + hermetic CI + coverage floor |
-| next | T3 — deferred-import / cycle cleanup | queued | Precedes T2 (PD-009 depends-on PD-012) |
-| next | T2 — ApplicationHost decomposition | queued | After T3 |
+| **0.47** | T3 — import-cycle cleanup (~35 upward edges) | 🔜 planned · [VISION-0.47](docs/VISION-0.47.md) | Dependency root for T2; refines PD-012 (287 runtime, not 595) |
+| **0.48** | T2 — ApplicationHost decomposition (5 seams → host <350 LOC) | 🔜 planned · [VISION-0.48](docs/VISION-0.48.md) | After 0.47; PD-009/010/018 |
 | next | T5 — observability unification | queued | Likely breaks API → `MIGRATION` doc |
 | later | T4 — assist/MCP complexity + coverage | queued | |
 | later | T7 — adapters & placeholders | queued | |
