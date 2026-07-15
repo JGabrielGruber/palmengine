@@ -307,6 +307,27 @@ class OrchestrationEngine(BasePalmEngine):
                 {"job_id": job.id, "status": job.status.value},
                 job=job,
             )
+            self._emit_flow_session_terminal(job)
+
+    def _emit_flow_session_terminal(self, job: Job) -> None:
+        """Publish session terminal events for trigger/on_flow consumers (0.45.5)."""
+        if job.status not in (JobStatus.SUCCEEDED, JobStatus.FAILED):
+            return
+        flow_id = job.metadata.get("flow") or job.metadata.get("flow_name")
+        payload: dict[str, Any] = {
+            "job_id": job.id,
+            "status": job.status.value,
+        }
+        if flow_id is not None:
+            flow_str = str(flow_id)
+            payload["flow_id"] = flow_str
+            payload["flow"] = flow_str
+        event_type = (
+            OrchestrationEventType.FLOW_SESSION_SUCCEEDED
+            if job.status == JobStatus.SUCCEEDED
+            else OrchestrationEventType.FLOW_SESSION_FAILED
+        )
+        self._emit(event_type, payload, job=job)
 
     def _emit(
         self,

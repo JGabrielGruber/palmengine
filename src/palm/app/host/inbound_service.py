@@ -263,8 +263,12 @@ class InboundBindingService:
         binding: InboundBinding,
         envelope: dict[str, Any],
     ) -> bool:
-        """Skip self-referential ``job.completed`` (pipeline filters are too late)."""
-        if envelope.get("type") != "job.completed":
+        """Skip self-referential orchestration signals (pipeline filters are too late)."""
+        if envelope.get("type") not in (
+            "job.completed",
+            "flow.session.succeeded",
+            "flow.session.failed",
+        ):
             return False
         target = binding.spec.work.target
         if not target:
@@ -272,7 +276,11 @@ class InboundBindingService:
         payload = envelope.get("payload")
         if not isinstance(payload, dict):
             return False
-        flow = payload.get("flow") or payload.get("flow_name")
+        flow = (
+            payload.get("flow")
+            or payload.get("flow_name")
+            or payload.get("flow_id")
+        )
         return str(flow or "") == target
 
     def _event_to_envelope(self, binding: InboundBinding, event: Any) -> dict[str, Any]:

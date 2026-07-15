@@ -149,6 +149,28 @@ def run_doctor(ctx: CliContext) -> int:
     elif not summaries:
         console.print("[dim]No process instances yet — try[/] [cyan]flow start onboard[/]")
 
+    if hasattr(host, "event_plane_status"):
+        try:
+            ep = host.event_plane_status()
+        except Exception:
+            ep = {}
+        if ep:
+            ep_table = Table(title="Event Plane", show_lines=True)
+            ep_table.add_column("Surface", style="cyan")
+            ep_table.add_column("Bus", style="green")
+            ep_table.add_row("orchestration", str(ep.get("orchestration_bus", "—")))
+            ep_table.add_row("internal inbound", str(ep.get("inbound_internal_bus", "—")))
+            ep_table.add_row("work drain", str(ep.get("work_drain_bus", "—")))
+            ep_table.add_row("journal", str(ep.get("journal_bus", "—")))
+            ep_table.add_row(
+                "internal bindings",
+                str(ep.get("internal_inbound_bindings", 0)),
+            )
+            console.print(ep_table)
+            note = ep.get("note")
+            if note:
+                console.print(f"[dim]{note}[/]")
+
     if issues:
         console.print(
             Panel(

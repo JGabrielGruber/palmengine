@@ -18,9 +18,9 @@ analytics datasets + dashboards.
 
 Dashboard: **`palm-system`** (includes **Event watch tail** tile)
 
-### Event watchdog (0.45.3–0.45.4)
+### Event watchdog (0.45.3–0.45.5)
 
-In-process ingress — no `PALM_ORIGIN_URL` loopback. **0.45.4** wires internal inbound to the runtime orchestration bus and fixes pipeline persist (`batch: false` on `persist_log`).
+In-process ingress — no `PALM_ORIGIN_URL` loopback. **0.45.4** wires internal inbound to the runtime orchestration bus and fixes pipeline persist (`batch: false` on `persist_log`). **0.45.5** emits `flow.session.succeeded`/`failed` from real job completion (listed in `event_types`); see [docs/EVENT-PLANE.md](../../../docs/EVENT-PLANE.md).
 
 Loop guards:
 

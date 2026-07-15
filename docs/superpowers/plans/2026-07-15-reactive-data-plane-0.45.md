@@ -19,7 +19,8 @@
 | 0.45.2 | C | same-process inbound (internal mode or on_event) |
 | 0.45.3 | B | system watchdog definitions + coconut slice |
 | 0.45.4 | D | runtime event bus + ingress self-skip + persist batch fix |
-| 0.45.5+ | — | hygiene train (see VISION Phase D follow-on table) |
+| 0.45.5 | E | event plane contract (EVENT-PLANE.md, doctor, flow.session.*) |
+| 0.45.6+ | — | hygiene train (see VISION Phase D follow-on table) |
 
 ---
 
@@ -127,6 +128,28 @@
 
 ---
 
-# 0.45.5+ — Hygiene (planned)
+# 0.45.5 — Event plane contract
+
+**Docs:** [docs/EVENT-PLANE.md](../../EVENT-PLANE.md)
+
+### Task 15: Emit session terminal events
+
+- [x] `OrchestrationEngine` emits `flow.session.succeeded` / `flow.session.failed` on terminal jobs
+- [x] Ingress skip extended for session events (self-flow storm guard)
+
+### Task 16: Doctor + tests
+
+- [x] `ApplicationHost.event_plane_status()` in `control_plane_status`
+- [x] CLI `palm doctor` Event Plane table
+- [x] `tests/helpers/event_plane.py` + `test_event_plane_contract_0_45_5.py`
+
+### Task 17: Release 0.45.5
+
+- [x] Version `0.45.5` + docs
+- [x] `pytest tests/test_*_0_45*.py tests/core/test_orchestration.py`
+
+---
+
+# 0.45.6+ — Hygiene (planned)
 
 See **0.45.5+ — hygiene train** in [docs/VISION-0.45.md](../../VISION-0.45.md).

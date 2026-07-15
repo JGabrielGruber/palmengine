@@ -8,6 +8,7 @@ from palm.common.resource.inbound import parse_inbound_spec
 from palm.core.event import EventEngine
 from palm.core.work import WorkIntent
 from palm.definitions import FlowDefinition, ResourceDefinition
+from tests.helpers.event_plane import emit_orchestration_event
 
 
 def test_parse_inbound_internal_mode() -> None:
@@ -112,7 +113,8 @@ def test_internal_inbound_on_host_without_loopback() -> None:
         bindings = host.inbound.list_bindings()
         assert any(b.get("mode") == "internal" and b.get("status") == "listening" for b in bindings)
 
-        host._app.runtime().event.emit(
+        emit_orchestration_event(
+            host,
             "resource.changed",
             resource_ref="palm-todos",
             action="put",

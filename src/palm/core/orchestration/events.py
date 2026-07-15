@@ -13,6 +13,8 @@ class OrchestrationEventType:
     JOB_SUBMITTED = "job.submitted"
     JOB_STATUS_CHANGED = "job.status_changed"
     JOB_COMPLETED = "job.completed"
+    FLOW_SESSION_SUCCEEDED = "flow.session.succeeded"
+    FLOW_SESSION_FAILED = "flow.session.failed"
     JOB_INPUT_RECEIVED = "job.input_received"
     JOB_CANCELLED = "job.cancelled"
     INSTANCE_CREATED = "instance.created"

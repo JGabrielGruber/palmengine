@@ -894,6 +894,46 @@ class ApplicationHost:
         n += self._work_drain.tick(limit=limit)
         return n
 
+    def event_plane_status(self) -> dict[str, Any]:
+        """Which EventEngine each reactive surface uses (0.45.5 doctor contract)."""
+        orchestration_bus = "host_fallback"
+        try:
+            runtime = self._app.runtime()
+            engine = runtime.event
+            if engine is not None and engine.is_initialized:
+                orchestration_bus = "runtime"
+        except Exception:
+            pass
+        internal_bindings = 0
+        if self._inbound is not None:
+            try:
+                internal_bindings = sum(
+                    1
+                    for row in self._inbound.list_bindings()
+                    if row.get("mode") == "internal"
+                )
+            except Exception:
+                internal_bindings = 0
+        return {
+            "orchestration_bus": orchestration_bus,
+            "host_coordination_bus": "host",
+            "inbound_internal_bus": orchestration_bus,
+            "work_drain_bus": orchestration_bus,
+            "journal_bus": "host",
+            "internal_inbound_bindings": internal_bindings,
+            "orchestration_event_types": [
+                "job.completed",
+                "flow.session.succeeded",
+                "flow.session.failed",
+            ],
+            "note": (
+                "Orchestration events emit on runtime.event when the runtime is "
+                "started; host.event is coordination only (host.started, journal, "
+                "outbox). Internal inbound and work-drain subscribe to the "
+                "orchestration bus."
+            ),
+        }
+
     def control_plane_status(self) -> dict[str, Any]:
         """Pending work + journal lag for doctor/ops (0.38 / 0.40.3)."""
         from palm.common.events.consumers import (
@@ -941,6 +981,7 @@ class ApplicationHost:
             "journal_consumers": list(DEFAULT_JOURNAL_CONSUMERS),
             "inbound_bindings": inbound_bindings,
             "inbound_count": len(inbound_bindings),
+            "event_plane": self.event_plane_status(),
         }
 
     def drain_journal_webhooks(

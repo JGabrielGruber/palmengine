@@ -1,6 +1,6 @@
 # VISION 0.45 — Reactive data plane
 
-**Status:** 0.45.1–0.45.4 shipped (data plane, internal inbound, watchdog dogfood, runtime-bus + persist fixes)
+**Status:** 0.45.1–0.45.5 shipped (data plane, internal inbound, watchdog dogfood, runtime-bus + persist fixes, event plane contract)
 **Builds on:** [VISION-0.44](VISION-0.44.md) (inbound store, poll, stream, work drain)
 
 ## Problem
@@ -26,7 +26,7 @@ Inbound → WorkIntent → flow works, but the **data plane** has holes that for
 | **0.45.2** | Phase C — same-process inbound (`mode: internal` on palm resource **or** `on_event` trigger) |
 | **0.45.3** | Phase B — system event-watch definitions + coconut pipeline migration slice |
 | **0.45.4** | Phase D — watchdog **works on `palm host server`** (runtime event bus, ingress self-skip, `persist_log` batch) |
-| **0.45.5** | Event plane contract — document/bridge host vs runtime bus; tests + doctor |
+| **0.45.5** | Event plane contract — [EVENT-PLANE.md](EVENT-PLANE.md), doctor `event_plane`, emit `flow.session.*`, test helpers |
 | **0.45.6** | Work-drain ergonomics — `submit_flow` naming, debounce defer-vs-drop, coalesce semantics |
 | **0.45.7** | Transform safety — `put_resource` list persist defaults; real-flow integration test |
 | **0.45.8** | Ops dogfood — example-root isolation in tests, invoke route docs, durable log guidance |
@@ -131,11 +131,21 @@ Shipped after first real `palm host server` run exposed integration gaps (unit t
 
 Invoke tail: `POST /v1/api/providers/kv/palm-system-event-log/invoke` with `{"action":"get"}`.
 
-## 0.45.5+ — hygiene train (code-smell backlog)
+## Phase E (0.45.5) — event plane contract
+
+| Deliverable | Where | Why |
+|-------------|--------|-----|
+| Two-bus documentation | [EVENT-PLANE.md](EVENT-PLANE.md) | Host vs runtime confusion caused silent production failure |
+| `event_plane` in doctor | `ApplicationHost.event_plane_status()`, CLI doctor | Ops can verify inbound subscribes to orchestration bus |
+| `flow.session.succeeded` / `failed` | `OrchestrationEngine._emit_flow_session_terminal` | Watch `event_types` listed dead config; triggers need `flow_id` |
+| Ingress skip for session events | `InboundBindingService` | Same self-flow storm as `job.completed` |
+| Test helpers | `tests/helpers/event_plane.py` | Forbid `host.event.emit` in orchestration contract tests |
+
+## 0.45.6+ — hygiene train (code-smell backlog)
 
 | Version | Theme | Targets |
 |---------|--------|---------|
-| **0.45.5** | **Event plane contract** | Document host vs runtime buses; doctor exposes which bus inbound uses; remove or emit `flow.session.succeeded`; forbid host-bus emits in orchestration tests |
+| **0.45.5** | **Event plane contract** *(shipped)* | [EVENT-PLANE.md](EVENT-PLANE.md); `event_plane` in doctor/control_plane; `OrchestrationEngine` emits `flow.session.succeeded`/`failed`; ingress skip for session events; `tests.helpers.event_plane` |
 | **0.45.6** | **Work-drain / inbound** | Rename work-drain `run_wizard` → `submit_flow`; debounce **defer** (merge payload) vs drop; declarative `inbound.skip_flows` / `skip_self` instead of engine hardcode; coalesce_key vs per-event `coalesce_field` docs |
 | **0.45.7** | **Transform safety** | `put_resource` safe default for list persistence (no silent per-item batch); catalog/docs for `TransformLeaf` batch heuristics |
 | **0.45.8** | **Ops dogfood** | Test isolation from cwd `examples/definitions`; REST invoke path discoverability; `control_plane` key consistency; server profile guidance for durable event-log storage |

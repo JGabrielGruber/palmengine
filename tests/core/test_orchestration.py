@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from palm.core.context import ContextEngine
@@ -16,7 +18,11 @@ from palm.core.orchestration import (
     OrchestrationEventType,
     RunResult,
 )
-from palm.core.orchestration.exceptions import JobNotFoundError, OrchestratorError
+from palm.core.orchestration.exceptions import (
+    JobExecutionError,
+    JobNotFoundError,
+    OrchestratorError,
+)
 from tests.core.fakes import FakeInputCapable, TestState
 from tests.core.fakes.mode import TestMode
 
@@ -151,7 +157,37 @@ def test_orchestration_events_via_event_engine(
     assert OrchestrationEventType.JOB_SUBMITTED in events
     assert OrchestrationEventType.JOB_STATUS_CHANGED in events
     assert OrchestrationEventType.JOB_COMPLETED in events
+    assert OrchestrationEventType.FLOW_SESSION_SUCCEEDED in events
     assert job.status == JobStatus.SUCCEEDED
+
+
+def test_orchestration_emits_flow_session_failed_with_flow_id(
+    event_engine: EventEngine,
+    test_mode: TestMode,
+) -> None:
+    captured: list[dict[str, Any]] = []
+    event_engine.subscribe(
+        OrchestrationEventType.FLOW_SESSION_FAILED,
+        lambda e: captured.append(e.enriched_payload()),
+    )
+
+    engine = OrchestrationEngine()
+    engine.initialize(scheduler=test_mode, event_engine=event_engine)
+    engine.start()
+    with pytest.raises(JobExecutionError):
+        engine.submit(
+            {"steps": 1, "final_status": "FAILED"},
+            metadata={"flow": "fragile"},
+            job_id="job-fail-flow-session",
+        )
+    job = engine.get_job("job-fail-flow-session")
+    engine.stop()
+    engine.shutdown()
+
+    assert job.status == JobStatus.FAILED
+    assert len(captured) == 1
+    assert captured[0].get("flow_id") == "fragile"
+    assert captured[0].get("job_id") == job.id
 
 
 def test_context_engine_binds_job_state(

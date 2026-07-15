@@ -19,6 +19,7 @@ from palm.core import PatternStatus
 from palm.core.transform.engine import TransformEngine
 from palm.core.transform.registry import transform_registry
 from tests.core.fakes import TestState
+from tests.helpers.event_plane import emit_orchestration_event
 
 
 @pytest.fixture
@@ -58,7 +59,7 @@ def _drain_all(host: ApplicationHost) -> None:
 
 def _emit_job_completed(host: ApplicationHost, **payload: object) -> None:
     """Emit on the runtime orchestration bus (where real jobs publish)."""
-    host._app.runtime().event.emit("job.completed", **payload)
+    emit_orchestration_event(host, "job.completed", **payload)
 
 
 def test_event_watch_definitions_parse() -> None:
@@ -201,7 +202,8 @@ def test_resource_changed_does_not_enqueue_watch() -> None:
     host.start()
     try:
         _register_watch(host)
-        host._app.runtime().event.emit(
+        emit_orchestration_event(
+            host,
             "resource.changed",
             resource_ref="palm-system-event-log",
             action="put",
