@@ -3,7 +3,7 @@ Wizard instance persistence — step slugs, BT position, and resume state restor
 
 Wizard-specific extensions for durable ``ProcessInstance`` records. Generic
 snapshot and instance shell logic lives in ``palm.common.persistence.instance_sync``;
-this module is registered via :func:`~palm.patterns._registry.register_instance_sync`.
+this module is registered via :func:`~palm.common.patterns._registry.register_instance_sync`.
 """
 
 from __future__ import annotations

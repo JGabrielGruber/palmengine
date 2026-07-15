@@ -1,7 +1,7 @@
 """
 Wizard flow submission extensions — job metadata enrichment for orchestration.
 
-Registered via :func:`~palm.patterns._registry.register_submission_metadata` so
+Registered via :func:`~palm.common.patterns._registry.register_submission_metadata` so
 ``palm.common.executions.flow_submission`` stays pattern-agnostic.
 """
 

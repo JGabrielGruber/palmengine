@@ -10,6 +10,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import ClassVar
 
+from palm.common.patterns._registry import register_pattern_app
+
 
 class PatternApp(ABC):
     """Declarative manifest and ``ready()`` hook for a pattern subpackage."""
@@ -25,7 +27,6 @@ class PatternApp(ABC):
 
     def register(self) -> None:
         """Register this app and invoke :meth:`ready` once."""
-        from palm.common.patterns._registry import register_pattern_app
 
         register_pattern_app(self)
         self.ready()

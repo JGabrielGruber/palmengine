@@ -1,7 +1,7 @@
 """DAG pattern registration — import this module to wire the app."""
 
+from palm.common.patterns._registry import register_builder
 from palm.core.registry import pattern_registry
-from palm.patterns._registry import register_builder
 from palm.patterns.dag.app import dag_app
 from palm.patterns.dag.bindings.definitions.builder import build
 from palm.patterns.dag.pattern import DagPattern

@@ -2,7 +2,7 @@
 Wizard bridge hooks — register pattern-specific runtime surfaces on ``_registry``.
 
 Keeps ``palm.common`` free of direct wizard imports; common dispatches through
-:mod:`palm.patterns._registry` instead.
+:mod:`palm.common.patterns._registry` instead.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from typing import Any
 
 from palm.core.orchestration import Job, JobStatus
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     ChildWaitHooks,
     InteractiveRuntimeHooks,
     register_child_wait,
@@ -58,7 +58,7 @@ def _wizard_parent_is_waiting(job: Job) -> bool:
 
 
 def _wizard_poll_child_for_parent(_state: Any, child_job_id: str) -> Job | None:
-    from palm.providers._registry import get_bound_runtime
+    from palm.common.providers._registry import get_bound_runtime
 
     runtime = get_bound_runtime()
     if runtime is None:

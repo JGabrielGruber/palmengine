@@ -13,7 +13,7 @@ class KvApp(ProviderApp):
     registry_hooks = ("provider_registry", "design_contributor")
 
     def ready(self) -> None:
-        from palm.providers._registry import register_provider_design_contributor_hook
+        from palm.common.providers._registry import register_provider_design_contributor_hook
 
         def _register_kv_design_contributor() -> None:
             from palm.providers.kv.bindings.design import register_kv_design_contributor

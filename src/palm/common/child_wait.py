@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.patterns._registry import ChildWaitHooks, get_child_wait_hooks
+from palm.common.providers._registry import get_bound_runtime
 from palm.core.orchestration import Job
 
 if TYPE_CHECKING:
@@ -23,7 +24,6 @@ def _child_wait_hooks(job: Job) -> ChildWaitHooks:
 
 def bound_runtime() -> Any | None:
     """Return the in-process runtime used for compositional palm invokes."""
-    from palm.common.providers._registry import get_bound_runtime
 
     return get_bound_runtime()
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     McpContributor,
     clear_mcp_contributors,
     get_mcp_contributor,
@@ -12,7 +12,7 @@ from palm.patterns._registry import (
 
 
 def test_register_and_iterate_mcp_contributors() -> None:
-    from palm.patterns._registry import iter_mcp_contributors as _before
+    from palm.common.patterns._registry import iter_mcp_contributors as _before
 
     saved = list(_before())
     clear_mcp_contributors()

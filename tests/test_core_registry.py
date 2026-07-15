@@ -8,11 +8,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pytest
 
 from palm.app.registry import RuntimeHandle, RuntimeRegistry
+from palm.common.patterns import _registry as builder_registry
 from palm.common.plans.registry import PlanRegistry
 from palm.core.exceptions import RegistryError
 from palm.core.registry import Registry
 from palm.definitions import FlowDefinition
-from palm.patterns import _registry as builder_registry
 from palm.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,

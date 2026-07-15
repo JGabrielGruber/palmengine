@@ -13,8 +13,8 @@ from palm.common.interactive_runtime import (
     resolve_interactive_job,
 )
 from palm.common.operator.flows_session_input import flatten_session_read_model
+from palm.common.patterns._registry import enrich_session_view
 from palm.core.orchestration import JobStatus
-from palm.patterns._registry import enrich_session_view
 from palm.services.execution.flows.schemas import SessionContext, build_session_context
 
 if TYPE_CHECKING:

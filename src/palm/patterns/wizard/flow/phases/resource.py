@@ -13,7 +13,7 @@ from palm.common.resource.compensation import is_mutating_action, track_resource
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.context import BaseState
 from palm.core.orchestration import JobStatus
-from palm.patterns._registry import get_child_wait_hooks
+from palm.common.patterns._registry import get_child_wait_hooks
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
 from palm.patterns.wizard.bindings.context.state import get_answers, set_answers
 from palm.patterns.wizard.bindings.definitions.config import WizardStepConfig

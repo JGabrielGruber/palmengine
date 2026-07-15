@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     DesignContributorHook,
     clear_design_contributor_hooks,
     get_design_contributor_hook,

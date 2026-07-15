@@ -3,7 +3,7 @@ CQRS wiring — register ApplicationHost command and query handlers.
 
 **Adding a command:** define a dataclass in the pattern app (or
 :mod:`palm.common.cqrs.command` for generic commands), register a
-:class:`~palm.patterns._registry.CqrsContributor`, and ensure the pattern
+:class:`~palm.common.patterns._registry.CqrsContributor`, and ensure the pattern
 app is loaded via :func:`palm.patterns._apps.autoload`.
 
 **Adding a query:** same pattern — contributor ``query_types`` and
@@ -50,10 +50,10 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
+from palm.common.patterns._registry import iter_cqrs_contributors
 from palm.common.runtimes.server.middleware import current_principal_id
 from palm.common.runtimes.server.plans import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
-from palm.patterns._registry import iter_cqrs_contributors
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 if TYPE_CHECKING:

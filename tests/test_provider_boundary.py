@@ -5,7 +5,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-_ALLOWED_COMMON_PROVIDER_MODULES = frozenset({"palm.providers._registry"})
+_ALLOWED_COMMON_PROVIDER_MODULES = frozenset({"palm.common.providers._registry"})
 
 
 def test_common_has_no_provider_imports() -> None:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.providers._registry import get_bound_runtime
 from palm.common.resource.document_storage import (
     StorageKvBackend,
     TieredKvConfig,
@@ -19,7 +20,6 @@ from palm.common.resource.document_storage import (
     resolve_kv_cold_root,
 )
 from palm.core.resource.result import ProviderResult
-from palm.providers._registry import get_bound_runtime
 from palm.providers.kv.flow.params import KvInvokeParams
 
 

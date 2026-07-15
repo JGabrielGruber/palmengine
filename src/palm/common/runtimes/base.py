@@ -18,6 +18,7 @@ from palm.common import DefinitionExecutor, DefinitionRepository, InstanceReposi
 from palm.common.events import OutboxProcessor, OutboxStore, wire_reliable_events
 from palm.common.hooks import InstancePersistenceHook, OutboxDrainHook, StateSnapshotHook
 from palm.common.managers import InstanceManager
+from palm.common.providers._registry import get_runtime_binding, get_runtime_unbinding
 from palm.common.resource import resource_definition_resolver
 from palm.common.runtimes.hooks import (
     AuthMiddleware,
@@ -199,7 +200,6 @@ class BaseRuntime:
         self.orchestration.start()
         self._started = True
 
-        from palm.common.providers._registry import get_runtime_binding
 
         bind_runtime = get_runtime_binding()
         if bind_runtime is not None:
@@ -210,7 +210,6 @@ class BaseRuntime:
         if not self._started:
             return
 
-        from palm.common.providers._registry import get_runtime_unbinding
 
         unbind_runtime = get_runtime_unbinding()
         if unbind_runtime is not None:

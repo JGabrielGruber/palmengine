@@ -4,12 +4,12 @@ Parallel pattern registry wiring.
 
 from __future__ import annotations
 
-from palm.core.registry import pattern_registry
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     register_builder,
     register_instance_sync,
     register_submission_metadata,
 )
+from palm.core.registry import pattern_registry
 from palm.patterns.parallel.app import parallel_app
 from palm.patterns.parallel.bindings.definitions.builder import build
 from palm.patterns.parallel.bindings.instances.persistence import (

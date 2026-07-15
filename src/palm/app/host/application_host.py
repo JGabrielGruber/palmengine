@@ -52,9 +52,9 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
 from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
+from palm.common.patterns._registry import get_projection_factory, registered_projection_factories
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
-from palm.patterns._registry import get_projection_factory, registered_projection_factories
 from palm.patterns.wizard.bindings.cqrs.projection import (
     WizardProgressProjection,
     WizardProgressReadModel,

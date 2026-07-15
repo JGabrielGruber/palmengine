@@ -6,13 +6,13 @@ import importlib
 
 import pytest
 
+from palm.common.patterns._registry import get_builder, registered_builders
 from palm.common.storage import StorageFactory
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS
 from palm.common.transforms._apps import autoload as autoload_transforms
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.transform.registry import transform_registry
 from palm.patterns._apps import INSTALLED_PATTERNS
-from palm.patterns._registry import get_builder, registered_builders
 from palm.providers._apps import INSTALLED_PROVIDERS
 from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
@@ -38,8 +38,8 @@ def test_installed_pattern_apps_register() -> None:
 
 
 def test_installed_provider_apps_register() -> None:
+    from palm.common.providers._registry import get_provider_app, installed_provider_apps
     from palm.common.providers.app import ProviderApp
-    from palm.providers._registry import get_provider_app, installed_provider_apps
 
     assert set(INSTALLED_PROVIDERS) == {"rest", "graphql", "postgres", "palm", "kv", "file"}
     for name in INSTALLED_PROVIDERS:
@@ -54,7 +54,7 @@ def test_installed_provider_apps_register() -> None:
 
 
 def test_palm_provider_app_manifest() -> None:
-    from palm.providers._registry import get_provider_app
+    from palm.common.providers._registry import get_provider_app
 
     app = get_provider_app("palm")
     assert app is not None
@@ -100,7 +100,7 @@ def test_wizard_handler_exports() -> None:
 
 
 def test_wizard_bridge_hooks_register() -> None:
-    from palm.patterns._registry import (
+    from palm.common.patterns._registry import (
         get_child_wait_hooks,
         get_cqrs_contributor,
         get_interactive_runtime,
@@ -119,8 +119,8 @@ def test_wizard_bridge_hooks_register() -> None:
 
 
 def test_pattern_app_autoload() -> None:
+    from palm.common.patterns._registry import get_pattern_app, installed_pattern_apps
     from palm.common.patterns.app import PatternApp
-    from palm.patterns._registry import get_pattern_app, installed_pattern_apps
 
     for name in INSTALLED_PATTERNS:
         app = get_pattern_app(name)

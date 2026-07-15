@@ -6,8 +6,8 @@ Read this file first to understand which Palm subsystems the parallel pattern do
 
 from __future__ import annotations
 
+from palm.common.patterns._registry import McpContributor, register_mcp_contributor
 from palm.common.patterns.app import PatternApp
-from palm.patterns._registry import McpContributor, register_mcp_contributor
 from palm.patterns.parallel.bindings.mcp import register_parallel_mcp_tools
 
 

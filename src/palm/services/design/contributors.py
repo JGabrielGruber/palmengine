@@ -14,11 +14,11 @@ def wire_builtin_design_contributors() -> None:
     with _lock:
         if _wired:
             return
-        from palm.patterns._registry import iter_design_contributor_hooks
+        from palm.common.patterns._registry import iter_design_contributor_hooks
 
         for hook in iter_design_contributor_hooks():
             hook.register()
-        from palm.providers._registry import iter_provider_design_contributor_hooks
+        from palm.common.providers._registry import iter_provider_design_contributor_hooks
 
         for hook in iter_provider_design_contributor_hooks():
             hook()

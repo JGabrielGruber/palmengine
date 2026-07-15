@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 import palm.providers  # noqa: F401 — register providers
-from palm.providers._registry import get_bound_runtime
+from palm.common.providers._registry import get_bound_runtime
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from palm.runtimes.embedded import EmbeddedRuntime
 

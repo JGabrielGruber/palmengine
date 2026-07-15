@@ -6,8 +6,8 @@ Read this file first to understand which Palm subsystems the palm provider dogfo
 
 from __future__ import annotations
 
+from palm.common.providers._registry import register_runtime_accessor, register_runtime_binding
 from palm.common.providers.app import ProviderApp
-from palm.providers._registry import register_runtime_accessor, register_runtime_binding
 from palm.providers.palm.bindings.runtimes.wiring import (
     bind_palm_runtime,
     clear_palm_runtime,

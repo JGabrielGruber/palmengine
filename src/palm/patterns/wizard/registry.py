@@ -1,7 +1,7 @@
 """Wizard pattern registration — import this module to wire the app."""
 
 from palm.core.registry import pattern_registry
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     register_builder,
     register_instance_sync,
     register_submission_metadata,

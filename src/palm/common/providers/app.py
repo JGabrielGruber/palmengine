@@ -10,6 +10,8 @@ from __future__ import annotations
 from abc import ABC
 from typing import ClassVar
 
+from palm.common.providers._registry import register_provider_app
+
 
 class ProviderApp(ABC):
     """Declarative manifest and ``ready()`` hook for a provider subpackage."""
@@ -26,7 +28,6 @@ class ProviderApp(ABC):
 
     def register(self) -> None:
         """Register this app and invoke :meth:`ready` once."""
-        from palm.common.providers._registry import register_provider_app
 
         register_provider_app(self)
         self.ready()

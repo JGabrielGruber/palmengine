@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from palm.common.executions.job_state import coerce_job_state
+from palm.common.patterns._registry import get_submission_metadata
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
 from palm.common.persistence.instance_sync import prepare_resume_state
@@ -117,7 +118,6 @@ def prepare_resume_submission(
 
 
 def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
-    from palm.common.patterns._registry import get_submission_metadata
 
     enricher = get_submission_metadata(flow.pattern)
     if enricher is None:

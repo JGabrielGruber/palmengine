@@ -7,7 +7,7 @@ Read this file first to understand which Palm subsystems the wizard pattern dogf
 from __future__ import annotations
 
 from palm.common.patterns.app import PatternApp
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     CqrsContributor,
     DesignContributorHook,
     McpContributor,

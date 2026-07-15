@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.common.patterns._registry import get_read_model_builder
+
 
 def build_pattern_read_model(
     pattern: str,
@@ -14,7 +16,6 @@ def build_pattern_read_model(
     **kwargs: Any,
 ) -> dict[str, Any]:
     """Dispatch a registered pattern read-model builder."""
-    from palm.common.patterns._registry import get_read_model_builder
 
     builder = get_read_model_builder(pattern)
     if builder is None:

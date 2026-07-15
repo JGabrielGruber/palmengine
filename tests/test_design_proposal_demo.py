@@ -8,7 +8,7 @@ import pytest
 
 from palm.app import ApplicationHost, HostProfile
 from palm.app.settings import PalmSettings
-from palm.patterns._registry import get_design_contributor_hook
+from palm.common.patterns._registry import get_design_contributor_hook
 from palm.services.design.contributors import reset_design_contributor_wiring
 from palm.services.design.registry import clear_design_contributors
 

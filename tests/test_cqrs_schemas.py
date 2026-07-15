@@ -7,14 +7,14 @@ from dataclasses import dataclass
 import palm.patterns  # noqa: F401
 from palm.common.cqrs.command import Command, SubmitFlowCommand
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, ValidationResult, build_schema_registry
-from palm.core.context.state_schema import DictStateSchema
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     CqrsContributor,
     clear_cqrs_contributors,
     register_cqrs_contributor,
     restore_cqrs_contributors,
     snapshot_cqrs_contributors,
 )
+from palm.core.context.state_schema import DictStateSchema
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     SubmitWizardCommand,

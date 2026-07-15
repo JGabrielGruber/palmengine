@@ -4,13 +4,13 @@ Pipeline pattern app manifest — declares Palm layer dependencies and registry 
 
 from __future__ import annotations
 
-from palm.common.patterns.app import PatternApp
-from palm.patterns._registry import (
+from palm.common.patterns._registry import (
     DesignContributorHook,
     McpContributor,
     register_design_contributor_hook,
     register_mcp_contributor,
 )
+from palm.common.patterns.app import PatternApp
 from palm.patterns.pipeline.bindings.mcp import register_pipeline_mcp_tools
 
 

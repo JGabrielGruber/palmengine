@@ -7,6 +7,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any
 
+from palm.common.patterns._registry import iter_cqrs_contributors
 from palm.core.context.state_schema import DictStateSchema
 
 
@@ -54,7 +55,6 @@ class CqrsSchemaRegistry:
 def build_schema_registry() -> CqrsSchemaRegistry:
     """Build a registry from core schemas and pattern CQRS contributors."""
     from palm.common.cqrs.schema_bootstrap import register_core_schemas
-    from palm.common.patterns._registry import iter_cqrs_contributors
 
     registry = CqrsSchemaRegistry()
     register_core_schemas(registry)

@@ -5,10 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from palm.common.providers._registry import get_bound_runtime
 from palm.common.resource.document_storage import FileDocumentStore, resolve_documents_root
 from palm.core.exceptions import StoragePermissionError
 from palm.core.resource.result import ProviderResult
-from palm.providers._registry import get_bound_runtime
 from palm.providers.file.flow.params import FileInvokeParams
 
 

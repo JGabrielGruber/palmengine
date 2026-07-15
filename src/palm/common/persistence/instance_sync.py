@@ -13,6 +13,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
+from palm.common.patterns._registry import get_instance_fields, get_resume_handler
 from palm.common.persistence.instance_migration_metadata import preserve_migration_metadata
 from palm.common.persistence.state_snapshot import (
     snapshot_meta,
@@ -102,7 +103,6 @@ def prepare_resume_state(
 
 def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
     """Resolve optional step slug and runtime position via the pattern registry."""
-    from palm.common.patterns._registry import get_instance_fields
 
     fields_fn = get_instance_fields(pattern)
     if fields_fn is None:
@@ -114,6 +114,5 @@ ResumeHandler = Callable[[ProcessInstance, Any, BlackboardState], BlackboardStat
 
 
 def _resume_handler(pattern: str) -> ResumeHandler | None:
-    from palm.common.patterns._registry import get_resume_handler
 
     return get_resume_handler(pattern)
