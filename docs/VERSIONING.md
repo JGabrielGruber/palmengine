@@ -14,6 +14,11 @@ Palm is pre-1.0, so the SemVer `MAJOR` slot stays `0` and stability guarantees a
 - **PATCH (`0.X.N`) = one shippable slice** within the theme — a single feature or tracked work-item (e.g. a
   `TECH-DEBT.md` `PD-NNN`). One focused change per patch.
 
+> **Release cadence — embedded release.** Each slice is its own *commit*, but the **version is not bumped per
+> commit** (every bump restamps 6+ doc surfaces — needless churn). We cut an **embedded release** — the
+> `just bump-version` + `CHANGELOG` + doc-sync — per **minor or per patch-group**, grouping several slice-commits
+> under one released version. Small steps in git; releases in batches. This is the organic palm flow.
+
 > At **1.0** we switch to strict SemVer (MAJOR = breaking, MINOR = additive, PATCH = fix).
 
 ## The `X.0` planning release
@@ -34,10 +39,13 @@ Palm is pre-1.0, so the SemVer `MAJOR` slot stays `0` and stability guarantees a
 - ADR(s) for significant structural decisions
 - `STATUS.md` updated; `CHANGELOG.md` section
 
-**Per patch (`0.X.N`)**
-- Commit `feat(0.X.N): <summary>` (or `fix(0.X.N):`) — one slice; cite the tracked item (e.g. "closes PD-004")
-- `CHANGELOG.md` entry
-- **Green `just check`** (lint + typecheck + test-quick + guard-core + guard-common) — enforced in CI
+**Per slice-commit**
+- Commit `feat(0.X): <summary>` (or `fix(0.X):` / `refactor(0.X):`) — one focused change; cite the tracked item (e.g. "closes PD-004"). **No version bump.**
+- **Green `just check`** / `just ci` (lint + test + guards) — enforced in CI.
+
+**Per embedded release (a minor or a patch-group)**
+- `just bump-version 0.X.N` — once, covering the grouped slice-commits (version + doc-surface sync).
+- `CHANGELOG.md` entry summarizing the group; `STATUS.md` updated.
 
 ## Version sources of truth & bump flow
 
@@ -45,7 +53,7 @@ Two files hold the version, kept in lockstep by `scripts/version_utils.py`:
 - `pyproject.toml` `[project].version`
 - `src/palm/__init__.py` `__version__`
 
-Bump with:
+Bump with (**at an embedded-release point — a minor or patch-group — not per commit**):
 
 ```
 just bump-version 0.X.N        # → scripts/sync_version.py --set
