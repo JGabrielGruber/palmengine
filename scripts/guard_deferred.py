@@ -19,8 +19,8 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 233  # ratcheted at 0.47.8 (job_inspect inverted to JobInspectable); 287→…→233
-MAX_UPWARD = 10  # ratcheted at 0.47.8 (patterns own inspect_job; shell is pattern-agnostic); 35→…→10 — target 0
+MAX_FUNCTION_LOCAL = 227  # ratcheted at 0.47.9a (analytics + assist domain reaches inverted); 287→…→227
+MAX_UPWARD = 5  # ratcheted at 0.47.9a; remaining 5 are sanctioned composition-root/lazy seams (see ADR-017)
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {
