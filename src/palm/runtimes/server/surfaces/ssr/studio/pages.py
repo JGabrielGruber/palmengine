@@ -14,7 +14,7 @@ from palm.runtimes.server.surfaces.ssr.studio.assets import (
 from palm.runtimes.server.surfaces.ssr.studio.bootstrap import render_shell
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 class StudioPages:

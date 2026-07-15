@@ -52,7 +52,7 @@ class ServerResponse:
 
 @runtime_checkable
 class ServerSurface(Protocol):
-    """Extensible interaction model mounted on a :class:`~palm.common.runtimes.server.app.ServerApp`."""
+    """Extensible interaction model mounted on a :class:`~palm.runtimes.server.app.ServerApp`."""
 
     @property
     def name(self) -> str:

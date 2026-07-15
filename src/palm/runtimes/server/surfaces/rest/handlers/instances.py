@@ -19,7 +19,7 @@ from palm.runtimes.server.surfaces.rest.validation import (
 )
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def list_instances(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

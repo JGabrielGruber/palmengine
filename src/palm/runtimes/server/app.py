@@ -8,7 +8,6 @@ import asyncio
 from typing import Any
 from urllib.parse import unquote
 
-from palm.common.runtimes.server.context import ServerContext
 from palm.common.runtimes.server.middleware import PALM_SUBJECT_HEADER, authenticate_request
 from palm.common.runtimes.server.protocol import (
     RouteHandler,
@@ -19,6 +18,7 @@ from palm.common.runtimes.server.protocol import (
 from palm.common.runtimes.server.registry import RouteRegistry, SurfaceRegistry
 from palm.common.runtimes.server.responses import not_found, unauthorized
 from palm.common.runtimes.server.webhooks import ServerWebhookBridge
+from palm.runtimes.server.context import ServerContext
 
 
 class ServerApp:

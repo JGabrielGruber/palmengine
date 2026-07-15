@@ -16,7 +16,7 @@ from palm.runtimes.server.surfaces.rest.responses import ok
 from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def list_proposals(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

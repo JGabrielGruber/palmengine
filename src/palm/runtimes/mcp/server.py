@@ -18,7 +18,7 @@ from palm.runtimes.mcp.surface import normalize_surface, surface_includes
 from palm.runtimes.mcp.system import register_system_tools
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 try:
     from fastmcp import FastMCP

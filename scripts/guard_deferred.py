@@ -20,7 +20,7 @@ from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
 MAX_FUNCTION_LOCAL = 219  # ratcheted at 0.48.3 (WorkPlaneCoordinator hoisted wiring/journal imports); 287→…→219
-MAX_UPWARD = 5  # ratcheted at 0.47.9a; remaining 5 are sanctioned composition-root/lazy seams (see ADR-017)
+MAX_UPWARD = 3  # ratcheted at 0.48.7 (ServerContext relocated to runtimes, PD-013); remaining 3 = app→runtimes runtime-factory (sanctioned lazy seam, ADR-017)
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {

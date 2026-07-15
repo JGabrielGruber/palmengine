@@ -12,7 +12,7 @@ from palm.runtimes.server.surfaces.rest.responses import ok
 from palm.services.analytics.errors import AnalyticsDisabledError, AnalyticsError
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def list_datasets(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

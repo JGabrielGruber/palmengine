@@ -18,7 +18,7 @@ from .resources import ResourcePages
 from .schemas import SchemaPages
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 __all__ = [
     "AssistPages",

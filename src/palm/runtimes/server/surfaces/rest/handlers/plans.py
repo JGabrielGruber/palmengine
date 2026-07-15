@@ -18,7 +18,7 @@ from palm.runtimes.server.surfaces.rest.schemas import (
 )
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def prepare_plans(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

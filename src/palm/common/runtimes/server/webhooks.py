@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from palm.common.events.external import WebhookDispatcher, WebhookTarget
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 @dataclass

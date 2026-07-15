@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 from palm.runtimes.server.surfaces.ssr.studio.assets import StaticAsset
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 _BOOTSTRAP_RE = re.compile(
     r'<script id="palm-studio-bootstrap"></script>',

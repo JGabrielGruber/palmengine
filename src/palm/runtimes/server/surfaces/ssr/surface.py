@@ -10,8 +10,8 @@ from palm.common.runtimes.server.surface import BaseSurface
 from palm.runtimes.server.surfaces.ssr.routes import register_explorer_routes
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 class ExplorerSurface(BaseSurface):

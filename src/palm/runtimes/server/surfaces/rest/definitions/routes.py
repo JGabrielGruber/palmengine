@@ -10,8 +10,8 @@ from palm.runtimes.server.surfaces.rest.definitions import handlers
 from palm.runtimes.server.surfaces.rest.prefix import API_PREFIX
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 @dataclass(frozen=True)

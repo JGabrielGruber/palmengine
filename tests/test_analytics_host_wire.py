@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.roles import HostProfile
 from palm.app.settings import PalmSettings
-from palm.common.runtimes.server.context import ServerContext
+from palm.runtimes.server.context import ServerContext
 from palm.services.analytics import AnalyticsService
 
 

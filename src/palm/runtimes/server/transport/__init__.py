@@ -12,7 +12,7 @@ from palm.runtimes.server.transport.stdlib import (
 )
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.app import ServerApp
+    from palm.runtimes.server.app import ServerApp
 
 DEFAULT_TRANSPORT = "stdlib"
 

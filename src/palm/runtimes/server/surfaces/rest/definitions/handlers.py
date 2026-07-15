@@ -19,7 +19,7 @@ from palm.runtimes.server.surfaces.rest.schemas import VALIDATE_FLOW_BODY
 from palm.runtimes.server.surfaces.rest.validation import PaginationParams, parse_list_flows_query
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

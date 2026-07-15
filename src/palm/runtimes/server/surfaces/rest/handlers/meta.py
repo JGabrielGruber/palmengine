@@ -10,7 +10,7 @@ from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
 from palm.runtimes.server.surfaces.rest.responses import ok
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def health(ctx: ServerContext, surface_names: list[str]) -> Any:

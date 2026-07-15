@@ -14,7 +14,7 @@ from palm.common.runtimes.server.protocol import ServerRequest
 from palm.common.runtimes.server.responses import error_response
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.app import ServerApp
+    from palm.runtimes.server.app import ServerApp
 
 
 class StdlibHttpTransport:

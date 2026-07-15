@@ -34,7 +34,7 @@ from palm.services.execution.flows import flow_command_from_body
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
     from palm.runtimes.server.runtime import ServerRuntime
 
 

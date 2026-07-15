@@ -22,7 +22,7 @@ from palm.runtimes.server.transport import DEFAULT_TRANSPORT, create_transport
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
-    from palm.common.runtimes.server.app import ServerApp
+    from palm.runtimes.server.app import ServerApp
 
 
 class ServerRuntime(BaseRuntime):

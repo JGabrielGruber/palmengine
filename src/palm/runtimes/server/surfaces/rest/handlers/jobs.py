@@ -22,7 +22,7 @@ from palm.runtimes.server.surfaces.rest.validation import parse_list_jobs_query
 from palm.services.execution.flows import flow_command_from_body
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def get_job(ctx: ServerContext, request: ServerRequest, *, job_id: str) -> ServerResponse:

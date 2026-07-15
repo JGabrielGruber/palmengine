@@ -16,8 +16,8 @@ from palm.runtimes.server.surfaces.rest.inbound.routes import register_inbound_r
 from palm.runtimes.server.surfaces.rest.system.routes import register_system_routes
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 def register_service_routes(

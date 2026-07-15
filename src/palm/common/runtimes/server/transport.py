@@ -1,5 +1,5 @@
 """
-Transport protocol — pluggable wire bindings for :class:`~palm.common.runtimes.server.app.ServerApp`.
+Transport protocol — pluggable wire bindings for :class:`~palm.runtimes.server.app.ServerApp`.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from palm.core.exceptions import RegistryError
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.app import ServerApp
+    from palm.runtimes.server.app import ServerApp
 
 TransportFactory = Callable[["ServerApp", str, int], "BaseTransport"]
 
@@ -19,7 +19,7 @@ TransportFactory = Callable[["ServerApp", str, int], "BaseTransport"]
 @runtime_checkable
 class BaseTransport(Protocol):
     """
-    Binds a :class:`~palm.common.runtimes.server.app.ServerApp` to a wire protocol.
+    Binds a :class:`~palm.runtimes.server.app.ServerApp` to a wire protocol.
 
     Implementations may be sync (stdlib HTTP) or async (Starlette/uvicorn). Async
     transports should serve all HTTP-mounted surfaces and upgrade paths (WebSocket).

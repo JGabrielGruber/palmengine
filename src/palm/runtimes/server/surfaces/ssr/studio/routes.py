@@ -8,8 +8,8 @@ from palm.runtimes.server.surfaces.ssr.studio.api.handlers import StudioApiHandl
 from palm.runtimes.server.surfaces.ssr.studio.pages import StudioPages
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 _SURFACE = "studio"
 

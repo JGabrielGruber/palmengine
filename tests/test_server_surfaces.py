@@ -9,11 +9,11 @@ from typing import Any
 
 import pytest
 
-from palm.common.runtimes.server.app import create_server_app
-from palm.common.runtimes.server.context import ServerContext
 from palm.common.runtimes.server.registry import RouteRegistry, SurfaceRegistry
 from palm.common.runtimes.server.transport import transport_registry
 from palm.runtimes.server import ServerRuntime, create_app, create_transport
+from palm.runtimes.server.app import create_server_app
+from palm.runtimes.server.context import ServerContext
 from palm.runtimes.server.surfaces import RestSurface, default_surfaces
 from palm.runtimes.server.transport import DEFAULT_TRANSPORT, StdlibHttpTransport
 

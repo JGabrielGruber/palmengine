@@ -9,8 +9,8 @@ from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
 from palm.runtimes.server.surfaces.rest.responses import ok
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+    from palm.runtimes.server.context import ServerContext
 
 
 def invoke_provider(

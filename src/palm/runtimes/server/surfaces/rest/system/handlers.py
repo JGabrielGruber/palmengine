@@ -10,8 +10,8 @@ from palm.runtimes.server.surfaces.rest.handlers import instances, jobs, meta, s
 from palm.runtimes.server.surfaces.rest.responses import ok, read_model_body
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+    from palm.runtimes.server.context import ServerContext
 
 
 def doctor(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

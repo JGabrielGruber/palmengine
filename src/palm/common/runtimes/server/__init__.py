@@ -1,12 +1,10 @@
 """Shared server infrastructure — protocol, routing, transport, and CQRS bridging.
 
-The composition-root exports (``ServerApp``, ``ServerContext``, ``ServerWebhookBridge``)
-are **lazy** (PEP 562 ``__getattr__``): they pull ``ServerContext``, which imports
-the service layer, so eager-importing them here creates a latent cycle —
-``services.definitions.service`` → ``server.plans`` → this ``__init__`` →
-``ServerContext`` → ``services.definitions``. Loading them lazily means importing
-server *infra* (e.g. ``.plans``, ``.middleware``) never triggers the service layer.
-Infra exports stay eager. (T2 / 0.48.6 — precursor to relocating ``ServerContext``, PD-013.)
+The **composition roots** ``ServerApp`` / ``ServerContext`` relocated to
+``palm.runtimes.server`` in 0.48.7 (PD-013) — a composition root that instantiates
+the service layer belongs in ``runtimes``, not ``common``. What remains here is
+reusable server *infrastructure*. ``ServerWebhookBridge`` stays (it only references
+``ServerContext`` under ``TYPE_CHECKING``) and is exported lazily.
 """
 
 from __future__ import annotations
@@ -34,16 +32,11 @@ from palm.common.runtimes.server.transport import (
 )
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.app import ServerApp, create_server_app
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.webhooks import ServerWebhookBridge
 
-# Composition-root exports pull the service layer via ServerContext — load them
-# lazily so importing server infra never triggers the cycle. Mirrors common/__init__.
+# ServerWebhookBridge is loaded lazily to keep this __init__ free of anything that
+# could re-introduce a service-layer import at package-import time.
 _LAZY_EXPORTS = {
-    "ServerApp": "palm.common.runtimes.server.app",
-    "create_server_app": "palm.common.runtimes.server.app",
-    "ServerContext": "palm.common.runtimes.server.context",
     "ServerWebhookBridge": "palm.common.runtimes.server.webhooks",
 }
 
@@ -64,8 +57,6 @@ __all__ = [
     "PALM_SUBJECT_HEADER",
     "RouteRegistry",
     "RouteSpec",
-    "ServerApp",
-    "ServerContext",
     "ServerRequest",
     "ServerResponse",
     "ServerSurface",
@@ -73,7 +64,6 @@ __all__ = [
     "SurfaceRegistry",
     "TransportRegistry",
     "authenticate_request",
-    "create_server_app",
     "current_principal_id",
     "error_response",
     "transport_registry",

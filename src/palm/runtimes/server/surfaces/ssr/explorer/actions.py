@@ -29,7 +29,7 @@ from palm.runtimes.server.surfaces.ssr.explorer.pages.wizards import _estimate_s
 from palm.runtimes.server.surfaces.ssr.explorer.schemas import build_flow_submit_schema
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 class ExplorerActions:

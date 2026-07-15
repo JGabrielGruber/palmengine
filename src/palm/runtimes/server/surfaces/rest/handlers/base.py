@@ -9,7 +9,7 @@ from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.rest import errors
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def require_auth(ctx: ServerContext, request: ServerRequest) -> ServerResponse | None:

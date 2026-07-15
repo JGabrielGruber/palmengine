@@ -10,8 +10,8 @@ from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.runtimes.server.surface import BaseSurface
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 class McpSurface(BaseSurface):

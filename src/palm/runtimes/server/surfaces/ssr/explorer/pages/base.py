@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 @dataclass

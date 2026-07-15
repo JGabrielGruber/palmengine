@@ -23,9 +23,9 @@ from palm.core.registry import pattern_registry
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
+    from palm.runtimes.server.context import ServerContext
 
 
 class ExplorerFetcher:

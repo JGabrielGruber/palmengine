@@ -20,8 +20,8 @@ from palm.runtimes.server.surfaces.websocket.session import (
 from palm.runtimes.server.surfaces.websocket.static import portal_file_response
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 class WebSocketSurface(BaseSurface):

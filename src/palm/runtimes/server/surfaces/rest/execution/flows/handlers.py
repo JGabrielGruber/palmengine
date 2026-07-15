@@ -23,7 +23,7 @@ from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 from palm.services.assist.views import resolve_view_format
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def list_flows(ctx: ServerContext, request: ServerRequest) -> ServerResponse:

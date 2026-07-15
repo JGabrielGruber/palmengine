@@ -11,7 +11,7 @@ from palm.core.transform.base import TransformMode
 from palm.core.transform.registry import transform_registry
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 class StudioFetcher:

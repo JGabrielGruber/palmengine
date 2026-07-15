@@ -8,7 +8,7 @@ from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.runtimes.server.surfaces.ssr.studio.fetch import StudioFetcher
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 _STRUCTURAL_ITEMS: tuple[dict[str, Any], ...] = (
     {

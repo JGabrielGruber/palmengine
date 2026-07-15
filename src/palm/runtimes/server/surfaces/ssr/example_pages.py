@@ -19,7 +19,7 @@ from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
 from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 class ExamplePages:

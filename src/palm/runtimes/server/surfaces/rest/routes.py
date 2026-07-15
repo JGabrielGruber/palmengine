@@ -13,8 +13,8 @@ from palm.runtimes.server.surfaces.rest.route_table import RouteDefinition, Rout
 from palm.runtimes.server.surfaces.rest.service_routes import register_service_routes
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.registry import RouteRegistry
+    from palm.runtimes.server.context import ServerContext
 
 
 def register_routes(

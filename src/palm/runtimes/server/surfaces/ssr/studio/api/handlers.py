@@ -11,8 +11,8 @@ from palm.runtimes.server.surfaces.ssr.studio.api.palette import get_palette
 from palm.runtimes.server.surfaces.ssr.studio.api.templates import get_template, get_templates
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+    from palm.runtimes.server.context import ServerContext
 
 
 class StudioApiHandlers:

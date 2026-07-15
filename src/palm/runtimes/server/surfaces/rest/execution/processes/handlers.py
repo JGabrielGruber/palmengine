@@ -17,8 +17,8 @@ from palm.runtimes.server.surfaces.rest.schemas import (
 )
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
     from palm.common.runtimes.server.protocol import ServerRequest
+    from palm.runtimes.server.context import ServerContext
 
 
 def prepare_process(

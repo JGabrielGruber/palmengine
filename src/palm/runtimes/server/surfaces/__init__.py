@@ -11,7 +11,7 @@ from palm.runtimes.server.surfaces.ssr.surface import ExplorerSurface, SsrSurfac
 from palm.runtimes.server.surfaces.websocket.surface import WebSocketSurface
 
 if TYPE_CHECKING:
-    from palm.common.runtimes.server.context import ServerContext
+    from palm.runtimes.server.context import ServerContext
 
 
 def default_surfaces(ctx: ServerContext) -> list[object]:

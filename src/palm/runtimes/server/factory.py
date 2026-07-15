@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.runtimes.server.app import ServerApp, create_server_app
-from palm.common.runtimes.server.context import ServerContext
+from palm.runtimes.server.app import ServerApp, create_server_app
+from palm.runtimes.server.context import ServerContext
 from palm.runtimes.server.surfaces import default_surfaces
 
 if TYPE_CHECKING:
