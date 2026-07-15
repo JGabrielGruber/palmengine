@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 287  # total runtime function-local palm imports (0.47.1 baseline)
+MAX_FUNCTION_LOCAL = 267  # ratcheted at 0.47.2 (mcp/in_process hoist); was 287 at 0.47.1 baseline
 MAX_UPWARD = 35  # of those, imports into a strictly higher layer (cycle-forcing) — target 0
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.

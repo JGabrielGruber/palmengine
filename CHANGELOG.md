@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.47.2 — De-cycle mcp↔server: hoist `in_process.py` imports (T3)
+- Hoisted 20 function-local imports in `runtimes/mcp/in_process.py` to module top — the leaf `rest.*` helpers (`pagination`/`validation`/`serializers`/`openapi`, all mcp-import-free) + the mcp intra-package imports. Verified `import palm.runtimes.mcp.in_process` is cycle-free; the 4 `server→mcp` edges + the bootstrap `server`/`app` imports stay deferred by design. The worst-offender file drops 32→12 deferred imports.
+- Ratchet: function-local `palm` imports **287 → 267** (`guard_deferred` ceiling lowered). Upward/cycle-forcing count unchanged at 35 (this is sibling de-cycling). Full suite green.
+
 ### 0.47.1 — Deferred-import ratchet (T3)
 - `scripts/guard_deferred.py` — AST fitness function: counts runtime function-local `palm` imports (excludes `TYPE_CHECKING`), classifies by layer direction, and fails if the total (**287**) or upward/cycle-forcing (**35**) ceiling is exceeded. Wired into `just check` / `just ci` as `just guard-deferred`. Locks the graph so nothing regresses while 0.47 cuts the seams; the ceilings only ratchet down toward 0. Zero behavior change.
 

@@ -15,8 +15,10 @@ from palm.common.cqrs.query import (
 )
 from palm.common.exceptions import InstanceNotFoundError, MutationRejectedError, PlanNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
+from palm.common.operator.waiting_jobs import enrich_job_list_rows
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.runtimes.mcp.assist.dispatch import dispatch_operator_path
 from palm.runtimes.mcp.config import PalmMcpConfig
 from palm.runtimes.mcp.flows.views import (
     flatten_session_view,
@@ -24,7 +26,11 @@ from palm.runtimes.mcp.flows.views import (
     session_context_dict,
     submission_view,
 )
-from palm.runtimes.mcp.rest_client import PalmRestError
+from palm.runtimes.mcp.rest_client import PalmRestError, _process_id_from_body
+from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
+from palm.runtimes.server.surfaces.rest.pagination import list_envelope
+from palm.runtimes.server.surfaces.rest.serializers import snapshot_detail, snapshot_summary
+from palm.runtimes.server.surfaces.rest.validation import PaginationParams
 from palm.services.execution.flows import flow_command_from_body
 from palm.states import BlackboardState
 
@@ -105,19 +111,12 @@ class PalmInProcessBackend:
         }
 
     def list_waiting_jobs(self, *, limit: int = 50) -> dict[str, Any]:
-        from palm.common.operator.waiting_jobs import enrich_job_list_rows
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.system.list_jobs(status="WAITING_FOR_INPUT", limit=None)
         rows = enrich_job_list_rows(self._ctx.runtime, rows)
         params = PaginationParams(limit=limit, offset=0)
         return list_envelope("jobs", rows, params)
 
     def flows_list(self) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.execution.flows.dispatch(["flows"])
         params = PaginationParams(limit=len(rows), offset=0)
         return list_envelope("flows", rows, params)
@@ -297,11 +296,7 @@ class PalmInProcessBackend:
         return flatten_session_view(view)
 
     def submit_wizard(self, body: dict[str, Any]) -> dict[str, Any]:
-        flow_id = str(
-            body.get("flow_name")
-            or _flow_id_from_submit_body(body)
-            or "flow"
-        )
+        flow_id = str(body.get("flow_name") or _flow_id_from_submit_body(body) or "flow")
         return self.flows_create_session(flow_id, body)
 
     def _resolve_flow_id(self, session_id: str) -> str:
@@ -337,9 +332,6 @@ class PalmInProcessBackend:
         }
 
     def list_flows(self, *, pattern: str | None = None) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.definitions.list_flows(pattern=pattern)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("flows", rows, params)
@@ -404,9 +396,6 @@ class PalmInProcessBackend:
             ) from exc
 
     def list_processes(self) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.definitions.list_processes()
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("processes", rows, params)
@@ -418,9 +407,6 @@ class PalmInProcessBackend:
             raise _process_not_found(exc.ref) from exc
 
     def list_resources(self, *, provider: str | None = None) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.definitions.list_resources(provider=provider)
         params = PaginationParams(limit=100, offset=0)
         return list_envelope("resources", rows, params)
@@ -439,8 +425,6 @@ class PalmInProcessBackend:
             ) from exc
 
     def get_openapi(self) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
-
         return build_openapi_spec(version=self._ctx.runtime.version)
 
     def cancel_job(self, job_id: str) -> dict[str, Any]:
@@ -450,8 +434,6 @@ class PalmInProcessBackend:
         return result
 
     def prepare_plans(self, body: dict[str, Any]) -> dict[str, Any]:
-        from palm.runtimes.mcp.rest_client import _process_id_from_body
-
         process_id = _process_id_from_body(body)
         try:
             return self._ctx.execution.processes.prepare(process_id, body=body)
@@ -481,8 +463,6 @@ class PalmInProcessBackend:
         path: list[str],
         params: dict[str, Any] | None = None,
     ) -> Any:
-        from palm.runtimes.mcp.assist.dispatch import dispatch_operator_path
-
         try:
             return dispatch_operator_path(self._ctx, path, params)
         except DefinitionNotFoundServiceError as exc:
@@ -595,9 +575,6 @@ class PalmInProcessBackend:
             ) from exc
 
     def design_list_proposals(self, *, flow_id: str | None = None) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         rows = self._ctx.design.list_proposals(flow_id=flow_id)
         params = PaginationParams(limit=max(len(rows), 1), offset=0)
         return list_envelope("proposals", rows, params)
@@ -714,10 +691,6 @@ class PalmInProcessBackend:
             ) from exc
 
     def list_snapshots(self, instance_id: str) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.pagination import list_envelope
-        from palm.runtimes.server.surfaces.rest.serializers import snapshot_summary
-        from palm.runtimes.server.surfaces.rest.validation import PaginationParams
-
         try:
             snapshots = self._ctx.ask(ListInstanceSnapshotsQuery(instance_id=instance_id))
         except InstanceNotFoundError as exc:
@@ -728,8 +701,6 @@ class PalmInProcessBackend:
         return list_envelope("snapshots", rows, params)
 
     def get_snapshot(self, instance_id: str, snapshot_id: str) -> dict[str, Any]:
-        from palm.runtimes.server.surfaces.rest.serializers import snapshot_detail
-
         try:
             resolved = self._ctx.ask(
                 GetInstanceSnapshotQuery(instance_id=instance_id, snapshot_id=snapshot_id)
