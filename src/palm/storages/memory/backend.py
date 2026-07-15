@@ -38,3 +38,6 @@ class MemoryBackend(BaseBackend):
             return
         self._data.clear()
         self._is_open = False
+
+    def keys_with_prefix(self, prefix: str) -> list[str]:
+        return sorted(key for key in self._data if key.startswith(prefix))

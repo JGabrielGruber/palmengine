@@ -141,6 +141,19 @@ class FilesystemStorageBackend(BaseBackend):
     def close(self) -> None:
         self._is_open = False
 
+    def keys_with_prefix(self, prefix: str) -> list[str]:
+        rel_dir = Path(*[segment for segment in prefix.split(":") if segment])
+        root = self._data_dir / rel_dir
+        if not root.exists():
+            return []
+        keys: list[str] = []
+        for path in root.rglob("*.json"):
+            if not path.is_file():
+                continue
+            relative = path.relative_to(self._data_dir).with_suffix("")
+            keys.append(":".join(relative.parts))
+        return sorted(keys)
+
     def _resolve_read_path(self, key: str) -> Path | None:
         for path in self._candidate_paths(key):
             if path.exists():

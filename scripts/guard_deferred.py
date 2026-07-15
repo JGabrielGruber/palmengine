@@ -19,8 +19,8 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 237  # ratcheted at 0.47.5d (hoisted sibling registry reads); 287→…→237
-MAX_UPWARD = 18  # ratcheted at 0.47.5c (common registry side-effect imports removed); 35→24→18 — target 0
+MAX_FUNCTION_LOCAL = 235  # ratcheted at 0.47.6 (storage backend polymorphism); 287→…→235
+MAX_UPWARD = 16  # ratcheted at 0.47.6 (common→storages inverted via keys_with_prefix); 35→…→16 — target 0
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.
 LAYER_RANK = {

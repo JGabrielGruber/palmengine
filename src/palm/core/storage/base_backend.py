@@ -51,3 +51,13 @@ class BaseBackend(ABC):
     @abstractmethod
     def close(self) -> None:
         """Close or disconnect the backend. Idempotent when already closed."""
+
+    def keys_with_prefix(self, prefix: str) -> list[str]:
+        """List stored keys beginning with ``prefix``, sorted.
+
+        Default is an empty list: backends that cannot cheaply enumerate keys
+        (e.g. remote document stores) inherit this. Enumerable backends
+        (memory, filesystem) override it — this is the polymorphic seam that
+        lets ``common`` list keys without importing concrete backends.
+        """
+        return []

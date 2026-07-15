@@ -190,17 +190,7 @@ def list_storage_keys_with_prefix(storage: StorageEngine, prefix: str) -> list[s
     backend = storage.backend
     if backend is None or not backend.is_open:
         return []
-
-    from palm.storages.filesystem.backend import FilesystemStorageBackend
-    from palm.storages.memory.backend import MemoryBackend
-
-    if isinstance(backend, MemoryBackend):
-        return sorted(key for key in backend._data if key.startswith(prefix))
-
-    if isinstance(backend, FilesystemStorageBackend):
-        return _list_filesystem_storage_prefix(backend.data_dir, prefix)
-
-    return []
+    return backend.keys_with_prefix(prefix)
 
 
 def logical_keys_from_prefixed(
@@ -653,20 +643,6 @@ def build_tiered_preflight_stats(
         "cold_keys": store.cold_key_count(namespace),
         "hot_max_keys": hot_max_keys,
     }
-
-
-def _list_filesystem_storage_prefix(data_dir: Path, prefix: str) -> list[str]:
-    rel_dir = Path(*[segment for segment in prefix.split(":") if segment])
-    root = data_dir / rel_dir
-    if not root.exists():
-        return []
-    keys: list[str] = []
-    for path in root.rglob("*.json"):
-        if not path.is_file():
-            continue
-        relative = path.relative_to(data_dir).with_suffix("")
-        keys.append(":".join(relative.parts))
-    return sorted(keys)
 
 
 __all__ = [
