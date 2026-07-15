@@ -50,6 +50,7 @@ from palm.common.cqrs.query import (
     Query,
 )
 from palm.common.cqrs.rebuild import ProjectionRebuildPolicy
+from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.events.external import WebhookDispatcher, webhook_targets_from_urls
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
@@ -62,6 +63,18 @@ from palm.patterns.wizard.bindings.cqrs.queries import (
     GetWizardProgressQuery,
     ListWizardProgressQuery,
 )
+from palm.services._cqrs_wiring import wire_all_service_cqrs
+from palm.services.analytics import AnalyticsService
+from palm.services.assist import AssistService
+from palm.services.definitions import DefinitionService
+from palm.services.design import DesignService
+from palm.services.design.contributors import wire_builtin_design_contributors
+from palm.services.design.factory import create_proposal_repository
+from palm.services.execution import ExecutionService
+from palm.services.execution.flows import FlowExecutionService
+from palm.services.execution.processes import ProcessExecutionService
+from palm.services.execution.providers import ProviderExecutionService
+from palm.services.system import SystemService
 
 if TYPE_CHECKING:
     from palm.common.runtimes.base import BaseRuntime
@@ -302,8 +315,7 @@ class ApplicationHost:
     def _work_drain_background_enabled(self) -> bool:
         """True when continuous WorkIntent drain should run (settings or host profile)."""
         return bool(
-            self.settings.enable_work_drain_service
-            or self.profile.enable_work_drain_service
+            self.settings.enable_work_drain_service or self.profile.enable_work_drain_service
         )
 
     def shutdown(self) -> None:
@@ -565,17 +577,6 @@ class ApplicationHost:
             job_board=self._job_board_projection,
             instance_manager=self._app.instance_manager,
         )
-        from palm.common.cqrs.schemas import build_schema_registry
-        from palm.services.assist import AssistService
-        from palm.services.definitions import DefinitionService
-        from palm.services.design import DesignService
-        from palm.services.design.factory import create_proposal_repository
-        from palm.services.execution import ExecutionService
-        from palm.services.execution.flows import FlowExecutionService
-        from palm.services.execution.processes import ProcessExecutionService
-        from palm.services.execution.providers import ProviderExecutionService
-        from palm.services.system import SystemService
-
         self._schema_registry = build_schema_registry()
         self._system = SystemService(
             commands=self._command_bus,
@@ -624,8 +625,6 @@ class ApplicationHost:
             proposals=create_proposal_repository(self._app.storage),
             runtime_resolver=self._resolve_execution_runtime,
         )
-        from palm.services.analytics import AnalyticsService
-
         settings = self.settings
         allow_unpub = bool(settings.analytics_allow_unpublished)
         if settings.analytics_allow_unpublished_with_server:
@@ -647,9 +646,6 @@ class ApplicationHost:
         self._wire_work_drain()
         self._wire_event_journal()
         self._wire_inbound()
-        from palm.services._cqrs_wiring import wire_all_service_cqrs
-        from palm.services.design.contributors import wire_builtin_design_contributors
-
         wire_builtin_design_contributors()
         wire_all_service_cqrs(
             self._command_bus,
@@ -910,9 +906,7 @@ class ApplicationHost:
         if self._inbound is not None:
             try:
                 internal_bindings = sum(
-                    1
-                    for row in self._inbound.list_bindings()
-                    if row.get("mode") == "internal"
+                    1 for row in self._inbound.list_bindings() if row.get("mode") == "internal"
                 )
             except Exception:
                 internal_bindings = 0

@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.47.4 — Hoist ApplicationHost `_wire_cqrs` service imports (T3)
+- Hoisted the 13 `_wire_cqrs` service/schema imports in `app/host/application_host.py` (SystemService, DefinitionService, ExecutionService + flows/processes/providers, AssistService, DesignService, AnalyticsService, `build_schema_registry`, `wire_all_service_cqrs`, `wire_builtin_design_contributors`) from function-local to module top. Pure downward (`app→services`/`app→common`) — verified no cycle (`import palm.app`, host start/shutdown, full suite all clean).
+- **⛳ Unblocks T2:** the god-class's service dependency surface is now top-level and visible, the precondition for the contributor-pipeline decomposition (VISION-0.48).
+- Ratchet: **267 → 254** function-local imports. Left deferred (by design): `import palm.patterns` side-effect (→ 0.47.5) and the scattered work-drain/inbound/consumers imports (follow-up).
+
 ### 0.47.3 — Centralize shared surface helpers → `common/surfaces/` (T3)
 Kills the `mcp → rest` coupling for shared helpers (from review feedback: mcp shouldn't depend on rest).
 - New **`palm/common/surfaces/`** package holds the transport-agnostic helpers — `pagination` (`PaginationParams`, `list_envelope`, `paginate_rows`) and `serializers` (`snapshot_summary`/`detail`). Every surface (rest/mcp/ssr/ws) now depends *down* on `common` instead of sideways on `rest`.

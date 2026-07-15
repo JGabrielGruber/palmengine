@@ -1,6 +1,6 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.47.3`
+**Current Version:** `0.47.4`
 **Last Updated:** July 10, 2026
 **Maturity:** Wizard · MCP · Assist remote · Portal/WS · **Analytics + dashboards** · **WorkIntent / journal foundations · **0.41 durable dashboards + schedules · **0.42 event stream foundation****** · Palm provider system inspect.
 
