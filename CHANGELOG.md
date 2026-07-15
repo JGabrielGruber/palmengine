@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.47.3 — Centralize shared surface helpers → `common/surfaces/` (T3)
+Kills the `mcp → rest` coupling for shared helpers (from review feedback: mcp shouldn't depend on rest).
+- New **`palm/common/surfaces/`** package holds the transport-agnostic helpers — `pagination` (`PaginationParams`, `list_envelope`, `paginate_rows`) and `serializers` (`snapshot_summary`/`detail`). Every surface (rest/mcp/ssr/ws) now depends *down* on `common` instead of sideways on `rest`.
+- Repointed the 9 importers; `rest/validation.py` re-exports `PaginationParams` (via `__all__`) so existing REST handlers are unchanged; removed `rest/pagination.py` + `rest/serializers.py`.
+- `mcp/in_process.py` no longer imports `rest` for shared helpers — the only remaining `mcp→rest` edge is `build_openapi_spec` (the REST API's own OpenAPI spec, which is inherently rest). Full suite green; single canonical `PaginationParams` (no dual class).
+
 ### 0.47.2 — De-cycle mcp↔server: hoist `in_process.py` imports (T3)
 - Hoisted 20 function-local imports in `runtimes/mcp/in_process.py` to module top — the leaf `rest.*` helpers (`pagination`/`validation`/`serializers`/`openapi`, all mcp-import-free) + the mcp intra-package imports. Verified `import palm.runtimes.mcp.in_process` is cycle-free; the 4 `server→mcp` edges + the bootstrap `server`/`app` imports stay deferred by design. The worst-offender file drops 32→12 deferred imports.
 - Ratchet: function-local `palm` imports **287 → 267** (`guard_deferred` ceiling lowered). Upward/cycle-forcing count unchanged at 35 (this is sibling de-cycling). Full suite green.

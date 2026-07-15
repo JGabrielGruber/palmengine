@@ -1,4 +1,8 @@
-"""REST serializers — snapshot response shapes."""
+"""Shared surface serializers — snapshot response shapes.
+
+Transport-agnostic (see :mod:`palm.common.surfaces`). Relocated from the REST surface
+in 0.47.3. Depends only on the ``palm.instances`` contract.
+"""
 
 from __future__ import annotations
 

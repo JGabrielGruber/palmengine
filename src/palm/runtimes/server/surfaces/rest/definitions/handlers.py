@@ -10,9 +10,9 @@ from palm.common.services.errors import (
     InstanceMigrationServiceError,
     InstanceNotFoundServiceError,
 )
+from palm.common.surfaces.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
-from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import created, ok
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body
 from palm.runtimes.server.surfaces.rest.schemas import VALIDATE_FLOW_BODY

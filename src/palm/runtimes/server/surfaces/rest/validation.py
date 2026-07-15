@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.surfaces.pagination import DEFAULT_LIMIT, MAX_LIMIT, PaginationParams
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_query_dict
 from palm.runtimes.server.surfaces.rest.schemas import (
@@ -15,14 +15,17 @@ from palm.runtimes.server.surfaces.rest.schemas import (
     LIST_SNAPSHOTS_QUERY,
 )
 
-DEFAULT_LIMIT = 50
-MAX_LIMIT = 200
-
-
-@dataclass(frozen=True)
-class PaginationParams:
-    limit: int
-    offset: int
+# PaginationParams / DEFAULT_LIMIT / MAX_LIMIT canonically live in the shared surface layer
+# (palm.common.surfaces.pagination, 0.47.3); re-exported here so REST importers keep working.
+__all__ = [
+    "DEFAULT_LIMIT",
+    "MAX_LIMIT",
+    "PaginationParams",
+    "parse_list_flows_query",
+    "parse_list_instances_query",
+    "parse_list_jobs_query",
+    "parse_list_snapshots_query",
+]
 
 
 def parse_list_jobs_query(request: ServerRequest) -> dict[str, Any] | ServerResponse:

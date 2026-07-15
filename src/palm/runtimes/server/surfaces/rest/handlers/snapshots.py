@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 from palm.common.cqrs.query import GetInstanceSnapshotQuery, ListInstanceSnapshotsQuery
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.surfaces.pagination import list_envelope
+from palm.common.surfaces.serializers import snapshot_detail, snapshot_summary
 from palm.runtimes.server.surfaces.rest import errors
-from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import ok
-from palm.runtimes.server.surfaces.rest.serializers import snapshot_detail, snapshot_summary
 from palm.runtimes.server.surfaces.rest.validation import (
     PaginationParams,
     parse_list_snapshots_query,

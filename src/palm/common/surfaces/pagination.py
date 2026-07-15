@@ -1,10 +1,22 @@
-"""REST pagination envelopes."""
+"""Shared surface pagination — list envelopes and pagination params.
+
+Transport-agnostic (see :mod:`palm.common.surfaces`). Used by REST, MCP, SSR and
+WebSocket surfaces alike. Relocated from the REST surface in 0.47.3.
+"""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
-from palm.runtimes.server.surfaces.rest.validation import PaginationParams
+DEFAULT_LIMIT = 50
+MAX_LIMIT = 200
+
+
+@dataclass(frozen=True)
+class PaginationParams:
+    limit: int
+    offset: int
 
 
 def paginate_rows(rows: list[Any], params: PaginationParams) -> dict[str, Any]:
@@ -25,11 +37,7 @@ def paginate_rows(rows: list[Any], params: PaginationParams) -> dict[str, Any]:
     }
 
 
-def list_envelope(
-    key: str,
-    rows: list[Any],
-    params: PaginationParams,
-) -> dict[str, Any]:
+def list_envelope(key: str, rows: list[Any], params: PaginationParams) -> dict[str, Any]:
     """Backward-compatible list key plus pagination block."""
     sliced = paginate_rows(rows, params)
     return {

@@ -52,14 +52,15 @@ dominant SCC is 81 modules across `app.* + common.runtimes.server.* + runtimes.*
 ## Slices (feature-per-patch; `just check` green + deferred metric strictly decreasing each patch)
 
 - **0.47.0** — Plan (this doc) + refine PD-012 metric in the register.
-- **0.47.1** — **Fitness function.** Add `scripts/guard_deferred.py` (model on `guard_core.py`): a ratchet ceiling on function-local palm imports + a no-new-upward-edge check against an allowlist snapshot; wire into `just check`. Reclassify the leaf layers. *Removes 0; locks the graph so nothing regresses while we cut.*
-- **0.47.2** — **mcp↔server** (technique 2): cut 4 `server → mcp` edges; hoist `mcp/in_process` deferrals.
-- **0.47.3** — **Hoist `app`/`ApplicationHost` downward deferrals** (technique 1): 14 `app→services` + 9 `app→common` wiring imports to top-level. **⛳ Unblocks T2** — the god-object's true dependency surface becomes top-level and visible.
-- **0.47.4** — **Pattern registry inversion** (techniques 3+4): relocate `patterns._registry` state below `common`; delete 13 `common→patterns` edges + the side-effect import. *Highest architectural payoff; also unblocks T2.*
-- **0.47.5** — **Provider + storage registry inversion** (same for 4 `common→providers` + 2 `common→storages`).
-- **0.47.6** — **Relocate `common/runtimes/server/*`** out of `common` → resolves 9 `common→services` edges **and PD-013**.
-- **0.47.7** — **`job_inspect` inversion + runtime-factory registry** — last 4 + 3 upward edges.
-- **0.47.8** — **Ratchet to zero + waivers:** flip `guard_deferred` to fail on any upward function-local import; re-evaluate the `patterns/wizard/** I001` isort waiver (likely droppable); optionally add `import-linter` layered contracts to CI incrementally.
+- **0.47.1** ✅ — **Fitness function** `scripts/guard_deferred.py` (ratchet ceilings 287/35, AST layer-direction classification), wired into `just check` / `just ci`. Locks the graph.
+- **0.47.2** ✅ — **mcp/in_process hoist**: leaf `rest.*` + mcp intra-package deferrals to top-level (32→12); ratchet 287→267.
+- **0.47.3** ✅ — **Relocate shared surface helpers → `palm/common/surfaces/`** (pagination, serializers). Kills the `mcp→rest` shared-helper coupling — both surfaces depend *down* on `common`. *(added from review feedback; the only remaining `mcp→rest` edge is `build_openapi_spec`, which is the REST API's own spec.)*
+- **0.47.4** — **Hoist `app`/`ApplicationHost` downward deferrals** (technique 1): 14 `app→services` + 9 `app→common` wiring imports to top-level. **⛳ Unblocks T2** — the god-object's true dependency surface becomes top-level and visible.
+- **0.47.5** — **Pattern registry inversion** (techniques 3+4): relocate `patterns._registry` state below `common`; delete 13 `common→patterns` edges + the side-effect import. *Highest architectural payoff; also unblocks T2.*
+- **0.47.6** — **Provider + storage registry inversion** (4 `common→providers` + 2 `common→storages`).
+- **0.47.7** — **Relocate `common/runtimes/server/*`** out of `common` → resolves 9 `common→services` edges **and PD-013**.
+- **0.47.8** — **`job_inspect` inversion + runtime-factory registry** — last 4 + 3 upward edges.
+- **0.47.9** — **Ratchet to zero + waivers:** flip `guard_deferred` to fail on any upward function-local import; re-evaluate the `patterns/wizard/** I001` isort waiver; optionally add `import-linter` layered contracts.
 
 ## Exit criteria
 

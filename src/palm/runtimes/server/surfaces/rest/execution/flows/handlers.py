@@ -9,13 +9,13 @@ from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
 from palm.common.services.errors import DefinitionNotFoundServiceError, InstanceNotFoundServiceError
+from palm.common.surfaces.pagination import list_envelope
 from palm.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
-from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import accepted, flatten_session_context, ok
 from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from palm.runtimes.server.surfaces.rest.schema_validation import validate_body

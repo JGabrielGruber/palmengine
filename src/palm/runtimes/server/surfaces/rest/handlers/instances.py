@@ -9,9 +9,9 @@ from palm.common.cqrs.query import GetInstanceStatusQuery, ListInstancesQuery
 from palm.common.exceptions import InstanceNotFoundError
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.common.runtimes.server.protocol import ServerRequest, ServerResponse
+from palm.common.surfaces.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest import errors
 from palm.runtimes.server.surfaces.rest.handlers.base import require_auth
-from palm.runtimes.server.surfaces.rest.pagination import list_envelope
 from palm.runtimes.server.surfaces.rest.responses import accepted, ok, read_model_body
 from palm.runtimes.server.surfaces.rest.validation import (
     PaginationParams,
