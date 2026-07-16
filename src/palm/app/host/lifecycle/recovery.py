@@ -85,7 +85,8 @@ class RecoveryCoordinator:
             if self._outbox_service is not None:
                 recovery["outbox_pending"] = self._outbox_service.store.pending_count()
 
-        if host.settings.rebuild_projections_on_startup:
+        # 0.51.5: no projection layer (lean composition) → nothing to rebuild.
+        if host.composition.has("projections") and host.settings.rebuild_projections_on_startup:
             report = host._projection_manager.rebuild_all(
                 policy=ProjectionRebuildPolicy(
                     batch_size=host.settings.projection_rebuild_batch_size,

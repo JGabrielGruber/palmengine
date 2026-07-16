@@ -22,7 +22,9 @@ from typing import Literal, Self
 
 ServiceName = Literal["system", "definitions", "execution", "assist", "design", "analytics"]
 SurfaceName = Literal["rest", "websocket", "mcp", "explorer", "studio"]
-Capability = Literal["work_drain", "outbox", "compensation", "webhook", "journal", "analytics"]
+Capability = Literal[
+    "work_drain", "outbox", "compensation", "webhook", "journal", "analytics", "projections"
+]
 
 #: The full service set the host builds today (pinned to CORE_SERVICE_PROVIDERS by tests).
 ALL_SERVICES: tuple[ServiceName, ...] = (
@@ -38,7 +40,9 @@ CORE_SERVICES: tuple[ServiceName, ...] = ("system", "definitions", "execution")
 #: The surfaces the server runtime ships (see runtimes/server/surfaces default_surfaces).
 SERVER_SURFACES: tuple[SurfaceName, ...] = ("rest", "websocket", "mcp", "explorer", "studio")
 #: Background/optional capabilities on for a full host by default.
-DEFAULT_CAPABILITIES: frozenset[Capability] = frozenset({"outbox", "compensation", "journal", "analytics"})
+DEFAULT_CAPABILITIES: frozenset[Capability] = frozenset(
+    {"outbox", "compensation", "journal", "analytics", "projections"}
+)
 
 
 @dataclass(frozen=True)

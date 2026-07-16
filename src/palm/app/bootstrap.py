@@ -155,12 +155,11 @@ def _capabilities_from_settings(settings: PalmSettings) -> frozenset[str]:
 
     This is the composition axis of capabilities — *availability*. ``DeploymentProfile``
     decides *activation* (whether this running node actually spins a background loop) at
-    gate-time (0.51.3). ``journal`` has no flag: it is wired whenever storage + event are
-    ready, so it is always available. Derived here but **not yet gating** — each piece of
-    host machinery still reads its own ``enable_*`` flag until 0.51.2+ switches its gate to
-    ``composition.has(...)``. See VISION-0.51 / ADR-020.
+    gate-time (0.51.3). ``journal`` and ``projections`` have no flag: they are wired whenever
+    the host assembles, so they are always available on a settings-composed host (a lean
+    *explicit* composition can still omit them). See VISION-0.51 / ADR-020.
     """
-    capabilities: set[str] = {"journal"}
+    capabilities: set[str] = {"journal", "projections"}
     if settings.enable_compensation:
         capabilities.add("compensation")
     if settings.enable_event_outbox:

@@ -34,17 +34,19 @@ def _caps(**overrides: object) -> frozenset[str]:
 
 
 def test_full_recovery_derives_exactly_default_capabilities() -> None:
-    """full_recovery turns on compensation + outbox; with analytics + always-on journal
-    that is exactly DEFAULT_CAPABILITIES — the production-default shape."""
+    """full_recovery turns on compensation + outbox; with analytics + the always-on journal
+    and projections that is exactly DEFAULT_CAPABILITIES — the production-default shape."""
     profile = composition_profile_from_settings(PalmSettings.for_tests(full_recovery=True))
     assert profile.capabilities == DEFAULT_CAPABILITIES
-    assert DEFAULT_CAPABILITIES == frozenset({"outbox", "compensation", "journal", "analytics"})
+    assert DEFAULT_CAPABILITIES == frozenset(
+        {"outbox", "compensation", "journal", "analytics", "projections"}
+    )
 
 
-def test_lean_test_settings_derive_journal_and_analytics_only() -> None:
+def test_lean_test_settings_derive_the_always_on_capabilities_plus_analytics() -> None:
     """for_tests default (full_recovery=False): compensation + outbox off, analytics on,
-    journal always available."""
-    assert _caps() == frozenset({"journal", "analytics"})
+    journal + projections always available."""
+    assert _caps() == frozenset({"journal", "projections", "analytics"})
 
 
 def test_each_flag_toggles_exactly_its_capability() -> None:
@@ -87,8 +89,8 @@ def test_services_not_gated_by_capabilities_yet() -> None:
     host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
     host.start()
     try:
-        # lean test settings derive only {journal, analytics} ...
-        assert host.composition.capabilities == frozenset({"journal", "analytics"})
+        # lean test settings derive {journal, projections, analytics} ...
+        assert host.composition.capabilities == frozenset({"journal", "projections", "analytics"})
         # ... yet every service is still built (services are a separate axis)
         for name in ("system", "definitions", "execution", "assist", "design", "analytics"):
             assert getattr(host, name) is not None
@@ -242,5 +244,35 @@ def test_journal_gated_by_capability() -> None:
     lean.start()
     try:
         assert lean.event_journal is None  # capability omitted → no journal
+    finally:
+        lean.shutdown()
+
+
+# ── 0.51.5: projections are a capability (the payoff — a lean ApplicationHost) ─
+
+
+def test_projections_are_a_capability_lean_host_starts_without_them() -> None:
+    """The projection layer is gated by composition.has('projections'). A default host has
+    it (derived always); a lean composition that omits it starts cleanly with NO projection
+    layer — the projection-less shape ApplicationHost could not express before (0.50.5f)."""
+    default = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
+    default.start()
+    try:
+        assert "projections" in default.composition.capabilities
+        assert default._instance_projection is not None
+    finally:
+        default.shutdown()
+
+    lean = ApplicationHost(
+        settings=PalmSettings.for_tests(load_examples=False),
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+    )
+    lean.start()
+    try:
+        assert lean.is_started is True  # it assembles — the payoff of the theme
+        assert lean._instance_projection is None
+        assert lean._job_board_projection is None
+        assert lean._resource_projection is None
+        assert lean.pattern_projection("wizard") is None
     finally:
         lean.shutdown()

@@ -502,22 +502,28 @@ class ApplicationHost:
         return self._app.runtime(resolved)
 
     def _wire_cqrs(self) -> None:
-        projections = build_host_projections(self._app.storage, self._app.instance_manager)
-        register_host_projections(self._projection_manager, projections)
-        self._instance_projection = projections.instance
-        self._resource_projection = projections.resource
-        self._job_board_projection = projections.job_board
-        self._pattern_projections = projections.patterns
         wire_command_bus(self._command_bus, self._app, self._router)
-        wire_query_bus(
-            self._query_bus,
-            app=self._app,
-            instances=self._instance_projection,
-            pattern_projections=self._pattern_projections,
-            resource_invocations=self._resource_projection,
-            job_board=self._job_board_projection,
-            instance_manager=self._app.instance_manager,
-        )
+        # 0.51.5: the projection layer is a capability. Default hosts derive "projections"
+        # (always), so this is behaviour-preserving; a lean composition that omits it wires
+        # no projections and no projection-backed query handlers — the projection-less shape
+        # ApplicationHost could not express before. Its read side (direct-from-runtime) is
+        # the composition-root fold-in (0.51.6); a projection-less host is submit-complete.
+        if self.composition.has("projections"):
+            projections = build_host_projections(self._app.storage, self._app.instance_manager)
+            register_host_projections(self._projection_manager, projections)
+            self._instance_projection = projections.instance
+            self._resource_projection = projections.resource
+            self._job_board_projection = projections.job_board
+            self._pattern_projections = projections.patterns
+            wire_query_bus(
+                self._query_bus,
+                app=self._app,
+                instances=self._instance_projection,
+                pattern_projections=self._pattern_projections,
+                resource_invocations=self._resource_projection,
+                job_board=self._job_board_projection,
+                instance_manager=self._app.instance_manager,
+            )
         self._schema_registry = build_schema_registry()
         service_ctx = HostServiceContext(
             command_bus=self._command_bus,
@@ -554,6 +560,8 @@ class ApplicationHost:
         )
 
     def _attach_projections(self) -> None:
+        if not self.composition.has("projections"):
+            return
         self._projection_manager.attach(self._event)
         self._projection_manager.attach_runtimes(self._app)
 
