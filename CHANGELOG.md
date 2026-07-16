@@ -4,6 +4,30 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.48.8] — 2026-07-15
+
+**Bundled release since 0.47.4** — completes **T3** (import-cycle cleanup, 0.47) and delivers **T2**
+(`ApplicationHost` decomposition, 0.48). Headline: upward cycle-forcing imports **35 → 3**;
+`ApplicationHost` **1164 → 629 LOC**; **PD-012, PD-013 closed** (+ PD-009/010/018 addressed). Two clean
+debt themes; public API stable (one internal import-path move — see [MIGRATION-0.48.md](MIGRATION-0.48.md)).
+
+### T2 — Decompose `ApplicationHost` (0.48 · PD-009/010/013/018)
+- **0.48.0** — Plan: [VISION-0.48](docs/VISION-0.48.md) + [ADR-018](docs/adr/018-application-host-decomposition.md) + characterization tests freezing the 3 status reports' JSON contract.
+- **0.48.1** — `app/host/observability.py::HostObservability` — the three status reports extracted (PD-018).
+- **0.48.2** — `app/host/services/` — the 6 core services build via a dependency-ordered `HostServiceRegistry` (PD-010).
+- **0.48.3** — `app/host/workplane/` — `WorkPlaneCoordinator` (work-drain / inbound / journal) + folds in the flat service files.
+- **0.48.4** — `app/host/lifecycle/` — `RuntimeSpawner` + `RecoveryCoordinator`.
+- **0.48.5–0.48.6** — `app/host/wiring/` (projections + CQRS bus handlers); **found & fixed a latent `services → server → ServerContext → services` import cycle** via lazy composition-root exports in `common/runtimes/server/__init__`.
+- **0.48.7** — Relocated `ServerContext`/`ServerApp` `common → runtimes/server/` — **PD-013 closed**; upward imports **5 → 3**; server infra stays in `common`. (import-path MIGRATION.)
+- **0.48.8** — Removed 8 dead host `@property` accessors (whole-repo zero-consumer sweep). `ApplicationHost` **1164 → 629 LOC**; T2 structurally complete (the final <350 shrink via facades moves to [VISION-0.49](docs/VISION-0.49.md), the app-composition-profile theme).
+
+### T3 — Break the import cycles, cont'd (0.47.5–0.47.9 · PD-012 closed)
+- **0.47.5 (a–d)** — Pattern + provider **registry inversion**: registries move into `common/{patterns,providers}/_registry`; plugins register downward; registration-by-side-effect autoloads removed; back-compat shims retired.
+- **0.47.6** — **Storage backend polymorphism** — `BaseBackend.keys_with_prefix` replaces `common`'s `isinstance` + private-attribute poking.
+- **0.47.7 (a–b)** — Service **CQRS contributor registry** → `common/cqrs/service_contributors`; services self-register their contributor on package import.
+- **0.47.8** — `job_inspect` → a `JobInspectable` capability: each pattern owns `inspect_job`; the shared inspector is pattern-agnostic (no `isinstance` ladder).
+- **0.47.9** — analytics preflight + assist CTA enrichment inverted via contributor registries; [ADR-017](docs/adr/017-import-seams.md) sanctions the 5 remaining composition-root/lazy seams; **PD-012 closed** (upward 35 → 5).
+
 ### 0.47.4 — Hoist ApplicationHost `_wire_cqrs` service imports (T3)
 - Hoisted the 13 `_wire_cqrs` service/schema imports in `app/host/application_host.py` (SystemService, DefinitionService, ExecutionService + flows/processes/providers, AssistService, DesignService, AnalyticsService, `build_schema_registry`, `wire_all_service_cqrs`, `wire_builtin_design_contributors`) from function-local to module top. Pure downward (`app→services`/`app→common`) — verified no cycle (`import palm.app`, host start/shutdown, full suite all clean).
 - **⛳ Unblocks T2:** the god-class's service dependency surface is now top-level and visible, the precondition for the contributor-pipeline decomposition (VISION-0.48).
