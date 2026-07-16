@@ -152,6 +152,20 @@ class ServerContext:
         """
         return self._host.composition if self._host is not None else CompositionProfile.server()
 
+    def resolve_execution_runtime(self, runtime_name: str | None = None) -> BaseRuntime:
+        """The runtime services execute on — the bridge seam toward a shared assembler.
+
+        0.50.5c: names the interface a unified ``core_service_registry().build_all``
+        will call, uniformly, from either composition root. Host-attached defers to the
+        host's resolver (routes by name); standalone is the single server runtime. The
+        remaining bridge (0.50.5d) adapts ``runtime.repository``/``runtime.storage`` to
+        the kernel-shape the service providers expect, after which this context's
+        service build collapses into the registry and ``ServerContext`` dissolves.
+        """
+        if self._host is not None:
+            return self._host._resolve_execution_runtime(runtime_name)
+        return self._runtime
+
     @property
     def command_bus(self) -> CommandBus:
         return self._command_bus
