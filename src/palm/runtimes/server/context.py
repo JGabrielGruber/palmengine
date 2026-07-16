@@ -53,12 +53,29 @@ class _RuntimeKernelView:
 
 class ServerContext:
     """
-    Shared execution context for all server surfaces.
+    The server composition root — and the surface-facing context every surface programs against.
 
-    When an :class:`~palm.app.host.ApplicationHost` is attached, commands and
-    queries flow through the host buses (projections, routing, webhooks). In
-    standalone :class:`~palm.runtimes.server.runtime.ServerRuntime` mode, local
-    buses are wired directly to the hosting runtime.
+    ``ServerContext`` is two things at once:
+
+    1. **The surface-facing context.** Every REST / WebSocket / MCP / SSR handler
+       and route takes a ``ctx: ServerContext`` and reads through its uniform
+       surface (``ask``/``execute``/``execution``/``definitions``/``composition``/…),
+       independent of what is assembling behind it.
+    2. **The lean server composition root.** When no host is attached it *is* the
+       ``CompositionProfile.server()`` phenotype — a single :class:`ServerRuntime`,
+       no projection layer, reads served directly from the runtime
+       (``wire_standalone_buses``). It is the server-side sibling of
+       ``CompositionProfile.embedded()``: one genome, a leaner phenotype.
+
+    It builds its services through the **same** ``core_service_registry()`` that
+    :class:`~palm.app.host.ApplicationHost` uses (0.50.5e) — the two composition
+    roots share one service genome. What stays distinct is *dispatch*: an attached
+    host routes commands/queries through its projection-ful buses (routing,
+    recovery, webhooks); host-less, the local buses serve reads live from the
+    runtime. That difference is the phenotype, not accidental duplication — so
+    ``ServerContext`` is retained, not dissolved (see ADR-019 Status / VISION-0.50).
+    Folding it into ``ApplicationHost`` would first require modeling projections as
+    a capability so the assembler can express this lean shape — a future theme.
     """
 
     def __init__(

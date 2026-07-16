@@ -48,10 +48,12 @@ A running app is assembled from a **`CompositionProfile`** and a **`DeploymentPr
 - ✅ **0.49.1** — `HostProfile` → `DeploymentProfile` (+ `HostProfilePreset`/`HostRoleName`/`host_profile_from_settings`).
 - ✅ **0.49.2** — `PalmApp` → `PalmKernel`, `palm.app.app` → `palm.app.kernel` — the infra *substrate*, not "the app".
 
-**Still open (settle when the mechanism lands):**
-- The two composition roots — `ApplicationHost` (the assembler) vs `ServerContext` — converge: "server" becomes
-  a `CompositionProfile`, not a separate class. What does the surviving assembler get called (keep
-  `ApplicationHost`, or `PalmHost`)? — decide alongside building the `CompositionProfile` mechanism.
+**Resolved (0.50.5e — see the revised-understanding note under §What this collapses):**
+- The two composition roots — `ApplicationHost` (the projection-ful assembler) and `ServerContext` (the lean,
+  projection-less server) — now share the service-build **genome** (`core_service_registry()`) but remain
+  distinct **phenotypes**. "server" is a `CompositionProfile`; `ApplicationHost` keeps its name (it *is* the
+  assembler). `ServerContext` is **retained** — it is the lean server root and the surface-facing context — not
+  deleted. The original "collapse into one class" framing was refined once the mechanism actually landed.
 
 ## The insight — two shapes are tangled in `ApplicationHost`
 
@@ -138,9 +140,25 @@ from our needs" table):
 - `default_surfaces(ctx)` stops being a hardcoded function → becomes a `CompositionProfile.surfaces` field.
 - The scattered `enable_*` settings become profile-level defaults (settings still override per the
   `*_from_settings` resolver pattern).
-- **`ServerContext` dissolves** into `CompositionProfile.server()` — the two hand-coded composition roots become
-  one assembler (`ApplicationHost`) over a declared profile. This is the biggest, most careful move of the theme.
+- **The service build converges; `ServerContext` is retained** (revised understanding — see note below). Both
+  roots now construct services through one `core_service_registry()`. What stays distinct — the host's
+  projection-ful dispatch vs the lean server's direct-from-runtime dispatch — is the *phenotype*, not accidental
+  duplication.
 - Facades (`host.flows` / `host.instances`) are the **capability surface** a profile turns on/off per shape.
+
+> **Revised understanding (0.50.5e).** The original plan named "`ServerContext` dissolves into
+> `CompositionProfile.server()`" as the theme's payoff. Building the mechanism revealed what `ServerContext`
+> actually *is*: (1) the **surface-facing context type** ~50 REST/WS/MCP/SSR handler and route files program
+> against (`ctx.ask`/`ctx.execute`/`ctx.execution`/…), and (2) a genuinely **leaner phenotype** — its
+> `wire_standalone_buses` serves reads *directly from the runtime* (no projection layer), because a bare
+> `ServerRuntime` is a real lean deployment shape, the server-side sibling of `CompositionProfile.embedded()`.
+> The convergence worth having — unifying the duplicated **service construction** — landed at 0.50.5e (both roots
+> build from `core_service_registry()`). Deleting the `ServerContext` type would remove the lean phenotype, force
+> projections/recovery into every standalone server, and re-type ~50 files toward the host — churn against Palm's
+> own principles, not long-term health. The deeper "one assembler over all shapes" endpoint is still *coherent* —
+> it needs **projections modeled as a capability** so `ApplicationHost` can express the lean shape too — but that
+> is a theme of its own (candidate for 0.51+), not a slice to force here. `ServerContext` stays; it is now
+> honestly named as the lean server composition root sharing the service genome. *One genome, many phenotypes.*
 
 ## Open questions (mostly resolved by §Mechanism — left for the ADR to lock)
 
@@ -169,14 +187,17 @@ composition-root convergence lands last.
 | **0.50.4** ✅ | **Read facades** (additive) — `host.instances` / `host.jobs` / `host.wizards` group the flat query methods into navigable sub-objects (`app/host/facades.py`); the flat methods stay as thin delegators (the "dead leaves"). The capability surface a profile will gate; the <350 shrink lands as the leaves are pruned in a later season. | no (additive) |
 | **0.50.5a–c** ✅ | **Both roots speak `composition`** — `ServerContext` gains a `.composition` (attached host's, or `server()`); surfaces + optional services derive from it; the runtime↔kernel bridge seam (`resolve_execution_runtime`) is named. | no |
 | **0.50.5d–e** ✅ | **Service-build convergence** (the heart of ADR-019) — `ServerContext._build_standalone_services` now builds through the *same* `core_service_registry().build_all(only=composition.services)` `ApplicationHost` uses. Bridge = `_RuntimeKernelView` (runtime → the `repository()`/`storage` kernel shape); `HostServiceContext.event` made optional so the host-less root builds without an event plane. Behaviour-preserving (runtime axis / event emission / analytics config all reconciled); full suite + hermetic CI green. | no |
-| **0.50.5f** | **`ServerContext` dissolves** → `CompositionProfile.server()`; the type goes away and a server is always an `ApplicationHost` over a declared profile. The careful, caller-facing one. | **yes** (import path) |
+| **0.50.5f** ✅ | **Truth-telling reframe** — the mechanism revealed `ServerContext` is the surface-facing context + the lean, projection-less server phenotype, not redundant logic (see revised-understanding note). The service-build convergence (5d–e) *is* the theme's payoff; `ServerContext` is retained and honestly renamed in docstring as the lean server composition root sharing `core_service_registry()`. Docs (this file + ADR-019) corrected so no future contributor performs the destructive rip-out. | no |
+| *future* | **One assembler over all shapes** (candidate 0.51+) — model **projections as a capability** so `ApplicationHost` can express the lean shape; only then could `ServerContext` fold in without losing the lean phenotype. A theme of its own, not forced. | **yes** (eventually) |
 | **0.50.6** | *(optional)* **Author-facing profiles** — users declare their own `CompositionProfile` (the `palmengine-django` embedding enablement); a registry of named profiles if warranted. | — |
 
 ## Exit criteria
 
-One assembler (`ApplicationHost`) over declared `CompositionProfile`s; `ServerContext` gone; palm's shapes
-(`all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp`) are **declarations**, not bespoke classes; the
-`palmengine-django`-style embedded/lib shape works via `CompositionProfile.embedded()`; `default_surfaces`
-+ the scattered `enable_*` composition flags subsumed into the profile; suite green throughout; public-API
-changes (facades, the `ServerContext` path) carried in `MIGRATION-0.50.md`. Bonus: `ApplicationHost` finally
-crosses <350 LOC as the facade/profile split lands.
+Both composition roots build services from **one** `core_service_registry()` (the achieved convergence);
+palm's shapes (`all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp`) are **declarations**, not bespoke
+classes; the `palmengine-django`-style embedded/lib shape works via `CompositionProfile.embedded()`;
+`default_surfaces` + the scattered `enable_*` composition flags subsumed into the profile; suite green
+throughout. `ServerContext` is **retained** as the lean server composition root + surface-facing context
+(revised from the original "gone" — see the 0.50.5e note); collapsing it into `ApplicationHost` awaits
+projections-as-a-capability, a future theme. Stretch (later, as the facade/flat-delegator prune lands):
+`ApplicationHost` crosses <350 LOC.

@@ -4,11 +4,16 @@
 
 **Accepted** — July 2026 (0.50.0, theme: Composition Profiles)
 
-> **Progress (0.50.5e):** decisions 1–2 landed; decision 3 — *the two composition roots
-> collapse into one* — is now substantially realized: both `ApplicationHost` and the host-less
-> `ServerContext` build their services through the **same** `core_service_registry()`. The
-> remaining step is the formal dissolution of the `ServerContext` *type* into
-> `CompositionProfile.server()` (0.50.5f, a caller-facing import migration).
+> **Progress + refinement (0.50.5e–f):** decisions 1–2 landed. Decision 3 — *the two composition
+> roots collapse into one* — is **refined**: both `ApplicationHost` and the host-less `ServerContext`
+> now build their services through the **same** `core_service_registry()` (the convergence that
+> mattered). But building the mechanism revealed `ServerContext` is not redundant logic to delete — it
+> is the surface-facing context type (~50 files) *and* a genuinely leaner phenotype (direct-from-runtime
+> dispatch, no projection layer — the server-side sibling of `embedded()`). So decision 3 is achieved
+> **at the service-build layer**, and `ServerContext` is **retained** as the lean server composition
+> root. Fully folding it into `ApplicationHost` would need **projections modeled as a capability** (so
+> the assembler can express the lean shape) — a coherent *future* theme (0.51+), not a 0.50 slice. See
+> the revised-understanding note in [VISION-0.50](../VISION-0.50.md).
 
 ## Context
 
@@ -45,12 +50,18 @@ Three load-bearing choices:
    profile defaults (settings still override, per the `*_from_settings` pattern). Facades
    (`host.flows`/`host.instances`) are the per-shape capability surface a profile turns on/off.
 
-3. **The two composition roots collapse into one.** `ServerContext` dissolves into
-   `CompositionProfile.server()` — "server" is a composition, not a class. This is the payoff (one assembler
-   over declared profiles) and the most careful move; it lands last (0.50.5), behind the trusted skeleton.
+3. **The two composition roots share one service genome.** *(Refined at 0.50.5e — see the Status note; the
+   original wording was "`ServerContext` dissolves into `CompositionProfile.server()`".)* Both
+   `ApplicationHost` and the host-less `ServerContext` build services through the **same**
+   `core_service_registry()`. "server" *is* a composition. But `ServerContext` is **retained**, not deleted:
+   it is the surface-facing context and the lean, projection-less server phenotype. This is the payoff (one
+   service-build genome, expressed as many phenotypes) and the most careful move; it landed last (0.50.5d–e),
+   behind the trusted skeleton. Collapsing the two *types* into one assembler awaits projections-as-a-capability
+   (a future theme).
 
 Sequenced low-risk → high-care: skeleton + presets (pinned against today's behavior) → host reads profile →
-surfaces from profile → facades → `ServerContext` dissolution → optional author-facing profiles.
+surfaces from profile → facades → service-build convergence (both roots → `core_service_registry()`) →
+optional author-facing profiles.
 
 ## Consequences
 
@@ -58,8 +69,9 @@ surfaces from profile → facades → `ServerContext` dissolution → optional a
   library) is authoring a `CompositionProfile`, not editing a god-class. The four scattered composition
   mechanisms unify. `ApplicationHost` crosses <350 LOC as the facade/profile split lands. The
   `palmengine-django` shape becomes first-class (`CompositionProfile.embedded()`).
-- **Negative / risk.** Touches the composition roots and public API (facades, the `ServerContext` import
-  path) → `MIGRATION-0.50.md`. Presets must be pinned against current behavior (0.50.1 tests) before anything
-  assembles from them, or a shape silently drifts.
+- **Negative / risk.** Touches the composition roots and public API (facades) → `MIGRATION-0.50.md`. Presets
+  must be pinned against current behavior (0.50.1 tests) before anything assembles from them, or a shape
+  silently drifts. *(The feared `ServerContext` import-path migration did not materialize — 0.50.5e converged
+  the service build without removing the type; see the Status note.)*
 - **Bounded.** Author-facing / user-declared profiles and a named-profile registry are deferred to 0.50.6,
   *only if warranted* — the internal typed-dataclass mechanism ships first and stands alone.
