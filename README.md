@@ -489,6 +489,8 @@ Two habits keep that promise honest as Palm grows:
 - **Register downward.** Shared state lives in the low layers; capabilities register *into* it from above — a new pattern, provider, or storage is a new module that registers itself, never an edit to the core. Extension is addition, not surgery.
 - **Coherence is a fitness function.** Palm's layering and import graph aren't just conventions — they're *checked* (`guard_core`, `guard_deferred`, wired into `just ci`) and only ever ratchet tighter. The architecture defends its own shape, which is what lets it be refactored fearlessly.
 
+For the spirit beneath the surface — what Palm *is*, not just what it does — see **[PHILOSOPHY.md](PHILOSOPHY.md)**.
+
 ---
 
 ## Migration
