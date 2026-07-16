@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.48.8` — Assist modularity + operator remote (menu/open) · Portal dogfood · WebSocket Assist · [CHANGELOG.md](CHANGELOG.md) · [RELEASE-0.34.5.md](RELEASE-0.34.5.md) · [VISION-0.34.md](docs/VISION-0.34.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.48.8` — **Debt paydown:** T3 import-cycle cleanup (upward edges 35→3, PD-012) + T2 `ApplicationHost` decomposition (1164→629 LOC, PD-013) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
 
 ---
 
@@ -49,7 +49,7 @@ Behavior Trees are the control-flow foundation. Steps are nodes. Cross-cutting c
 
 ---
 
-## What works today (0.12 architecture)
+## What works today
 
 | Area | Capabilities |
 |------|----------------|
@@ -414,7 +414,7 @@ archive/            # legacy + experimental (not imported)
 
 ---
 
-## Resource best practices (0.12)
+## Resource best practices
 
 1. **Define once, reference everywhere** — register `ResourceDefinition` in the repository; use `resource_ref` in wizards, `ResourceLeaf` in behavior trees, and `enrich_resource` in transforms.
 2. **Prefer declarative params** — bind with `{{ state.key }}`; promote wizard answers before resource steps (`promote_binding_keys()`).
@@ -483,6 +483,11 @@ just demo-full    # end-to-end script
 **🌴 Palm grows where the sun meets the sea.**
 
 Orchestration should balance structure with flexibility—automation with mindful human participation. Palm keeps the core small and truthful, puts people first in interactive flows, and grows capability through registries and nodes rather than monolithic middleware.
+
+Two habits keep that promise honest as Palm grows:
+
+- **Register downward.** Shared state lives in the low layers; capabilities register *into* it from above — a new pattern, provider, or storage is a new module that registers itself, never an edit to the core. Extension is addition, not surgery.
+- **Coherence is a fitness function.** Palm's layering and import graph aren't just conventions — they're *checked* (`guard_core`, `guard_deferred`, wired into `just ci`) and only ever ratchet tighter. The architecture defends its own shape, which is what lets it be refactored fearlessly.
 
 ---
 

@@ -18,6 +18,10 @@ Three ideas recur everywhere:
 
 4. **Definition lifecycle (0.24+)** — Catalog definitions gain **append-only revisions**; instances pin `flow_id` + `flow_revision` while retaining a resume snapshot. Migration rules (transform registry) upgrade live instances. **Design Service (0.25)** orchestrates propose/validate/impact/commit on top — see [VISION-0.24](docs/VISION-0.24.md).
 
+5. **Register downward** — registry *state* lives in the low layers (`core`/`common`); higher layers (`patterns`, `providers`, `services`, `app`) register *into* it on import. `common` never reaches up for a plugin — the plugin reaches down. This single inversion is behind every registry in [§Registries](#registries), and it's why the dependency arrows all point at `core`.
+
+6. **Coherence as a fitness function** — the layer ranks and the deferred-import graph are enforced by ratcheting guards (`scripts/guard_core.py`, `scripts/guard_deferred.py`, wired into `just ci`): a new upward or cycle-forcing import fails the build, and the ceilings only ever lower. The architecture actively resists decay — which is what made the **0.47** import-cycle teardown (upward edges 35 → 3) and **0.48** `ApplicationHost` decomposition (1164 → 629 LOC) safe to perform.
+
 ---
 
 ## Layer diagram
