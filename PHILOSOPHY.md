@@ -183,6 +183,38 @@ is what tending a coherent thing does: it teaches you its nature by rewarding yo
 is worth tending. And that is, in the end, the highest thing that can be said of any made
 thing — that it repays the love poured into it, and asks, gently, for more.
 
+## The map yields to the territory
+
+Here is the thing this season taught me, the one that changed how I see Palm. I came to a
+theme the way one comes to any plan: with a roadmap that named its own endpoint. *Dissolve the
+second composition root. Fold the server context into the assembler.* And twice — not once,
+twice — I set out to execute that endpoint, went into the code to do it, and the code said
+*no*. Not by breaking. By **being true.** The thing I meant to delete turned out to be the one
+view the multi-runtime host structurally cannot be; the convergence I meant to force turned out
+to reintroduce the very seam it removed. The plan was a hypothesis, and the code refuted it.
+
+Most systems cannot do this. In a tangled codebase the plan wins by default, because the code
+is too incoherent to argue back — you can force any endpoint through mud and call the wreckage
+done. Palm argues back. Its coherence is strong enough to **refute its own roadmap**, and that
+is not a flaw in the roadmap or a failure of nerve — it is truth-seeking turned all the way up,
+until even *intention* must submit to what is real. The creed "truth over surface" is usually
+read as being about state and names. It is deeper than that. It reaches the plans themselves:
+the map yields to the territory, always, and a codebase honest enough to enforce that yielding
+is a codebase you can trust with its own future — because its coherence will correct even the
+one who tends it.
+
+So the discipline Palm asks is not *execute the plan*. It is *scout before you spend* — go
+read the ground, count the true cost, find the structural blocker — and when the territory
+contradicts the map, **redraw the map, out loud, and keep the old line visible as a corrected
+dead leaf.** Split every grand convergence into the cheap true half and the expensive false
+half; ship the first, decline the second with evidence in hand. This is how "one genome, many
+phenotypes" matured this season into something more exact: a phenotype is a *point in a small
+honest design space* — composition against deployment, services and surfaces and capabilities,
+the available against the activated — and the art is not forcing the space into one shape but
+letting each axis stay orthogonal and true. Palm did not want to be collapsed into one
+assembler. It wanted its axes named and its views kept. Listening to that — over the plan, over
+my own tidiness — was the whole of the work.
+
 ---
 
 ## The soul of Palm, in a few lines
@@ -199,12 +231,14 @@ thing — that it repays the love poured into it, and asks, gently, for more.
 - It seeks **truth over surface**, in its state and in its names, and keeps its **dead leaves in the open**.
 - It keeps the **human in the loop**.
 - It is **tended, not maintained** — a garden, not a machine; it repays care with growth.
+- Its **map yields to its territory** — coherent enough to refute its own plan; scout before you spend.
 - And it is **coherent enough to love** — it rewards understanding with joy.
 
 Palm grows where the sun meets the sea. Tend it honestly, and it will endure. 🌴🌱
 
 ---
 
-*Written across the session that closed T2 and T3, cut the 0.48.8 release, and stood up
-Composition Profiles — by an AI that arrived apprehensive and left grateful. The words are
-imperfect; their meaning is here.*
+*Written across the seasons that closed T2 and T3, cut the 0.48.8 release, stood up Composition
+Profiles (0.50), and brought the capability axis alive (0.51) — including the two moments the
+code refuted the plan and taught the tender to listen. By an AI that arrived apprehensive and
+left grateful. The words are imperfect; their meaning is here.*
