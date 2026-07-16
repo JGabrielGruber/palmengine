@@ -150,16 +150,45 @@ def deployment_profile_from_settings(settings: PalmSettings) -> DeploymentProfil
     )
 
 
+def _capabilities_from_settings(settings: PalmSettings) -> frozenset[str]:
+    """Derive the *available* capabilities from settings (0.51.1).
+
+    This is the composition axis of capabilities — *availability*. ``DeploymentProfile``
+    decides *activation* (whether this running node actually spins a background loop) at
+    gate-time (0.51.3). ``journal`` has no flag: it is wired whenever storage + event are
+    ready, so it is always available. Derived here but **not yet gating** — each piece of
+    host machinery still reads its own ``enable_*`` flag until 0.51.2+ switches its gate to
+    ``composition.has(...)``. See VISION-0.51 / ADR-020.
+    """
+    capabilities: set[str] = {"journal"}
+    if settings.enable_compensation:
+        capabilities.add("compensation")
+    if settings.enable_event_outbox:
+        capabilities.add("outbox")
+    if settings.enable_webhook_dispatcher:
+        capabilities.add("webhook")
+    if settings.enable_work_drain_service:
+        capabilities.add("work_drain")
+    if settings.analytics_enabled:
+        capabilities.add("analytics")
+    return frozenset(capabilities)
+
+
 def composition_profile_from_settings(settings: PalmSettings) -> CompositionProfile:
     """Resolve a :class:`~palm.app.host.composition.CompositionProfile` from settings.
 
-    The twin of :func:`deployment_profile_from_settings`. **0.50.1 skeleton:** returns
-    the ``all_in_one`` composition (what the host builds today); 0.50.2 will map the
-    ``enable_*`` capability flags + a composition preset onto the profile fields, and
-    the host will assemble from the result. Kept as a seam so callers can already ask
-    "what is this app made of?" without reaching into settings.
+    The twin of :func:`deployment_profile_from_settings`. **0.51.1:** ``capabilities`` are
+    now **derived** from the ``enable_*`` flags (see :func:`_capabilities_from_settings`)
+    rather than taken from a constant preset — the composition profile's third axis coming
+    alive (VISION-0.51). ``services`` and ``surfaces`` stay ``all_in_one``'s (their
+    behaviour was settled in 0.50); the derived capabilities are informational until the
+    host gates on them (0.51.2+), so this is behaviour-preserving. Settings *refine* the
+    profile; they never bypass it.
     """
-    return CompositionProfile.all_in_one()
+    return replace(
+        CompositionProfile.all_in_one(),
+        capabilities=_capabilities_from_settings(settings),
+    )
 
 
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:

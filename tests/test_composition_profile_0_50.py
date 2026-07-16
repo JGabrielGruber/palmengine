@@ -37,10 +37,13 @@ def test_all_in_one_services_match_what_host_builds_today() -> None:
     assert ALL_SERVICES == built  # the constant is the single source of truth
 
 
-def test_default_resolver_is_all_in_one_today() -> None:
-    """0.50.1: the resolver returns the current default composition (no behavior change)."""
+def test_default_resolver_matches_all_in_one_services_and_surfaces() -> None:
+    """0.51.1: the resolver now *derives* capabilities from settings, but services and
+    surfaces still match all_in_one (their behaviour was settled in 0.50 — preserved).
+    Capability derivation itself is pinned in test_living_capabilities_0_51.py."""
     profile = composition_profile_from_settings(PalmSettings.for_tests(load_examples=False))
-    assert profile == CP.all_in_one()
+    assert profile.services == CP.all_in_one().services
+    assert profile.surfaces == CP.all_in_one().surfaces
 
 
 def test_presets_declare_the_shapes_palm_ships() -> None:
@@ -85,7 +88,7 @@ def test_host_default_composition_builds_all_six() -> None:
     host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
     host.start()
     try:
-        assert host.composition == CP.all_in_one()
+        assert host.composition.services == CP.all_in_one().services
         for name in ("system", "definitions", "execution", "assist", "design", "analytics"):
             assert getattr(host, name) is not None
     finally:
