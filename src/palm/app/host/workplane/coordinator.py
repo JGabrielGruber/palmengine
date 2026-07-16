@@ -118,6 +118,12 @@ class WorkPlaneCoordinator:
 
     def wire_event_journal(self) -> None:
         host = self._host
+        # 0.51.4: gated by the "journal" capability. The resolver always derives it
+        # (journal has no settings flag), so this is behaviour-preserving for
+        # settings-composed hosts; an explicit lean composition (e.g. embedded()) that
+        # omits it correctly wires no journal.
+        if not host.composition.has("journal"):
+            return
         if not host._app.storage.is_initialized:
             return
         if not host._event.is_initialized:

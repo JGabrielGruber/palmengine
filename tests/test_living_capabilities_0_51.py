@@ -218,3 +218,29 @@ def test_work_drain_settings_side_routes_through_the_capability() -> None:
         assert off._work_drain_background_enabled() is False  # neither source enables it
     finally:
         off.shutdown()
+
+
+# ── 0.51.4: journal gated by the capability ──────────────────────────────────
+
+
+def test_journal_gated_by_capability() -> None:
+    """Journal wiring is gated by composition.has('journal'). The resolver always derives
+    it (no settings flag), so default hosts keep their journal; an explicit lean
+    composition that omits it wires none."""
+    default = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
+    default.start()
+    try:
+        assert "journal" in default.composition.capabilities
+        assert default.event_journal is not None
+    finally:
+        default.shutdown()
+
+    lean = ApplicationHost(
+        settings=PalmSettings.for_tests(load_examples=False),
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+    )
+    lean.start()
+    try:
+        assert lean.event_journal is None  # capability omitted → no journal
+    finally:
+        lean.shutdown()
