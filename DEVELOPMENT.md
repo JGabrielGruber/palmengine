@@ -145,7 +145,7 @@ Mypy runs in **strict** mode on all of `src/palm/` (`pyproject.toml` → `[tool.
 
 ```
 src/palm/
-├── app/               # ApplicationHost, PalmApp (infra), settings, host roles
+├── app/               # ApplicationHost, PalmKernel (infra), settings, host roles
 ├── core/              # Pure engines — no external palm imports
 ├── patterns/          # Wizard, DAG, ETL (+ commit registry, validation)
 ├── providers/         # REST, GraphQL, Postgres
@@ -260,22 +260,22 @@ with ApplicationHost(profile=profile) as host:
 
 Blocking standalone process: ``run_host("master")`` or ``palm host master``.
 
-### Low-level embedding (PalmApp)
+### Low-level embedding (PalmKernel)
 
-Use :class:`~palm.app.PalmApp` directly when testing runtime registry behaviour
+Use :class:`~palm.app.PalmKernel` directly when testing runtime registry behaviour
 without host overhead:
 
 ```python
-from palm.app import PalmApp, PalmSettings
+from palm.app import PalmKernel, PalmSettings
 
-with PalmApp(PalmSettings(load_example_definitions=False)).bootstrap() as app:
+with PalmKernel(PalmSettings(load_example_definitions=False)).bootstrap() as app:
     app.create_runtime("embedded", autostart=True)
     app.load_definitions()
     job = app.submit_flow("onboard")
 ```
 
 Pass an existing ``StorageEngine`` to ``ApplicationHost(..., storage=storage)``
-or ``PalmApp(storage=storage)`` when resuming across separate lifetimes.
+or ``PalmKernel(storage=storage)`` when resuming across separate lifetimes.
 
 Environment variables (prefix `PALM_`):
 
@@ -298,7 +298,7 @@ reconciliation. Access via ``app.instance_manager`` or ``runtime.instance_manage
 rows = host.list_instance_views(include_terminal=True)
 snapshots = host.list_instance_snapshots("inst-abc")
 
-# Via PalmApp infra (authoritative store)
+# Via PalmKernel infra (authoritative store)
 summaries = app.list_instance_summaries()
 instance = app.instance_manager.acquire("inst-abc")
 ```
@@ -427,7 +427,7 @@ Snapshots persist with the `ProcessInstance` record in `InstanceRepository` (sam
 
 | File | Coverage |
 |------|----------|
-| `tests/test_state_snapshot_hook.py` | Hook behavior, ring buffer trim, non-blocking errors, embedded integration, `PalmApp` wiring |
+| `tests/test_state_snapshot_hook.py` | Hook behavior, ring buffer trim, non-blocking errors, embedded integration, `PalmKernel` wiring |
 | `tests/test_instances.py` | `ProcessInstance` persistence and resume (uses `state_snapshot`, not history) |
 
 Run snapshot tests only:
@@ -516,7 +516,7 @@ Plugin registries (`pattern_registry`, `provider_registry`, `storage_registry`, 
 
 - Register patterns/providers/storages in each app's `registry.py`, imported via `INSTALLED_*` autoload lists.
 - Register commit handlers in `register_definitions()` or module import side effects before serving traffic.
-- Use `ApplicationHost.start()` or `PalmApp.bootstrap()` before serving traffic in multi-threaded deployments.
+- Use `ApplicationHost.start()` or `PalmKernel.bootstrap()` before serving traffic in multi-threaded deployments.
 
 **Avoid:**
 

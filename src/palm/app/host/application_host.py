@@ -8,7 +8,6 @@ import signal
 import threading
 from typing import TYPE_CHECKING, Any, Self
 
-from palm.app.app import PalmApp
 from palm.app.bootstrap import deployment_profile_from_settings, runtime_start_options
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
@@ -26,6 +25,7 @@ from palm.app.host.wiring import (
 )
 from palm.app.host.workers import WorkerCoordinator
 from palm.app.host.workplane import WorkPlaneCoordinator
+from palm.app.kernel import PalmKernel
 from palm.app.settings import PalmSettings
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
@@ -80,7 +80,7 @@ class ApplicationHost:
     """
     Top-level Palm orchestrator — roles, CQRS, projections, and recovery.
 
-    :class:`~palm.app.app.PalmApp` remains the infrastructure layer (shared
+    :class:`~palm.app.kernel.PalmKernel` remains the infrastructure layer (shared
     storage, runtime registry). The host owns command dispatch, query serving,
     worker routing, and background services::
 
@@ -100,7 +100,7 @@ class ApplicationHost:
     ) -> None:
         self.settings = settings or PalmSettings()
         self.profile = profile or deployment_profile_from_settings(self.settings)
-        self._app = PalmApp(self.settings, storage=storage)
+        self._app = PalmKernel(self.settings, storage=storage)
         self._event = EventEngine()
         self._command_bus = CommandBus()
         self._query_bus = QueryBus()
@@ -127,7 +127,7 @@ class ApplicationHost:
         self._recovery = RecoveryCoordinator(self)
 
     @property
-    def app(self) -> PalmApp:
+    def app(self) -> PalmKernel:
         """Infrastructure layer — storage and runtime registry."""
         return self._app
 

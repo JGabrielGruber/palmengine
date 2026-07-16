@@ -85,7 +85,7 @@ flowchart LR
     CM --> BT[Behavior Tree]
 ```
 
-**Recommended entrypoint:** `ApplicationHost` wraps `PalmApp` (infrastructure) and wires CQRS, projections, outbox, and compensation. The CLI uses it automatically via `create_cli_host()`.
+**Recommended entrypoint:** `ApplicationHost` wraps `PalmKernel` (infrastructure) and wires CQRS, projections, outbox, and compensation. The CLI uses it automatically via `create_cli_host()`.
 
 ---
 
@@ -395,7 +395,7 @@ Run `palm --help` for the full list.
 
 ```
 src/palm/
-├── app/            # ApplicationHost, PalmApp (infra), settings, host roles
+├── app/            # ApplicationHost, PalmKernel (infra), settings, host roles
 ├── core/           # Pure engines (BT, orchestration, context, storage, …)
 ├── common/         # CQRS, outbox, compensation, hooks, persistence, managers
 ├── instances/      # ProcessInstance + StateSnapshot models

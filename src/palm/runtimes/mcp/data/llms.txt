@@ -25,7 +25,7 @@ with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
 
 CLI bootstrap uses the same path via `create_cli_host()` (collapsed `all_in_one` profile).
 
-**PalmApp** remains valid for low-level embedding when you need direct runtime registry control without host overhead.
+**PalmKernel** remains valid for low-level embedding when you need direct runtime registry control without host overhead.
 
 ## Architecture (0.16+)
 
@@ -36,7 +36,7 @@ REST / MCP / CLI
         ↓
 palm/runtimes/     Thin adapters → services (per-domain routes + MCP)
         ↓
-palm/app/          ApplicationHost (recommended), PalmApp (infra)
+palm/app/          ApplicationHost (recommended), PalmKernel (infra)
         ↓
 palm/services/     USER API — definitions, execution/*, system, assist (0.18)
         ↓
@@ -180,7 +180,7 @@ export PALM_DATA_DIR=./data
 
 ```
 src/palm/
-├── app/            # ApplicationHost, PalmApp, DeploymentProfile, create_cli_host()
+├── app/            # ApplicationHost, PalmKernel, DeploymentProfile, create_cli_host()
 ├── core/           # Pure engines (no external palm imports)
 ├── services/       # User-facing API (definitions, execution, system)
 ├── common/         # CQRS, hooks, persistence, transforms, runtimes base

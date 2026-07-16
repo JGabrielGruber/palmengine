@@ -28,5 +28,27 @@ host = ApplicationHost(profile=DeploymentProfile.all_in_one())
 Unchanged: the `profile=` parameter name, the `roles` property, the `palm.app.host.roles` module, and all
 factory methods (`all_in_one` / `master_only` / `worker_only` / `server_only` / `from_preset` / `from_roles`).
 Clean rename, no deprecated alias (pre-1.0). Why: it's the *deployment* axis — naming it so keeps it distinct
-from the incoming *composition* axis (`CompositionProfile`); a running app is
-`CompositionProfile` × `DeploymentProfile`.
+from the incoming *composition* axis (`CompositionProfile`); a running app is assembled from a
+`CompositionProfile` and a `DeploymentProfile`.
+
+## `PalmApp` → `PalmKernel` (0.49.2)
+
+The infrastructure layer (storage + runtime registry + definition loading) is renamed: it isn't "the app",
+it's the **substrate** every composition root stands on. The module moves with it.
+
+| Before | After |
+|---|---|
+| `PalmApp` (class) | `PalmKernel` |
+| `palm.app.app` (module) | `palm.app.kernel` |
+
+```python
+# before — low-level embedding only; prefer ApplicationHost
+from palm.app import PalmApp
+kernel = PalmApp().bootstrap()
+# after
+from palm.app import PalmKernel
+kernel = PalmKernel().bootstrap()
+```
+
+`ApplicationHost` remains the recommended entrypoint; `PalmKernel` is the infra substrate it (and every other
+composition root) builds on. The `palm.app` package name is unchanged.

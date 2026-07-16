@@ -1,5 +1,5 @@
 """
-Runtime registry — named runtime handles managed by :class:`~palm.app.app.PalmApp`.
+Runtime registry — named runtime handles managed by :class:`~palm.app.kernel.PalmKernel`.
 """
 
 from __future__ import annotations

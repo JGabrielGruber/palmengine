@@ -149,11 +149,11 @@ Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks)
 |-----------|------|
 | `ApplicationHost` | Top-level orchestrator — `start()`, `execute()`, `ask()`, `submit_flow()`, … |
 | `DeploymentProfile` | Composable roles: `all_in_one`, `master`, `worker`, `server` |
-| `PalmApp` | Infrastructure — shared storage, runtime registry, definition loading |
+| `PalmKernel` | Infrastructure — shared storage, runtime registry, definition loading |
 | `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
 | `create_cli_host()` | CLI bootstrap — collapsed `all_in_one` host |
 
-`PalmApp` is intentionally **not** the primary public API for services or the CLI. Use it directly only for low-level embedding tests or when you need fine-grained runtime registry control without CQRS.
+`PalmKernel` is intentionally **not** the primary public API for services or the CLI. Use it directly only for low-level embedding tests or when you need fine-grained runtime registry control without CQRS.
 
 ```python
 from palm.app import ApplicationHost, DeploymentProfile
@@ -265,7 +265,7 @@ Extension is explicit and import-time registered:
 | `CommitRegistry` | `patterns/wizard/bindings/compensation/handler.py` | named commit handlers |
 | CQRS contributors | `patterns/<name>/bindings/cqrs/` | wizard commands/queries via `register_cqrs_contributor()` |
 | `PlanRegistry` | `common/plans/registry.py` | deferred execution plans |
-| `RuntimeRegistry` | `app/registry.py` | named `PalmApp` runtimes |
+| `RuntimeRegistry` | `app/registry.py` | named `PalmKernel` runtimes |
 
 New capabilities are added by new modules under `patterns/`, `providers/`, or `storages/`—not by editing orchestration internals.
 
@@ -288,7 +288,7 @@ Persistence is coordinated by `StorageEngine` in core; concrete backends live in
 
 ### Instance coordination (0.7)
 
-`InstanceManager` sits above `InstanceRepository` as the single lifecycle coordinator shared by `PalmApp` runtimes:
+`InstanceManager` sits above `InstanceRepository` as the single lifecycle coordinator shared by `PalmKernel` runtimes:
 
 | Concern | Approach |
 |---------|----------|
@@ -301,7 +301,7 @@ Persistence is coordinated by `StorageEngine` in core; concrete backends live in
 
 ### Thread-safety contract
 
-Registries are **read from multiple threads** after bootstrap (queued schedulers, daemon workers, multi-runtime `PalmApp` setups, CLI + background runtimes). All registry-like maps use **`threading.RLock`** (reentrant) to protect mutations and consistent reads:
+Registries are **read from multiple threads** after bootstrap (queued schedulers, daemon workers, multi-runtime `PalmKernel` setups, CLI + background runtimes). All registry-like maps use **`threading.RLock`** (reentrant) to protect mutations and consistent reads:
 
 - `Registry.register()` / `get()` / `names()` / `clear()`
 - Pattern `register_builder()` / `get_builder()` / `registered_builders()`
@@ -314,7 +314,7 @@ Registries are **read from multiple threads** after bootstrap (queued schedulers
 - **Handler invocation outside the lock** — `CommitRegistry.run()` resolves the handler under lock, then calls it unlocked to avoid deadlocks during user code.
 - **Read-heavy after bootstrap** — lock hold time is minimal (dict get/set); no read-copy-update needed at current scale.
 
-**Operational guidance:** register plugins during `PalmApp.bootstrap()` / module autoload, not from hot job-drive paths. Runtime code should only **read** registries during job execution.
+**Operational guidance:** register plugins during `PalmKernel.bootstrap()` / module autoload, not from hot job-drive paths. Runtime code should only **read** registries during job execution.
 
 ---
 
@@ -369,7 +369,7 @@ Keeping the executor outside core preserves a single orchestration model while a
 3. Restore blackboard from `state_snapshot`
 4. Register job; continue via `provide_input` or orchestration resume
 
-`EmbeddedRuntime.resume_process()`, `PalmApp.resume_process()`, and CLI `process resume` expose this path. Historical `state_snapshots[]` entries are **not** used for resume today—they are for inspection and future time-travel replay.
+`EmbeddedRuntime.resume_process()`, `PalmKernel.resume_process()`, and CLI `process resume` expose this path. Historical `state_snapshots[]` entries are **not** used for resume today—they are for inspection and future time-travel replay.
 
 ---
 
@@ -594,7 +594,7 @@ Wiring path: `PalmSettings` → `runtime_start_options()` → `palm.common.runti
 - **Performance:** one serialize + repository read/write per matching transition when enabled; zero cost when disabled (hook not registered).
 - **Operational:** narrow `snapshot_on_status` in high-throughput deployments; use durable storage backends when snapshots must survive restarts.
 
-**Inspection:** `host.list_instance_snapshots(instance_id)` (or `PalmApp.list_instance_snapshots` when embedding infra directly) and CLI `palm instance snapshots <id>`.
+**Inspection:** `host.list_instance_snapshots(instance_id)` (or `PalmKernel.list_instance_snapshots` when embedding infra directly) and CLI `palm instance snapshots <id>`.
 
 ---
 
@@ -744,7 +744,7 @@ Multi-role hosts use `WorkerCoordinator` to track daemon/server worker registrat
 
 ### CLI and runtime integration
 
-Terminal surfaces bootstrap through **ApplicationHost**, not direct `PalmApp` wiring:
+Terminal surfaces bootstrap through **ApplicationHost**, not direct `PalmKernel` wiring:
 
 ```
 palm CLI → bootstrap_runtime() → create_cli_host() → ApplicationHost(all_in_one).start()
@@ -756,9 +756,9 @@ palm CLI → bootstrap_runtime() → create_cli_host() → ApplicationHost(all_i
 |---------|-----------|--------|-------|
 | CLI / REPL | `create_cli_host` | `CliContext.submit_*` → host command bus | `CliContext.list_instance_summaries()` → query bus |
 | `palm host` | `run_host(profile)` | Same CQRS path per role | Projections + recovery |
-| Library embed | `ApplicationHost` or `PalmApp` | Prefer host `execute()` | Prefer host `ask()` |
+| Library embed | `ApplicationHost` or `PalmKernel` | Prefer host `execute()` | Prefer host `ask()` |
 
-`PalmApp.bootstrap_cli()`, the `cli/pkg/` shim, and `create_cli_app()` are removed — use `create_cli_host()` → `ApplicationHost`.
+`PalmKernel.bootstrap_cli()`, the `cli/pkg/` shim, and `create_cli_app()` are removed — use `create_cli_host()` → `ApplicationHost`.
 
 Low-level job helpers (`resume_job`, `persist_job`) stay on `CliContext` for wizard backtrack until a dedicated command exists.
 

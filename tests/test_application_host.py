@@ -145,9 +145,9 @@ def test_deployment_profile_from_settings_roles(settings: PalmSettings) -> None:
 
 
 def test_palm_app_backward_compatible(settings: PalmSettings) -> None:
-    from palm.app import PalmApp
+    from palm.app import PalmKernel
 
-    app = PalmApp(settings)
+    app = PalmKernel(settings)
     app.bootstrap()
     runtime = app.create_runtime("embedded", autostart=True)
     assert runtime.is_started

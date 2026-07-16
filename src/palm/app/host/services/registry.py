@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
+    from palm.app.kernel import PalmKernel
     from palm.app.settings import PalmSettings
     from palm.common.cqrs.bus import CommandBus, QueryBus
     from palm.core.event import EventEngine
@@ -32,7 +32,7 @@ class HostServiceContext:
     command_bus: CommandBus
     query_bus: QueryBus
     schemas: Any
-    app: PalmApp
+    app: PalmKernel
     event: EventEngine
     settings: PalmSettings
     resolve_execution_runtime: Callable[[str | None], BaseRuntime]

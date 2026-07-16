@@ -19,7 +19,7 @@ Palm follows a **layered, registry-driven** model with a strictly pure core:
 - `palm/core/` — Pure foundational engines (Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform). **Zero external Palm imports allowed.**
 - `palm/services/` — User-facing domain API (`definitions`, `execution/flows`, `execution/providers`, `system`, `assist`, `design`); `palm/common/services/` retains primitives only.
 - `palm/common/` — Rich shared coordination layer (executions, plans, hooks, persistence, CQRS + schemas, compensation, transforms, runtime infrastructure).
-- `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmApp` is infrastructure.
+- `palm/app/` — Application orchestration. `ApplicationHost` is the primary recommended orchestrator; `PalmKernel` is infrastructure.
 - `palm/patterns/`, `palm/providers/`, `palm/storages/` — Extensible plugin-style apps (`PatternApp` / `ProviderApp` + `bindings/`/`flow/` — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) and [docs/PROVIDER-APPS.md](docs/PROVIDER-APPS.md)).
 - `palm/runtimes/` — Thin surfaces over the common runtime layer.
 

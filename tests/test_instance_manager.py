@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import PalmApp, PalmSettings
+from palm.app import PalmKernel, PalmSettings
 from palm.common import InstanceNotFoundError, InstanceRepository
 from palm.common.exceptions import InstanceActiveLimitError
 from palm.common.managers import InstanceManager, InstanceSummary
@@ -214,7 +214,7 @@ def test_palm_app_exposes_shared_instance_manager(tmp_path) -> None:
         max_loaded_instances=64,
         reconcile_instances_on_startup=False,
     )
-    with PalmApp(settings) as app:
+    with PalmKernel(settings) as app:
         app.create_runtime("embedded", autostart=True)
         inst = ProcessInstance(
             instance_id="inst-app",

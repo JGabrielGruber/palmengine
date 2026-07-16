@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from palm.app import PalmApp, PalmSettings
+from palm.app import PalmKernel, PalmSettings
 from palm.common import DefinitionRepository, InstanceRepository
 from palm.common.storage import StorageFactory
 from palm.core import (
@@ -202,7 +202,7 @@ def test_instance_repository_filesystem_roundtrip(tmp_path: Path) -> None:
 
 def test_palm_app_filesystem_integration(tmp_path: Path) -> None:
     settings = PalmSettings(storage_backend="filesystem", data_dir=tmp_path)
-    with PalmApp(settings) as app:
+    with PalmKernel(settings) as app:
         app.create_runtime("embedded", autostart=True)
         runtime = app.runtime()
         runtime.repository.save_flow(_sample_flow())

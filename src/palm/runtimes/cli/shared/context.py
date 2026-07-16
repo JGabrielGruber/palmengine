@@ -21,8 +21,8 @@ from palm.runtimes.cli.shared.instances import resolve_instance_id as _resolve_i
 from palm.services.execution.flows import ReplSession
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
     from palm.app.host.application_host import ApplicationHost
+    from palm.app.kernel import PalmKernel
 
 
 @dataclass
@@ -44,7 +44,7 @@ class CliContext:
     _repl_session: ReplSession | None = field(default=None, repr=False)
 
     @property
-    def app(self) -> PalmApp:
+    def app(self) -> PalmKernel:
         """Infrastructure layer — definitions, storage, runtime registry."""
         return self.host.app
 

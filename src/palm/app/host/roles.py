@@ -2,8 +2,8 @@
 DeploymentProfile — composable deployment roles (master/worker/server) for ApplicationHost.
 
 The *where/how it runs* axis. Distinct from the *what it's made of* axis
-(``CompositionProfile``, 0.49): a running app is assembled from
-``CompositionProfile`` × ``DeploymentProfile``.
+(``CompositionProfile``, 0.49): a running app is assembled from a
+``CompositionProfile`` and a ``DeploymentProfile``.
 """
 
 from __future__ import annotations

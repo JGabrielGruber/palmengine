@@ -92,7 +92,7 @@ class ProjectionManager:
             self._subscriptions.append((event_engine, subscription))
 
     def attach_runtimes(self, app: object) -> None:
-        """Attach to every started runtime event bus on a PalmApp."""
+        """Attach to every started runtime event bus on a PalmKernel."""
         runtimes = getattr(app, "_runtimes", None)
         if runtimes is None:
             return

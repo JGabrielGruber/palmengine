@@ -12,7 +12,7 @@ from palm.definitions.process import ProcessDefinition
 from palm.definitions.resource import ResourceDefinition
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
+    from palm.app.kernel import PalmKernel
     from palm.common.persistence.definition_repository import DefinitionRepository
 
 
@@ -33,16 +33,16 @@ def resolve_process(repository: DefinitionRepository, ref: str) -> ProcessDefini
 
 
 def resolve_flow_for_app(
-    app: PalmApp, ref: str, *, runtime_name: str | None = None
+    app: PalmKernel, ref: str, *, runtime_name: str | None = None
 ) -> FlowDefinition:
-    """Resolve a flow via a :class:`~palm.app.app.PalmApp` runtime repository."""
+    """Resolve a flow via a :class:`~palm.app.kernel.PalmKernel` runtime repository."""
     return resolve_flow(app.repository(runtime_name=runtime_name), ref)
 
 
 def resolve_process_for_app(
-    app: PalmApp, ref: str, *, runtime_name: str | None = None
+    app: PalmKernel, ref: str, *, runtime_name: str | None = None
 ) -> ProcessDefinition:
-    """Resolve a process via a :class:`~palm.app.app.PalmApp` runtime repository."""
+    """Resolve a process via a :class:`~palm.app.kernel.PalmKernel` runtime repository."""
     return resolve_process(app.repository(runtime_name=runtime_name), ref)
 
 
@@ -55,7 +55,7 @@ def resolve_resource(repository: DefinitionRepository, ref: str) -> ResourceDefi
 
 
 def resolve_resource_for_app(
-    app: PalmApp, ref: str, *, runtime_name: str | None = None
+    app: PalmKernel, ref: str, *, runtime_name: str | None = None
 ) -> ResourceDefinition:
-    """Resolve a resource via a :class:`~palm.app.app.PalmApp` runtime repository."""
+    """Resolve a resource via a :class:`~palm.app.kernel.PalmKernel` runtime repository."""
     return resolve_resource(app.repository(runtime_name=runtime_name), ref)

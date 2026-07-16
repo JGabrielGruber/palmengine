@@ -1,5 +1,5 @@
 """
-PalmApp — infrastructure layer for Palm Engine (storage, runtimes, definitions).
+PalmKernel — infrastructure layer for Palm Engine (storage, runtimes, definitions).
 
 Prefer :class:`~palm.app.host.ApplicationHost` for orchestration with CQRS and recovery.
 """
@@ -30,21 +30,21 @@ if TYPE_CHECKING:
     from palm.instances import ProcessInstance, StateSnapshot
 
 
-class PalmApp:
+class PalmKernel:
     """
     Infrastructure layer — shared storage, instance manager, and runtime registry.
 
     For role-based orchestration, CQRS, and recovery, prefer
-    :class:`~palm.app.host.ApplicationHost`, which wraps ``PalmApp`` as its
+    :class:`~palm.app.host.ApplicationHost`, which wraps ``PalmKernel`` as its
     infrastructure delegate.
 
-    A single ``PalmApp`` can host multiple runtimes (embedded, daemon, server)
+    A single ``PalmKernel`` can host multiple runtimes (embedded, daemon, server)
     that share one :class:`~palm.core.storage.StorageEngine` for durable
     definitions and instances.
 
     Typical usage::
 
-        app = PalmApp().bootstrap()
+        app = PalmKernel().bootstrap()
         embedded = app.create_runtime("embedded", autostart=True)
         daemon = app.create_runtime("daemon", name="worker", autostart=True)
         app.load_definitions()
@@ -377,4 +377,4 @@ class PalmApp:
 
     def _require_bootstrapped(self) -> None:
         if not self._bootstrapped:
-            raise RuntimeError("PalmApp is not bootstrapped; call bootstrap() first")
+            raise RuntimeError("PalmKernel is not bootstrapped; call bootstrap() first")

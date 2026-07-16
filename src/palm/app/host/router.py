@@ -8,7 +8,7 @@ import threading
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
+    from palm.app.kernel import PalmKernel
     from palm.app.registry import RuntimeHandle
 
 
@@ -20,7 +20,7 @@ class RuntimeRouter:
     commands round-robin across worker runtimes when available.
     """
 
-    def __init__(self, app: PalmApp) -> None:
+    def __init__(self, app: PalmKernel) -> None:
         self._app = app
         self._lock = threading.Lock()
         self._worker_index = 0

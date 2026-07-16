@@ -53,7 +53,7 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 - **`palm/core/`** — Pure engines and primitives. Behavior Trees are the universal control-flow model. No external Palm imports allowed.
 - **`palm/services/`** — User-facing business API (`DefinitionService`, `ExecutionService`, `SystemService`) composing schema-validated CQRS. Domain modules own `registry.py`. Runtimes call services; services do not import runtimes. Shared `BaseService` / views remain in `palm/common/services/`.
 - **`palm/common/`** — The “middle layer” where most coordination lives. Execution plans, hooks, CQRS + `CqrsSchemaRegistry`, reliable events (outbox), compensation, transforms, and shared runtime infrastructure.
-- **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `DeploymentProfile` roles) is the recommended entry point for most use cases. `PalmApp` is infrastructure.
+- **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `DeploymentProfile` roles) is the recommended entry point for most use cases. `PalmKernel` is infrastructure.
 - **`palm/patterns/`, `palm/providers/`, `palm/storages/`** — Extensible “Django-style apps”. Each capability lives in its own subpackage with `registry.py`.
 - **`palm/runtimes/`** — Thin surfaces (CLI, embedded, daemon, server). Heavy lifting lives in `palm.common.runtimes`.
 - **`palm/definitions/` + `palm/instances/`** — Stable contracts and durable state.
@@ -139,7 +139,7 @@ Follow these patterns. They exist so growth remains orderly.
 | Assist design entry (0.30+) | `palm/services/assist/` + operator-entry / design-entry scenarios | Surface create/improve flow from Assist without reimplementing Design — [VISION-0.30](docs/VISION-0.30.md) |
 | MCP meta-surface (0.31+) | `palm/runtimes/mcp/` surface profiles | Progressive disclosure: slim tool catalogs, assist-as-meta-execute, inventory measurement — [VISION-0.31](docs/VISION-0.31.md) |
 | WebSocket Assist / Portal (0.32+) | `palm/runtimes/server/surfaces/websocket/` | Human real-time Assist channel (same dispatch as MCP); Portal PWA client later — [VISION-0.32](docs/VISION-0.32.md) |
-| Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmApp` usage |
+| Application-level orchestration | `palm/app/` | Prefer `ApplicationHost` over direct `PalmKernel` usage |
 
 **Never:**
 - Add new logic directly into core engines

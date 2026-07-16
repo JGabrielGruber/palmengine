@@ -13,7 +13,7 @@ from palm.app.host.roles import DeploymentProfile
 from palm.core.event import EventEngine
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
+    from palm.app.kernel import PalmKernel
 
 
 class WorkerCoordinator:
@@ -60,7 +60,7 @@ class WorkerCoordinator:
         with self._lock:
             self._registered.add(name)
 
-    def wait_until_ready(self, app: PalmApp, *, timeout: float = 5.0) -> bool:
+    def wait_until_ready(self, app: PalmKernel, *, timeout: float = 5.0) -> bool:
         """
         Block until expected worker runtimes are registered or ``timeout`` elapses.
 
@@ -85,7 +85,7 @@ class WorkerCoordinator:
         self._emit_ready(expected=expected, registered=registered, timed_out=True)
         return len(registered) >= expected
 
-    def _sync_from_app(self, app: PalmApp) -> None:
+    def _sync_from_app(self, app: PalmKernel) -> None:
         for name in app.running():
             handle = app._runtimes.get(name)
             if handle is None or not handle.is_started:

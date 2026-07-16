@@ -6,11 +6,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.app.app import PalmApp
+from palm.app.kernel import PalmKernel
 from palm.runtimes.cli.shared.settings import is_durable_storage
 
 
-def format_persistence_notice(app: PalmApp) -> str:
+def format_persistence_notice(app: PalmKernel) -> str:
     """Human-readable persistence summary for doctor and REPL startup."""
     backend = app.settings.storage_backend
     durable = is_durable_storage(backend)
@@ -50,7 +50,7 @@ def format_persistence_notice(app: PalmApp) -> str:
     return "\n".join(lines)
 
 
-def print_startup_banner(console: Any, app: PalmApp) -> None:
+def print_startup_banner(console: Any, app: PalmKernel) -> None:
     """Print persistence notice when the CLI session starts."""
     from rich.panel import Panel
 

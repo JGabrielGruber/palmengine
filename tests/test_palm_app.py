@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import PalmApp, PalmSettings
+from palm.app import PalmKernel, PalmSettings
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
@@ -14,27 +14,27 @@ from palm.runtimes.server import ServerRuntime
 
 
 @pytest.fixture
-def app() -> PalmApp:
-    application = PalmApp(PalmSettings(load_example_definitions=False))
+def app() -> PalmKernel:
+    application = PalmKernel(PalmSettings(load_example_definitions=False))
     application.bootstrap()
     return application
 
 
-def test_bootstrap_registers_plugins(app: PalmApp) -> None:
+def test_bootstrap_registers_plugins(app: PalmKernel) -> None:
     assert app.is_bootstrapped
     assert "wizard" in pattern_registry.names()
     assert "rest" in provider_registry.names()
     assert "memory" in storage_registry.names()
 
 
-def test_create_embedded_runtime(app: PalmApp) -> None:
+def test_create_embedded_runtime(app: PalmKernel) -> None:
     runtime = app.create_runtime("embedded", autostart=True)
     assert isinstance(runtime, EmbeddedRuntime)
     assert runtime.is_started
     assert app.runtime() is runtime
 
 
-def test_multiple_runtimes_share_storage(app: PalmApp) -> None:
+def test_multiple_runtimes_share_storage(app: PalmKernel) -> None:
     embedded = app.create_runtime("embedded", name="api", autostart=True)
     daemon = app.create_runtime("daemon", name="worker", autostart=True)
 
@@ -47,7 +47,7 @@ def test_multiple_runtimes_share_storage(app: PalmApp) -> None:
     assert daemon.repository.has_flow("shared")
 
 
-def test_daemon_and_embedded_concurrent(app: PalmApp) -> None:
+def test_daemon_and_embedded_concurrent(app: PalmKernel) -> None:
     embedded = app.create_runtime("embedded", name="cli", autostart=True)
     daemon = app.create_runtime("daemon", name="bg", autostart=True)
 
@@ -57,14 +57,14 @@ def test_daemon_and_embedded_concurrent(app: PalmApp) -> None:
     daemon.wait_until_idle(timeout=2.0)
 
 
-def test_server_runtime_via_app(app: PalmApp) -> None:
+def test_server_runtime_via_app(app: PalmKernel) -> None:
     runtime = app.create_runtime("server", name="http", autostart=True, port=0, http=True)
     assert isinstance(runtime, ServerRuntime)
     assert runtime.base_url.startswith("http://127.0.0.1:")
     runtime.stop()
 
 
-def test_load_definitions_hydrates_repository(app: PalmApp) -> None:
+def test_load_definitions_hydrates_repository(app: PalmKernel) -> None:
     app.settings = PalmSettings(load_example_definitions=True)
     app.create_runtime("embedded", autostart=True)
     count = app.load_definitions()
@@ -72,7 +72,7 @@ def test_load_definitions_hydrates_repository(app: PalmApp) -> None:
     assert app.runtime().repository.list_flows() or count == 0
 
 
-def test_shutdown_stops_runtimes_and_storage(app: PalmApp) -> None:
+def test_shutdown_stops_runtimes_and_storage(app: PalmKernel) -> None:
     app.create_runtime("embedded", autostart=True)
     app.create_runtime("daemon", name="worker", autostart=True)
     app.shutdown()
@@ -81,14 +81,14 @@ def test_shutdown_stops_runtimes_and_storage(app: PalmApp) -> None:
 
 
 def test_context_manager_shuts_down() -> None:
-    with PalmApp(PalmSettings(load_example_definitions=False)) as application:
+    with PalmKernel(PalmSettings(load_example_definitions=False)) as application:
         application.create_runtime("embedded", autostart=True)
         assert application.running()
     storage = StorageEngine()
     assert not storage.is_initialized
 
 
-def test_set_primary_runtime(app: PalmApp) -> None:
+def test_set_primary_runtime(app: PalmKernel) -> None:
     app.create_runtime("embedded", name="first", autostart=True)
     app.create_runtime("daemon", name="second", autostart=True, set_primary=False)
     app.set_primary("second")
@@ -96,7 +96,7 @@ def test_set_primary_runtime(app: PalmApp) -> None:
 
 
 def test_requires_bootstrap() -> None:
-    application = PalmApp()
+    application = PalmKernel()
     with pytest.raises(RuntimeError, match="bootstrapped"):
         application.create_runtime("embedded")
 

@@ -57,7 +57,7 @@ from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 if TYPE_CHECKING:
-    from palm.app.app import PalmApp
+    from palm.app.kernel import PalmKernel
     from palm.common.cqrs.projection import Projection
     from palm.common.managers.instance_manager import InstanceManager
     from palm.definitions.flow import FlowDefinition
@@ -66,9 +66,9 @@ if TYPE_CHECKING:
 
 
 class PalmCommandHandlers:
-    """Dispatch host commands through PalmApp with runtime routing."""
+    """Dispatch host commands through PalmKernel with runtime routing."""
 
-    def __init__(self, app: PalmApp, router: RuntimeRouter) -> None:
+    def __init__(self, app: PalmKernel, router: RuntimeRouter) -> None:
         self._app = app
         self._router = router
 
@@ -196,7 +196,7 @@ class HostQueryHandlers:
     def __init__(
         self,
         *,
-        app: PalmApp,
+        app: PalmKernel,
         instances: InstanceIndexProjection,
         pattern_projections: dict[str, Projection],
         resource_invocations: ResourceInvocationProjection,
@@ -350,7 +350,7 @@ def collect_cqrs_query_types() -> tuple[type, ...]:
     return _collect(mode="host")
 
 
-def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> None:
+def wire_command_bus(bus: CommandBus, app: PalmKernel, router: RuntimeRouter) -> None:
     handler = PalmCommandHandlers(app, router)
     for command_type in collect_cqrs_command_types():
         bus.register(command_type, handler)
@@ -359,7 +359,7 @@ def wire_command_bus(bus: CommandBus, app: PalmApp, router: RuntimeRouter) -> No
 def wire_query_bus(
     bus: QueryBus,
     *,
-    app: PalmApp,
+    app: PalmKernel,
     instances: InstanceIndexProjection,
     pattern_projections: dict[str, Projection],
     resource_invocations: ResourceInvocationProjection,

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.app import PalmApp, PalmSettings
+from palm.app import PalmKernel, PalmSettings
 from palm.common.hooks.state_snapshot import StateSnapshotHook
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.core import StorageEngine
@@ -203,7 +203,7 @@ def test_embedded_runtime_snapshots_wizard_flow_when_enabled() -> None:
         storage.shutdown()
 
 
-def test_palm_app_wires_snapshot_settings(app: PalmApp) -> None:
+def test_palm_app_wires_snapshot_settings(app: PalmKernel) -> None:
     app.settings = PalmSettings(
         load_example_definitions=False,
         enable_state_snapshot=True,
@@ -215,7 +215,7 @@ def test_palm_app_wires_snapshot_settings(app: PalmApp) -> None:
 
 
 @pytest.fixture
-def app() -> PalmApp:
-    application = PalmApp(PalmSettings(load_example_definitions=False))
+def app() -> PalmKernel:
+    application = PalmKernel(PalmSettings(load_example_definitions=False))
     application.bootstrap()
     return application
