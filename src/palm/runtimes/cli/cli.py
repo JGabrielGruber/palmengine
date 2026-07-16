@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import sys
 
-from palm.app import HostProfile, run_host
+from palm.app import DeploymentProfile, run_host
 from palm.app.session import create_console
 from palm.app.settings import PalmSettings
 from palm.runtimes.cli.commands.registry import build_registry
@@ -67,19 +67,19 @@ def main(argv: list[str] | None = None) -> int:
 def _host_profile_from_invocation(
     inv: CliInvocation,
     settings: PalmSettings | None = None,
-) -> HostProfile:
+) -> DeploymentProfile:
     """Build a host profile; bind host/port fall back to :class:`PalmSettings`."""
     cfg = settings if settings is not None else PalmSettings()
     cmd = (inv.host_cmd or "all-in-one").replace("-", "_")
     if cmd in {"all_in_one", "allinone"}:
-        return HostProfile.all_in_one()
+        return DeploymentProfile.all_in_one()
     if cmd == "master":
-        return HostProfile.master_only()
+        return DeploymentProfile.master_only()
     if cmd == "worker":
         count = inv.host_workers if inv.host_workers is not None else cfg.worker_count
-        return HostProfile.worker_only(count=count)
+        return DeploymentProfile.worker_only(count=count)
     if cmd == "server":
-        return HostProfile.server_only(
+        return DeploymentProfile.server_only(
             host=inv.host_bind if inv.host_bind is not None else cfg.server_host,
             port=inv.host_port if inv.host_port is not None else cfg.server_port,
         )

@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.runtimes.mcp.assist.dispatch import (
     dispatch_operator_path,
@@ -19,7 +19,7 @@ from palm.services.assist.registry import resolve_mcp_alias
 @pytest.fixture
 def host() -> Iterator[ApplicationHost]:
     settings = PalmSettings.for_tests(load_examples=True)
-    h = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    h = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     h.start()
     yield h
     h.shutdown()

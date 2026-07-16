@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from palm.app import HostProfile
+from palm.app import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.runtimes.cli.cli import _host_profile_from_invocation, main
 from palm.runtimes.cli.shared.args import CliInvocation
@@ -62,7 +62,7 @@ def test_host_profile_server_cli_overrides_settings() -> None:
 def test_main_host_all_in_one_starts_host() -> None:
     captured: dict[str, object] = {}
 
-    def fake_run_host(profile: HostProfile, *, settings: PalmSettings | None = None) -> None:
+    def fake_run_host(profile: DeploymentProfile, *, settings: PalmSettings | None = None) -> None:
         captured["profile"] = profile
         captured["settings"] = settings
 
@@ -71,14 +71,14 @@ def test_main_host_all_in_one_starts_host() -> None:
 
     assert exit_code == 0
     profile = captured["profile"]
-    assert isinstance(profile, HostProfile)
+    assert isinstance(profile, DeploymentProfile)
     assert profile.roles == frozenset({"master", "worker"})
 
 
 def test_main_host_master_starts_host() -> None:
     captured: dict[str, object] = {}
 
-    def fake_run_host(profile: HostProfile, *, settings: PalmSettings | None = None) -> None:
+    def fake_run_host(profile: DeploymentProfile, *, settings: PalmSettings | None = None) -> None:
         captured["profile"] = profile
 
     with patch("palm.runtimes.cli.cli.run_host", fake_run_host):
@@ -86,5 +86,5 @@ def test_main_host_master_starts_host() -> None:
 
     assert exit_code == 0
     profile = captured["profile"]
-    assert isinstance(profile, HostProfile)
+    assert isinstance(profile, DeploymentProfile)
     assert profile.roles == frozenset({"master"})

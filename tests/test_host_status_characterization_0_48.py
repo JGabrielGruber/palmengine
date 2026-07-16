@@ -12,7 +12,7 @@ See docs/VISION-0.48.md and docs/adr/018-application-host-decomposition.md.
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.events.consumers import DEFAULT_JOURNAL_CONSUMERS
 
@@ -108,7 +108,7 @@ def test_status_reports_degrade_without_started_workplane() -> None:
     """
     host = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     )
     # No start() — _work_drain / _inbound / _event_journal are None.
     ep = host.event_plane_status()

@@ -9,7 +9,7 @@ import time
 from typing import TYPE_CHECKING
 
 from palm.app.host.events import HostEventType
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.core.event import EventEngine
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class WorkerCoordinator:
 
     def __init__(
         self,
-        profile: HostProfile,
+        profile: DeploymentProfile,
         event_engine: EventEngine,
     ) -> None:
         self._profile = profile

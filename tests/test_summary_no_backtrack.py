@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.core.orchestration import JobStatus
 
@@ -14,7 +14,7 @@ from palm.core.orchestration import JobStatus
 @pytest.fixture
 def host() -> Iterator[ApplicationHost]:
     settings = PalmSettings.for_tests(load_examples=False)
-    h = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    h = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     h.start()
     h.definitions.create_flow(
         {

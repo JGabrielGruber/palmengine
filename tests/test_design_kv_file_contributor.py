@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 import palm.providers  # noqa: F401 — register providers + design contributors
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.providers.file.bindings.design import validate_file_design_proposal
 from palm.providers.kv.bindings.design import validate_kv_design_proposal
 from palm.services.design.registry import clear_design_contributors, iter_design_contributors
@@ -26,7 +26,7 @@ def _ensure_contributors_registered() -> None:
 @pytest.fixture
 def design_host():
     settings = PalmSettings()
-    with ApplicationHost(settings=settings, profile=HostProfile.all_in_one()) as host:
+    with ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one()) as host:
         yield host
 
 

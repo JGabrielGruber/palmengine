@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.app.host.events import HostEventType
 from palm.common.events import OutboxStore
 from palm.core.event import Event
@@ -17,7 +17,7 @@ from palm.runtimes.server import ServerRuntime
 
 
 def test_all_in_one_collapses_to_single_embedded(full_recovery_settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=full_recovery_settings, profile=DeploymentProfile.all_in_one())
     host.start()
 
     assert host.is_started
@@ -30,7 +30,7 @@ def test_all_in_one_collapses_to_single_embedded(full_recovery_settings: PalmSet
 
 
 def test_collapsed_runtime_worker_ready_without_timeout(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     started = time.monotonic()
     host.start()
     elapsed = time.monotonic() - started
@@ -44,7 +44,7 @@ def test_collapsed_runtime_worker_ready_without_timeout(settings: PalmSettings) 
 
 
 def test_master_only_spawns_command_runtime(full_recovery_settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.master_only())
+    host = ApplicationHost(settings=full_recovery_settings, profile=DeploymentProfile.master_only())
     host.start()
 
     assert host.running_runtimes() == ["command"]
@@ -57,7 +57,7 @@ def test_master_only_spawns_command_runtime(full_recovery_settings: PalmSettings
 def test_worker_only_spawns_daemon_workers(settings: PalmSettings) -> None:
     host = ApplicationHost(
         settings=settings,
-        profile=HostProfile.worker_only(count=2),
+        profile=DeploymentProfile.worker_only(count=2),
     )
     host.start()
 
@@ -71,7 +71,7 @@ def test_worker_only_spawns_daemon_workers(settings: PalmSettings) -> None:
 def test_server_profile_spawns_server_runtime(settings: PalmSettings) -> None:
     host = ApplicationHost(
         settings=settings,
-        profile=HostProfile.server_only(port=0),
+        profile=DeploymentProfile.server_only(port=0),
     )
     host.start()
 
@@ -85,7 +85,7 @@ def test_server_profile_spawns_server_runtime(settings: PalmSettings) -> None:
 
 
 def test_master_and_worker_spawn_command_plus_daemon(settings: PalmSettings) -> None:
-    profile = HostProfile(master=True, worker=True, server=False, worker_count=2)
+    profile = DeploymentProfile(master=True, worker=True, server=False, worker_count=2)
     host = ApplicationHost(settings=settings, profile=profile)
     host.start()
 
@@ -98,7 +98,7 @@ def test_master_and_worker_spawn_command_plus_daemon(settings: PalmSettings) -> 
 
 def test_host_emits_lifecycle_events(settings: PalmSettings) -> None:
     events: list[str] = []
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.event.subscribe("*", lambda e: events.append(e.type))
     host.start()
     host.shutdown()
@@ -109,7 +109,7 @@ def test_host_emits_lifecycle_events(settings: PalmSettings) -> None:
 
 
 def test_outbox_service_drains_pending_entries(full_recovery_settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.master_only())
+    host = ApplicationHost(settings=full_recovery_settings, profile=DeploymentProfile.master_only())
     host.start()
 
     store = host.outbox_service.store
@@ -124,7 +124,7 @@ def test_outbox_service_drains_pending_entries(full_recovery_settings: PalmSetti
 
 
 def test_all_in_one_submits_flow(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
 
     flow = FlowDefinition(name="quick", pattern="dag", options={"name": "quick"})
@@ -134,7 +134,7 @@ def test_all_in_one_submits_flow(settings: PalmSettings) -> None:
     host.shutdown()
 
 
-def test_host_profile_from_settings_roles(settings: PalmSettings) -> None:
+def test_deployment_profile_from_settings_roles(settings: PalmSettings) -> None:
     settings.host_roles = ["master", "worker"]
     settings.worker_count = 2
     host = ApplicationHost(settings=settings)
@@ -155,7 +155,7 @@ def test_palm_app_backward_compatible(settings: PalmSettings) -> None:
 
 
 def test_context_manager(settings: PalmSettings) -> None:
-    with ApplicationHost(settings=settings, profile=HostProfile.all_in_one()) as host:
+    with ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one()) as host:
         assert host.is_started
         assert host.running_runtimes()
     assert not host.is_started
@@ -165,7 +165,7 @@ def test_context_manager(settings: PalmSettings) -> None:
 def test_outbox_background_poll_marks_entries(full_recovery_settings: PalmSettings) -> None:
     host = ApplicationHost(
         settings=full_recovery_settings,
-        profile=HostProfile(
+        profile=DeploymentProfile(
             master=True,
             worker=False,
             outbox_poll_interval=0.05,

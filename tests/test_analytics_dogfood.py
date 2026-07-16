@@ -8,14 +8,14 @@ from examples.definitions.todos.resources import (
     materialize_todo_analytics,
 )
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 
 
 def test_todo_package_materialize_and_query() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         register_todos(host.app.repository())
         result = materialize_todo_analytics(host.execution.providers)
@@ -45,7 +45,7 @@ def test_todo_package_materialize_and_query() -> None:
 def test_bootstrap_loads_todos_and_coconut_packs() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=True),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         flows = {f["name"] for f in host.definitions.list_flows()}
         assert "todo-builder" in flows

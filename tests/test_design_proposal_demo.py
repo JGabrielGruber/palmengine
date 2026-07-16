@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.patterns._registry import get_design_contributor_hook
 from palm.services.design.contributors import reset_design_contributor_wiring
@@ -18,7 +18,7 @@ def demo_host() -> Iterator[ApplicationHost]:
     clear_design_contributors()
     reset_design_contributor_wiring()
     settings = PalmSettings.for_tests(load_examples=False)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
     yield host
     host.shutdown()

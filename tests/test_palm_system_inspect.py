@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from examples.definitions.system import register_definitions as register_system
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.providers.palm.bindings.resource.system_inspect import (
     SYSTEM_READ_ACTIONS,
@@ -22,7 +22,7 @@ def test_system_read_action_names() -> None:
 def test_local_list_flows_and_analytics() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=True),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         register_system(host.app.repository())
         body = host.execution.providers.invoke("palm-system-flows", action="list_flows")

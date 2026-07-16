@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.runtimes.server.context import ServerContext
 from palm.services.analytics import AnalyticsService
@@ -12,7 +12,7 @@ from palm.services.analytics import AnalyticsService
 def test_host_exposes_analytics() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         assert isinstance(host.analytics, AnalyticsService)
         assert isinstance(host.analytics.list_datasets(), list)
@@ -21,7 +21,7 @@ def test_host_exposes_analytics() -> None:
 def test_server_context_standalone_and_host() -> None:
     with ApplicationHost(
         settings=PalmSettings.for_tests(),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         runtime = host.app.runtime()
         standalone = ServerContext(runtime, host=None)

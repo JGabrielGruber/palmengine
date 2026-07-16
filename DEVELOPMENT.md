@@ -237,10 +237,10 @@ mirror production wiring (CQRS, projections, outbox, compensation):
 ```python
 from pathlib import Path
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 
 settings = PalmSettings(storage_backend="filesystem", data_dir=Path("data"))
-with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(settings, profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
     rows = host.list_instance_views(include_terminal=False)
 ```
@@ -250,10 +250,10 @@ CLI equivalent: :func:`~palm.app.session.create_cli_host` (same profile).
 Multi-role deployment:
 
 ```python
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 
 # Master + workers in one process (tests)
-profile = HostProfile(master=True, worker=True, worker_count=2)
+profile = DeploymentProfile(master=True, worker=True, worker_count=2)
 with ApplicationHost(profile=profile) as host:
     job = host.submit_flow("quick")  # routed to a worker runtime
 ```
@@ -376,14 +376,14 @@ export PALM_MAX_SNAPSHOTS_PER_INSTANCE=10
 **In tests or scripts:**
 
 ```python
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 
 settings = PalmSettings(
     enable_state_snapshot=True,
     snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
     max_snapshots_per_instance=5,
 )
-with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(settings, profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
 ```
 

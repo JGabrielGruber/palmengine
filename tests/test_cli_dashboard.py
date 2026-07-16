@@ -7,7 +7,7 @@ from io import StringIO
 import pytest
 from rich.console import Console
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.app.host.event_recorder import HostEventRecorder
 from palm.app.host.events import HostEventType
 from palm.patterns.wizard.bindings.cqrs.queries import ListWizardProgressQuery
@@ -124,7 +124,7 @@ def test_host_event_recorder_ring_buffer() -> None:
 def test_list_wizard_progress_query_active_only(fast_cli_settings: PalmSettings) -> None:
     host = ApplicationHost(
         settings=fast_cli_settings,
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     )
     host.start()
 
@@ -139,7 +139,7 @@ def test_list_wizard_progress_query_active_only(fast_cli_settings: PalmSettings)
 
 
 def test_last_recovery_populated_on_start(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
 
     recovery = host.last_recovery

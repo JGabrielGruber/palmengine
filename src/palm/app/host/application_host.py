@@ -9,13 +9,13 @@ import threading
 from typing import TYPE_CHECKING, Any, Self
 
 from palm.app.app import PalmApp
-from palm.app.bootstrap import host_profile_from_settings, runtime_start_options
+from palm.app.bootstrap import deployment_profile_from_settings, runtime_start_options
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
 from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
 from palm.app.host.observability import HostObservability
 from palm.app.host.outbox_service import OutboxBackgroundService
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.host.router import RuntimeRouter
 from palm.app.host.services import HostServiceContext, core_service_registry
 from palm.app.host.wiring import (
@@ -84,7 +84,7 @@ class ApplicationHost:
     storage, runtime registry). The host owns command dispatch, query serving,
     worker routing, and background services::
 
-        host = ApplicationHost(profile=HostProfile.all_in_one())
+        host = ApplicationHost(profile=DeploymentProfile.all_in_one())
         host.start()
         job = host.execute(SubmitFlowCommand(flow="my_flow"))
         rows = host.ask(ListInstancesQuery(include_terminal=False))
@@ -95,11 +95,11 @@ class ApplicationHost:
         self,
         settings: PalmSettings | None = None,
         *,
-        profile: HostProfile | None = None,
+        profile: DeploymentProfile | None = None,
         storage: StorageEngine | None = None,
     ) -> None:
         self.settings = settings or PalmSettings()
-        self.profile = profile or host_profile_from_settings(self.settings)
+        self.profile = profile or deployment_profile_from_settings(self.settings)
         self._app = PalmApp(self.settings, storage=storage)
         self._event = EventEngine()
         self._command_bus = CommandBus()
@@ -605,7 +605,7 @@ class ApplicationHost:
 
 
 def run_host(
-    profile: HostProfile | str = "all_in_one",
+    profile: DeploymentProfile | str = "all_in_one",
     *,
     settings: PalmSettings | None = None,
     **start_options: Any,
@@ -615,7 +615,7 @@ def run_host(
 
     Library helper for standalone master/worker/server processes.
     """
-    resolved = profile if isinstance(profile, HostProfile) else HostProfile.from_preset(profile)
+    resolved = profile if isinstance(profile, DeploymentProfile) else DeploymentProfile.from_preset(profile)
     host = ApplicationHost(settings=settings, profile=resolved)
     host.start(**start_options)
     try:

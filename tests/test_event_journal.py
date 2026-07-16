@@ -74,12 +74,12 @@ def test_wire_journal_interceptor() -> None:
 
 def test_host_control_plane_status() -> None:
     from palm.app.host.application_host import ApplicationHost
-    from palm.app.host.roles import HostProfile
+    from palm.app.host.roles import DeploymentProfile
     from palm.app.settings import PalmSettings
 
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         assert host.event_journal is not None
         host.event.emit("resource.changed", resource_ref="x", action="put")

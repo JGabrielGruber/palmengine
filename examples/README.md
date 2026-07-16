@@ -194,9 +194,9 @@ uv run python examples/full_demo.py
 ```
 
 ```python
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 
-with ApplicationHost(PalmSettings(), profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(PalmSettings(), profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
     host.provide_input(job.id, "Ada")
     views = host.list_instance_views()

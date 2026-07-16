@@ -13,7 +13,7 @@ import palm.common.transforms  # autoload common transform rules
 import palm.patterns  # — autoload pattern apps
 import palm.providers  # — autoload provider apps
 import palm.storages  # noqa: F401 — autoload core storage apps
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.storage import StorageFactory
@@ -120,17 +120,17 @@ def load_definitions_for_repository(
     return count
 
 
-def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
-    """Resolve a :class:`~palm.app.host.roles.HostProfile` from application settings.
+def deployment_profile_from_settings(settings: PalmSettings) -> DeploymentProfile:
+    """Resolve a :class:`~palm.app.host.roles.DeploymentProfile` from application settings.
 
     Always applies ``server_host`` / ``server_port`` from settings so
     ``PALM_SERVER_HOST`` / ``PALM_SERVER_PORT`` win over dataclass defaults
     (presets like ``server`` and ``all_in_one`` used to ignore them).
     """
     if settings.host_profile:
-        profile = HostProfile.from_preset(settings.host_profile)
+        profile = DeploymentProfile.from_preset(settings.host_profile)
     elif settings.host_roles:
-        profile = HostProfile.from_roles(
+        profile = DeploymentProfile.from_roles(
             settings.host_roles,
             worker_count=settings.worker_count,
             server_host=settings.server_host,
@@ -139,7 +139,7 @@ def host_profile_from_settings(settings: PalmSettings) -> HostProfile:
             outbox_poll_interval=settings.outbox_poll_interval,
         )
     else:
-        profile = HostProfile.all_in_one()
+        profile = DeploymentProfile.all_in_one()
     return replace(
         profile,
         enable_outbox_service=settings.enable_outbox_service,

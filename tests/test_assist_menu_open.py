@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.operator.view_registry import OperatorViewContext
 from palm.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
@@ -27,7 +27,7 @@ from palm.services.assist.profiles.policy import (
 def host() -> Iterator[ApplicationHost]:
     """Started host WITH example definitions (todo-builder) — overrides the no-examples conftest host."""
     settings = PalmSettings.for_tests(load_examples=True)
-    application_host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    application_host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     application_host.start()
     yield application_host
     application_host.shutdown()

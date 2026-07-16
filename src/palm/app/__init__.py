@@ -6,14 +6,14 @@ Use :class:`~palm.app.app.PalmApp` directly only for low-level embedding tests.
 """
 
 from palm.app.app import PalmApp
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from palm.app.session import create_cli_host, create_console
 from palm.app.settings import PalmSettings
 
 __all__ = [
     "ApplicationHost",
-    "HostProfile",
+    "DeploymentProfile",
     "PalmApp",
     "PalmSettings",
     "RuntimeHandle",

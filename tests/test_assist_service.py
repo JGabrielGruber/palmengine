@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 
 
@@ -17,7 +17,7 @@ def assist_settings() -> PalmSettings:
 
 @pytest.fixture
 def assist_host(assist_settings: PalmSettings) -> Iterator[ApplicationHost]:
-    host = ApplicationHost(settings=assist_settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=assist_settings, profile=DeploymentProfile.all_in_one())
     host.start()
     yield host
     host.shutdown()

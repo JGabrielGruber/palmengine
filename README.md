@@ -107,9 +107,9 @@ palm flow start onboard          # recommended — works for all patterns
 **Library quick start (ApplicationHost):**
 
 ```python
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 
-with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
     rows = host.list_instance_views(include_terminal=False)
     print(job.status.value, len(rows))
@@ -310,14 +310,14 @@ palm instance snapshots <instance_id>   # inspect captured history
 **Enable in code:**
 
 ```python
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 
 settings = PalmSettings(
     enable_state_snapshot=True,
     snapshot_on_status=["WAITING_FOR_INPUT", "SUCCEEDED"],
     max_snapshots_per_instance=5,
 )
-with ApplicationHost(settings, profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(settings, profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
     snapshots = host.list_instance_snapshots(job.metadata["instance_id"])
 ```

@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.operator.path_match import match_command_path
 from palm.services.design.dispatch import _DISPATCH_HANDLERS
@@ -22,7 +22,7 @@ from palm.services.design.registry import (
 def design_host() -> Iterator[ApplicationHost]:
     clear_design_contributors()
     settings = PalmSettings.for_tests(load_examples=False)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
     yield host
     host.shutdown()

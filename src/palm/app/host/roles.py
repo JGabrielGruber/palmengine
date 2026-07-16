@@ -1,5 +1,9 @@
 """
-Host role profiles — composable deployment roles for ApplicationHost.
+DeploymentProfile — composable deployment roles (master/worker/server) for ApplicationHost.
+
+The *where/how it runs* axis. Distinct from the *what it's made of* axis
+(``CompositionProfile``, 0.49): a running app is assembled from
+``CompositionProfile`` × ``DeploymentProfile``.
 """
 
 from __future__ import annotations
@@ -7,12 +11,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, Self
 
-HostRoleName = Literal["master", "worker", "server"]
-HostProfilePreset = Literal["all_in_one", "master", "worker", "server"]
+DeploymentRoleName = Literal["master", "worker", "server"]
+DeploymentProfilePreset = Literal["all_in_one", "master", "worker", "server"]
 
 
 @dataclass(frozen=True)
-class HostProfile:
+class DeploymentProfile:
     """
     Declares which capabilities an :class:`~palm.app.host.ApplicationHost` provides.
 
@@ -39,8 +43,8 @@ class HostProfile:
             raise ValueError("At least one host role must be enabled")
 
     @property
-    def roles(self) -> frozenset[HostRoleName]:
-        enabled: set[HostRoleName] = set()
+    def roles(self) -> frozenset[DeploymentRoleName]:
+        enabled: set[DeploymentRoleName] = set()
         if self.master:
             enabled.add("master")
         if self.worker:
@@ -83,7 +87,7 @@ class HostProfile:
         )
 
     @classmethod
-    def from_preset(cls, preset: HostProfilePreset | str) -> Self:
+    def from_preset(cls, preset: DeploymentProfilePreset | str) -> Self:
         mapping: dict[str, Self] = {
             "all_in_one": cls.all_in_one(),
             "master": cls.master_only(),

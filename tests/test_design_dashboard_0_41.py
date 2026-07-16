@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.services.analytics.dashboard_design import validate_dashboard_body
 from palm.services.analytics.dashboards import clear_dashboards, get_dashboard
@@ -38,7 +38,7 @@ def test_publish_dashboard_registers() -> None:
     clear_dashboards()
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     ) as host:
         out = host.design.publish_dashboard(
             {

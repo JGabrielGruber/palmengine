@@ -36,7 +36,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.exceptions import DefinitionNotFoundError
 from palm.common.persistence.definition_migration import (
@@ -212,7 +212,7 @@ def _host_for_repository(repository: object) -> ApplicationHost | None:
     if storage is None or not getattr(storage, "is_initialized", False):
         return None
     settings = PalmSettings.for_tests(load_examples=False)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one(), storage=storage)
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one(), storage=storage)
     host.start()
     return host
 
@@ -332,7 +332,7 @@ def _seed_revision_one_instance(host: ApplicationHost, *, instance_id: str) -> N
 
 def main() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
     attach_design_host(host)
 

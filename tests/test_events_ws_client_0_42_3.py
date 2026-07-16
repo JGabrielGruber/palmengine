@@ -6,7 +6,7 @@ import threading
 import time
 
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.providers.palm.events_ws import (
     PalmEventsWebSocketClient,
@@ -33,7 +33,7 @@ def test_events_ws_subscribe_and_live() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
     with ApplicationHost(
         settings=settings,
-        profile=HostProfile.server_only(host="127.0.0.1", port=0),
+        profile=DeploymentProfile.server_only(host="127.0.0.1", port=0),
     ) as host:
         base = _host_base_url(host)
         assert host.event is not None

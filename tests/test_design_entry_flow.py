@@ -8,14 +8,14 @@ from pathlib import Path
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 
 
 @pytest.fixture
 def assist_host() -> Iterator[ApplicationHost]:
     settings = PalmSettings.for_tests(load_examples=True)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
     yield host
     host.shutdown()

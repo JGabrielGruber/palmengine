@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.definitions import FlowDefinition
 
 
 @pytest.fixture
 def design_host():
     settings = PalmSettings()
-    with ApplicationHost(settings=settings, profile=HostProfile.all_in_one()) as host:
+    with ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one()) as host:
         yield host
 
 

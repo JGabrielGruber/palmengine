@@ -13,9 +13,9 @@ Palm grows where the sun meets the sea. Orchestration should feel alive, truthfu
 For most applications, use **ApplicationHost** — it wires CQRS, projections, outbox, compensation, and recovery:
 
 ```python
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 
-with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
     session = host.execution.flows.dispatch(
         ["flows", "onboard", "session", sid, "input"],
         {"value": "yes"},
@@ -180,7 +180,7 @@ export PALM_DATA_DIR=./data
 
 ```
 src/palm/
-├── app/            # ApplicationHost, PalmApp, HostProfile, create_cli_host()
+├── app/            # ApplicationHost, PalmApp, DeploymentProfile, create_cli_host()
 ├── core/           # Pure engines (no external palm imports)
 ├── services/       # User-facing API (definitions, execution, system)
 ├── common/         # CQRS, hooks, persistence, transforms, runtimes base

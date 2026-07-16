@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.common.cqrs.query import ListInstancesQuery
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
@@ -105,7 +105,7 @@ def test_wizard_live_events_update_progress_projection() -> None:
 def test_host_job_board_updates_on_submit(settings: PalmSettings) -> None:
     from palm.definitions.flow import FlowDefinition
 
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
 
     flow = FlowDefinition(name="quick", pattern="dag", options={"name": "quick"})

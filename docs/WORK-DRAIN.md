@@ -27,7 +27,7 @@ Background drain polls the durable store (like the outbox service), claims due i
 palm host server
 ```
 
-The **`server`** host profile sets `enable_work_drain_service=True` on `HostProfile`. No env var required for inbound webhooks or triggers to run.
+The **`server`** host profile sets `enable_work_drain_service=True` on `DeploymentProfile`. No env var required for inbound webhooks or triggers to run.
 
 ### Environment override
 

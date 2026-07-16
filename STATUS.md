@@ -10,7 +10,7 @@ Palm is a lightweight, Python-first orchestration engine built on a clean **Beha
 
 **Distribution name:** `palmengine` (PyPI)  
 **Import name:** `palm`  
-**Recommended entrypoint:** `ApplicationHost` via `create_cli_host()` for CLI, or `ApplicationHost(profile=HostProfile.all_in_one())` for library use
+**Recommended entrypoint:** `ApplicationHost` via `create_cli_host()` for CLI, or `ApplicationHost(profile=DeploymentProfile.all_in_one())` for library use
 
 ## Architecture Snapshot
 
@@ -36,7 +36,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [AGENTS.md](AGENTS.md) for full detai
 - Durable process instances with resume across restarts
 - CQRS (Command + Query buses + projections including `resource_invocations`)
 - Reliability primitives: Transactional outbox, Compensation handlers (resource undo), Webhook dispatch support
-- Composable host roles (`ApplicationHost` + `HostProfile`)
+- Composable host roles (`ApplicationHost` + `DeploymentProfile`)
 - Rich CLI + REPL with live dashboard (`palm status`) and `palm resource *` commands
 - Multiple runtimes (Embedded, Daemon, Server, CLI)
 - **Palm Explorer** — SSR hub at `/explorer` (flows, jobs, instances, wizard workspace, **resources**); `GET /` redirects here

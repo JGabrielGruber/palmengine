@@ -148,7 +148,7 @@ Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks)
 | Component | Role |
 |-----------|------|
 | `ApplicationHost` | Top-level orchestrator — `start()`, `execute()`, `ask()`, `submit_flow()`, … |
-| `HostProfile` | Composable roles: `all_in_one`, `master`, `worker`, `server` |
+| `DeploymentProfile` | Composable roles: `all_in_one`, `master`, `worker`, `server` |
 | `PalmApp` | Infrastructure — shared storage, runtime registry, definition loading |
 | `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
 | `create_cli_host()` | CLI bootstrap — collapsed `all_in_one` host |
@@ -156,9 +156,9 @@ Runtime **infrastructure** (engine wiring, schedulers, auth/observability hooks)
 `PalmApp` is intentionally **not** the primary public API for services or the CLI. Use it directly only for low-level embedding tests or when you need fine-grained runtime registry control without CQRS.
 
 ```python
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 
-with ApplicationHost(profile=HostProfile.all_in_one()) as host:
+with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
     job = host.submit_flow("onboard")
     view = host.get_instance_view(job.metadata["instance_id"])
 ```

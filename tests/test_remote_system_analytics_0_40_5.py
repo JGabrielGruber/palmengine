@@ -8,7 +8,7 @@ from examples.definitions.system.origin_resources import (
     register_origin_system_resources,
 )
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.definitions import FlowDefinition
 from palm.runtimes.server.runtime import ServerRuntime
@@ -29,7 +29,7 @@ def test_analytics_origin_resources_not_query_params() -> None:
     try:
         with ApplicationHost(
             settings=PalmSettings.for_tests(load_examples=False),
-            profile=HostProfile.all_in_one(),
+            profile=DeploymentProfile.all_in_one(),
         ) as host:
             register_system(host.app.repository())
             names = register_origin_system_resources(

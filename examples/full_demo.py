@@ -20,7 +20,7 @@ from typing import Any
 import palm.patterns
 import palm.providers
 import palm.storages.memory  # noqa: F401
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.app.bootstrap import runtime_start_options
 from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
@@ -76,7 +76,7 @@ def main() -> int:
 
     def phase_one() -> None:
         nonlocal instance_id
-        host = ApplicationHost(settings, profile=HostProfile.all_in_one(), storage=storage)
+        host = ApplicationHost(settings, profile=DeploymentProfile.all_in_one(), storage=storage)
         host.start(**runtime_start_options(settings))
         try:
             _register_demo_flow(host.app.runtime().repository)
@@ -104,7 +104,7 @@ def main() -> int:
         if not instance_id:
             raise RuntimeError("phase one did not produce an instance_id")
 
-        host = ApplicationHost(settings, profile=HostProfile.all_in_one(), storage=storage)
+        host = ApplicationHost(settings, profile=DeploymentProfile.all_in_one(), storage=storage)
         host.start(**runtime_start_options(settings))
         try:
             _register_demo_flow(host.app.runtime().repository)

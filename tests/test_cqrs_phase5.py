@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.app.host.events import HostEventType
 from palm.common.compensation import (
     CompensationCoordinator,
@@ -209,7 +209,7 @@ def test_outbox_processor_dispatches_webhooks_before_publish() -> None:
 @pytest.mark.integration
 def test_host_recovery_includes_projection_report(full_recovery_settings: PalmSettings) -> None:
     recovered: list[dict] = []
-    host = ApplicationHost(settings=full_recovery_settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=full_recovery_settings, profile=DeploymentProfile.all_in_one())
     host.event.subscribe(
         HostEventType.RECOVERED,
         lambda e: recovered.append(dict(e.payload)),
@@ -227,7 +227,7 @@ def test_host_recovery_includes_projection_report(full_recovery_settings: PalmSe
 
 def test_host_emits_workers_ready(settings: PalmSettings) -> None:
     events: list[str] = []
-    profile = HostProfile(master=True, worker=True, server=False, worker_count=2)
+    profile = DeploymentProfile(master=True, worker=True, server=False, worker_count=2)
     host = ApplicationHost(settings=settings, profile=profile)
     host.event.subscribe("*", lambda e: events.append(e.type))
     host.start()

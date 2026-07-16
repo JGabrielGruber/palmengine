@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.app import ApplicationHost, HostProfile, PalmSettings
+from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.common.cqrs import CommandBus
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
@@ -86,7 +86,7 @@ def test_repl_session_tracks_active_session() -> None:
 
 
 def test_application_host_exposes_execution_service(settings: PalmSettings) -> None:
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
 
     assert host.execution is not None

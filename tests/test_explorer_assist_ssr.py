@@ -9,7 +9,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.runtimes.server import ServerRuntime
 
@@ -17,7 +17,7 @@ from palm.runtimes.server import ServerRuntime
 @pytest.fixture
 def server() -> Iterator[ServerRuntime]:
     settings = PalmSettings.for_tests(load_examples=True)
-    host = ApplicationHost(settings=settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=settings, profile=DeploymentProfile.all_in_one())
     host.start()
     rt = ServerRuntime(host="127.0.0.1", port=0, host_bridge=host)
     rt.start(port=0)

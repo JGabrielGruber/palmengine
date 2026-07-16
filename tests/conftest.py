@@ -15,7 +15,7 @@ import pytest
 
 import palm.patterns  # autoload plugin apps for the whole test session
 import palm.providers  # noqa: F401 — (0.47.5: common no longer triggers this side-effect)
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.core.event import EventEngine
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
@@ -144,7 +144,7 @@ def host(fast_settings: PalmSettings) -> Iterator[ApplicationHost]:
     """Started collapsed ApplicationHost for integration tests."""
     application_host = ApplicationHost(
         settings=fast_settings,
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     )
     application_host.start()
     yield application_host

@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, HostProfile
+from palm.app import ApplicationHost, DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.definitions import FlowDefinition
 from palm.services.design.registry import clear_design_contributors, iter_design_contributors
@@ -19,7 +19,7 @@ def design_settings() -> PalmSettings:
 
 @pytest.fixture
 def design_host(design_settings: PalmSettings) -> Iterator[ApplicationHost]:
-    host = ApplicationHost(settings=design_settings, profile=HostProfile.all_in_one())
+    host = ApplicationHost(settings=design_settings, profile=DeploymentProfile.all_in_one())
     host.start()
     yield host
     host.shutdown()

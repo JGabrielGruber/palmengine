@@ -53,7 +53,7 @@ palm/core/                 ← PURE foundational engines (Behavior Tree, Orchest
 - **`palm/core/`** — Pure engines and primitives. Behavior Trees are the universal control-flow model. No external Palm imports allowed.
 - **`palm/services/`** — User-facing business API (`DefinitionService`, `ExecutionService`, `SystemService`) composing schema-validated CQRS. Domain modules own `registry.py`. Runtimes call services; services do not import runtimes. Shared `BaseService` / views remain in `palm/common/services/`.
 - **`palm/common/`** — The “middle layer” where most coordination lives. Execution plans, hooks, CQRS + `CqrsSchemaRegistry`, reliable events (outbox), compensation, transforms, and shared runtime infrastructure.
-- **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `HostProfile` roles) is the recommended entry point for most use cases. `PalmApp` is infrastructure.
+- **`palm/app/`** — Application-level orchestration. `ApplicationHost` (with composable `DeploymentProfile` roles) is the recommended entry point for most use cases. `PalmApp` is infrastructure.
 - **`palm/patterns/`, `palm/providers/`, `palm/storages/`** — Extensible “Django-style apps”. Each capability lives in its own subpackage with `registry.py`.
 - **`palm/runtimes/`** — Thin surfaces (CLI, embedded, daemon, server). Heavy lifting lives in `palm.common.runtimes`.
 - **`palm/definitions/` + `palm/instances/`** — Stable contracts and durable state.
@@ -126,7 +126,7 @@ Follow these patterns. They exist so growth remains orderly.
 | CQRS schemas | `palm/patterns/<name>/bindings/cqrs/schemas.py` | Add `command_schemas` / `query_schemas` on `CqrsContributor`; optional `instance_status_query` for inspect |
 | Service method | `palm/services/<domain>/` | Compose CQRS in domain `service.py`; register REST/MCP in domain `registry.py`; wire on host/context in `_wire_cqrs()` |
 | MCP tool (0.16+) | `palm/runtimes/mcp/<domain>/` | Group tools by service domain (`flows`, `providers`, `definitions`, `system`); pattern contributors stay in pattern `bindings/mcp.py` |
-| New host role / capability | `palm/app/host/` | Extend `HostProfile` or add to `ApplicationHost` wiring |
+| New host role / capability | `palm/app/host/` | Extend `DeploymentProfile` or add to `ApplicationHost` wiring |
 | Compensation handler | During definition bootstrap | Register on `default_compensation_registry()` |
 | New runtime surface | `palm/runtimes/<name>/` | Keep thin. Put logic in `palm.common.runtimes` |
 | WebSocket / Portal transport (0.32+) | `palm/runtimes/server/surfaces/websocket/` | Frames → shared assist dispatch; **no** new service domain; see [VISION-0.32](docs/VISION-0.32.md) |

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.app import ApplicationHost, PalmSettings
-from palm.app.host.roles import HostProfile
+from palm.app.host.roles import DeploymentProfile
 
 
 def test_server_profile_starts_work_drain_without_env() -> None:
@@ -11,7 +11,7 @@ def test_server_profile_starts_work_drain_without_env() -> None:
     assert settings.enable_work_drain_service is False
     host = ApplicationHost(
         settings=settings,
-        profile=HostProfile.server_only(port=0),
+        profile=DeploymentProfile.server_only(port=0),
     )
     host.start()
     try:
@@ -27,7 +27,7 @@ def test_all_in_one_profile_does_not_auto_drain() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(
         settings=settings,
-        profile=HostProfile.all_in_one(),
+        profile=DeploymentProfile.all_in_one(),
     )
     host.start()
     try:

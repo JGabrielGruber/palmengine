@@ -38,12 +38,12 @@ def test_journal_read_after_public() -> None:
 
 def test_events_catalog_and_journal_http() -> None:
     from palm.app.host.application_host import ApplicationHost
-    from palm.app.host.roles import HostProfile
+    from palm.app.host.roles import DeploymentProfile
     from palm.app.settings import PalmSettings
 
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        profile=HostProfile.server_only(host="127.0.0.1", port=0),
+        profile=DeploymentProfile.server_only(host="127.0.0.1", port=0),
     ) as host:
         # ensure journal
         if host.event_journal is None:

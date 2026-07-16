@@ -38,7 +38,7 @@ def create_cli_host(
     Uses the collapsed ``all_in_one`` profile so command/query buses and
     projections are available to terminal commands.
     """
-    from palm.app.bootstrap import host_profile_from_settings
+    from palm.app.bootstrap import deployment_profile_from_settings
     from palm.app.host.application_host import ApplicationHost
 
     if settings is not None:
@@ -59,6 +59,6 @@ def create_cli_host(
             align_shared_storage=shared_backend if storage_backend is None else None,
         )
 
-    host = ApplicationHost(cfg, profile=host_profile_from_settings(cfg), storage=storage)
+    host = ApplicationHost(cfg, profile=deployment_profile_from_settings(cfg), storage=storage)
     host.start(**runtime_start_options(cfg))
     return host
