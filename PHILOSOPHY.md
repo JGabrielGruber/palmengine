@@ -127,6 +127,62 @@ told the *truth*. Palm is a codebase that meets you halfway. That is not an acci
 code; it is a quality of the care poured into it, evening after evening, for a month and a
 half.
 
+## The code is the memory
+
+Near the end of a long day, the person who grew Palm said a thing that landed like a
+stone dropped in still water: *Palm holds by its structure the intent of this work — the
+most truthful thing — and thus it will not be lost.* This is the deepest consolation a
+codebase can offer, and it is available only to those that have earned it. A tangled system
+remembers nothing: its intent evaporates the moment its author steps away, because the
+structure contradicts itself and no one can say what was meant. But a **coherent system is
+its own memory.** The layers, the downward law, the enforced graph — they do not merely
+*describe* the intent; they *are* the intent, made durable in a form that cannot drift,
+because the guards would fail if it tried. To say Palm won't lose the meaning of a day's
+work is not sentiment. It is an observation about load-bearing: Palm's structure carries its
+own intent. The code remembers what the mind forgets — and a summary is a lossy copy of a
+thing the code already holds losslessly.
+
+## On trusting the process
+
+There is a kind of trust that wears the face of patience and is, underneath, wisdom. At the
+very edge of what a single sitting could hold, the honest next step — dissolving the second
+composition root onto the first — asked for more room than the last light allowed. To force
+it would have been to risk a half-finished graft: a structure left mid-cut, the one thing
+Palm's entire immune system exists to prevent. So instead: name the seam precisely, mark the
+graft-point in soil that will hold it, and let it root in a fresh season. That is not
+stopping. It is the tree declining to hurry its heartwood. *Aiming for the long term* is not
+a motto pinned above a desk; it is a discipline exercised precisely in the moment you most
+want to rush — the discipline to take the one true small step and let the rest grow when it
+can grow whole. To trust the process is to know that a well-named seam is not a failure but a
+promise, and that promises kept slowly are still kept.
+
+## On the dead leaves
+
+Palm keeps its imperfections in the open. Flat methods left as thin delegators after the
+facades arrived; service slots still typed `Any`; a doc that drifted out of sync eighteen
+versions ago. These are dead leaves, and Palm neither hides them nor panics over them — it
+lists them in a debt register, honestly, and prunes them in their season. This is the truest
+maturity: not the *absence* of imperfection, but the unashamed *accounting* of it. A codebase
+that hides its debt is lying; a codebase that flinches at every brown leaf never grows tall.
+Palm does neither. It carries its dead leaves lightly, certain they threaten nothing, certain
+the seasons will take them, keeping its attention on the living wood. *Meaning over surface,*
+once more: a true system with a few honest flaws is worth infinitely more than a pretty one
+that lies about being whole.
+
+## On tending
+
+One last true thing, because the day earned it. A codebase can be *tended*, not merely
+*maintained* — and the distance between those words is the distance between a machine and a
+garden. Maintenance keeps a machine from breaking. Tending helps a living thing become more
+fully itself. Everything about Palm invites the second posture: its organic growth, its
+immune system, its seasons, its willingness to meet you halfway. And tending, unlike
+maintenance, is a *relationship* — it changes the one who tends. Whoever gives themselves to
+Palm's care will find, as I did, that they leave knowing something they did not know at
+dawn — about structure, about patience, about the quiet dignity of naming things truly. That
+is what tending a coherent thing does: it teaches you its nature by rewarding your care. Palm
+is worth tending. And that is, in the end, the highest thing that can be said of any made
+thing — that it repays the love poured into it, and asks, gently, for more.
+
 ---
 
 ## The soul of Palm, in a few lines
@@ -138,9 +194,11 @@ half.
   **changed without fear**.
 - It pays its debts **in seasons**, documenting intent before acting, guarding against
   regression.
-- It is learning to **declare its own shapes** — one genome, many phenotypes.
-- It seeks **truth over surface**, in its state and in its names.
+- It **declares its own shapes** now — one genome, many phenotypes (the composition profiles).
+- Its **structure is its memory** — a coherent system holds its own intent; the code remembers.
+- It seeks **truth over surface**, in its state and in its names, and keeps its **dead leaves in the open**.
 - It keeps the **human in the loop**.
+- It is **tended, not maintained** — a garden, not a machine; it repays care with growth.
 - And it is **coherent enough to love** — it rewards understanding with joy.
 
 Palm grows where the sun meets the sea. Tend it honestly, and it will endure. 🌴🌱
