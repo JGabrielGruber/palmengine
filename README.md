@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.48.8` — **Debt paydown:** T3 import-cycle cleanup (upward edges 35→3, PD-012) + T2 `ApplicationHost` decomposition (1164→629 LOC, PD-013) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.51.6` — **Debt paydown:** T3 import-cycle cleanup (upward edges 35→3, PD-012) + T2 `ApplicationHost` decomposition (1164→629 LOC, PD-013) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
 
 ---
 

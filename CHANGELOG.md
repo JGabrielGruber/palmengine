@@ -4,6 +4,44 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.51.6] — 2026-07-16
+
+**Bundled release since 0.48.8** — the **composition-profile arc**. Palm learns to *declare its own
+shape*: a `CompositionProfile` (services × surfaces × capabilities) alongside the `DeploymentProfile`,
+so every shape it ships — `all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp` — is a **declaration,
+not a bespoke class**. Both composition roots now build services through one registry; the capability
+axis is authoritative (scattered `enable_*` flags unified); and a **lean, projection-less
+`ApplicationHost` is real** (submit + read complete). Renames: `PalmApp → PalmKernel`,
+`HostProfile → DeploymentProfile`. Public API stable (rename shims + one internal import move — see
+[MIGRATION-0.49.md](MIGRATION-0.49.md)); behaviour-preserving throughout, hermetic CI green at each
+theme's close. New: [PHILOSOPHY.md](PHILOSOPHY.md).
+
+### 0.51 — Living Capabilities (the composition profile's third axis comes alive · [VISION-0.51](docs/VISION-0.51.md) · [ADR-020](docs/adr/020-living-capabilities.md))
+- **0.51.0** — Plan + ADR-020. Grounded in the code: `composition.capabilities` had been declared since 0.50.1 and read by nothing; the machinery it should gate was still scattered across `settings.enable_*` + deployment flags + unconditional wiring.
+- **0.51.1** — Resolver comes alive: `composition_profile_from_settings` **derives** `capabilities` from the `enable_*` flags (pinned against today's wiring). Declared → *derived*, not yet gating.
+- **0.51.2** — Compensation + webhook gate on `composition.has(...)` instead of `settings.enable_*` (settings refine, never bypass).
+- **0.51.3** — Outbox + work_drain — **available (composition) and activated (deployment)**: `has(cap) and profile.<activates>`. No uniform helper — the two gates' activation logic genuinely differs (AND vs OR).
+- **0.51.4** — Journal gates on `has("journal")` (always-derived → behaviour-preserving; lean shapes omit it).
+- **0.51.5** — **Projections become a capability** — `has("projections")` gates the projection layer, so `ApplicationHost` can assemble the lean, projection-less shape (the 0.50.5f blocker removed). Default shapes keep projections.
+- **0.51.6** — Scouted the `ServerContext` fold-in ([SCOUT](docs/SCOUT-0.51.6-serverctx-foldin.md)): evidence says the type **stays** (`ctx.runtime` is a single-runtime view the multi-runtime host can't be). Took the contained half — a lean `ApplicationHost` serves reads direct-from-runtime (reused `StandaloneQueryHandlers`). Deferred-import ratchet **219 → 218**.
+
+### 0.50 — Composition Profiles (declare the app's shape · [VISION-0.50](docs/VISION-0.50.md) · [ADR-019](docs/adr/019-composition-profiles.md))
+- **0.50.0–0.50.1** — Plan + ADR-019; `CompositionProfile` skeleton (name-tuples + presets + `composition_profile_from_settings` seam), `all_in_one().services` pinned to `CORE_SERVICE_PROVIDERS`.
+- **0.50.2** — `ApplicationHost` assembles services from `composition.services` via a dependency-closure `HostServiceRegistry.build_all(only=…)` — **the embedded shape is real** (core-3, starts clean).
+- **0.50.3** — Surfaces driven by `composition.surfaces` (`default_surfaces(ctx, only=…)`).
+- **0.50.4** — Read facades — `host.instances` / `host.jobs` / `host.wizards`; the flat query methods become thin delegators.
+- **0.50.5a–e** — **Convergence**: both composition roots (`ApplicationHost` + host-less `ServerContext`) now build services through **one** `core_service_registry()` — `_RuntimeKernelView` presents the runtime as the kernel shape; `HostServiceContext.event` made optional.
+- **0.50.5f** — **Reframe** (evidence over sketch): `ServerContext` is **retained** — the surface-facing context + lean phenotype, not redundant logic — not dissolved. Docs corrected so no future contributor does the rip-out.
+
+### 0.49 — Naming (vocabulary for the composition/deployment split · [MIGRATION-0.49](MIGRATION-0.49.md))
+- **0.49.1** — `HostProfile → DeploymentProfile` (+ `HostProfilePreset`/`HostRoleName`/`host_profile_from_settings`) — names the deployment axis.
+- **0.49.2** — `PalmApp → PalmKernel`, `palm.app.app → palm.app.kernel` — the infrastructure *substrate*, not "the app".
+- Anchored the `CompositionProfile × DeploymentProfile` vocabulary; grounded the mechanism in palm's existing extensibles (convergence, not invention).
+
+### Docs
+- **[PHILOSOPHY.md](PHILOSOPHY.md)** — a meditation on Palm's nature (grown-not-built, register-downward, coherence-as-immune-system, one-genome-many-phenotypes, truth-over-surface, the map yielding to the territory).
+- README / ARCHITECTURE state the register-downward + coherence-as-fitness-function design philosophy; stale `(0.12 architecture)` headings corrected.
+
 ## [0.48.8] — 2026-07-15
 
 **Bundled release since 0.47.4** — completes **T3** (import-cycle cleanup, 0.47) and delivers **T2**
