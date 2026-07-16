@@ -272,9 +272,15 @@ class ApplicationHost:
         return self
 
     def _work_drain_background_enabled(self) -> bool:
-        """True when continuous WorkIntent drain should run (settings or host profile)."""
+        """True when continuous WorkIntent drain should run.
+
+        0.51.3: the composition declares the ``work_drain`` capability is *available*
+        (derived from ``settings.enable_work_drain_service``); the deployment profile can
+        *also* activate it for network-facing roles. Either source turns it on — the 0.44.1
+        OR semantics preserved, now routed through the capability axis.
+        """
         return bool(
-            self.settings.enable_work_drain_service or self.profile.enable_work_drain_service
+            self.composition.has("work_drain") or self.profile.enable_work_drain_service
         )
 
     def shutdown(self) -> None:

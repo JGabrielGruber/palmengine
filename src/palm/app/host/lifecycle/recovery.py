@@ -73,7 +73,14 @@ class RecoveryCoordinator:
             self._compensation.attach(host._event)
             self._compensation.attach_runtimes(host._app)
 
-        if host.profile.master and host.profile.enable_outbox_service:
+        # 0.51.3: available-and-activated — the composition declares the "outbox" capability
+        # is available (derived from settings.enable_event_outbox); the deployment role
+        # decides whether this node runs the drainer. Don't drain an outbox you don't have.
+        if (
+            host.composition.has("outbox")
+            and host.profile.master
+            and host.profile.enable_outbox_service
+        ):
             self._start_outbox_service()
             if self._outbox_service is not None:
                 recovery["outbox_pending"] = self._outbox_service.store.pending_count()

@@ -20,6 +20,7 @@ from palm.app.host.composition import (
     SERVER_SURFACES,
 )
 from palm.app.host.composition import CompositionProfile as CP
+from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 
 
@@ -154,3 +155,66 @@ def test_webhook_gate_reads_composition_not_settings() -> None:
         assert without_cap._recovery._build_webhook_dispatcher() is None  # capability axis wins
     finally:
         without_cap.shutdown()
+
+
+# ── 0.51.3: available (composition) and activated (deployment) ───────────────
+
+
+def test_outbox_drainer_is_available_times_activated() -> None:
+    """The outbox drainer is composition.has('outbox') AND the deployment role (master +
+    enable_outbox_service). A composition omitting 'outbox' stops the drainer even on a
+    master that would otherwise activate it."""
+    settings = PalmSettings.for_tests(full_recovery=True)  # enable_event_outbox → has('outbox')
+    master = DeploymentProfile.all_in_one()  # master=True, enable_outbox_service=True
+
+    with_cap = ApplicationHost(
+        settings=settings,
+        profile=master,
+        composition=replace(CP.all_in_one(), capabilities=frozenset({"outbox"})),
+    )
+    with_cap.start()
+    try:
+        assert with_cap.outbox_service is not None  # available AND activated
+    finally:
+        with_cap.shutdown()
+
+    without_cap = ApplicationHost(
+        settings=settings,
+        profile=master,  # role would activate ...
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),  # ... but not available
+    )
+    without_cap.start()
+    try:
+        assert without_cap.outbox_service is None  # don't drain an outbox you don't have
+    finally:
+        without_cap.shutdown()
+
+
+def test_work_drain_settings_side_routes_through_the_capability() -> None:
+    """work_drain keeps its 0.44.1 OR semantics (either source enables it), but the
+    settings side now routes through composition.has('work_drain'): an explicit composition
+    declaring it enables the drain even when the deployment profile does not activate it."""
+    settings = PalmSettings.for_tests(load_examples=False)  # enable_work_drain_service False
+    profile = DeploymentProfile.all_in_one()  # enable_work_drain_service False
+
+    on = ApplicationHost(
+        settings=settings,
+        profile=profile,
+        composition=replace(CP.all_in_one(), capabilities=frozenset({"work_drain"})),
+    )
+    on.start()
+    try:
+        assert on._work_drain_background_enabled() is True  # capability side of the OR
+    finally:
+        on.shutdown()
+
+    off = ApplicationHost(
+        settings=settings,
+        profile=profile,
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+    )
+    off.start()
+    try:
+        assert off._work_drain_background_enabled() is False  # neither source enables it
+    finally:
+        off.shutdown()
