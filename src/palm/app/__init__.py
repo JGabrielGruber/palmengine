@@ -5,6 +5,7 @@ Prefer :class:`~palm.app.host.ApplicationHost` for CLI, services, and deployment
 Use :class:`~palm.app.kernel.PalmKernel` directly only for low-level embedding tests.
 """
 
+from palm.app.host.composition import CompositionProfile
 from palm.app.host.roles import DeploymentProfile
 from palm.app.kernel import PalmKernel
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
@@ -13,6 +14,7 @@ from palm.app.settings import PalmSettings
 
 __all__ = [
     "ApplicationHost",
+    "CompositionProfile",
     "DeploymentProfile",
     "PalmKernel",
     "PalmSettings",

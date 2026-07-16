@@ -13,6 +13,7 @@ import palm.common.transforms  # autoload common transform rules
 import palm.patterns  # — autoload pattern apps
 import palm.providers  # — autoload provider apps
 import palm.storages  # noqa: F401 — autoload core storage apps
+from palm.app.host.composition import CompositionProfile
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
@@ -147,6 +148,18 @@ def deployment_profile_from_settings(settings: PalmSettings) -> DeploymentProfil
         server_host=settings.server_host,
         server_port=settings.server_port,
     )
+
+
+def composition_profile_from_settings(settings: PalmSettings) -> CompositionProfile:
+    """Resolve a :class:`~palm.app.host.composition.CompositionProfile` from settings.
+
+    The twin of :func:`deployment_profile_from_settings`. **0.50.1 skeleton:** returns
+    the ``all_in_one`` composition (what the host builds today); 0.50.2 will map the
+    ``enable_*`` capability flags + a composition preset onto the profile fields, and
+    the host will assemble from the result. Kept as a seam so callers can already ask
+    "what is this app made of?" without reaching into settings.
+    """
+    return CompositionProfile.all_in_one()
 
 
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:

@@ -2,16 +2,18 @@
 ApplicationHost — role-based deployment coordinator for Palm 0.10+.
 """
 
+from palm.app.host.composition import CompositionProfile
 from palm.app.host.events import HostEventType
 from palm.app.host.outbox_service import OutboxBackgroundService
 from palm.app.host.roles import DeploymentProfile, DeploymentProfilePreset, DeploymentRoleName
 
 __all__ = [
     "ApplicationHost",
-    "HostEventType",
+    "CompositionProfile",
     "DeploymentProfile",
     "DeploymentProfilePreset",
     "DeploymentRoleName",
+    "HostEventType",
     "OutboxBackgroundService",
     "run_host",
 ]
