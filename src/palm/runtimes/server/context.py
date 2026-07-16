@@ -7,26 +7,48 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.app.host.composition import CompositionProfile
+from palm.app.host.services import HostServiceContext, core_service_registry
+from palm.app.settings import PalmSettings
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
 from palm.common.cqrs.query import Query
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
 from palm.common.plans import PlanRegistry
 from palm.common.runtimes.server.cqrs import wire_standalone_buses
-from palm.services.analytics import AnalyticsService
-from palm.services.assist import AssistService
-from palm.services.definitions import DefinitionService
-from palm.services.design import DesignService
-from palm.services.design.factory import create_proposal_repository
-from palm.services.execution import ExecutionService
-from palm.services.execution.flows import FlowExecutionService
-from palm.services.execution.processes import ProcessExecutionService
-from palm.services.execution.providers import ProviderExecutionService
-from palm.services.system import SystemService
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
     from palm.common.runtimes.base import BaseRuntime
+    from palm.services.analytics import AnalyticsService
+    from palm.services.assist import AssistService
+    from palm.services.definitions import DefinitionService
+    from palm.services.design import DesignService
+    from palm.services.execution import ExecutionService
+    from palm.services.system import SystemService
+
+
+class _RuntimeKernelView:
+    """The kernel shape the service providers build against, over one runtime.
+
+    ApplicationHost passes its :class:`~palm.app.kernel.PalmKernel` as
+    ``HostServiceContext.app``; a host-less ``ServerContext`` has only its single
+    runtime. This thin view presents the two members the providers touch —
+    ``repository()`` and ``storage`` — so both composition roots can construct
+    services through the same ``core_service_registry()`` (0.50.5e). It is the
+    bridge the runtime↔kernel seam (0.50.5c) pointed toward.
+    """
+
+    __slots__ = ("_runtime",)
+
+    def __init__(self, runtime: BaseRuntime) -> None:
+        self._runtime = runtime
+
+    def repository(self, *, runtime_name: str | None = None) -> Any:
+        return self._runtime.repository
+
+    @property
+    def storage(self) -> Any:
+        return self._runtime.storage
 
 
 class ServerContext:
@@ -64,9 +86,16 @@ class ServerContext:
     def _build_standalone_services(self, runtime: BaseRuntime) -> None:
         """Construct and wire services for standalone (host-less) server mode.
 
-        Isolated from ``__init__`` (0.50.5d) so the host-less service build is a
-        single named seam — the next step (0.50.5e) routes it through the shared
-        ``core_service_registry()`` both composition roots build from.
+        Builds through the very same ``core_service_registry()`` ApplicationHost
+        uses (0.50.5e): the runtime is presented as a kernel via
+        :class:`_RuntimeKernelView`, the runtime↔kernel seam
+        (:meth:`resolve_execution_runtime`) is the resolver, and the composition
+        selects which services to build. Both composition roots now assemble
+        services one way — the convergence ADR-019 aimed at.
+
+        Behaviour-preserving: ``event=None`` keeps the host-less provider service
+        from emitting (there is no standalone coordination event plane, as before),
+        and ``PalmSettings()`` analytics defaults equal the prior hard-coded config.
         """
         wire_standalone_buses(
             self._command_bus,
@@ -74,62 +103,23 @@ class ServerContext:
             runtime,
             plan_registry=self.plan_registry,
         )
-        schemas = build_schema_registry()
-        bus_kw = {
-            "commands": self._command_bus,
-            "queries": self._query_bus,
-            "schemas": schemas,
-        }
-        self._system = SystemService(**bus_kw)
-        self._definitions = DefinitionService(
-            **bus_kw,
-            repository=runtime.repository,
+        service_ctx = HostServiceContext(
+            command_bus=self._command_bus,
+            query_bus=self._query_bus,
+            schemas=build_schema_registry(),
+            app=_RuntimeKernelView(runtime),
+            event=None,
+            settings=PalmSettings(),
+            resolve_execution_runtime=self.resolve_execution_runtime,
         )
-        flows = FlowExecutionService(**bus_kw, system=self._system, runtime=runtime)
-        definitions = self._definitions
-        self._execution = ExecutionService(
-            flows=flows,
-            providers=ProviderExecutionService(
-                **bus_kw,
-                runtime=runtime,
-                definitions=definitions,
-            ),
-            processes=ProcessExecutionService(**bus_kw, runtime=runtime),
-        )
-        # Honor the composition for the optional services (system/definitions/
-        # execution are the always-present core), mirroring ApplicationHost. For
-        # the server shape (all six) everything is built — behaviour-preserving.
-        services = self.composition.services
-        self._assist = (
-            AssistService(
-                **bus_kw,
-                definitions=definitions,
-                execution=self._execution,
-                system=self._system,
-                runtime=runtime,
-            )
-            if "assist" in services
-            else None
-        )
-        self._design = (
-            DesignService(
-                **bus_kw,
-                definitions=definitions,
-                proposals=create_proposal_repository(runtime.storage),
-                runtime=runtime,
-            )
-            if "design" in services
-            else None
-        )
-        self._analytics = (
-            AnalyticsService(
-                definitions=definitions,
-                providers=self._execution.providers,
-                **bus_kw,
-            )
-            if "analytics" in services
-            else None
-        )
+        built = core_service_registry().build_all(service_ctx, only=self.composition.services)
+        self._system = built.get("system")
+        self._definitions = built.get("definitions")
+        self._execution = built.get("execution")
+        self._assist = built.get("assist")
+        self._design = built.get("design")
+        self._analytics = built.get("analytics")
+
         from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
         from palm.services.design.contributors import wire_builtin_design_contributors
 

@@ -33,7 +33,7 @@ class HostServiceContext:
     query_bus: QueryBus
     schemas: Any
     app: PalmKernel
-    event: EventEngine
+    event: EventEngine | None
     settings: PalmSettings
     resolve_execution_runtime: Callable[[str | None], BaseRuntime]
 
