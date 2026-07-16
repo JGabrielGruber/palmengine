@@ -4,6 +4,12 @@
 
 **Accepted** — July 2026 (0.50.0, theme: Composition Profiles)
 
+> **Progress (0.50.5e):** decisions 1–2 landed; decision 3 — *the two composition roots
+> collapse into one* — is now substantially realized: both `ApplicationHost` and the host-less
+> `ServerContext` build their services through the **same** `core_service_registry()`. The
+> remaining step is the formal dissolution of the `ServerContext` *type* into
+> `CompositionProfile.server()` (0.50.5f, a caller-facing import migration).
+
 ## Context
 
 palm ships multiple app *shapes* — `embedded`, `daemon`, `server`, `cli`, `mcp` runtimes, plus the
