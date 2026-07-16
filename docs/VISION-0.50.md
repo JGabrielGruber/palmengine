@@ -163,8 +163,8 @@ composition-root convergence lands last.
 | Patch | Scope | MIGRATION? |
 |---|---|---|
 | **0.50.0** | Plan (this doc) + [ADR-019](adr/019-composition-profiles.md). Vocabulary already in code (0.49). | — |
-| **0.50.1** | **`CompositionProfile` skeleton** — typed dataclass (`services`/`surfaces`/`capabilities` name-tuples) + presets (`all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp`) + `composition_profile_from_settings` resolver. Mirrors `DeploymentProfile`. *No behavior change* — the profile just exists; a test pins each preset against what the host builds today. | no |
-| **0.50.2** | **`ApplicationHost` reads its profile** — service construction + collaborators driven by `CompositionProfile` (which services/capabilities). `enable_*` settings feed profile defaults via the resolver. Behavior-preserving for the default (all_in_one) profile. | no |
+| **0.50.1** ✅ | **`CompositionProfile` skeleton** — typed dataclass (`services`/`surfaces`/`capabilities` name-tuples) + presets + `composition_profile_from_settings` seam. Mirrors `DeploymentProfile`; `all_in_one().services` pinned to `CORE_SERVICE_PROVIDERS`. Declared, not wired. | no |
+| **0.50.2** ✅ | **`ApplicationHost` reads its profile (services)** — `build_all(only=composition.services)` with dependency closure; slots + cross-wiring guarded for absent services. Default (all six) unchanged; **the embedded shape is now real** (core-3, starts clean). Next: capabilities from `enable_*`. | no |
 | **0.50.3** | **Surfaces from the profile** — `default_surfaces()` becomes driven by `CompositionProfile.surfaces` instead of a hardcoded list. | no |
 | **0.50.4** | **Facades** — `host.flows` / `host.instances` / `host.jobs` as the capability surface a profile turns on/off; the <350 LOC shrink deferred from T2 lands here. | **yes** (facade API) |
 | **0.50.5** | **`ServerContext` dissolves** → `CompositionProfile.server()`; the two composition roots become one assembler (`ApplicationHost`) over a declared profile. The careful one. | **yes** (import path) |

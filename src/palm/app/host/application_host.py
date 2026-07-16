@@ -8,7 +8,12 @@ import signal
 import threading
 from typing import TYPE_CHECKING, Any, Self
 
-from palm.app.bootstrap import deployment_profile_from_settings, runtime_start_options
+from palm.app.bootstrap import (
+    composition_profile_from_settings,
+    deployment_profile_from_settings,
+    runtime_start_options,
+)
+from palm.app.host.composition import CompositionProfile
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
 from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
@@ -96,10 +101,12 @@ class ApplicationHost:
         settings: PalmSettings | None = None,
         *,
         profile: DeploymentProfile | None = None,
+        composition: CompositionProfile | None = None,
         storage: StorageEngine | None = None,
     ) -> None:
         self.settings = settings or PalmSettings()
         self.profile = profile or deployment_profile_from_settings(self.settings)
+        self.composition = composition or composition_profile_from_settings(self.settings)
         self._app = PalmKernel(self.settings, storage=storage)
         self._event = EventEngine()
         self._command_bus = CommandBus()
@@ -518,19 +525,23 @@ class ApplicationHost:
             settings=self.settings,
             resolve_execution_runtime=self._resolve_execution_runtime,
         )
-        built = core_service_registry().build_all(service_ctx)
-        self._system = built["system"]
-        self._definitions = built["definitions"]
-        self._execution = built["execution"]
-        self._assist = built["assist"]
-        self._design = built["design"]
-        self._analytics = built["analytics"]
-        self._assist.bind_analytics(self._analytics)
+        # Build only the services this app is composed of (+ their transitive deps).
+        # Default composition (all_in_one) is all six, so this is behaviour-preserving.
+        built = core_service_registry().build_all(service_ctx, only=self.composition.services)
+        self._system = built.get("system")
+        self._definitions = built.get("definitions")
+        self._execution = built.get("execution")
+        self._assist = built.get("assist")
+        self._design = built.get("design")
+        self._analytics = built.get("analytics")
+        if self._assist is not None and self._analytics is not None:
+            self._assist.bind_analytics(self._analytics)
         self._wire_dashboard_store()
         self._workplane.wire_work_drain()
         self._workplane.wire_event_journal()
         self._workplane.wire_inbound()
-        wire_builtin_design_contributors()
+        if self._design is not None:
+            wire_builtin_design_contributors()
         wire_all_service_cqrs(
             self._command_bus,
             self._query_bus,

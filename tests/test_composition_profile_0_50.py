@@ -10,6 +10,7 @@ that transition. See VISION-0.50 / ADR-019.
 from __future__ import annotations
 
 import palm.app
+from palm.app import ApplicationHost
 from palm.app.bootstrap import composition_profile_from_settings
 from palm.app.host.composition import (
     ALL_SERVICES,
@@ -73,3 +74,37 @@ def test_helpers() -> None:
     server = CP.server()
     assert server.exposes("rest") and not server.exposes("nope")
     assert server.has("compensation") and not server.has("nope")
+
+
+# ── 0.50.2: the host reads its composition ───────────────────────────────────
+
+
+def test_host_default_composition_builds_all_six() -> None:
+    """Behavior-preserving: the default host still builds every service."""
+    host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
+    host.start()
+    try:
+        assert host.composition == CP.all_in_one()
+        for name in ("system", "definitions", "execution", "assist", "design", "analytics"):
+            assert getattr(host, name) is not None
+    finally:
+        host.shutdown()
+
+
+def test_host_embedded_composition_builds_core_only() -> None:
+    """The embedded/lib shape is now real: core services only, and it starts clean."""
+    host = ApplicationHost(
+        settings=PalmSettings.for_tests(load_examples=False),
+        composition=CP.embedded(),
+    )
+    host.start()
+    try:
+        assert host.composition.services == ("system", "definitions", "execution")
+        assert host.system is not None
+        assert host.definitions is not None
+        assert host.execution is not None
+        assert host.assist is None
+        assert host.design is None
+        assert host.analytics is None
+    finally:
+        host.shutdown()

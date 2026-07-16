@@ -67,14 +67,37 @@ class HostServiceRegistry:
             self._order.append(provider.name)
         self._providers[provider.name] = provider
 
-    def build_all(self, ctx: HostServiceContext) -> dict[str, Any]:
-        """Construct every registered service in dependency order.
+    def _dependency_closure(self, names: tuple[str, ...] | frozenset[str]) -> set[str]:
+        """``names`` plus every service they transitively depend on."""
+        closure: set[str] = set()
+        stack = list(names)
+        while stack:
+            name = stack.pop()
+            if name in closure:
+                continue
+            if name not in self._providers:
+                raise ValueError(f"unknown service {name!r}")
+            closure.add(name)
+            stack.extend(self._providers[name].depends_on)
+        return closure
 
-        Returns a ``{name: service}`` map. Raises on an unknown or cyclic
-        dependency rather than building a partial graph.
+    def build_all(
+        self,
+        ctx: HostServiceContext,
+        *,
+        only: tuple[str, ...] | frozenset[str] | None = None,
+    ) -> dict[str, Any]:
+        """Construct services in dependency order.
+
+        ``only`` restricts construction to those services **plus their transitive
+        dependencies** (a composition can't ask for ``execution`` without
+        ``system``/``definitions``); ``None`` builds everything registered. Returns a
+        ``{name: service}`` map. Raises on an unknown or cyclic dependency rather than
+        building a partial graph.
         """
+        targets = set(self._order) if only is None else self._dependency_closure(only)
         built: dict[str, Any] = {}
-        pending = list(self._order)
+        pending = [name for name in self._order if name in targets]
         while pending:
             progressed = False
             for name in list(pending):
