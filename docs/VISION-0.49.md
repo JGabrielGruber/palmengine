@@ -82,11 +82,59 @@ This is the encouraging part — the foundation is largely in place:
 This shrinks the host toward <350, makes the API navigable, and — crucially — *surfaces the capabilities as
 structure*. It is also the cheapest thing that makes the shape visible.
 
-**North star — a declarative `AppProfile` / composition manifest.** An app is *declared* (its services,
-projections, surfaces, collaborators, contributors), and `ApplicationHost` becomes a thin **assembler** over
-that declaration — the way a Django project is `INSTALLED_APPS` + settings, not a god-class. "Another app" then
-becomes "another manifest", not "another god-class." The deployment `HostProfile` composes *with* it (shape ×
-deployment), it doesn't merge into it.
+**North star — a declarative `CompositionProfile`.** An app is *declared* (its services, projections, surfaces,
+collaborators, contributors), and `ApplicationHost` becomes a thin **assembler** over that declaration — the way
+a Django project is `INSTALLED_APPS` + settings, not a god-class. "Another app" becomes "another profile", not
+"another god-class." The `DeploymentProfile` composes *with* it (a running app = composition + deployment), it
+doesn't merge into it.
+
+## Mechanism — grounded in what palm already has (don't invent)
+
+The design falls out of a survey of the existing **extensibles + configs**: palm's composition isn't missing,
+it's **scattered across four mechanisms that don't know about each other.**
+
+| Mechanism | Declares | Scope today |
+|---|---|---|
+| `INSTALLED_SERVICES` / `_PATTERNS` / `_PROVIDERS` / `_STORAGES` (+ `autoload()`) | *which plugins exist* | global, per-domain |
+| `default_surfaces(ctx)` (server runtime) | *which surfaces are exposed* | **hardcoded function** — the one domain with no `INSTALLED_` list |
+| `PalmSettings.enable_*` (`work_drain`, `compensation`, `outbox`, `webhook`, `analytics`, …) | *which optional capabilities are on* | config flags |
+| `ApplicationHost.__init__` / `ServerContext.__init__` | *which services + projections + collaborators get built* | hardcoded per composition root |
+
+**`CompositionProfile` is the convergence of those four into one named shape** — not new machinery. And palm
+already ships the exact template on the *other* axis: **`DeploymentProfile`** is a typed dataclass of name-tuples
+(`roles`), with presets (`all_in_one`/`server_only`/…), resolved from settings by
+`deployment_profile_from_settings`. `CompositionProfile` is its twin:
+
+```
+DeploymentProfile   roles=(master, worker, server)                   # already exists — the "where/how" axis
+CompositionProfile  services=(…), surfaces=(…), capabilities=(…)     # the "what" axis, same shape
+```
+
+Low bet: no manifest DSL, no plugin framework — the tuple-of-installed-names + preset + settings-resolver idiom
+palm already lives by, applied to the composition axis.
+
+### The needs answer the fields
+
+The shapes palm already ships tell us what a `CompositionProfile` must express (this is the "find the answer
+from our needs" table):
+
+| Shape | services | surfaces | background (work-drain / outbox) | facade |
+|---|---|---|---|---|
+| `all_in_one` | all | (optional) | on | full |
+| `server` | all | rest / ssr / mcp / ws | on | — |
+| `embedded` / lib (palmengine-django) | core only | **none** | **off** | submit / ask only |
+| `worker` / daemon | execution | none | on | — |
+| `cli` | all | none | on | cli |
+| `mcp` | all | mcp | on | — |
+
+### What this collapses
+
+- `default_surfaces(ctx)` stops being a hardcoded function → becomes a `CompositionProfile.surfaces` field.
+- The scattered `enable_*` settings become profile-level defaults (settings still override per the
+  `*_from_settings` resolver pattern).
+- **`ServerContext` dissolves** into `CompositionProfile.server()` — the two hand-coded composition roots become
+  one assembler (`ApplicationHost`) over a declared profile. This is the biggest, most careful move of the theme.
+- Facades (`host.flows` / `host.instances`) are the **capability surface** a profile turns on/off per shape.
 
 ## Open questions (to discuss before planning)
 
