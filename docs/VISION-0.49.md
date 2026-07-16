@@ -23,6 +23,27 @@ The abstraction is warranted because the shapes already exist, hand-coded:
 So the question isn't *whether* to support multiple shapes (we already do, badly) — it's whether to keep
 hand-coding each composition root or **declare the shape once and assemble it**.
 
+## Naming — the anchor vocabulary (decided at 0.49 kickoff)
+
+Two axes, two deliberately-**distinct** names (not both `*Profile`-with-`app`, so the axes never blur; and
+avoiding "app" as a modifier, which is ambiguous — palm *is* the engine):
+
+- **`CompositionProfile`** — *what* an app is made of: the declared set of services, surfaces, projections, and
+  collaborators. The 0.49 centerpiece.
+- **`DeploymentProfile`** — *where/how* it runs: the deployment roles today in `HostProfile`
+  (`all_in_one` / `worker_only` / `server_only`). Rename `HostProfile` → `DeploymentProfile`.
+
+A running app is assembled from **`CompositionProfile` × `DeploymentProfile`**.
+
+> Rationale (user, kickoff): *"selecting a composition profile for the palm app is coherent alongside the
+> deployment profile"*; *"app shape is confusing for referring to palm."*
+
+**Open naming threads** (the "app" ambiguity, to settle next):
+- The two composition roots — `ApplicationHost` (the assembler) vs `ServerContext` — should converge: "server"
+  becomes a `CompositionProfile`, not a separate class. What does the surviving assembler get called?
+- `PalmApp` is the infra *substrate* (storage + runtime registry), not "the app" — rename to a
+  non-"app" word (e.g. `PalmKernel`), or keep + document the distinction?
+
 ## The insight — two shapes are tangled in `ApplicationHost`
 
 There are **two independent axes** of "what an app is", and today only one has a name:
