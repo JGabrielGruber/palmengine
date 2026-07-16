@@ -80,28 +80,45 @@ class ServerContext:
                 ),
                 processes=ProcessExecutionService(**bus_kw, runtime=runtime),
             )
-            self._assist = AssistService(
-                **bus_kw,
-                definitions=definitions,
-                execution=self._execution,
-                system=self._system,
-                runtime=runtime,
+            # Honor the composition for the optional services (system/definitions/
+            # execution are the always-present core), mirroring ApplicationHost. For
+            # the server shape (all six) everything is built — behaviour-preserving.
+            services = self.composition.services
+            self._assist = (
+                AssistService(
+                    **bus_kw,
+                    definitions=definitions,
+                    execution=self._execution,
+                    system=self._system,
+                    runtime=runtime,
+                )
+                if "assist" in services
+                else None
             )
-            self._design = DesignService(
-                **bus_kw,
-                definitions=definitions,
-                proposals=create_proposal_repository(runtime.storage),
-                runtime=runtime,
+            self._design = (
+                DesignService(
+                    **bus_kw,
+                    definitions=definitions,
+                    proposals=create_proposal_repository(runtime.storage),
+                    runtime=runtime,
+                )
+                if "design" in services
+                else None
             )
-            self._analytics = AnalyticsService(
-                definitions=definitions,
-                providers=self._execution.providers,
-                **bus_kw,
+            self._analytics = (
+                AnalyticsService(
+                    definitions=definitions,
+                    providers=self._execution.providers,
+                    **bus_kw,
+                )
+                if "analytics" in services
+                else None
             )
             from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
             from palm.services.design.contributors import wire_builtin_design_contributors
 
-            wire_builtin_design_contributors()
+            if self._design is not None:
+                wire_builtin_design_contributors()
             wire_all_service_cqrs_from_runtime(
                 self._command_bus,
                 self._query_bus,
