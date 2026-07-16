@@ -62,7 +62,10 @@ class RecoveryCoordinator:
         recovery["workers_ready"] = workers_ready
         recovery["workers"] = list(coordinator.registered_workers)
 
-        if host.settings.enable_compensation:
+        # 0.51.2: gated by the composition's capability axis. On the default path this
+        # equals settings.enable_compensation (the resolver derives it from that flag);
+        # an explicit composition that omits "compensation" wins (capabilities authoritative).
+        if host.composition.has("compensation"):
             self._compensation = CompensationCoordinator(
                 default_compensation_registry(),
                 host._event,
@@ -104,7 +107,10 @@ class RecoveryCoordinator:
 
     def _build_webhook_dispatcher(self) -> WebhookDispatcher | None:
         host = self._host
-        if not host.settings.enable_webhook_dispatcher:
+        # 0.51.2: the "webhook" capability gates availability (derived from
+        # settings.enable_webhook_dispatcher on the default path); settings.webhook_urls
+        # still configure the targets — settings refine within the capability, never bypass it.
+        if not host.composition.has("webhook"):
             return None
         if not host.settings.webhook_urls:
             return None

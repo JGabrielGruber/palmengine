@@ -10,6 +10,8 @@ ADR-020.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from palm.app import ApplicationHost
 from palm.app.bootstrap import composition_profile_from_settings
 from palm.app.host.composition import (
@@ -78,16 +80,77 @@ def test_resolver_preserves_services_and_surfaces() -> None:
     assert profile.surfaces == SERVER_SURFACES == CP.all_in_one().surfaces
 
 
-def test_capabilities_not_yet_gating_host_behaviour_unchanged() -> None:
-    """Derived capabilities are informational in 0.51.1: the host still builds every
-    service and starts regardless of the derived set (gating arrives 0.51.2+)."""
+def test_services_not_gated_by_capabilities_yet() -> None:
+    """Service construction is settled by composition.services (0.50), not capabilities:
+    a lean-capability host still builds every service."""
     host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
     host.start()
     try:
         # lean test settings derive only {journal, analytics} ...
         assert host.composition.capabilities == frozenset({"journal", "analytics"})
-        # ... yet every service is still built (nothing gates on capabilities yet)
+        # ... yet every service is still built (services are a separate axis)
         for name in ("system", "definitions", "execution", "assist", "design", "analytics"):
             assert getattr(host, name) is not None
     finally:
         host.shutdown()
+
+
+# ── 0.51.2: the first gates read the composition, not scattered flags ─────────
+
+
+def test_compensation_gate_reads_composition_not_settings() -> None:
+    """RecoveryCoordinator gates compensation on composition.has('compensation'); an
+    explicit composition wins over settings.enable_compensation (which full_recovery sets)."""
+    settings = PalmSettings.for_tests(full_recovery=True)  # enable_compensation=True
+
+    with_cap = ApplicationHost(
+        settings=settings,
+        composition=replace(CP.all_in_one(), capabilities=frozenset({"compensation"})),
+    )
+    with_cap.start()
+    try:
+        assert with_cap._recovery.compensation is not None
+    finally:
+        with_cap.shutdown()
+
+    without_cap = ApplicationHost(
+        settings=settings,  # settings still enable compensation ...
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),  # ... composition omits it
+    )
+    without_cap.start()
+    try:
+        assert without_cap._recovery.compensation is None  # capability axis wins
+    finally:
+        without_cap.shutdown()
+
+
+def test_webhook_gate_reads_composition_not_settings() -> None:
+    """The webhook dispatcher is gated by composition.has('webhook'); settings.webhook_urls
+    still configure it (refine, not bypass). Composition omitting 'webhook' wins over
+    settings.enable_webhook_dispatcher."""
+    settings = PalmSettings.for_tests(full_recovery=True).model_copy(
+        update={
+            "enable_webhook_dispatcher": True,
+            "webhook_urls": ["https://example.test/hook"],
+        }
+    )
+
+    with_cap = ApplicationHost(
+        settings=settings,
+        composition=replace(CP.all_in_one(), capabilities=frozenset({"webhook"})),
+    )
+    with_cap.start()
+    try:
+        assert with_cap._recovery._build_webhook_dispatcher() is not None
+    finally:
+        with_cap.shutdown()
+
+    without_cap = ApplicationHost(
+        settings=settings,  # settings still enable the dispatcher + provide urls ...
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),  # ... composition omits it
+    )
+    without_cap.start()
+    try:
+        assert without_cap._recovery._build_webhook_dispatcher() is None  # capability axis wins
+    finally:
+        without_cap.shutdown()
