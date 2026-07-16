@@ -61,10 +61,14 @@ class CompositionProfile:
 
     @classmethod
     def all_in_one(cls) -> Self:
-        """The full host — every service, no server surfaces, background work on."""
+        """The full host — every service + every surface available, background work on.
+
+        Surfaces are *available*; the server deployment mounts them, other deployments
+        (CLI) simply don't run a server. So all_in_one declares the full surface set to
+        stay behavior-preserving when server-deployed (the common case)."""
         return cls(
             services=ALL_SERVICES,
-            surfaces=(),
+            surfaces=SERVER_SURFACES,
             capabilities=DEFAULT_CAPABILITIES | {"work_drain"},
         )
 

@@ -44,9 +44,10 @@ def test_default_resolver_is_all_in_one_today() -> None:
 
 
 def test_presets_declare_the_shapes_palm_ships() -> None:
-    # server exposes all its surfaces + webhook; all_in_one exposes none
+    # all_in_one has every surface available (the server deployment mounts them);
+    # server adds webhook dispatch on top.
     assert CP.server().surfaces == SERVER_SURFACES
-    assert CP.all_in_one().surfaces == ()
+    assert CP.all_in_one().surfaces == SERVER_SURFACES
     assert CP.server().has("webhook")
     assert not CP.all_in_one().has("webhook")
 
@@ -108,3 +109,23 @@ def test_host_embedded_composition_builds_core_only() -> None:
         assert host.analytics is None
     finally:
         host.shutdown()
+
+
+# ── 0.50.3: surfaces driven by the profile ───────────────────────────────────
+
+
+def test_default_surfaces_respects_composition_filter() -> None:
+    """`only` (a composition's surfaces) narrows what the server mounts; None = all."""
+    from palm.runtimes.server import ServerRuntime
+    from palm.runtimes.server.context import ServerContext
+    from palm.runtimes.server.surfaces import default_surfaces
+
+    ctx = ServerContext(ServerRuntime())
+    full = default_surfaces(ctx)  # None → all (rest + 4)
+    assert len(full) == 5
+
+    filtered = default_surfaces(ctx, only=("rest", "mcp"))
+    assert len(filtered) == 2  # rest + mcp only
+
+    # all_in_one mounts everything (server-deploy behaviour-preserving)
+    assert len(default_surfaces(ctx, only=CP.all_in_one().surfaces)) == 5

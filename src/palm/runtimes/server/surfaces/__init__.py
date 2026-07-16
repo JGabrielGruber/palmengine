@@ -14,16 +14,30 @@ if TYPE_CHECKING:
     from palm.runtimes.server.context import ServerContext
 
 
-def default_surfaces(ctx: ServerContext) -> list[object]:
-    """Built-in surfaces shipped with the Palm server runtime."""
+def default_surfaces(
+    ctx: ServerContext,
+    *,
+    only: tuple[str, ...] | frozenset[str] | None = None,
+) -> list[object]:
+    """Built-in surfaces shipped with the Palm server runtime.
+
+    ``only`` (a ``CompositionProfile.surfaces``) restricts which surfaces are mounted,
+    by name; ``None`` mounts them all (the default). Surface ``__init__`` is
+    side-effect-free — filtering the returned list is what selects them.
+    """
     planned = [
         WebSocketSurface(ctx),
         McpSurface(ctx),
         ExplorerSurface(ctx),
         StudioSurface(ctx),
     ]
-    names = ["rest", *(surface.name for surface in planned)]
-    return [RestSurface(ctx, surface_names=names), *planned]
+    if only is not None:
+        planned = [surface for surface in planned if surface.name in only]
+    include_rest = only is None or "rest" in only
+    names = [*(["rest"] if include_rest else []), *(surface.name for surface in planned)]
+    if include_rest:
+        return [RestSurface(ctx, surface_names=names), *planned]
+    return list(planned)
 
 
 __all__ = [

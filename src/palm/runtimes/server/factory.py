@@ -38,5 +38,8 @@ def create_app(
 ) -> ServerApp:
     """Factory for a composable Palm server application with default surfaces."""
     ctx = build_server_context(runtime, host=host)
-    resolved = surfaces if surfaces is not None else default_surfaces(ctx)
+    # A host attached to the server contributes its CompositionProfile.surfaces;
+    # standalone (no host) mounts all. Explicit `surfaces=` still wins.
+    only = ctx.host.composition.surfaces if ctx.host is not None else None
+    resolved = surfaces if surfaces is not None else default_surfaces(ctx, only=only)
     return create_server_app(ctx, surfaces=resolved, webhook_bridge=webhook_bridge)
