@@ -103,12 +103,12 @@ move — the one that changes what `ApplicationHost` can be — lands last.
 | Patch | Scope | MIGRATION? |
 |---|---|---|
 | **0.51.0** | Plan (this doc) + [ADR-020](adr/020-living-capabilities.md). Capability vocabulary already in code (0.50.1). | — |
-| **0.51.1** | **Resolver comes alive** — `composition_profile_from_settings` derives `capabilities` from the `enable_*` flags; pinned against today's effective wiring by tests. Declared → *derived*, still not yet gating. | no |
-| **0.51.2** | **Compensation + webhook from the profile** — `RecoveryCoordinator` gates on `composition.has("compensation")` / `has("webhook")` instead of `settings.enable_*` (settings refine via resolver). Behavior-preserving. | no |
-| **0.51.3** | **Outbox + work_drain — available × activated** — gate on `composition.has(cap) and profile.<activates>`; the composition/deployment seam made explicit. Behavior-preserving. | no |
-| **0.51.4** | **Journal from the profile** — the always-on journal becomes `has("journal")`-gated (default on for the shapes that have it). Behavior-preserving. | no |
-| **0.51.5** | **Projections as a capability** (the careful one) — `has("projections")` gates the projection layer; `ApplicationHost` can now assemble the lean shape. Default (all_in_one/server) keeps projections. | possibly (new capability default) |
-| **0.51.6** | *(assess, don't force)* With a lean `ApplicationHost` real, revisit the 0.50.5f `ServerContext` fold-in behind a shared surface-context protocol — **only if** it reads as simplification, not churn. | **yes** (if taken) |
+| **0.51.1** ✅ | **Resolver comes alive** — `composition_profile_from_settings` derives `capabilities` from the `enable_*` flags; pinned against today's effective wiring. Declared → *derived*, not yet gating. | no |
+| **0.51.2** ✅ | **Compensation + webhook from the profile** — `RecoveryCoordinator` gates on `composition.has("compensation")` / `has("webhook")` instead of `settings.enable_*` (settings refine via resolver). Behaviour-preserving. | no |
+| **0.51.3** ✅ | **Outbox + work_drain — available and activated** — gate on `composition.has(cap) and profile.<activates>`; the composition/deployment seam explicit. (No uniform helper — the two gates' activation logic genuinely differs, AND vs OR.) | no |
+| **0.51.4** ✅ | **Journal from the profile** — the always-on journal becomes `has("journal")`-gated. Behaviour-preserving; lean shapes omit it. | no |
+| **0.51.5** ✅ | **Projections as a capability** (the payoff) — `has("projections")` gates the projection layer; `ApplicationHost` now assembles the lean, projection-less shape (0.50.5f blocker removed). Default shapes keep projections. | no (default-on) |
+| **0.51.6** ✅ | **Scouted, then contained** — a read-only spike ([SCOUT](SCOUT-0.51.6-serverctx-foldin.md)) proved the `ServerContext` *type* fold-in is churn without simplification (`ctx.runtime` is a single-runtime property the multi-runtime host can't be; the view *is* `ServerContext`) → **`ServerContext` stays**. Took only the cheap valuable half: a lean `ApplicationHost` serves reads direct-from-runtime (reused `StandaloneQueryHandlers`), so it is read-complete. No surface churn. | no |
 
 ## Open questions (for ADR-020 to lock)
 

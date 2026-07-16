@@ -2,8 +2,18 @@
 
 ## Status
 
-**Proposed** — July 2026 (0.51.0, theme: Living Capabilities). Sibling of
+**Accepted** — July 2026 (0.51, theme: Living Capabilities). Sibling of
 [ADR-019](019-composition-profiles.md); planned in [VISION-0.51](../VISION-0.51.md).
+
+> **Landed (0.51.1–0.51.6).** All capabilities now gate on `composition.has(...)` (resolver
+> derives them, pinned; settings/deployment refine). Decisions 1–2 and 4 held as written.
+> Refinements found while building: (3) *no uniform `capability_active()` helper* — the
+> available-and-activated gates have genuinely different logic (outbox is AND, work_drain is
+> OR), so a single helper would flatten a real distinction; deferred until an AND-shaped
+> pattern repeats. (4) projections became a capability, giving a lean `ApplicationHost`; a
+> read-only scout ([SCOUT-0.51.6](../SCOUT-0.51.6-serverctx-foldin.md)) then showed the
+> `ServerContext` *type* fold-in is churn without simplification, so `ServerContext` **stays**
+> and 0.51.6 took only the contained read-side completion.
 
 ## Context
 
