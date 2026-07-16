@@ -1,10 +1,27 @@
 # VISION 0.49 — App composition profiles (DRAFT, for discussion)
 
-**Status:** 🟡 **DRAFT — not scheduled.** Opened mid-0.48 (T2) as a design note to discuss, then plan. Nothing
-here is committed to; the slice list is a sketch, not a promise. Supersede/rewrite freely at the real `0.49.0`.
+**Status:** 🟡 **DRAFT — warranted, not yet scheduled.** Opened mid-0.48 (T2) as a design note. The core open
+question ("is there a real second-app shape?") is now **answered: yes** — see Evidence — so this is a real
+direction, not a YAGNI hedge. Slice list is still a sketch; supersede/rewrite freely at the real `0.49.0`.
 
 **Seed:** while decomposing `ApplicationHost` (T2), a deeper question surfaced — *the god-object isn't just
 too big, it has no declared **shape**.* This doc captures that thread so we can decide how far to take it.
+
+## Evidence — palm is already multi-shape (the need is real, not speculative)
+
+The abstraction is warranted because the shapes already exist, hand-coded:
+
+- **The runtimes are shapes:** `embedded`, `daemon`, `server`, `cli`, `mcp` — palm is *designed* to run
+  headless / embedded / as a lib / on the edge / as a worker. Each assembles a different composition.
+- **Two composition roots already coexist:** `ApplicationHost` (the all-in-one host shape) and `ServerContext`
+  (the server-standalone shape). 0.48.7 *separated* them (relocating `ServerContext` to `runtimes/server/`) —
+  which means we now have **two hand-coded compositions of the same parts, side by side, with no shared
+  declaration.** That duplication is the smell 0.49 resolves.
+- **Prior art:** `palmengine-django` (archived, ~0.13) embedded palm inside Django and worked — a proven
+  embedded/library shape.
+
+So the question isn't *whether* to support multiple shapes (we already do, badly) — it's whether to keep
+hand-coding each composition root or **declare the shape once and assemble it**.
 
 ## The insight — two shapes are tangled in `ApplicationHost`
 
@@ -49,10 +66,10 @@ deployment), it doesn't merge into it.
 
 ## Open questions (to discuss before planning)
 
-1. **Do we actually need N apps?** Today there is one. The honest risk is building a plugin-app framework before
-   a second app exists to validate it — a speculative abstraction wrong in three places. What are the *real*
-   second-shape candidates? (a headless/library-only app? an edge/worker-only app? a test harness app? a
-   customer-embedding of palm with a curated capability set?)
+1. ~~Do we actually need N apps?~~ **Answered: yes** (see Evidence). Shapes already exist — headless, embedded,
+   lib, edge, worker — and two composition roots (`ApplicationHost`, `ServerContext`) are already hand-coded.
+   The remaining question is *which shapes get a first-class profile* and in what order (host / server exist;
+   embedded-lib is the palmengine-django case; worker/edge are daemon-shaped).
 2. **How declarative, how soon?** Options on a spectrum: (a) keep imperative `__init__`, just extract facades;
    (b) a typed `AppProfile` dataclass the host reads; (c) a full django-apps `INSTALLED_*` manifest with
    autoload. Each is a different bet size.
@@ -65,16 +82,29 @@ deployment), it doesn't merge into it.
 
 ## Tentative sequence (if we proceed)
 
-1. **Facade decomposition** — methods → `host.<facade>.<verb>()`; host shrinks; shape becomes visible. *(Low risk;
-   valuable regardless of how far B goes.)*
+1. **Facade decomposition** — methods → `host.<facade>.<verb>()`; the facades are the *capability surface*.
+   Host shrinks; the shape becomes visible. *(Design these as composable capabilities, since a profile turns
+   them on/off per shape — not blind method-grouping.)*
 2. **Make `__init__` an explicit `AppProfile`** — the implicit manifest becomes a typed, inspectable object the
-   host assembles from. Still one app; no new machinery.
-3. **(Only if a real second shape appears)** — registry of profiles / author-facing declaration / multiple apps.
+   host assembles from.
+3. **Collapse the two composition roots** — `ApplicationHost` and `ServerContext` both assemble from a declared
+   `AppProfile` instead of hand-coding; the runtimes select/parameterize a profile. This is where the real
+   payoff lands (headless / embedded-lib / edge / worker shapes become declarations).
 
-## Recommendation
+## Recommendation (revised — the need is now confirmed)
 
-Do **step 1 (facades)** as the tail of T2 — it's real, low-risk, and it de-risks everything after. Treat steps
-2–3 as *earned by need*: let the manifest crystallize from the registries when a genuine second app shape shows
-up, rather than building the framework on spec. **Decision needed:** which of the open questions above do we
-want to answer now vs. defer, and is there a concrete second-app shape driving this (which would change the
-calculus toward doing B sooner)?
+Because the multi-shape need is **real and already hand-coded**, the facade decomposition is *not* separable
+from this theme: **facades are the per-shape capability surface** a profile assembles (a lib/embedded app has
+no `host.jobs.tick()` / no server surfaces; the server shape has no CLI facade). Doing facades blindly inside
+T2 would risk redoing them once the profile lands. So:
+
+- **Finish the genuinely-independent tail of T2 now** — **dead-accessor removal** (pure cleanup, forward-
+  compatible with any profile design). This "finishes what's left" of T2 that the profile work does *not* touch.
+- **Re-scope T2's exit:** the *structural* decomposition is done (seams extracted, PD-013 closed, modular
+  subpackages, the two composition roots separated). The final shrink to <350 via **facades moves into 0.49**,
+  because facades = composition-profile capability surface — same problem, design them together.
+- **Then plan 0.49 properly**, grounded in the real shapes + `palmengine-django` as the validation case:
+  declare a shape once, and make both `ApplicationHost` and `ServerContext` assemble from it.
+
+**Decision needed from you:** (a) OK to land T2 at "structurally complete" (dead-accessor cleanup + docs), moving
+the facade/`<350` work into 0.49? and (b) how additive-vs-clean-break do you want the eventual facade API?
