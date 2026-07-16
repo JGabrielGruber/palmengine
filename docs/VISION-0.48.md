@@ -80,8 +80,8 @@ lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC track
 **T2 re-scoped (0.48.8):** the *structural* decomposition is **complete** — 6 seams extracted into modular
 subpackages, PD-009/010/013/018 addressed, the two composition roots separated, host **1164 → 629 LOC**. The
 remaining shrink to <350 is via **facades** (`host.flows`/`host.instances`/…), which turned out to be the
-**per-shape capability surface of a composition profile** — so it moves to **0.49** ([VISION-0.49](VISION-0.49.md)),
-designed together with the app-shape work rather than blindly here.
+**per-shape capability surface of a composition profile** — so it moves to **0.50** ([VISION-0.50](VISION-0.50.md)),
+designed together with the composition-profile work rather than blindly here.
 
 *(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
 provider type from `app/host` is an upward edge; the composition root owning the provider list is the

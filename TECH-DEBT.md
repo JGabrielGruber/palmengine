@@ -232,7 +232,8 @@ tracker** — flip items as they close. Order follows the dependency roots above
 | **0.46** | **T1 — Safety net (green suite + CI)** | ✅ done · [VISION-0.46](docs/VISION-0.46.md) | Dependency root, landed 0.46.0–0.46.5. Green suite + lint + hermetic CI + coverage floor |
 | **0.47** | T3 — import-cycle cleanup (upward 35→5) | ✅ done · [VISION-0.47](docs/VISION-0.47.md) · [ADR-017](docs/adr/017-import-seams.md) | PD-012 closed via dependency inversion (registries register downward); 5 remaining edges sanctioned as composition-root/lazy seams. PD-013 (`ServerContext` relocation) deferred to 0.48 |
 | **0.48** | T2 — ApplicationHost decomposition (6 seams → host <350 LOC) | 🚧 in progress · [VISION-0.48](docs/VISION-0.48.md) · [ADR-018](docs/adr/018-application-host-decomposition.md) | 8 slices landed (1164→662 LOC); **PD-013 closed** (0.48.7). Remaining: facades + dead-accessor shrink |
-| **0.49?** | App **composition profiles** — make the app's shape declarative | 🟡 draft/pondering · [VISION-0.49](docs/VISION-0.49.md) | Design note only — the deeper root behind PD-009 (implicit composition shape). Discuss before scheduling |
+| **0.49** | **Naming** — profile vocabulary for the composition/deployment split | ✅ done · [MIGRATION-0.49](MIGRATION-0.49.md) | `HostProfile → DeploymentProfile`, `PalmApp → PalmKernel`; anchored `CompositionProfile` |
+| **0.50** | **Composition Profiles** — declare the app's shape; one assembler over declared profiles | 🟢 planned · [VISION-0.50](docs/VISION-0.50.md) · [ADR-019](docs/adr/019-composition-profiles.md) | First capability theme after the debt line; the deeper root behind PD-009; dissolves `ServerContext`, host <350 LOC |
 | next | T5 — observability unification | queued | Likely breaks API → `MIGRATION` doc |
 | later | T4 — assist/MCP complexity + coverage | queued | |
 | later | T7 — adapters & placeholders | queued | |

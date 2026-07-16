@@ -19,7 +19,7 @@ debt themes; public API stable (one internal import-path move — see [MIGRATION
 - **0.48.4** — `app/host/lifecycle/` — `RuntimeSpawner` + `RecoveryCoordinator`.
 - **0.48.5–0.48.6** — `app/host/wiring/` (projections + CQRS bus handlers); **found & fixed a latent `services → server → ServerContext → services` import cycle** via lazy composition-root exports in `common/runtimes/server/__init__`.
 - **0.48.7** — Relocated `ServerContext`/`ServerApp` `common → runtimes/server/` — **PD-013 closed**; upward imports **5 → 3**; server infra stays in `common`. (import-path MIGRATION.)
-- **0.48.8** — Removed 8 dead host `@property` accessors (whole-repo zero-consumer sweep). `ApplicationHost` **1164 → 629 LOC**; T2 structurally complete (the final <350 shrink via facades moves to [VISION-0.49](docs/VISION-0.49.md), the app-composition-profile theme).
+- **0.48.8** — Removed 8 dead host `@property` accessors (whole-repo zero-consumer sweep). `ApplicationHost` **1164 → 629 LOC**; T2 structurally complete (the final <350 shrink via facades moves to [VISION-0.50](docs/VISION-0.50.md), the app-composition-profile theme).
 
 ### T3 — Break the import cycles, cont'd (0.47.5–0.47.9 · PD-012 closed)
 - **0.47.5 (a–d)** — Pattern + provider **registry inversion**: registries move into `common/{patterns,providers}/_registry`; plugins register downward; registration-by-side-effect autoloads removed; back-compat shims retired.

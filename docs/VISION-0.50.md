@@ -1,11 +1,17 @@
-# VISION 0.49 — App composition profiles (DRAFT, for discussion)
+# VISION 0.50 — Composition Profiles
 
-**Status:** 🟡 **DRAFT — warranted, not yet scheduled.** Opened mid-0.48 (T2) as a design note. The core open
-question ("is there a real second-app shape?") is now **answered: yes** — see Evidence — so this is a real
-direction, not a YAGNI hedge. Slice list is still a sketch; supersede/rewrite freely at the real `0.49.0`.
+**Status:** 🟢 **Planned — opens at 0.50.0.** The first capability theme after the debt-paydown line
+(0.46 T1 → 0.47 T3 → 0.48 T2) and the 0.49 naming minor. Design is grounded (see §Mechanism); the build is
+sequenced in §Slices.
 
-**Seed:** while decomposing `ApplicationHost` (T2), a deeper question surfaced — *the god-object isn't just
-too big, it has no declared **shape**.* This doc captures that thread so we can decide how far to take it.
+**Lineage:** seeded mid-0.48 while decomposing `ApplicationHost` (the god-object had no declared *shape*);
+its vocabulary was carved in **0.49** (`DeploymentProfile`, `PalmKernel`, and the `CompositionProfile` name).
+0.50 builds the mechanism those names anticipate.
+
+**Thesis:** the god-object wasn't just too big — the app's **composition** (which services / surfaces /
+capabilities make it up) had no name and no declaration; it was hand-coded per composition root. 0.50 names it
+(`CompositionProfile`) and makes `ApplicationHost` a thin **assembler** over a declared shape, so palm's already-
+real shapes (headless / embedded / lib / edge / worker / server) become *declarations*, not bespoke classes.
 
 ## Evidence — palm is already multi-shape (the need is real, not speculative)
 
@@ -136,47 +142,39 @@ from our needs" table):
   one assembler (`ApplicationHost`) over a declared profile. This is the biggest, most careful move of the theme.
 - Facades (`host.flows` / `host.instances`) are the **capability surface** a profile turns on/off per shape.
 
-## Open questions (to discuss before planning)
+## Open questions (mostly resolved by §Mechanism — left for the ADR to lock)
 
-1. ~~Do we actually need N apps?~~ **Answered: yes** (see Evidence). Shapes already exist — headless, embedded,
-   lib, edge, worker — and two composition roots (`ApplicationHost`, `ServerContext`) are already hand-coded.
-   The remaining question is *which shapes get a first-class profile* and in what order (host / server exist;
-   embedded-lib is the palmengine-django case; worker/edge are daemon-shaped).
-2. **How declarative, how soon?** Options on a spectrum: (a) keep imperative `__init__`, just extract facades;
-   (b) a typed `AppProfile` dataclass the host reads; (c) a full django-apps `INSTALLED_*` manifest with
-   autoload. Each is a different bet size.
-3. **Relationship to `HostProfile`.** Composition (what) vs deployment (where/how) — kept orthogonal, or unified
-   into one "app definition" with both facets?
-4. **Facade API & compatibility.** Grouped attributes are a public-API change. Additive (keep flat methods as
-   delegators) or a clean break with a `MIGRATION`?
-5. **Where does a manifest live?** `app/profiles/`? A registry of `AppProfile`s (django-app style)? Author-facing
-   (users declare their own app) or internal-only?
+1. ~~Do we actually need N apps?~~ **Answered: yes** (Evidence). Remaining: *which* shapes get a first-class
+   preset first — `all_in_one`/`server` exist; `embedded` is the palmengine-django case; `worker` is daemon-shaped.
+2. ~~How declarative, how soon?~~ **Answered:** a typed `CompositionProfile` dataclass mirroring `DeploymentProfile`
+   (tuple-of-names + presets + settings resolver) — not a manifest DSL. Author-facing profiles (0.50.6) can layer
+   on later without changing this.
+3. ~~Relationship to `DeploymentProfile`?~~ **Orthogonal** — composition (what) × deployment (where/how); a running
+   app takes one of each. They never merge.
+4. **Facade API & compatibility** (0.50.4) — additive (keep flat methods as thin delegators) vs clean break. *Open.*
+5. **Where do profiles live?** `app/profiles/` beside `app/host/roles.py`? Registry of named profiles for the
+   author-facing case (0.50.6)? *Open — decide when 0.50.6 is warranted.*
 
-## Tentative sequence (if we proceed)
+## Slices (feature-per-patch; low-risk → high-care)
 
-1. **Facade decomposition** — methods → `host.<facade>.<verb>()`; the facades are the *capability surface*.
-   Host shrinks; the shape becomes visible. *(Design these as composable capabilities, since a profile turns
-   them on/off per shape — not blind method-grouping.)*
-2. **Make `__init__` an explicit `AppProfile`** — the implicit manifest becomes a typed, inspectable object the
-   host assembles from.
-3. **Collapse the two composition roots** — `ApplicationHost` and `ServerContext` both assemble from a declared
-   `AppProfile` instead of hand-coding; the runtimes select/parameterize a profile. This is where the real
-   payoff lands (headless / embedded-lib / edge / worker shapes become declarations).
+Sequenced so the profile *exists and is trusted* before anything assembles from it, and the risky
+composition-root convergence lands last.
 
-## Recommendation (revised — the need is now confirmed)
+| Patch | Scope | MIGRATION? |
+|---|---|---|
+| **0.50.0** | Plan (this doc) + [ADR-019](adr/019-composition-profiles.md). Vocabulary already in code (0.49). | — |
+| **0.50.1** | **`CompositionProfile` skeleton** — typed dataclass (`services`/`surfaces`/`capabilities` name-tuples) + presets (`all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp`) + `composition_profile_from_settings` resolver. Mirrors `DeploymentProfile`. *No behavior change* — the profile just exists; a test pins each preset against what the host builds today. | no |
+| **0.50.2** | **`ApplicationHost` reads its profile** — service construction + collaborators driven by `CompositionProfile` (which services/capabilities). `enable_*` settings feed profile defaults via the resolver. Behavior-preserving for the default (all_in_one) profile. | no |
+| **0.50.3** | **Surfaces from the profile** — `default_surfaces()` becomes driven by `CompositionProfile.surfaces` instead of a hardcoded list. | no |
+| **0.50.4** | **Facades** — `host.flows` / `host.instances` / `host.jobs` as the capability surface a profile turns on/off; the <350 LOC shrink deferred from T2 lands here. | **yes** (facade API) |
+| **0.50.5** | **`ServerContext` dissolves** → `CompositionProfile.server()`; the two composition roots become one assembler (`ApplicationHost`) over a declared profile. The careful one. | **yes** (import path) |
+| **0.50.6** | *(optional)* **Author-facing profiles** — users declare their own `CompositionProfile` (the `palmengine-django` embedding enablement); a registry of named profiles if warranted. | — |
 
-Because the multi-shape need is **real and already hand-coded**, the facade decomposition is *not* separable
-from this theme: **facades are the per-shape capability surface** a profile assembles (a lib/embedded app has
-no `host.jobs.tick()` / no server surfaces; the server shape has no CLI facade). Doing facades blindly inside
-T2 would risk redoing them once the profile lands. So:
+## Exit criteria
 
-- **Finish the genuinely-independent tail of T2 now** — **dead-accessor removal** (pure cleanup, forward-
-  compatible with any profile design). This "finishes what's left" of T2 that the profile work does *not* touch.
-- **Re-scope T2's exit:** the *structural* decomposition is done (seams extracted, PD-013 closed, modular
-  subpackages, the two composition roots separated). The final shrink to <350 via **facades moves into 0.49**,
-  because facades = composition-profile capability surface — same problem, design them together.
-- **Then plan 0.49 properly**, grounded in the real shapes + `palmengine-django` as the validation case:
-  declare a shape once, and make both `ApplicationHost` and `ServerContext` assemble from it.
-
-**Decision needed from you:** (a) OK to land T2 at "structurally complete" (dead-accessor cleanup + docs), moving
-the facade/`<350` work into 0.49? and (b) how additive-vs-clean-break do you want the eventual facade API?
+One assembler (`ApplicationHost`) over declared `CompositionProfile`s; `ServerContext` gone; palm's shapes
+(`all_in_one`/`server`/`embedded`/`worker`/`cli`/`mcp`) are **declarations**, not bespoke classes; the
+`palmengine-django`-style embedded/lib shape works via `CompositionProfile.embedded()`; `default_surfaces`
++ the scattered `enable_*` composition flags subsumed into the profile; suite green throughout; public-API
+changes (facades, the `ServerContext` path) carried in `MIGRATION-0.50.md`. Bonus: `ApplicationHost` finally
+crosses <350 LOC as the facade/profile split lands.
