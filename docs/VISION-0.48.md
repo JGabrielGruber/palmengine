@@ -75,7 +75,13 @@ lands as a modular `app/host/<concern>/` subpackage (see Layout). Host LOC track
 | **0.48.5** | Seam 2a — `app/host/wiring/` — projection build+register extracted to root-agnostic `build_host_projections`/`register_host_projections` (671→663) | ✅ | no |
 | **0.48.6** | Seam 2b — **broke the latent cycle** (below): lazy composition-root exports in `common/runtimes/server/__init__` (PEP 562), then folded `cqrs_wiring.py` into `app/host/wiring/cqrs.py`. Wiring package now complete + order-independent | ✅ | no |
 | **0.48.7** | Seam 6 — **relocated `ServerContext` + `ServerApp`** out of `common` → `runtimes/server/` (**PD-013 closed**). Kills the 2 `context→services` upward edges (`MAX_UPWARD` 5→3); reusable server infra stays in `common`. [MIGRATION-0.48.md](../MIGRATION-0.48.md) | ✅ | **yes** (import path) |
-| next | **Dead-accessor removal** + continue host shrink toward < 350 LOC (query/view read methods → facade; trim the ~29 thin accessors) | — | **yes** |
+| **0.48.8** | **Dead-accessor removal** — dropped 8 `@property` accessors with zero repo-wide consumers (whole-repo sweep verified) (662→629 LOC) | ✅ | **yes** (accessors) |
+
+**T2 re-scoped (0.48.8):** the *structural* decomposition is **complete** — 6 seams extracted into modular
+subpackages, PD-009/010/013/018 addressed, the two composition roots separated, host **1164 → 629 LOC**. The
+remaining shrink to <350 is via **facades** (`host.flows`/`host.instances`/…), which turned out to be the
+**per-shape capability surface of a composition profile** — so it moves to **0.49** ([VISION-0.49](VISION-0.49.md)),
+designed together with the app-shape work rather than blindly here.
 
 *(Dropped from the original plan: "services ship their own `ServiceProvider`" — a service importing the
 provider type from `app/host` is an upward edge; the composition root owning the provider list is the

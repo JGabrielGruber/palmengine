@@ -27,10 +27,6 @@ from palm.app.host.wiring import (
 from palm.app.host.workers import WorkerCoordinator
 from palm.app.host.workplane import WorkPlaneCoordinator
 from palm.app.settings import PalmSettings
-from palm.common.compensation import (
-    CompensationCoordinator,
-    default_compensation_registry,
-)
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
     Command,
@@ -63,7 +59,6 @@ from palm.common.events.external import WebhookDispatcher
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.patterns.wizard.bindings.cqrs.projection import (
-    WizardProgressProjection,
     WizardProgressReadModel,
 )
 from palm.patterns.wizard.bindings.cqrs.queries import (
@@ -216,49 +211,16 @@ class ApplicationHost:
             self._event.initialize()
         return self._event
 
-    @property
-    def projections(self) -> ProjectionManager:
-        return self._projection_manager
-
-    @property
-    def instance_projection(self) -> InstanceIndexProjection | None:
-        return self._instance_projection
-
-    @property
-    def wizard_projection(self) -> WizardProgressProjection | None:
-        projection = self._pattern_projections.get("wizard")
-        return projection if isinstance(projection, WizardProgressProjection) else None
-
     def pattern_projection(self, name: str) -> Any | None:
         return self._pattern_projections.get(name)
-
-    @property
-    def resource_projection(self) -> ResourceInvocationProjection | None:
-        return self._resource_projection
-
-    @property
-    def job_board_projection(self) -> JobStatusBoardProjection | None:
-        return self._job_board_projection
 
     @property
     def outbox_service(self) -> OutboxBackgroundService | None:
         return self._recovery.outbox_service
 
     @property
-    def compensation(self) -> CompensationCoordinator | None:
-        return self._recovery.compensation
-
-    @property
-    def compensation_registry(self):
-        return default_compensation_registry()
-
-    @property
     def webhook_dispatcher(self) -> WebhookDispatcher | None:
         return self._recovery.webhook_dispatcher
-
-    @property
-    def event_recorder(self) -> HostEventRecorder:
-        return self._event_recorder
 
     @property
     def last_recovery(self) -> dict[str, Any] | None:

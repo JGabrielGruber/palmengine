@@ -35,3 +35,17 @@ the old `common.runtimes.server.*` submodule paths needs updating.
 (a) was the real shape of **PD-013** (a composition root misplaced in a low layer) and
 (b) created a latent `services → server → ServerContext → services` import cycle. The
 move removes both — the last non-sanctioned upward import edges in the tree.
+
+## Removed dead `ApplicationHost` accessors (0.48.8)
+
+Eight `@property` accessors with **zero consumers anywhere** in the codebase (verified by a
+whole-repo sweep — no attribute access, `getattr`, or string-literal use) were removed:
+
+`compensation`, `compensation_registry`, `event_recorder`, `instance_projection`,
+`job_board_projection`, `projections`, `resource_projection`, `wizard_projection`.
+
+The underlying state is unchanged and still used internally (e.g. `_projection_manager`,
+`_recovery`); only the unused public getters were dropped. If you were relying on one of
+these (none are referenced in-tree), reach the value via the owning collaborator
+(`host._recovery.compensation`, the projections via the query bus, etc.) or open an issue —
+they can be restored as thin delegators.
