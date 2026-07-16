@@ -129,3 +129,22 @@ def test_default_surfaces_respects_composition_filter() -> None:
 
     # all_in_one mounts everything (server-deploy behaviour-preserving)
     assert len(default_surfaces(ctx, only=CP.all_in_one().surfaces)) == 5
+
+
+# ── 0.50.4: read facades ─────────────────────────────────────────────────────
+
+
+def test_read_facades_group_the_flat_methods() -> None:
+    """host.instances/jobs/wizards are navigable groupings; flat methods delegate to them."""
+    host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
+    host.start()
+    try:
+        # facade and its flat delegator return the same thing
+        assert host.instances.list(include_terminal=False) == host.list_instance_views(
+            include_terminal=False
+        )
+        assert host.jobs.list() == host.list_job_views()
+        assert host.wizards.list() == host.list_wizard_progress_views()
+        assert host.instances.get("nope") is None  # missing instance → None
+    finally:
+        host.shutdown()
