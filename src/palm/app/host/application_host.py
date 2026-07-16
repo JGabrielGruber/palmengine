@@ -58,6 +58,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.schemas import build_schema_registry
 from palm.common.events.external import WebhookDispatcher
+from palm.common.runtimes.server.cqrs import wire_standalone_query_bus
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.patterns.wizard.bindings.cqrs.projection import (
@@ -524,6 +525,14 @@ class ApplicationHost:
                 job_board=self._job_board_projection,
                 instance_manager=self._app.instance_manager,
             )
+        else:
+            # 0.51.6: projection-less (lean) shape — serve reads direct-from-runtime,
+            # reusing the standalone read handlers over the host's primary runtime, so a
+            # lean ApplicationHost is read-complete, not just submit-complete. Single-runtime
+            # assumption: reads reflect the primary runtime (the lean shapes are
+            # single-runtime; see docs/SCOUT-0.51.6-serverctx-foldin.md). ServerContext stays
+            # — this is only the read half of the convergence, no surface re-typing.
+            wire_standalone_query_bus(self._query_bus, self.runtime())
         self._schema_registry = build_schema_registry()
         service_ctx = HostServiceContext(
             command_bus=self._command_bus,

@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.common.cqrs.catalog import collect_cqrs_command_types, collect_cqrs_query_types
 from palm.common.cqrs.command import (
     CancelJobCommand,
     Command,
@@ -358,6 +359,21 @@ class StandaloneQueryHandlers:
         }
 
 
+def wire_standalone_query_bus(query_bus: QueryBus, runtime: BaseRuntime) -> None:
+    """Register direct-from-runtime read handlers for the standalone query types.
+
+    The read half of :func:`wire_standalone_buses`, extracted so a lean
+    (projection-less) :class:`~palm.app.host.ApplicationHost` can reuse it (0.51.6):
+    when a composition omits the ``projections`` capability the host serves reads
+    straight from its primary runtime instead of from a projection layer — the read
+    half of the composition-root convergence, achieved *without* dissolving
+    ``ServerContext`` (see ``docs/SCOUT-0.51.6-serverctx-foldin.md``).
+    """
+    queries = StandaloneQueryHandlers(runtime)
+    for query_type in collect_cqrs_query_types(mode="standalone"):
+        query_bus.register(query_type, queries)
+
+
 def wire_standalone_buses(
     command_bus: CommandBus,
     query_bus: QueryBus,
@@ -366,15 +382,9 @@ def wire_standalone_buses(
     plan_registry: PlanRegistry,
 ) -> None:
     commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
-    queries = StandaloneQueryHandlers(runtime)
-    from palm.common.cqrs.catalog import collect_cqrs_command_types, collect_cqrs_query_types
-
-    command_types = list(collect_cqrs_command_types(mode="standalone"))
-    query_types = list(collect_cqrs_query_types(mode="standalone"))
-    for command_type in command_types:
+    for command_type in collect_cqrs_command_types(mode="standalone"):
         command_bus.register(command_type, commands)
-    for query_type in query_types:
-        query_bus.register(query_type, queries)
+    wire_standalone_query_bus(query_bus, runtime)
 
 
 def _safe_wizard_step(runtime: BaseRuntime, job_id: str) -> str | None:

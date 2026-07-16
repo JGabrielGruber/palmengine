@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 # ── Ratchets — lower these as slices land; NEVER raise. Target: 0 upward. ─────────────
-MAX_FUNCTION_LOCAL = 219  # ratcheted at 0.48.3 (WorkPlaneCoordinator hoisted wiring/journal imports); 287→…→219
+MAX_FUNCTION_LOCAL = 218  # ratcheted at 0.51.6 (hoisted standalone-cqrs catalog import to module level); 287→…→218
 MAX_UPWARD = 3  # ratcheted at 0.48.7 (ServerContext relocated to runtimes, PD-013); remaining 3 = app→runtimes runtime-factory (sanctioned lazy seam, ADR-017)
 
 # Inward-pointing layer ranks (arrows point toward core). Higher rank imports lower rank.

@@ -276,3 +276,25 @@ def test_projections_are_a_capability_lean_host_starts_without_them() -> None:
         assert lean.pattern_projection("wizard") is None
     finally:
         lean.shutdown()
+
+
+def test_lean_host_serves_reads_direct_from_runtime() -> None:
+    """0.51.6: a projection-less ApplicationHost serves reads via the standalone
+    direct-from-runtime handlers — read-complete without a projection layer, and without
+    dissolving ServerContext (see docs/SCOUT-0.51.6-serverctx-foldin.md). The reads return
+    rather than raising "no handler for query"."""
+    from palm.common.cqrs.query import GetJobStatusQuery, ListInstancesQuery, ListJobStatusQuery
+
+    lean = ApplicationHost(
+        settings=PalmSettings.for_tests(load_examples=False),
+        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+    )
+    lean.start()
+    try:
+        assert lean._instance_projection is None  # no projection layer ...
+        # ... yet the read side works, served direct-from-runtime
+        assert lean.ask(ListInstancesQuery(include_terminal=True)) == []
+        assert lean.ask(ListJobStatusQuery()) == []
+        assert lean.ask(GetJobStatusQuery(job_id="nope")) == {"found": False, "job_id": "nope"}
+    finally:
+        lean.shutdown()
