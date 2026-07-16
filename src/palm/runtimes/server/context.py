@@ -52,79 +52,7 @@ class ServerContext:
         self._command_bus = host.commands if host is not None else CommandBus()
         self._query_bus = host.queries if host is not None else QueryBus()
         if host is None:
-            wire_standalone_buses(
-                self._command_bus,
-                self._query_bus,
-                runtime,
-                plan_registry=self.plan_registry,
-            )
-            schemas = build_schema_registry()
-            bus_kw = {
-                "commands": self._command_bus,
-                "queries": self._query_bus,
-                "schemas": schemas,
-            }
-            self._system = SystemService(**bus_kw)
-            self._definitions = DefinitionService(
-                **bus_kw,
-                repository=runtime.repository,
-            )
-            flows = FlowExecutionService(**bus_kw, system=self._system, runtime=runtime)
-            definitions = self._definitions
-            self._execution = ExecutionService(
-                flows=flows,
-                providers=ProviderExecutionService(
-                    **bus_kw,
-                    runtime=runtime,
-                    definitions=definitions,
-                ),
-                processes=ProcessExecutionService(**bus_kw, runtime=runtime),
-            )
-            # Honor the composition for the optional services (system/definitions/
-            # execution are the always-present core), mirroring ApplicationHost. For
-            # the server shape (all six) everything is built — behaviour-preserving.
-            services = self.composition.services
-            self._assist = (
-                AssistService(
-                    **bus_kw,
-                    definitions=definitions,
-                    execution=self._execution,
-                    system=self._system,
-                    runtime=runtime,
-                )
-                if "assist" in services
-                else None
-            )
-            self._design = (
-                DesignService(
-                    **bus_kw,
-                    definitions=definitions,
-                    proposals=create_proposal_repository(runtime.storage),
-                    runtime=runtime,
-                )
-                if "design" in services
-                else None
-            )
-            self._analytics = (
-                AnalyticsService(
-                    definitions=definitions,
-                    providers=self._execution.providers,
-                    **bus_kw,
-                )
-                if "analytics" in services
-                else None
-            )
-            from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
-            from palm.services.design.contributors import wire_builtin_design_contributors
-
-            if self._design is not None:
-                wire_builtin_design_contributors()
-            wire_all_service_cqrs_from_runtime(
-                self._command_bus,
-                self._query_bus,
-                runtime,
-                design=self._design,
-            )
+            self._build_standalone_services(runtime)
         else:
             self._system = host.system
             self._definitions = host.definitions
@@ -132,6 +60,87 @@ class ServerContext:
             self._assist = host.assist
             self._design = host.design
             self._analytics = host.analytics
+
+    def _build_standalone_services(self, runtime: BaseRuntime) -> None:
+        """Construct and wire services for standalone (host-less) server mode.
+
+        Isolated from ``__init__`` (0.50.5d) so the host-less service build is a
+        single named seam — the next step (0.50.5e) routes it through the shared
+        ``core_service_registry()`` both composition roots build from.
+        """
+        wire_standalone_buses(
+            self._command_bus,
+            self._query_bus,
+            runtime,
+            plan_registry=self.plan_registry,
+        )
+        schemas = build_schema_registry()
+        bus_kw = {
+            "commands": self._command_bus,
+            "queries": self._query_bus,
+            "schemas": schemas,
+        }
+        self._system = SystemService(**bus_kw)
+        self._definitions = DefinitionService(
+            **bus_kw,
+            repository=runtime.repository,
+        )
+        flows = FlowExecutionService(**bus_kw, system=self._system, runtime=runtime)
+        definitions = self._definitions
+        self._execution = ExecutionService(
+            flows=flows,
+            providers=ProviderExecutionService(
+                **bus_kw,
+                runtime=runtime,
+                definitions=definitions,
+            ),
+            processes=ProcessExecutionService(**bus_kw, runtime=runtime),
+        )
+        # Honor the composition for the optional services (system/definitions/
+        # execution are the always-present core), mirroring ApplicationHost. For
+        # the server shape (all six) everything is built — behaviour-preserving.
+        services = self.composition.services
+        self._assist = (
+            AssistService(
+                **bus_kw,
+                definitions=definitions,
+                execution=self._execution,
+                system=self._system,
+                runtime=runtime,
+            )
+            if "assist" in services
+            else None
+        )
+        self._design = (
+            DesignService(
+                **bus_kw,
+                definitions=definitions,
+                proposals=create_proposal_repository(runtime.storage),
+                runtime=runtime,
+            )
+            if "design" in services
+            else None
+        )
+        self._analytics = (
+            AnalyticsService(
+                definitions=definitions,
+                providers=self._execution.providers,
+                **bus_kw,
+            )
+            if "analytics" in services
+            else None
+        )
+        from palm.services._cqrs_wiring import wire_all_service_cqrs_from_runtime
+        from palm.services.design.contributors import wire_builtin_design_contributors
+
+        if self._design is not None:
+            wire_builtin_design_contributors()
+        wire_all_service_cqrs_from_runtime(
+            self._command_bus,
+            self._query_bus,
+            runtime,
+            design=self._design,
+        )
 
     @property
     def runtime(self) -> BaseRuntime:
