@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from palm.app.host.composition import CompositionProfile
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
 from palm.common.cqrs.query import Query
@@ -122,6 +123,17 @@ class ServerContext:
     @property
     def host(self) -> ApplicationHost | None:
         return self._host
+
+    @property
+    def composition(self) -> CompositionProfile:
+        """What this server context is composed of.
+
+        An attached host contributes its ``CompositionProfile``; standalone, the
+        server context *is* the server shape. The first step of 0.50.5 — both
+        composition roots now speak the same ``composition`` language, en route to
+        ``ServerContext`` dissolving into ``CompositionProfile.server()``.
+        """
+        return self._host.composition if self._host is not None else CompositionProfile.server()
 
     @property
     def command_bus(self) -> CommandBus:
