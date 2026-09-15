@@ -4,6 +4,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Named residual
+- [SD-024](TECH-DEBT.md#sd-024) — host still names wizard (`get_wizard_progress` / `list_wizard_progress_views`, job-context stitch, `current_wizard_step`). Dispatch and projection factories already walk the registry. Named, not paid. Not a minor.
+
 ### Portal dogfood — pt-BR paint skin
 - Empty `/portal/` page keeps the FAB and adds language links (`?lang=en`, `?lang=pt-BR`). Chat chrome is unchanged until a skin opens.
 - Portal paints chrome, action labels, choice labels, and demo questions (operator-entry, todo-builder, coconut-npc). Values, aliases, paths, and ids stay English. Missing keys stay English.

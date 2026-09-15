@@ -53,6 +53,7 @@ This file holds **what still needs work** plus a **master index** of all IDs.
 | [SD-021](#sd-021) | Profile / composition / env as parallel structure king | S2 | L | **0.63** growth | open (seed map + purge) |
 | [SD-022](#sd-022) | Law docs treat talk/metaphor as types | S3 | L | ongoing | open (named 2026-08-19) |
 | [SD-023](#sd-023) | 0.68 exit residual duals | S3 | S | **0.68** exit | open (named 2026-09-15; not unpaid costume) |
+| [SD-024](#sd-024) | Host names wizard | S3 | S | after **0.68** close | open (named 2026-09-15; not unpaid costume) |
 
 ### Surface debt (SU)
 
@@ -251,6 +252,31 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 | `HttpWebhookDeliverer` as unused default | `WebhookDispatcher` defaults to urllib POST. Production drain does not call `dispatch` | Webhook organ, recording deliverer, `on_before_publish` test hook |
 
 **Do not:** Wire outbox drain to `dispatch` to “use” HTTP. Deflate the fat MCP `full` catalog here (that is [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) / SU-003). Open a minor only to delete these names.
+
+**Status:** open (named 2026-09-15).
+
+---
+
+
+### SD-024 — Host names wizard
+
+<a id="sd-024"></a>
+
+**Severity:** S3 · **Effort:** S · **Theme:** none (named after [VISION-0.68](docs/vision/closed/VISION-0.68.md) close) · registry extension leftover
+
+**Observation:** José named this after 0.68 close. Dispatch already walks `CqrsContributor`. Pattern projections already walk `registered_projection_factories()`. The hub still **imports wizard** for typed convenience and job-context stitch. 0.68.15 composted unused `host.wizards` / `instances` / `jobs` objects and kept the flats without naming them.
+
+| Dual | What it is | Keep |
+|------|------------|------|
+| `ApplicationHost.get_wizard_progress` / `list_wizard_progress_views` | Host imports wizard query types and read-model type. Thin `ask()` wrappers. CLI dashboard, diagnostics, `full_demo` call the flats | `host.ask(query)`. Callers import the query from `palm.patterns.wizard` |
+| `HostQueryHandlers._get_job_context` | Generic job-context query hardcodes `_pattern_projections.get("wizard")` and builds `GetWizardProgressQuery` | Pattern extras via contributor / read-model registry |
+| `build_job_context(..., wizard_progress=)` | Shared job-context envelope names a pattern field. `derive_next_actions` copy says wizard input | Pattern inspection already on the payload |
+| `PalmKernel.current_wizard_step` / `BaseRuntime.current_wizard_step` / `wizard_answers` | Runtime inspect already is `inspect_step` / `inspect_answers` | Generic inspect on the executable |
+| `kits.server.cqrs` `_wizard_progress` | Server kit repeats the same stitch | Same as host query walk |
+
+**Do not:** Invert this as a 0.68 compost slice (theme closed). Fold it into [SD-023](#sd-023). Treat it as [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) or Navigator. Add a new host facade. Open a minor only to delete these names.
+
+**Law:** [src/palm/AGENTS.md](src/palm/AGENTS.md) §1.1 — definition at the edge; hub holds and runs. A private menu of concretes in the host is a missing inversion.
 
 **Status:** open (named 2026-09-15).
 
@@ -600,7 +626,7 @@ Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked t
 | Seed | Debt | Spirit |
 |------|------|--------|
 | **Multi-claimer / capacity** | SD-017 · SD-018 · residual SD-019 | **Closed 0.62** — [VISION-0.62](docs/vision/closed/VISION-0.62.md) · [ADR-031](docs/adr/031-multi-claimer-work-drain.md) Accepted |
-| **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) |
+| **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · SD-024 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) · [SD-024](#sd-024) |
 | **Surface deflation** | SU-* · SI-002/006/010 | Compost with evidence after eyes — [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
 | **Navigator** | SD-022 · Assist as product bag | Operator-guidance definition + presentation adapter — [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (queue seed; not open) |
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |

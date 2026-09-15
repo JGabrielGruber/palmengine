@@ -4,7 +4,7 @@
 **ADR:** none (costume compost; no new door)  
 **Migration:** [MIGRATION-0.68](../../migrations/MIGRATION-0.68.md)  
 **Map:** [PALM.md](../../PALM.md) · seed [VISION-ASSEMBLY](../VISION-ASSEMBLY.md) · prior [VISION-0.67](VISION-0.67.md) (**closed**) · [ADR-036](../../adr/036-require-capability.md) **Accepted**  
-**Debt:** [SD-023](../../../TECH-DEBT.md#sd-023) exit residual · [SD-021](../../../TECH-DEBT.md#sd-021) profile/env duals
+**Debt:** [SD-023](../../../TECH-DEBT.md#sd-023) exit residual · [SD-024](../../../TECH-DEBT.md#sd-024) host names wizard (named after close) · [SD-021](../../../TECH-DEBT.md#sd-021) profile/env duals
 
 Teaching name: **the great cleansing**. Law: compost remaining **costume** after assembly dependents. Do not invent a new organ. Do not pay delivery.
 
@@ -66,7 +66,7 @@ Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José 
 | `ApplicationHost.redrive_journal` (+ workplane coordinator twin) | Composition-root method, no product/CLI/MCP caller | Compost tests `hasattr` it green. `EventJournal.redrive` is honest journal machinery. | ✅ **0.68.13** dropped the host facade. Keep the journal method. |
 | Unread parking lots | `palm.system.ports` / `planes` / `supervisor` re-export shims; `palm.utils`; `palm.patterns.dag.flow` placeholder; `kits.doctor_section` on `INTENTION_KITS = ()` | Callers already moved (SD-016 said drop when migrated). Same class as 0.68.8. | ✅ **0.68.14** composted unread packages and the unused doctor fragment. Closed chronicles that name old paths stay. |
 | Vitality skip stubs | Default registry registers `boot_membership` / `system_log_tail` whose sample is always skip | Tests freeze catalog presence and “not in snapshot.” Same smell as runner `ready()` doctor. | ✅ **0.68.14** composted those two stubs. `monitor_agent` stays a parked later skip. |
-| Host query facades | `host.instances` / `jobs` / `wizards` | CLI uses the flat methods. Only a test asserts the facade objects equal the flats. | ✅ **0.68.15** composted the unused facade objects. Keep the flats until a surface theme. |
+| Host query facades | `host.instances` / `jobs` / `wizards` | CLI uses the flat methods. Only a test asserts the facade objects equal the flats. | ✅ **0.68.15** composted the unused facade objects. Flats that still **name wizard** on the host are [SD-024](../../../TECH-DEBT.md#sd-024) (named after close; not a surface theme). |
 
 ### Living docs that lie
 
