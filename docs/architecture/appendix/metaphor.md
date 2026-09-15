@@ -40,6 +40,7 @@ When cleaning docs, move metaphor here or delete it. Keep [glossary.md](../gloss
 | Living Palm biology | genome, phenotype, organism (spirit / composition) | [PHILOSOPHY.md](../../../PHILOSOPHY.md) |
 | Intended places | org / realm as recursive support; Grove crown | [glossary.md](../glossary.md) §5; [PALM.md](../../PALM.md) §8 |
 | Navigator talk (not types) | rails, Terminal, navigator, master flow, Next | Law terms in [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md) §2 |
+| Tiny LLM talk (not types) | tiny LLM, bot, brain, life, context pyramid, driver | Law terms in [VISION-TINY-LLM](../../vision/VISION-TINY-LLM.md) §2 |
 
 **Phenotype** on `BootMode` / definition shape overlaps the biology register. Do not rename it as part of the feudal cleanup unless José says that register moves.
 

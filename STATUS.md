@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.67.0` · **Active theme:** **`0.68` The great cleansing** · **Prior closed:** [**0.67** Dependents require the organ](docs/vision/closed/VISION-0.67.md)  
-**Last Updated:** August 25, 2026 · Portal pt-BR paint skin on the empty FAB page (not a 0.68 unit). Package stays `0.67.0` until 0.68 exit.  
+**Last Updated:** September 15, 2026 · Tiny LLM queue seed named (not a 0.68 unit). Portal two-slot + pt-BR empty FAB remains a side cut. Package stays `0.67.0` until 0.68 exit.  
 **Map:** [docs/PALM.md](docs/PALM.md) · open [VISION-0.68](docs/vision/VISION-0.68.md) · closed [VISION-0.67](docs/vision/closed/VISION-0.67.md) · [ADR-036](docs/adr/036-require-capability.md) **Accepted** · [MIGRATION-0.68](docs/migrations/MIGRATION-0.68.md) · [MIGRATION-0.67](docs/migrations/MIGRATION-0.67.md)  
 **Debt (live):** [TECH-DEBT.md](TECH-DEBT.md) — **SD-020** (face paid; dependents paid) · **SD-021** (profile/env residual) · **SD-022** · residual **SD-019** · **SD-016** / **BI-*** / **SI-*** / **SU-***  
 **Closed seasons:** [docs/vision/closed/](docs/vision/closed/) · [VERSIONING.md](docs/VERSIONING.md) (STATUS is the present)
@@ -16,7 +16,7 @@ José closed 0.67 (2026-08-21) and opened 0.68 as costume compost. **0.68.12** d
 | **0.68 open** | Compost remaining costume. Not a new organ. Not delivery POST. |
 | **ADR-036** | **Accepted** — two doors stay |
 | **Locks** | Costume, not a new organ · roles, not a shared drain · closed chronicles stay · remaining compost stays in 0.68 · read flags are not unread flags |
-| **Later** | [SD-021](TECH-DEBT.md#sd-021) duals named in 0.68 · [VISION-0.56](docs/vision/VISION-0.56.md) · [NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
+| **Later** | [SD-021](TECH-DEBT.md#sd-021) duals named in 0.68 · [VISION-0.56](docs/vision/VISION-0.56.md) · [NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
 | **Experimental** | Pre-1.0 · **no LTS** — [README](README.md) |
 
 ## 0.68 — The great cleansing (**open** · José 2026-08-21 · plan `0.68.0`)
@@ -55,5 +55,6 @@ Delete empty work after assembly dependents. Keep honest packaging.
 | Profile / env structure duals | [SD-021](TECH-DEBT.md#sd-021) |
 | Workload place book | [VISION-0.56](docs/vision/VISION-0.56.md) (scout; remainder queued) |
 | Navigator | [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · **SD-022** |
+| Tiny LLM (needs) | [VISION-TINY-LLM](docs/vision/VISION-TINY-LLM.md) — after Navigator walk + 0.56 place; not 0.68 |
 | Tunnels → Grove | [VISION-TUNNELS](docs/vision/VISION-TUNNELS.md) → [VISION-GROVE](docs/vision/VISION-GROVE.md) |
 | Surface compost | [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |

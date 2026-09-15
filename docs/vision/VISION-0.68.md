@@ -72,7 +72,7 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 
 - Workload spawn of support / work processes. That is [VISION-0.56](VISION-0.56.md).  
 - DNA phenotype retune (`local.cli` vs `local.embedded` lists) unless José names that cut.  
-- Navigator. Tunnels. Grove. Surface compost ([VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) is a different pile).  
+- Navigator. Tiny LLM ([VISION-TINY-LLM](VISION-TINY-LLM.md)). Tunnels. Grove. Surface compost ([VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) is a different pile).  
 - Engine as walker. Two doors stay as 0.67 law.
 
 ## Guide slices (not a sealed contract)

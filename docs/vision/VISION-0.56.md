@@ -7,7 +7,7 @@
 
 **ADR:** [024-workload-engine.md](../adr/024-workload-engine.md) (accept with **0.56.0**).  
 **Builds on:** [ADR-003](../adr/003-provider-apps.md) · [ADR-009](../adr/009-service-cqrs-contributors.md) · [ADR-022](../adr/022-neonroot-provider.md) · [ADR-023](../adr/023-hermetic-jobs.md) · [ADR-025](../adr/025-reactive-interests.md) · [EVENT-PLANE](../EVENT-PLANE.md) · [VISION-0.54](closed/VISION-0.54.md) · [VISION-0.55](closed/VISION-0.55.md) · [VISION-GROVE](VISION-GROVE.md).  
-**Scale meaning (updated):** Workload is the **horizontal** axis — the **place book**. Vertical home/authority is [VISION-ASSEMBLY](VISION-ASSEMBLY.md). Reach later is [VISION-TUNNELS](VISION-TUNNELS.md). See [PALM.md §8](../PALM.md).
+**Scale meaning (updated):** Workload is the **horizontal** axis — the **place book**. Vertical home/authority is [VISION-ASSEMBLY](VISION-ASSEMBLY.md). Reach later is [VISION-TUNNELS](VISION-TUNNELS.md). Tiny model process as a place: [VISION-TINY-LLM](VISION-TINY-LLM.md) (needs; not this theme’s spawn remainder). See [PALM.md §8](../PALM.md).
 
 ---
 

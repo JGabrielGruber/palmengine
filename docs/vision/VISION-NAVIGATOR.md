@@ -106,5 +106,6 @@ These remain questions. They are not architecture law.
 | **SD-022** | Law docs treat talk/metaphor as types — clean when touched |
 | **SD-010** | STE density rewrite (different care) |
 | **SU-*** / **SI-002** | Surface compost — [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) |
+| [VISION-TINY-LLM](VISION-TINY-LLM.md) | Model as resource · context as flow. **Not** this seed’s floor. A guidance pack may include a translator child after the invert is real. |
 
 *Guidance is a definition. The adapter only walks.*
