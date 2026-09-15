@@ -17,7 +17,6 @@ from palm.app.host.boot.modes import BootMode, resolve_boot_mode
 from palm.app.host.composition import CompositionProfile
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
-from palm.app.host.facades import InstancesFacade, JobsFacade, WizardsFacade
 from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
 from palm.app.host.observability import HostObservability
 from palm.app.host.roles import DeploymentProfile
@@ -53,6 +52,10 @@ from palm.common.cqrs.projections.resource_invocation import (
     ResourceInvocationProjection,
 )
 from palm.common.cqrs.query import (
+    GetInstanceStatusQuery,
+    ListInstanceSnapshotsQuery,
+    ListInstancesQuery,
+    ListJobStatusQuery,
     Query,
 )
 from palm.common.cqrs.schemas import build_schema_registry
@@ -63,6 +66,10 @@ from palm.core.structure import CAPABILITY_ANALYTICS, CAPABILITY_PROJECTIONS
 from palm.kits.server.cqrs import wire_standalone_query_bus
 from palm.patterns.wizard.bindings.cqrs.projection import (
     WizardProgressReadModel,
+)
+from palm.patterns.wizard.bindings.cqrs.queries import (
+    GetWizardProgressQuery,
+    ListWizardProgressQuery,
 )
 from palm.system.boot import HOST_PHASES, BootContext, walk_schedule
 from palm.system.log import get_system_log
@@ -168,9 +175,6 @@ class ApplicationHost:
         self._workplane = WorkPlaneCoordinator(self)
         self._spawner = RuntimeSpawner(self)
         self._recovery = RecoveryCoordinator(self)
-        self.instances = InstancesFacade(self)
-        self.jobs = JobsFacade(self)
-        self.wizards = WizardsFacade(self)
 
     @classmethod
     def for_mode(
@@ -588,9 +592,6 @@ class ApplicationHost:
             signal.signal(signal.SIGINT, previous_int)
             signal.signal(signal.SIGTERM, previous_term)
 
-    # Flat read methods — thin delegators to the facades (host.instances/jobs/wizards).
-    # Kept for compatibility; the facades are the navigable surface (0.50.4).
-
     def list_instance_views(
         self,
         *,
@@ -599,18 +600,20 @@ class ApplicationHost:
         include_terminal: bool = True,
         limit: int | None = None,
     ) -> list[InstanceReadModel]:
-        return self.instances.list(
-            status=status,
-            flow_name=flow_name,
-            include_terminal=include_terminal,
-            limit=limit,
+        return self.ask(
+            ListInstancesQuery(
+                status=status,
+                flow_name=flow_name,
+                include_terminal=include_terminal,
+                limit=limit,
+            )
         )
 
     def get_instance_view(self, instance_id: str) -> InstanceReadModel | None:
-        return self.instances.get(instance_id)
+        return self.ask(GetInstanceStatusQuery(instance_id=instance_id))
 
     def list_instance_snapshots(self, instance_id: str) -> list:
-        return self.instances.snapshots(instance_id)
+        return self.ask(ListInstanceSnapshotsQuery(instance_id=instance_id))
 
     def get_wizard_progress(
         self,
@@ -618,7 +621,7 @@ class ApplicationHost:
         instance_id: str | None = None,
         job_id: str | None = None,
     ) -> WizardProgressReadModel | None:
-        return self.wizards.progress(instance_id=instance_id, job_id=job_id)
+        return self.ask(GetWizardProgressQuery(instance_id=instance_id, job_id=job_id))
 
     def list_job_views(
         self,
@@ -626,7 +629,7 @@ class ApplicationHost:
         status: str | None = None,
         limit: int | None = None,
     ) -> list[JobStatusReadModel]:
-        return self.jobs.list(status=status, limit=limit)
+        return self.ask(ListJobStatusQuery(status=status, limit=limit))
 
     def list_wizard_progress_views(
         self,
@@ -634,7 +637,7 @@ class ApplicationHost:
         limit: int | None = 10,
         active_only: bool = False,
     ) -> list[WizardProgressReadModel]:
-        return self.wizards.list(limit=limit, active_only=active_only)
+        return self.ask(ListWizardProgressQuery(limit=limit, active_only=active_only))
 
     def recent_host_events(self, *, limit: int = 10) -> list[RecordedEvent]:
         return self._event_recorder.recent(limit=limit)

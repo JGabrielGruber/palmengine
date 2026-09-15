@@ -162,20 +162,20 @@ def test_default_surfaces_respects_composition_filter() -> None:
     assert len(default_surfaces(ctx, only=CP.all_in_one().surfaces)) == 5
 
 
-# ── 0.50.4: read facades ─────────────────────────────────────────────────────
+# ── host query flats (grouping objects composted 0.68.15) ────────────────────
 
 
-def test_read_facades_group_the_flat_methods() -> None:
-    """host.instances/jobs/wizards are navigable groupings; flat methods delegate to them."""
+def test_host_query_flats_list_without_grouping_objects() -> None:
+    """CLI query surface is the flat methods; grouping objects are gone."""
     host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
     host.start()
     try:
-        # facade and its flat delegator return the same thing
-        assert host.instances.list(include_terminal=False) == host.list_instance_views(
-            include_terminal=False
-        )
-        assert host.jobs.list() == host.list_job_views()
-        assert host.wizards.list() == host.list_wizard_progress_views()
-        assert host.instances.get("nope") is None  # missing instance → None
+        assert not hasattr(host, "instances")
+        assert not hasattr(host, "jobs")
+        assert not hasattr(host, "wizards")
+        assert host.list_instance_views(include_terminal=False) == []
+        assert host.list_job_views() == []
+        assert host.list_wizard_progress_views() == []
+        assert host.get_instance_view("nope") is None
     finally:
         host.shutdown()
