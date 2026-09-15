@@ -151,12 +151,6 @@ CHANNEL_WORK_PLANE: Final[str] = "work_plane"
 DEFAULT_EMISSION_WINDOW_LIMIT: Final[int] = 40
 """Default max system-log records folded into one emission_window sample."""
 
-CAPABILITY_BOOT_MEMBERSHIP: Final[str] = "boot_membership"
-"""Optional observe: boot walk context as capability (seat also exists)."""
-
-CAPABILITY_SYSTEM_LOG_TAIL: Final[str] = "system_log_tail"
-"""Optional observe: system log sample (BI-015 neighbor)."""
-
 CAPABILITY_PROCESS_RESOURCES: Final[str] = "process_resources"
 """Optional observe: RSS/CPU/threads (stdlib; installed 0.61.8)."""
 
@@ -199,14 +193,12 @@ __all__ = [
     "ACTOR_KIND_SYSTEM",
     "ACTOR_KIND_UNKNOWN",
     "CAPABILITY_BENCHMARK",
-    "CAPABILITY_BOOT_MEMBERSHIP",
     "CAPABILITY_EMISSION_WINDOW",
     "CAPABILITY_FRAGMENT_SCHEMA",
     "CAPABILITY_LOADED_BULK",
     "CAPABILITY_MONITOR_AGENT",
     "CAPABILITY_PROCESS_RESOURCES",
     "CAPABILITY_SEAT_WALK",
-    "CAPABILITY_SYSTEM_LOG_TAIL",
     "CHANNEL_SYSTEM_LOG",
     "CHANNEL_WORK_PLANE",
     "COST_CHEAP",

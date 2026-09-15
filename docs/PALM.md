@@ -338,7 +338,7 @@ Then call **system ports** (target). Today many paths call engines on a resolved
 **Name law (tell the truth):**  
 Product package **`palm.services.inspect` / `InspectService`** is the operator present door.  
 **System layer** in this map is the **kernel shape** (`palm.system`).  
-Supervisor continuous loops keep protocol name **`SystemService`** under `palm.system.supervisor` — different concept.  
+Supervisor continuous loops keep protocol name **`SystemService`** under `palm.system.subsystems.supervisor` — different concept.  
 Import/host aliases (`palm.services.system`, `host.system`) are temporary migration only.
 
 **CQRS** is how many edges ask product.  

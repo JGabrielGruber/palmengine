@@ -85,7 +85,7 @@ class InspectService(BaseService):
     projection output. Prefer ``top`` / ``vitality`` for operate physiology.
 
     Supervisor continuous loops keep the unrelated protocol name
-    ``SystemService`` under ``palm.system.supervisor``.
+    ``SystemService`` under ``palm.system.subsystems.supervisor``.
     """
 
     def top(

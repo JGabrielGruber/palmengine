@@ -28,13 +28,11 @@ from palm.system.vitality.process_resources import sample_process_resources
 from palm.system.vitality.report import SeatReport, reports_to_dicts
 from palm.system.vitality.schema import (
     CAPABILITY_BENCHMARK,
-    CAPABILITY_BOOT_MEMBERSHIP,
     CAPABILITY_EMISSION_WINDOW,
     CAPABILITY_LOADED_BULK,
     CAPABILITY_MONITOR_AGENT,
     CAPABILITY_PROCESS_RESOURCES,
     CAPABILITY_SEAT_WALK,
-    CAPABILITY_SYSTEM_LOG_TAIL,
     COST_CHEAP,
     COST_MODERATE,
     LINEAGE_NATIVE,
@@ -179,20 +177,6 @@ def build_default_capabilities() -> list[VitalityCapability]:
     return [
         build_seat_walk_capability(),
         build_emission_window_capability(),
-        intention_stub(
-            CAPABILITY_BOOT_MEMBERSHIP,
-            role=ROLE_OBSERVE,
-            description="Boot membership as capability (seat_walk already samples seat)",
-            order=30,
-            tags=("observe", "intention"),
-        ),
-        intention_stub(
-            CAPABILITY_SYSTEM_LOG_TAIL,
-            role=ROLE_OBSERVE,
-            description="System log tail sample (BI-015 neighbor)",
-            order=40,
-            tags=("observe", "intention"),
-        ),
         build_process_resources_capability(),
         build_loaded_bulk_capability(),
         build_benchmark_capability(),

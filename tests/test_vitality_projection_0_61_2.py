@@ -7,9 +7,9 @@ from typing import Any
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.vitality import (
-    CAPABILITY_BOOT_MEMBERSHIP,
     CAPABILITY_EMISSION_WINDOW,
     CAPABILITY_LOADED_BULK,
+    CAPABILITY_MONITOR_AGENT,
     CAPABILITY_PROCESS_RESOURCES,
     CAPABILITY_SEAT_WALK,
     LINEAGE_SAMPLED,
@@ -60,10 +60,12 @@ def test_default_registry_has_seat_walk_enabled() -> None:
     assert reg.is_enabled(CAPABILITY_LOADED_BULK)
     lb = next(r for r in reg.catalog() if r["id"] == CAPABILITY_LOADED_BULK)
     assert lb["maturity"] == MATURITY_INSTALLED
-    assert CAPABILITY_BOOT_MEMBERSHIP in reg
-    assert not reg.is_enabled(CAPABILITY_BOOT_MEMBERSHIP)
+    assert "boot_membership" not in reg
+    assert "system_log_tail" not in reg
+    assert CAPABILITY_MONITOR_AGENT in reg
+    assert not reg.is_enabled(CAPABILITY_MONITOR_AGENT)
     intention = next(
-        r for r in reg.catalog() if r["id"] == CAPABILITY_BOOT_MEMBERSHIP
+        r for r in reg.catalog() if r["id"] == CAPABILITY_MONITOR_AGENT
     )
     assert intention["maturity"] == MATURITY_INTENTION
 
@@ -122,7 +124,9 @@ def test_project_started_runtime_seat_walk() -> None:
         assert CAPABILITY_EMISSION_WINDOW in snap.fragments
         assert CAPABILITY_PROCESS_RESOURCES in snap.fragments
         assert CAPABILITY_LOADED_BULK in snap.fragments
-        assert CAPABILITY_BOOT_MEMBERSHIP not in snap.fragments
+        assert CAPABILITY_MONITOR_AGENT not in snap.fragments
+        assert "boot_membership" not in snap.fragments
+        assert "system_log_tail" not in snap.fragments
     finally:
         rt.stop()
 
@@ -192,16 +196,16 @@ def test_only_unknown_capability_skipped() -> None:
 
 
 def test_extra_enable_intention_returns_skipped_body() -> None:
-    """Intention stub is registered; enabling it yields skipped fragment, not fake ok."""
+    """Parked monitor_agent stub is registered; enabling it yields skipped, not fake ok."""
     reg = default_vitality_registry()
     snap = VitalityProjection(reg).sample(
         object(),
         ProjectionOptions(
-            only=frozenset({CAPABILITY_BOOT_MEMBERSHIP}),
-            extra_enable=frozenset({CAPABILITY_BOOT_MEMBERSHIP}),
+            only=frozenset({CAPABILITY_MONITOR_AGENT}),
+            extra_enable=frozenset({CAPABILITY_MONITOR_AGENT}),
         ),
     )
-    frag = snap.fragments[CAPABILITY_BOOT_MEMBERSHIP]
+    frag = snap.fragments[CAPABILITY_MONITOR_AGENT]
     assert frag.state == STATE_SKIPPED
     assert "intention_not_implemented" in frag.notes[0]
 

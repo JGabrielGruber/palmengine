@@ -116,8 +116,8 @@ Shared, non-plugin coordination lives under `palm.common/`:
 | System (`palm.system`) | Responsibility |
 |------------------------|----------------|
 | `system/runtime/` | `BaseRuntime`, `RuntimeHost`, wiring, schedulers, runtime hooks |
-| `system/ports/` | `ExecutionPort` (effects: resource, workload, `resume_job`) |
-| `system/planes/` | wait (continue), work (start intents), workload glue |
+| `system/interfaces/` | `ExecutionPort`, `InstallInterface` (effects: resource, workload, `resume_job`) |
+| `system/subsystems/planes/` | wait (continue), work (start intents), workload glue |
 
 Import the **system instance and ports** from **`palm.system`**. Shared coordination stays under **`palm.common`**. Pattern-specific APIs live in the owning pattern app under `palm.patterns`.
 

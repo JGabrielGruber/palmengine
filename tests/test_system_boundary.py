@@ -33,7 +33,7 @@ def test_system_package_exists() -> None:
     assert root.is_dir(), "palm.system package must exist"
     assert (root / "__init__.py").is_file()
     assert (root / "instance.py").is_file()
-    assert (root / "ports" / "execution.py").is_file()
+    assert (root / "interfaces" / "execution.py").is_file()
 
 
 def test_system_has_no_product_surface_pattern_imports() -> None:

@@ -376,8 +376,8 @@ the protocols structurally.
 | Surfaces | Thin only; SU-* for bypass/bulk; samples in debt |
 | Runtime (canonical) | `src/palm/system/runtime/base.py` |
 | Host protocol (canonical) | `src/palm/system/runtime/host.py` |
-| Wait plane (canonical) | `src/palm/system/planes/wait/plane.py` |
-| Work / workload planes | `src/palm/system/planes/work/`, `…/workload/` |
+| Wait plane (canonical) | `src/palm/system/subsystems/planes/wait/plane.py` |
+| Work / workload planes | `src/palm/system/subsystems/planes/work/`, `…/workload/` |
 | Compatibility shims | `src/palm/common/runtimes/*`, `common/wait`, `common/work`, `common/workload` (SD-012) |
 | Build context | `src/palm/common/patterns/build_context.py` |
 | Executor | `src/palm/system/executions/executor.py` (shims under common) |

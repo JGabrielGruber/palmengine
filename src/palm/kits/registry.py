@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import threading
 from dataclasses import dataclass
-from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,26 +60,9 @@ def clear_kits() -> None:
         _kits.clear()
 
 
-def doctor_section() -> dict[str, Any]:
-    """Small doctor fragment: installed kits vs intention list."""
-    from palm.kits._apps import INSTALLED_KITS, INTENTION_KITS
-
-    registered = installed_kit_names()
-    return {
-        "installed": list(INSTALLED_KITS),
-        "registered": registered,
-        "intentions": list(INTENTION_KITS),
-        "kits": [
-            {"name": k.name, "module": k.module, "description": k.description}
-            for k in list_kits()
-        ],
-    }
-
-
 __all__ = [
     "KitInfo",
     "clear_kits",
-    "doctor_section",
     "get_kit",
     "installed_kit_names",
     "list_kits",
