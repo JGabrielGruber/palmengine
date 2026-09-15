@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.62.8 (PyPI) · trunk 0.32 · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** WebSocket Assist + Portal dogfood (0.32) · MCP meta-surface (0.31) · weak-LLM Assist (0.21–0.30)
+**Version:** 0.67.0 (PyPI) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** 0.68 open (costume compost; package stays 0.67.0 until exit) · present STATUS.md
 
 ## Philosophy
 
@@ -55,7 +55,7 @@ palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Stora
 |------|------------|
 | **Wizard** | Validation, collection steps, transform steps, backtracking, summary + commit |
 | **Parallel** | Concurrent wizard branches with isolated scopes and merge strategies |
-| **Transforms** | 22 built-in rules; pipelines, wizard steps, or `TransformExecutor` |
+| **Transforms** | 24 built-in rules; pipelines, wizard steps, or `TransformExecutor` (`parquet_load` is intention-only) |
 | **State** | `DictStateSchema`, scoped blackboards, schema-aware snapshots (`__palm:meta`) |
 | **Persistence** | Durable `ProcessInstance` records; resume across restarts |
 | **CQRS** | Command/query buses; host projections (`instance_index`, `job_status_board`); wizard CQRS in `patterns/wizard/bindings/cqrs/` |
@@ -87,16 +87,14 @@ palm flow start onboard
 palm flow start schema-onboard
 palm flow start todo-builder
 palm flow start parallel-demo
-palm resource list
-palm resource describe fetch-customer
-palm resource invoke fetch-customer customer_id=42
+palm repl   # then: resource list / describe / invoke
 ```
 
 From source: `uv sync --group dev --extra cli && uv pip install -e ".[cli]"`
 
 Server + Explorer:
 ```bash
-python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+palm host server   # or: just palm-server
 # → http://localhost:8080/explorer (root / redirects here)
 curl -s -X POST http://localhost:8080/v1/api/flows/todo-builder/create \
   -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'

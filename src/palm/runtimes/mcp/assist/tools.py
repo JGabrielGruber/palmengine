@@ -20,16 +20,16 @@ _PALM_ASSIST_DESC = tool_description(
     "Primary Palm meta-tool: operator-entry, run flows, publish designs, doctor/catalog.",
     when=(
         "Bare ``{}`` → operator-entry. "
-        "``params={flow_id}`` start · ``{session_id, flow_id, value}`` continue · "
+        "``params={flow_id}`` start · ``{instance_id, flow_id, value}`` continue · "
         "``{body}`` publish · ``alias=assist/discover`` (+ query) to search routes. "
-        "Aliases: assist/doctor, assist/catalog/flows, design/publish, flows/session-resume. "
+        "Aliases: assist/doctor, assist/catalog/flows, design/publish, flows/instance-resume. "
         "Read ``palm://agent/card`` before full guides."
     ),
     examples=[
         "palm_assist()",
         'palm_assist(alias="assist/discover", params={"query": "publish"})',
         'palm_assist(params={"flow_id": "coconut-npc"})',
-        'palm_assist(params={"session_id": "inst-1", "flow_id": "coconut-npc", "value": "hi"})',
+        'palm_assist(params={"instance_id": "inst-1", "flow_id": "coconut-npc", "value": "hi"})',
         'palm_assist(params={"body": {"name": "foo-bar", "pattern": "wizard", "options": {"steps": [...]}}})',
     ],
 )

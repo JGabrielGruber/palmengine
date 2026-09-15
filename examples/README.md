@@ -99,9 +99,9 @@ Sovereign Runners examples — `examples/definitions/neonroot_runners.py`:
 | `neonroot-spawn-docs-build` | `spawn` | Living Library builder in sandbox |
 
 ```bash
-palm resource invoke neonroot-health
-# optional, after `just ci-image`:
-palm resource invoke neonroot-spawn-true
+palm repl
+# then: resource invoke neonroot-health
+# optional, after `just ci-image`: resource invoke neonroot-spawn-true
 ```
 
 ## Approval workflow (`approval-workflow`)
@@ -260,7 +260,7 @@ Wizard flow options commonly used:
 | `transform-example` | wizard | `string_format` between input steps |
 | `transform-formats` | pipeline | `json_load` → reshape → `csv_dump` |
 
-Run `palm doctor` for all **22** built-in transform rules.
+Run `palm doctor` for all **24** built-in transform rules.
 
 Commit handlers receive `CommitContext` with `answers`, `state`, and optional `resource_engine`.
 

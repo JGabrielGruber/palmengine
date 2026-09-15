@@ -8,7 +8,7 @@
 
 ```bash
 # Start the server (default port 8080)
-python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+palm host server   # or: just palm-server
 
 # Submit a wizard (returns instance_id)
 curl -s -X POST http://localhost:8080/v1/wizards \

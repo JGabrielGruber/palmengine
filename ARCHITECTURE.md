@@ -142,7 +142,7 @@ Core defines the engine contract (`TransformEngine`, `BaseTransformRule`, `trans
 | Piece | Location | Role |
 |-------|----------|------|
 | Engine + contract | `palm/core/transform/` | Pure coordination; resolves rules by name |
-| Built-in rules | `common/transforms/rules/` | 22 rules — see `common/transforms/catalog.py` and `palm doctor` |
+| Built-in rules | `common/transforms/rules/` | 24 rules — see `common/transforms/catalog.py` and `palm doctor` |
 | Catalog | `common/transforms/catalog.py` | Short descriptions for docs and CLI diagnostics |
 | Registration | `common/transforms/rules/registry.py` | Wires builtins at import (like `patterns/<app>/registry.py`) |
 | Helpers | `common/transforms/registration.py` | `register_transform(name, cls)`, `@transform_rule`, `registered_transforms()` |
@@ -152,7 +152,7 @@ Patterns register custom rules at bootstrap with `register_transform("my_rule", 
 
 `bootstrap()` imports `palm.common.transforms` so builtins are available before flows run; `palm doctor` lists the `transforms` registry with per-rule descriptions.
 
-**Built-in rules (22):** field rules (`rename_field`, `map_fields`, `filter_items`, `lookup`, `conditional`, `jsonpath_*`, `calculate`, `string_format`, `date_*`), integration (`enrich_resource`, `callable`), and serialization (`json_load`/`json_dump`, `csv_load`/`csv_dump`, `yaml_load`/`yaml_dump`, `toml_load`, `xml_load`, `parquet_load` stub). See `catalog.py` or `palm doctor`.
+**Built-in rules (24):** field rules (`rename_field`, `map_fields`, `append_item`, `filter_items`, `count_by`, `lookup`, `conditional`, `jsonpath_*`, `calculate`, `string_format`, `date_*`), integration (`enrich_resource`, `put_resource`, `callable`), and serialization (`json_load`/`json_dump`, `csv_load`/`csv_dump`, `yaml_load`/`yaml_dump`, `toml_load`, `xml_load`). `parquet_load` is intention-only (ST-004). See `catalog.py` or `palm doctor`.
 
 Use in **pipelines** (`pattern: pipeline`), **wizard** steps (`step_kind: transform`), or programmatically via `TransformExecutor` / `TransformLeaf`. `enrich_resource` receives `ResourceEngine` from the hosting runtime automatically.
 

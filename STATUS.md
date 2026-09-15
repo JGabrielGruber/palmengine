@@ -9,7 +9,7 @@
 ### Agent resume (after compact)
 
 Read: **this STATUS** → [VISION-0.68](docs/vision/VISION-0.68.md) → [ADR-036](docs/adr/036-require-capability.md) **Accepted**.  
-José closed 0.67 (2026-08-21) and opened 0.68 as costume compost. **0.68.12** drops the unused projection journal facade. Remaining after that is named in VISION-0.68 **What 0.68 can still compost**. José picked execute **0.68.13–16** (journal consumer `"work_drain"` + host `redrive_journal`; unread parking lots + vitality skip stubs; unused host query facades; README / transform-count / L0 copy). Portal identity (FAB, pt-BR synonyms, hello auto-start) lives on [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md). Guidance invert lives on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). Two session/instance slots stay honest packaging.
+José closed 0.67 (2026-08-21) and opened 0.68 as costume compost. **0.68.16** trims living README / transform-count / L0 continue copy. Remaining execute: **0.68.13–15**. Named leftover in VISION-0.68 **What 0.68 can still compost**. Portal identity (FAB, pt-BR synonyms, hello auto-start) lives on [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md). Guidance invert lives on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). Two session/instance slots stay honest packaging.
 
 | Spirit | Decision |
 |--------|----------|
@@ -44,10 +44,10 @@ Delete empty work after assembly dependents. Keep honest packaging.
 | **0.68.13** | 🔄 journal consumer `"work_drain"` + host `redrive_journal` |
 | **0.68.14** | 🔄 unread parking lots + vitality skip stubs |
 | **0.68.15** | 🔄 unused host query facades |
-| **0.68.16** | 🔄 README / transform-count / L0 copy |
+| **0.68.16** | ✅ README / transform-count / L0 copy |
 | **exit** | stamp `0.68.0` · José |
 
-**Named remaining:** see [VISION-0.68](docs/vision/VISION-0.68.md) **What 0.68 can still compost**. Execute in flight: **0.68.13–16**. `enable_state_snapshot` stays read packaging. Pattern/Provider `ready()` stays. Living projections organ stays. Work drain as WorkIntent drain stays (not the journal consumer of that name).
+**Named remaining:** see [VISION-0.68](docs/vision/VISION-0.68.md) **What 0.68 can still compost**. Execute in flight: **0.68.13–15**. `enable_state_snapshot` stays read packaging. Pattern/Provider `ready()` stays. Living projections organ stays. Work drain as WorkIntent drain stays (not the journal consumer of that name).
 
 **Floor:** one compost of costume. **Not this theme:** outbox POST (B), [VISION-0.56](docs/vision/VISION-0.56.md) spawn, DNA phenotype retune, dissolve `ServerContext`.
 

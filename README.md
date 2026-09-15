@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.67.0` — capacity closed · [VISION-0.62](docs/vision/closed/VISION-0.62.md) · vitality [VISION-0.61](docs/vision/closed/VISION-0.61.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.67.0` · **Open theme:** [**0.68** The great cleansing](docs/vision/VISION-0.68.md) · present [STATUS.md](STATUS.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
 
 ### Experimental — no long-term support
 
@@ -10,7 +10,7 @@ Palm is **pre-1.0** and **experimental**. APIs, packages, and behaviors may brea
 
 Use Palm to explore, dogfood, and build. Pin versions deliberately. Read [STATUS.md](STATUS.md), [docs/VERSIONING.md](docs/VERSIONING.md), and [MIGRATION](docs/migrations/) notes when you upgrade. Structure and honesty matter more than comfort paths while the organism is still growing.
 
-**0.65 closed** (outbox proof) — [VISION-0.65](docs/vision/closed/VISION-0.65.md) · [ADR-034](docs/adr/034-supervised-start-walks-registration.md) Accepted. Prior [VISION-0.64](docs/vision/closed/VISION-0.64.md) closed. Seed law [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md). No open minor.  
+Package stamp stays `0.67.0` until 0.68 exit. Prior closed: [0.67](docs/vision/closed/VISION-0.67.md) · [0.65](docs/vision/closed/VISION-0.65.md) outbox proof. Seed law [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md).  
 **Website:** [palmengine.org](https://palmengine.org) — [`website/`](website/) · build `just website-build` → **`website/dist`** (Cloudflare assets dir).
 
 ---
@@ -81,7 +81,7 @@ Behavior Trees are the control-flow foundation for **business**. Organism topolo
 | **Reliability** | Transactional outbox, compensation handlers (including resource undo). Webhook organ does not POST |
 | **Core** | Behavior tree, orchestration, context, storage, resource, event, auth, **TransformEngine** |
 | **State** | `DictStateSchema`, scoped state, schema-aware snapshots (`__palm:meta`) |
-| **Transforms** | **22 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization, `enrich_resource` |
+| **Transforms** | **24 built-in rules** — field shaping, JSONPath, dates, conditionals, serialization, `enrich_resource` (`parquet_load` is intention-only) |
 | **Patterns** | **PatternApp** manifests + `bindings/`/`flow/` layout; **Wizard**, **parallel**, **pipeline**, **dag** (installed); **etl** intention-only — see [docs/PATTERN-APPS.md](docs/PATTERN-APPS.md) · [docs/STUBS.md](docs/STUBS.md) |
 | **Persistence** | Filesystem backend, `InstanceManager`, durable resume across restarts |
 | **Runtimes** | `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime` (HTTP), **CLI + REPL** (host-backed) |
@@ -153,7 +153,7 @@ Connect your IDE to the `palm-mcp` stdio server (`pip install "palmengine[mcp]"`
 
 **Operator loop:** definitions → create session → inspect → input → wait on children → resume.
 
-**Key conventions:** use `session_id` for flow sessions; pass plain `input` strings (`yes`, choice slugs, text); read `palm://agent/guide` (`docs/mcp.txt`) and `palm://agent/skill` at session start. Portable skill: [`docs/skills/palm/`](docs/skills/palm/).
+**Key conventions:** prefer `instance_id` for continue (not system `session_id`); pass plain `input` strings (`yes`, choice slugs, text); read `palm://agent/guide` (`docs/mcp.txt`) and `palm://agent/skill` first. Portable skill: [`docs/skills/palm/`](docs/skills/palm/).
 
 **Docker (host server + Explorer):**
 
@@ -169,7 +169,8 @@ Full stack guide: **[docs/DOCKER.md](docs/DOCKER.md)** — volumes, HTTP MCP aga
 
 ```bash
 # Start HTTP server (default port 8080)
-python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+palm host server
+# or: just palm-server
 
 # Open the living hub — flows, jobs, instances, schemas
 open http://localhost:8080/explorer   # or just http://localhost:8080/ (redirects)
@@ -183,16 +184,17 @@ The instance detail page is a **live wizard workspace** — progress bar, prompt
 
 ```bash
 # 1. Start server
-python -c "from palm.runtimes.server import ServerRuntime, run_server; run_server(ServerRuntime())"
+palm host server
+# or: just palm-server
 
 # 2. Submit todo-builder (collection demo)
 curl -s -X POST http://localhost:8080/v1/api/flows/todo-builder/create \
   -H 'Content-Type: application/json' \
   -d '{"flow_name": "todo-builder"}'
-# → copy session_id from JSON
+# → copy instance_id from JSON
 
 # 3. Open workspace
-open http://localhost:8080/explorer/instances/<session_id>
+open http://localhost:8080/explorer/instances/<instance_id>
 ```
 
 Use **Add New** on the collection overview, fill fields, edit or remove items, then **Continue to summary**. Full guide: [EXPLORER-WIZARD.md](docs/wiki/guides/explorer-wizard.md).
@@ -448,9 +450,8 @@ archive/            # legacy + experimental (not imported)
 6. **Discover before invoke** — `palm doctor`, REPL `resource list` / `describe`, and Explorer `/explorer/resources` show actions and schemas.
 
 ```bash
-palm resource list
-palm resource describe fetch-customer
-palm resource invoke fetch-customer customer_id=42
+palm repl
+# then: resource list / describe fetch-customer / invoke fetch-customer customer_id=42
 ```
 
 Full guide: [docs/vision/closed/VISION-0.12.md](docs/vision/closed/VISION-0.12.md) · [MIGRATION-0.12.md](docs/migrations/MIGRATION-0.12.md)

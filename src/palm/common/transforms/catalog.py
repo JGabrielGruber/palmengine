@@ -13,6 +13,7 @@ TRANSFORM_CATALOG: dict[str, str] = {
         "list sources persist as one value, not per-item"
     ),
     "filter_items": "Filter a list of mappings by field predicates",
+    "count_by": "Group a list of mappings by a field and emit counts",
     "callable": "Apply a Python callable to a value or list",
     "string_format": "Template, case, and inline date formatting for strings",
     "jsonpath_extract": "Read a nested value via dot path (e.g. user.profile.name)",
@@ -31,7 +32,6 @@ TRANSFORM_CATALOG: dict[str, str] = {
     "yaml_dump": "Serialize data to YAML text (requires PyYAML)",
     "toml_load": "Parse TOML text or bytes into a mapping (stdlib tomllib)",
     "xml_load": "Parse XML text into nested mappings (stdlib ElementTree)",
-    "parquet_load": "Placeholder for Parquet — register a custom rule with pyarrow",
 }
 
 

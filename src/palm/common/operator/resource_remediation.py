@@ -36,7 +36,7 @@ def resource_invoke_remediation(
     if "unsupported action" in lowered:
         return (
             f"Check provider actions for {provider_label!r}; "
-            "use palm resource describe <ref> or Explorer /explorer/resources."
+            "use REPL `resource describe <ref>` or Explorer /explorer/resources."
         )
 
     if provider == "rest" or "rest fetch" in lowered:

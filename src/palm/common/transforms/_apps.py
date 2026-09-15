@@ -12,7 +12,10 @@ import importlib
 INSTALLED_TRANSFORMS: tuple[str, ...] = (
     "rename_field",
     "map_fields",
+    "append_item",
+    "put_resource",
     "filter_items",
+    "count_by",
     "callable",
     "string_format",
     "jsonpath_extract",

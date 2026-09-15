@@ -70,9 +70,9 @@ Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José 
 
 | Thing | What it is | Why it still lives | 0.68 motion |
 |-------|------------|--------------------|-------------|
-| README as present | Front door still says theme 0.65 / “No open minor.” `run_server(ServerRuntime())` TypeErrors. One-shot `palm resource *` while argparse has no `resource`. | 0.68.3 class: living docs that promise a door the tree does not have. | 📋 Trim README (and copied wiki snippets) to STATUS / real CLI. Do not add a `resource` one-shot to prove the lie. |
-| Transform count | README **22**; install tuple **21** (test-pinned); live register has extras; catalog still describes gated `parquet_load`. | Unread dual. Tests freeze the 21. | 📋 Make one honest count. Do not un-gate parquet (ST-004 paid). |
-| MCP L0 continue copy | L0 still teaches `{session_id, flow_id, value}` with `inst-1`. Skill already says `instance_id`. | Living lie of **session** vs **instance**. Field rename is surface deflation. | 📋 Trim the L0 sentence/example. Do not rename FastMCP kwargs. |
+| README as present | Front door still says theme 0.65 / “No open minor.” `run_server(ServerRuntime())` TypeErrors. One-shot `palm resource *` while argparse has no `resource`. | 0.68.3 class: living docs that promise a door the tree does not have. | ✅ **0.68.16** trimmed to STATUS / real CLI. Do not add a `resource` one-shot. |
+| Transform count | README **22**; install tuple **21** (test-pinned); live register has extras; catalog still describes gated `parquet_load`. | Unread dual. Tests freeze the 21. | ✅ **0.68.16** locked **24** (`INSTALLED_TRANSFORMS` = live register = catalog). Do not un-gate parquet (ST-004 paid). |
+| MCP L0 continue copy | L0 still teaches `{session_id, flow_id, value}` with `inst-1`. Skill already says `instance_id`. | Living lie of **session** vs **instance**. Field rename is surface deflation. | ✅ **0.68.16** L0 continue uses `instance_id`. FastMCP kwargs unchanged. |
 
 ### Optional small duals (include per slice, not a new organ)
 
@@ -142,7 +142,7 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 | **0.68.13** | Compost journal consumer `"work_drain"` + host `redrive_journal`. Keep the work-drain organ and `EventJournal.redrive`. |
 | **0.68.14** | Compost unread parking lots + kits `doctor_section` + vitality skip stubs `boot_membership` / `system_log_tail`. `monitor_agent` stays parked. |
 | **0.68.15** | Compost unused `host.instances` / `jobs` / `wizards` facades. Keep the flat methods. |
-| **0.68.16** | Trim README / transform-count / L0 continue copy. Do not add `resource` one-shot. Do not un-gate parquet. Do not rename FastMCP kwargs. |
+| **0.68.16** | Trim README / transform-count / L0 continue copy. Do not add `resource` one-shot. Do not un-gate parquet. Do not rename FastMCP kwargs. ✅ |
 | **exit** | José · stamp `0.68.0`. |
 
 *Delete the empty work. Keep the honest knob.*

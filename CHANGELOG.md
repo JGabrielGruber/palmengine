@@ -4,6 +4,18 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.68.16 — living README / L0 continue copy
+- Trim README (and copied wiki / llms snippets) to STATUS: theme **0.68** open, package `0.67.0`. Server start is `palm host server`. Resource inspect is REPL-only.
+- Lock one transform count: **24** installed builtins (`append_item`, `put_resource`, `count_by` on the tuple). Catalog drops gated `parquet_load`. Do not un-gate parquet.
+- L0 `palm_assist` continue example uses `instance_id`, not `session_id` + `inst-1`. FastMCP kwargs unchanged. Package stamp stays `0.67.0`.
+
+### 0.68.15 — unused host query facades
+- Drop `host.instances` / `jobs` / `wizards` grouping objects. Flat list/get methods stay. CLI already used the flats.
+
+### 0.68.14 — unread parking lots and skip stubs
+- Drop unread `palm.system.ports` / `planes` / `supervisor` re-export shims, `palm.utils`, `palm.patterns.dag.flow` placeholder, `kits.doctor_section`, and vitality skip stubs `boot_membership` / `system_log_tail`.
+- `monitor_agent` stays parked. Canonical homes stay. Closed chronicles stay. Package stamp stays `0.67.0`.
+
 ### 0.68.13 — unused work_drain journal consumer
 - Drop `mark_work_drain_caught_up`, doctor consumer name `"work_drain"`, and host `redrive_journal` (coordinator twin included). Nothing in product advanced the offset. The body counted journal entries; drain still uses the WorkIntent store.
 - Work-drain organ stays. `EventJournal.redrive` stays. Do not wire journal consume into drain. Package stamp stays `0.67.0`.

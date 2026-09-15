@@ -116,11 +116,18 @@ def test_installed_storage_apps_register() -> None:
 
 
 def test_installed_transform_apps_register() -> None:
-    assert len(INSTALLED_TRANSFORMS) == 21
+    from palm.common.transforms.catalog import TRANSFORM_CATALOG
+
+    assert len(INSTALLED_TRANSFORMS) == 24
+    assert "append_item" in INSTALLED_TRANSFORMS
+    assert "put_resource" in INSTALLED_TRANSFORMS
+    assert "count_by" in INSTALLED_TRANSFORMS
     assert "json_load" in INSTALLED_TRANSFORMS
     assert "csv_dump" in INSTALLED_TRANSFORMS
     assert "parquet_load" not in INSTALLED_TRANSFORMS
     assert set(INTENTION_TRANSFORMS) == {"parquet_load"}
+    assert "parquet_load" not in TRANSFORM_CATALOG
+    assert set(TRANSFORM_CATALOG) == set(INSTALLED_TRANSFORMS)
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
     with pytest.raises(RegistryError):

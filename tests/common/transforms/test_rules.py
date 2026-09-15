@@ -26,8 +26,8 @@ def executor() -> TransformExecutor:
 
 
 def test_installed_transforms_register(executor: TransformExecutor) -> None:
-    expected = set(INSTALLED_TRANSFORMS)
-    assert set(INSTALLED_TRANSFORMS) == expected
+    assert len(INSTALLED_TRANSFORMS) == 24
+    assert set(transform_registry.names()) == set(INSTALLED_TRANSFORMS)
     for name in INSTALLED_TRANSFORMS:
         transform_registry.get(name)
     engine = executor.engine
