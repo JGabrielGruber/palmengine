@@ -45,7 +45,52 @@ Honest packaging that **stays** unless José includes it:
 
 - `analytics_enabled` / `webhook_urls` refine the install organ.  
 - Host-less `ServerContext` is a second composition root (ADR-019). Do not dissolve it to fake one leftover path.  
-- DNA lists on `local.cli` vs `local.embedded` — José has not locked phenotypes.
+- DNA lists on `local.cli` vs `local.embedded` — José has not locked phenotypes.  
+- Pattern / Provider `ready()`. Living projections organ. Work drain as WorkIntent drain (not the journal consumer of that name).  
+- Two Portal slots for **session** vs **instance**. FastMCP kwargs still named `session_id` (trim living copy; do not rename the field here).  
+- Remote Palm-provider HTTP (Palm X→Y). Example-pack *unit* tests that only prove the pack builds.
+
+---
+
+## What 0.68 can still compost (2026-09-15)
+
+Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José picked execute 2026-09-15:** **0.68.13–16**. Two-read compost ([VERSIONING](../VERSIONING.md)): costume, then affected dead code (callers, bags, tests that freeze absence). Do not relocate. Do not invert Navigator. Do not deflate surfaces.
+
+### Empty work / unread dual
+
+| Thing | What it is | Why it still lives | 0.68 motion |
+|-------|------------|--------------------|-------------|
+| Journal consumer `"work_drain"` + `mark_work_drain_caught_up` | Catch-up that counts journal entries under the organ’s name | Same class as 0.68.11/12. Doctor reports lag. No product caller advances the offset. Drain still uses the WorkIntent store. | 📋 Compost the **consumer** and host lag report. Keep the work-drain organ. Do not wire journal consume into drain. |
+| `ApplicationHost.redrive_journal` (+ workplane coordinator twin) | Composition-root method, no product/CLI/MCP caller | Compost tests `hasattr` it green. `EventJournal.redrive` is honest journal machinery. | 📋 Drop the host facade. Keep the journal method. |
+| Unread parking lots | `palm.system.ports` / `planes` / `supervisor` re-export shims; `palm.utils`; `palm.patterns.dag.flow` placeholder; `kits.doctor_section` on `INTENTION_KITS = ()` | Callers already moved (SD-016 said drop when migrated). Same class as 0.68.8. | 📋 Compost unread packages and the unused doctor fragment. Closed chronicles that name old paths stay. |
+| Vitality skip stubs | Default registry registers `boot_membership` / `system_log_tail` whose sample is always skip | Tests freeze catalog presence and “not in snapshot.” Same smell as runner `ready()` doctor. | 📋 Compost those two stubs. `monitor_agent` stays a parked later skip. |
+| Host query facades | `host.instances` / `jobs` / `wizards` | CLI uses the flat methods. Only a test asserts the facade objects equal the flats. | 📋 Compost the unused facade objects. Keep the flats until a surface theme. |
+
+### Living docs that lie
+
+| Thing | What it is | Why it still lives | 0.68 motion |
+|-------|------------|--------------------|-------------|
+| README as present | Front door still says theme 0.65 / “No open minor.” `run_server(ServerRuntime())` TypeErrors. One-shot `palm resource *` while argparse has no `resource`. | 0.68.3 class: living docs that promise a door the tree does not have. | 📋 Trim README (and copied wiki snippets) to STATUS / real CLI. Do not add a `resource` one-shot to prove the lie. |
+| Transform count | README **22**; install tuple **21** (test-pinned); live register has extras; catalog still describes gated `parquet_load`. | Unread dual. Tests freeze the 21. | 📋 Make one honest count. Do not un-gate parquet (ST-004 paid). |
+| MCP L0 continue copy | L0 still teaches `{session_id, flow_id, value}` with `inst-1`. Skill already says `instance_id`. | Living lie of **session** vs **instance**. Field rename is surface deflation. | 📋 Trim the L0 sentence/example. Do not rename FastMCP kwargs. |
+
+### Optional small duals (include per slice, not a new organ)
+
+| Thing | Note |
+|-------|------|
+| MCP profile `experimental` | Same tool-group set as `full`. Name with no experiment. |
+| Recovery `_webhook_dispatcher` alias | Second pointer so tests can count two seats. Install organ stays. |
+| Host `event_plane_status` / `ops_status` / `control_plane_status` | Triple aliases residual (CS-002). `packaging_status` is the bag. |
+| `HttpWebhookDeliverer` as unused default | 0.68.3: do not wire production POST. Second scout if still no product caller. Webhook organ stays. |
+| Overlapping `find_spec is None` / `"phase not in"` tests | Affected dead code of **already paid** units. Collapse when touching that file. Not a first execute. |
+
+### Suggested first execute (not sealed)
+
+1. Journal consumer `"work_drain"` + host `redrive_journal` (same family as 0.68.11/12).  
+2. Unread parking lots + kits `doctor_section` + vitality skip stubs.  
+3. README / L0 living lies.
+
+José picked the four slices. Proof stays: a pin that froze empty work now matches the delete, or names the honest skip.
 
 ## Locks (José 2026-08-21)
 
@@ -72,7 +117,9 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 
 - Workload spawn of support / work processes. That is [VISION-0.56](VISION-0.56.md).  
 - DNA phenotype retune (`local.cli` vs `local.embedded` lists) unless José names that cut.  
-- Navigator. Tiny LLM ([VISION-TINY-LLM](VISION-TINY-LLM.md)). Tunnels. Grove. Surface compost ([VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) is a different pile).  
+- Navigator invert: Assist command table, operator-entry auto-start, fake catalog turns, example pack as `main()`. [VISION-NAVIGATOR](VISION-NAVIGATOR.md).  
+- Surface identity: Portal FAB / PWA / pt-BR synonym policy / hello auto-start; MCP fat catalog (SU-003); CLI forest as chatbot (SU-005 / SU-008); walk-handle field rename (SI-002). [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md). Two slots stay honest packaging.  
+- Tiny LLM ([VISION-TINY-LLM](VISION-TINY-LLM.md)). Tunnels. Grove. `PalmProvider` as submit/wait. Speak-after-place blueprint.  
 - Engine as walker. Two doors stay as 0.67 law.
 
 ## Guide slices (not a sealed contract)
@@ -92,7 +139,10 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 | **0.68.10** | Compost unused `host.webhook.delivered` / `failed`. ✅ |
 | **0.68.11** | Compost unused webhook journal facade. ✅ |
 | **0.68.12** | Compost unused projection journal facade. ✅ |
-| **0.68.13+** | Compost units José includes. |
+| **0.68.13** | Compost journal consumer `"work_drain"` + host `redrive_journal`. Keep the work-drain organ and `EventJournal.redrive`. |
+| **0.68.14** | Compost unread parking lots + kits `doctor_section` + vitality skip stubs `boot_membership` / `system_log_tail`. `monitor_agent` stays parked. |
+| **0.68.15** | Compost unused `host.instances` / `jobs` / `wizards` facades. Keep the flat methods. |
+| **0.68.16** | Trim README / transform-count / L0 continue copy. Do not add `resource` one-shot. Do not un-gate parquet. Do not rename FastMCP kwargs. |
 | **exit** | José · stamp `0.68.0`. |
 
 *Delete the empty work. Keep the honest knob.*

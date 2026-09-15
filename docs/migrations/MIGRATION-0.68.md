@@ -3,7 +3,7 @@
 **Theme:** [VISION-0.68](../vision/VISION-0.68.md) · **ADR:** none  
 **Map:** [PALM.md](../PALM.md)
 
-Palm is pre-1.0. Plan `0.68.0`. Package stays `0.67.0` until José exits. **0.68.1** drops the empty projections boot phase. **0.68.2** drops the runner `ready()` doctor register. **0.68.3** trims living docs that promised webhook POST. **0.68.4** DNA-skips outbox store wire (`capability_off:outbox`). **0.68.5** drops the empty `LocalRunnerApp.ready()` override. **0.68.6** drops the runner `ready()` call. **0.68.7** drops the write-only `RunnerApp` bag. **0.68.8** drops the empty `palm.common.runtimes` parking lot. **0.68.9** drops the Pattern MCP second `ready()` call. **0.68.10** drops unused `host.webhook.delivered` / `failed` event names. **0.68.11** drops the unused webhook journal facade. **0.68.12** drops the unused projection journal facade. Costume compost may drop further empty seats.
+Palm is pre-1.0. Plan `0.68.0`. Package stays `0.67.0` until José exits. **0.68.1** drops the empty projections boot phase. **0.68.2** drops the runner `ready()` doctor register. **0.68.3** trims living docs that promised webhook POST. **0.68.4** DNA-skips outbox store wire (`capability_off:outbox`). **0.68.5** drops the empty `LocalRunnerApp.ready()` override. **0.68.6** drops the runner `ready()` call. **0.68.7** drops the write-only `RunnerApp` bag. **0.68.8** drops the empty `palm.common.runtimes` parking lot. **0.68.9** drops the Pattern MCP second `ready()` call. **0.68.10** drops unused `host.webhook.delivered` / `failed` event names. **0.68.11** drops the unused webhook journal facade. **0.68.12** drops the unused projection journal facade. José picked **0.68.13–16**: journal consumer `"work_drain"` + host `redrive_journal`; unread parking lots + vitality skip stubs; unused host query facades; README / transform-count / L0 copy.
 
 ## Prefer
 
@@ -39,4 +39,6 @@ Execute will name the cut. Likely:
 
 - Outbox `on_before_publish` as production POST.  
 - Workload spawn ([VISION-0.56](../vision/VISION-0.56.md)).  
-- Host-less `ServerContext` dissolve.
+- Host-less `ServerContext` dissolve.  
+- Navigator invert ([VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md)).  
+- Surface identity / fat catalogs ([VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md)).

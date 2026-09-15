@@ -76,6 +76,20 @@ An **operator-guidance definition** is a normal flow or process in the catalog. 
 | CLI command forest + dual slots | New thin stdio surface on the adapter + `BoundSurface` |
 | Portal as Assist chat (pre-session) | New thin WebSocket surface; session bind first |
 
+### As-built (2026-09-15)
+
+No `BotService` in `src/`. Identity is Assist plus the MCP/Portal operator path stacked on it.
+
+| Fact | Why it is this seed |
+|------|---------------------|
+| `AssistService.dispatch` is a second spine (list/start/inspect, instance verbs, doctor/top/vitality, discover/menu/open). | Purpose lives in a product path table, not in a **definition**. |
+| Root menu and discover starters are Python lists. `inspect_catalog` returns a synthetic turn with no **job**. | Open-coded menu. Tests freeze coconut/design CTAs. |
+| `palm-operator-entry` is a wizard that ends. Chat profile then auto-starts `todo-builder` / `coconut-npc` (`CHAT_AUTO_START_INTENTS`, default `auto_start=True`). | The guidance **definition** does not start the work it named. Product owns start after complete. |
+| Bare `palm_assist()` → alias `operator-entry/start`. Settings `load_example_definitions` default True. | Example pack is the operator door. Entry chooser is still open (§5). |
+| Coconut is the MCP card “run a flow.” | Dogfood entitled as product identity. Replace the pack; do not compost Palm to lose the NPC. |
+
+Fat MCP catalog, CLI REPL-as-chat, Portal FAB/paint, and `session_id` on walk handles are [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md). Empty host/docs costume is [VISION-0.68](VISION-0.68.md). Do not invert guidance in 0.68.
+
 ---
 
 ## 5. Open (not locked)
@@ -106,6 +120,7 @@ These remain questions. They are not architecture law.
 | **SD-022** | Law docs treat talk/metaphor as types — clean when touched |
 | **SD-010** | STE density rewrite (different care) |
 | **SU-*** / **SI-002** | Surface compost — [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) |
+| [VISION-0.68](VISION-0.68.md) | Costume compost (open). Not the invert. |
 | [VISION-TINY-LLM](VISION-TINY-LLM.md) | Model as resource · context as flow. **Not** this seed’s floor. A guidance pack may include a translator child after the invert is real. |
 
 *Guidance is a definition. The adapter only walks.*
