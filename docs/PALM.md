@@ -89,7 +89,9 @@ These words are **stable**. Use them with one meaning only.
 | **Behavior Tree (BT)** | Control-flow model: nodes tick; composition is explicit. |
 | **Job** | Live unit of execution under the orchestration engine. |
 | **Instance** | Durable process record for one definition run; survives restart when storage is shared. |
-| **Session** | Outside subject (system plane): one coherent external walk; may own **many** instances. |
+| **Session** | Outside subject (system plane): one coherent external walk; may own **many** instances. Not who the person is. |
+| **Principal** | Who is walking (identity). Not the walk. Not admission. |
+| **User plane** | Later identity policy (entry, visibility, impersonation, grants) over principal ↔ session. Does not own jobs. Seed: [ADR-027](adr/027-session-plane.md) D11 · [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) (seam named; not Navigator floor). |
 | **State** | Blackboard data for the run (`BaseState` and schemas). |
 | **Resource** | Named way to **speak** to an external or internal system (provider + action). |
 | **Provider** | Plugin that implements resource speak. (Not a DI “provider.”) |
@@ -331,7 +333,7 @@ Then call **system ports** (target). Today many paths call engines on a resolved
 | **Definitions** | Catalog read/write of definitions |
 | **Design** | Propose → impact → commit definition change |
 | **Execution** | Run flows, processes, provider invoke, workloads |
-| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition**; present/bind is a **presentation adapter** (kit). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
+| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition** that **stays** as session home; present/bind is **`palm.kits.present`**. Surfaces stay in-process for that invert. Entry and visibility are later **principal / user-plane**. Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
 | **Inspect** (product door) | Doctor / top / list / cancel present — **not** the kernel layer (**SD-007** paid 0.61.4) |
 | **Analytics** | Datasets and dashboards |
 
@@ -433,7 +435,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, …) | SD-011 ✅ |
+| `palm.kits` | Surface kits (`server`, …). Intended present kit: **`palm.kits.present`** ([VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) — named, not shipped). | SD-011 ✅ |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---

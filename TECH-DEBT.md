@@ -628,9 +628,9 @@ Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked t
 | **Multi-claimer / capacity** | SD-017 · SD-018 · residual SD-019 | **Closed 0.62** — [VISION-0.62](docs/vision/closed/VISION-0.62.md) · [ADR-031](docs/adr/031-multi-claimer-work-drain.md) Accepted |
 | **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · SD-024 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) · [SD-024](#sd-024) |
 | **Surface deflation** | SU-* · SI-002/006/010 | Compost with evidence after eyes — [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
-| **Navigator** | SD-022 · Assist as product bag | Operator-guidance definition + presentation adapter — [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (queue seed; not open) |
+| **Navigator** | SD-022 · Assist as product bag | Operator-guidance definition + **`palm.kits.present`** — [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (queue seed; not open). **Named 2026-09-15:** guidance stays home; entry/visibility not this floor; surfaces in-process. |
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |
-| **User plane + session impersonation** | D11 · SI-015 bare residual | Principal **acts as** owning session — not dual-own |
+| **User plane + session impersonation** | D11 · SI-015 bare residual | Principal **acts as** owning session — not dual-own. **Also owns** entry chooser and definition visibility (named on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) 2026-09-15). Do not grow ambient `AuthEngine` principal into this plane. Do not open this to ship Navigator. |
 | **Delegate / team session membership** | growth | Shared walk under one owner session |
 | **Workload remainder** | 0.56 queue | Full placement, cancel hooks, peer mesh; place registry for assembly |
 | **Tunnels / reach** | after assembly | Trusted paths · neighborhood · edge/cloud — [VISION-TUNNELS](docs/vision/VISION-TUNNELS.md) (queue seed; not open) |

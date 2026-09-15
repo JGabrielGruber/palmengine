@@ -54,11 +54,10 @@ Record decisions in ADRs, [principles.md](../principles.md), or glossary when lo
 
 ---
 
-## Navigator (queue seed — not locked)
+## Navigator (queue seed)
 
 Seed: [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md). José named the seed **2026-08-19**. Not an ADR.
 
-- Kit package name for the presentation adapter (`palm.kits…`)?
-- Default operator-guidance definition: catalog tag vs structure/settings seed?
-- When (if ever) does definition visibility become a system interface beside admission?
-- Surface as a separate OS process vs in-process adapter — first dogfood?
+**Locked (José 2026-09-15):** operator-guidance **instance stays** as session home (focus returns). Entry chooser and definition **visibility** are **principal / user-plane**, not this invert’s floor. Floor: one anonymous outside subject; one process default guidance definition; adapter does not filter the catalog. Fail-closed later = **system interface**, not admission, not adapter. Kit **`palm.kits.present`**. Surfaces stay **in-process** for this invert (out-of-process = later client scale).
+
+No remaining open questions on this seed.

@@ -10,6 +10,7 @@
 | Planes / supervisor | `palm.system.subsystems…` | Traffic and continuous care |
 | Product | `palm.services…` | Userland |
 | Surfaces | `palm.runtimes…` | Transport |
+| Present kit | `palm.kits.present` | Named (Navigator seed). Bind / present / submit / focus. Not shipped. |
 | Host | `palm.app.host…` | Wire / packaging |
 
 Add one note per package family when boundaries need prose (`core.md`, `system.md`, …).

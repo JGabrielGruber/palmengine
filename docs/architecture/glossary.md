@@ -92,6 +92,9 @@ Between **machine up** (boot) and **business runs** (job path). Component note: 
 | **Plane** | System path for one kind of traffic (work/start, wait/continue, session, workload, event, …). | Cloud “control plane” marketing |
 | **Work plane** | Start path: WorkIntent → new job (drain under supervisor). | Structure assemble loop |
 | **Wait plane** | Continue path: wait interest match → resume / fail owner. | Human “wait” in product copy |
+| **Session** | Outside subject of a walk. Owns many instances. Continue **focus** is among owned instances only. | Instance id; principal identity; user plane |
+| **Principal** | Who is walking (identity). Core type exists. Not the walk. | Session; admission; adapter filter |
+| **User plane** | Later identity policy over principal ↔ session (entry, visibility, impersonation, grants). Does not own jobs. [ADR-027](../adr/027-session-plane.md) D8 · D11. | Session plane; Navigator invert; ambient `AuthEngine` current principal |
 | **Supervisor** | Continuous care of planes / drain workers (system). | OS process supervisor only |
 | **Vitality** | Living eyes / inspect heat on the system (present, not structure law). | Admission snapshot |
 | **Seat** | Installed organ on the shell (e.g. structure seat, plane service). Prefer inject seat/interface over ambient shell. | Chair metaphor as architecture |
@@ -104,6 +107,8 @@ Between **machine up** (boot) and **business runs** (job path). Component note: 
 |------|------------------|----------------|
 | **Job path** | Business spine: catalog definition → pattern → job → effects → events → start/continue. | Structure assemble path |
 | **Definition** (business) | Declared contract of work (flow, process, resource, …) in the catalog. | Structure definition |
+| **Operator-guidance definition** | Catalog definition whose job is the empty-handed walk. It **stays** as session home when it starts other work. Many allowed. None is the engine `main()`. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Assist product domain; structure definition; user plane |
+| **Presentation adapter** | Kit **`palm.kits.present`**: bind session, present the current turn, submit input, start or continue, change focus. Consumes runs. Not purpose. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Product service; catalog ACL; surface protocol; `palm.kits.server` |
 | **Pattern** | How a business definition runs (wizard, process, …). | Structure reconcile algorithm |
 | **Job** | Live run under orchestration. | OS process; workload place |
 | **Instance** | Durable record of a run. | Structure status |
