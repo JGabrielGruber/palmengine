@@ -5,7 +5,7 @@
 **Map:** [PALM.md](../PALM.md) · session law [VISION-0.58](closed/VISION-0.58.md) (**closed**) · [ADR-027](../adr/027-session-plane.md)  
 **Debt:** [TECH-DEBT.md](../../TECH-DEBT.md) **SU-*** · **SI-002** / **SI-006** / **SI-010** · **SI-016** residual  
 **Grow (not compost):** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) — operator-guidance definition + presentation adapter.  
-**Open costume (not this pile):** [VISION-0.68](VISION-0.68.md) — empty work, unread duals, living doc lies in host/docs.  
+**Closed costume (not this pile):** [VISION-0.68](closed/VISION-0.68.md) — empty work, unread duals, living doc lies in host/docs. Residual [SD-023](../../TECH-DEBT.md#sd-023).  
 **North star:** [VISION-GROVE](VISION-GROVE.md)
 
 **Split:** 0.68 does not deflate surfaces. Navigator does not rewrite Assist in place. This file owns surface identity, fat catalogs, and era handles.
@@ -88,7 +88,7 @@ Precision of file paths is not the point. **Intent** and **drag** are.
 | **Intent** | Human operator on a terminal; track “what am I driving.” |
 | **Discovery** | Need active focus and bind; dual slots (`system` + `assist`) grew before BoundSurface. |
 | **Impact** | SI-006: instance-shaped “session” slot names; mirrors next to BoundSurface (SI-016 partial). |
-| **As-built (2026-09-15)** | Empty argv is REPL. Non-command lines become `assist input`. Banner teaches `assist start operator-entry`. `CliContext` keeps BoundSurface plus mirrors `active_system_session_id` / `active_assist_session_id` / `active_instance_id`. README one-shot `palm resource *` is a living lie for [VISION-0.68](VISION-0.68.md) docs, not a CLI rewrite. |
+| **As-built (2026-09-15)** | Empty argv is REPL. Non-command lines become `assist input`. Banner teaches `assist start operator-entry`. `CliContext` keeps BoundSurface plus mirrors `active_system_session_id` / `active_assist_session_id` / `active_instance_id`. README one-shot `palm resource *` was a living lie; **0.68.16** trimmed it. Not a CLI rewrite. |
 | **Later** | One BoundSurface truth; drop dual mirrors; alias forest (SU-005) only if still needed. New thin stdio surface on the presentation adapter — [VISION-NAVIGATOR](VISION-NAVIGATOR.md). |
 
 ### 3.4 WebSocket + Portal

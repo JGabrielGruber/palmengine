@@ -3,7 +3,7 @@
 **Theme:** [VISION-0.67](../vision/closed/VISION-0.67.md) (**closed**) · **ADR:** [036](../adr/036-require-capability.md) **Accepted**  
 **Map:** [PALM.md](../PALM.md)
 
-Palm is pre-1.0. Theme closed at stamp `0.67.0`. Additive: a new require beside the ready door. Remaining costume: [VISION-0.68](../vision/VISION-0.68.md).
+Palm is pre-1.0. Theme closed at stamp `0.67.0`. Additive: a new require beside the ready door. Costume composted: [VISION-0.68](../vision/closed/VISION-0.68.md) (**closed**). Residual [SD-023](../../TECH-DEBT.md#sd-023).
 
 ## Prefer
 

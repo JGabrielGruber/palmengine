@@ -88,7 +88,7 @@ No `BotService` in `src/`. Identity is Assist plus the MCP/Portal operator path 
 | Bare `palm_assist()` → alias `operator-entry/start`. Settings `load_example_definitions` default True. | Example pack is the operator door. Entry chooser is still open (§5). |
 | Coconut is the MCP card “run a flow.” | Dogfood entitled as product identity. Replace the pack; do not compost Palm to lose the NPC. |
 
-Fat MCP catalog, CLI REPL-as-chat, Portal FAB/paint, and `session_id` on walk handles are [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md). Empty host/docs costume is [VISION-0.68](VISION-0.68.md). Do not invert guidance in 0.68.
+Fat MCP catalog, CLI REPL-as-chat, Portal FAB/paint, and `session_id` on walk handles are [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md). Empty host/docs costume is [VISION-0.68](closed/VISION-0.68.md) (**closed**). Residual [SD-023](../../TECH-DEBT.md#sd-023). Do not invert guidance as 0.68 leftover.
 
 ---
 
@@ -120,7 +120,7 @@ These remain questions. They are not architecture law.
 | **SD-022** | Law docs treat talk/metaphor as types — clean when touched |
 | **SD-010** | STE density rewrite (different care) |
 | **SU-*** / **SI-002** | Surface compost — [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) |
-| [VISION-0.68](VISION-0.68.md) | Costume compost (open). Not the invert. |
+| [VISION-0.68](closed/VISION-0.68.md) | Costume compost (**closed**). Residual [SD-023](../../TECH-DEBT.md#sd-023). Not the invert. |
 | [VISION-TINY-LLM](VISION-TINY-LLM.md) | Model as resource · context as flow. **Not** this seed’s floor. A guidance pack may include a translator child after the invert is real. |
 
 *Guidance is a definition. The adapter only walks.*

@@ -6,7 +6,7 @@
 **Map:** [PALM.md](../../PALM.md) · seed [VISION-ASSEMBLY](../VISION-ASSEMBLY.md) · prior [VISION-0.65](VISION-0.65.md) (**closed**) · [VISION-0.64](VISION-0.64.md) (**closed**)  
 **Debt:** [SD-020](../../../TECH-DEBT.md#sd-020) (face paid; dependents later)
 
-**Exit:** José closed the theme (2026-08-20). The face publishes installed names. Step 4 dependents: [VISION-0.67](VISION-0.67.md) (**closed**). Remaining costume: [VISION-0.68](../VISION-0.68.md).
+**Exit:** José closed the theme (2026-08-20). The face publishes installed names. Step 4 dependents: [VISION-0.67](VISION-0.67.md) (**closed**). Costume composted: [VISION-0.68](VISION-0.68.md) (**closed**). Residual [SD-023](../../../TECH-DEBT.md#sd-023).
 
 This minor is **assembly remainder step 3**: the admission face still answers “may this act run.” It **reads installed capabilities**. It is not a second walker.
 

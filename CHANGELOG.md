@@ -4,6 +4,26 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Portal dogfood — pt-BR paint skin
+- Empty `/portal/` page keeps the FAB and adds language links (`?lang=en`, `?lang=pt-BR`). Chat chrome is unchanged until a skin opens.
+- Portal paints chrome, action labels, choice labels, and demo questions (operator-entry, todo-builder, coconut-npc). Values, aliases, paths, and ids stay English. Missing keys stay English.
+- Optional typed synonyms (`sim` → `yes`) on the client only. Not a 0.68 compost slice.
+
+### Portal dogfood — session vs instance slots
+- Portal keeps two slots: `session_id` (system subject) and `instance_id` (continue handle). Start / Menu / Open send `clear: true` so the previous run does not stick.
+- Hello auto-starts operator-entry even when Assist WS already bound a `sess-…`. Continue frames send both ids. Not a 0.68 compost slice.
+
+## [0.68.0] — 2026-09-15
+
+### 0.68 — The great cleansing (**theme closed** · José)
+
+Vision: [VISION-0.68](docs/vision/closed/VISION-0.68.md) · Migration: [MIGRATION-0.68](docs/migrations/MIGRATION-0.68.md) · residual [SD-023](TECH-DEBT.md#sd-023)
+
+- Costume composted: empty boot phase, runner `ready()` doctor, living POST lies, outbox DNA skip, empty Local ready, runner ready call, write-only RunnerApp bag, empty `palm.common.runtimes`, Pattern MCP second ready, unused webhook events, unused webhook/projection journal facades, unused work_drain journal consumer, unread parking lots, unused host query facades, living README / transform-count / L0 copy.
+- Honest packaging stays: `enable_state_snapshot`, Pattern/Provider `ready()`, living projections, WorkIntent drain, two Portal slots.
+- Exit residual named, not paid: MCP `experimental` = `full`; recovery webhook alias; host status triple names; `HttpWebhookDeliverer` default. Do not wire production POST.
+- Stamp `0.68.0`. No open minor.
+
 ### 0.68.16 — living README / L0 continue copy
 - Trim README (and copied wiki / llms snippets) to STATUS: theme **0.68** open, package `0.67.0`. Server start is `palm host server`. Resource inspect is REPL-only.
 - Lock one transform count: **24** installed builtins (`append_item`, `put_resource`, `count_by` on the tuple). Catalog drops gated `parquet_load`. Do not un-gate parquet.
@@ -19,15 +39,6 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### 0.68.13 — unused work_drain journal consumer
 - Drop `mark_work_drain_caught_up`, doctor consumer name `"work_drain"`, and host `redrive_journal` (coordinator twin included). Nothing in product advanced the offset. The body counted journal entries; drain still uses the WorkIntent store.
 - Work-drain organ stays. `EventJournal.redrive` stays. Do not wire journal consume into drain. Package stamp stays `0.67.0`.
-
-### Portal dogfood — pt-BR paint skin
-- Empty `/portal/` page keeps the FAB and adds language links (`?lang=en`, `?lang=pt-BR`). Chat chrome is unchanged until a skin opens.
-- Portal paints chrome, action labels, choice labels, and demo questions (operator-entry, todo-builder, coconut-npc). Values, aliases, paths, and ids stay English. Missing keys stay English.
-- Optional typed synonyms (`sim` → `yes`) on the client only. Not a 0.68 compost slice. Package stamp stays `0.67.0`.
-
-### Portal dogfood — session vs instance slots
-- Portal keeps two slots: `session_id` (system subject) and `instance_id` (continue handle). Start / Menu / Open send `clear: true` so the previous run does not stick.
-- Hello auto-starts operator-entry even when Assist WS already bound a `sess-…`. Continue frames send both ids. Not a 0.68 compost slice. Package stamp stays `0.67.0`.
 
 ### 0.68.12 — unused projection journal facade
 - Drop `drain_journal_projections`, `consume_for_projections`, and the doctor consumer name `"projections"`. Nothing in product called the host method. The body counted journal entries; it did not rebuild.

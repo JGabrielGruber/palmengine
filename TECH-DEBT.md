@@ -52,6 +52,7 @@ This file holds **what still needs work** plus a **master index** of all IDs.
 | [SD-020](#sd-020) | Dual readiness / residual edges (no single admission gate) | S1 | L | **0.63** floor | open (0.66 face; 0.67 dependents paid [VISION-0.67](docs/vision/closed/VISION-0.67.md); residual edges named) |
 | [SD-021](#sd-021) | Profile / composition / env as parallel structure king | S2 | L | **0.63** growth | open (seed map + purge) |
 | [SD-022](#sd-022) | Law docs treat talk/metaphor as types | S3 | L | ongoing | open (named 2026-08-19) |
+| [SD-023](#sd-023) | 0.68 exit residual duals | S3 | S | **0.68** exit | open (named 2026-09-15; not unpaid costume) |
 
 ### Surface debt (SU)
 
@@ -191,7 +192,7 @@ Shape 0.62 claimer/lease fields so CAS is a plug-in, not a rewrite.
 
 **Do not:** Soft-open the gate for CI. Permanent corridor guards instead of one gate. Fake green that encodes dual mode. Leave “not this door” **unnamed** so digs become lifestyle.
 
-**Status:** open (0.63 walls up; residuals **named**). **0.66** paid the face. **0.67** paid dependents (require door, drain able, composition kings + leftover). Sequence: [VISION-0.64](docs/vision/closed/VISION-0.64.md). Remaining costume: [VISION-0.68](docs/vision/VISION-0.68.md).
+**Status:** open (0.63 walls up; residuals **named**). **0.66** paid the face. **0.67** paid dependents (require door, drain able, composition kings + leftover). Sequence: [VISION-0.64](docs/vision/closed/VISION-0.64.md). Costume composted: [VISION-0.68](docs/vision/closed/VISION-0.68.md) (**closed**). Residual [SD-023](#sd-023).
 
 ---
 
@@ -200,13 +201,13 @@ Shape 0.62 claimer/lease fields so CAS is a plug-in, not a rewrite.
 
 <a id="sd-021"></a>
 
-**Severity:** S2 · **Effort:** L · **Theme:** **0.63** growth (closed) · residual under [VISION-0.68](docs/vision/VISION-0.68.md)
+**Severity:** S2 · **Effort:** L · **Theme:** **0.63** growth (closed) · residual profile/env (not 0.68 costume)
 
 **Observation:** `CompositionProfile`, `DeploymentProfile`, `BootMode`, and some structure-shaped `PALM_*` toggles still act as **structure law** beside the structure definition. That is dual king after assembly lands.
 
 **Pay in 0.63 growth:** Map entry/mode/env into **definition seed**; after load, assembly status is structure truth; packaging env stays; structure dual toggles purge or residual kill-date. First definition: **embedded**; dogfood: cli / server.
 
-**Progress:** **0.63.5** seed map + builtin DNA catalog on host spawn. **0.63.13** — `PALM_ASSEMBLY_DNA_ID` explicit seed; membership always for refuse; continuous drain DNA king; `STRUCTURE_SEED_ENV` cartography. **0.63.19** — full `MEMBERSHIP_CAPABILITY_SEEDS` catalog; bootstrap single source. **0.63.28** — host outbox store wire from `composition.has("outbox")` (settings seed only). **0.63.39** — DNA `capabilities` lists `work_drain`; manager materializes (register/start) only when listed; `composition.has` / `BootMode.allow_background_drain` no longer peer-gate that unit. **0.65.2** — host outbox store wire follows DNA `has_capability("outbox")`; the 0.63.28 composition king is paid. **0.67.7** — journal is DNA list + attach hand; `composition.has("journal")` dies on that unit. **0.67.8** — journal leftover costume paid (one attach on the runtime bus; host slot aliases it; not a loop). **0.67.9** — projections is DNA list + attach hand; `composition.has("projections")` dies on that unit. **0.67.10** — projections leftover costume paid (one attach on the runtime bus; host slots alias it; not a loop). **0.67.11** — compensation is DNA list + attach hand; `composition.has("compensation")` dies on that unit. **0.67.12** — compensation leftover costume paid (one attach on the runtime bus; host slot aliases it; not a loop). **0.67.13** — webhook is DNA list + attach hand; `composition.has("webhook")` dies on that unit. **0.67.14** — webhook leftover costume paid (one dispatcher; host slot aliases it; URLs refine that object; not a loop). **0.67.15** — unread `enable_compensation` / `enable_webhook_dispatcher` composted; dead `attach_runtimes` gone. **0.67.16** — analytics is DNA list + attach hand; `composition.has("analytics")` dies on that unit. **0.67.17** — analytics leftover costume paid (one organ; host slot aliases it; `analytics_enabled` refines that object; not a loop). **0.68.1** — empty `host.projections.attach` composted. **0.68.4** — outbox store wire is DNA listing (`capability_off:outbox`); `enable_event_outbox` gone. Residual: profile/env duals — [VISION-0.68](docs/vision/VISION-0.68.md); SD-020 soft-ready neighbors.
+**Progress:** **0.63.5** seed map + builtin DNA catalog on host spawn. **0.63.13** — `PALM_ASSEMBLY_DNA_ID` explicit seed; membership always for refuse; continuous drain DNA king; `STRUCTURE_SEED_ENV` cartography. **0.63.19** — full `MEMBERSHIP_CAPABILITY_SEEDS` catalog; bootstrap single source. **0.63.28** — host outbox store wire from `composition.has("outbox")` (settings seed only). **0.63.39** — DNA `capabilities` lists `work_drain`; manager materializes (register/start) only when listed; `composition.has` / `BootMode.allow_background_drain` no longer peer-gate that unit. **0.65.2** — host outbox store wire follows DNA `has_capability("outbox")`; the 0.63.28 composition king is paid. **0.67.7** — journal is DNA list + attach hand; `composition.has("journal")` dies on that unit. **0.67.8** — journal leftover costume paid (one attach on the runtime bus; host slot aliases it; not a loop). **0.67.9** — projections is DNA list + attach hand; `composition.has("projections")` dies on that unit. **0.67.10** — projections leftover costume paid (one attach on the runtime bus; host slots alias it; not a loop). **0.67.11** — compensation is DNA list + attach hand; `composition.has("compensation")` dies on that unit. **0.67.12** — compensation leftover costume paid (one attach on the runtime bus; host slot aliases it; not a loop). **0.67.13** — webhook is DNA list + attach hand; `composition.has("webhook")` dies on that unit. **0.67.14** — webhook leftover costume paid (one dispatcher; host slot aliases it; URLs refine that object; not a loop). **0.67.15** — unread `enable_compensation` / `enable_webhook_dispatcher` composted; dead `attach_runtimes` gone. **0.67.16** — analytics is DNA list + attach hand; `composition.has("analytics")` dies on that unit. **0.67.17** — analytics leftover costume paid (one organ; host slot aliases it; `analytics_enabled` refines that object; not a loop). **0.68.1** — empty `host.projections.attach` composted. **0.68.4** — outbox store wire is DNA listing (`capability_off:outbox`); `enable_event_outbox` gone. Residual: profile/env duals (this row); 0.68 costume closed — [VISION-0.68](docs/vision/closed/VISION-0.68.md); [SD-023](#sd-023); SD-020 soft-ready neighbors.
 
 **Do not:** Leave profiles as public dual structure forever “for compatibility.” Remove packaging env wholesale.
 
@@ -230,6 +231,28 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 **Do not:** Freeze a spoken word because it is familiar. Refuse a CS word because it is missing from the STE term list.
 
 **Status:** open (named 2026-08-19).
+
+---
+
+
+### SD-023 — 0.68 exit residual duals
+
+<a id="sd-023"></a>
+
+**Severity:** S3 · **Effort:** S · **Theme:** [VISION-0.68](docs/vision/closed/VISION-0.68.md) (**closed**) · named at exit
+
+**Observation:** José closed 0.68 with these duals **named**, not composted. They are leftover names and defaults, not unpaid organs.
+
+| Dual | What it is | Keep |
+|------|------------|------|
+| MCP profile `experimental` | Same tool groups as `full` | `full` / `assist` / `core` |
+| Recovery `_webhook_dispatcher` | Second pointer to `install.webhook` so tests count two seats | DNA webhook, URL refine on the install organ |
+| Host `event_plane_status` / `ops_status` / `control_plane_status` | CS-002 residual public names. `packaging_status` ≡ `control_plane_status`. `event_plane` / `ops` are nested bags | Living eyes: `inspect.top` / vitality |
+| `HttpWebhookDeliverer` as unused default | `WebhookDispatcher` defaults to urllib POST. Production drain does not call `dispatch` | Webhook organ, recording deliverer, `on_before_publish` test hook |
+
+**Do not:** Wire outbox drain to `dispatch` to “use” HTTP. Deflate the fat MCP `full` catalog here (that is [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) / SU-003). Open a minor only to delete these names.
+
+**Status:** open (named 2026-09-15).
 
 ---
 
@@ -577,7 +600,7 @@ Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked t
 | Seed | Debt | Spirit |
 |------|------|--------|
 | **Multi-claimer / capacity** | SD-017 · SD-018 · residual SD-019 | **Closed 0.62** — [VISION-0.62](docs/vision/closed/VISION-0.62.md) · [ADR-031](docs/adr/031-multi-claimer-work-drain.md) Accepted |
-| **Assembly / organism truth** | SD-020 · SD-021 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.67 closed** · **0.68 open** (costume compost) — [VISION-0.68](docs/vision/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) |
+| **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) |
 | **Surface deflation** | SU-* · SI-002/006/010 | Compost with evidence after eyes — [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
 | **Navigator** | SD-022 · Assist as product bag | Operator-guidance definition + presentation adapter — [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (queue seed; not open) |
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |

@@ -39,7 +39,6 @@ def test_living_docs_match_status_and_real_cli() -> None:
     )
     for rel in living:
         text = (ROOT / rel).read_text(encoding="utf-8")
-        assert "No open minor" not in text
         assert "run_server(ServerRuntime())" not in text
         assert "palm resource list" not in text
         assert "palm resource invoke" not in text

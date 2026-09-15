@@ -4,7 +4,7 @@
 **Language:** ASD-STE100 (practical).  
 **Map:** [PALM.md](../PALM.md) · [VERSIONING.md](../VERSIONING.md) (floor · growth · exit · **José** decides)  
 **Intended architecture:** [docs/architecture/](../architecture/README.md) (Palm-wide; structure management is one component).  
-**Active plan:** [VISION-0.68](VISION-0.68.md) (**open**) — the great cleansing (costume compost). Dependents [VISION-0.67](closed/VISION-0.67.md) and admission face [VISION-0.66](closed/VISION-0.66.md) are **closed**. This file keeps **roles · ports · citizenship · modules**.  
+**Active plan:** none. Costume [VISION-0.68](closed/VISION-0.68.md) (**closed**). Dependents [VISION-0.67](closed/VISION-0.67.md) and admission face [VISION-0.66](closed/VISION-0.66.md) are **closed**. Residual [SD-023](../../TECH-DEBT.md#sd-023). This file keeps **roles · ports · citizenship · modules**.  
 **Spine we keep:** [VISION-0.57](closed/VISION-0.57.md)+ system · [VISION-0.56](VISION-0.56.md) workload scout · [VISION-0.55](closed/VISION-0.55.md) reactive · [VISION-0.62](closed/VISION-0.62.md) capacity  
 **Horizon order:** assembly → [VISION-TUNNELS](VISION-TUNNELS.md) → [VISION-GROVE](VISION-GROVE.md). Surface compost [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) may interleave.  
 **Debt:** [SD-020](../../TECH-DEBT.md#sd-020) · [SD-021](../../TECH-DEBT.md#sd-021) · [SD-019](../../TECH-DEBT.md#sd-019) · [SD-016](../../TECH-DEBT.md#sd-016)
@@ -27,7 +27,7 @@
 
 §7 layout below is **vision shape**. Paths there stay `*/assembly/` as the essay. Code homes are the table. Glossary: [architecture/glossary.md](../architecture/glossary.md).
 
-**Remainder.** 0.63 mapped the citizen contract. 0.64 / 0.65 did the work. **Step 3** is [VISION-0.66](closed/VISION-0.66.md) (**closed**): admission reads installed capabilities. **Step 4** is [VISION-0.67](closed/VISION-0.67.md) (**closed**): dependents require the organ. Remaining costume is [VISION-0.68](VISION-0.68.md) (**open**). Sequence: [VISION-0.64](closed/VISION-0.64.md).
+**Remainder.** 0.63 mapped the citizen contract. 0.64 / 0.65 did the work. **Step 3** is [VISION-0.66](closed/VISION-0.66.md) (**closed**): admission reads installed capabilities. **Step 4** is [VISION-0.67](closed/VISION-0.67.md) (**closed**): dependents require the organ. Costume is [VISION-0.68](closed/VISION-0.68.md) (**closed**). Residual [SD-023](../../TECH-DEBT.md#sd-023). Sequence: [VISION-0.64](closed/VISION-0.64.md).
 
 ---
 

@@ -1,12 +1,14 @@
 # VISION 0.68 — The great cleansing
 
-**Status:** 📗 **Theme open** (José 2026-08-21). Plan `0.68.0`. Package stamp stays `0.67.0` until exit.  
+**Status:** ✅ **Theme closed** (José 2026-09-15) at `0.68.0`.  
 **ADR:** none (costume compost; no new door)  
-**Migration:** [MIGRATION-0.68](../migrations/MIGRATION-0.68.md)  
-**Map:** [PALM.md](../PALM.md) · seed [VISION-ASSEMBLY](VISION-ASSEMBLY.md) · prior [VISION-0.67](closed/VISION-0.67.md) (**closed**) · [ADR-036](../adr/036-require-capability.md) **Accepted**  
-**Debt:** [SD-021](../../TECH-DEBT.md#sd-021) residual packaging duals · empty boot phases after leftover
+**Migration:** [MIGRATION-0.68](../../migrations/MIGRATION-0.68.md)  
+**Map:** [PALM.md](../../PALM.md) · seed [VISION-ASSEMBLY](../VISION-ASSEMBLY.md) · prior [VISION-0.67](VISION-0.67.md) (**closed**) · [ADR-036](../../adr/036-require-capability.md) **Accepted**  
+**Debt:** [SD-023](../../../TECH-DEBT.md#sd-023) exit residual · [SD-021](../../../TECH-DEBT.md#sd-021) profile/env duals
 
 Teaching name: **the great cleansing**. Law: compost remaining **costume** after assembly dependents. Do not invent a new organ. Do not pay delivery.
+
+**Exit:** José closed the theme (2026-09-15). Floor held: one compost of costume, then 0.68.1–16. Residual duals stay **named** ([SD-023](../../../TECH-DEBT.md#sd-023)). No open minor. Navigator remains a queue seed.
 
 ---
 
@@ -54,7 +56,7 @@ Honest packaging that **stays** unless José includes it:
 
 ## What 0.68 can still compost (2026-09-15)
 
-Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José picked execute 2026-09-15:** **0.68.13–16**. Two-read compost ([VERSIONING](../VERSIONING.md)): costume, then affected dead code (callers, bags, tests that freeze absence). Do not relocate. Do not invert Navigator. Do not deflate surfaces.
+Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José picked execute 2026-09-15:** **0.68.13–16**. Two-read compost ([VERSIONING](../../VERSIONING.md)): costume, then affected dead code (callers, bags, tests that freeze absence). Do not relocate. Do not invert Navigator. Do not deflate surfaces.
 
 ### Empty work / unread dual
 
@@ -74,7 +76,7 @@ Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José 
 | Transform count | README **22**; install tuple **21** (test-pinned); live register has extras; catalog still describes gated `parquet_load`. | Unread dual. Tests freeze the 21. | ✅ **0.68.16** locked **24** (`INSTALLED_TRANSFORMS` = live register = catalog). Do not un-gate parquet (ST-004 paid). |
 | MCP L0 continue copy | L0 still teaches `{session_id, flow_id, value}` with `inst-1`. Skill already says `instance_id`. | Living lie of **session** vs **instance**. Field rename is surface deflation. | ✅ **0.68.16** L0 continue uses `instance_id`. FastMCP kwargs unchanged. |
 
-### Optional small duals (include per slice, not a new organ)
+### Optional small duals (José kept named at exit — [SD-023](../../../TECH-DEBT.md#sd-023))
 
 | Thing | Note |
 |-------|------|
@@ -97,7 +99,7 @@ José picked the four slices. Proof stays: a pin that froze empty work now match
 | # | Lock |
 |---|------|
 | **1** | **Costume, not a new organ.** Delete empty work. Do not add `require_*`. Do not add a capability name to prove the theme. |
-| **2** | **Roles, not a shared drain** (carried from 0.67 lock 5). Do not pay outbox POST as two processes polling one `OutboxStore`. Scale home is [VISION-0.56](VISION-0.56.md). |
+| **2** | **Roles, not a shared drain** (carried from 0.67 lock 5). Do not pay outbox POST as two processes polling one `OutboxStore`. Scale home is [VISION-0.56](../VISION-0.56.md). |
 | **3** | **Closed chronicles stay history.** Retune tests that pin empty phases. Do not rewrite 0.59 as if the phase never existed. |
 | **4** | Remaining compost stays **in 0.68**. Do not open 0.69 for this pile. |
 | **5** | **Read flags are not unread flags.** Compost `enable_event_outbox` only with a DNA-shaped skip. Do not delete `enable_state_snapshot` because it looks like a flag. |
@@ -115,11 +117,11 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 
 ## Not this theme
 
-- Workload spawn of support / work processes. That is [VISION-0.56](VISION-0.56.md).  
+- Workload spawn of support / work processes. That is [VISION-0.56](../VISION-0.56.md).  
 - DNA phenotype retune (`local.cli` vs `local.embedded` lists) unless José names that cut.  
-- Navigator invert: Assist command table, operator-entry auto-start, fake catalog turns, example pack as `main()`. [VISION-NAVIGATOR](VISION-NAVIGATOR.md).  
-- Surface identity: Portal FAB / PWA / pt-BR synonym policy / hello auto-start; MCP fat catalog (SU-003); CLI forest as chatbot (SU-005 / SU-008); walk-handle field rename (SI-002). [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md). Two slots stay honest packaging.  
-- Tiny LLM ([VISION-TINY-LLM](VISION-TINY-LLM.md)). Tunnels. Grove. `PalmProvider` as submit/wait. Speak-after-place blueprint.  
+- Navigator invert: Assist command table, operator-entry auto-start, fake catalog turns, example pack as `main()`. [VISION-NAVIGATOR](../VISION-NAVIGATOR.md).  
+- Surface identity: Portal FAB / PWA / pt-BR synonym policy / hello auto-start; MCP fat catalog (SU-003); CLI forest as chatbot (SU-005 / SU-008); walk-handle field rename (SI-002). [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md). Two slots stay honest packaging.  
+- Tiny LLM ([VISION-TINY-LLM](../VISION-TINY-LLM.md)). Tunnels. Grove. `PalmProvider` as submit/wait. Speak-after-place blueprint.  
 - Engine as walker. Two doors stay as 0.67 law.
 
 ## Guide slices (not a sealed contract)
@@ -143,6 +145,6 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 | **0.68.14** | Compost unread parking lots + kits `doctor_section` + vitality skip stubs `boot_membership` / `system_log_tail`. `monitor_agent` stays parked. ✅ |
 | **0.68.15** | Compost unused `host.instances` / `jobs` / `wizards` facades. Keep the flat methods. ✅ |
 | **0.68.16** | Trim README / transform-count / L0 continue copy. Do not add `resource` one-shot. Do not un-gate parquet. Do not rename FastMCP kwargs. ✅ |
-| **exit** | José · stamp `0.68.0`. |
+| **exit** | José · stamp `0.68.0`. ✅ |
 
 *Delete the empty work. Keep the honest knob.*

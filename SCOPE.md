@@ -1,6 +1,6 @@
 # Palm Engine — Scope & horizon
 
-**Version:** 0.67.0 · **Last updated:** August 2026  
+**Version:** 0.68.0 · **Last updated:** August 2026  
 **Map first:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Spirit:** [PHILOSOPHY.md](PHILOSOPHY.md)
 
 This file answers **what Palm is for** and **where courage points**.  

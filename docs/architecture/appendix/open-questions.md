@@ -19,7 +19,7 @@ Record decisions in ADRs, [principles.md](../principles.md), or glossary when lo
 - **Intent:** reconciler (engine) in **core**; manager (seat, loop, hands, materialize, resolvers) in **system**.  
 - Open: any pure types that must stay system-only? Any manager API surface on the shell beyond admission + structure effects?  
 - **Locked (2026-08-20):** admission snapshot publishes **installed** `capabilities` / `has_capability`. [VISION-0.66](../../vision/closed/VISION-0.66.md) · [ADR-035](../../adr/035-admission-sits-on-capabilities.md) **Accepted**.  
-- **Locked (2026-08-21, Accepted):** two doors — `require_business_admission` (ready) and `require_capability` (ready then name). No decorators. [VISION-0.67](../../vision/closed/VISION-0.67.md) · [ADR-036](../../adr/036-require-capability.md) **Accepted**. Remaining costume: [VISION-0.68](../../vision/VISION-0.68.md).
+- **Locked (2026-08-21, Accepted):** two doors — `require_business_admission` (ready) and `require_capability` (ready then name). No decorators. [VISION-0.67](../../vision/closed/VISION-0.67.md) · [ADR-036](../../adr/036-require-capability.md) **Accepted**. Costume composted: [VISION-0.68](../../vision/closed/VISION-0.68.md) (**closed**). Residual [SD-023](../../../TECH-DEBT.md#sd-023).
 
 ---
 

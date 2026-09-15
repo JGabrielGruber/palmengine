@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-**Palm Engine** · **0.67.0** · System seasons through capacity · August 2026 · PyPI: `palmengine`
+**Palm Engine** · **0.68.0** · System seasons through capacity · August 2026 · PyPI: `palmengine`
 
 High-level technical architecture for Palm: layers, engines, control flow, middleware, and extension.  
 **Map first:** [docs/PALM.md](docs/PALM.md) · **Scope / courage:** [SCOPE.md](SCOPE.md) · **Assembly seed:** [docs/vision/VISION-ASSEMBLY.md](docs/vision/VISION-ASSEMBLY.md)

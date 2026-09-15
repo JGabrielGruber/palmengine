@@ -41,7 +41,7 @@ Themes **classify** the work. They are not theater. If a later cut shows the fir
 |---------|--------|------------|
 | **0.64** | **closed** (José 2026-08-18) · **copyable** | First organ `work_drain`. Next organ is name + hand. If a later cut shows costume, that work is still this theme's law. |
 | **0.65** | [closed](VISION-0.65.md) | Proof the home copies: **outbox**. Name + hand + kill the old walker in the same cut. |
-| **Assembly remainder** | [VISION-0.66](VISION-0.66.md) (**closed**) · [VISION-0.67](VISION-0.67.md) (**closed**) | Step 3 paid. Step 4 dependents paid. Costume: [VISION-0.68](../VISION-0.68.md). |
+| **Assembly remainder** | [VISION-0.66](VISION-0.66.md) (**closed**) · [VISION-0.67](VISION-0.67.md) (**closed**) | Step 3 paid. Step 4 dependents paid. Costume: [VISION-0.68](VISION-0.68.md) (**closed**). |
 
 **Costume landed (no second organ):** composition does not type `work_drain`; assemble / seed / refuse no longer shovel a capabilities bag; `WORK_DRAIN_SERVICE` is gone. Hand still calls `register_work_drain`.
 
@@ -75,4 +75,4 @@ Dogfood (`analytics`, `neonroot`) and always-on engine (`workloads`) are not the
 
 A, B1–B3, C landed. Named leftovers paid: assemble uses `shell.structure`; settings/deployment have no `enable_work_drain_service`. Vitality default probes share `attr_resolver` (supervisor, execution, install, structure), `get_system_planes` (hub), and `first_resolver` for process log. Inventory `admission_inventory_snapshot` stays as eyes.
 
-**After this close:** Outbox is [VISION-0.65](VISION-0.65.md) (closed). Admission contract is [VISION-0.66](VISION-0.66.md) (closed). Step 4 dependents are [VISION-0.67](VISION-0.67.md) (**closed**). Remaining costume: [VISION-0.68](../VISION-0.68.md).
+**After this close:** Outbox is [VISION-0.65](VISION-0.65.md) (closed). Admission contract is [VISION-0.66](VISION-0.66.md) (closed). Step 4 dependents are [VISION-0.67](VISION-0.67.md) (**closed**). Costume composted: [VISION-0.68](VISION-0.68.md) (**closed**). Residual [SD-023](../../../TECH-DEBT.md#sd-023).

@@ -23,4 +23,4 @@ Palm is pre-1.0. Theme closed at stamp `0.66.0`. Snapshot fields have defaults. 
 
 `require_business_admission` still fail-closes only on `may_run_business`. `able` is not this theme.
 
-Dependents that freeze `may_run_business` as the organ list: [VISION-0.67](../vision/closed/VISION-0.67.md) (**closed**) / [SD-020](../../TECH-DEBT.md#sd-020). Remaining costume: [VISION-0.68](../vision/VISION-0.68.md).
+Dependents that freeze `may_run_business` as the organ list: [VISION-0.67](../vision/closed/VISION-0.67.md) (**closed**) / [SD-020](../../TECH-DEBT.md#sd-020). Costume composted: [VISION-0.68](../vision/closed/VISION-0.68.md) (**closed**). Residual [SD-023](../../TECH-DEBT.md#sd-023).

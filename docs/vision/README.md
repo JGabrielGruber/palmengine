@@ -18,7 +18,6 @@ Seeds deepen; they do not hide that law only inside one file.
 
 | Doc | Role |
 |------|------|
-| [VISION-0.68.md](VISION-0.68.md) | **Open** — the great cleansing (costume compost) |
 | [VISION-ASSEMBLY.md](VISION-ASSEMBLY.md) | Seed essay (law) · roles · ports · admission · citizenship · modules |
 | [VISION-0.56.md](VISION-0.56.md) | Workload — **horizontal** place book (scout) |
 | [VISION-TUNNELS.md](VISION-TUNNELS.md) | **Reach** only · after assembly, before Grove |
@@ -33,7 +32,7 @@ Seeds deepen; they do not hide that law only inside one file.
 ## Closed
 
 All finished theme plans live under [`closed/`](closed/).  
-Example: [closed/VISION-0.67.md](closed/VISION-0.67.md) (dependents require the organ), [closed/VISION-0.66.md](closed/VISION-0.66.md) (admission on capabilities).
+Example: [closed/VISION-0.68.md](closed/VISION-0.68.md) (the great cleansing), [closed/VISION-0.67.md](closed/VISION-0.67.md) (dependents require the organ).
 
 Index of names: list the directory. Do not re-import closed themes into AGENTS or the live debt front matter.
 

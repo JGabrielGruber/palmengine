@@ -5,7 +5,7 @@
 **Map:** [PALM.md](../PALM.md) · [WRITING.md](../WRITING.md) (talk vs law) · [VERSIONING.md](../VERSIONING.md)  
 **Walk:** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) (operator-guidance definition · presentation adapter)  
 **Place:** [VISION-0.56](VISION-0.56.md) (workload · place book)  
-**Compost now:** [VISION-0.68](VISION-0.68.md) (**open** — costume; not this seed)  
+**Compost:** [VISION-0.68](closed/VISION-0.68.md) (**closed** — costume; not this seed) · residual [SD-023](../../TECH-DEBT.md#sd-023)  
 **Surface compost:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md)  
 **North star:** [VISION-GROVE](VISION-GROVE.md)
 

@@ -6,7 +6,7 @@
 **Map:** [PALM.md](../../PALM.md) · seed [VISION-ASSEMBLY](../VISION-ASSEMBLY.md) · prior [VISION-0.66](VISION-0.66.md) (**closed**) · sequence [VISION-0.64](VISION-0.64.md) step 4  
 **Debt:** [SD-020](../../../TECH-DEBT.md#sd-020) (face paid; dependents paid)
 
-**Exit:** José closed the theme (2026-08-21). Dependents ask the published face. Remaining costume: [VISION-0.68](../VISION-0.68.md) (**open**).
+**Exit:** José closed the theme (2026-08-21). Dependents ask the published face. Costume composted: [VISION-0.68](VISION-0.68.md) (**closed**). Residual [SD-023](../../../TECH-DEBT.md#sd-023).
 
 This minor is **assembly remainder step 4**: callers that still treat `may_run_business` as the organ list now ask the published face. The face already publishes installed names. Dependents must use them.
 
@@ -67,7 +67,7 @@ Lock 1 is the fork from the 0.66 close sitting. José opened 0.67 after the two 
 - Engine as walker. Places. Surface compost. Navigator. Tunnels. Grove.  
 - Workload spawn of support / work processes (lock 5). That is [VISION-0.56](../VISION-0.56.md), not a 0.67 leftover.  
 - If drain/outbox still show first-organ costume, that work is still **0.64** / **0.65** law.  
-- Remaining costume after leftover (empty boot phases, bare `enable_event_outbox`, living POST lies) — [VISION-0.68](../VISION-0.68.md).
+- Remaining costume after leftover (empty boot phases, bare `enable_event_outbox`, living POST lies) — [VISION-0.68](VISION-0.68.md) (**closed**).
 
 ## Guide slices (not a sealed contract)
 
@@ -91,7 +91,7 @@ Lock 1 is the fork from the 0.66 close sitting. José opened 0.67 after the two 
 | **0.67.15** | Unread-flag compost: settings drop `enable_compensation` / `enable_webhook_dispatcher`; dead `attach_runtimes` gone. ✅ |
 | **0.67.16** | Analytics: DNA list + attach hand + `composition.has` dies on that unit. ✅ |
 | **0.67.17** | Analytics leftover: one organ; host slot aliases it; `analytics_enabled` refines that object; not a loop. ✅ |
-| **0.67.18+** | Not opened. José exited; remaining costume is [VISION-0.68](../VISION-0.68.md). |
+| **0.67.18+** | Not opened. José exited; costume is [VISION-0.68](VISION-0.68.md) (**closed**). |
 | **exit** | José · ADR-036 Accepted · stamp `0.67.0`. ✅ |
 
 *The face reads the fact. Dependents ask the face.*
