@@ -936,22 +936,6 @@ class ApplicationHost:
         """
         return self._observability.control_plane_status()
 
-    def redrive_journal(
-        self,
-        *,
-        from_offset: int = 0,
-        to_offset: int | None = None,
-        event_types: list[str] | None = None,
-        limit: int = 100,
-    ) -> list[dict[str, Any]]:
-        """Replay journal entries for operator tooling (does not move consumer offsets)."""
-        return self._workplane.redrive_journal(
-            from_offset=from_offset,
-            to_offset=to_offset,
-            event_types=event_types,
-            limit=limit,
-        )
-
     def _require_started(self) -> None:
         if not self._started:
             raise RuntimeError("ApplicationHost is not started; call start() first")

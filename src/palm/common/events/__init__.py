@@ -2,9 +2,7 @@
 
 from palm.common.events.consumers import (
     DEFAULT_JOURNAL_CONSUMERS,
-    JOURNAL_CONSUMER_WORK_DRAIN,
     journal_consumer_status,
-    mark_work_drain_caught_up,
 )
 from palm.common.events.domain import CRITICAL_EVENT_TYPES, INSTANCE_EVENT_TYPES, DomainEventType
 from palm.common.events.external import (
@@ -34,7 +32,6 @@ __all__ = [
     "EventJournal",
     "HttpWebhookDeliverer",
     "INSTANCE_EVENT_TYPES",
-    "JOURNAL_CONSUMER_WORK_DRAIN",
     "JOURNAL_EVENT_TYPES",
     "JournalEntry",
     "DomainEventType",
@@ -49,7 +46,6 @@ __all__ = [
     "compact_key_for_resource_changed",
     "event_context_from_job",
     "journal_consumer_status",
-    "mark_work_drain_caught_up",
     "webhook_targets_from_urls",
     "wire_event_journal",
     "wire_reliable_events",

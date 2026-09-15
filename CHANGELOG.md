@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.68.13 — unused work_drain journal consumer
+- Drop `mark_work_drain_caught_up`, doctor consumer name `"work_drain"`, and host `redrive_journal` (coordinator twin included). Nothing in product advanced the offset. The body counted journal entries; drain still uses the WorkIntent store.
+- Work-drain organ stays. `EventJournal.redrive` stays. Do not wire journal consume into drain. Package stamp stays `0.67.0`.
+
 ### Portal dogfood — pt-BR paint skin
 - Empty `/portal/` page keeps the FAB and adds language links (`?lang=en`, `?lang=pt-BR`). Chat chrome is unchanged until a skin opens.
 - Portal paints chrome, action labels, choice labels, and demo questions (operator-entry, todo-builder, coconut-npc). Values, aliases, paths, and ids stay English. Missing keys stay English.

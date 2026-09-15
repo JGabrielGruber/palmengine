@@ -20,7 +20,6 @@ def test_webhook_journal_facade_is_gone() -> None:
     assert "consume_for_webhooks" not in inspect.getsource(journal_consumers)
 
 
-def test_work_drain_and_deliverer_stay() -> None:
-    assert "work_drain" in journal_consumers.DEFAULT_JOURNAL_CONSUMERS
+def test_deliverer_stays() -> None:
     assert HttpWebhookDeliverer is not None
     assert WebhookDispatcher is not None

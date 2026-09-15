@@ -191,26 +191,6 @@ class WorkPlaneCoordinator:
         n += plane.tick(limit=limit)
         return n
 
-    def redrive_journal(
-        self,
-        *,
-        from_offset: int = 0,
-        to_offset: int | None = None,
-        event_types: list[str] | None = None,
-        limit: int = 100,
-    ) -> list[dict[str, Any]]:
-        """Replay journal entries for operator tooling (does not move consumer offsets)."""
-        if self._event_journal is None:
-            return []
-        types = frozenset(event_types) if event_types else None
-        entries = self._event_journal.redrive(
-            from_offset=from_offset,
-            to_offset=to_offset,
-            event_types=types,
-            limit=limit,
-        )
-        return [e.to_dict() for e in entries]
-
     def stop_inbound(self) -> None:
         try:
             runtime = self._host._app.runtime()

@@ -32,10 +32,10 @@ def test_named_consumer_offsets() -> None:
     j = EventJournal(_storage())
     j.append("resource.changed", {"resource_ref": "x", "action": "put"})
     j.append("resource.changed", {"resource_ref": "y", "action": "put"})
-    batch = j.consume("work_drain", limit=1, auto_commit=True)
+    batch = j.consume("c1", limit=1, auto_commit=True)
     assert len(batch) == 1
-    assert j.get_consumer_offset("work_drain") == 1
-    batch2 = j.consume("work_drain", limit=10)
+    assert j.get_consumer_offset("c1") == 1
+    batch2 = j.consume("c1", limit=10)
     assert len(batch2) == 1
     assert batch2[0].offset == 2
 
@@ -86,5 +86,6 @@ def test_host_control_plane_status() -> None:
         status = host.control_plane_status()
         assert "work_pending" in status
         assert status["journal"]["latest_offset"] >= 1
-        redrive = host.redrive_journal(from_offset=0, limit=10)
-        assert any(e.get("event_type") == "resource.changed" for e in redrive)
+        assert "work_drain" not in status["journal"].get("consumers", {})
+        redrive = host.event_journal.redrive(from_offset=0, limit=10)
+        assert any(e.event_type == "resource.changed" for e in redrive)
