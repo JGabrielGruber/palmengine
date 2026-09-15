@@ -102,7 +102,7 @@ Docstrings must say that (SD-006).
 ### 3.1 Protocol (normative sketch)
 
 ```python
-# Conceptual — implement in 0.57.3 under palm.system.ports.execution
+# Conceptual — implement in 0.57.3 under palm.system.interfaces.execution
 
 class ExecutionPort(Protocol):
     """Effects a started system instance may perform for graphs and product."""

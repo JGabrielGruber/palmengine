@@ -60,11 +60,11 @@ Discovery after 0.68.12. Recorded so remaining is not empty by amnesia. **José 
 
 | Thing | What it is | Why it still lives | 0.68 motion |
 |-------|------------|--------------------|-------------|
-| Journal consumer `"work_drain"` + `mark_work_drain_caught_up` | Catch-up that counts journal entries under the organ’s name | Same class as 0.68.11/12. Doctor reports lag. No product caller advances the offset. Drain still uses the WorkIntent store. | 📋 Compost the **consumer** and host lag report. Keep the work-drain organ. Do not wire journal consume into drain. |
-| `ApplicationHost.redrive_journal` (+ workplane coordinator twin) | Composition-root method, no product/CLI/MCP caller | Compost tests `hasattr` it green. `EventJournal.redrive` is honest journal machinery. | 📋 Drop the host facade. Keep the journal method. |
-| Unread parking lots | `palm.system.ports` / `planes` / `supervisor` re-export shims; `palm.utils`; `palm.patterns.dag.flow` placeholder; `kits.doctor_section` on `INTENTION_KITS = ()` | Callers already moved (SD-016 said drop when migrated). Same class as 0.68.8. | 📋 Compost unread packages and the unused doctor fragment. Closed chronicles that name old paths stay. |
-| Vitality skip stubs | Default registry registers `boot_membership` / `system_log_tail` whose sample is always skip | Tests freeze catalog presence and “not in snapshot.” Same smell as runner `ready()` doctor. | 📋 Compost those two stubs. `monitor_agent` stays a parked later skip. |
-| Host query facades | `host.instances` / `jobs` / `wizards` | CLI uses the flat methods. Only a test asserts the facade objects equal the flats. | 📋 Compost the unused facade objects. Keep the flats until a surface theme. |
+| Journal consumer `"work_drain"` + `mark_work_drain_caught_up` | Catch-up that counts journal entries under the organ’s name | Same class as 0.68.11/12. Doctor reports lag. No product caller advances the offset. Drain still uses the WorkIntent store. | ✅ **0.68.13** composted the **consumer** and host lag report. Keep the work-drain organ. Do not wire journal consume into drain. |
+| `ApplicationHost.redrive_journal` (+ workplane coordinator twin) | Composition-root method, no product/CLI/MCP caller | Compost tests `hasattr` it green. `EventJournal.redrive` is honest journal machinery. | ✅ **0.68.13** dropped the host facade. Keep the journal method. |
+| Unread parking lots | `palm.system.ports` / `planes` / `supervisor` re-export shims; `palm.utils`; `palm.patterns.dag.flow` placeholder; `kits.doctor_section` on `INTENTION_KITS = ()` | Callers already moved (SD-016 said drop when migrated). Same class as 0.68.8. | ✅ **0.68.14** composted unread packages and the unused doctor fragment. Closed chronicles that name old paths stay. |
+| Vitality skip stubs | Default registry registers `boot_membership` / `system_log_tail` whose sample is always skip | Tests freeze catalog presence and “not in snapshot.” Same smell as runner `ready()` doctor. | ✅ **0.68.14** composted those two stubs. `monitor_agent` stays a parked later skip. |
+| Host query facades | `host.instances` / `jobs` / `wizards` | CLI uses the flat methods. Only a test asserts the facade objects equal the flats. | ✅ **0.68.15** composted the unused facade objects. Keep the flats until a surface theme. |
 
 ### Living docs that lie
 
@@ -139,9 +139,9 @@ Lock 2 is the fork from leftover option B as “whoever drains the shared store 
 | **0.68.10** | Compost unused `host.webhook.delivered` / `failed`. ✅ |
 | **0.68.11** | Compost unused webhook journal facade. ✅ |
 | **0.68.12** | Compost unused projection journal facade. ✅ |
-| **0.68.13** | Compost journal consumer `"work_drain"` + host `redrive_journal`. Keep the work-drain organ and `EventJournal.redrive`. |
-| **0.68.14** | Compost unread parking lots + kits `doctor_section` + vitality skip stubs `boot_membership` / `system_log_tail`. `monitor_agent` stays parked. |
-| **0.68.15** | Compost unused `host.instances` / `jobs` / `wizards` facades. Keep the flat methods. |
+| **0.68.13** | Compost journal consumer `"work_drain"` + host `redrive_journal`. Keep the work-drain organ and `EventJournal.redrive`. ✅ |
+| **0.68.14** | Compost unread parking lots + kits `doctor_section` + vitality skip stubs `boot_membership` / `system_log_tail`. `monitor_agent` stays parked. ✅ |
+| **0.68.15** | Compost unused `host.instances` / `jobs` / `wizards` facades. Keep the flat methods. ✅ |
 | **0.68.16** | Trim README / transform-count / L0 continue copy. Do not add `resource` one-shot. Do not un-gate parquet. Do not rename FastMCP kwargs. ✅ |
 | **exit** | José · stamp `0.68.0`. |
 
