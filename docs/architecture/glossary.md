@@ -92,7 +92,7 @@ Between **machine up** (boot) and **business runs** (job path). Component note: 
 | **Plane** | System path for one kind of traffic (work/start, wait/continue, session, workload, event, …). | Cloud “control plane” marketing |
 | **Work plane** | Start path: WorkIntent → new job (drain under supervisor). | Structure assemble loop |
 | **Wait plane** | Continue path: wait interest match → resume / fail owner. | Human “wait” in product copy |
-| **Session** | Outside subject of a walk. Owns many instances. Continue **focus** is among owned instances only. | Instance id; principal identity; user plane |
+| **Session** | Outside subject of a walk. Owns many instances. Continue **focus** is among owned instances only. Navigator: session holds **`guidance_instance_id`**. | Instance id; principal identity; user plane; kit RAM; instance tree root |
 | **Principal** | Who is walking (identity). Core type exists. Not the walk. | Session; admission; adapter filter |
 | **User plane** | Later identity policy over principal ↔ session (entry, visibility, impersonation, grants). Does not own jobs. [ADR-027](../adr/027-session-plane.md) D8 · D11. | Session plane; Navigator invert; ambient `AuthEngine` current principal |
 | **Supervisor** | Continuous care of planes / drain workers (system). | OS process supervisor only |
@@ -107,10 +107,13 @@ Between **machine up** (boot) and **business runs** (job path). Component note: 
 |------|------------------|----------------|
 | **Job path** | Business spine: catalog definition → pattern → job → effects → events → start/continue. | Structure assemble path |
 | **Definition** (business) | Declared contract of work (flow, process, resource, …) in the catalog. | Structure definition |
-| **Operator-guidance definition** | Catalog definition whose job is the empty-handed walk. It **stays** as session home when it starts other work. Many allowed. None is the engine `main()`. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Assist product domain; structure definition; user plane |
-| **Presentation adapter** | Kit **`palm.kits.present`**: bind session, present the current turn, submit input, start or continue, change focus. Consumes runs. Not purpose. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Product service; catalog ACL; surface protocol; `palm.kits.server` |
+| **Operator-guidance definition** | Catalog definition whose job is the empty-handed walk. It **stays** attached when it starts other work. Many allowed. None is the engine `main()`. **Dashboard model:** chooser shell, operator wait, no `WaitInterest` on siblings. Invert **pack:** new wizard definition **beside** `operator_entry`; sibling start; stay waiting; return is `focus` of **`guidance_instance_id`**. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Assist product domain; `operator_entry` as floor; structure definition; user plane; wait-plane owner of titles |
+| **`guidance_instance_id`** | Session **metadata** key: which attached instance is this walk’s operator-guidance run. Not `active_instance_id`. Not a `SessionRecord` field in the floor. Kit reads it. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Root; Home type; kit field; job metadata; typed plane column |
+| **Walk write** | Session-context mutation (named metadata keys, later grants / impersonation) through a **system interface**. Floor allow. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Execution effect; job hook; kit verb; `SessionEffects` product; plane `focus` / attach |
+| **Presentation adapter** | Kit **`palm.kits.present`**: one library object holds `BoundSurface` and walks bind / present / submit / start / focus. **Turn invert:** kit walks; pattern fills `JobInspectable` / `InputCapable`. Contributes **`guidance_definition_id`**. Not purpose. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | Product service; catalog ACL; surface protocol; `palm.kits.server`; `EmbeddedRuntime`; pattern `if` in the kit; dispatch table; core `PalmSettings` field |
+| **Embedded library surface** | First present-kit adapter: in-process Python calls the kit. Phenotype `CompositionProfile.embedded()`. [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md). | `EmbeddedRuntime` (engine); MCP/CLI/WS; Assist |
 | **Pattern** | How a business definition runs (wizard, process, …). | Structure reconcile algorithm |
-| **Job** | Live run under orchestration. | OS process; workload place |
+| **Job** | Live run under orchestration. **Session-ignorant** (Navigator): does not carry the walk. | OS process; workload place; session store |
 | **Instance** | Durable record of a run. | Structure status |
 | **Orchestration** | Drives jobs (scheduler, apply result, status). Not structure manager. | Host “orchestrator” profile role alone |
 | **Interest** | Explicit want: **start** (trigger) or **continue** (wait). | Casual curiosity |

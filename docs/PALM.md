@@ -241,6 +241,26 @@ Capability is added at the edge. Core contracts stay stable.
 **Flagship pattern today:** **wizard** — interactive steps, validation, backtrack, commit, resource and workload leaves.  
 Other patterns exist at different maturity. Maturity is not the same as purpose.
 
+**Turn invert (Navigator, locked):** `palm.kits.present` walks. The pattern fills `JobInspectable` / `InputCapable` (and wait plane). The kit does not switch on pattern name.
+
+**Kit-as-composition (Navigator, locked):** that kit is one library object that holds `BoundSurface` and composes `SessionService` + execution. Not a product service.
+
+**Pack (Navigator, locked):** new wizard operator-guidance definition **beside** `operator_entry`. Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**.
+
+**`guidance_instance_id` (Navigator, locked):** session **metadata** key — which attached instance is this walk’s operator-guidance run. Not continue focus. Not kit RAM. Not root. Not a `SessionRecord` field in the floor.
+
+**Walk writes (Navigator, locked):** session-context writes go through a **system interface** (`SessionService` door, plane store). Floor degenerate. User plane later installs. Not a product domain.
+
+**Job is session-ignorant (Navigator, locked):** the job does not know the walk. Attach is a session write after start, not `session_id` on job metadata.
+
+**Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home.
+
+**Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`**. Not a field on core `PalmSettings`.
+
+**Stamp caller (Navigator, locked):** present kit asks `SessionService` to stamp `guidance_instance_id` after attach if the started definition is that chooser. Attach does not stamp.
+
+**Replace predicate (Navigator, locked):** kit asks; instance attached; definition id equals `guidance_definition_id`. Titles cannot become Home. [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) §5.
+
 ### 5.4 System — the running Palm
 
 **Purpose:** Hold engines for **one** started runtime, expose **ports**, run **planes**, accept definition-driven jobs.
@@ -281,7 +301,7 @@ A **plane** is system traffic of one kind.
 | **Event** | Signals; completers speak of self | `runtime.event` (orchestration bus) |
 | **Work (start)** | Trigger → WorkIntent → new job | **0.60 closed:** `runtime.work_plane` + session attr + inbound under `planes.work` · continuous services on **supervisor** — [VISION-0.60](vision/closed/VISION-0.60.md) · [ADR-029](adr/029-system-supervisor.md) Accepted. |
 | **Wait (continue)** | Interest → resume or fail parked work | Wait plane on system (`runtime.wait_plane`) |
-| **Session** (0.58 **closed**) | Outside subject + service attribution + surface context | System `planes.session`: bind; exclusive attach; **active focus**; **owner gate**; **strict attribution**; **inherit-or-service** reactive start. **Product** `SessionService` / kit `resolve_session_service` is the surface door. **BoundSurface**. **Operate:** focus / list waiting / cancel-owned. **Vocabulary:** `session_id` = system subject (`sess-…`); `instance_id` = continue; path segment `instance`. Session metadata ≠ job metadata. Active ≠ foreign pass. Plane remains law. Theme: [VISION-0.58](vision/closed/VISION-0.58.md) · [ADR-027](adr/027-session-plane.md) Accepted. Surface compost residual: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
+| **Session** (0.58 **closed**) | Outside subject + service attribution + surface context | System `planes.session`: bind; exclusive attach; **active focus**; **owner gate**; **strict attribution**; **inherit-or-service** reactive start. **Product** `SessionService` / kit `resolve_session_service` is the surface door. **BoundSurface**. **Operate:** focus / list waiting / cancel-owned. **Vocabulary:** `session_id` = system subject (`sess-…`); `instance_id` = continue; path segment `instance`. Navigator walk fact (named, not shipped): **`guidance_instance_id`**. Session metadata ≠ job metadata. Active ≠ foreign pass. Active ≠ guidance. Plane remains law. Theme: [VISION-0.58](vision/closed/VISION-0.58.md) · [ADR-027](adr/027-session-plane.md) Accepted. Surface compost residual: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
 | **Workload** | Isolation lifecycle events and placement | Workload engine + runners |
 
 **Supervisor** (0.60 **closed**): not a plane. Continuous system services (work drain, outbox, inbound workers) live under **`SystemSupervisor`** on the system instance. Planes carry traffic; supervisor runs loops. See [VISION-0.60](vision/closed/VISION-0.60.md) · [ADR-029](adr/029-system-supervisor.md) Accepted.
@@ -333,7 +353,7 @@ Then call **system ports** (target). Today many paths call engines on a resolved
 | **Definitions** | Catalog read/write of definitions |
 | **Design** | Propose → impact → commit definition change |
 | **Execution** | Run flows, processes, provider invoke, workloads |
-| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition** that **stays** as session home; present/bind is **`palm.kits.present`**. Surfaces stay in-process for that invert. Entry and visibility are later **principal / user-plane**. Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
+| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition** that **stays** as session home; present/bind is **`palm.kits.present`** (**turn invert:** kit walks, pattern fills inspect/input). First adapter: **embedded library surface**. Entry and visibility are later **principal / user-plane**. Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
 | **Inspect** (product door) | Doctor / top / list / cancel present — **not** the kernel layer (**SD-007** paid 0.61.4) |
 | **Analytics** | Datasets and dashboards |
 
@@ -354,7 +374,7 @@ Stay thin.
 
 | Surface family | Examples |
 |----------------|----------|
-| Embedded | In-process library runtime |
+| Embedded | In-process library surface. First **`palm.kits.present`** adapter (named). `EmbeddedRuntime` is the engine, not the adapter. Phenotype `CompositionProfile.embedded()`. [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). |
 | Daemon | Long-lived worker |
 | Server | HTTP, Explorer SSR, WebSocket assist |
 | CLI | Stdio / REPL surface (command forest is compost — [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md)) |
@@ -435,7 +455,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, …). Intended present kit: **`palm.kits.present`** ([VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) — named, not shipped). | SD-011 ✅ |
+| `palm.kits` | Surface kits (`server`, …). Intended present kit: **`palm.kits.present`** (named, not shipped; **turn invert** + **kit-as-composition** locked). [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). | SD-011 ✅ |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---

@@ -11,6 +11,7 @@
 | Product | `palm.services…` | Userland |
 | Surfaces | `palm.runtimes…` | Transport |
 | Present kit | `palm.kits.present` | Named (Navigator seed). Bind / present / submit / focus. Not shipped. |
+| Embedded library surface | Runtime family `embedded` (library door). Not `EmbeddedRuntime`. | First present-kit adapter. Named, not shipped. |
 | Host | `palm.app.host…` | Wire / packaging |
 
 Add one note per package family when boundaries need prose (`core.md`, `system.md`, …).
