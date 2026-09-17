@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.3 — spawn without nested park
+- Product door `FlowExecutionService.spawn_sibling`: start named work as a same-session sibling. Attach via `SessionService.attach_after_start`. Job stays session-ignorant.
+- Guidance job stays `WAITING_FOR_INPUT`. Do not open `WaitInterest` on the sibling.
+- Leftover `until_input` nested park stays. Kit `start()` waits for `0.69.4`.
+
 ### 0.69.2 — session-side attach after start
 - Product door `SessionService.attach_after_start`: after execution start, attach the new instance on the bound session.
 - Job stays session-ignorant: do not copy `session_id` onto the job. Attach does not stamp `guidance_instance_id`.

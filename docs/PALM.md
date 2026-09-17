@@ -253,7 +253,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Job is session-ignorant (Navigator, locked):** the job does not know the walk. Attach is a session write after start, not `session_id` on job metadata. As-built `0.69.2`: `SessionService.attach_after_start`. Leftover hook still reads job metadata.
 
-**Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home.
+**Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home. As-built `0.69.3`: `FlowExecutionService.spawn_sibling` (start + `attach_after_start`; no `WaitInterest` on the sibling). Leftover `until_input` nested park stays.
 
 **Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`**. Not a field on core `PalmSettings`.
 

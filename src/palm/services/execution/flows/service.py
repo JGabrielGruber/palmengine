@@ -19,9 +19,10 @@ from palm.services.execution.flows.schemas import SessionContext, build_session_
 from palm.services.execution.flows.session import FlowSession
 
 if TYPE_CHECKING:
-    from palm.system.runtime.base import BaseRuntime
-    from palm.services.session.service import SessionService
     from palm.services.inspect.service import InspectService
+    from palm.services.session.bound_surface import BoundSurface
+    from palm.services.session.service import SessionService
+    from palm.system.runtime.base import BaseRuntime
 
 
 class FlowExecutionService(BaseService):
@@ -300,6 +301,38 @@ class FlowExecutionService(BaseService):
         session_id = instance_id_for_job(job)
         flow_id = str(flow) if isinstance(flow, str) else None
         return self.session(flow_id, session_id)
+
+    def spawn_sibling(
+        self,
+        session_id: str,
+        flow: Any,
+        *,
+        by_id: bool = False,
+        job_id: str | None = None,
+        state: Any = None,
+    ) -> BoundSurface:
+        """Start named work as a same-session sibling (0.69.3).
+
+        Execution start with no ``session_id`` on the job, then session-side
+        attach. Does not open ``WaitInterest`` on parked jobs. Nested park
+        (``until_input``) is leftover, not this door. Kit start() later.
+        """
+        from palm.system.structure.errors import require_business_admission
+
+        if self._session is None:
+            raise RuntimeError("FlowExecutionService.spawn_sibling requires session=")
+        require_business_admission(self.admission_gate())
+        job = self.dispatch_command(
+            SubmitFlowCommand(
+                flow=flow,
+                by_id=by_id,
+                job_id=job_id,
+                state=state,
+                metadata={},
+            )
+        )
+        self.wait_until_idle()
+        return self._session.attach_after_start(session_id, instance_id_for_job(job))
 
     def inspect_session(self, session_id: str) -> dict[str, Any]:
         """Delegate to system inspect for session status views."""
