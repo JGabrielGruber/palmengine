@@ -245,7 +245,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Kit-as-composition (Navigator, locked):** that kit is one library object that holds `BoundSurface` and composes `SessionService` + execution. Not a product service. As-built `0.69.4`: `palm.kits.present.bind(host)` walks bind / present / submit / start / attach / focus. Handle class unnamed.
 
-**Pack (Navigator, locked):** new wizard operator-guidance definition **beside** `operator_entry`. Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**.
+**Pack (Navigator, locked):** wizard **`navigator`** beside `operator_entry` (`examples/definitions/navigator.py`). Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**. As-built `0.69.6`. Leftover `operator_entry` still ends.
 
 **`guidance_instance_id` (Navigator, locked):** session **metadata** key — which attached instance is this walk’s operator-guidance run. Not continue focus. Not kit RAM. Not root. Not a `SessionRecord` field in the floor.
 

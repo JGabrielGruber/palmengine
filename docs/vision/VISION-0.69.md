@@ -1,6 +1,6 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.5` landed (kit-contributed `guidance_definition_id` + stamp caller). Package stamp stays `0.68.0`.  
+**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.6` landed (catalog wizard `navigator`). Package stamp stays `0.68.0`.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
@@ -153,7 +153,7 @@ José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAV
 | **Kit** | `palm.kits.present`. Kit-as-composition. One `BoundSurface`. |
 | **First adapter** | Embedded library surface. Engine stays `EmbeddedRuntime`. |
 | **Turn invert** | Kit walks. Pattern fills. No pattern `if`. |
-| **Pack** | New wizard **beside** `operator_entry`. Stay waiting. Return is `focus`. |
+| **Pack** | Wizard **`navigator`** beside `operator_entry`. Stay waiting. Return is `focus`. |
 | **Job is session-ignorant** | Attach after start on the session. |
 | **`guidance_instance_id`** | Session metadata. Stamp caller = kit after attach. |
 | **Replace predicate** | Kit; attached; definition id equals `guidance_definition_id`. |
@@ -179,7 +179,8 @@ José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAV
             — walk-write interface (stamp / replace keys)
             — wait plane · work plane
             │
-  CATALOG — new operator-guidance wizard (stays waiting)
+  CATALOG — wizard navigator (stays waiting)
+          — leftover operator_entry (still ends)
           — any other definition as a sibling title
 ```
 
@@ -199,7 +200,7 @@ Execution starts at `0.69.1`. Protocol + failing tests belong in execute, not th
 | **0.69.3** | ✅ Spawn without nested park. Guidance stays operator-wait. `FlowExecutionService.spawn_sibling`. |
 | **0.69.4** | ✅ `palm.kits.present` kit-as-composition (bind, present, submit, start, attach, focus). Handle class unnamed. |
 | **0.69.5** | ✅ Kit-contributed `guidance_definition_id` + stamp caller + replace predicate. |
-| **0.69.6** | New wizard pack beside `operator_entry`. |
+| **0.69.6** | ✅ Wizard pack `navigator` beside `operator_entry`. Stay waiting. Leftover still ends. |
 | **0.69.7** | Empty-handed start dogfood on embedded — **floor proof**. |
 
 Merge or extend when review stays clear. Do not skip the three engine holes.
