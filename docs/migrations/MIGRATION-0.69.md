@@ -10,12 +10,13 @@ Palm is pre-1.0. Package stamp stays `0.68.0` until an embedded release. This fi
 
 | Goal | Use |
 |------|-----|
-| Empty-handed walk | Present kit `start()` with `guidance_definition_id` |
+| Empty-handed walk | Present kit `start()` with kit-owned `guidance_definition_id` (`0.69.5`). Unset refuses. |
 | Return to guidance | `focus(guidance_instance_id)` on the bound session |
 | Attach after start | `SessionService.attach_after_start` (`0.69.2`). Do **not** set `session_id` on the job |
 | Spawn a sibling without nested park | `FlowExecutionService.spawn_sibling` (`0.69.3`). Parent stays `WAITING_FOR_INPUT`. No `WaitInterest` on the sibling |
 | Present a waiting run | `palm.kits.present` present → `JobInspectable` / wait plane (`0.69.4`) |
 | Walk bind / submit / start / attach / focus | `palm.kits.present.bind(host)` (`0.69.4`). Handle class unnamed. Start reuses `spawn_sibling` |
+| Stamp / replace Home | Present kit after attach (`0.69.5`). `SessionService` writes. Titles cannot become Home |
 
 ## Behavior / names that may change
 
@@ -23,12 +24,12 @@ Execute will name the cut. Likely:
 
 | Was | May become |
 |-----|------------|
-| `AssistService.dispatch` as the empty-handed door | Still as-built. Library door: `palm.kits.present` on embedded (`0.69.4`). Empty-handed `guidance_definition_id` is `0.69.5` |
+| `AssistService.dispatch` as the empty-handed door | Still as-built. Library door: `palm.kits.present` on embedded (`0.69.4`). Empty-handed start: kit `guidance_definition_id` (`0.69.5`) |
 | `operator-entry` ends, then product auto-starts | New wizard pack **beside** it (`0.69.6`). Floor spawn: `spawn_sibling` (`0.69.3`); instance stays `WAITING_FOR_INPUT` |
 | Nested park (`until_input`) as Home | Leftover. Floor spawn does not wait on child terminal |
 | `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is `SessionService.attach_after_start` (`0.69.2`) |
-| No `guidance_instance_id` | Session metadata key. `0.69.1`: stamp/replace via `SessionService` (kit caller later) |
-| Core `PalmSettings` as every kit knob | Present kit owns `guidance_definition_id` |
+| No `guidance_instance_id` | Session metadata key. `0.69.1`: stamp/replace via `SessionService`. `0.69.5`: kit is the stamp/replace caller |
+| Core `PalmSettings` as every kit knob | Present kit owns `guidance_definition_id` (`0.69.5`). Unset default. Not flattened onto core settings |
 
 ## Unchanged in this theme
 

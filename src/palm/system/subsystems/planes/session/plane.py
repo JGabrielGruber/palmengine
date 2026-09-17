@@ -346,7 +346,7 @@ class SessionPlaneService:
         """Replace ``guidance_instance_id`` (explicit walk write).
 
         Degenerate allow: the session must own *instance_id* (attached).
-        The product kit's definition-id predicate is a later slice.
+        The product kit's definition-id predicate is `0.69.5`.
         """
         iid = (instance_id or "").strip()
         self.require_owned_instance(session_id, iid)

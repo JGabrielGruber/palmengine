@@ -2,7 +2,8 @@
 
 Library door: one object holds one BoundSurface and walks bind, present,
 submit, start, attach, focus. Not a PresentService. No pattern if.
-Empty-handed guidance_definition_id / stamp caller wait for 0.69.5.
+Empty-handed guidance_definition_id / stamp caller: 0.69.5.
+Title start still must not stamp when the definition id does not match.
 """
 
 from __future__ import annotations

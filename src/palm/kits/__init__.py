@@ -13,7 +13,7 @@ Law (SD-011 / 0.57.13):
 - Surfaces import kits; they do not invent private protocol copies.
 
 Import the server kit as :mod:`palm.kits.server`.
-Import the present kit as :mod:`palm.kits.present` (0.69.4).
+Import the present kit as :mod:`palm.kits.present` (0.69.4 / 0.69.5).
 """
 
 from __future__ import annotations

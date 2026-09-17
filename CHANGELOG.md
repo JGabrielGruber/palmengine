@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.5 — kit-contributed guidance_definition_id
+- Present kit owns `guidance_definition_id` (`str | None`). Unset → no empty-handed start. Not a field on core `PalmSettings`.
+- Stamp caller: after session-side attach, the kit asks `SessionService.stamp_guidance_instance` if the started definition id equals that key. Stamp if absent; replace stays explicit.
+- Replace predicate: kit asks `replace_guidance_instance` only when the instance is attached and its definition id equals `guidance_definition_id`. Titles cannot become Home.
+- Env spelling and constructor override stay later. New wizard pack waits for `0.69.6`.
+
 ### 0.69.4 — present kit (kit-as-composition)
 - Install `palm.kits.present` (`INSTALLED_KITS`). One library object holds one `BoundSurface` and walks bind, present, submit, start, attach, focus.
 - Present is `JobInspectable.inspect_job` plus wait plane `waiting_on`. Submit is `InputCapable` via runtime input. Start reuses `FlowExecutionService.spawn_sibling`.

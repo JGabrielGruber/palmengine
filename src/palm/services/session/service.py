@@ -312,7 +312,7 @@ class SessionService(BaseService):
         """Product door: stamp ``guidance_instance_id`` if absent (0.69.1).
 
         Plane stores. Degenerate allow is owner + attached instance.
-        Does not stamp on attach. Kit caller is a later slice.
+        Does not stamp on attach. Kit caller is `0.69.5`.
         """
         self.plane().stamp_guidance_instance(session_id, instance_id)
         return self.surface_from_session(session_id)
@@ -322,7 +322,7 @@ class SessionService(BaseService):
     ) -> BoundSurface:
         """Product door: replace ``guidance_instance_id`` (explicit).
 
-        Kit definition-id predicate is a later slice. Floor allow is
+        Kit definition-id predicate is `0.69.5`. Floor allow is
         owner + attached instance.
         """
         self.plane().replace_guidance_instance(session_id, instance_id)

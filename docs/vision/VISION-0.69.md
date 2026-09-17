@@ -1,6 +1,6 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.4` landed (`palm.kits.present`). Package stamp stays `0.68.0`.  
+**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.5` landed (kit-contributed `guidance_definition_id` + stamp caller). Package stamp stays `0.68.0`.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
@@ -68,7 +68,7 @@ The invert is **real** when tests on `CompositionProfile.embedded()` (no Assist)
 |------|------------|
 | **Start sibling** | ✅ `0.69.2` `SessionService.attach_after_start`. ✅ `0.69.4` kit `start()` walks `spawn_sibling`. Not inherit `session_id` onto the job. |
 | **Park / home** | ✅ `0.69.3` `FlowExecutionService.spawn_sibling`. ✅ `0.69.4` kit `focus`. Home stays operator-wait. Nested park leftover stays. |
-| **Stamp** | Walk-write interface (degenerate allow). Kit asks after attach — **0.69.5**. `SessionService` writes. |
+| **Stamp** | ✅ `0.69.1` walk-write seam. ✅ `0.69.5` kit asks after attach iff definition id equals `guidance_definition_id`. `SessionService` writes. |
 
 ---
 
@@ -198,7 +198,7 @@ Execution starts at `0.69.1`. Protocol + failing tests belong in execute, not th
 | **0.69.2** | ✅ Session-side attach after start. Job stays session-ignorant. `SessionService.attach_after_start`. |
 | **0.69.3** | ✅ Spawn without nested park. Guidance stays operator-wait. `FlowExecutionService.spawn_sibling`. |
 | **0.69.4** | ✅ `palm.kits.present` kit-as-composition (bind, present, submit, start, attach, focus). Handle class unnamed. |
-| **0.69.5** | Kit-contributed `guidance_definition_id` + stamp caller + replace predicate. |
+| **0.69.5** | ✅ Kit-contributed `guidance_definition_id` + stamp caller + replace predicate. |
 | **0.69.6** | New wizard pack beside `operator_entry`. |
 | **0.69.7** | Empty-handed start dogfood on embedded — **floor proof**. |
 
