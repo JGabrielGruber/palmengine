@@ -1,6 +1,6 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.7` landed (embedded floor proof). Package stamp stays `0.68.0`.  
+**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.8` landed (kit owns walk-role key). Package stamp stays `0.68.0`.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
@@ -70,7 +70,7 @@ The invert is **real** when tests on `CompositionProfile.embedded()` (no Assist)
 |------|------------|
 | **Start sibling** | ✅ `0.69.2` `SessionService.attach_after_start`. ✅ `0.69.4` kit `start()` walks `spawn_sibling`. Not inherit `session_id` onto the job. |
 | **Park / home** | ✅ `0.69.3` `FlowExecutionService.spawn_sibling`. ✅ `0.69.4` kit `focus`. Home stays operator-wait. Nested park leftover stays. |
-| **Stamp** | ✅ `0.69.1` walk-write seam. ✅ `0.69.5` kit asks after attach iff definition id equals `guidance_definition_id`. `SessionService` writes. |
+| **Stamp** | ✅ `0.69.1` walk-write seam. ✅ `0.69.5` kit asks after attach iff definition id equals `guidance_definition_id`. ✅ `0.69.8` kit owns the key; `SessionService.stamp` / `replace` take that key. |
 
 ---
 
@@ -82,7 +82,8 @@ While the theme stays open, slices may:
 - Seed `guidance_definition_id` for embedded / test phenotypes.  
 - Fill pattern inspect/input so the kit has no pattern `if`.  
 - Name Protocol / handle / walk-write types when José locks them.  
-- Add a second guidance definition as a **title** (must not steal Home).
+- Add a second guidance definition as a **title** (must not steal Home).  
+- Keep kit-role words off session verbs (`0.69.8` paid the `guidance_instance_id` leak).
 
 **Not floor:** env spelling of kit settings. Nested-on-`PalmSettings` vs sibling object. MCP / CLI / WS adapters. Compost of Assist.
 
@@ -157,7 +158,7 @@ José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAV
 | **Turn invert** | Kit walks. Pattern fills. No pattern `if`. |
 | **Pack** | Wizard **`navigator`** beside `operator_entry`. Stay waiting. Return is `focus`. |
 | **Job is session-ignorant** | Attach after start on the session. |
-| **`guidance_instance_id`** | Session metadata. Stamp caller = kit after attach. |
+| **`guidance_instance_id`** | Session metadata. Kit owns the key (`0.69.8`). Stamp caller = kit after attach. |
 | **Replace predicate** | Kit; attached; definition id equals `guidance_definition_id`. |
 | **Walk writes** | System interface. Floor degenerate allow. |
 | **Kit-contributed settings** | Present owns `guidance_definition_id`. Unset → no empty-handed start. |
@@ -204,6 +205,7 @@ Execution starts at `0.69.1`. Protocol + failing tests belong in execute, not th
 | **0.69.5** | ✅ Kit-contributed `guidance_definition_id` + stamp caller + replace predicate. |
 | **0.69.6** | ✅ Wizard pack `navigator` beside `operator_entry`. Stay waiting. Leftover still ends. |
 | **0.69.7** | ✅ Empty-handed start dogfood on embedded — **floor proof**. |
+| **0.69.8** | ✅ Present kit owns the walk-role key. Session `stamp` / `replace` take a named key. |
 
 Merge or extend when review stays clear. Do not skip the three engine holes.
 

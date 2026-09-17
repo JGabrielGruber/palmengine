@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.8 — kit owns the walk-role key
+- Present kit owns `GUIDANCE_INSTANCE_ID` (`"guidance_instance_id"`). Session plane does not export that constant.
+- `SessionService` / session plane `stamp(session_id, key, instance_id)` and `replace(...)` write a named metadata key. Degenerate allow stays owner + attached instance. No "guidance" in the session verb.
+- `BoundSurface.SESSION_CONTEXT_KEYS` no longer lists the kit role key. Kit `replace_guidance_instance` stays the predicate door.
+- Tests: `tests/test_present_kit_walk_role_key_0_69_8.py`. Floor walk `0.69.7` stays green. Theme stays open; ADR-037 stays Proposed.
+
 ### 0.69.7 — empty-handed start dogfood (floor proof)
 - One embedded walk without Assist: bind → empty-handed `start()` of **`navigator`** → stamp `guidance_instance_id` → stay `WAITING_FOR_INPUT` → sibling `start(title)` (no job `session_id`, no `WaitInterest`) → `focus(guidance_instance_id)` home.
 - Seed is `kit.guidance_definition_id = "navigator"` after bind. Empty-handed start does not start `operator-entry`. Unset kit key still refuses. `present()` of the waiting navigator has no Assist envelope.

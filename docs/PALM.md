@@ -247,9 +247,9 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Pack (Navigator, locked):** wizard **`navigator`** beside `operator_entry` (`examples/definitions/navigator.py`). Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**. As-built `0.69.6`. Leftover `operator_entry` still ends. Floor dogfood as-built `0.69.7`: empty-handed start of **`navigator`** on `CompositionProfile.embedded()` (no Assist).
 
-**`guidance_instance_id` (Navigator, locked):** session **metadata** key — which attached instance is this walk’s operator-guidance run. Not continue focus. Not kit RAM. Not root. Not a `SessionRecord` field in the floor.
+**`guidance_instance_id` (Navigator, locked):** session **metadata** key — which attached instance is this walk’s operator-guidance run. Present kit owns the string (`0.69.8`). Not continue focus. Not kit RAM. Not root. Not a `SessionRecord` field in the floor.
 
-**Walk writes (Navigator, locked):** session-context writes go through a **system interface** (`SessionService` door, plane store). Floor degenerate. As-built `0.69.1`: `stamp_guidance_instance` / `replace_guidance_instance` for **`guidance_instance_id`**. Interface type unnamed. User plane later installs. Not a product domain.
+**Walk writes (Navigator, locked):** session-context writes go through a **system interface** (`SessionService` door, plane store). Floor degenerate. As-built `0.69.8`: `SessionService.stamp` / `replace` take a named instance-id key. Present kit owns **`guidance_instance_id`**. Interface type unnamed. User plane later installs. Not a product domain.
 
 **Job is session-ignorant (Navigator, locked):** the job does not know the walk. Attach is a session write after start, not `session_id` on job metadata. As-built `0.69.2`: `SessionService.attach_after_start`. Leftover hook still reads job metadata.
 
@@ -257,7 +257,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`** (`str | None`). As-built `0.69.5`: unset default; empty-handed `start()` uses the key (by id). Not a field on core `PalmSettings`. As-built `0.69.7`: dogfood sets the key after bind (`"navigator"`). Constructor override and env spelling stay later.
 
-**Stamp caller (Navigator, locked):** present kit asks `SessionService` to stamp `guidance_instance_id` after attach if the started definition is that chooser. As-built `0.69.5`. Attach does not stamp.
+**Stamp caller (Navigator, locked):** present kit asks `SessionService.stamp` with its walk-role key after attach if the started definition is that chooser. As-built `0.69.5` caller · `0.69.8` key on the kit. Attach does not stamp.
 
 **Replace predicate (Navigator, locked):** kit asks; instance attached; definition id equals `guidance_definition_id`. As-built `0.69.5`. Titles cannot become Home. [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) §5.
 
@@ -301,7 +301,7 @@ A **plane** is system traffic of one kind.
 | **Event** | Signals; completers speak of self | `runtime.event` (orchestration bus) |
 | **Work (start)** | Trigger → WorkIntent → new job | **0.60 closed:** `runtime.work_plane` + session attr + inbound under `planes.work` · continuous services on **supervisor** — [VISION-0.60](vision/closed/VISION-0.60.md) · [ADR-029](adr/029-system-supervisor.md) Accepted. |
 | **Wait (continue)** | Interest → resume or fail parked work | Wait plane on system (`runtime.wait_plane`) |
-| **Session** (0.58 **closed**) | Outside subject + service attribution + surface context | System `planes.session`: bind; exclusive attach; **active focus**; **owner gate**; **strict attribution**; **inherit-or-service** reactive start. **Product** `SessionService` / kit `resolve_session_service` is the surface door. **BoundSurface**. **Operate:** focus / list waiting / cancel-owned. **Vocabulary:** `session_id` = system subject (`sess-…`); `instance_id` = continue; path segment `instance`. Navigator walk fact **`guidance_instance_id`** (`0.69.1` stamp/replace; kit caller `0.69.5`). Floor attach after start: **`SessionService.attach_after_start`** (`0.69.2`; job stays session-ignorant). Session metadata ≠ job metadata. Active ≠ foreign pass. Active ≠ guidance. Plane remains law. Theme: [VISION-0.58](vision/closed/VISION-0.58.md) · [ADR-027](adr/027-session-plane.md) Accepted. Surface compost residual: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
+| **Session** (0.58 **closed**) | Outside subject + service attribution + surface context | System `planes.session`: bind; exclusive attach; **active focus**; **owner gate**; **strict attribution**; **inherit-or-service** reactive start. **Product** `SessionService` / kit `resolve_session_service` is the surface door. **BoundSurface**. **Operate:** focus / list waiting / cancel-owned. **Vocabulary:** `session_id` = system subject (`sess-…`); `instance_id` = continue; path segment `instance`. Navigator walk fact **`guidance_instance_id`** (kit-owned key `0.69.8`; stamp/replace `0.69.1`; kit caller `0.69.5`). Floor attach after start: **`SessionService.attach_after_start`** (`0.69.2`; job stays session-ignorant). Session metadata ≠ job metadata. Active ≠ foreign pass. Active ≠ guidance. Plane remains law. Theme: [VISION-0.58](vision/closed/VISION-0.58.md) · [ADR-027](adr/027-session-plane.md) Accepted. Surface compost residual: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
 | **Workload** | Isolation lifecycle events and placement | Workload engine + runners |
 
 **Supervisor** (0.60 **closed**): not a plane. Continuous system services (work drain, outbox, inbound workers) live under **`SystemSupervisor`** on the system instance. Planes carry traffic; supervisor runs loops. See [VISION-0.60](vision/closed/VISION-0.60.md) · [ADR-029](adr/029-system-supervisor.md) Accepted.

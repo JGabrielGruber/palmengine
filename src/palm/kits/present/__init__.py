@@ -3,8 +3,9 @@
 One object holds one :class:`~palm.services.session.bound_surface.BoundSurface`
 and walks existing doors: bind, present, submit, start, attach, focus.
 
-Owns ``guidance_definition_id`` (``str | None``). Unset → no empty-handed
-start. Stamp / replace callers live here; SessionService writes.
+Owns ``guidance_definition_id`` (``str | None``) and the walk-role key
+``guidance_instance_id``. Unset definition → no empty-handed start.
+Stamp / replace callers live here; SessionService writes a named key.
 
 Not a ``PresentService``. Not ``palm.kits.server``. Turn invert: this kit
 walks; the pattern fills ``JobInspectable`` / ``InputCapable``. Handle class
@@ -19,8 +20,9 @@ from typing import TYPE_CHECKING, Any
 from palm.common.job_inspection import JobContext, inspect_job
 from palm.kits.registry import register_kit
 from palm.system.subsystems.planes.session import InstanceNotOwnedError
-from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
 from palm.system.subsystems.planes.wait.present import waiting_on_from_job
+
+GUIDANCE_INSTANCE_ID = "guidance_instance_id"
 
 if TYPE_CHECKING:
     from palm.core.orchestration import Job
@@ -135,7 +137,7 @@ class _Present:
                 "replace_guidance_instance requires instance definition id "
                 "equal to guidance_definition_id"
             )
-        self._bound = self._session.replace_guidance_instance(sid, iid)
+        self._bound = self._session.replace(sid, GUIDANCE_INSTANCE_ID, iid)
         return self._bound
 
     def _stamp_if_guidance(self, flow: Any) -> None:
@@ -148,8 +150,8 @@ class _Present:
         current = _strip_id((self.bound.metadata or {}).get(GUIDANCE_INSTANCE_ID))
         if current is not None:
             return
-        self._bound = self._session.stamp_guidance_instance(
-            self.bound.session_id, iid
+        self._bound = self._session.stamp(
+            self.bound.session_id, GUIDANCE_INSTANCE_ID, iid
         )
 
     def _focused_job(self) -> Job:
@@ -187,4 +189,4 @@ def bind(host: Any, session_id: str | None = None, **kwargs: Any) -> _Present:
     return kit
 
 
-__all__ = ["bind"]
+__all__ = ["GUIDANCE_INSTANCE_ID", "bind"]

@@ -11,8 +11,8 @@
 * :attr:`SessionRecord.active_instance_id` / :meth:`SessionPlaneService.set_active_instance` (0.58.10)
 * :meth:`SessionPlaneService.owns_instance` / :meth:`~SessionPlaneService.require_owned_instance` (0.58.11 SI-015)
 * :meth:`SessionPlaneService.get_metadata` / :meth:`~SessionPlaneService.merge_metadata` (0.58.14)
-* :meth:`SessionPlaneService.stamp_guidance_instance` /
-  :meth:`~SessionPlaneService.replace_guidance_instance` (0.69.1)
+* :meth:`SessionPlaneService.stamp` / :meth:`~SessionPlaneService.replace`
+  (0.69.1 / 0.69.8 — named instance-id key; degenerate allow)
 * :func:`require_session_plane`
 
 **Ownership:** one instance → one session (exclusive).  
@@ -51,10 +51,8 @@ from palm.system.subsystems.planes.session.types import (
     new_session_id,
     service_session_id,
 )
-from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
 
 __all__ = [
-    "GUIDANCE_INSTANCE_ID",
     "HOST_SESSION_ID",
     "HOST_SESSION_ORIGIN",
     "InstanceAlreadyAttachedError",

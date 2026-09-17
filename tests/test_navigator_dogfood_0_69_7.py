@@ -20,7 +20,7 @@ from palm.app.host.composition import CompositionProfile
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
-from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
+from palm.kits.present import GUIDANCE_INSTANCE_ID
 from tests.helpers.flows import spine_wizard
 
 _ASSIST_ENVELOPE_KEYS = (

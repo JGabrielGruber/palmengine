@@ -40,7 +40,6 @@ SESSION_CONTEXT_KEYS = frozenset(
         "labels",
         "prefs",
         "walk",
-        "guidance_instance_id",
     }
 )
 

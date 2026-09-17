@@ -16,7 +16,7 @@ Palm is pre-1.0. Package stamp stays `0.68.0` until an embedded release. This fi
 | Spawn a sibling without nested park | `FlowExecutionService.spawn_sibling` (`0.69.3`). Parent stays `WAITING_FOR_INPUT`. No `WaitInterest` on the sibling |
 | Present a waiting run | `palm.kits.present` present → `JobInspectable` / wait plane (`0.69.4`) |
 | Walk bind / submit / start / attach / focus | `palm.kits.present.bind(host)` (`0.69.4`). Handle class unnamed. Start reuses `spawn_sibling` |
-| Stamp / replace Home | Present kit after attach (`0.69.5`). `SessionService` writes. Titles cannot become Home |
+| Stamp / replace Home | Present kit after attach (`0.69.5`). Kit owns the key (`0.69.8`). `SessionService.stamp` / `replace` write that named key. Titles cannot become Home |
 
 ## Behavior / names that may change
 
@@ -28,7 +28,7 @@ Execute will name the cut. Likely:
 | `operator-entry` ends, then product auto-starts | Catalog wizard **`navigator`** beside it (`0.69.6`). Floor spawn: `spawn_sibling` (`0.69.3`); instance stays `WAITING_FOR_INPUT`. Leftover `operator_entry` still ends |
 | Nested park (`until_input`) as Home | Leftover. Floor spawn does not wait on child terminal |
 | `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is `SessionService.attach_after_start` (`0.69.2`) |
-| No `guidance_instance_id` | Session metadata key. `0.69.1`: stamp/replace via `SessionService`. `0.69.5`: kit is the stamp/replace caller |
+| No `guidance_instance_id` | Session metadata key owned by the present kit (`0.69.8`). `0.69.1`: generic stamp/replace via `SessionService`. `0.69.5`: kit is the stamp/replace caller |
 | Core `PalmSettings` as every kit knob | Present kit owns `guidance_definition_id` (`0.69.5`). Unset default. Not flattened onto core settings |
 
 ## Unchanged in this theme

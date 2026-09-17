@@ -306,26 +306,26 @@ class SessionService(BaseService):
         self.plane().replace_metadata(session_id, metadata)
         return self.surface_from_session(session_id)
 
-    def stamp_guidance_instance(
-        self, session_id: str, instance_id: str
+    def stamp(
+        self, session_id: str, key: str, instance_id: str
     ) -> BoundSurface:
-        """Product door: stamp ``guidance_instance_id`` if absent (0.69.1).
+        """Product door: stamp a named instance-id key if absent (0.69.8).
 
         Plane stores. Degenerate allow is owner + attached instance.
-        Does not stamp on attach. Kit caller is `0.69.5`.
+        Does not stamp on attach. Callers own meaning of *key*.
         """
-        self.plane().stamp_guidance_instance(session_id, instance_id)
+        self.plane().stamp(session_id, key, instance_id)
         return self.surface_from_session(session_id)
 
-    def replace_guidance_instance(
-        self, session_id: str, instance_id: str
+    def replace(
+        self, session_id: str, key: str, instance_id: str
     ) -> BoundSurface:
-        """Product door: replace ``guidance_instance_id`` (explicit).
+        """Product door: replace a named instance-id key (explicit).
 
-        Kit definition-id predicate is `0.69.5`. Floor allow is
-        owner + attached instance.
+        Floor allow is owner + attached instance. Callers own meaning of
+        *key* (present kit owns the guidance walk-role).
         """
-        self.plane().replace_guidance_instance(session_id, instance_id)
+        self.plane().replace(session_id, key, instance_id)
         return self.surface_from_session(session_id)
 
     def require_open(self, session_id: str) -> SessionRecord:
@@ -359,7 +359,7 @@ class SessionService(BaseService):
         """Session-side attach after execution start (0.69.2).
 
         Geometry attach on the bound session. Does not copy ``session_id``
-        onto the job. Does not stamp ``guidance_instance_id``. Kit start()
+        onto the job. Does not stamp walk-role metadata. Kit start()
         calls this later; leftover ``SessionOwnershipHook`` is not this door.
         """
         self.plane().attach_instance(session_id, instance_id)

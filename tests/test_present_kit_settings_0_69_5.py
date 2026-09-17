@@ -12,8 +12,8 @@ import pytest
 
 from palm.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
+from palm.kits.present import GUIDANCE_INSTANCE_ID
 from palm.system.subsystems.planes.session import InstanceNotOwnedError
-from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
 from tests.helpers.flows import spine_wizard
 
 

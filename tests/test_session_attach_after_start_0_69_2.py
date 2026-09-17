@@ -9,7 +9,7 @@ Kit start() is a later slice.
 from __future__ import annotations
 
 from palm.app.host.application_host import ApplicationHost
-from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
+from palm.kits.present import GUIDANCE_INSTANCE_ID
 from tests.helpers.flows import spine_wizard
 
 
