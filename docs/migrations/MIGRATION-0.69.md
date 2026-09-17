@@ -24,7 +24,7 @@ Execute will name the cut. Likely:
 | `AssistService.dispatch` as the empty-handed door | Still as-built. New door: `palm.kits.present` on embedded |
 | `operator-entry` ends, then product auto-starts | New wizard pack **beside** it; instance stays `WAITING_FOR_INPUT` |
 | `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is session-side |
-| No `guidance_instance_id` | Session metadata key, stamped by the kit after attach |
+| No `guidance_instance_id` | Session metadata key. `0.69.1`: stamp/replace via `SessionService` (kit caller later) |
 | Core `PalmSettings` as every kit knob | Present kit owns `guidance_definition_id` |
 
 ## Unchanged in this theme

@@ -25,6 +25,7 @@ from palm.system.subsystems.planes.session.types import (
     SessionStatus,
     new_session_id,
 )
+from palm.system.subsystems.planes.session.walk_writes import GUIDANCE_INSTANCE_ID
 
 if TYPE_CHECKING:
     from palm.core.storage import StorageEngine
@@ -316,6 +317,40 @@ class SessionPlaneService:
         rec.metadata = dict(metadata or {})
         rec.touch()
         return self._store.put(rec)
+
+    def stamp_guidance_instance(
+        self, session_id: str, instance_id: str
+    ) -> SessionRecord:
+        """Stamp ``guidance_instance_id`` if absent (0.69.1 walk write).
+
+        Degenerate allow: the session must own *instance_id* (attached).
+        Does not change continue focus. Attach does not stamp.
+        If the key is already set to a different instance, refuse - use
+        :meth:`replace_guidance_instance`.
+        """
+        iid = (instance_id or "").strip()
+        rec = self.require_owned_instance(session_id, iid)
+        current = rec.metadata.get(GUIDANCE_INSTANCE_ID)
+        if current is None or not str(current).strip():
+            return self.merge_metadata(session_id, {GUIDANCE_INSTANCE_ID: iid})
+        if str(current).strip() == iid:
+            return rec
+        raise SessionPlaneError(
+            f"session {session_id!r} already has "
+            f"{GUIDANCE_INSTANCE_ID}={current!r}; use replace_guidance_instance"
+        )
+
+    def replace_guidance_instance(
+        self, session_id: str, instance_id: str
+    ) -> SessionRecord:
+        """Replace ``guidance_instance_id`` (explicit walk write).
+
+        Degenerate allow: the session must own *instance_id* (attached).
+        The product kit's definition-id predicate is a later slice.
+        """
+        iid = (instance_id or "").strip()
+        self.require_owned_instance(session_id, iid)
+        return self.merge_metadata(session_id, {GUIDANCE_INSTANCE_ID: iid})
 
     def require(self, session_id: str) -> SessionRecord:
         rec = self._store.get(session_id)
@@ -872,6 +907,8 @@ class SessionPlaneService:
                 "event_matches",
                 "attributed_session_id",
                 "make_event_filter",
+                "stamp_guidance_instance",
+                "replace_guidance_instance",
             ],
             "store": "storage_engine",
             "storage_backend": backend,

@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.1 — walk-write seam
+- Named session-metadata key **`guidance_instance_id`**: `SessionService.stamp_guidance_instance` / `replace_guidance_instance` (product door) → session plane store.
+- Floor allow is degenerate: owner session + attached instance. Stamp if absent; replace is explicit. Attach and focus do not stamp.
+- Interface type stays unnamed until José locks it. Kit caller and definition-id replace predicate wait for `0.69.5`.
+
 ### 0.69.0 — Navigator (plan)
 - José opened theme **0.69**. Vision: [VISION-0.69](docs/vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Migration stub: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md).
 - Floor: one embedded walk (bind → empty-handed guidance start → stay waiting → sibling attach → focus home). Execute starts at `0.69.1`. Package stamp stays `0.68.0`.

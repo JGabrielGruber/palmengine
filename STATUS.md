@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.68.0` · **Active theme:** [**0.69** Navigator](docs/vision/VISION-0.69.md) · **Prior closed:** [**0.68** The great cleansing](docs/vision/closed/VISION-0.68.md)  
-**Last Updated:** September 17, 2026 · José opened **0.69** and locked the **floor + slice guide**. Package stamp stays `0.68.0`. Law seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Floor: one embedded walk (bind → empty-handed guidance start → stay waiting → sibling attach → focus home). Execute starts at `0.69.1`. Assist stays until [surface deflation](docs/vision/VISION-SURFACE-DEFLATION.md).  
+**Last Updated:** September 17, 2026 · **0.69.1** landed: walk-write seam (degenerate allow) stamps / replaces session metadata `guidance_instance_id`. Interface type unnamed. Package stamp stays `0.68.0`. ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Next: `0.69.2` session-side attach after start. Assist stays until [surface deflation](docs/vision/VISION-SURFACE-DEFLATION.md).  
 **Map:** [docs/PALM.md](docs/PALM.md) · [VISION-0.69](docs/vision/VISION-0.69.md) · seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md) · closed [VISION-0.68](docs/vision/closed/VISION-0.68.md) · [ADR-036](docs/adr/036-require-capability.md) **Accepted**  
 **Debt (live):** [TECH-DEBT.md](TECH-DEBT.md) — **SD-023** (0.68 exit residual) · **SD-024** (host names wizard; do not pay as Navigator) · **SD-020** (face paid; dependents paid) · **SD-021** · **SD-022** · residual **SD-019** · **SD-016** / **BI-*** / **SI-*** / **SU-***  
 **Closed seasons:** [docs/vision/closed/](docs/vision/closed/) · [VERSIONING.md](docs/VERSIONING.md) (STATUS is the present)
@@ -9,14 +9,14 @@
 ### Agent resume (after compact)
 
 Read: **this STATUS** → [VISION-0.69](docs/vision/VISION-0.69.md) → [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) §5–6 (locks + harvest) → [ADR-037](docs/adr/037-navigator-invert.md) **Proposed**.  
-No `src/` on `0.69.0`. Protocol + failing tests start at `0.69.1`. Job stays session-ignorant (attach is session-side; do not copy `session_id` onto the job). Do not compost Assist. Do not pay [SD-024](TECH-DEBT.md#sd-024).
+`0.69.1` shipped: `SessionService.stamp_guidance_instance` / `replace_guidance_instance` → plane store. Floor allow = owner + attached instance. Attach and focus do not stamp. Job stays session-ignorant. Do not compost Assist. Do not pay [SD-024](TECH-DEBT.md#sd-024).
 
 | Spirit | Decision |
 |--------|----------|
 | **0.69 open** | Navigator invert. Guidance is a definition. Kit walks. |
 | **ADR-037** | **Proposed** — accept at exit |
 | **ADR-006** | Stays **Accepted** (as-built Assist) |
-| **Next** | `0.69.1` walk-write seam + stamp/replace tests |
+| **Next** | `0.69.2` session-side attach after start |
 | **Later** | [SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) · [SD-021](TECH-DEBT.md#sd-021) · [VISION-0.56](docs/vision/VISION-0.56.md) · [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
 | **Experimental** | Pre-1.0 · **no LTS** — [README](README.md) |
 
@@ -30,7 +30,7 @@ No `src/` on `0.69.0`. Protocol + failing tests start at `0.69.1`. Job stays ses
 | Patch | Status |
 |-------|--------|
 | **0.69.0** | ✅ plan + ADR-037 Proposed · José locked floor + slice guide |
-| **0.69.1** | walk-write interface + `guidance_instance_id` stamp/replace (failing tests first) |
+| **0.69.1** | ✅ walk-write seam + `guidance_instance_id` stamp/replace (type unnamed) |
 | **0.69.2** | session-side attach after start |
 | **0.69.3** | spawn without nested park |
 | **0.69.4** | `palm.kits.present` kit-as-composition |

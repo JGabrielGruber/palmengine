@@ -1,6 +1,6 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17) at plan `0.69.0`. José locked **floor + slice guide**. Package stamp stays `0.68.0`.  
+**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.1` landed (walk-write seam). Package stamp stays `0.68.0`.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
@@ -194,7 +194,7 @@ Execution starts at `0.69.1`. Protocol + failing tests belong in execute, not th
 | Slice | Intent |
 |-------|--------|
 | **0.69.0** | Plan + ADR-037 Proposed + this floor. José locked floor + slice guide. |
-| **0.69.1** | Walk-write interface (degenerate allow) + `guidance_instance_id` stamp/replace through it. Failing tests first. |
+| **0.69.1** | ✅ Walk-write seam (degenerate allow) + `guidance_instance_id` stamp/replace. Interface type unnamed. |
 | **0.69.2** | Session-side attach after start. Job stays session-ignorant. |
 | **0.69.3** | Spawn without nested park. Guidance stays operator-wait. |
 | **0.69.4** | `palm.kits.present` kit-as-composition (bind, present, submit, start, attach, focus). |

@@ -210,7 +210,7 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 | **Pattern invert incomplete** | Installed: `wizard`, `parallel`, `pipeline`, `dag`. `JobInspectable` today: wizard + parallel. `InteractiveRuntimeHooks` + read-model builder: **wizard only**. Pipeline / DAG: empty `JobContext` fallback + wait plane. Intention: `etl` (not installed). Kit must not paper this with a pattern `if`. |
 | **Bind-aware start** | Restated: kit/SessionService must **attach** the new instance on the bound session. Putting `session_id` on the job is leftover, not the floor. |
 | **Kit Protocol** | Not in `src/`. Do not stub `PresentService`. |
-| **`guidance_instance_id` stamp** | Name + metadata-key + walk-write seam + **kit caller** locked (§5). As-built: `merge_metadata` unused in production; no interface; kit does not stamp. |
+| **`guidance_instance_id` stamp** | Name + metadata-key + walk-write seam + **kit caller** locked (§5). As-built `0.69.1`: plane/SessionService stamp/replace (degenerate allow). Kit does not stamp yet. Interface type unnamed. |
 
 Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work in **0.69**: session-side attach after start; park without wait-on-child-terminal; stamp **`guidance_instance_id`**.
 
