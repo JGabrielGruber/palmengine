@@ -13,6 +13,7 @@ import importlib
 # Real kits only — ship when purpose and package exist.
 INSTALLED_KITS: tuple[str, ...] = (
     "server",
+    "present",
 )
 
 # Named futures without a body (do not auto-load; purpose lives in STUBS/VISION).

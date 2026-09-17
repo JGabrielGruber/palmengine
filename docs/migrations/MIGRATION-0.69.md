@@ -14,7 +14,8 @@ Palm is pre-1.0. Package stamp stays `0.68.0` until an embedded release. This fi
 | Return to guidance | `focus(guidance_instance_id)` on the bound session |
 | Attach after start | `SessionService.attach_after_start` (`0.69.2`). Do **not** set `session_id` on the job |
 | Spawn a sibling without nested park | `FlowExecutionService.spawn_sibling` (`0.69.3`). Parent stays `WAITING_FOR_INPUT`. No `WaitInterest` on the sibling |
-| Present a waiting run | Kit present → `JobInspectable` / wait plane (turn invert) |
+| Present a waiting run | `palm.kits.present` present → `JobInspectable` / wait plane (`0.69.4`) |
+| Walk bind / submit / start / attach / focus | `palm.kits.present.bind(host)` (`0.69.4`). Handle class unnamed. Start reuses `spawn_sibling` |
 
 ## Behavior / names that may change
 
@@ -22,7 +23,7 @@ Execute will name the cut. Likely:
 
 | Was | May become |
 |-----|------------|
-| `AssistService.dispatch` as the empty-handed door | Still as-built. New door: `palm.kits.present` on embedded |
+| `AssistService.dispatch` as the empty-handed door | Still as-built. Library door: `palm.kits.present` on embedded (`0.69.4`). Empty-handed `guidance_definition_id` is `0.69.5` |
 | `operator-entry` ends, then product auto-starts | New wizard pack **beside** it (`0.69.6`). Floor spawn: `spawn_sibling` (`0.69.3`); instance stays `WAITING_FOR_INPUT` |
 | Nested park (`until_input`) as Home | Leftover. Floor spawn does not wait on child terminal |
 | `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is `SessionService.attach_after_start` (`0.69.2`) |

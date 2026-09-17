@@ -243,7 +243,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Turn invert (Navigator, locked):** `palm.kits.present` walks. The pattern fills `JobInspectable` / `InputCapable` (and wait plane). The kit does not switch on pattern name.
 
-**Kit-as-composition (Navigator, locked):** that kit is one library object that holds `BoundSurface` and composes `SessionService` + execution. Not a product service.
+**Kit-as-composition (Navigator, locked):** that kit is one library object that holds `BoundSurface` and composes `SessionService` + execution. Not a product service. As-built `0.69.4`: `palm.kits.present.bind(host)` walks bind / present / submit / start / attach / focus. Handle class unnamed.
 
 **Pack (Navigator, locked):** new wizard operator-guidance definition **beside** `operator_entry`. Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**.
 
@@ -253,7 +253,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Job is session-ignorant (Navigator, locked):** the job does not know the walk. Attach is a session write after start, not `session_id` on job metadata. As-built `0.69.2`: `SessionService.attach_after_start`. Leftover hook still reads job metadata.
 
-**Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home. As-built `0.69.3`: `FlowExecutionService.spawn_sibling` (start + `attach_after_start`; no `WaitInterest` on the sibling). Leftover `until_input` nested park stays.
+**Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home. As-built `0.69.3`: `FlowExecutionService.spawn_sibling`. As-built `0.69.4`: kit `start()` walks that door; kit `focus` among owned instances. Leftover `until_input` nested park stays.
 
 **Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`**. Not a field on core `PalmSettings`.
 
@@ -455,7 +455,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, …). Intended present kit: **`palm.kits.present`** (named, not shipped; **turn invert** + **kit-as-composition** locked). Theme: [VISION-0.69](vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). | SD-011 ✅ |
+| `palm.kits` | Surface kits (`server`, **`present`**, …). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**). Handle class unnamed. Theme: [VISION-0.69](vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). | SD-011 ✅ |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---

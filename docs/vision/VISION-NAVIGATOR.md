@@ -143,7 +143,7 @@ Unnamed contracts the harvest must close (or name as holes):
 | **Turn** | **Locked** (§5 turn invert). Harvest closed the keep/exclude; Protocol type still unnamed. |
 | **Start sibling** | **Law locked** (§5 pack + job is session-ignorant). Glue: attach from the session after start — named hole. Do not copy `session_id` onto the child job. |
 | **Park / home** | **Law locked** (§5 dashboard model): operator-wait chooser, no interest on siblings. As-built `0.69.3`: `FlowExecutionService.spawn_sibling`. Nested park leftover stays. |
-| **Library door** | **Locked** (§5 kit-as-composition): the kit object holds `BoundSurface`. Chain holes (bind-aware start, not in `INSTALLED_KITS`) stay named. Handle class unnamed. |
+| **Library door** | **Locked** (§5 kit-as-composition): the kit object holds `BoundSurface`. As-built `0.69.4`: in `INSTALLED_KITS`; `bind(host)` walks existing doors. Handle class unnamed. |
 | **Empty-handed start** | **Locked** (§5 pack + kit-contributed settings): **`guidance_definition_id`** on the present kit, not core `PalmSettings`. Unset → no empty-handed start. As-built not seeded — named hole. |
 | **Anti-requirements** | **Locked** (kit + pack refuse lists in §6.1 exclude). |
 
@@ -179,9 +179,9 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 | **History / verbs** | `answers` / `answers_preview`. Drive: `next_commands` (`input`, `backtrack`, `resume`, `cancel`). Slim `next_actions` **names**. Wizard `mutation` minus `agent_hint`. |
 | **Submit** | `InputCapable.provide_input` via `provide_interactive_input_for_instance` (registry hooks per pattern). `FlowSession.input` / `host.provide_input`. Live **value** is submit, not a present field. Wizard and **parallel** register hooks. Pipeline / DAG do not. |
 | **Bind / focus** | `SessionService.bind_surface` → `BoundSurface` (`kind` default `outside`). `attach_instance` / `focus` / `set_active_instance`. First attach steals continue focus. `BoundSurface` is a frozen snapshot; rebuild after start/submit. |
-| **Attach glue** | As-built leftover: `SessionOwnershipHook` reads `session_id` from **job** metadata. Floor `0.69.2`: `SessionService.attach_after_start` after start. Job stays session-ignorant. Kit `start()` later. |
+| **Attach glue** | As-built leftover: `SessionOwnershipHook` reads `session_id` from **job** metadata. Floor `0.69.2`: `SessionService.attach_after_start` after start. Job stays session-ignorant. Kit `start()` as-built `0.69.4`. |
 | **Start work** | Catalog does not start. `host.submit_flow(..., session_id=)` or `execution.flows.run_wizard` with that id. Omit id → no attach, or `run_wizard` mints a **new** `sess-…`. |
-| **Spawn another instance** | Floor `0.69.3`: `FlowExecutionService.spawn_sibling` (start + session-side attach; parent stays operator-wait; no `WaitInterest` on the sibling). Leftover: resource leaf → Palm invoke → `runtime.submit_flow`. Default wait: fire-and-forget. `until_input` opens **nested park** (parent waits on child terminal). |
+| **Spawn another instance** | Floor `0.69.3`: `FlowExecutionService.spawn_sibling`. Kit `start()` as-built `0.69.4` walks that door. Leftover: resource leaf → Palm invoke → `runtime.submit_flow`. Default wait: fire-and-forget. `until_input` opens **nested park** (parent waits on child terminal). |
 | **Embedded phenotype** | `ApplicationHost.for_mode("test"\|"safe")` uses `CompositionProfile.embedded()` + collapsed `EmbeddedRuntime`. Services: inspect, session, definitions, execution. No Assist, no surfaces. `PalmSettings.for_tests(load_examples=False)`. |
 | **Session geometry on Assist** | Continuity **does** pass parent `sess-…` into `flows/{id}/create` — **after** parent complete. Focus door exists (`system/session/{id}/focus`). |
 
@@ -200,16 +200,16 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 
 | Hole | Fact |
 |------|------|
-| **Start sibling** | As-built `0.69.2`: `SessionService.attach_after_start` after start — **not** inherit `session_id` onto the child job. Kit `start()` still later. |
-| **Park / home** | As-built `0.69.3`: `FlowExecutionService.spawn_sibling` — stay WAITING; no interest on siblings. Leftover nested park waits **on child success**, then parent **advances**. `focus` home is later kit. |
-| **Library door** | **Holder locked** (§5): the kit object holds `BoundSurface`. As-built: caller local only; not in `INSTALLED_KITS`. |
+| **Start sibling** | As-built `0.69.2`: `SessionService.attach_after_start` after start — **not** inherit `session_id` onto the child job. Kit `start()` as-built `0.69.4`. |
+| **Park / home** | As-built `0.69.3`: `FlowExecutionService.spawn_sibling` — stay WAITING; no interest on siblings. Leftover nested park waits **on child success**, then parent **advances**. Kit `focus` as-built `0.69.4` (stamp home pointer is `0.69.5`). |
+| **Library door** | **Holder locked** (§5): the kit object holds `BoundSurface`. As-built `0.69.4`: `palm.kits.present` in `INSTALLED_KITS`. Handle class unnamed. |
 | **Empty-handed start** | After bind: no job. No present-kit `guidance_definition_id`. `load_example_definitions` is catalog roots on/off. Floor: kit-contributed key — **not seeded**. |
 | **definition_id** | Compact publishes `flow` only. |
 | **value on present** | No current-step draft on inspect/compact. |
 | **mutation on job compact** | `compact_job_inspect` has no `mutation`. Wizard compact does. Shared turn should not require the wizard-only compact. |
 | **Pattern invert incomplete** | Installed: `wizard`, `parallel`, `pipeline`, `dag`. `JobInspectable` today: wizard + parallel. `InteractiveRuntimeHooks` + read-model builder: **wizard only**. Pipeline / DAG: empty `JobContext` fallback + wait plane. Intention: `etl` (not installed). Kit must not paper this with a pattern `if`. |
-| **Bind-aware start** | As-built `0.69.2`: `SessionService.attach_after_start` on the bound session. Putting `session_id` on the job is leftover, not the floor. Kit `start()` later. |
-| **Kit Protocol** | Not in `src/`. Do not stub `PresentService`. |
+| **Bind-aware start** | As-built `0.69.2`: `SessionService.attach_after_start` on the bound session. Kit `start()` as-built `0.69.4` walks `spawn_sibling`. Putting `session_id` on the job is leftover, not the floor. |
+| **Kit Protocol** | Handle class unnamed. Package `palm.kits.present` as-built `0.69.4`. Do not stub `PresentService`. |
 | **`guidance_instance_id` stamp** | Name + metadata-key + walk-write seam + **kit caller** locked (§5). As-built `0.69.1`: plane/SessionService stamp/replace (degenerate allow). Kit does not stamp yet. Interface type unnamed. |
 
 Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work in **0.69**: session-side attach after start (`0.69.2` door); spawn without nested park (`0.69.3` door); stamp **`guidance_instance_id`** (seam `0.69.1`; kit caller later).
@@ -218,7 +218,7 @@ Harvest locks in §5 are complete (including **job is session-ignorant**). Engin
 
 ## 7. Open (not locked)
 
-Homing, dashboard model, turn invert, kit-as-composition, pack, **`guidance_instance_id`**, **walk writes**, **job is session-ignorant**, **kit-contributed settings**, **stamp caller**, and **replace predicate** (kit definition-id check) are locked (§5). Protocol type names, kit handle class, walk-write interface type, and env spelling stay unnamed. Session-side attach glue is as-built (`0.69.2`). Park glue is as-built (`0.69.3`). Stamp **kit caller** stays a hole.
+Homing, dashboard model, turn invert, kit-as-composition, pack, **`guidance_instance_id`**, **walk writes**, **job is session-ignorant**, **kit-contributed settings**, **stamp caller**, and **replace predicate** (kit definition-id check) are locked (§5). Protocol type names, kit handle class, walk-write interface type, and env spelling stay unnamed. Session-side attach glue is as-built (`0.69.2`). Park glue is as-built (`0.69.3`). Library door is as-built (`0.69.4`). Stamp **kit caller** stays a hole.
 
 ---
 

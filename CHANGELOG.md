@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.4 — present kit (kit-as-composition)
+- Install `palm.kits.present` (`INSTALLED_KITS`). One library object holds one `BoundSurface` and walks bind, present, submit, start, attach, focus.
+- Present is `JobInspectable.inspect_job` plus wait plane `waiting_on`. Submit is `InputCapable` via runtime input. Start reuses `FlowExecutionService.spawn_sibling`.
+- Handle class unnamed. Do not stamp `guidance_instance_id`. Do not seed `guidance_definition_id` (0.69.5).
+
 ### 0.69.3 — spawn without nested park
 - Product door `FlowExecutionService.spawn_sibling`: start named work as a same-session sibling. Attach via `SessionService.attach_after_start`. Job stays session-ignorant.
 - Guidance job stays `WAITING_FOR_INPUT`. Do not open `WaitInterest` on the sibling.
