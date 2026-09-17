@@ -1,65 +1,51 @@
 # Palm Engine — Project Status
 
-**Current Version:** `0.68.0` · **Active theme:** none · **Prior closed:** [**0.68** The great cleansing](docs/vision/closed/VISION-0.68.md)  
-**Last Updated:** September 16, 2026 · José closed **0.68**. Residual duals named [**SD-023**](TECH-DEBT.md#sd-023). Host names wizard named [**SD-024**](TECH-DEBT.md#sd-024). Navigator stays a queue seed (not open). José locked Navigator **guidance home**, **dashboard model** (chooser shell; session-owned titles), **principal seam**, kit **`palm.kits.present`** (**kit-as-composition**), first adapter **embedded library surface**, **turn invert**, **pack**, session metadata **`guidance_instance_id`**, **walk writes**, **job is session-ignorant**, **kit-contributed settings** (`guidance_definition_id` on present), **stamp caller** (kit after attach), **replace predicate** (kit definition-id check). Harvest §6.1. Not an open minor.  
-**Map:** [docs/PALM.md](docs/PALM.md) · closed [VISION-0.68](docs/vision/closed/VISION-0.68.md) · [VISION-0.67](docs/vision/closed/VISION-0.67.md) · [ADR-036](docs/adr/036-require-capability.md) **Accepted** · [MIGRATION-0.68](docs/migrations/MIGRATION-0.68.md) · [MIGRATION-0.67](docs/migrations/MIGRATION-0.67.md)  
-**Debt (live):** [TECH-DEBT.md](TECH-DEBT.md) — **SD-023** (0.68 exit residual) · **SD-024** (host names wizard) · **SD-020** (face paid; dependents paid) · **SD-021** (profile/env residual) · **SD-022** · residual **SD-019** · **SD-016** / **BI-*** / **SI-*** / **SU-***  
+**Current Version:** `0.68.0` · **Active theme:** [**0.69** Navigator](docs/vision/VISION-0.69.md) · **Prior closed:** [**0.68** The great cleansing](docs/vision/closed/VISION-0.68.md)  
+**Last Updated:** September 17, 2026 · José opened **0.69** and locked the **floor + slice guide**. Package stamp stays `0.68.0`. Law seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Floor: one embedded walk (bind → empty-handed guidance start → stay waiting → sibling attach → focus home). Execute starts at `0.69.1`. Assist stays until [surface deflation](docs/vision/VISION-SURFACE-DEFLATION.md).  
+**Map:** [docs/PALM.md](docs/PALM.md) · [VISION-0.69](docs/vision/VISION-0.69.md) · seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md) · closed [VISION-0.68](docs/vision/closed/VISION-0.68.md) · [ADR-036](docs/adr/036-require-capability.md) **Accepted**  
+**Debt (live):** [TECH-DEBT.md](TECH-DEBT.md) — **SD-023** (0.68 exit residual) · **SD-024** (host names wizard; do not pay as Navigator) · **SD-020** (face paid; dependents paid) · **SD-021** · **SD-022** · residual **SD-019** · **SD-016** / **BI-*** / **SI-*** / **SU-***  
 **Closed seasons:** [docs/vision/closed/](docs/vision/closed/) · [VERSIONING.md](docs/VERSIONING.md) (STATUS is the present)
 
 ### Agent resume (after compact)
 
-Read: **this STATUS** → [VISION-0.68](docs/vision/closed/VISION-0.68.md) (**closed**) → [SD-023](TECH-DEBT.md#sd-023) · [SD-024](TECH-DEBT.md#sd-024). Navigator: [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) §5–6 (locks + harvest). Harvest merged in [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) §6.1. **Job is session-ignorant** locked (attach is session-side; do not copy `session_id` onto the job). Protocol + failing tests only when a theme opens.  
-José closed 0.68 (2026-09-15) at stamp `0.68.0`. Costume composted through **0.68.16**. Four duals stay named (MCP `experimental`, recovery webhook alias, host status triple names, `HttpWebhookDeliverer` default). Host still names wizard ([SD-024](TECH-DEBT.md#sd-024) — typed flats + job-context stitch). Do not wire POST. Do not open **0.69** unless José names it. Queue: [NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (harvest locks complete; still not open) · [SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) · [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [VISION-0.56](docs/vision/VISION-0.56.md).
+Read: **this STATUS** → [VISION-0.69](docs/vision/VISION-0.69.md) → [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) §5–6 (locks + harvest) → [ADR-037](docs/adr/037-navigator-invert.md) **Proposed**.  
+No `src/` on `0.69.0`. Protocol + failing tests start at `0.69.1`. Job stays session-ignorant (attach is session-side; do not copy `session_id` onto the job). Do not compost Assist. Do not pay [SD-024](TECH-DEBT.md#sd-024).
 
 | Spirit | Decision |
 |--------|----------|
-| **0.68 closed** | Costume composted. Residual **SD-023**. Host names wizard **SD-024** (named after close). Not a new organ. Not delivery POST. |
-| **ADR-036** | **Accepted** — two doors stay |
-| **Next** | No open minor. Navigator harvest locks complete (incl. **walk writes**). Do not open **0.69** unless José names it. |
-| **Later** | [SD-021](TECH-DEBT.md#sd-021) · [VISION-0.56](docs/vision/VISION-0.56.md) · [NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
+| **0.69 open** | Navigator invert. Guidance is a definition. Kit walks. |
+| **ADR-037** | **Proposed** — accept at exit |
+| **ADR-006** | Stays **Accepted** (as-built Assist) |
+| **Next** | `0.69.1` walk-write seam + stamp/replace tests |
+| **Later** | [SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) · [SD-021](TECH-DEBT.md#sd-021) · [VISION-0.56](docs/vision/VISION-0.56.md) · [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
 | **Experimental** | Pre-1.0 · **no LTS** — [README](README.md) |
 
-## 0.68 — The great cleansing (**closed** · José 2026-09-15 · stamp `0.68.0`)
+## 0.69 — Navigator (**open** · José 2026-09-17 · plan `0.69.0`)
 
-**Vision:** [docs/vision/closed/VISION-0.68.md](docs/vision/closed/VISION-0.68.md)  
-**Migration:** [MIGRATION-0.68](docs/migrations/MIGRATION-0.68.md)
-
-Delete empty work after assembly dependents. Keep honest packaging.
+**Vision:** [docs/vision/VISION-0.69.md](docs/vision/VISION-0.69.md)  
+**Seed:** [docs/vision/VISION-NAVIGATOR.md](docs/vision/VISION-NAVIGATOR.md)  
+**ADR:** [037](docs/adr/037-navigator-invert.md) **Proposed**  
+**Migration:** [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md)
 
 | Patch | Status |
 |-------|--------|
-| **0.68.0** | ✅ plan + named remaining |
-| **0.68.1** | ✅ empty `host.projections.attach` composted |
-| **0.68.2** | ✅ runner `ready()` doctor register composted |
-| **0.68.3** | ✅ living POST lies trimmed |
-| **0.68.4** | ✅ bare `enable_event_outbox` → DNA skip |
-| **0.68.5** | ✅ empty `LocalRunnerApp.ready()` composted |
-| **0.68.6** | ✅ runner `ready()` call composted |
-| **0.68.7** | ✅ write-only `RunnerApp` bag composted |
-| **0.68.8** | ✅ empty `palm.common.runtimes` parking lot composted |
-| **0.68.9** | ✅ Pattern MCP second `ready()` call composted |
-| **0.68.10** | ✅ unused `host.webhook.delivered` / `failed` composted |
-| **0.68.11** | ✅ unused webhook journal facade composted |
-| **0.68.12** | ✅ unused projection journal facade composted |
-| **0.68.13** | ✅ unused journal consumer `"work_drain"` + host `redrive_journal` |
-| **0.68.14** | ✅ unread parking lots + vitality skip stubs |
-| **0.68.15** | ✅ unused host query facades |
-| **0.68.16** | ✅ README / transform-count / L0 copy |
-| **exit** | ✅ stamp `0.68.0` · José 2026-09-15 |
+| **0.69.0** | ✅ plan + ADR-037 Proposed · José locked floor + slice guide |
+| **0.69.1** | walk-write interface + `guidance_instance_id` stamp/replace (failing tests first) |
+| **0.69.2** | session-side attach after start |
+| **0.69.3** | spawn without nested park |
+| **0.69.4** | `palm.kits.present` kit-as-composition |
+| **0.69.5** | kit-contributed `guidance_definition_id` + stamp caller + replace predicate |
+| **0.69.6** | new wizard pack beside `operator_entry` |
+| **0.69.7** | empty-handed start dogfood on embedded (floor proof) |
 
-**Exit residual ([SD-023](TECH-DEBT.md#sd-023)):** MCP `experimental` = `full`; recovery webhook alias; host status triple aliases; unused `HttpWebhookDeliverer` default. `enable_state_snapshot` stays read packaging. Pattern/Provider `ready()` stays. Living projections organ stays. Work drain as WorkIntent drain stays.
-
-**Named after close ([SD-024](TECH-DEBT.md#sd-024)):** host still imports wizard for `get_wizard_progress` / `list_wizard_progress_views` and job-context stitch. Dispatch and projection factories already walk the registry. Not a 0.68 compost slice. Not surface deflation.
-
-**Floor:** one compost of costume. **Not this theme:** outbox POST (B), [VISION-0.56](docs/vision/VISION-0.56.md) spawn, DNA phenotype retune, dissolve `ServerContext`.
+**Floor:** one embedded walk without Assist. **Not this theme:** MCP/CLI/Portal invert, user plane, Tiny LLM, SD-023/024.
 
 ## Later seeds (not this season)
 
 | Seed | Home |
 |------|------|
+| Surface compost | [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
 | Profile / env structure duals | [SD-021](TECH-DEBT.md#sd-021) |
 | Workload place book | [VISION-0.56](docs/vision/VISION-0.56.md) (scout; remainder queued) |
-| Navigator | [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) — harvest locks complete (walk writes); engine holes named |
 | Tiny LLM (needs) | [VISION-TINY-LLM](docs/vision/VISION-TINY-LLM.md) — after Navigator walk + 0.56 place |
 | Tunnels → Grove | [VISION-TUNNELS](docs/vision/VISION-TUNNELS.md) → [VISION-GROVE](docs/vision/VISION-GROVE.md) |
-| Surface compost | [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |

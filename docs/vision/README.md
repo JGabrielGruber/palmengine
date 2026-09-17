@@ -22,7 +22,8 @@ Seeds deepen; they do not hide that law only inside one file.
 | [VISION-0.56.md](VISION-0.56.md) | Workload — **horizontal** place book (scout) |
 | [VISION-TUNNELS.md](VISION-TUNNELS.md) | **Reach** only · after assembly, before Grove |
 | [VISION-SURFACE-DEFLATION.md](VISION-SURFACE-DEFLATION.md) | Surface compost |
-| [VISION-NAVIGATOR.md](VISION-NAVIGATOR.md) | Operator-guidance definition · presentation adapter (queue) |
+| [VISION-0.69.md](VISION-0.69.md) | **Open** — Navigator invert (plan `0.69.0`) |
+| [VISION-NAVIGATOR.md](VISION-NAVIGATOR.md) | Operator-guidance definition · presentation adapter (law seed for 0.69) |
 | [VISION-TINY-LLM.md](VISION-TINY-LLM.md) | Tiny LLM — model as resource · context as flow (queue; needs) |
 | [VISION-GROVE.md](VISION-GROVE.md) | Multi-Palm crown · continuous interface · updated org meaning |
 

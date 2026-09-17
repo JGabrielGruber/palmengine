@@ -3,7 +3,7 @@
 **Status:** Live open residual · **2026-08-05**.  
 **Paid/closed detail:** [docs/audit/TECH-DEBT-PAID.md](docs/audit/TECH-DEBT-PAID.md)  
 **PD-era archive:** [docs/audit/TECH-DEBT-ERA-0.45.md](docs/audit/TECH-DEBT-ERA-0.45.md)  
-**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Closed theme:** [VISION-0.64](docs/vision/closed/VISION-0.64.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md)  
+**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Open theme:** [VISION-0.69](docs/vision/VISION-0.69.md) · seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md)  
 **Language:** ASD-STE100 (practical).
 
 Closed theme chronicles live under [docs/vision/closed/](docs/vision/closed/).  
@@ -621,14 +621,14 @@ shared fixtures; do not reintroduce dead `options={"name": "quick"}` DAGs.
 
 Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked theme**.
 
-## 7. Later theme seeds (not open VISION yet)
+## 7. Later theme seeds (not the open minor)
 
 | Seed | Debt | Spirit |
 |------|------|--------|
 | **Multi-claimer / capacity** | SD-017 · SD-018 · residual SD-019 | **Closed 0.62** — [VISION-0.62](docs/vision/closed/VISION-0.62.md) · [ADR-031](docs/adr/031-multi-claimer-work-drain.md) Accepted |
 | **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · SD-024 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) · [SD-024](#sd-024) |
 | **Surface deflation** | SU-* · SI-002/006/010 | Compost with evidence after eyes — [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
-| **Navigator** | SD-022 · Assist as product bag | Operator-guidance definition + **`palm.kits.present`** — [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) (queue seed; not open). **Named:** guidance stays attached; entry/visibility not this floor; first adapter **embedded library surface**; **turn invert**; **kit-as-composition**; **pack**; session metadata **`guidance_instance_id`**; **walk writes**; **job is session-ignorant**; **dashboard model**; kit-contributed **`guidance_definition_id`**; stamp caller = kit; replace = kit definition-id check. |
+| **Navigator** | SD-022 · Assist as product bag | **Open 0.69** — [VISION-0.69](docs/vision/VISION-0.69.md) · seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [ADR-037](docs/adr/037-navigator-invert.md) **Proposed**. Do not pay [SD-024](#sd-024) here. |
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |
 | **User plane + session impersonation** | D11 · SI-015 bare residual | Principal **acts as** owning session — not dual-own. **Also owns** entry chooser and definition visibility (named on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) 2026-09-15). Do not grow ambient `AuthEngine` principal into this plane. Do not open this to ship Navigator. |
 | **Delegate / team session membership** | growth | Shared walk under one owner session |

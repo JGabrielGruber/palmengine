@@ -4,8 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.0 — Navigator (plan)
+- José opened theme **0.69**. Vision: [VISION-0.69](docs/vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Migration stub: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md).
+- Floor: one embedded walk (bind → empty-handed guidance start → stay waiting → sibling attach → focus home). Execute starts at `0.69.1`. Package stamp stays `0.68.0`.
+- Assist stays. Do not pay [SD-024](TECH-DEBT.md#sd-024) as Navigator.
+
 ### Named residual
-- [SD-024](TECH-DEBT.md#sd-024) — host still names wizard (`get_wizard_progress` / `list_wizard_progress_views`, job-context stitch, `current_wizard_step`). Dispatch and projection factories already walk the registry. Named, not paid. Not a minor.
+- [SD-024](TECH-DEBT.md#sd-024) — host still names wizard (`get_wizard_progress` / `list_wizard_progress_views`, job-context stitch, `current_wizard_step`). Dispatch and projection factories already walk the registry. Named, not paid. Not Navigator.
 
 ### Portal dogfood — pt-BR paint skin
 - Empty `/portal/` page keeps the FAB and adds language links (`?lang=en`, `?lang=pt-BR`). Chat chrome is unchanged until a skin opens.

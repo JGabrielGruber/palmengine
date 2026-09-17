@@ -54,9 +54,9 @@ Record decisions in ADRs, [principles.md](../principles.md), or glossary when lo
 
 ---
 
-## Navigator (queue seed)
+## Navigator (open theme 0.69)
 
-Seed: [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md). José named the seed **2026-08-19**. Not an ADR.
+Theme: [VISION-0.69](../../vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md). ADR: [037](../../adr/037-navigator-invert.md) **Proposed**. José named the seed **2026-08-19**; opened the minor **2026-09-17**.
 
 **Locked (José 2026-09-15–16):** operator-guidance **instance stays** attached (focus returns). Entry chooser and definition **visibility** are **principal / user-plane**, not this invert’s floor. Floor: one anonymous outside subject; one process default guidance definition; adapter does not filter the catalog. Fail-closed later = **system interface**, not admission, not adapter. Kit **`palm.kits.present`** (**kit-as-composition:** one object holds `BoundSurface`, walks session + execution). Surfaces stay **in-process**. First adapter = **embedded library surface** (`CompositionProfile.embedded()`). `EmbeddedRuntime` is the engine, not the adapter. **Turn invert:** kit walks; pattern fills `JobInspectable` / `InputCapable`; no pattern `if` in the kit. **Pack:** new wizard definition beside `operator_entry`; same-session sibling; stay `WAITING_FOR_INPUT`; return is `focus`. Session **metadata** key **`guidance_instance_id`**. **Walk writes** through a system interface (floor degenerate; user plane later installs). **Job is session-ignorant** (attach is session-side). **Dashboard model:** chooser shell; session-owned titles; no `WaitInterest` on siblings. **Kit-contributed settings:** present owns `guidance_definition_id` (not core `PalmSettings`). **Stamp caller:** kit asks after attach; `SessionService` writes. **Replace predicate:** kit; attached; definition id equals `guidance_definition_id`. Interface type unnamed.
 

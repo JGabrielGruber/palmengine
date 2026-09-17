@@ -1,7 +1,7 @@
 # VISION — Navigator (operator-guidance definition · presentation adapter)
 
-**Status:** 📋 **Queue seed** — named **2026-08-19** (José: **navigator**). Not an open minor.  
-**Locks (José 2026-09-15–16):** guidance instance stays as **home**; entry and visibility are **principal / user-plane**, not this invert. Kit **`palm.kits.present`** (**kit-as-composition:** one object holds `BoundSurface` and walks session + execution). Surfaces stay **in-process**. First adapter: **embedded library surface** (not `EmbeddedRuntime`). **Turn invert:** kit walks; pattern fills inspect/input. **Pack:** new wizard guidance definition beside `operator_entry`; sibling start; stay waiting; return is `focus`. Session metadata: **`guidance_instance_id`**. **Walk writes** through a system interface (floor degenerate). **Job is session-ignorant.** **Dashboard model:** guidance is a staying chooser shell; spawned work is session-owned titles. **Kit-contributed settings:** present owns `guidance_definition_id`. **Stamp caller:** kit asks after attach. **Replace predicate:** kit; attached; definition id equals `guidance_definition_id`. Harvest §6.1. Not an open minor.  
+**Status:** 📋 **Law seed** for open theme [**0.69** Navigator](VISION-0.69.md) (José opened **2026-09-17**). Named **2026-08-19**.  
+**Locks (José 2026-09-15–16):** guidance instance stays as **home**; entry and visibility are **principal / user-plane**, not this invert. Kit **`palm.kits.present`** (**kit-as-composition:** one object holds `BoundSurface` and walks session + execution). Surfaces stay **in-process**. First adapter: **embedded library surface** (not `EmbeddedRuntime`). **Turn invert:** kit walks; pattern fills inspect/input. **Pack:** new wizard guidance definition beside `operator_entry`; sibling start; stay waiting; return is `focus`. Session metadata: **`guidance_instance_id`**. **Walk writes** through a system interface (floor degenerate). **Job is session-ignorant.** **Dashboard model:** guidance is a staying chooser shell; spawned work is session-owned titles. **Kit-contributed settings:** present owns `guidance_definition_id`. **Stamp caller:** kit asks after attach. **Replace predicate:** kit; attached; definition id equals `guidance_definition_id`. Harvest §6.1. Theme plan: [VISION-0.69](VISION-0.69.md). ADR [037](../adr/037-navigator-invert.md) **Proposed**.  
 **Language:** Law uses computer-science terms. Spoken teaching words are marked once. They are not types.  
 **Map:** [PALM.md](../PALM.md) · [WRITING.md](../WRITING.md) (talk vs law)  
 **Compost:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) (old Assist / CLI / Portal)  
@@ -18,7 +18,7 @@ Assist captured a real need: a client that does not already know a definition id
 
 That need became a **product domain** (`AssistService`) and a fat surface stack (MCP operator path, CLI command forest, Portal). The idea is still right. The home is wrong.
 
-This seed records the **intended split** so later work can grow a thin adapter and treat operator guidance as **catalog definitions**. It does not open a theme.
+This seed records the **intended split**. Theme plan: [VISION-0.69](VISION-0.69.md).
 
 ---
 
@@ -105,7 +105,7 @@ Fat MCP catalog, CLI REPL-as-chat, Portal FAB/paint, and `session_id` on walk ha
 
 ## 5. Locked (José 2026-09-15–16)
 
-These are named. They are not an open minor.
+These are named. Theme [0.69](VISION-0.69.md) executes them.
 
 | Cut | Law |
 |-----|-----|
@@ -134,7 +134,7 @@ A process may still name which guidance definition empty-handed start uses (pack
 
 ## 6. Scout harvest (José 2026-09-16)
 
-Harvest the **job path**, not Assist. Read-only. Do not invent a `PresentService`. Do not open a minor from the scout.
+Harvest the **job path**, not Assist. Read-only. Do not invent a `PresentService`. Scout is closed. Execute is [VISION-0.69](VISION-0.69.md).
 
 Unnamed contracts the harvest must close (or name as holes):
 
@@ -160,7 +160,7 @@ If a job-path mechanism is missing, that is a **named hole**, not a new product 
 
 Session geometry is **not** a fifth agent. Embedded dogfood already walks bind / focus.
 
-**After harvest:** this session merges reuse / exclude / hole. **Turn invert**, **kit-as-composition**, and **pack** locked (José 2026-09-16). Protocol + failing tests only when a theme opens.
+**After harvest:** this session merges reuse / exclude / hole. **Turn invert**, **kit-as-composition**, and **pack** locked (José 2026-09-16). Protocol + failing tests: [VISION-0.69](VISION-0.69.md) execute (`0.69.1+`).
 
 Not in this harvest: user plane, MCP as first client, Portal/CLI compost order.
 
@@ -212,7 +212,7 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 | **Kit Protocol** | Not in `src/`. Do not stub `PresentService`. |
 | **`guidance_instance_id` stamp** | Name + metadata-key + walk-write seam + **kit caller** locked (§5). As-built: `merge_metadata` unused in production; no interface; kit does not stamp. |
 
-Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work when a theme opens: session-side attach after start; park without wait-on-child-terminal; stamp **`guidance_instance_id`**.
+Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work in **0.69**: session-side attach after start; park without wait-on-child-terminal; stamp **`guidance_instance_id`**.
 
 ---
 
@@ -222,9 +222,10 @@ Homing, dashboard model, turn invert, kit-as-composition, pack, **`guidance_inst
 
 ---
 
-## 8. Non-goals (until a theme opens)
+## 8. Non-goals (not 0.69’s subject)
 
-- Open a minor or accept an ADR.
+Theme non-goals live in [VISION-0.69](VISION-0.69.md). This seed still refuses:
+
 - A `GatewayService` or `TerminalService` product domain.
 - Stretch admission into authorization.
 - Encode application menus in structure definition (DNA ≠ catalog).
