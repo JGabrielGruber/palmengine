@@ -4,6 +4,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.2 — session-side attach after start
+- Product door `SessionService.attach_after_start`: after execution start, attach the new instance on the bound session.
+- Job stays session-ignorant: do not copy `session_id` onto the job. Attach does not stamp `guidance_instance_id`.
+- Leftover `SessionOwnershipHook` (job metadata attach) stays. Kit `start()` waits for `0.69.4`.
+
 ### 0.69.1 — walk-write seam
 - Named session-metadata key **`guidance_instance_id`**: `SessionService.stamp_guidance_instance` / `replace_guidance_instance` (product door) → session plane store.
 - Floor allow is degenerate: owner session + attached instance. Stamp if absent; replace is explicit. Attach and focus do not stamp.

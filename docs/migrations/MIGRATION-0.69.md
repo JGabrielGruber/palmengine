@@ -12,7 +12,7 @@ Palm is pre-1.0. Package stamp stays `0.68.0` until an embedded release. This fi
 |------|-----|
 | Empty-handed walk | Present kit `start()` with `guidance_definition_id` |
 | Return to guidance | `focus(guidance_instance_id)` on the bound session |
-| Attach after start | Session-side attach. Do **not** set `session_id` on the job |
+| Attach after start | `SessionService.attach_after_start` (`0.69.2`). Do **not** set `session_id` on the job |
 | Present a waiting run | Kit present → `JobInspectable` / wait plane (turn invert) |
 
 ## Behavior / names that may change
@@ -23,7 +23,7 @@ Execute will name the cut. Likely:
 |-----|------------|
 | `AssistService.dispatch` as the empty-handed door | Still as-built. New door: `palm.kits.present` on embedded |
 | `operator-entry` ends, then product auto-starts | New wizard pack **beside** it; instance stays `WAITING_FOR_INPUT` |
-| `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is session-side |
+| `SessionOwnershipHook` / job metadata `session_id` | Leftover. Floor attach is `SessionService.attach_after_start` (`0.69.2`) |
 | No `guidance_instance_id` | Session metadata key. `0.69.1`: stamp/replace via `SessionService` (kit caller later) |
 | Core `PalmSettings` as every kit knob | Present kit owns `guidance_definition_id` |
 

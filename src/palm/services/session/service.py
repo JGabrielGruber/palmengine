@@ -355,6 +355,16 @@ class SessionService(BaseService):
     def attach_instance(self, session_id: str, instance_id: str) -> SessionRecord:
         return self.plane().attach_instance(session_id, instance_id)
 
+    def attach_after_start(self, session_id: str, instance_id: str) -> BoundSurface:
+        """Session-side attach after execution start (0.69.2).
+
+        Geometry attach on the bound session. Does not copy ``session_id``
+        onto the job. Does not stamp ``guidance_instance_id``. Kit start()
+        calls this later; leftover ``SessionOwnershipHook`` is not this door.
+        """
+        self.plane().attach_instance(session_id, instance_id)
+        return self.surface_from_session(session_id)
+
     def detach_instance(self, session_id: str, instance_id: str) -> SessionRecord:
         return self.plane().detach_instance(session_id, instance_id)
 
