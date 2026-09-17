@@ -4,16 +4,24 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69 — Navigator (**theme closed** · José 2026-09-17)
+
+Vision: [VISION-0.69](docs/vision/closed/VISION-0.69.md) · ADR [037](docs/adr/037-navigator-invert.md) **Accepted** · Migration: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md)
+
+- Floor: one embedded walk without Assist (`0.69.7`). Last growth: kit owns the walk-role key (`0.69.8`).
+- Package stamp stays `0.68.0`. No embedded release.
+- Residual named, not paid: Assist / CLI / Portal; leftover `SessionOwnershipHook`, nested park, `operator_entry` ending; unnamed handle / Protocol / env.
+
 ### 0.69.8 — kit owns the walk-role key
 - Present kit owns `GUIDANCE_INSTANCE_ID` (`"guidance_instance_id"`). Session plane does not export that constant.
 - `SessionService` / session plane `stamp(session_id, key, instance_id)` and `replace(...)` write a named metadata key. Degenerate allow stays owner + attached instance. No "guidance" in the session verb.
 - `BoundSurface.SESSION_CONTEXT_KEYS` no longer lists the kit role key. Kit `replace_guidance_instance` stays the predicate door.
-- Tests: `tests/test_present_kit_walk_role_key_0_69_8.py`. Floor walk `0.69.7` stays green. Theme stays open; ADR-037 stays Proposed.
+- Tests: `tests/test_present_kit_walk_role_key_0_69_8.py`. Floor walk `0.69.7` stays green.
 
 ### 0.69.7 — empty-handed start dogfood (floor proof)
 - One embedded walk without Assist: bind → empty-handed `start()` of **`navigator`** → stamp `guidance_instance_id` → stay `WAITING_FOR_INPUT` → sibling `start(title)` (no job `session_id`, no `WaitInterest`) → `focus(guidance_instance_id)` home.
 - Seed is `kit.guidance_definition_id = "navigator"` after bind. Empty-handed start does not start `operator-entry`. Unset kit key still refuses. `present()` of the waiting navigator has no Assist envelope.
-- Tests: `tests/test_navigator_dogfood_0_69_7.py`. Phenotype `ApplicationHost.for_mode("test")` / `CompositionProfile.embedded()`. Constructor override and env spelling stay later. Theme stays open; ADR-037 stays Proposed.
+- Tests: `tests/test_navigator_dogfood_0_69_7.py`. Phenotype `ApplicationHost.for_mode("test")` / `CompositionProfile.embedded()`. Constructor override and env spelling stay later.
 
 ### 0.69.6 — navigator wizard pack
 - New catalog wizard **`navigator`** (`examples/definitions/navigator.py`) beside `operator_entry`. Definition id `navigator`.
@@ -47,7 +55,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 - Interface type stays unnamed until José locks it. Kit caller and definition-id replace predicate wait for `0.69.5`.
 
 ### 0.69.0 — Navigator (plan)
-- José opened theme **0.69**. Vision: [VISION-0.69](docs/vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) **Proposed**. Migration stub: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md).
+- José opened theme **0.69**. Vision: [VISION-0.69](docs/vision/closed/VISION-0.69.md). Seed: [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md). ADR [037](docs/adr/037-navigator-invert.md) (Accepted at exit). Migration: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md).
 - Floor: one embedded walk (bind → empty-handed guidance start → stay waiting → sibling attach → focus home). Execute starts at `0.69.1`. Package stamp stays `0.68.0`.
 - Assist stays. Do not pay [SD-024](TECH-DEBT.md#sd-024) as Navigator.
 

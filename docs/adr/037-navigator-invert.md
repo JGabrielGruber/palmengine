@@ -1,13 +1,13 @@
 # ADR-037 — Navigator invert (operator-guidance definition · presentation kit)
 
-**Status:** Proposed  
-**Date:** 2026-09-17  
-**Theme:** [VISION-0.69](../vision/VISION-0.69.md) (**open**)  
+**Status:** Accepted  
+**Date:** 2026-09-17 · **Accepted:** 2026-09-17  
+**Theme:** [VISION-0.69](../vision/closed/VISION-0.69.md) (**closed**)  
 **Seed:** [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md)  
 **Map:** [PALM.md](../PALM.md)  
 **Related:** [ADR-006](006-assist-domain.md) **Accepted** (as-built Assist — **not** superseded) · [ADR-027](027-session-plane.md) **Accepted**
 
-José opened **0.69** (2026-09-17). Locks in the seed §5 stand. This ADR records the invert as a decision. Accept at theme exit.
+José accepted (2026-09-17). Theme closed. Floor: one embedded walk without Assist. Package stamp stays `0.68.0`. Compost of Assist is [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md).
 
 ---
 
@@ -81,9 +81,9 @@ Do not migrate `AssistService` in place. Do not compost MCP / CLI / Portal in th
 ### Negative / residual
 
 - Two operator spines until surface deflation.  
-- Engine glue is missing until 0.69 execute (attach, park, stamp).  
-- Protocol type names, kit handle class, and walk-write interface type stay unnamed until José locks them.  
-- `SessionOwnershipHook` / job `session_id` inherit is leftover, not floor.
+- Protocol type names, kit handle class, walk-write interface type, and env spelling stay unnamed until José locks them.  
+- `SessionOwnershipHook` / job `session_id` inherit is leftover, not floor.  
+- Nested `until_input` park and leftover `operator_entry` (still ends) stay.
 
 ### Forbidden
 
@@ -104,7 +104,7 @@ Do not migrate `AssistService` in place. Do not compost MCP / CLI / Portal in th
 
 ## Links
 
-- [VISION-0.69](../vision/VISION-0.69.md)  
+- [VISION-0.69](../vision/closed/VISION-0.69.md)  
 - [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md)  
 - [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md)  
 - [ADR-006](006-assist-domain.md)  

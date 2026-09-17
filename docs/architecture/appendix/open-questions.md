@@ -54,12 +54,14 @@ Record decisions in ADRs, [principles.md](../principles.md), or glossary when lo
 
 ---
 
-## Navigator (open theme 0.69)
+## Navigator (closed 0.69)
 
-Theme: [VISION-0.69](../../vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md). ADR: [037](../../adr/037-navigator-invert.md) **Proposed**. José named the seed **2026-08-19**; opened the minor **2026-09-17**.
+Theme: [VISION-0.69](../../vision/closed/VISION-0.69.md) (**closed**). Seed: [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md). ADR: [037](../../adr/037-navigator-invert.md) **Accepted**. José named the seed **2026-08-19**; opened the minor **2026-09-17**; closed **2026-09-17**. Package stamp stays `0.68.0`.
 
 **Locked (José 2026-09-15–16):** operator-guidance **instance stays** attached (focus returns). Entry chooser and definition **visibility** are **principal / user-plane**, not this invert’s floor. Floor: one anonymous outside subject; one process default guidance definition; adapter does not filter the catalog. Fail-closed later = **system interface**, not admission, not adapter. Kit **`palm.kits.present`** (**kit-as-composition:** one object holds `BoundSurface`, walks session + execution). Surfaces stay **in-process**. First adapter = **embedded library surface** (`CompositionProfile.embedded()`). `EmbeddedRuntime` is the engine, not the adapter. **Turn invert:** kit walks; pattern fills `JobInspectable` / `InputCapable`; no pattern `if` in the kit. **Pack:** new wizard definition beside `operator_entry`; same-session sibling; stay `WAITING_FOR_INPUT`; return is `focus`. Session **metadata** key **`guidance_instance_id`**. **Walk writes** through a system interface (floor degenerate; user plane later installs). **Job is session-ignorant** (attach is session-side). **Dashboard model:** chooser shell; session-owned titles; no `WaitInterest` on siblings. **Kit-contributed settings:** present owns `guidance_definition_id` (not core `PalmSettings`). **Stamp caller:** kit asks after attach; `SessionService` writes. **Replace predicate:** kit; attached; definition id equals `guidance_definition_id`. Interface type unnamed.
 
 **Scout harvest (José 2026-09-16):** returned in [VISION-NAVIGATOR](../../vision/VISION-NAVIGATOR.md) §6.1. Turn invert, kit-as-composition, pack, and `guidance_instance_id` locked. Protocol types unnamed.
 
-Homes (kit, kit-as-composition, first adapter, guidance instance, principal seam, turn invert, pack, `guidance_instance_id`, walk writes, job is session-ignorant, dashboard model, kit-contributed settings, stamp caller, replace predicate) are locked. Sibling-start (session-side attach) / park glue (spawn without nested park) / stamp **glue** is a named hole. Handle class, walk-write interface type, and env spelling unnamed.
+Homes (kit, kit-as-composition, first adapter, guidance instance, principal seam, turn invert, pack, `guidance_instance_id`, walk writes, job is session-ignorant, dashboard model, kit-contributed settings, stamp caller, replace predicate) are locked. Engine glue shipped: session-side attach (`0.69.2`), spawn without nested park (`0.69.3`), stamp caller (`0.69.5`), kit owns the key (`0.69.8`).
+
+**Still unnamed:** Protocol types, kit handle class, walk-write interface type, env spelling, constructor override. Pattern inspect/input fill (pipeline / DAG). Assist compost is [VISION-SURFACE-DEFLATION](../../vision/VISION-SURFACE-DEFLATION.md).

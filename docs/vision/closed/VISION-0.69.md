@@ -1,19 +1,21 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.8` landed (kit owns walk-role key). Package stamp stays `0.68.0`.  
+**Status:** ✅ **Theme closed** (José 2026-09-17). Floor proven `0.69.7`. Last growth `0.69.8`. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
-**Map:** [PALM.md](../PALM.md) — read first.  
-**ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
-**Seed (law):** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) §5–6.  
-**Migration:** [MIGRATION-0.69](../migrations/MIGRATION-0.69.md) (stub).  
-**Theme law:** [VERSIONING.md](../VERSIONING.md) (floor · growth · exit judgment).  
-**Prior closed:** [VISION-0.68](closed/VISION-0.68.md) costume · residual [SD-023](../../TECH-DEBT.md#sd-023) · [SD-024](../../TECH-DEBT.md#sd-024).  
-**Compost later:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md).  
-**Not this theme:** [VISION-TINY-LLM](VISION-TINY-LLM.md) · [VISION-0.56](VISION-0.56.md) · user plane.  
-**North star:** [VISION-GROVE](VISION-GROVE.md).
+**Map:** [PALM.md](../../PALM.md) — read first.  
+**ADR:** [037-navigator-invert.md](../../adr/037-navigator-invert.md) **Accepted**.  
+**Seed (law):** [VISION-NAVIGATOR](../VISION-NAVIGATOR.md) §5–6.  
+**Migration:** [MIGRATION-0.69](../../migrations/MIGRATION-0.69.md).  
+**Theme law:** [VERSIONING.md](../../VERSIONING.md) (floor · growth · exit judgment).  
+**Prior closed:** [VISION-0.68](VISION-0.68.md) costume · residual [SD-023](../../../TECH-DEBT.md#sd-023) · [SD-024](../../../TECH-DEBT.md#sd-024).  
+**Compost later:** [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md).  
+**Not this theme:** [VISION-TINY-LLM](../VISION-TINY-LLM.md) · [VISION-0.56](../VISION-0.56.md) · user plane.  
+**North star:** [VISION-GROVE](../VISION-GROVE.md).
 
 Teaching name: **Navigator**.  
 Law: operator-guidance **definition** + presentation kit **`palm.kits.present`**.
+
+**Exit:** José closed the theme (2026-09-17). Floor held: one embedded walk without Assist. ADR-037 **Accepted**. Residual named in §11. No open minor. Assist stays until surface deflation.
 
 ---
 
@@ -44,7 +46,7 @@ Move the empty-handed walk out of `AssistService` and into the **job path**.
 | **Growth line** | Theme may grow while José keeps it open — glue, pack, kit install, pattern fill. |
 | **Exit** | **José’s** judgment when the home is proper and residual is honest. |
 
-**Who decides:** José Gabriel Gruber — [VERSIONING.md](../VERSIONING.md) *Who decides*.
+**Who decides:** José Gabriel Gruber — [VERSIONING.md](../../VERSIONING.md) *Who decides*.
 
 ---
 
@@ -64,7 +66,7 @@ The invert is **real** when tests on `CompositionProfile.embedded()` (no Assist)
 
 **Proven `0.69.7`:** `tests/test_navigator_dogfood_0_69_7.py` on `ApplicationHost.for_mode("test")` (`CompositionProfile.embedded()`, no Assist). Seed is `kit.guidance_definition_id = "navigator"` after bind. Constructor override and env spelling stay unnamed.
 
-**Engine holes that the floor must close** ([VISION-NAVIGATOR](VISION-NAVIGATOR.md) §6.1):
+**Engine holes that the floor must close** ([VISION-NAVIGATOR](../VISION-NAVIGATOR.md) §6.1):
 
 | Hole | Floor glue |
 |------|------------|
@@ -92,7 +94,7 @@ While the theme stays open, slices may:
 ## 4. Why now
 
 1. **0.68** closed costume. Residual duals stay named. They are not this invert.  
-2. Harvest locks in [VISION-NAVIGATOR](VISION-NAVIGATOR.md) §5 are complete.  
+2. Harvest locks in [VISION-NAVIGATOR](../VISION-NAVIGATOR.md) §5 are complete.  
 3. José named **0.69** (2026-09-17).  
 4. Further surfaces on Assist grow the wrong home.
 
@@ -104,13 +106,13 @@ While the theme stays open, slices may:
 
 | Out of this theme’s *subject* | Home |
 |-------------------------------|------|
-| Compost Assist / CLI forest / Portal | [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) |
-| Tiny model body / typed speak | [VISION-TINY-LLM](VISION-TINY-LLM.md) |
-| Workload place book | [VISION-0.56](VISION-0.56.md) |
-| User plane, impersonation, catalog ACL | [ADR-027](../adr/027-session-plane.md) D8 · D11 |
+| Compost Assist / CLI forest / Portal | [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md) |
+| Tiny model body / typed speak | [VISION-TINY-LLM](../VISION-TINY-LLM.md) |
+| Workload place book | [VISION-0.56](../VISION-0.56.md) |
+| User plane, impersonation, catalog ACL | [ADR-027](../../adr/027-session-plane.md) D8 · D11 |
 | Out-of-process surface | Client scale later |
-| Host wizard-named flats | [SD-024](../../TECH-DEBT.md#sd-024) — do not pay as Navigator |
-| 0.68 leftover duals | [SD-023](../../TECH-DEBT.md#sd-023) |
+| Host wizard-named flats | [SD-024](../../../TECH-DEBT.md#sd-024) — do not pay as Navigator |
+| 0.68 leftover duals | [SD-023](../../../TECH-DEBT.md#sd-023) |
 
 **Forbidden always (layer law):**
 
@@ -128,7 +130,7 @@ While the theme stays open, slices may:
 
 ## 6. Principles
 
-Bind to [PALM.md](../PALM.md), [ADR-027](../adr/027-session-plane.md), and [ADR-037](../adr/037-navigator-invert.md).
+Bind to [PALM.md](../../PALM.md), [ADR-027](../../adr/027-session-plane.md), and [ADR-037](../../adr/037-navigator-invert.md).
 
 1. **Purpose is a definition.** Geometry is the kit.  
 2. **Birth, then delete.** Grow beside Assist. Compost later.  
@@ -138,7 +140,7 @@ Bind to [PALM.md](../PALM.md), [ADR-027](../adr/027-session-plane.md), and [ADR-
 6. **Walk writes** go through a system interface. Floor allow. User plane installs later.  
 7. **Kit-contributed settings.** `guidance_definition_id` lives on the present kit, not core `PalmSettings`.  
 8. **One anonymous outside subject** on the floor. The adapter does not filter the catalog.  
-9. **STE** for theme docs. Spoken words are teaching only ([VISION-NAVIGATOR](VISION-NAVIGATOR.md) §2).  
+9. **STE** for theme docs. Spoken words are teaching only ([VISION-NAVIGATOR](../VISION-NAVIGATOR.md) §2).  
 10. **Theme exit is José’s judgment** when the home is proper.
 
 **Spirit:** Do not grow a second spine. Use the job path.
@@ -147,7 +149,7 @@ Bind to [PALM.md](../PALM.md), [ADR-027](../adr/027-session-plane.md), and [ADR-
 
 ## 7. Locks (carried from the seed)
 
-José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAVIGATOR.md) §5.
+José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](../VISION-NAVIGATOR.md) §5.
 
 | Cut | Law |
 |-----|-----|
@@ -166,7 +168,7 @@ José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAV
 
 **Still unnamed (José locks later):** Protocol type names, kit handle class, walk-write interface type, env spelling.
 
-[ADR-006](../adr/006-assist-domain.md) stays **Accepted** as as-built Assist. This ADR does **not** supersede it. Surface compost may supersede later.
+[ADR-006](../../adr/006-assist-domain.md) stays **Accepted** as as-built Assist. This ADR does **not** supersede it. Surface compost may supersede later.
 
 ---
 
@@ -187,7 +189,7 @@ José locked these on **2026-09-15–16**. Detail: [VISION-NAVIGATOR](VISION-NAV
           — any other definition as a sibling title
 ```
 
-Assist remains a parallel as-built spine until [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md).
+Assist remains a parallel as-built spine until [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md).
 
 ---
 
@@ -216,26 +218,34 @@ Merge or extend when review stays clear. Do not skip the three engine holes.
 | ID | Motion |
 |----|--------|
 | Engine holes (attach / park / stamp) | **Pay** in this theme |
-| [SD-022](../../TECH-DEBT.md#sd-022) | Clean talk-as-type when a law file is touched |
-| [SD-023](../../TECH-DEBT.md#sd-023) | **Name** — not this theme |
-| [SD-024](../../TECH-DEBT.md#sd-024) | **Name** — do not grow the kit on host wizard flats |
-| [SU-*](../../TECH-DEBT.md) / SI-002 | Surface deflation later |
-| [ADR-006](../adr/006-assist-domain.md) | Stays until compost |
+| [SD-022](../../../TECH-DEBT.md#sd-022) | Clean talk-as-type when a law file is touched |
+| [SD-023](../../../TECH-DEBT.md#sd-023) | **Name** — not this theme |
+| [SD-024](../../../TECH-DEBT.md#sd-024) | **Name** — do not grow the kit on host wizard flats |
+| [SU-*](../../../TECH-DEBT.md) / SI-002 | Surface deflation later |
+| [ADR-006](../../adr/006-assist-domain.md) | Stays until compost |
 
 ---
 
 ## 11. Exit judgment
 
-Exit when José judges:
+José closed the theme (2026-09-17).
 
-- The floor walk holds in code and tests.  
-- ADR-037 Accepted (or waived honestly).  
-- Residual named.  
-- Spine green on declared modes.
+- Floor walk holds: `tests/test_navigator_dogfood_0_69_7.py` on `CompositionProfile.embedded()`.  
+- ADR-037 **Accepted**.  
+- Package stamp stays `0.68.0` (no embedded release).  
+- Residual **named** (not paid):
 
-**0.69.7** proved the floor walk in tests. Exit is still José’s call. ADR-037 stays Proposed.
+| Residual | Home |
+|----------|------|
+| Assist / CLI forest / Portal | [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md) |
+| `SessionOwnershipHook` / job `session_id` inherit | leftover; floor attach is session-side |
+| Nested `until_input` park | leftover; floor spawn does not wait on child terminal |
+| `operator_entry` still ends | leftover pack; floor pack is **`navigator`** |
+| Protocol types, kit handle class, walk-write interface type, env spelling, constructor override | unnamed until José locks |
+| Pattern inspect/input incomplete (pipeline / DAG) | kit must not paper with a pattern `if` |
+| Host wizard flats | [SD-024](../../../TECH-DEBT.md#sd-024) |
+| 0.68 leftover duals | [SD-023](../../../TECH-DEBT.md#sd-023) |
 
-Do not close because the slice table is ticked.  
 Do not keep the theme open to compost Assist.
 
 ---

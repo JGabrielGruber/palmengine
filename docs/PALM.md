@@ -5,7 +5,7 @@
 **Role:** This file is the **map of Palm as a whole**. Use it first.  
 **Detail:** Link out. Do not replace this map with a second full copy.
 
-**Related:** [architecture/](architecture/README.md) (**intended architecture** · C4 SE vault) · [VISION-0.62](vision/closed/VISION-0.62.md) (multi-claimer capacity **closed** `0.62.8`) · [ADR-031](adr/031-multi-claimer-work-drain.md) **Accepted** · [VISION-0.61](vision/closed/VISION-0.61.md) (vitality **closed** `0.61.13`) · [ADR-030](adr/030-system-vitality.md) **Accepted** · [VISION-0.60](vision/closed/VISION-0.60.md) (supervisor + work plane **closed**) · [ADR-029](adr/029-system-supervisor.md) **Accepted** · [VISION-0.59](vision/closed/VISION-0.59.md) (boot **closed**) · [ADR-028](adr/028-system-boot.md) **Accepted** · [VISION-0.58](vision/closed/VISION-0.58.md) (session **closed**) · [ADR-027](adr/027-session-plane.md) **Accepted** · [VISION-0.64](vision/closed/VISION-0.64.md) (**closed**) · [VISION-0.63](vision/closed/VISION-0.63.md) (assembly **closed**) · [ADR-032](adr/032-organism-assembly.md) **Accepted** · [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) (seed law) · [VISION-0.66](vision/closed/VISION-0.66.md) (**closed**) · [VISION-0.67](vision/closed/VISION-0.67.md) (**closed**) · [VISION-0.68](vision/closed/VISION-0.68.md) (**closed**) · [VISION-0.69](vision/VISION-0.69.md) (**open** Navigator) · [ADR-037](adr/037-navigator-invert.md) **Proposed** · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) · [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) (queue) · [VISION-TINY-LLM](vision/VISION-TINY-LLM.md) (queue) · [VISION-VITALITY](vision/closed/VISION-VITALITY.md) (seed essay) · [VISION-0.57](vision/closed/VISION-0.57.md) · [ADR-026](adr/026-palm-system-layer.md) · [WRITING.md](WRITING.md) · [VISION-GROVE](vision/VISION-GROVE.md) · [AGENTS.md](../AGENTS.md) (mode router) · [src/palm/AGENTS.md](../src/palm/AGENTS.md) (development) · [architecture/AGENTS.md](architecture/AGENTS.md) (intended architecture) · [ARCHITECTURE.md](../ARCHITECTURE.md) · [STATUS.md](../STATUS.md)
+**Related:** [architecture/](architecture/README.md) (**intended architecture** · C4 SE vault) · [VISION-0.62](vision/closed/VISION-0.62.md) (multi-claimer capacity **closed** `0.62.8`) · [ADR-031](adr/031-multi-claimer-work-drain.md) **Accepted** · [VISION-0.61](vision/closed/VISION-0.61.md) (vitality **closed** `0.61.13`) · [ADR-030](adr/030-system-vitality.md) **Accepted** · [VISION-0.60](vision/closed/VISION-0.60.md) (supervisor + work plane **closed**) · [ADR-029](adr/029-system-supervisor.md) **Accepted** · [VISION-0.59](vision/closed/VISION-0.59.md) (boot **closed**) · [ADR-028](adr/028-system-boot.md) **Accepted** · [VISION-0.58](vision/closed/VISION-0.58.md) (session **closed**) · [ADR-027](adr/027-session-plane.md) **Accepted** · [VISION-0.64](vision/closed/VISION-0.64.md) (**closed**) · [VISION-0.63](vision/closed/VISION-0.63.md) (assembly **closed**) · [ADR-032](adr/032-organism-assembly.md) **Accepted** · [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) (seed law) · [VISION-0.66](vision/closed/VISION-0.66.md) (**closed**) · [VISION-0.67](vision/closed/VISION-0.67.md) (**closed**) · [VISION-0.68](vision/closed/VISION-0.68.md) (**closed**) · [VISION-0.69](vision/closed/VISION-0.69.md) (**closed** Navigator) · [ADR-037](adr/037-navigator-invert.md) **Accepted** · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) · [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) (queue) · [VISION-TINY-LLM](vision/VISION-TINY-LLM.md) (queue) · [VISION-VITALITY](vision/closed/VISION-VITALITY.md) (seed essay) · [VISION-0.57](vision/closed/VISION-0.57.md) · [ADR-026](adr/026-palm-system-layer.md) · [WRITING.md](WRITING.md) · [VISION-GROVE](vision/VISION-GROVE.md) · [AGENTS.md](../AGENTS.md) (mode router) · [src/palm/AGENTS.md](../src/palm/AGENTS.md) (development) · [architecture/AGENTS.md](architecture/AGENTS.md) (intended architecture) · [ARCHITECTURE.md](../ARCHITECTURE.md) · [STATUS.md](../STATUS.md)
 
 ---
 
@@ -353,7 +353,7 @@ Then call **system ports** (target). Today many paths call engines on a resolved
 | **Definitions** | Catalog read/write of definitions |
 | **Design** | Propose → impact → commit definition change |
 | **Execution** | Run flows, processes, provider invoke, workloads |
-| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition** that **stays** as session home; present/bind is **`palm.kits.present`** (**turn invert:** kit walks, pattern fills inspect/input). First adapter: **embedded library surface**. Entry and visibility are later **principal / user-plane**. Theme: [VISION-0.69](vision/VISION-0.69.md) (**open**). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
+| **Assist** | As-built operator conversation (discover, drive, present). Intended: guidance is a **catalog definition** that **stays** as session home; present/bind is **`palm.kits.present`** (**turn invert:** kit walks, pattern fills inspect/input). First adapter: **embedded library surface**. Entry and visibility are later **principal / user-plane**. Theme: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). Compost: [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md). |
 | **Inspect** (product door) | Doctor / top / list / cancel present — **not** the kernel layer (**SD-007** paid 0.61.4) |
 | **Analytics** | Datasets and dashboards |
 
@@ -455,7 +455,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, **`present`**, …). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. Handle class unnamed. Theme: [VISION-0.69](vision/VISION-0.69.md). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). | SD-011 ✅ |
+| `palm.kits` | Surface kits (`server`, **`present`**, …). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. Handle class unnamed. Theme: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). Seed: [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md). | SD-011 ✅ |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---
@@ -599,7 +599,7 @@ From theme **0.57** onward:
 | Live debt (SD/SU/ST/CS) | [TECH-DEBT.md](../TECH-DEBT.md) |
 | Intention stubs | [STUBS.md](STUBS.md) |
 | Debt archive (PD era) | [audit/TECH-DEBT-ERA-0.45.md](audit/TECH-DEBT-ERA-0.45.md) |
-| Theme plan | [VISION-0.69](vision/VISION-0.69.md) (**open**) · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) |
+| Theme plan | none open · closed [VISION-0.69](vision/closed/VISION-0.69.md) · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) |
 | Structural ADR | [ADR-026](adr/026-palm-system-layer.md) |
 | Start / continue law | [VISION-0.55](vision/closed/VISION-0.55.md) · [ADR-025](adr/025-reactive-interests.md) |
 | Event buses | [EVENT-PLANE](EVENT-PLANE.md) |
@@ -633,7 +633,7 @@ A map that only names **ideals** without today is also incomplete.
 | Definitions, instances, resume | **Real** |
 | BT + orchestration job path | **Real** — spine of Palm |
 | Patterns / providers / storages registries | **Real** |
-| Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **open 0.69** — kit not shipped |
+| Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
 | Workload plane (place registry) | **Scout** (0.56) — engine, runners, product path; multi-process **control** via named places — remainder + [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
