@@ -10,7 +10,7 @@ Palm is pre-1.0. Package stamp stays `0.68.0` until an embedded release. This fi
 
 | Goal | Use |
 |------|-----|
-| Empty-handed walk | Present kit `start()` with kit-owned `guidance_definition_id` (`0.69.5`). Unset refuses. Set to **`navigator`** for the staying chooser (`0.69.6`). Phenotype seed waits for `0.69.7`. |
+| Empty-handed walk | Present kit `start()` with kit-owned `guidance_definition_id` (`0.69.5`). Unset refuses. Set to **`navigator`** for the staying chooser (`0.69.6`). Dogfood `0.69.7` assigns that key after bind on embedded / test. Constructor override and env spelling stay later. |
 | Return to guidance | `focus(guidance_instance_id)` on the bound session |
 | Attach after start | `SessionService.attach_after_start` (`0.69.2`). Do **not** set `session_id` on the job |
 | Spawn a sibling without nested park | `FlowExecutionService.spawn_sibling` (`0.69.3`). Parent stays `WAITING_FOR_INPUT`. No `WaitInterest` on the sibling |

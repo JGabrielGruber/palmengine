@@ -144,7 +144,7 @@ Unnamed contracts the harvest must close (or name as holes):
 | **Start sibling** | **Law locked** (§5 pack + job is session-ignorant). Glue: attach from the session after start — named hole. Do not copy `session_id` onto the child job. |
 | **Park / home** | **Law locked** (§5 dashboard model): operator-wait chooser, no interest on siblings. As-built `0.69.3`: `FlowExecutionService.spawn_sibling`. Nested park leftover stays. |
 | **Library door** | **Locked** (§5 kit-as-composition): the kit object holds `BoundSurface`. As-built `0.69.4`: in `INSTALLED_KITS`; `bind(host)` walks existing doors. Handle class unnamed. |
-| **Empty-handed start** | **Locked** (§5 pack + kit-contributed settings): **`guidance_definition_id`** on the present kit, not core `PalmSettings`. Unset → no empty-handed start. As-built `0.69.5`: kit-owned fragment; empty-handed `start()` uses it by id. Phenotype seed stays later. |
+| **Empty-handed start** | **Locked** (§5 pack + kit-contributed settings): **`guidance_definition_id`** on the present kit, not core `PalmSettings`. Unset → no empty-handed start. As-built `0.69.5`: kit-owned fragment; empty-handed `start()` uses it by id. As-built `0.69.7`: embedded dogfood assigns `"navigator"` after bind. Constructor override and env spelling stay later. |
 | **Anti-requirements** | **Locked** (kit + pack refuse lists in §6.1 exclude). |
 
 If a job-path mechanism is missing, that is a **named hole**, not a new product domain.
@@ -203,7 +203,7 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 | **Start sibling** | As-built `0.69.2`: `SessionService.attach_after_start` after start — **not** inherit `session_id` onto the child job. Kit `start()` as-built `0.69.4`. |
 | **Park / home** | As-built `0.69.3`: `FlowExecutionService.spawn_sibling` — stay WAITING; no interest on siblings. Leftover nested park waits **on child success**, then parent **advances**. Kit `focus` as-built `0.69.4`. Stamp home pointer as-built `0.69.5`. |
 | **Library door** | **Holder locked** (§5): the kit object holds `BoundSurface`. As-built `0.69.4`: `palm.kits.present` in `INSTALLED_KITS`. Handle class unnamed. |
-| **Empty-handed start** | As-built `0.69.5`: present kit owns `guidance_definition_id`. Unset refuses empty-handed `start()`. Set starts that definition by id. Phenotype seed and constructor override stay later. |
+| **Empty-handed start** | As-built `0.69.5`: present kit owns `guidance_definition_id`. Unset refuses empty-handed `start()`. Set starts that definition by id. As-built `0.69.7`: dogfood on `ApplicationHost.for_mode("test")` assigns `"navigator"` after bind. Constructor override and env spelling stay later. |
 | **definition_id** | Compact publishes `flow` only. |
 | **value on present** | No current-step draft on inspect/compact. |
 | **mutation on job compact** | `compact_job_inspect` has no `mutation`. Wizard compact does. Shared turn should not require the wizard-only compact. |
@@ -212,13 +212,13 @@ Four read-only scouts: Envelope, Pack mechanics, Embedded dogfood, Negative spin
 | **Kit Protocol** | Handle class unnamed. Package `palm.kits.present` as-built `0.69.4`. Do not stub `PresentService`. |
 | **`guidance_instance_id` stamp** | Name + metadata-key + walk-write seam + **kit caller** locked (§5). As-built `0.69.1`: plane/SessionService stamp/replace (degenerate allow). As-built `0.69.5`: kit stamps after attach iff definition id equals; replace predicate on the kit. Interface type unnamed. |
 
-Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work in **0.69**: session-side attach after start (`0.69.2` door); spawn without nested park (`0.69.3` door); stamp **`guidance_instance_id`** (seam `0.69.1`; kit caller `0.69.5`). Pack as-built `0.69.6`: **`navigator`**. Floor dogfood remains `0.69.7`.
+Harvest locks in §5 are complete (including **job is session-ignorant**). Engine work in **0.69**: session-side attach after start (`0.69.2` door); spawn without nested park (`0.69.3` door); stamp **`guidance_instance_id`** (seam `0.69.1`; kit caller `0.69.5`). Pack as-built `0.69.6`: **`navigator`**. Floor dogfood as-built `0.69.7`.
 
 ---
 
 ## 7. Open (not locked)
 
-Homing, dashboard model, turn invert, kit-as-composition, pack, **`guidance_instance_id`**, **walk writes**, **job is session-ignorant**, **kit-contributed settings**, **stamp caller**, and **replace predicate** (kit definition-id check) are locked (§5). Protocol type names, kit handle class, walk-write interface type, and env spelling stay unnamed. Session-side attach glue is as-built (`0.69.2`). Park glue is as-built (`0.69.3`). Library door is as-built (`0.69.4`). Kit-contributed `guidance_definition_id` + stamp caller + replace predicate are as-built (`0.69.5`). Pack as-built `0.69.6`: catalog wizard **`navigator`**. Floor dogfood stays later (`0.69.7`).
+Homing, dashboard model, turn invert, kit-as-composition, pack, **`guidance_instance_id`**, **walk writes**, **job is session-ignorant**, **kit-contributed settings**, **stamp caller**, and **replace predicate** (kit definition-id check) are locked (§5). Protocol type names, kit handle class, walk-write interface type, and env spelling stay unnamed. Session-side attach glue is as-built (`0.69.2`). Park glue is as-built (`0.69.3`). Library door is as-built (`0.69.4`). Kit-contributed `guidance_definition_id` + stamp caller + replace predicate are as-built (`0.69.5`). Pack as-built `0.69.6`: catalog wizard **`navigator`**. Floor dogfood as-built `0.69.7`: empty-handed start of **`navigator`** on embedded (no Assist).
 
 ---
 

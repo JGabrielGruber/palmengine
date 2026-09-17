@@ -4,10 +4,15 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.69.7 — empty-handed start dogfood (floor proof)
+- One embedded walk without Assist: bind → empty-handed `start()` of **`navigator`** → stamp `guidance_instance_id` → stay `WAITING_FOR_INPUT` → sibling `start(title)` (no job `session_id`, no `WaitInterest`) → `focus(guidance_instance_id)` home.
+- Seed is `kit.guidance_definition_id = "navigator"` after bind. Empty-handed start does not start `operator-entry`. Unset kit key still refuses. `present()` of the waiting navigator has no Assist envelope.
+- Tests: `tests/test_navigator_dogfood_0_69_7.py`. Phenotype `ApplicationHost.for_mode("test")` / `CompositionProfile.embedded()`. Constructor override and env spelling stay later. Theme stays open; ADR-037 stays Proposed.
+
 ### 0.69.6 — navigator wizard pack
 - New catalog wizard **`navigator`** (`examples/definitions/navigator.py`) beside `operator_entry`. Definition id `navigator`.
 - Stays `WAITING_FOR_INPUT` after naming work (no `__end__`). Sibling start is kit `start()` / `spawn_sibling`. Return is `focus` of `guidance_instance_id`.
-- Do not copy handoff, coconut/design doors, or Assist scenario façade. Leftover `operator_entry` still ends. Floor dogfood waits for `0.69.7`.
+- Do not copy handoff, coconut/design doors, or Assist scenario façade. Leftover `operator_entry` still ends. Floor dogfood: `0.69.7`.
 
 ### 0.69.5 — kit-contributed guidance_definition_id
 - Present kit owns `guidance_definition_id` (`str | None`). Unset → no empty-handed start. Not a field on core `PalmSettings`.

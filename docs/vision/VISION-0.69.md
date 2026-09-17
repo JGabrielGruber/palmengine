@@ -1,6 +1,6 @@
 # VISION 0.69 — Navigator
 
-**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.6` landed (catalog wizard `navigator`). Package stamp stays `0.68.0`.  
+**Status:** 📋 **Theme open** (José 2026-09-17). Plan `0.69.0` · execute `0.69.7` landed (embedded floor proof). Package stamp stays `0.68.0`.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [037-navigator-invert.md](../adr/037-navigator-invert.md) **Proposed**.  
@@ -61,6 +61,8 @@ The invert is **real** when tests on `CompositionProfile.embedded()` (no Assist)
 7. Replace stamps only when the started definition id equals `guidance_definition_id`.
 
 **Floor function:** that walk. Not MCP. Not CLI. Not Portal. Not user plane.
+
+**Proven `0.69.7`:** `tests/test_navigator_dogfood_0_69_7.py` on `ApplicationHost.for_mode("test")` (`CompositionProfile.embedded()`, no Assist). Seed is `kit.guidance_definition_id = "navigator"` after bind. Constructor override and env spelling stay unnamed.
 
 **Engine holes that the floor must close** ([VISION-NAVIGATOR](VISION-NAVIGATOR.md) §6.1):
 
@@ -201,7 +203,7 @@ Execution starts at `0.69.1`. Protocol + failing tests belong in execute, not th
 | **0.69.4** | ✅ `palm.kits.present` kit-as-composition (bind, present, submit, start, attach, focus). Handle class unnamed. |
 | **0.69.5** | ✅ Kit-contributed `guidance_definition_id` + stamp caller + replace predicate. |
 | **0.69.6** | ✅ Wizard pack `navigator` beside `operator_entry`. Stay waiting. Leftover still ends. |
-| **0.69.7** | Empty-handed start dogfood on embedded — **floor proof**. |
+| **0.69.7** | ✅ Empty-handed start dogfood on embedded — **floor proof**. |
 
 Merge or extend when review stays clear. Do not skip the three engine holes.
 
@@ -228,6 +230,8 @@ Exit when José judges:
 - ADR-037 Accepted (or waived honestly).  
 - Residual named.  
 - Spine green on declared modes.
+
+**0.69.7** proved the floor walk in tests. Exit is still José’s call. ADR-037 stays Proposed.
 
 Do not close because the slice table is ticked.  
 Do not keep the theme open to compost Assist.

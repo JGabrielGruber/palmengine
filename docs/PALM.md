@@ -245,7 +245,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Kit-as-composition (Navigator, locked):** that kit is one library object that holds `BoundSurface` and composes `SessionService` + execution. Not a product service. As-built `0.69.4`: `palm.kits.present.bind(host)` walks bind / present / submit / start / attach / focus. Handle class unnamed.
 
-**Pack (Navigator, locked):** wizard **`navigator`** beside `operator_entry` (`examples/definitions/navigator.py`). Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**. As-built `0.69.6`. Leftover `operator_entry` still ends.
+**Pack (Navigator, locked):** wizard **`navigator`** beside `operator_entry` (`examples/definitions/navigator.py`). Same-session sibling start; guidance stays waiting; return is `focus` of **`guidance_instance_id`**. As-built `0.69.6`. Leftover `operator_entry` still ends. Floor dogfood as-built `0.69.7`: empty-handed start of **`navigator`** on `CompositionProfile.embedded()` (no Assist).
 
 **`guidance_instance_id` (Navigator, locked):** session **metadata** key — which attached instance is this walk’s operator-guidance run. Not continue focus. Not kit RAM. Not root. Not a `SessionRecord` field in the floor.
 
@@ -255,7 +255,7 @@ Other patterns exist at different maturity. Maturity is not the same as purpose.
 
 **Dashboard model (Navigator, locked):** guidance job is a staying chooser shell (operator wait). Spawned work is session-owned peers, not wait-plane targets of home. As-built `0.69.3`: `FlowExecutionService.spawn_sibling`. As-built `0.69.4`: kit `start()` walks that door; kit `focus` among owned instances. Leftover `until_input` nested park stays.
 
-**Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`** (`str | None`). As-built `0.69.5`: unset default; empty-handed `start()` uses the key (by id). Not a field on core `PalmSettings`. Constructor override and env spelling stay later.
+**Kit-contributed settings (Navigator, locked):** kits extend process config. Present owns **`guidance_definition_id`** (`str | None`). As-built `0.69.5`: unset default; empty-handed `start()` uses the key (by id). Not a field on core `PalmSettings`. As-built `0.69.7`: dogfood sets the key after bind (`"navigator"`). Constructor override and env spelling stay later.
 
 **Stamp caller (Navigator, locked):** present kit asks `SessionService` to stamp `guidance_instance_id` after attach if the started definition is that chooser. As-built `0.69.5`. Attach does not stamp.
 
