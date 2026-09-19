@@ -290,11 +290,11 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 
 **Severity:** S2 · **Effort:** M · **Theme:** [VISION-0.70](docs/vision/VISION-0.70.md) (**open**) · named 2026-09-19
 
-**Observation:** Library `land(host).commit(body)` needs `host.definitions`. The job has the bound runtime, not the host. Provider `palm` submits and lists. It does not write a catalog flow ([ADR-038](docs/adr/038-authoring-adapter.md) D8). `LocalPalmInvoker` is an open-coded `if` menu. A one-name `create_flow` `if` violates [AGENTS §1.1](src/palm/AGENTS.md). The seed forbids assuming `palm` `create_flow`. As-built `0.70.5`: a pack resource walks `bound().commit` (definitions bound by `land(host)`). As-built `0.70.6`: that `commit` walks catalog `kind` (`flow` / `resource`). Working provider name `authoring` duals the kit. `0.70.4` still calls `create_resource`.
+**Observation:** Library `land(host).commit(body)` needs `host.definitions`. The job has the bound runtime, not the host. Provider `palm` submits and lists. It does not write a catalog flow ([ADR-038](docs/adr/038-authoring-adapter.md) D8). `LocalPalmInvoker` is an open-coded `if` menu. A one-name `create_flow` `if` violates [AGENTS §1.1](src/palm/AGENTS.md). The seed forbids assuming `palm` `create_flow`. As-built `0.70.5`: a pack resource walks `bound().commit`. As-built `0.70.6`: that `commit` walks catalog `kind` (`flow` / `resource`). As-built `0.70.7`: `bound()` takes definitions from the started host on the bound runtime; `land(host)` does not stash. Working provider name `authoring` duals the kit. `0.70.4` still calls `create_resource`.
 
 | Cut | What it is | Keep |
 |-----|------------|------|
-| Host-only `land` | Adapter holds `DefinitionService` from `ApplicationHost` | Same adapter; bind definitions when `land(host)` runs so a job can speak it |
+| Host-only `land` | Adapter holds `DefinitionService` from `ApplicationHost` | Same adapter. Job speaks `bound()` from the started host (`0.70.7`). Runtime bind stays SD-016 |
 | `palm` catalog write | Named hole. Submit / list / inspect only | Adapter door. Do not add a one-name invoker `if` |
 | Open-coded palm invoke | `LocalPalmInvoker` branches on action / kind | Invert to a table **before** a new palm action ([AGENTS §1.1](src/palm/AGENTS.md)) |
 | Pytest as leaf | Pack submit unused; test calls `commit` / `create_resource` | Job resource walks the adapter. Resource land is `commit` of `kind: resource` (`0.70.6`). `0.70.4` still bypasses |
@@ -304,7 +304,7 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 
 **Law:** [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md) §4 — catalog write from a leaf is the adapter, or a resource that walks it.
 
-**Status:** open (named 2026-09-19). Job-leaf speak paid `0.70.5`. Resource land paid `0.70.6` (`commit` walks `kind: resource`). Remaining: provider name, process-global bind, palm invoker inversion. `0.70.4` still calls `create_resource`.
+**Status:** open (named 2026-09-19). Job-leaf speak paid `0.70.5`. Resource land paid `0.70.6`. Bind ambient paid `0.70.7` (no kit-global stash). Remaining: provider name, palm invoker inversion. `0.70.4` still calls `create_resource`.
 
 ---
 

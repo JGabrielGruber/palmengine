@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.7 — bound() walks the started host
+
+- `bound()` takes `DefinitionService` from the started host on the bound runtime. `land(host)` is the library door; it does not stash definitions in the kit.
+- Job leaf still walks `bound().commit`. No `palm` `create_flow`. No land verbs on present.
+- Tests: `tests/test_authoring_bind_ambient_0_70_7.py`. Theme stays open.
+
 ### 0.70.6 — commit lands a resource; pack leaf publishes the snapshot
 
 - `commit(body)` walks catalog `kind` (`flow` / `resource`). Pack submit of a `ResourceDefinition` mapping lands `authoring-snapshot`. Present starts apply; file write stays the file provider.

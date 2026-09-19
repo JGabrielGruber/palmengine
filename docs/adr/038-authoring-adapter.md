@@ -66,7 +66,7 @@ An **authoring definition pack** is a normal catalog flow. Present may start it.
 
 `examples/definitions/design_entry.py` is leftover Assist discovery. It is not this pack.
 
-Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: pytest `commit`s a thin apply flow; present starts it. As-built `0.70.5`: a leaf of the pack run speaks the adapter (resource `authoring-commit`; working provider `authoring`). As-built `0.70.6`: that leaf lands a `ResourceDefinition` through the same `commit` door.
+Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: pytest `commit`s a thin apply flow; present starts it. As-built `0.70.5`: a leaf of the pack run speaks the adapter (resource `authoring-commit`; working provider `authoring`). As-built `0.70.6`: that leaf lands a `ResourceDefinition` through the same `commit` door. As-built `0.70.7`: `bound()` walks the started host; `land(host)` is library-only.
 
 ### D6 — Catalog truth is FlowDefinition / ResourceDefinition
 

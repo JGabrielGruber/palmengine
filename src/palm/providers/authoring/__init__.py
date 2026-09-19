@@ -1,7 +1,7 @@
 """Authoring resource provider package (0.70.5).
 
 Working name ``authoring``. Duals the kit package. José may rename.
-Walks ``palm.kits.authoring.bound().commit``. See SD-025.
+Walks ``palm.kits.authoring.bound().commit`` (started host, ``0.70.7``). See SD-025.
 """
 
 from palm.providers.authoring import registry as registry

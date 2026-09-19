@@ -6,15 +6,17 @@ and walks one-shot catalog commit.
 Not an ``AuthoringService``. Not ``DesignService``. Not land verbs on
 ``palm.kits.present``. Handle class name stays unnamed (VISION-0.70 §9).
 
-Library door: ``land(host)``. ``commit(body)`` walks catalog ``kind``
-(``flow`` / ``resource``). José locked the package ``palm.kits.authoring``
-(2026-09-19). Constructor spelling is as-built for the floor; rename is José's.
+Library door: ``land(host)``. Job leaf: ``bound()`` from the started host.
+``commit(body)`` walks catalog ``kind`` (``flow`` / ``resource``). José
+locked the package ``palm.kits.authoring`` (2026-09-19). Constructor
+spelling is as-built for the floor; rename is José's.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from palm.common.providers._registry import get_bound_runtime
 from palm.kits.registry import register_kit
 
 if TYPE_CHECKING:
@@ -25,9 +27,6 @@ register_kit(
     description="Embedded library walk: one-shot commit on host.definitions",
     module="palm.kits.authoring",
 )
-
-
-_bound_definitions: DefinitionService | None = None
 
 
 def _land_flow(definitions: Any, body: dict[str, Any]) -> dict[str, Any]:
@@ -60,19 +59,22 @@ class _Authoring:
 
 def land(host: Any) -> _Authoring:
     """Open an authoring walk on ``host.definitions``."""
-    global _bound_definitions
-    _bound_definitions = host.definitions
     return _Authoring(definitions=host.definitions)
 
 
 def bound() -> _Authoring:
-    """Return the adapter bound by the last ``land(host)`` in this process.
+    """Return the adapter for the started host on the bound runtime.
 
-    Named residual (SD-025): process-global bind. Jobs have no host.
+    Jobs have no host. Host start already binds the runtime (same door
+    file/kv use). ``land(host)`` is the library door, not a kit-global stash.
     """
-    if _bound_definitions is None:
-        raise RuntimeError("authoring has no bound definitions; call land(host) first")
-    return _Authoring(definitions=_bound_definitions)
+    runtime = get_bound_runtime()
+    if runtime is None or not runtime.is_started:
+        raise RuntimeError("authoring has no bound definitions; start the host first")
+    host = runtime.application_host
+    if host is None or host.definitions is None:
+        raise RuntimeError("authoring has no bound definitions; start the host first")
+    return _Authoring(definitions=host.definitions)
 
 
 __all__ = ["land"]
