@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.68.0` · **Open minor:** [0.70 Authoring](docs/vision/VISION-0.70.md) · present [STATUS.md](STATUS.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.68.0` · **Open minor:** none · present [STATUS.md](STATUS.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
 
 ### Experimental — no long-term support
 
@@ -10,7 +10,7 @@ Palm is **pre-1.0** and **experimental**. APIs, packages, and behaviors may brea
 
 Use Palm to explore, dogfood, and build. Pin versions deliberately. Read [STATUS.md](STATUS.md), [docs/VERSIONING.md](docs/VERSIONING.md), and [MIGRATION](docs/migrations/) notes when you upgrade. Structure and honesty matter more than comfort paths while the organism is still growing.
 
-Stamp `0.68.0`. Open minor: [0.70](docs/vision/VISION-0.70.md) Authoring (`0.70.1` adapter). Prior closed: [0.69](docs/vision/closed/VISION-0.69.md) Navigator · [0.68](docs/vision/closed/VISION-0.68.md) costume. Residual duals [SD-023](TECH-DEBT.md#sd-023).  
+Stamp `0.68.0`. No open minor. Prior closed: [0.70](docs/vision/closed/VISION-0.70.md) Authoring · [0.69](docs/vision/closed/VISION-0.69.md) Navigator · [0.68](docs/vision/closed/VISION-0.68.md) costume. Residual duals [SD-023](TECH-DEBT.md#sd-023).  
 **Website:** [palmengine.org](https://palmengine.org) — [`website/`](website/) · build `just website-build` → **`website/dist`** (Cloudflare assets dir).
 
 ---

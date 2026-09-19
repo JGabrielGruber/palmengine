@@ -4,29 +4,37 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70 — Authoring (**theme closed** · José 2026-09-19)
+
+Vision: [VISION-0.70](docs/vision/closed/VISION-0.70.md) · ADR [038](docs/adr/038-authoring-adapter.md) **Accepted** · Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md)
+
+- Floor: one embedded land without Assist or Design (`0.70.1`–`0.70.2`). Last growth: `bound()` from the started host (`0.70.7`).
+- Package stamp stays `0.68.0`. No embedded release.
+- Residual named, not paid: working names; `LocalPalmInvoker` invert; historical `0.70.4` `create_resource`; [SD-025](TECH-DEBT.md#sd-025).
+
 ### 0.70.7 — bound() walks the started host
 
 - `bound()` takes `DefinitionService` from the started host on the bound runtime. `land(host)` is the library door; it does not stash definitions in the kit.
 - Job leaf still walks `bound().commit`. No `palm` `create_flow`. No land verbs on present.
-- Tests: `tests/test_authoring_bind_ambient_0_70_7.py`. Theme stays open.
+- Tests: `tests/test_authoring_bind_ambient_0_70_7.py`.
 
 ### 0.70.6 — commit lands a resource; pack leaf publishes the snapshot
 
 - `commit(body)` walks catalog `kind` (`flow` / `resource`). Pack submit of a `ResourceDefinition` mapping lands `authoring-snapshot`. Present starts apply; file write stays the file provider.
 - No second provider action. No `palm` `create_flow`. No fifth wizard. `0.70.4` still calls `create_resource`.
-- Tests: `tests/test_authoring_resource_land_0_70_6.py`. Theme stays open.
+- Tests: `tests/test_authoring_resource_land_0_70_6.py`.
 
 ### 0.70.5 — pack job leaf commits via the adapter
 
 - Pack submit is a `FlowDefinition` mapping. Resource `authoring-commit` (working provider `authoring`) walks `bound().commit`. Present starts the new catalog id.
 - Hole named [SD-025](TECH-DEBT.md#sd-025). No `palm` `create_flow`. No land verbs on present.
-- Tests: `tests/test_authoring_job_leaf_0_70_5.py`. Theme stays open.
+- Tests: `tests/test_authoring_job_leaf_0_70_5.py`.
 
 ### 0.70.4 — thin apply speaks a file snapshot
 
 - Leaf commits apply via adapter (`land` / `commit` of as-built `authoring-apply`). Snapshot resource is `file` (`authoring-snapshot`); lands via `host.definitions.create_resource`.
 - Apply wizard: resource step writes JSON data (`{"note": "rules-as-data"}`); confirm waits; present drives until apply `SUCCEEDED`. Pack stays waiting. Snapshot is not a `FlowDefinition` revision.
-- Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`. Theme stays open.
+- Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`.
 
 ### 0.70.3 — authoring pack
 
@@ -50,7 +58,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### 0.70.0 — Authoring (plan)
 
-José opened theme **0.70**. Vision: [VISION-0.70](docs/vision/VISION-0.70.md). Seed: [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md). ADR [038](docs/adr/038-authoring-adapter.md) **Proposed**. Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md).
+José opened theme **0.70**. Vision: [VISION-0.70](docs/vision/closed/VISION-0.70.md). Seed: [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md). ADR [038](docs/adr/038-authoring-adapter.md) **Accepted**. Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md).
 
 - Floor: one-shot land on `CompositionProfile.embedded()` via adapter walking `host.definitions`; present starts the landed definition.
 - Execute starts at `0.70.1`. Package stamp stays `0.68.0`.

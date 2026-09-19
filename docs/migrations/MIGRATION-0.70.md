@@ -1,10 +1,10 @@
 # Migration — 0.70 Authoring
 
-**Theme:** [VISION-0.70](../vision/VISION-0.70.md) (**open**) · **ADR:** [038](../adr/038-authoring-adapter.md) **Proposed**  
+**Theme:** [VISION-0.70](../vision/closed/VISION-0.70.md) (**closed**) · **ADR:** [038](../adr/038-authoring-adapter.md) **Accepted**  
 **Map:** [PALM.md](../PALM.md)  
 **Seed:** [VISION-AUTHORING](../vision/VISION-AUTHORING.md)
 
-Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Adapter as-built `0.70.1`: `palm.kits.authoring`. Present start as-built `0.70.2`. Pack as-built `0.70.3`. Thin apply as-built `0.70.4`. Job leaf as-built `0.70.5`. Resource land as-built `0.70.6`. Bind ambient as-built `0.70.7`.
+Palm is pre-1.0. José closed **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Floor: one embedded land without Assist or Design. Last growth `0.70.7`.
 
 ## Prefer
 
@@ -18,9 +18,9 @@ Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0
 | Land with impact / migrate | `DesignService` on **fat** phenotypes |
 | Rules / thresholds / books | Resource **snapshot** (data), not a flow-tree policy |
 
-## As-built (open plan)
+## As-built (closed)
 
-| Was | Now (intent) |
+| Was | Now |
 |-----|----------------|
 | Python `examples/` + fat `DesignService` as the only land | Floor: adapter on `CompositionProfile.embedded()` via `host.definitions` |
 | No in-process land kit | `palm.kits.authoring` (`0.70.1`). Handle class unnamed. Door `land(host)` |

@@ -68,12 +68,12 @@ Homes (kit, kit-as-composition, first adapter, guidance instance, principal seam
 
 ---
 
-## Authoring (open 0.70)
+## Authoring (closed 0.70)
 
-Theme: [VISION-0.70](../../vision/VISION-0.70.md) (**open**, plan `0.70.0`). Seed: [VISION-AUTHORING](../../vision/VISION-AUTHORING.md). ADR: [038](../../adr/038-authoring-adapter.md) **Proposed**. José named the seed **2026-09-19**; opened the minor **2026-09-19**. Package stamp stays `0.68.0`.
+Theme: [VISION-0.70](../../vision/closed/VISION-0.70.md) (**closed**). Seed: [VISION-AUTHORING](../../vision/VISION-AUTHORING.md). ADR: [038](../../adr/038-authoring-adapter.md) **Accepted**. José named the seed **2026-09-19**; opened the minor **2026-09-19**; closed **2026-09-19**. Package stamp stays `0.68.0`.
 
-**Locked (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); hold / land / drive split; Design overlay on fat phenotypes; no `INTENTION_KITS` until a package exists.
+**Locked (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); hold / land / drive split; Design overlay on fat phenotypes; package **`palm.kits.authoring`**.
 
-**Locked (José 2026-09-19, package):** `palm.kits.authoring`. As-built `0.70.1`: `INSTALLED_KITS`; `land(host)` / `commit(body)` walks `create_flow`.
+**As-built:** `INSTALLED_KITS`; `land(host)` / `commit(body)` walks catalog `kind`; `bound()` from the started host; pack job leaf via resource `authoring-commit`.
 
-**Still unnamed:** handle class, Protocol types, authoring pack id, env spelling, whether catalog speak becomes a `palm` provider action. Constructor spelling is as-built `land`; José may rename.
+**Still unnamed:** handle class, Protocol types, authoring pack id, env spelling, provider name `authoring`. Constructor spelling is as-built `land`. Invert `LocalPalmInvoker` before any `palm` catalog action ([SD-025](../../../TECH-DEBT.md#sd-025)).

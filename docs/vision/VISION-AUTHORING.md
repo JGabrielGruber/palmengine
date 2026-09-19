@@ -1,7 +1,7 @@
 # VISION — Authoring adapter (land a shape · definition pack)
 
-**Status:** 📋 **Law seed** (executed as [**0.70** Authoring](VISION-0.70.md), **open** 2026-09-19). Named **2026-09-19** (José: **authoring adapter**; floor **A**).  
-**Locks (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); Design overlay on fat phenotypes; package **`palm.kits.authoring`**; no `INTENTION_KITS` parking. Theme plan: [VISION-0.70](VISION-0.70.md). ADR [038](../adr/038-authoring-adapter.md) **Proposed**. Handle class unnamed. As-built `0.70.1`: `land(host)` / `commit(body)`.  
+**Status:** 📋 **Law seed** (executed as [**0.70** Authoring](closed/VISION-0.70.md), **closed** 2026-09-19). Named **2026-09-19** (José: **authoring adapter**; floor **A**).  
+**Locks (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); Design overlay on fat phenotypes; package **`palm.kits.authoring`**; no `INTENTION_KITS` parking. Theme plan: [VISION-0.70](closed/VISION-0.70.md) (**closed**). ADR [038](../adr/038-authoring-adapter.md) **Accepted**. Handle class unnamed. As-built: `land(host)` / `commit(body)` / `bound()`.  
 **Language:** Law uses computer-science terms. Spoken teaching words are marked once. They are not types.  
 **Map:** [PALM.md](../PALM.md) · [WRITING.md](../WRITING.md) (talk vs law) · [VERSIONING.md](../VERSIONING.md)  
 **Walk:** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) (operator-guidance definition · presentation adapter) · closed [VISION-0.69](closed/VISION-0.69.md) · [ADR-037](../adr/037-navigator-invert.md) **Accepted**  
@@ -9,7 +9,7 @@
 **Surface compost:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md)  
 **North star:** [VISION-GROVE](VISION-GROVE.md)
 
-This seed records **law**. Theme plan: [VISION-0.70](VISION-0.70.md).
+This seed records **law**. Theme plan: [VISION-0.70](closed/VISION-0.70.md) (**closed**).
 
 ---
 
@@ -135,7 +135,7 @@ A shallower map (YAML, diagram) may **feed** the adapter later. It is not core. 
 
 ## 6. First proof (theme floor)
 
-Theme [VISION-0.70](VISION-0.70.md) owns execute. Named so we do not start with a language bet.
+Theme [VISION-0.70](closed/VISION-0.70.md) executed this floor. Named so we do not start with a language bet.
 
 1. Host: `CompositionProfile.embedded()`.  
 2. Authoring adapter walks `host.definitions` (one-shot commit is enough for the floor).  
@@ -155,7 +155,7 @@ Farm-shaped numbers (diesel, VAT, Sheets) are **not** the first proof. They are 
 Navigator (present + guidance definition)   ← closed 0.69; consume exists
         │
         ▼
-this seed (land)                            ← adapter + pack; **0.70 open**
+this seed (land)                            ← adapter + pack; **0.70 closed**
         │
         ▼
 real dogfood on present                     ← apply flow that speaks a snapshot
@@ -193,7 +193,6 @@ These remain questions. They are not architecture law.
 
 ## 9. Non-goals (not this theme’s subject)
 
-- Accept ADR-038 before José exits **0.70**.  
 - Put a name on `INTENTION_KITS`.  
 - Implement YAML-in-core or a public BT factory (`Sequence` / `Selector` as product API).  
 - Add land verbs to `palm.kits.present`.  

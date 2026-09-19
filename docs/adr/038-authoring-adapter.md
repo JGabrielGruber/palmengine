@@ -1,13 +1,13 @@
 # ADR-038 — Authoring adapter (land a shape · definition pack)
 
-**Status:** Proposed  
-**Date:** 2026-09-19  
-**Theme:** [VISION-0.70](../vision/VISION-0.70.md) (**open**)  
+**Status:** Accepted  
+**Date:** 2026-09-19 · **Accepted:** 2026-09-19  
+**Theme:** [VISION-0.70](../vision/closed/VISION-0.70.md) (**closed**)  
 **Seed:** [VISION-AUTHORING](../vision/VISION-AUTHORING.md)  
 **Map:** [PALM.md](../PALM.md)  
 **Related:** [ADR-037](037-navigator-invert.md) **Accepted** (consume — present kit) · [ADR-008](008-design-service.md) **Accepted** (Design overlay — **not** superseded) · [ADR-007](007-definition-revisioning.md) **Accepted** (catalog revision)
 
-José opened theme **0.70** (2026-09-19). This ADR stays **Proposed** until theme exit. Package stamp stays `0.68.0`. José locked package **`palm.kits.authoring`** (2026-09-19). Handle class stays unnamed.
+José accepted (2026-09-19). Theme closed. Floor: one embedded land without Assist or Design. Package stamp stays `0.68.0`. José locked package **`palm.kits.authoring`** (2026-09-19). Handle class stays unnamed.
 
 ---
 
@@ -120,7 +120,7 @@ Provider `palm` actions include submit / list / inspect. They do **not** include
 
 ## Links
 
-- [VISION-0.70](../vision/VISION-0.70.md)  
+- [VISION-0.70](../vision/closed/VISION-0.70.md)  
 - [VISION-AUTHORING](../vision/VISION-AUTHORING.md)  
 - [VISION-NAVIGATOR](../vision/VISION-NAVIGATOR.md)  
 - [ADR-037](037-navigator-invert.md)  

@@ -3,7 +3,7 @@
 **Status:** Live open residual · **2026-08-05**.  
 **Paid/closed detail:** [docs/audit/TECH-DEBT-PAID.md](docs/audit/TECH-DEBT-PAID.md)  
 **PD-era archive:** [docs/audit/TECH-DEBT-ERA-0.45.md](docs/audit/TECH-DEBT-ERA-0.45.md)  
-**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Open theme:** [0.70 Authoring](docs/vision/VISION-0.70.md) · seed [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md) · closed [VISION-0.69](docs/vision/closed/VISION-0.69.md)  
+**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Open theme:** none · closed [VISION-0.70](docs/vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md)  
 **Language:** ASD-STE100 (practical).
 
 Closed theme chronicles live under [docs/vision/closed/](docs/vision/closed/).  
@@ -288,7 +288,7 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 
 <a id="sd-025"></a>
 
-**Severity:** S2 · **Effort:** M · **Theme:** [VISION-0.70](docs/vision/VISION-0.70.md) (**open**) · named 2026-09-19
+**Severity:** S2 · **Effort:** M · **Theme:** [VISION-0.70](docs/vision/closed/VISION-0.70.md) (**closed**) · named 2026-09-19
 
 **Observation:** Library `land(host).commit(body)` needs `host.definitions`. The job has the bound runtime, not the host. Provider `palm` submits and lists. It does not write a catalog flow ([ADR-038](docs/adr/038-authoring-adapter.md) D8). `LocalPalmInvoker` is an open-coded `if` menu. A one-name `create_flow` `if` violates [AGENTS §1.1](src/palm/AGENTS.md). The seed forbids assuming `palm` `create_flow`. As-built `0.70.5`: a pack resource walks `bound().commit`. As-built `0.70.6`: that `commit` walks catalog `kind` (`flow` / `resource`). As-built `0.70.7`: `bound()` takes definitions from the started host on the bound runtime; `land(host)` does not stash. Working provider name `authoring` duals the kit. `0.70.4` still calls `create_resource`.
 
