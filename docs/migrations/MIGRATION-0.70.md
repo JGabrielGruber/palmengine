@@ -4,7 +4,7 @@
 **Map:** [PALM.md](../PALM.md)  
 **Seed:** [VISION-AUTHORING](../vision/VISION-AUTHORING.md)
 
-Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Adapter as-built `0.70.1`: `palm.kits.authoring`. Present start as-built `0.70.2`.
+Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Adapter as-built `0.70.1`: `palm.kits.authoring`. Present start as-built `0.70.2`. Pack as-built `0.70.3`.
 
 ## Prefer
 
@@ -24,6 +24,7 @@ Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0
 | No in-process land kit | `palm.kits.authoring` (`0.70.1`). Handle class unnamed. Door `land(host)` |
 | Assist `design_entry` as discovery | Leftover. Not the authoring pack |
 | Present drives fixtures | Present drives a landed catalog id after `0.70.2` (`start(..., by_id=True)`) |
+| No authoring pack | Catalog wizard landed via adapter (`0.70.3`). As-built id `authoring-pack`. Pack id unnamed. Not `design_entry` |
 
 ## Unchanged in this theme
 

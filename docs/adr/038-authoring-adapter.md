@@ -66,7 +66,7 @@ An **authoring definition pack** is a normal catalog flow. Present may start it.
 
 `examples/definitions/design_entry.py` is leftover Assist discovery. It is not this pack.
 
-Pack id stays unnamed (`author` is spoken only).
+Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename.
 
 ### D6 — Catalog truth is FlowDefinition / ResourceDefinition
 

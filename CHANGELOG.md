@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.3 — authoring pack
+
+- Catalog wizard present can start and wait. Proof path: `land` / `commit` then present `start(..., by_id=True)`.
+- Pack id unnamed. As-built catalog name `authoring-pack` (`examples/definitions/authoring_pack.py`). José may rename.
+- Stays `WAITING_FOR_INPUT` after a text shape. No `__end__`. Not `design_entry`. No Assist contributor. Leaf apply / snapshot waits for `0.70.4`.
+- Tests: `tests/test_authoring_pack_0_70_3.py`.
+
 ### 0.70.2 — present starts the committed definition
 
 - Same embedded host: `land` / `commit` then `palm.kits.present` `start(..., by_id=True)` of the catalog id.

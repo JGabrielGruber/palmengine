@@ -1,6 +1,6 @@
 # VISION 0.70 — Authoring
 
-**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Pack `0.70.3`. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [038-authoring-adapter.md](../adr/038-authoring-adapter.md) **Proposed**.  
@@ -14,7 +14,7 @@
 Teaching name (once): **control kit**.  
 Law: **authoring adapter** + authoring **definition pack**.
 
-**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id.
+**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id. As-built `0.70.3`: authoring pack wizard (working catalog name `authoring-pack`; José may rename).
 
 ---
 
@@ -65,6 +65,8 @@ The land walk is **real** when tests on `CompositionProfile.embedded()` (no Assi
 
 **As-built `0.70.2`:** `palm.kits.present` starts the committed definition by catalog id (`start(..., by_id=True)`). Same host. No land verbs on present. Existing consume doors. Tests: `tests/test_authoring_present_start_0_70_2.py`.
 
+**As-built `0.70.3`:** authoring pack wizard. Pack id unnamed. Working catalog name `authoring-pack`. Land via adapter; present starts it; submit stays `WAITING_FOR_INPUT`. Tests: `tests/test_authoring_pack_0_70_3.py`. Leaf apply waits for `0.70.4`.
+
 ---
 
 ## 3. Growth
@@ -72,7 +74,7 @@ The land walk is **real** when tests on `CompositionProfile.embedded()` (no Assi
 While the theme stays open, slices may:
 
 - ✅ Install the kit (`INSTALLED_KITS`) — `0.70.1`.  
-- Add the authoring pack as a wizard present can start.  
+- ✅ Add the authoring pack as a wizard present can start — `0.70.3` (as-built `authoring-pack`; pack id unnamed).  
 - Let a leaf commit a **thin apply flow**.  
 - Let that apply flow speak a snapshot resource (file is enough) and wait when unsure.  
 - Drive the apply flow with present (full dogfood loop from the seed).  
@@ -163,7 +165,7 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | **0.70.0** | Plan. This file. ADR **Proposed**. STATUS. |
 | **0.70.1** | ✅ Adapter `palm.kits.authoring` walks `host.definitions` (one-shot `commit`). |
 | **0.70.2** | ✅ Present starts the committed definition (remaining floor). |
-| **0.70.3** | Authoring pack — wizard present can start. Pack id still unnamed. |
+| **0.70.3** | ✅ Authoring pack — wizard present can start. Pack id unnamed; as-built `authoring-pack`. |
 | **0.70.4** | Thin apply speaks a file snapshot; waits when unsure; present drives. |
 
 **Named later (not this pass — not QA in 0.70.1):**
