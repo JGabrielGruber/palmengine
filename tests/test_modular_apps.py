@@ -54,6 +54,7 @@ def test_installed_provider_apps_register() -> None:
         "palm",
         "kv",
         "file",
+        "authoring",
     }
     assert set(INTENTION_PROVIDERS) == {"graphql", "postgres"}
     for name in INSTALLED_PROVIDERS:

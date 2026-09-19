@@ -2,7 +2,7 @@
 
 Purpose lives in a definition. Proof path is adapter land/commit then
 present start by catalog id. Pack id stays unnamed; as-built
-``authoring-pack``. Thin apply / snapshot is ``0.70.4``.
+``authoring-pack``. Job-leaf commit is ``0.70.5``.
 
 Not another generic wizard body. Not design_entry. Not Assist.
 """
@@ -48,16 +48,11 @@ def test_authoring_pack_is_purpose_wizard_not_author() -> None:
     assert "handoff_map" not in assist
     assert "handoff_flows" not in assist
 
-    routes: list[str] = []
-    for step in options.get("steps") or []:
-        if not isinstance(step, dict):
-            continue
-        params = step.get("params") or {}
-        route = params.get("route_on_answer") or {}
-        if isinstance(route, dict):
-            routes.extend(str(v) for v in route.values())
-    assert routes
-    assert "__end__" not in routes
+    steps = options.get("steps") or []
+    assert len(steps) == 2
+    assert steps[0].get("slug") == "shape"
+    assert steps[1].get("step_kind") == "resource"
+    assert steps[1].get("resource_ref") == "authoring-commit"
 
 
 def test_authoring_pack_module_does_not_import_assist() -> None:
@@ -127,14 +122,7 @@ def test_land_commit_then_present_starts_authoring_pack_and_waits() -> None:
 
         names_before = {row["name"] for row in host.definitions.list_flows()}
         jobs_before = {j.id for j in host.runtime().orchestration.list_jobs()}
-
-        kit.submit("a thin shape as text")
-
-        after = _job(host, "job-authoring-pack")
-        assert after.status == JobStatus.WAITING_FOR_INPUT
-        names_after = {row["name"] for row in host.definitions.list_flows()}
-        jobs_after = {j.id for j in host.runtime().orchestration.list_jobs()}
-        assert names_after == names_before
-        assert jobs_after == jobs_before
+        assert "authoring-pack" in names_before
+        assert "job-authoring-pack" in jobs_before
     finally:
         host.shutdown()

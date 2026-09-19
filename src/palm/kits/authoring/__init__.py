@@ -26,6 +26,9 @@ register_kit(
 )
 
 
+_bound_definitions: DefinitionService | None = None
+
+
 class _Authoring:
     """Holds DefinitionService and walks catalog create."""
 
@@ -38,7 +41,19 @@ class _Authoring:
 
 def land(host: Any) -> _Authoring:
     """Open an authoring walk on ``host.definitions``."""
+    global _bound_definitions
+    _bound_definitions = host.definitions
     return _Authoring(definitions=host.definitions)
+
+
+def bound() -> _Authoring:
+    """Return the adapter bound by the last ``land(host)`` in this process.
+
+    Named residual (SD-025): process-global bind. Jobs have no host.
+    """
+    if _bound_definitions is None:
+        raise RuntimeError("authoring has no bound definitions; call land(host) first")
+    return _Authoring(definitions=_bound_definitions)
 
 
 __all__ = ["land"]

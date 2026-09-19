@@ -99,9 +99,6 @@ def test_pack_wait_leaf_commit_apply_snapshot_present_drive(tmp_path: Path) -> N
         assert GUIDANCE_INSTANCE_ID not in (kit.bound.metadata or {})
         assert _job(host, "job-authoring-pack").status == JobStatus.WAITING_FOR_INPUT
 
-        kit.submit("thin-apply")
-        assert _job(host, "job-authoring-pack").status == JobStatus.WAITING_FOR_INPUT
-
         published = land(host).commit(AUTHORING_APPLY_FLOW.to_dict())
         apply_id = published["name"]
         assert apply_id == "authoring-apply"

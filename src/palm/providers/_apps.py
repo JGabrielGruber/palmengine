@@ -12,6 +12,7 @@ INSTALLED_PROVIDERS: tuple[str, ...] = (
     "palm",
     "kv",
     "file",
+    "authoring",
     # neonroot removed 0.56 — isolation is WorkloadRuntime under palm.runners.neonroot
 )
 

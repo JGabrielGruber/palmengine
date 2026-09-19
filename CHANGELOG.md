@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.5 — pack job leaf commits via the adapter
+
+- Pack submit is a `FlowDefinition` mapping. Resource `authoring-commit` (working provider `authoring`) walks `bound().commit`. Present starts the new catalog id.
+- Hole named [SD-025](TECH-DEBT.md#sd-025). No `palm` `create_flow`. No land verbs on present.
+- Tests: `tests/test_authoring_job_leaf_0_70_5.py`. Theme stays open.
+
 ### 0.70.4 — thin apply speaks a file snapshot
 
 - Leaf commits apply via adapter (`land` / `commit` of as-built `authoring-apply`). Snapshot resource is `file` (`authoring-snapshot`); lands via `host.definitions.create_resource`.

@@ -54,6 +54,7 @@ This file holds **what still needs work** plus a **master index** of all IDs.
 | [SD-022](#sd-022) | Law docs treat talk/metaphor as types | S3 | L | ongoing | open (named 2026-08-19) |
 | [SD-023](#sd-023) | 0.68 exit residual duals | S3 | S | **0.68** exit | open (named 2026-09-15; not unpaid costume) |
 | [SD-024](#sd-024) | Host names wizard | S3 | S | after **0.68** close | open (named 2026-09-15; not unpaid costume) |
+| [SD-025](#sd-025) | Authoring job-leaf catalog write | S2 | M | **0.70** | open (named 2026-09-19; limits job-leaf land) |
 
 ### Surface debt (SU)
 
@@ -279,6 +280,31 @@ This is **not** SD-010 (dense prose). This is **wrong ontology**.
 **Law:** [src/palm/AGENTS.md](src/palm/AGENTS.md) §1.1 — definition at the edge; hub holds and runs. A private menu of concretes in the host is a missing inversion.
 
 **Status:** open (named 2026-09-15).
+
+---
+
+
+### SD-025 — Authoring job-leaf catalog write
+
+<a id="sd-025"></a>
+
+**Severity:** S2 · **Effort:** M · **Theme:** [VISION-0.70](docs/vision/VISION-0.70.md) (**open**) · named 2026-09-19
+
+**Observation:** Library `land(host).commit(body)` needs `host.definitions`. The job has the bound runtime, not the host. Provider `palm` submits and lists. It does not write a catalog flow ([ADR-038](docs/adr/038-authoring-adapter.md) D8). `LocalPalmInvoker` is an open-coded `if` menu. A one-name `create_flow` `if` violates [AGENTS §1.1](src/palm/AGENTS.md). The seed forbids assuming `palm` `create_flow`. As-built `0.70.5`: a pack resource walks `bound().commit` (definitions bound by `land(host)`). Working provider name `authoring` duals the kit. Snapshot/apply still use pytest + `create_resource`.
+
+| Cut | What it is | Keep |
+|-----|------------|------|
+| Host-only `land` | Adapter holds `DefinitionService` from `ApplicationHost` | Same adapter; bind definitions when `land(host)` runs so a job can speak it |
+| `palm` catalog write | Named hole. Submit / list / inspect only | Adapter door. Do not add a one-name invoker `if` |
+| Open-coded palm invoke | `LocalPalmInvoker` branches on action / kind | Invert to a table **before** a new palm action ([AGENTS §1.1](src/palm/AGENTS.md)) |
+| Pytest as leaf | Pack submit unused; test calls `commit` / `create_resource` | Job resource walks the adapter. Resource land stays `create_resource` until the adapter has a resource verb |
+| Provider name | Working `authoring` duals the kit package | José locks the provider name |
+
+**Do not:** Land verbs on `palm.kits.present`. Design on `embedded()`. `AuthoringService`. YAML-in-core. `INTENTION_KITS`. A fifth example wizard. An `if` to stay green.
+
+**Law:** [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md) §4 — catalog write from a leaf is the adapter, or a resource that walks it.
+
+**Status:** open (named 2026-09-19). Job-leaf speak paid `0.70.5` (resource walks `bound().commit`). Remaining: provider name, process-global bind, adapter resource verb, palm invoker inversion.
 
 ---
 
@@ -629,6 +655,7 @@ Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked t
 | **Assembly / organism truth** | SD-020 · SD-021 · SD-023 · SD-024 · host/profile glue · catalog wire · product dig into composition root | **0.63–0.68 closed** — [VISION-0.68](docs/vision/closed/VISION-0.68.md) · seed [VISION-ASSEMBLY](docs/vision/VISION-ASSEMBLY.md) · residual [SD-023](#sd-023) · [SD-024](#sd-024) |
 | **Surface deflation** | SU-* · SI-002/006/010 | Compost with evidence after eyes — [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) |
 | **Navigator** | SD-022 · Assist as product bag | **Closed 0.69** — [VISION-0.69](docs/vision/closed/VISION-0.69.md) · seed [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) · [ADR-037](docs/adr/037-navigator-invert.md) **Accepted**. Assist compost is [VISION-SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md). Do not pay [SD-024](#sd-024) as Navigator. |
+| **Authoring (open 0.70)** | SD-025 | Job-leaf catalog write — adapter or resource that walks it. Do not pay as `palm` `create_flow` `if`. |
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |
 | **User plane + session impersonation** | D11 · SI-015 bare residual | Principal **acts as** owning session — not dual-own. **Also owns** entry chooser and definition visibility (named on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) 2026-09-15). Do not grow ambient `AuthEngine` principal into this plane. Navigator floor did not open this plane. |
 | **Delegate / team session membership** | growth | Shared walk under one owner session |

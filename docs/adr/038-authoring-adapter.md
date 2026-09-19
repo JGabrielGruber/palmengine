@@ -66,7 +66,7 @@ An **authoring definition pack** is a normal catalog flow. Present may start it.
 
 `examples/definitions/design_entry.py` is leftover Assist discovery. It is not this pack.
 
-Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: a leaf `commit`s a thin apply flow; present starts it.
+Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: pytest `commit`s a thin apply flow; present starts it. As-built `0.70.5`: a leaf of the pack run speaks the adapter (resource `authoring-commit`; working provider `authoring`).
 
 ### D6 — Catalog truth is FlowDefinition / ResourceDefinition
 
@@ -82,7 +82,7 @@ The draft is **not** thresholds, book names as policy, or keyword lists. Those a
 
 ### D8 — Named hole: provider catalog write
 
-Provider `palm` actions include submit / list / inspect. They do **not** include catalog create / revise. The adapter is that door until José locks a provider action or a resource that walks the adapter.
+Provider `palm` actions include submit / list / inspect. They do **not** include catalog create / revise. The adapter is that door until José locks a provider action or a resource that walks the adapter. As-built `0.70.5`: resource `authoring-commit` walks the adapter. Working provider name `authoring` (duals the kit; José may rename). Hole named [SD-025](../../TECH-DEBT.md#sd-025). Do not add a `palm` `create_flow` `if`.
 
 ## Consequences
 

@@ -149,7 +149,7 @@ src/palm/
 ├── core/              # Pure engines — no external palm imports
 ├── system/            # System instance, ports, planes (BaseRuntime, wait/work/workload)
 ├── patterns/          # Wizard, DAG, parallel, pipeline (etl = intention only)
-├── providers/         # rest, palm, kv, file (graphql/postgres = intention only)
+├── providers/         # rest, palm, kv, file, authoring (graphql/postgres = intention only)
 ├── storages/          # memory, filesystem core; postgres/mongodb optional intention
 ├── definitions/       # FlowDefinition, ProcessDefinition
 ├── common/            # Shared libs (plans, CQRS, transforms, persistence)
