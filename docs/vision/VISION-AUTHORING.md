@@ -1,6 +1,7 @@
 # VISION — Authoring adapter (land a shape · definition pack)
 
-**Status:** 📋 **Queue seed** — named **2026-09-19** (José: **authoring adapter**; floor **A**). Not an open minor.  
+**Status:** 📋 **Law seed** (executed as [**0.70** Authoring](VISION-0.70.md), **open** 2026-09-19). Named **2026-09-19** (José: **authoring adapter**; floor **A**).  
+**Locks (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); Design overlay on fat phenotypes; package **`palm.kits.authoring`**; no `INTENTION_KITS` parking. Theme plan: [VISION-0.70](VISION-0.70.md). ADR [038](../adr/038-authoring-adapter.md) **Proposed**. Handle class unnamed. As-built `0.70.1`: `land(host)` / `commit(body)`.  
 **Language:** Law uses computer-science terms. Spoken teaching words are marked once. They are not types.  
 **Map:** [PALM.md](../PALM.md) · [WRITING.md](../WRITING.md) (talk vs law) · [VERSIONING.md](../VERSIONING.md)  
 **Walk:** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) (operator-guidance definition · presentation adapter) · closed [VISION-0.69](closed/VISION-0.69.md) · [ADR-037](../adr/037-navigator-invert.md) **Accepted**  
@@ -8,7 +9,7 @@
 **Surface compost:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md)  
 **North star:** [VISION-GROVE](VISION-GROVE.md)
 
-This seed does **not** open a theme. It records **needs** so later themes do not close the door.
+This seed records **law**. Theme plan: [VISION-0.70](VISION-0.70.md).
 
 ---
 
@@ -102,7 +103,7 @@ Later themes must **leave room**. They must not grow a costume that blocks these
 
 **Kit-as-composition (copy present law, not present verbs):**
 
-- Named package `palm.kits.<name>` when **José** names it.  
+- Named package **`palm.kits.authoring`** (José 2026-09-19). As-built `0.70.1`.  
 - One library object. Host holds it. Walks **existing** doors.  
 - Kit-owned settings. Do not flatten onto core `PalmSettings`.  
 - Handle class, Protocol types, constructor/env spelling stay **unnamed** until José locks them.  
@@ -132,9 +133,9 @@ A shallower map (YAML, diagram) may **feed** the adapter later. It is not core. 
 
 ---
 
-## 6. First proof (when a theme opens)
+## 6. First proof (theme floor)
 
-Not this season. Named so we do not start with a language bet.
+Theme [VISION-0.70](VISION-0.70.md) owns execute. Named so we do not start with a language bet.
 
 1. Host: `CompositionProfile.embedded()`.  
 2. Authoring adapter walks `host.definitions` (one-shot commit is enough for the floor).  
@@ -154,7 +155,7 @@ Farm-shaped numbers (diesel, VAT, Sheets) are **not** the first proof. They are 
 Navigator (present + guidance definition)   ← closed 0.69; consume exists
         │
         ▼
-this seed (land)                            ← adapter + pack; not open
+this seed (land)                            ← adapter + pack; **0.70 open**
         │
         ▼
 real dogfood on present                     ← apply flow that speaks a snapshot
@@ -182,7 +183,7 @@ surface deflation / SDK harvest             ← transports after a shape is real
 
 These remain questions. They are not architecture law.
 
-- Package name under `palm.kits.*` (José locks).  
+- Package name under `palm.kits.*` — **locked** `palm.kits.authoring` (José 2026-09-19). Library door as-built `land(host)` (`0.70.1`).  
 - Whether catalog speak becomes a `palm` provider action or stays adapter-only.  
 - Authoring pack id (`author` is spoken only until locked).  
 - When a shallow draft language compiles into `FlowDefinition` (not a YAML-parser theme to have an adapter).  
@@ -190,9 +191,9 @@ These remain questions. They are not architecture law.
 
 ---
 
-## 9. Non-goals (until a theme opens)
+## 9. Non-goals (not this theme’s subject)
 
-- Open a minor or accept an ADR for this seed.  
+- Accept ADR-038 before José exits **0.70**.  
 - Put a name on `INTENTION_KITS`.  
 - Implement YAML-in-core or a public BT factory (`Sequence` / `Selector` as product API).  
 - Add land verbs to `palm.kits.present`.  

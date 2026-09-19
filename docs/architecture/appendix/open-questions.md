@@ -65,3 +65,15 @@ Theme: [VISION-0.69](../../vision/closed/VISION-0.69.md) (**closed**). Seed: [VI
 Homes (kit, kit-as-composition, first adapter, guidance instance, principal seam, turn invert, pack, `guidance_instance_id`, walk writes, job is session-ignorant, dashboard model, kit-contributed settings, stamp caller, replace predicate) are locked. Engine glue shipped: session-side attach (`0.69.2`), spawn without nested park (`0.69.3`), stamp caller (`0.69.5`), kit owns the key (`0.69.8`).
 
 **Still unnamed:** Protocol types, kit handle class, walk-write interface type, env spelling, constructor override. Pattern inspect/input fill (pipeline / DAG). Assist compost is [VISION-SURFACE-DEFLATION](../../vision/VISION-SURFACE-DEFLATION.md).
+
+---
+
+## Authoring (open 0.70)
+
+Theme: [VISION-0.70](../../vision/VISION-0.70.md) (**open**, plan `0.70.0`). Seed: [VISION-AUTHORING](../../vision/VISION-AUTHORING.md). ADR: [038](../../adr/038-authoring-adapter.md) **Proposed**. José named the seed **2026-09-19**; opened the minor **2026-09-19**. Package stamp stays `0.68.0`.
+
+**Locked (José 2026-09-19):** law word **authoring adapter**; floor phenotype **A** (`host.definitions` on `CompositionProfile.embedded()`); hold / land / drive split; Design overlay on fat phenotypes; no `INTENTION_KITS` until a package exists.
+
+**Locked (José 2026-09-19, package):** `palm.kits.authoring`. As-built `0.70.1`: `INSTALLED_KITS`; `land(host)` / `commit(body)` walks `create_flow`.
+
+**Still unnamed:** handle class, Protocol types, authoring pack id, env spelling, whether catalog speak becomes a `palm` provider action. Constructor spelling is as-built `land`; José may rename.

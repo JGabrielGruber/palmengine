@@ -14,6 +14,7 @@ Law (SD-011 / 0.57.13):
 
 Import the server kit as :mod:`palm.kits.server`.
 Import the present kit as :mod:`palm.kits.present` (0.69.4 / 0.69.5).
+Import the authoring kit as :mod:`palm.kits.authoring` (0.70.1).
 """
 
 from __future__ import annotations

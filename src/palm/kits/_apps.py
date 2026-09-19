@@ -14,6 +14,7 @@ import importlib
 INSTALLED_KITS: tuple[str, ...] = (
     "server",
     "present",
+    "authoring",
 )
 
 # Named futures without a body (do not auto-load; purpose lives in STUBS/VISION).

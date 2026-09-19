@@ -4,6 +4,21 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.1 — authoring kit (one-shot commit)
+
+- Package **`palm.kits.authoring`** (José locked the name 2026-09-19). In `INSTALLED_KITS`.
+- Library door `land(host)` holds `host.definitions`. `commit(body)` walks `create_flow`.
+- Tests: `tests/test_authoring_kit_0_70_1.py` on `ApplicationHost.for_mode("test")` (embedded; no Assist; no Design).
+- Handle class unnamed. Present start of the landed definition waits. `INTENTION_KITS` stays empty.
+
+### 0.70.0 — Authoring (plan)
+
+José opened theme **0.70**. Vision: [VISION-0.70](docs/vision/VISION-0.70.md). Seed: [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md). ADR [038](docs/adr/038-authoring-adapter.md) **Proposed**. Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md).
+
+- Floor: one-shot land on `CompositionProfile.embedded()` via adapter walking `host.definitions`; present starts the landed definition.
+- Execute starts at `0.70.1`. Package stamp stays `0.68.0`.
+- Design stays overlay on fat phenotypes. Do not stamp `INTENTION_KITS`. Do not grow land onto present.
+
 ### 0.69 — Navigator (**theme closed** · José 2026-09-17)
 
 Vision: [VISION-0.69](docs/vision/closed/VISION-0.69.md) · ADR [037](docs/adr/037-navigator-invert.md) **Accepted** · Migration: [MIGRATION-0.69](docs/migrations/MIGRATION-0.69.md)
