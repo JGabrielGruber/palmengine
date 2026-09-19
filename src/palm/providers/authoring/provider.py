@@ -73,7 +73,7 @@ class AuthoringProvider(BaseProvider):
             actions=(
                 ProviderActionDescriptor(
                     "commit",
-                    "Walk land/commit with params.body as a FlowDefinition mapping",
+                    "Walk land/commit with params.body as a catalog mapping",
                 ),
             ),
         )

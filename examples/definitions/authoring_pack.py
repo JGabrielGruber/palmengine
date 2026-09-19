@@ -1,8 +1,8 @@
 """
 Authoring pack — catalog wizard present can start (0.70.3 / 0.70.5).
 
-Asks for a shape (FlowDefinition mapping). A resource step walks the
-authoring adapter (``authoring-commit``). Pack id stays unnamed. As-built
+Asks for a shape (catalog mapping: flow or resource). A resource step walks
+the authoring adapter (``authoring-commit``). Pack id stays unnamed. As-built
 catalog name is ``authoring-pack``. José may rename.
 
 Do not copy ``design_entry``. Do not register Assist. Do not stamp
@@ -40,7 +40,7 @@ AUTHORING_PACK_FLOW = FlowDefinition(
             {
                 "slug": "shape",
                 "title": "Shape",
-                "prompt": "Submit a shape (FlowDefinition mapping).",
+                "prompt": "Submit a shape (catalog mapping).",
                 "field_type": "text",
             },
             {

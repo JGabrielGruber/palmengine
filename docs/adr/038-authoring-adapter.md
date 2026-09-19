@@ -42,7 +42,7 @@ Not an `AuthoringService`. Not a `ControlService`. Not a `DesignKit`. Not a `Gat
 
 Kit-contributed settings stay on the kit object. Do not flatten them onto core `PalmSettings`.
 
-Package **`palm.kits.authoring`** (José 2026-09-19). As-built `0.70.1`: in `INSTALLED_KITS`. Library door `land(host)`; `commit(body)` walks `create_flow`. Keep `INTENTION_KITS` empty.
+Package **`palm.kits.authoring`** (José 2026-09-19). As-built `0.70.1`: in `INSTALLED_KITS`. Library door `land(host)`; `commit(body)` walks catalog `kind` (`flow` / `resource` as of `0.70.6`). Keep `INTENTION_KITS` empty.
 
 Handle class, Protocol types, env spelling stay unnamed until José locks them. Constructor spelling is as-built `land`; José may rename.
 
@@ -66,7 +66,7 @@ An **authoring definition pack** is a normal catalog flow. Present may start it.
 
 `examples/definitions/design_entry.py` is leftover Assist discovery. It is not this pack.
 
-Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: pytest `commit`s a thin apply flow; present starts it. As-built `0.70.5`: a leaf of the pack run speaks the adapter (resource `authoring-commit`; working provider `authoring`).
+Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: pytest `commit`s a thin apply flow; present starts it. As-built `0.70.5`: a leaf of the pack run speaks the adapter (resource `authoring-commit`; working provider `authoring`). As-built `0.70.6`: that leaf lands a `ResourceDefinition` through the same `commit` door.
 
 ### D6 — Catalog truth is FlowDefinition / ResourceDefinition
 

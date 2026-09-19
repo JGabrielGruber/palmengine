@@ -6,7 +6,8 @@ and walks one-shot catalog commit.
 Not an ``AuthoringService``. Not ``DesignService``. Not land verbs on
 ``palm.kits.present``. Handle class name stays unnamed (VISION-0.70 §9).
 
-Library door: ``land(host)``. José locked the package ``palm.kits.authoring``
+Library door: ``land(host)``. ``commit(body)`` walks catalog ``kind``
+(``flow`` / ``resource``). José locked the package ``palm.kits.authoring``
 (2026-09-19). Constructor spelling is as-built for the floor; rename is José's.
 """
 
@@ -29,6 +30,20 @@ register_kit(
 _bound_definitions: DefinitionService | None = None
 
 
+def _land_flow(definitions: Any, body: dict[str, Any]) -> dict[str, Any]:
+    return definitions.create_flow(body)
+
+
+def _land_resource(definitions: Any, body: dict[str, Any]) -> dict[str, Any]:
+    return definitions.create_resource(body)
+
+
+_LAND = {
+    "flow": _land_flow,
+    "resource": _land_resource,
+}
+
+
 class _Authoring:
     """Holds DefinitionService and walks catalog create."""
 
@@ -36,7 +51,11 @@ class _Authoring:
         self._definitions = definitions
 
     def commit(self, body: dict[str, Any]) -> dict[str, Any]:
-        return self._definitions.create_flow(body)
+        kind = str((body or {}).get("kind") or "flow").strip()
+        hand = _LAND.get(kind)
+        if hand is None:
+            raise ValueError(f"authoring commit does not land kind {kind!r}")
+        return hand(self._definitions, body)
 
 
 def land(host: Any) -> _Authoring:

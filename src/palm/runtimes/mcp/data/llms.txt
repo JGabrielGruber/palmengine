@@ -2,7 +2,7 @@
 
 > Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
 
-**Version:** 0.68.0 (PyPI) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** 0.70 Authoring (adapter 0.70.1; job leaf 0.70.5; stamp 0.68.0) · present STATUS.md
+**Version:** 0.68.0 (PyPI) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** 0.70 Authoring (adapter 0.70.1; job leaf 0.70.5; resource land 0.70.6; stamp 0.68.0) · present STATUS.md
 
 ## Philosophy
 

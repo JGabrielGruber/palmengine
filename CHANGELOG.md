@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.6 — commit lands a resource; pack leaf publishes the snapshot
+
+- `commit(body)` walks catalog `kind` (`flow` / `resource`). Pack submit of a `ResourceDefinition` mapping lands `authoring-snapshot`. Present starts apply; file write stays the file provider.
+- No second provider action. No `palm` `create_flow`. No fifth wizard. `0.70.4` still calls `create_resource`.
+- Tests: `tests/test_authoring_resource_land_0_70_6.py`. Theme stays open.
+
 ### 0.70.5 — pack job leaf commits via the adapter
 
 - Pack submit is a `FlowDefinition` mapping. Resource `authoring-commit` (working provider `authoring`) walks `bound().commit`. Present starts the new catalog id.

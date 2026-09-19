@@ -41,7 +41,7 @@ def test_pack_job_leaf_commits_submitted_shape_via_adapter() -> None:
         assert host.assist is None
 
         land(host).commit(AUTHORING_PACK_FLOW.to_dict())
-        host.definitions.create_resource(AUTHORING_COMMIT_RESOURCE.to_dict())
+        land(host).commit(AUTHORING_COMMIT_RESOURCE.to_dict())
 
         kit = bind(host, surface="embedded", origin="test")
         kit.start("authoring-pack", by_id=True, job_id="job-authoring-pack")

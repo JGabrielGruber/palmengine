@@ -455,7 +455,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, **`present`**, **`authoring`**, …). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. **`palm.kits.authoring`** as-built `0.70.1` (`land` / `commit` on `host.definitions`); `0.70.5` job leaf via resource that walks `bound()`. Handle classes unnamed. Theme: [VISION-0.70](vision/VISION-0.70.md) (**open**). Seed: [VISION-AUTHORING](vision/VISION-AUTHORING.md). Present: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). | SD-011 ✅ · SD-025 |
+| `palm.kits` | Surface kits (`server`, **`present`**, **`authoring`**, …). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. **`palm.kits.authoring`** as-built `0.70.1` (`land` / `commit` on `host.definitions`); `0.70.5` job leaf via resource that walks `bound()`; `0.70.6` `commit` lands `kind: resource`. Handle classes unnamed. Theme: [VISION-0.70](vision/VISION-0.70.md) (**open**). Seed: [VISION-AUTHORING](vision/VISION-AUTHORING.md). Present: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). | SD-011 ✅ · SD-025 |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---

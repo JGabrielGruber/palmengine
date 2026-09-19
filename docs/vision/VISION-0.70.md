@@ -1,6 +1,6 @@
 # VISION 0.70 — Authoring
 
-**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Pack `0.70.3`. Thin apply `0.70.4`. Job leaf `0.70.5`. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Pack `0.70.3`. Thin apply `0.70.4`. Job leaf `0.70.5`. Resource land `0.70.6`. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [038-authoring-adapter.md](../adr/038-authoring-adapter.md) **Proposed**.  
@@ -14,7 +14,7 @@
 Teaching name (once): **control kit**.  
 Law: **authoring adapter** + authoring **definition pack**.
 
-**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id. As-built `0.70.3`: authoring pack wizard (working catalog name `authoring-pack`; José may rename). As-built `0.70.4`: thin apply (`authoring-apply`) speaks file snapshot (`authoring-snapshot`); present drives. As-built `0.70.5`: pack job leaf walks the adapter (working provider `authoring`; José may rename). [SD-025](../../TECH-DEBT.md#sd-025) named.
+**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id. As-built `0.70.3`: authoring pack wizard (working catalog name `authoring-pack`; José may rename). As-built `0.70.4`: thin apply (`authoring-apply`) speaks file snapshot (`authoring-snapshot`); present drives. As-built `0.70.5`: pack job leaf walks the adapter (working provider `authoring`; José may rename). As-built `0.70.6`: `commit` lands `kind: resource`. [SD-025](../../TECH-DEBT.md#sd-025) named.
 
 ---
 
@@ -67,9 +67,11 @@ The land walk is **real** when tests on `CompositionProfile.embedded()` (no Assi
 
 **As-built `0.70.3`:** authoring pack wizard. Pack id unnamed. Working catalog name `authoring-pack`. Land via adapter; present starts it; waits on shape. Tests: `tests/test_authoring_pack_0_70_3.py`.
 
-**As-built `0.70.4`:** thin apply. Working catalog names `authoring-apply` and `authoring-snapshot` (José may rename). Pytest `land(host).commit` still publishes the apply flow (job leaf is `0.70.5`). Snapshot resource lands via `host.definitions.create_resource` (adapter has no resource verb). Present starts the apply by catalog id. Wizard resource step writes file JSON data; confirm waits; present submit completes the apply. Pack stays waiting. Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`.
+**As-built `0.70.4`:** thin apply. Working catalog names `authoring-apply` and `authoring-snapshot` (José may rename). Pytest `land(host).commit` still publishes the apply flow (job leaf is `0.70.5`). Snapshot resource lands via `host.definitions.create_resource` (resource verb is `0.70.6`). Present starts the apply by catalog id. Wizard resource step writes file JSON data; confirm waits; present submit completes the apply. Pack stays waiting. Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`.
 
 **As-built `0.70.5`:** pack submit is a `FlowDefinition` mapping. Resource `authoring-commit` (provider working name `authoring`) walks `bound().commit`. Catalog revision exists. Pytest is not that leaf. Present starts the new id. Tests: `tests/test_authoring_job_leaf_0_70_5.py`. Hole named [SD-025](../../TECH-DEBT.md#sd-025).
+
+**As-built `0.70.6`:** `commit(body)` walks catalog `kind` (`flow` → `create_flow`, `resource` → `create_resource`). Pack submit of a `ResourceDefinition` mapping lands the snapshot. Pytest is not that leaf. Present starts apply; file data is still the file provider. Tests: `tests/test_authoring_resource_land_0_70_6.py`. `0.70.4` still uses `create_resource` as a library bypass.
 
 ---
 
@@ -83,6 +85,7 @@ While the theme stays open, slices may:
 - ✅ Let that apply flow speak a snapshot resource (file is enough) and wait when unsure — `0.70.4` (`authoring-snapshot`).  
 - ✅ Drive the apply flow with present (full dogfood loop from the seed) — `0.70.4`.  
 - ✅ Let a **leaf of the pack run** speak the adapter — `0.70.5` (working provider `authoring`; [SD-025](../../TECH-DEBT.md#sd-025)).  
+- ✅ Let that leaf land a **resource** through the same `commit` door — `0.70.6`.  
 - Name handle / Protocol / pack id / provider when José locks them.  
 - Decide whether catalog speak becomes a `palm` provider action or stays adapter-only.
 
@@ -173,6 +176,7 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | **0.70.3** | ✅ Authoring pack — wizard present can start. Pack id unnamed; as-built `authoring-pack`. |
 | **0.70.4** | ✅ Thin apply speaks a file snapshot; waits when unsure; present drives. |
 | **0.70.5** | ✅ Pack job leaf commits the submitted shape via adapter (resource walks `bound().commit`). |
+| **0.70.6** | ✅ `commit` lands `kind: resource`; pack leaf publishes the snapshot; present drives apply. |
 
 **Named later (not this pass — not QA in 0.70.1):**
 
@@ -181,7 +185,7 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | Handle class / Protocol types | José locks when the door is tired of `_Authoring` |
 | Env spelling / constructor override | `land(host)` is as-built; José may rename |
 | Provider `create_flow` hole | Adapter door until José locks a `palm` action. Job leaf uses resource `authoring-commit` ([SD-025](../../TECH-DEBT.md#sd-025)) |
-| Adapter resource commit | `0.70.4` / `0.70.5` used `host.definitions.create_resource`; `_Authoring.commit` is still `create_flow` only |
+| Adapter resource commit | ✅ `0.70.6` `commit` walks `kind: resource`. `0.70.4` test still calls `create_resource` |
 | Provider name `authoring` | Duals the kit package. Working name. José may rename |
 | Pack id lock | As-built `authoring-pack`; unnamed until José locks |
 | Fat phenotypes: Design commit vs `definitions` write | [ADR-008](../adr/008-design-service.md) overlay; not embedded floor |
@@ -216,7 +220,7 @@ These remain questions. They are not architecture law.
 
 ---
 
-## 11. Remaining direction (after `0.70.5`)
+## 11. Remaining direction (after `0.70.6`)
 
 The theme is a **seed**. Slice rows above are a walk we took. They are not the answer and not a kill contract.
 
@@ -226,22 +230,29 @@ José keeps exit. Agents explore the home until it is proper or he stops them. D
 
 **Floor is real** (`0.70.1` + `0.70.2`):
 
-- `palm.kits.authoring`: `land(host)` / `commit(body)` → `create_flow`.
+- `palm.kits.authoring`: `land(host)` / `commit(body)`.
 - Present `start(catalog_id, by_id=True)` on the same embedded host.
 - No Assist. No Design. No land verbs on present.
 
 **Job leaf is real** (`0.70.5`):
 
-- Pack waits on shape. Submit is a `FlowDefinition` mapping.
+- Pack waits on shape. Submit is a catalog mapping.
 - Resource `authoring-commit` walks `bound().commit` (definitions bound by `land(host)`).
 - Working provider name `authoring`. Duals the kit. José may rename.
 - Hole named [SD-025](../../TECH-DEBT.md#sd-025). No `palm` `create_flow`. No invoker `if`.
 
-**Still half-done** (`0.70.4` apply/snapshot):
+**Resource land is real** (`0.70.6`):
 
-- Pytest still `commit`s `authoring-apply` and `create_resource` for snapshots.
-- Adapter still has one verb: create flow.
+- `commit` walks catalog `kind` (`flow` / `resource`).
+- Pack submit of a `ResourceDefinition` mapping lands the snapshot.
+- Present starts apply; file write is still the file provider.
+- `0.70.4` still calls `create_resource` (library bypass; not the job leaf).
+
+**Still residual:**
+
 - Bind is process-global (SD-025 / SD-016 related).
+- Working names. José may rename.
+- `update_flow` / validate only if the loop edits.
 
 ### 11.2 What “more coherent” means
 
@@ -261,9 +272,9 @@ If a candidate needs a new pattern, a land verb on present, Design on `embedded(
 
 | Cut | Direction |
 |-----|-----------|
-| **Job leaf** | ✅ `0.70.5` — resource walks `bound().commit`. Remaining: names, bind ambient, adapter resource verb. |
-| **Shape is the apply** | ✅ Pack submit is the `FlowDefinition` body (`0.70.5`). `AUTHORING_APPLY_FLOW` remains a pytest fixture for snapshot dogfood. |
-| **Resource land** | If the loop lands a snapshot, the adapter (or a resource that walks it) is the door. Raw `create_resource` in the test is a bypass. |
+| **Job leaf** | ✅ `0.70.5` — resource walks `bound().commit`. Remaining: names, bind ambient. |
+| **Shape is the apply** | ✅ Pack submit is the catalog body (`0.70.5` / `0.70.6`). |
+| **Resource land** | ✅ `0.70.6` — `commit` walks `kind: resource`. `0.70.4` test still bypasses. |
 | **Revise** | Walk `update_flow` / validate only when the loop edits. Create-only can stay honest. |
 | **`palm` catalog write** | Named hole. Do not add a provider action only to paint the test green. Adapter stays the door until the walk needs a speak from a resource/provider **and** that door is the smaller truth. |
 | **Names** | Pack id, handle, Protocol, `land`, provider `authoring`. Lock when the door is tired. Working names are not product. |
@@ -272,6 +283,6 @@ Do **not** open as this theme: MCP / CLI / Flutter authoring, Assist / `design_e
 
 ### 11.4 Resume
 
-Read this file §11 + §2 + ADR-038 D1–D8 + [SD-025](../../TECH-DEBT.md#sd-025). Code: `src/palm/kits/authoring/`, `src/palm/providers/authoring/`, `examples/definitions/authoring_pack.py`. Job leaf is `0.70.5`. Do not add `palm` `create_flow`. José exits.
+Read this file §11 + §2 + ADR-038 D1–D8 + [SD-025](../../TECH-DEBT.md#sd-025). Code: `src/palm/kits/authoring/`, `src/palm/providers/authoring/`, `examples/definitions/authoring_pack.py`. Job leaf is `0.70.5`. Resource land is `0.70.6`. Do not add `palm` `create_flow`. José exits.
 
 *Purpose is a definition. The adapter only lands. Present only drives.*
