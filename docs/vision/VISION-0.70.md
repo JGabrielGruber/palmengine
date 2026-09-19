@@ -182,6 +182,8 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | Fat phenotypes: Design commit vs `definitions` write | [ADR-008](../adr/008-design-service.md) overlay; not embedded floor |
 | Shallow draft language (YAML / diagram) | Not a parser theme to have an adapter |
 
+This table is **not** the remaining work. See §11.
+
 ---
 
 ## 9. Open (not locked)
@@ -206,5 +208,62 @@ These remain questions. They are not architecture law.
 | [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) | Do not birth new Assist-shaped surfaces |
 | **SD-022** | Talk as types — clean when touched |
 | **SD-023** / **SD-024** | Not this theme |
+
+---
+
+## 11. Remaining direction (after `0.70.4`)
+
+The theme is a **seed**. Slice rows above are a walk we took. They are not the answer and not a kill contract.
+
+José keeps exit. Agents explore the home until it is proper or he stops them. Do not invent a fifth example wizard to look complete.
+
+### 11.1 Honest as-built
+
+**Floor is real** (`0.70.1` + `0.70.2`):
+
+- `palm.kits.authoring`: `land(host)` / `commit(body)` → `create_flow`.
+- Present `start(catalog_id, by_id=True)` on the same embedded host.
+- No Assist. No Design. No land verbs on present.
+
+**Growth is half-done** (`0.70.3` + `0.70.4`):
+
+- Pack `authoring-pack` waits. Submit does not land a shape.
+- The **pytest process** is the leaf that `commit`s `authoring-apply`.
+- Snapshot resource lands via `host.definitions.create_resource`, not the adapter.
+- Apply body is a fixture. The submitted pack text is unused.
+- Adapter still has one verb: create flow.
+
+That loop proves present can drive a landed apply. It does **not** prove Palm authoring Palm as a job.
+
+### 11.2 What “more coherent” means
+
+One session, embedded:
+
+1. Present starts the pack. It waits.
+2. A person or agent submits a **shape** (control flow + speak contracts).
+3. A **leaf of that run** speaks the adapter. A catalog revision exists. Pytest is not the leaf.
+4. Present starts the new apply by catalog id.
+5. Apply speaks snapshot **data** (file is enough) and waits when unsure. Present drives.
+
+Library one-shot `land` / `commit` without a pack job stays valid. It is the same adapter.
+
+If a candidate needs a new pattern, a land verb on present, Design on `embedded()`, or an `if` to stay green: **stop** and tell José.
+
+### 11.3 Direction (explore; do not stamp as law)
+
+| Cut | Direction |
+|-----|-----------|
+| **Job leaf** | Something *in the run* calls the adapter (resource that walks `land` / `commit`, or another existing door). First growth that changes the home. |
+| **Shape is the apply** | Pack submit becomes the `FlowDefinition` body (dict is enough). Stop shipping `AUTHORING_APPLY_FLOW` as the landed shape. |
+| **Resource land** | If the loop lands a snapshot, the adapter (or a resource that walks it) is the door. Raw `create_resource` in the test is a bypass. |
+| **Revise** | Walk `update_flow` / validate only when the loop edits. Create-only can stay honest. |
+| **`palm` catalog write** | Named hole. Do not add a provider action only to paint the test green. Adapter stays the door until the walk needs a speak from a resource/provider **and** that door is the smaller truth. |
+| **Names** | Pack id, handle, Protocol, `land`. Lock when the door is tired. Working names are not product. |
+
+Do **not** open as this theme: MCP / CLI / Flutter authoring, Assist / `design_entry` compost, YAML-in-core, Design impact on embedded, handle rename as a season.
+
+### 11.4 Resume
+
+Read this file §11 + §2 + ADR-038 D1–D8. Code: `src/palm/kits/authoring/`, `examples/definitions/authoring_pack.py`, `examples/definitions/authoring_apply.py`. Explore `palm.providers.palm` invoke and wizard `step_kind: resource` before adding an organ. First unit of a new organ is already registry-shaped ([src/palm/AGENTS.md](../../src/palm/AGENTS.md) §1.1).
 
 *Purpose is a definition. The adapter only lands. Present only drives.*
