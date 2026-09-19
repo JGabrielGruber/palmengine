@@ -2,7 +2,7 @@
 
 Purpose lives in a definition. Proof path is adapter land/commit then
 present start by catalog id. Pack id stays unnamed; as-built
-``authoring-pack``. Leaf apply / snapshot waits for 0.70.4.
+``authoring-pack``. Thin apply / snapshot is ``0.70.4``.
 
 Not another generic wizard body. Not design_entry. Not Assist.
 """

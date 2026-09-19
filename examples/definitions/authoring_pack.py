@@ -2,8 +2,8 @@
 Authoring pack — catalog wizard present can start (0.70.3).
 
 Asks for a shape. Stays ``WAITING_FOR_INPUT`` after submit
-(``route_on_answer.default`` stays on the same step). A leaf that commits
-a thin apply flow waits for 0.70.4.
+(``route_on_answer.default`` stays on the same step). A leaf commits a
+thin apply flow in ``authoring_apply`` (0.70.4).
 
 Pack id stays unnamed. As-built catalog name is ``authoring-pack``.
 José may rename. Spoken word ``author`` is teaching only — not this id.

@@ -66,7 +66,7 @@ An **authoring definition pack** is a normal catalog flow. Present may start it.
 
 `examples/definitions/design_entry.py` is leftover Assist discovery. It is not this pack.
 
-Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename.
+Pack id stays unnamed (`author` is spoken only). As-built `0.70.3` working catalog name is `authoring-pack`; José may rename. As-built `0.70.4`: a leaf `commit`s a thin apply flow; present starts it.
 
 ### D6 — Catalog truth is FlowDefinition / ResourceDefinition
 
@@ -78,7 +78,7 @@ Refuse a public BT factory (`from palm.core import Sequence`) as the authoring p
 
 The draft is control flow and speak contracts (steps, waits, `resource_ref` to a snapshot).
 
-The draft is **not** thresholds, book names as policy, or keyword lists. Those are snapshot rows (data). A resource snapshot is not a definition revision.
+The draft is **not** thresholds, book names as policy, or keyword lists. Those are snapshot rows (data). A resource snapshot is not a definition revision. As-built `0.70.4`: file JSON `{"note": "rules-as-data"}` is data; it is not a `FlowDefinition` revision.
 
 ### D8 — Named hole: provider catalog write
 

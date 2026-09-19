@@ -1,6 +1,6 @@
 # VISION 0.70 — Authoring
 
-**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Pack `0.70.3`. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Pack `0.70.3`. Thin apply `0.70.4`. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [038-authoring-adapter.md](../adr/038-authoring-adapter.md) **Proposed**.  
@@ -14,7 +14,7 @@
 Teaching name (once): **control kit**.  
 Law: **authoring adapter** + authoring **definition pack**.
 
-**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id. As-built `0.70.3`: authoring pack wizard (working catalog name `authoring-pack`; José may rename).
+**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id. As-built `0.70.3`: authoring pack wizard (working catalog name `authoring-pack`; José may rename). As-built `0.70.4`: thin apply (`authoring-apply`) speaks file snapshot (`authoring-snapshot`); present drives.
 
 ---
 
@@ -65,7 +65,9 @@ The land walk is **real** when tests on `CompositionProfile.embedded()` (no Assi
 
 **As-built `0.70.2`:** `palm.kits.present` starts the committed definition by catalog id (`start(..., by_id=True)`). Same host. No land verbs on present. Existing consume doors. Tests: `tests/test_authoring_present_start_0_70_2.py`.
 
-**As-built `0.70.3`:** authoring pack wizard. Pack id unnamed. Working catalog name `authoring-pack`. Land via adapter; present starts it; submit stays `WAITING_FOR_INPUT`. Tests: `tests/test_authoring_pack_0_70_3.py`. Leaf apply waits for `0.70.4`.
+**As-built `0.70.3`:** authoring pack wizard. Pack id unnamed. Working catalog name `authoring-pack`. Land via adapter; present starts it; submit stays `WAITING_FOR_INPUT`. Tests: `tests/test_authoring_pack_0_70_3.py`.
+
+**As-built `0.70.4`:** thin apply. Working catalog names `authoring-apply` and `authoring-snapshot` (José may rename). Leaf `land(host).commit` publishes the apply flow. Snapshot resource lands via `host.definitions.create_resource` (adapter has no resource verb). Present starts the apply by catalog id. Wizard resource step writes file JSON data; confirm waits; present submit completes the apply. Pack stays waiting. Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`.
 
 ---
 
@@ -75,9 +77,9 @@ While the theme stays open, slices may:
 
 - ✅ Install the kit (`INSTALLED_KITS`) — `0.70.1`.  
 - ✅ Add the authoring pack as a wizard present can start — `0.70.3` (as-built `authoring-pack`; pack id unnamed).  
-- Let a leaf commit a **thin apply flow**.  
-- Let that apply flow speak a snapshot resource (file is enough) and wait when unsure.  
-- Drive the apply flow with present (full dogfood loop from the seed).  
+- ✅ Let a leaf commit a **thin apply flow** — `0.70.4` (as-built `authoring-apply`).  
+- ✅ Let that apply flow speak a snapshot resource (file is enough) and wait when unsure — `0.70.4` (`authoring-snapshot`).  
+- ✅ Drive the apply flow with present (full dogfood loop from the seed) — `0.70.4`.  
 - Name handle / Protocol / pack id when José locks them.  
 - Decide whether catalog speak becomes a `palm` provider action or stays adapter-only.
 
@@ -166,7 +168,7 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | **0.70.1** | ✅ Adapter `palm.kits.authoring` walks `host.definitions` (one-shot `commit`). |
 | **0.70.2** | ✅ Present starts the committed definition (remaining floor). |
 | **0.70.3** | ✅ Authoring pack — wizard present can start. Pack id unnamed; as-built `authoring-pack`. |
-| **0.70.4** | Thin apply speaks a file snapshot; waits when unsure; present drives. |
+| **0.70.4** | ✅ Thin apply speaks a file snapshot; waits when unsure; present drives. |
 
 **Named later (not this pass — not QA in 0.70.1):**
 
@@ -175,6 +177,8 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 | Handle class / Protocol types | José locks when the door is tired of `_Authoring` |
 | Env spelling / constructor override | `land(host)` is as-built; José may rename |
 | Provider `create_flow` hole | Adapter door until José locks a `palm` action |
+| Adapter resource commit | `0.70.4` used `host.definitions.create_resource`; `_Authoring.commit` is still `create_flow` only |
+| Pack id lock | As-built `authoring-pack`; unnamed until José locks |
 | Fat phenotypes: Design commit vs `definitions` write | [ADR-008](../adr/008-design-service.md) overlay; not embedded floor |
 | Shallow draft language (YAML / diagram) | Not a parser theme to have an adapter |
 

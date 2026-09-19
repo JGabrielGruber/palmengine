@@ -4,6 +4,12 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.4 — thin apply speaks a file snapshot
+
+- Leaf commits apply via adapter (`land` / `commit` of as-built `authoring-apply`). Snapshot resource is `file` (`authoring-snapshot`); lands via `host.definitions.create_resource`.
+- Apply wizard: resource step writes JSON data (`{"note": "rules-as-data"}`); confirm waits; present drives until apply `SUCCEEDED`. Pack stays waiting. Snapshot is not a `FlowDefinition` revision.
+- Tests: `tests/test_authoring_apply_snapshot_0_70_4.py`. Theme stays open.
+
 ### 0.70.3 — authoring pack
 
 - Catalog wizard present can start and wait. Proof path: `land` / `commit` then present `start(..., by_id=True)`.
