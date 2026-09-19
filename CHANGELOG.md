@@ -4,12 +4,18 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.70.2 — present starts the committed definition
+
+- Same embedded host: `land` / `commit` then `palm.kits.present` `start(..., by_id=True)` of the catalog id.
+- No land verbs on present. Existing consume doors. `INTENTION_KITS` stays empty.
+- Tests: `tests/test_authoring_present_start_0_70_2.py`.
+
 ### 0.70.1 — authoring kit (one-shot commit)
 
 - Package **`palm.kits.authoring`** (José locked the name 2026-09-19). In `INSTALLED_KITS`.
 - Library door `land(host)` holds `host.definitions`. `commit(body)` walks `create_flow`.
 - Tests: `tests/test_authoring_kit_0_70_1.py` on `ApplicationHost.for_mode("test")` (embedded; no Assist; no Design).
-- Handle class unnamed. Present start of the landed definition waits. `INTENTION_KITS` stays empty.
+- Handle class unnamed. `INTENTION_KITS` stays empty.
 
 ### 0.70.0 — Authoring (plan)
 

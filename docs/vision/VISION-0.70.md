@@ -1,6 +1,6 @@
 # VISION 0.70 — Authoring
 
-**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 🚧 **Theme open** (José **2026-09-19**). Plan `0.70.0`. Adapter `0.70.1`. Present start `0.70.2`. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [038-authoring-adapter.md](../adr/038-authoring-adapter.md) **Proposed**.  
@@ -14,7 +14,7 @@
 Teaching name (once): **control kit**.  
 Law: **authoring adapter** + authoring **definition pack**.
 
-**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`.
+**Open:** José named **0.70** (2026-09-19). Floor phenotype **A** stays: walk `host.definitions` on `CompositionProfile.embedded()`. Package **`palm.kits.authoring`** locked (José 2026-09-19). Handle class and pack id stay **unnamed**. Library door as-built `0.70.1`: `land(host)` then `commit(body)`. As-built `0.70.2`: present starts that catalog id.
 
 ---
 
@@ -61,7 +61,9 @@ The land walk is **real** when tests on `CompositionProfile.embedded()` (no Assi
 
 **Floor function:** that land. Not MCP. Not CLI. Not Portal. Not Flutter. Not YAML-in-core. Not Design propose/impact. Not farm-shaped numbers.
 
-**As-built `0.70.1`:** package `palm.kits.authoring` in `INSTALLED_KITS`. `land(host)` holds `host.definitions`. `commit(body)` walks `create_flow`. Tests: `tests/test_authoring_kit_0_70_1.py` on `ApplicationHost.for_mode("test")` (embedded; no Assist; no Design). Handle class unnamed. Present start of the landed definition waits for a later slice.
+**As-built `0.70.1`:** package `palm.kits.authoring` in `INSTALLED_KITS`. `land(host)` holds `host.definitions`. `commit(body)` walks `create_flow`. Tests: `tests/test_authoring_kit_0_70_1.py` on `ApplicationHost.for_mode("test")` (embedded; no Assist; no Design). Handle class unnamed.
+
+**As-built `0.70.2`:** `palm.kits.present` starts the committed definition by catalog id (`start(..., by_id=True)`). Same host. No land verbs on present. Existing consume doors. Tests: `tests/test_authoring_present_start_0_70_2.py`.
 
 ---
 
@@ -160,7 +162,7 @@ José locked these on **2026-09-19**. Detail: [VISION-AUTHORING](VISION-AUTHORIN
 |-------|--------|
 | **0.70.0** | Plan. This file. ADR **Proposed**. STATUS. |
 | **0.70.1** | ✅ Adapter `palm.kits.authoring` walks `host.definitions` (one-shot `commit`). |
-| **0.70.2** | Present starts the committed definition (remaining floor). |
+| **0.70.2** | ✅ Present starts the committed definition (remaining floor). |
 | **0.70.3** | Authoring pack — wizard present can start. Pack id still unnamed. |
 | **0.70.4** | Thin apply speaks a file snapshot; waits when unsure; present drives. |
 

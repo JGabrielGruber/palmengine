@@ -4,7 +4,7 @@
 **Map:** [PALM.md](../PALM.md)  
 **Seed:** [VISION-AUTHORING](../vision/VISION-AUTHORING.md)
 
-Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Adapter as-built `0.70.1`: `palm.kits.authoring`.
+Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0` (no embedded release). Adapter as-built `0.70.1`: `palm.kits.authoring`. Present start as-built `0.70.2`.
 
 ## Prefer
 
@@ -23,7 +23,7 @@ Palm is pre-1.0. José opened **0.70** (2026-09-19). Package stamp stays `0.68.0
 | Python `examples/` + fat `DesignService` as the only land | Floor: adapter on `CompositionProfile.embedded()` via `host.definitions` |
 | No in-process land kit | `palm.kits.authoring` (`0.70.1`). Handle class unnamed. Door `land(host)` |
 | Assist `design_entry` as discovery | Leftover. Not the authoring pack |
-| Present drives fixtures | Present drives a landed definition after `0.70.1+` |
+| Present drives fixtures | Present drives a landed catalog id after `0.70.2` (`start(..., by_id=True)`) |
 
 ## Unchanged in this theme
 
