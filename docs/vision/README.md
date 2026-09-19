@@ -24,6 +24,7 @@ Seeds deepen; they do not hide that law only inside one file.
 | [VISION-SURFACE-DEFLATION.md](VISION-SURFACE-DEFLATION.md) | Surface compost |
 | [VISION-NAVIGATOR.md](VISION-NAVIGATOR.md) | Operator-guidance definition · presentation adapter (law seed; executed as **0.69**) |
 | [VISION-TINY-LLM.md](VISION-TINY-LLM.md) | Tiny LLM — model as resource · context as flow (queue; needs) |
+| [VISION-AUTHORING.md](VISION-AUTHORING.md) | Authoring adapter — land a shape · definition pack (queue; needs) |
 | [VISION-GROVE.md](VISION-GROVE.md) | Multi-Palm crown · continuous interface · updated org meaning |
 
 **Map / status:** [PALM.md](../PALM.md) · [STATUS.md](../../STATUS.md) · [VERSIONING.md](../VERSIONING.md)  
