@@ -276,8 +276,11 @@ Do not invent a Protocol type name for the registry.
 | Bare in-process ids / `os:` overlay | **Pay** on compost (`0.71.9` — no overlay beside the book). |
 | `RegisteredPlaceSpawn.handles` | **Pay** on invert (`0.71.10` typed `register_body` / `os_registry`). |
 | StructureEngine place observations | **Pay** on invert (`0.71.11` registry `ready` hand). |
-| `workload_place` remaining `isinstance` | **Leave** named. Env dict (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). |
-| `WorkloadEngine` remaining `isinstance` | **Leave** named. Runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). |
+| `workload_place` remaining `isinstance` | **Leave** named. Env dict; typed `WorkloadHandle` accept at Mapping body. |
+| `WorkloadEngine` remaining `isinstance` | **Leave** named. Initialize runtime bind; argv-must-not-be-str. |
+| `place_spawn` remaining `getattr`/`isinstance` | **Leave** named. `os:` process poll / pid / env payload. |
+| `seat.py` `getattr(…, "bind_structure", None)` | **Leave** named. Not this trio. |
+| Pure-engine `_places_ready` (no registry hand) | **Leave** named. `0.71.11` as-built when the hand is unbound. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
 
@@ -289,5 +292,10 @@ Theme stays **open**. Execute `0.71.0`–`0.71.11` landed. Names locked. Next is
 
 | Residual | Truth |
 |----------|-------|
-| `workload_place` remaining `isinstance` | Env dict gate (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). Payload shape / fail-closed. **Not** honest compost now. |
-| `WorkloadEngine` remaining `isinstance` | Initialize runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). Fail-closed. **Not** honest compost now. |
+| `workload_place` remaining `isinstance` | Env dict; typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** honest compost now. |
+| `WorkloadEngine` remaining `isinstance` | Initialize runtime bind; argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
+| `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** honest compost now. |
+| `seat.py` `getattr(self.effects, "bind_structure", None)` | Not this trio. **Leave** named. |
+| Pure-engine `_places_ready` when no registry hand is bound | `0.71.11` as-built. Bound seat reads registry `ready`; unbound engine keeps local observation. **Leave** named. |
+
+**Paid this pass (`0.71.9`–`0.71.11`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book.
