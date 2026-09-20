@@ -4,9 +4,9 @@ Registry of places this process can mark ready so a definition with
 places_required can converge. **0.63.14:** optional :class:`PlaceSpawnPort`
 grows bodies (OS / workload strategies); default remains in-process success.
 
-**0.71.2:** when a workload book is bound, adopted and ``workload:`` readiness
-is a **projection** of that book. The overlay is only for bare / ``os:`` ids
-and failed ensures that never entered the book. Not Grove.
+**0.71.2 / 0.71.9:** when a workload book is bound, readiness is a **projection**
+of that book only — no overlay dict beside it. Unbound, one local register
+holds bare / ``os:`` ready rows. Failed ensures are observations, not rows.
 
 **0.71.7:** ``engine_from_spawn`` matches typed ``RegisteredPlaceSpawn`` (same
 invert as ``host_bind.book_bind_port``); no Protocol ``isinstance``.
@@ -30,12 +30,6 @@ from palm.system.structure.place_spawn import (
 PlaceState = Literal["ready", "failed", "gone"]
 
 
-def _writes_overlay(reason: str) -> bool:
-    """Bare / os: write overlay. Adopt and workload: live in the book."""
-    tag = str(reason or "")
-    return not (tag.startswith("adopt_") or tag.startswith("workload_"))
-
-
 def engine_from_spawn(spawn: object) -> WorkloadEngine | None:
     """Return the WorkloadEngine from typed RegisteredPlaceSpawn binds, if any."""
     match spawn:
@@ -43,6 +37,7 @@ def engine_from_spawn(spawn: object) -> WorkloadEngine | None:
             return registered.book_engine()
         case _:
             return None
+
 
 def _place_id_for(workload: Workload) -> str:
     labeled = str(workload.spec.labels.get("structure_place") or "").strip()
@@ -62,55 +57,63 @@ def _project_state(workload: Workload) -> PlaceState | None:
 
 @dataclass
 class InProcessPlaceRegistry:
-    """Structure place view: overlay plus optional workload-book projection."""
+    """Structure place view: one local register, or workload-book projection."""
 
-    overlay: dict[str, PlaceState] = field(default_factory=dict)
+    _local: dict[str, PlaceState] = field(default_factory=dict)
     book: WorkloadEngine | None = None
 
     @property
     def places(self) -> dict[str, PlaceState]:
-        """Merged view. Book rows win for ids the engine still tracks."""
-        return self._projected()
+        """Book projection when bound; otherwise the local register."""
+        if self._book_is_home():
+            return self._project_book()
+        return dict(self._local)
 
     def bind_book(self, book: WorkloadEngine | None) -> None:
         self.book = book
 
+    def _book_is_home(self) -> bool:
+        book = self.book
+        return book is not None and book.is_initialized
+
     def mark(self, place_id: str, state: PlaceState) -> None:
+        """Write the local register. No-op when the workload book is home."""
+        if self._book_is_home():
+            return
         key = str(place_id or "").strip()
         if not key:
             return
         if state == "gone":
-            self.overlay.pop(key, None)
+            self._local.pop(key, None)
         else:
-            self.overlay[key] = state
+            self._local[key] = state
 
     def release(self, place_id: str) -> PlaceState:
         key = str(place_id or "").strip()
         if not key:
             return "gone"
-        self.overlay.pop(key, None)
+        if self._book_is_home():
+            return "gone"
+        self._local.pop(key, None)
         return "gone"
 
-    def _projected(self) -> dict[str, PlaceState]:
-        live: set[str] = set()
+    def _project_book(self) -> dict[str, PlaceState]:
         projected: dict[str, PlaceState] = {}
         book = self.book
-        if book is not None and book.is_initialized:
-            try:
-                rows = book.list()
-            except Exception:
-                rows = []
-            for workload in rows:
-                place_id = _place_id_for(workload)
-                if not place_id:
-                    continue
-                live.add(place_id)
-                state = _project_state(workload)
-                if state is not None:
-                    projected[place_id] = state
-        out = {key: state for key, state in self.overlay.items() if key not in live}
-        out.update(projected)
-        return out
+        if book is None or not book.is_initialized:
+            return projected
+        try:
+            rows = book.list()
+        except Exception:
+            rows = []
+        for workload in rows:
+            place_id = _place_id_for(workload)
+            if not place_id:
+                continue
+            state = _project_state(workload)
+            if state is not None:
+                projected[place_id] = state
+        return projected
 
 
 @dataclass
@@ -144,14 +147,11 @@ class PlaceEffectPort:
                         payload={"reason": "empty_place_id"},
                     ),
                 )
-            # Spawn hands first (structure body). Overlay only when the book
-            # is not the home (bare / os:).
+            # Spawn hands first. Local register only when the book is not home.
+            # Ready rows only — failed ensures stay observations (0.71.3+).
             result = self.spawn.ensure(target, payload=dict(intent.payload or {}))
-            if _writes_overlay(result.reason):
-                self.registry.mark(
-                    target, "ready" if result.state == "ready" else "failed"
-                )
             if result.state == "ready":
+                self.registry.mark(target, "ready")
                 return (
                     Observation(
                         kind=ObservationKind.PLACE_READY,

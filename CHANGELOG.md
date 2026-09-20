@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.8`: residual named (overlay / handles / assemble observations / remaining `isinstance` gates). PALM pointers through `0.71.8`. No queued further compost.
+- After `0.71.9`: residual named (handles / assemble observations / remaining `isinstance` gates). Overlay composted. No queued further compost.
+
+### 0.71.9 — Compost place-registry overlay
+
+- No `overlay` dict beside the workload book. Bound places are book projection only; unbound bare / `os:` use one local register. Tests: `tests/test_place_overlay_compost_0_71_9.py`.
 
 ### 0.71.8 — Typed adopt payload handle
 

@@ -1,7 +1,7 @@
 """0.71.3 — compost extra place maps.
 
 Workload book is the body book. Spawn hands do not keep place_id → workload_id.
-Overlay is not written for adopt / workload outcomes.
+Adopt / workload outcomes live in the book, not a local register row.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def test_spawn_hands_have_no_place_id_map() -> None:
     assert "places" not in names
 
 
-def test_ensure_adopt_does_not_write_overlay() -> None:
+def test_ensure_adopt_projects_book_not_local_row() -> None:
     eng = _engine()
     try:
         eng.adopt(
@@ -72,13 +72,13 @@ def test_ensure_adopt_does_not_write_overlay() -> None:
         )
         port = PlaceEffectPort(spawn=adopt_prefix_spawn_port(engine=eng))
         port.apply(EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="adopt:yard"))
-        assert "adopt:yard" not in port.registry.overlay
         assert port.registry.places.get("adopt:yard") == "ready"
+        assert eng.get("adopt:yard").status is WorkloadStatus.READY
     finally:
         eng.shutdown()
 
 
-def test_failed_adopt_is_observation_not_overlay_row() -> None:
+def test_failed_adopt_is_observation_not_registry_row() -> None:
     eng = _engine()
     try:
         port = PlaceEffectPort(spawn=adopt_prefix_spawn_port(engine=eng))
@@ -86,7 +86,6 @@ def test_failed_adopt_is_observation_not_overlay_row() -> None:
             EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="adopt:ghost")
         )
         assert obs[0].kind.value == "place_failed"
-        assert "adopt:ghost" not in port.registry.overlay
         assert "adopt:ghost" not in port.registry.places
         assert "adopt:ghost" not in {wl.workload_id for wl in eng.list()}
     finally:
@@ -104,7 +103,6 @@ def test_workload_place_id_is_the_book_id() -> None:
         assert obs[0].kind.value == "place_ready"
         booked = eng.get("workload:manor")
         assert booked.status is WorkloadStatus.READY
-        assert "workload:manor" not in port.registry.overlay
         assert port.registry.places.get("workload:manor") == "ready"
         eng.stop("workload:manor")
         assert "workload:manor" not in port.registry.places
@@ -129,7 +127,7 @@ def test_reensure_adopt_reads_book_not_a_hand_map() -> None:
         eng.shutdown()
 
 
-def test_bare_id_still_uses_overlay() -> None:
+def test_bare_id_unbound_uses_local_register() -> None:
     port = PlaceEffectPort()
     port.apply(EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="support_home"))
-    assert port.registry.overlay.get("support_home") == "ready"
+    assert port.registry.places.get("support_home") == "ready"

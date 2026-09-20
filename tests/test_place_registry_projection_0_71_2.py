@@ -1,7 +1,7 @@
 """0.71.2 — InProcessPlaceRegistry projects the workload book.
 
 Adopted and workload: readiness is the book, not a copied dict.
-Bare in-process ids stay a local overlay (named residual).
+Bare in-process ids use the local register only when unbound (see 0.71.9).
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ def test_workload_prefix_projects_then_drops_on_engine_stop() -> None:
         eng.shutdown()
 
 
-def test_failed_adopt_overlay_is_not_a_book_row() -> None:
+def test_failed_adopt_is_not_a_book_row() -> None:
     eng = _engine()
     try:
         port = PlaceEffectPort(spawn=adopt_prefix_spawn_port(engine=eng))
@@ -122,7 +122,7 @@ def test_failed_adopt_overlay_is_not_a_book_row() -> None:
         eng.shutdown()
 
 
-def test_bare_in_process_id_stays_local_overlay() -> None:
+def test_bare_in_process_id_unbound_uses_local_register() -> None:
     port = PlaceEffectPort()
     obs = port.apply(
         EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="support_home")

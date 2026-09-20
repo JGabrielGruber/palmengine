@@ -34,7 +34,7 @@ def test_os_prefix_fail_closed_without_body() -> None:
     )
     assert obs[0].kind.value == "place_failed"
     assert obs[0].payload.get("reason") == "os_spawn_not_configured"
-    assert port.registry.places.get("os:worker-a") == "failed"
+    assert "os:worker-a" not in port.registry.places
 
 
 def test_os_prefix_ready_when_body_provided() -> None:

@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.8` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.9` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -118,12 +118,17 @@ The registry is **real** when tests prove this chain:
 - `AdoptPlaceSpawn` / place→engine boundary takes typed `WorkloadHandle` only. No dict | `base_url` coercion in `_handle_from_payload`.
 - Tests: `tests/test_handle_payload_invert_0_71_8.py`.
 
+**As-built `0.71.9`:**
+
+- No `overlay` dict beside the workload book. Bound: `places` is book projection only. Unbound: one local register for bare / `os:` ready. Failed ensures stay observations.
+- Tests: `tests/test_place_overlay_compost_0_71_9.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
 - Fail closed when `workload:` has no engine.  
 - `os:` fail closed until a body strategy exists.  
-- Bare place ids: in-process success. **Named residual.** Do not compost on the floor.
+- Bare place ids: in-process success (assemble observation when book-bound).
 
 ---
 
@@ -163,7 +168,7 @@ While the theme stays open, slices may:
 | Authoring names / `palm` catalog write | [SD-025](../../TECH-DEBT.md#sd-025) |
 | Host wizard-named flats | [SD-024](../../TECH-DEBT.md#sd-024) |
 | 0.68 leftover duals | [SD-023](../../TECH-DEBT.md#sd-023) |
-| Bare in-process place ids | Named residual — not floor compost |
+| Bare in-process place ids (body strategy) | Later — `0.71.9` removed the overlay dual; bare ready when book-bound is assemble observation |
 
 **Forbidden always (layer law):**
 
@@ -226,8 +231,9 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.6** | Typed `host_bind` shell / engine / effects / spawn hands. **landed**. |
 | **0.71.7** | Typed `place_registry` spawn / book bind (no Protocol isinstance). **landed**. |
 | **0.71.8** | Typed adopt payload handle (no dict \| `base_url` coercion). **landed**. |
+| **0.71.9** | Compost overlay; bare / `os:` no second map beside the book. **landed**. |
 
-No queued compost after `0.71.8`. Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
+Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
 
 ---
 
@@ -255,7 +261,7 @@ Do not invent a Protocol type name for the registry.
 | Host bind getattr / isinstance duck nest | **Pay** on invert (`0.71.6` typed shell / effects / `workload_bind`). |
 | place_registry Protocol isinstance on spawn | **Pay** on invert (`0.71.7` typed `RegisteredPlaceSpawn`). |
 | EffectIntent payload handle coercion | **Pay** on invert (`0.71.8` typed `WorkloadHandle` only). |
-| Bare in-process ids / `os:` overlay | **Leave** named. In-process home until a later body strategy. Not honest compost now. |
+| Bare in-process ids / `os:` overlay | **Pay** on compost (`0.71.9` — no overlay beside the book). |
 | `RegisteredPlaceSpawn.handles` | **Leave** named. Place-id body handles + residual `__os_registry__` stash. Not book bind. |
 | StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
 | `workload_place` remaining `isinstance` | **Leave** named. Env dict (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). |
@@ -267,12 +273,11 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.8` landed. Names locked. No further compost slice is queued. Next is José exit judgment.
+Theme stays **open**. Execute `0.71.0`–`0.71.9` landed. Names locked. No further compost slice is queued. Next is José exit judgment.
 
 | Residual | Truth |
 |----------|-------|
-| Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
 | `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`); `workload_bind` is typed (`0.71.6`); `engine_from_spawn` is typed (`0.71.7`). **Not** honest compost now. |
-| StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
+| StructureEngine place observations | Assemble / admission state (including bare ready when book-bound). **Not** a second body book. **Not** honest compost. |
 | `workload_place` remaining `isinstance` | Env dict gate (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). Payload shape / fail-closed. **Not** honest compost now. |
 | `WorkloadEngine` remaining `isinstance` | Initialize runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). Fail-closed. **Not** honest compost now. |
