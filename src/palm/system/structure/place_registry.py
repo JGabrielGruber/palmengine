@@ -12,9 +12,11 @@ and failed ensures that never entered the book. Not Grove.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Literal
 
 from palm.core.structure import EffectIntent, EffectIntentKind, Observation, ObservationKind
+from palm.core.workload.engine import WorkloadEngine
+from palm.core.workload.record import Workload
 from palm.core.workload.status import WorkloadStatus, is_terminal
 from palm.system.structure.place_spawn import (
     BookBindPort,
@@ -31,27 +33,24 @@ def _writes_overlay(reason: str) -> bool:
     return not (tag.startswith("adopt_") or tag.startswith("workload_"))
 
 
-def engine_from_spawn(spawn: Any) -> Any | None:
+def engine_from_spawn(spawn: object) -> WorkloadEngine | None:
     """Return the WorkloadEngine from typed book binds on a spawn port, if any."""
     if isinstance(spawn, BookBindPort):
         return spawn.book_engine()
     return None
 
-
-def _place_id_for(workload: Any) -> str:
-    spec = getattr(workload, "spec", None)
-    labels = getattr(spec, "labels", None) or {}
-    labeled = str(labels.get("structure_place") or "").strip()
+def _place_id_for(workload: Workload) -> str:
+    labeled = str(workload.spec.labels.get("structure_place") or "").strip()
     if labeled:
         return labeled
-    return str(getattr(workload, "workload_id", "") or "").strip()
+    return str(workload.workload_id or "").strip()
 
 
-def _project_state(workload: Any) -> PlaceState | None:
-    status = getattr(workload, "status", None)
+def _project_state(workload: Workload) -> PlaceState | None:
+    status = workload.status
     if status is WorkloadStatus.FAILED:
         return "failed"
-    if status is None or is_terminal(status):
+    if is_terminal(status):
         return None
     return "ready"
 
@@ -61,14 +60,14 @@ class InProcessPlaceRegistry:
     """Structure place view: overlay plus optional workload-book projection."""
 
     overlay: dict[str, PlaceState] = field(default_factory=dict)
-    book: Any | None = None
+    book: WorkloadEngine | None = None
 
     @property
     def places(self) -> dict[str, PlaceState]:
         """Merged view. Book rows win for ids the engine still tracks."""
         return self._projected()
 
-    def bind_book(self, book: Any | None) -> None:
+    def bind_book(self, book: WorkloadEngine | None) -> None:
         self.book = book
 
     def mark(self, place_id: str, state: PlaceState) -> None:
@@ -91,7 +90,7 @@ class InProcessPlaceRegistry:
         live: set[str] = set()
         projected: dict[str, PlaceState] = {}
         book = self.book
-        if book is not None and getattr(book, "is_initialized", False):
+        if book is not None and book.is_initialized:
             try:
                 rows = book.list()
             except Exception:

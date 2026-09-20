@@ -11,7 +11,10 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from palm.core.workload.engine import WorkloadEngine
 
 PlaceSpawnState = Literal["ready", "failed", "gone"]
 
@@ -51,9 +54,9 @@ class PlaceSpawnPort(Protocol):
 class BookBoundHands(Protocol):
     """Spawn hands that attach a WorkloadEngine (typed bind, not handles stash)."""
 
-    engine: Any | None
+    engine: WorkloadEngine | None
 
-    def bind_engine(self, engine: Any | None) -> None:
+    def bind_engine(self, engine: WorkloadEngine | None) -> None:
         """Attach or clear the live workload book."""
         ...
 
@@ -66,11 +69,11 @@ class BookBindPort(Protocol):
         """Registered book-bound hands (workload / adopt)."""
         ...
 
-    def bind_book(self, engine: Any | None) -> None:
+    def bind_book(self, engine: WorkloadEngine | None) -> None:
         """Attach the live engine to every registered book bind."""
         ...
 
-    def book_engine(self) -> Any | None:
+    def book_engine(self) -> WorkloadEngine | None:
         """First non-None engine among book binds, if any."""
         ...
 
@@ -152,17 +155,16 @@ class RegisteredPlaceSpawn:
     def book_binds(self) -> tuple[BookBoundHands, ...]:
         return tuple(self.binds)
 
-    def bind_book(self, engine: Any | None) -> None:
+    def bind_book(self, engine: WorkloadEngine | None) -> None:
         for hands in self.binds:
             hands.bind_engine(engine)
 
-    def book_engine(self) -> Any | None:
+    def book_engine(self) -> WorkloadEngine | None:
         for hands in self.binds:
             engine = hands.engine
             if engine is not None:
                 return engine
         return None
-
     def _match_prefix(
         self, place_id: str, table: dict[str, Any]
     ) -> Any | None:

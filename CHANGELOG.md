@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.5 — Typed workload book row reads
+
+- `place_registry` / `workload_place` read `Workload` / `WorkloadHandle` fields typed; they do not getattr duck-type book rows. Tests: `tests/test_workload_row_reads_0_71_5.py`.
+
 ### 0.71.4 — Typed book binds (spawn-hand discovery invert)
 
 - `RegisteredPlaceSpawn.register_bind` / `BookBindPort`: host_bind and place_registry walk typed binds; they do not duck-walk `handles` for workload/adopt hands. Tests: `tests/test_spawn_bind_invert_0_71_4.py`.
