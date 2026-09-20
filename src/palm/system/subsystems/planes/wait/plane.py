@@ -15,7 +15,6 @@ from palm.system.subsystems.planes.wait.deliver import deliver_wait_completion
 from palm.system.subsystems.planes.wait.index import WaitOwnerIndex
 from palm.system.subsystems.planes.wait.matcher import MatchDisposition, WaitMatcher
 from palm.system.subsystems.planes.wait.present import summarize_waiting_on, waiting_on_from_job
-from palm.system.subsystems.planes.wait.rehydrate import rehydrate_wait_interests
 from palm.system.subsystems.planes.wait.signals import TargetSignal
 from palm.core.orchestration.job import JobStatus
 from palm.core.orchestration.run_result import RunResult
@@ -24,6 +23,7 @@ from palm.core.wait import (
     close_wait_on_job,
     list_waits_on_job,
     open_wait_on_job,
+    rehydrate_wait_interests,
 )
 
 if TYPE_CHECKING:

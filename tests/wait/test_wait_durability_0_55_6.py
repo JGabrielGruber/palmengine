@@ -6,7 +6,6 @@ import palm.providers  # noqa: F401
 from palm.common.persistence.state_snapshot import snapshot_state, state_from_snapshot
 from palm.system.subsystems.planes.wait.index import WaitOwnerIndex
 from palm.system.subsystems.planes.wait.matcher import WaitMatcher
-from palm.system.subsystems.planes.wait.rehydrate import rehydrate_wait_interests
 from palm.core import StorageEngine
 from palm.core.orchestration import Job, JobStatus
 from palm.core.wait import (
@@ -15,6 +14,7 @@ from palm.core.wait import (
     list_wait_interests,
     make_job_wait,
     open_wait_on_job,
+    rehydrate_wait_interests,
 )
 from palm.definitions import FlowDefinition, ResourceDefinition
 from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime

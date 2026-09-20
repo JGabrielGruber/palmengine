@@ -14,6 +14,10 @@ from palm.core.wait.interest import (
     make_job_wait,
     make_workload_wait,
 )
+from palm.core.wait.rehydrate import (
+    rehydrate_wait_interests,
+    rehydrate_wait_interests_from_snapshot,
+)
 from palm.core.wait.state_ops import (
     clear_wait_interests,
     close_wait_interest,
@@ -48,4 +52,6 @@ __all__ = [
     "make_workload_wait",
     "open_wait_interest",
     "open_wait_on_job",
+    "rehydrate_wait_interests",
+    "rehydrate_wait_interests_from_snapshot",
 ]
