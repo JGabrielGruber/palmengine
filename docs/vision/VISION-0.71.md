@@ -258,6 +258,8 @@ Do not invent a Protocol type name for the registry.
 | Bare in-process ids / `os:` overlay | **Leave** named. In-process home until a later body strategy. Not honest compost now. |
 | `RegisteredPlaceSpawn.handles` | **Leave** named. Place-id body handles + residual `__os_registry__` stash. Not book bind. |
 | StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
+| `workload_place` remaining `isinstance` | **Leave** named. Env dict (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). |
+| `WorkloadEngine` remaining `isinstance` | **Leave** named. Runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
 
@@ -269,6 +271,8 @@ Theme stays **open**. Execute `0.71.0`–`0.71.8` landed. Names locked. No furth
 
 | Residual | Truth |
 |----------|-------|
+| Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
 | `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`); `workload_bind` is typed (`0.71.6`); `engine_from_spawn` is typed (`0.71.7`). **Not** honest compost now. |
 | StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
-| Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
+| `workload_place` remaining `isinstance` | Env dict gate (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). Payload shape / fail-closed. **Not** honest compost now. |
+| `WorkloadEngine` remaining `isinstance` | Initialize runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). Fail-closed. **Not** honest compost now. |
