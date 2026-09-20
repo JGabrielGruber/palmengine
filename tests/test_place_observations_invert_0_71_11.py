@@ -90,13 +90,14 @@ def test_engine_with_ready_hand_does_not_fold_place_ready_into_local_set() -> No
     eng.observe(
         Observation(kind=ObservationKind.PLACE_READY, target="support_home")
     )
-    assert eng._places_ready == set()  # noqa: SLF001 — invert proof
+    assert not hasattr(eng, "_places_ready")
     result = eng.tick()
     assert result.admission.may_run_business is True
     assert result.status.places_ready == frozenset({"support_home"})
 
 
-def test_engine_without_hand_still_folds_observations_for_pure_tests() -> None:
+def test_engine_without_hand_does_not_admit_from_place_ready_alone() -> None:
+    """0.71.15: unbound hand — no second observation set; fail closed."""
     eng = StructureEngine()
     eng.initialize()
     dna = StructureDefinition(
@@ -109,9 +110,10 @@ def test_engine_without_hand_still_folds_observations_for_pure_tests() -> None:
     eng.observe(
         Observation(kind=ObservationKind.PLACE_READY, target="support_home")
     )
-    assert "support_home" in eng._places_ready  # noqa: SLF001
+    assert not hasattr(eng, "_places_ready")
     result = eng.tick()
-    assert result.admission.may_run_business is True
+    assert result.admission.may_run_business is False
+    assert "support_home" in result.status.places_missing
 
 
 def test_seat_assemble_reads_registry_ready_not_second_book() -> None:
@@ -128,7 +130,7 @@ def test_seat_assemble_reads_registry_ready_not_second_book() -> None:
     assert seat.status().places_ready == frozenset({"support_home", "work_yard"})
     assert seat.effects.registry.ready("support_home") is True  # type: ignore[union-attr]
     assert seat.effects.registry.ready("work_yard") is True  # type: ignore[union-attr]
-    assert seat.engine._places_ready == set()  # noqa: SLF001 — hand bound
+    assert not hasattr(seat.engine, "_places_ready")
 
 
 def test_seat_adopt_converges_from_book_via_ready_hand() -> None:
@@ -149,7 +151,7 @@ def test_seat_adopt_converges_from_book_via_ready_hand() -> None:
         assert seat.admission().may_run_business is True
         assert seat.effects.registry.ready("adopt:manor") is True  # type: ignore[union-attr]
         assert seat.effects.registry.places.get("adopt:manor") == "ready"  # type: ignore[union-attr]
-        assert seat.engine._places_ready == set()  # noqa: SLF001
+        assert not hasattr(seat.engine, "_places_ready")
     finally:
         eng.shutdown()
 

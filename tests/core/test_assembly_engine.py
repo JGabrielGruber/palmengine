@@ -104,6 +104,8 @@ def test_truth_home_down_blocks(engine: StructureEngine) -> None:
 def test_places_required_emits_ensure_and_waits(
     engine: StructureEngine,
 ) -> None:
+    ready_ids: set[str] = set()
+    engine.bind_place_ready(lambda place_id: place_id in ready_ids)
     dna = StructureDefinition(
         id="local.with_place",
         version="1",
@@ -123,6 +125,7 @@ def test_places_required_emits_ensure_and_waits(
     assert result2.intents == ()
     assert result2.admission.may_run_business is False
 
+    ready_ids.add("support_home")
     engine.observe(
         Observation(kind=ObservationKind.PLACE_READY, target="support_home")
     )

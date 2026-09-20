@@ -3,6 +3,8 @@
 Floor: no place-registry spawn yet. ENSURE_PLACE is recorded and can be
 auto-satisfied for tests via ``auto_ack_places`` (default off in production;
 on for pure loop dogfood when no place registry is wired).
+
+**0.71.15:** auto-ack owns a ``ready(place_id)`` hand (no engine second set).
 """
 
 from __future__ import annotations
@@ -28,6 +30,12 @@ class RecordingEffectPort:
     auto_ack_places: bool = False
     applied: list[EffectIntent] = field(default_factory=list)
     on_apply: Callable[[EffectIntent], tuple[Observation, ...]] | None = None
+    _ready: set[str] = field(default_factory=set)
+
+    def ready(self, place_id: str) -> bool:
+        """Assemble readiness hand for StructureEngine.bind_place_ready."""
+        key = str(place_id or "").strip()
+        return bool(key) and key in self._ready
 
     def apply(self, intent: EffectIntent) -> tuple[Observation, ...]:
         self.applied.append(intent)
@@ -38,9 +46,22 @@ class RecordingEffectPort:
             and self.auto_ack_places
             and intent.target
         ):
+            key = str(intent.target).strip()
+            if key:
+                self._ready.add(key)
             return (
                 Observation(
                     kind=ObservationKind.PLACE_READY,
+                    target=intent.target,
+                ),
+            )
+        if intent.kind is EffectIntentKind.RELEASE_PLACE and intent.target:
+            key = str(intent.target).strip()
+            if key:
+                self._ready.discard(key)
+            return (
+                Observation(
+                    kind=ObservationKind.PLACE_GONE,
                     target=intent.target,
                 ),
             )

@@ -15,7 +15,7 @@ from palm.core.structure import (
     local_embedded,
     refuse_violations,
 )
-from palm.system.structure.effects import EffectPort
+from palm.system.structure.effects import EffectPort, RecordingEffectPort
 from palm.system.structure.hands import CapabilitySeats
 from palm.system.structure.loop import (
     DEFAULT_MAX_TICKS,
@@ -42,12 +42,14 @@ class StructureSeat:
         self._bind_place_ready_hand()
 
     def _bind_place_ready_hand(self) -> None:
-        """Prefer place-registry ``ready`` over folding PLACE_READY into a second book."""
+        """Bind the effects ``ready`` hand; no engine second places set (0.71.15)."""
         match self.effects:
             case StructureEffectPort() as port:
                 self.engine.bind_place_ready(port.registry.ready)
             case PlaceEffectPort() as port:
                 self.engine.bind_place_ready(port.registry.ready)
+            case RecordingEffectPort() as port:
+                self.engine.bind_place_ready(port.ready)
             case _:
                 self.engine.bind_place_ready(None)
 

@@ -4,8 +4,8 @@ No sockets. No OS spawn. No business jobs. System applies effect intents;
 clients read admission. Floor: embedded definition with empty places becomes READY
 after tick when not blocked.
 
-**0.71.11:** place readiness prefers a bound ``ready(place_id)`` hand (place
-registry). When bound, PLACE_READY does not accumulate a second body book.
+**0.71.15:** place readiness lives only behind a bound ``ready(place_id)`` hand.
+No second ``_places_ready`` set. Unbound hand → places stay missing (fail closed).
 """
 
 from __future__ import annotations
@@ -35,7 +35,6 @@ class StructureEngine(BasePalmEngine):
         self._lock = threading.RLock()
         self._definition: StructureDefinition | None = None
         self._phase: StructurePhase = StructurePhase.EMPTY
-        self._places_ready: set[str] = set()
         self._place_ready: Callable[[str], bool] | None = None
         self._block_reasons: list[str] = []
         self._truth_home_up: bool = True
@@ -48,7 +47,6 @@ class StructureEngine(BasePalmEngine):
         with self._lock:
             self._definition = None
             self._phase = StructurePhase.EMPTY
-            self._places_ready.clear()
             self._block_reasons.clear()
             self._truth_home_up = True
             self._pending_ensure.clear()
@@ -81,7 +79,6 @@ class StructureEngine(BasePalmEngine):
 
             had_ready = self._phase is StructurePhase.READY
             self._definition = definition
-            self._places_ready.clear()
             self._block_reasons.clear()
             self._truth_home_up = True
             self._pending_ensure.clear()
@@ -109,7 +106,7 @@ class StructureEngine(BasePalmEngine):
             return self._status_unlocked().admission()
 
     def bind_place_ready(self, ready: Callable[[str], bool] | None) -> None:
-        """Bind assemble place readiness (place registry ``ready``). None = local set."""
+        """Bind assemble place readiness (registry / port ``ready``). None = none ready."""
         with self._lock:
             self._place_ready = ready
 
@@ -220,19 +217,17 @@ class StructureEngine(BasePalmEngine):
 
     def _is_place_ready_unlocked(self, place_id: str) -> bool:
         hand = self._place_ready
-        if hand is not None:
-            return bool(hand(place_id))
-        return place_id in self._places_ready
+        if hand is None:
+            return False
+        return bool(hand(place_id))
 
     def _places_ready_view_unlocked(self) -> frozenset[str]:
         definition = self._definition
         if definition is None:
             return frozenset()
-        if self._place_ready is not None:
-            return frozenset(
-                p for p in definition.places_required if self._is_place_ready_unlocked(p)
-            )
-        return frozenset(self._places_ready)
+        return frozenset(
+            p for p in definition.places_required if self._is_place_ready_unlocked(p)
+        )
 
     def _missing_places_unlocked(self) -> tuple[str, ...]:
         if self._definition is None:
@@ -259,9 +254,7 @@ class StructureEngine(BasePalmEngine):
 
         if kind is ObservationKind.PLACE_READY:
             if target:
-                # Bound hand: registry is body/assemble truth — do not fold a second book.
-                if self._place_ready is None:
-                    self._places_ready.add(target)
+                # Readiness truth is the bound hand — observation clears pending only.
                 self._pending_ensure.discard(target)
             # Drop place_failed for this target
             self._block_reasons = [
@@ -271,16 +264,12 @@ class StructureEngine(BasePalmEngine):
             ]
         elif kind is ObservationKind.PLACE_FAILED:
             if target:
-                if self._place_ready is None:
-                    self._places_ready.discard(target)
                 reason = f"place_failed:{target}"
                 if reason not in self._block_reasons:
                     self._block_reasons.append(reason)
                 self._phase = StructurePhase.BLOCKED
         elif kind is ObservationKind.PLACE_GONE:
             if target:
-                if self._place_ready is None:
-                    self._places_ready.discard(target)
                 if self._phase is StructurePhase.READY:
                     self._phase = StructurePhase.INVALIDATED
         elif kind is ObservationKind.TRUTH_HOME_UP:
