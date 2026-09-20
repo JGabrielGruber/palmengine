@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.9`: residual named (handles / assemble observations / remaining `isinstance` gates). Overlay composted. No queued further compost.
+- After `0.71.10`: residual named (assemble observations / remaining `isinstance` gates). Handles bag inverted.
+
+### 0.71.10 — Invert RegisteredPlaceSpawn.handles
+
+- Typed `register_body` / `body` / `forget_body` and typed `os_registry`. No `handles` bag. No `__os_registry__`. Tests: `tests/test_spawn_handles_invert_0_71_10.py`.
 
 ### 0.71.9 — Compost place-registry overlay
 

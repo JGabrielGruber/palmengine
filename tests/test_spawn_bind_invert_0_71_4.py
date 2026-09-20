@@ -71,8 +71,8 @@ def test_prefix_ports_register_typed_binds_not_magic_handle_keys() -> None:
         ad = adopt_prefix_spawn_port(engine=eng)
         assert isinstance(wl, RegisteredPlaceSpawn)
         assert isinstance(ad, RegisteredPlaceSpawn)
-        assert "__workload_spawn__" not in wl.handles
-        assert "__adopt_spawn__" not in ad.handles
+        assert not hasattr(wl, "handles")
+        assert not hasattr(ad, "handles")
         assert len(wl.book_binds()) == 1
         assert len(ad.book_binds()) == 1
         assert isinstance(wl.book_binds()[0], WorkloadPlaceSpawn)
@@ -87,8 +87,7 @@ def test_combined_port_merges_binds_without_magic_keys() -> None:
     eng = _engine(runtime=_SpyRuntime())
     try:
         port = combined_structure_spawn_port(engine=eng)
-        assert "__workload_spawn__" not in port.handles
-        assert "__adopt_spawn__" not in port.handles
+        assert not hasattr(port, "handles")
         kinds = {type(h) for h in port.book_binds()}
         assert WorkloadPlaceSpawn in kinds
         assert AdoptPlaceSpawn in kinds

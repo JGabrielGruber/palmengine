@@ -107,7 +107,8 @@ class RegisteredPlaceSpawn:
     Unregistered places fall through to ``fallback`` (default in-process).
     Prefix routes (e.g. ``os:``) match when no exact id is registered.
     Book-bound hands register via :meth:`register_bind` (typed bind table).
-    ``handles`` keeps place-id body handles and residual ``os:`` stash only.
+    Place-id body handles register via :meth:`register_body` (not a mixed bag).
+    ``os:`` process registry is typed :attr:`os_registry`.
     """
 
     ensures: dict[str, PlaceEnsureFn] = field(default_factory=dict)
@@ -116,10 +117,13 @@ class RegisteredPlaceSpawn:
     prefix_ensures: dict[str, PlaceEnsureFn] = field(default_factory=dict)
     prefix_releases: dict[str, PlaceReleaseFn] = field(default_factory=dict)
     fallback: PlaceSpawnPort = field(default_factory=InProcessPlaceSpawn)
-    handles: dict[str, Any] = field(default_factory=dict)
+    #: Place-id → body handle from last ready ensure (typed body register).
+    bodies: dict[str, Any] = field(default_factory=dict)
     binds: list[BookBoundHands] = field(default_factory=list)
-    #: Typed workload: hands (set by workload / combined factories; not handles stash).
+    #: Typed workload: hands (set by workload / combined factories).
     workload_bind: WorkloadPlaceSpawn | None = None
+    #: Typed ``os:`` process registry when this port owns those routes.
+    os_registry: OsProcessRegistry | None = None
 
     def register(
         self,
@@ -155,6 +159,21 @@ class RegisteredPlaceSpawn:
         """Register book-bound spawn hands for typed host / registry discovery."""
         self.binds.append(hands)
 
+    def register_body(self, place_id: str, handle: Any) -> None:
+        """Remember a place-id body handle from a ready ensure."""
+        key = str(place_id or "").strip()
+        if not key or handle is None:
+            return
+        self.bodies[key] = handle
+
+    def forget_body(self, place_id: str) -> None:
+        """Drop a remembered place-id body handle."""
+        self.bodies.pop(str(place_id or "").strip(), None)
+
+    def body(self, place_id: str) -> Any | None:
+        """Return the remembered body handle for ``place_id``, if any."""
+        return self.bodies.get(str(place_id or "").strip())
+
     def book_binds(self) -> tuple[BookBoundHands, ...]:
         return tuple(self.binds)
 
@@ -168,6 +187,7 @@ class RegisteredPlaceSpawn:
             if engine is not None:
                 return engine
         return None
+
     def _match_prefix(
         self, place_id: str, table: dict[str, Any]
     ) -> Any | None:
@@ -188,7 +208,7 @@ class RegisteredPlaceSpawn:
         if fn is not None:
             result = fn(key, body)
             if result.state == "ready" and result.handle is not None:
-                self.handles[key] = result.handle
+                self.register_body(key, result.handle)
             return result
         return self.fallback.ensure(key, payload=body)
 
@@ -199,9 +219,9 @@ class RegisteredPlaceSpawn:
         fn = self.releases.get(key) or self._match_prefix(key, self.prefix_releases)
         if fn is not None:
             result = fn(key)
-            self.handles.pop(key, None)
+            self.forget_body(key)
             return result
-        self.handles.pop(key, None)
+        self.forget_body(key)
         return self.fallback.release(key)
 
 
@@ -358,8 +378,7 @@ def os_prefix_spawn_port(
         ensure=lambda pid, payload: reg.ensure(pid, payload),
         release=lambda pid: reg.release(pid),
     )
-    # Keep registry reachable for tests / shutdown.
-    port.handles["__os_registry__"] = reg  # type: ignore[index]
+    port.os_registry = reg
     return port
 
 

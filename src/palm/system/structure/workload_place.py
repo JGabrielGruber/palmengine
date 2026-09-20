@@ -407,10 +407,7 @@ def combined_structure_spawn_port(
     for hands in ad_port.book_binds():
         combined.register_bind(hands)
     combined.workload_bind = wl_port.workload_bind
-    # Residual: os registry stash for tests / shutdown (not book bind).
-    os_reg = os_port.handles.get("__os_registry__")
-    if os_reg is not None:
-        combined.handles["__os_registry__"] = os_reg
+    combined.os_registry = os_port.os_registry
     return combined
 
 
