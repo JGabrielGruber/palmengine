@@ -100,9 +100,7 @@ def test_workload_prefix_projects_then_drops_on_engine_stop() -> None:
         )
         assert obs[0].kind.value == "place_ready"
         assert port.registry.places.get("workload:manor") == "ready"
-        hands = spawn.handles["__workload_spawn__"]
-        wid = hands.places["workload:manor"]
-        eng.stop(wid)
+        eng.stop("workload:manor")
         assert port.registry.places.get("workload:manor") != "ready"
         assert "workload:manor" not in port.registry.places
     finally:
@@ -117,7 +115,7 @@ def test_failed_adopt_overlay_is_not_a_book_row() -> None:
             EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="adopt:ghost")
         )
         assert obs[0].kind.value == "place_failed"
-        assert port.registry.places.get("adopt:ghost") == "failed"
+        assert "adopt:ghost" not in port.registry.places
         ids = {wl.workload_id for wl in eng.list()}
         assert "adopt:ghost" not in ids
     finally:

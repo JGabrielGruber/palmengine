@@ -9,7 +9,7 @@
 ### Agent resume (after compact)
 
 Read: **this STATUS** → [VISION-0.71](docs/vision/VISION-0.71.md) (**open**) → [ADR-039](docs/adr/039-place-registry-adopt.md) **Proposed**.  
-José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.71.2` structure registry projects the workload book. Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks.
+José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.71.2` projection. Compost `0.71.3` extra maps (spawn `place_id` dicts; overlay not for book outcomes). Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks.
 
 | Spirit | Decision |
 |--------|----------|
@@ -27,7 +27,8 @@ José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.7
 |-------|--------|--------|
 | **0.71.0** | Plan: VISION, ADR Proposed, STATUS, PALM pointer | landed |
 | **0.71.1** | Adopt into the workload book; structure ENSURE; fail closed | landed |
-| **0.71.2** | Structure registry projects the workload book | **this** |
+| **0.71.2** | Structure registry projects the workload book | landed |
+| **0.71.3** | Compost extra maps; place id is the book id | **this** |
 
 ## Later seeds (not this season)
 

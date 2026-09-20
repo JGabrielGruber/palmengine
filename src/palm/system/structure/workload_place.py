@@ -8,7 +8,7 @@ body) so ensure does not require a one-shot command.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from palm.core.workload.handle import WorkloadHandle
@@ -28,13 +28,24 @@ from palm.system.structure.place_spawn import (
 )
 
 
+def _row(engine: Any, place_id: str) -> Any | None:
+    """Read the workload book by place id. Place id is the workload id."""
+    if engine is None:
+        return None
+    get = getattr(engine, "get", None)
+    if not callable(get):
+        return None
+    try:
+        return get(place_id)
+    except Exception:
+        return None
+
+
 @dataclass
 class WorkloadPlaceSpawn:
     """Ensure/release structure places via an optional :class:`WorkloadEngine`."""
 
     engine: Any | None = None
-    #: place_id → workload_id
-    places: dict[str, str] = field(default_factory=dict)
     default_runtime: str = "local"
     default_kind: str = "workspace"
 
@@ -60,30 +71,30 @@ class WorkloadPlaceSpawn:
                 payload={"place_id": key},
             )
 
-        existing = self.places.get(key)
+        existing = _row(self.engine, str(body.get("workload_id") or key))
         if existing is not None:
-            try:
-                wl = self.engine.get(existing)
-                status = getattr(wl, "status", None)
-                if status is not None and not is_terminal(status):
-                    return PlaceSpawnResult(
-                        state="ready",
-                        reason="workload_already",
-                        handle=existing,
-                        payload={"workload_id": existing, "status": str(status)},
-                    )
-                if status is WorkloadStatus.STOPPED:
-                    # One-shot run completed successfully — place still ready.
-                    return PlaceSpawnResult(
-                        state="ready",
-                        reason="workload_stopped_ok",
-                        handle=existing,
-                        payload={"workload_id": existing, "status": str(status)},
-                    )
-                # Failed / missing — clear and respawn
-                self.places.pop(key, None)
-            except Exception:
-                self.places.pop(key, None)
+            status = getattr(existing, "status", None)
+            wid = getattr(existing, "workload_id", None) or key
+            if status is not None and not is_terminal(status):
+                return PlaceSpawnResult(
+                    state="ready",
+                    reason="workload_already",
+                    handle=wid,
+                    payload={"workload_id": wid, "status": str(status)},
+                )
+            if status is WorkloadStatus.STOPPED:
+                return PlaceSpawnResult(
+                    state="ready",
+                    reason="workload_stopped_ok",
+                    handle=wid,
+                    payload={"workload_id": wid, "status": str(status)},
+                )
+            return PlaceSpawnResult(
+                state="failed",
+                reason="workload_failed",
+                handle=wid,
+                payload={"place_id": key, "workload_id": wid, "status": str(status)},
+            )
 
         try:
             spec = self._spec_from_payload(key, body)
@@ -98,13 +109,12 @@ class WorkloadPlaceSpawn:
             session_id=str(body.get("session_id") or "structure"),
             lease_id=str(body.get("lease_id") or key),
         )
-        # Stable workload id per place for idempotent re-ensure in one process.
-        safe_id = "place-" + key.replace(":", "-").replace("/", "-")
+        wid = str(body.get("workload_id") or key)
         try:
             wl = self.engine.start(
                 spec,
                 owner=owner,
-                workload_id=body.get("workload_id") or safe_id,
+                workload_id=wid,
                 idempotency_key=str(body.get("idempotency_key") or key),
             )
         except Exception as exc:
@@ -115,29 +125,28 @@ class WorkloadPlaceSpawn:
             )
 
         status = getattr(wl, "status", None)
-        wid = getattr(wl, "workload_id", None) or safe_id
+        recorded = getattr(wl, "workload_id", None) or wid
         if status is WorkloadStatus.FAILED:
             return PlaceSpawnResult(
                 state="failed",
                 reason="workload_failed",
-                handle=wid,
+                handle=recorded,
                 payload={
                     "place_id": key,
-                    "workload_id": wid,
+                    "workload_id": recorded,
                     "status": str(status),
                     "message": getattr(wl, "message", None)
                     or getattr(getattr(wl, "result", None), "message", None),
                 },
             )
 
-        self.places[key] = wid
         return PlaceSpawnResult(
             state="ready",
             reason="workload_started",
-            handle=wid,
+            handle=recorded,
             payload={
                 "place_id": key,
-                "workload_id": wid,
+                "workload_id": recorded,
                 "status": str(status),
                 "runtime": getattr(wl, "runtime", None),
             },
@@ -147,9 +156,12 @@ class WorkloadPlaceSpawn:
         key = str(place_id or "").strip()
         if not key:
             return PlaceSpawnResult(state="gone", reason="empty_place_id")
-        wid = self.places.pop(key, None)
-        if wid is None or self.engine is None:
+        if self.engine is None:
             return PlaceSpawnResult(state="gone", reason="workload_not_tracked")
+        row = _row(self.engine, key)
+        if row is None:
+            return PlaceSpawnResult(state="gone", reason="workload_not_tracked")
+        wid = getattr(row, "workload_id", None) or key
         try:
             self.engine.stop(wid)
         except Exception as exc:
@@ -202,8 +214,6 @@ class AdoptPlaceSpawn:
     """
 
     engine: Any | None = None
-    #: place_id → workload_id
-    places: dict[str, str] = field(default_factory=dict)
 
     def bind_engine(self, engine: Any | None) -> None:
         self.engine = engine
@@ -230,7 +240,7 @@ class AdoptPlaceSpawn:
         handle = _handle_from_payload(key, body)
         wid = str(body.get("workload_id") or key)
         if handle is None:
-            booked = self._ready_from_book(key, wid)
+            booked = self._ready_from_book(wid)
             if booked is not None:
                 return booked
             return PlaceSpawnResult(
@@ -262,7 +272,6 @@ class AdoptPlaceSpawn:
                 handle=recorded,
                 payload={"place_id": key, "workload_id": recorded},
             )
-        self.places[key] = recorded
         return PlaceSpawnResult(
             state="ready",
             reason="workload_adopted",
@@ -278,9 +287,12 @@ class AdoptPlaceSpawn:
         key = str(place_id or "").strip()
         if not key:
             return PlaceSpawnResult(state="gone", reason="empty_place_id")
-        wid = self.places.pop(key, None) or key
         if self.engine is None:
             return PlaceSpawnResult(state="gone", reason="workload_not_tracked")
+        row = _row(self.engine, key)
+        if row is None:
+            return PlaceSpawnResult(state="gone", reason="workload_not_tracked")
+        wid = getattr(row, "workload_id", None) or key
         try:
             self.engine.stop(wid)
         except Exception as exc:
@@ -296,25 +308,19 @@ class AdoptPlaceSpawn:
             handle=wid,
         )
 
-    def _ready_from_book(self, key: str, wid: str) -> PlaceSpawnResult | None:
-        engine = self.engine
-        if engine is None:
-            return None
-        lookup = self.places.get(key) or wid
-        try:
-            wl = engine.get(lookup)
-        except Exception:
+    def _ready_from_book(self, wid: str) -> PlaceSpawnResult | None:
+        wl = _row(self.engine, wid)
+        if wl is None:
             return None
         status = getattr(wl, "status", None)
-        recorded = getattr(wl, "workload_id", None) or lookup
+        recorded = getattr(wl, "workload_id", None) or wid
         if status is not None and not is_terminal(status):
-            self.places[key] = recorded
             return PlaceSpawnResult(
                 state="ready",
                 reason="workload_already",
                 handle=recorded,
                 payload={
-                    "place_id": key,
+                    "place_id": recorded,
                     "workload_id": recorded,
                     "status": str(status),
                 },

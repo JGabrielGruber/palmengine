@@ -24,6 +24,12 @@ PlaceState = Literal["ready", "failed", "gone"]
 _BOOK_HANDLE_KEYS = ("__adopt_spawn__", "__workload_spawn__")
 
 
+def _writes_overlay(reason: str) -> bool:
+    """Bare / os: write overlay. Adopt and workload: live in the book."""
+    tag = str(reason or "")
+    return not (tag.startswith("adopt_") or tag.startswith("workload_"))
+
+
 def engine_from_spawn(spawn: Any) -> Any | None:
     """Return the WorkloadEngine stashed on a registered spawn port, if any."""
     handles = getattr(spawn, "handles", None)
@@ -139,10 +145,14 @@ class PlaceEffectPort:
                         payload={"reason": "empty_place_id"},
                     ),
                 )
-            # Spawn hands first (structure body); registry records the outcome.
+            # Spawn hands first (structure body). Overlay only when the book
+            # is not the home (bare / os:).
             result = self.spawn.ensure(target, payload=dict(intent.payload or {}))
+            if _writes_overlay(result.reason):
+                self.registry.mark(
+                    target, "ready" if result.state == "ready" else "failed"
+                )
             if result.state == "ready":
-                self.registry.mark(target, "ready")
                 return (
                     Observation(
                         kind=ObservationKind.PLACE_READY,
@@ -150,7 +160,6 @@ class PlaceEffectPort:
                         payload={"spawn": result.reason, **dict(result.payload)},
                     ),
                 )
-            self.registry.mark(target, "failed")
             return (
                 Observation(
                     kind=ObservationKind.PLACE_FAILED,

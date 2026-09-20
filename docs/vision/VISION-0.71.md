@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Floor `0.71.1` and growth `0.71.2` landed. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Floor `0.71.1`, projection `0.71.2`, compost `0.71.3` landed. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -85,6 +85,13 @@ The registry is **real** when tests prove this chain:
 - Adopted unbind (`stop`, empty runtime → `STOPPED`) drops ready from the view without a `RELEASE_PLACE` intent.
 - Overlay keeps bare in-process ids and failed ensures that never entered the book.
 - Tests: `tests/test_place_registry_projection_0_71_2.py`.
+
+**As-built `0.71.3`:**
+
+- `AdoptPlaceSpawn` / `WorkloadPlaceSpawn` do not keep a `place_id` → `workload_id` map. Place id is the workload id.
+- `PlaceEffectPort` does not write overlay for `adopt_*` / `workload_*` outcomes. Failed adopt is an observation, not a registry row.
+- Overlay remains for bare in-process and `os:` (named residual).
+- Tests: `tests/test_place_maps_compost_0_71_3.py`.
 
 **As-built to keep:**
 
@@ -185,6 +192,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.0** | Plan. This file. ADR **Proposed**. STATUS. PALM one-line pointer. |
 | **0.71.1** | Floor: adopt into the workload book; structure ENSURE; fail closed without handle. **landed**. |
 | **0.71.2** | Growth: `InProcessPlaceRegistry` projects the workload book. **landed**. |
+| **0.71.3** | Compost extra maps. Place id is the book id. **landed**. |
 
 Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
 
@@ -207,7 +215,7 @@ Do not invent a Protocol type name for the registry.
 | Pay or leave | Note |
 |--------------|------|
 | Adopt missing | **Pay** on floor (`0.71.1`). |
-| Structure copy of readiness | **Pay** on growth (`0.71.2` projection). |
+| Structure copy of readiness | **Pay** on growth (`0.71.2` projection, `0.71.3` compost). |
 | Bare in-process ids | **Leave** named. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
@@ -217,7 +225,7 @@ Do not invent a Protocol type name for the registry.
 ## 11. Residual (open)
 
 - Working names: method `adopt`, prefix `adopt:`, empty `runtime` on adopted rows. José locks.
-- Spawn hands still map `place_id` → `workload_id` for idempotent ensure. Readiness is the book.
 - `StructureEngine` still records place observations for admission. That is assemble state, not a second body book.
+- `RegisteredPlaceSpawn.handles` still stashes spawn-hand objects for bind. Not a body book.
 - Reuse `Workload` for adopted rows. Contested only if José wants a thinner place row.
-- Bare in-process place ids stay named.
+- Bare in-process place ids stay named. Overlay also still records `os:` outcomes.

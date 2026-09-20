@@ -149,7 +149,7 @@ def test_ensure_adopt_without_handle_fails_closed() -> None:
         obs = port.apply(EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="adopt:ghost"))
         assert obs[0].kind.value == "place_failed"
         assert obs[0].payload.get("reason") == "adopt_handle_missing"
-        assert port.registry.places.get("adopt:ghost") == "failed"
+        assert "adopt:ghost" not in port.registry.places
     finally:
         eng.shutdown()
 

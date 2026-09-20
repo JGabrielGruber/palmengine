@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.3 — Compost extra place maps
+
+- Spawn hands do not keep `place_id` → `workload_id`. Place id is the workload id. Overlay is not written for adopt/workload outcomes. Tests: `tests/test_place_maps_compost_0_71_3.py`.
+
 ### 0.71.2 — Structure registry projects the workload book
 
 - `InProcessPlaceRegistry.places` reads adopted and `workload:` readiness from `WorkloadEngine`. Overlay stays for bare ids and failed ensures. Tests: `tests/test_place_registry_projection_0_71_2.py`.
