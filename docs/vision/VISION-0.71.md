@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.12` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.13` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -138,6 +138,11 @@ The registry is **real** when tests prove this chain:
 - `WorkloadPlaceSpawn._spec_from_payload` takes typed env via `_env_from_payload` (Mapping only). Missing → empty. Non-mapping fails closed. No `isinstance(..., dict)` silent drop.
 - Tests: `tests/test_workload_place_env_0_71_12.py`.
 
+**As-built `0.71.13`:**
+
+- `WorkloadEngine._do_initialize` binds named runtimes via `_named_runtimes` (Mapping only). Missing → empty. Non-mapping / non-`WorkloadRuntime` fails closed. No `isinstance(bound, dict)` / `isinstance(runtime, WorkloadRuntime)` soup.
+- Tests: `tests/test_runtime_bind_0_71_13.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -250,6 +255,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.10** | Invert `handles`; typed `register_body` / `os_registry`. **landed**. |
 | **0.71.11** | Invert StructureEngine place observations onto registry `ready`. **landed**. |
 | **0.71.12** | Typed `workload_place` spec env at Mapping boundary. **landed**. |
+| **0.71.13** | Typed `WorkloadEngine` initialize named runtime bind. **landed**. |
 
 Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
 
@@ -283,8 +289,9 @@ Do not invent a Protocol type name for the registry.
 | `RegisteredPlaceSpawn.handles` | **Pay** on invert (`0.71.10` typed `register_body` / `os_registry`). |
 | StructureEngine place observations | **Pay** on invert (`0.71.11` registry `ready` hand). |
 | `workload_place` env dict isinstance | **Pay** on invert (`0.71.12` typed Mapping env). |
+| `WorkloadEngine` initialize runtime bind | **Pay** on invert (`0.71.13` typed named runtime Mapping). |
 | `workload_place` remaining `isinstance` | **Leave** named. Typed `WorkloadHandle` accept at Mapping body. |
-| `WorkloadEngine` remaining `isinstance` | **Leave** named. Initialize runtime bind; argv-must-not-be-str. |
+| `WorkloadEngine` remaining `isinstance` | **Leave** named. argv-must-not-be-str. |
 | `place_spawn` remaining `getattr`/`isinstance` | **Leave** named. `os:` process poll / pid / env payload. |
 | `seat.py` `getattr(…, "bind_structure", None)` | **Leave** named. Not this trio. |
 | Pure-engine `_places_ready` (no registry hand) | **Leave** named. `0.71.11` as-built when the hand is unbound. |
@@ -295,14 +302,14 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.12` landed. Names locked. Next is José exit judgment.
+Theme stays **open**. Execute `0.71.0`–`0.71.13` landed. Names locked. Next is José exit judgment.
 
 | Residual | Truth |
 |----------|-------|
 | `workload_place` remaining `isinstance` | Typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** honest compost now. |
-| `WorkloadEngine` remaining `isinstance` | Initialize runtime bind; argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
+| `WorkloadEngine` remaining `isinstance` | argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
 | `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** honest compost now. |
 | `seat.py` `getattr(self.effects, "bind_structure", None)` | Not this trio. **Leave** named. |
 | Pure-engine `_places_ready` when no registry hand is bound | `0.71.11` as-built. Bound seat reads registry `ready`; unbound engine keeps local observation. **Leave** named. |
 
-**Paid this pass (`0.71.9`–`0.71.12`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop).
+**Paid this pass (`0.71.9`–`0.71.13`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop); typed `WorkloadEngine` named runtime bind (no dict / WorkloadRuntime isinstance soup).

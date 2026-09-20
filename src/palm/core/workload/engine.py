@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import threading
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from palm.core.base import BasePalmEngine
@@ -49,6 +49,26 @@ EventPublisher = Callable[[str, dict[str, Any]], None]
 RuntimeFactory = Callable[[str], WorkloadRuntime]
 
 
+def _named_runtimes(bound: object | None) -> dict[str, WorkloadRuntime]:
+    """Typed name → WorkloadRuntime bind. Missing → empty. Non-mapping fails closed."""
+    if bound is None:
+        return {}
+    match bound:
+        case Mapping() as named:
+            out: dict[str, WorkloadRuntime] = {}
+            for name, runtime in named.items():
+                match runtime:
+                    case WorkloadRuntime() as rt:
+                        out[str(name)] = rt
+                    case _:
+                        raise TypeError(
+                            f"runtimes[{name!r}] must be a WorkloadRuntime, got {type(runtime)}"
+                        )
+            return out
+        case _:
+            raise TypeError("runtimes must be a mapping of name → WorkloadRuntime")
+
+
 class WorkloadEngine(BasePalmEngine):
     """In-memory workload lifecycle engine (durable projection later in service)."""
 
@@ -67,14 +87,7 @@ class WorkloadEngine(BasePalmEngine):
         self._runtime_factory = options.get("runtime_factory")
         self._default_runtime = options.get("default_runtime")
         # Optional pre-bound runtime instances (tests / host wiring)
-        bound = options.get("runtimes") or {}
-        if isinstance(bound, dict):
-            for name, runtime in bound.items():
-                if not isinstance(runtime, WorkloadRuntime):
-                    raise TypeError(
-                        f"runtimes[{name!r}] must be a WorkloadRuntime, got {type(runtime)}"
-                    )
-                self._runtimes[str(name)] = runtime
+        self._runtimes.update(_named_runtimes(options.get("runtimes")))
 
     def _do_shutdown(self) -> None:
         with self._lock:
