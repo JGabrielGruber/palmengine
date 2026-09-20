@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Plan only (`0.71.0`). Execute starts at `0.71.1`. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Floor execute `0.71.1` landed. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -71,6 +71,14 @@ The registry is **real** when tests prove this chain:
 
 **Working prefix** until José locks a name: `adopt:`. Same table as `workload:` / `os:` (`RegisteredPlaceSpawn`). Not a new `if`.
 
+**As-built `0.71.1`:**
+
+- `WorkloadEngine.adopt(id, handle)` records `READY` with `WorkloadHandle.base_url`. No `WorkloadRuntime.start`. Empty id or missing `base_url` raises `WorkloadSpecError`.
+- Adopted row uses empty `runtime` (no runner). `stop` unbinds. `exec` fails closed. Status refresh does not poll.
+- `AdoptPlaceSpawn` registers prefix `adopt:` on `RegisteredPlaceSpawn` and on `combined_structure_spawn_port`.
+- ENSURE / `places_required` converge when the book already holds that place id. Missing handle fails closed (`adopt_handle_missing`), not in-process ready.
+- Tests: `tests/test_place_adopt_0_71_1.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -84,11 +92,11 @@ The registry is **real** when tests prove this chain:
 
 While the theme stays open, slices may:
 
-- Register `adopt:` on `combined_structure_spawn_port`.  
 - Make structure `InProcessPlaceRegistry` a **projection** of the workload book for adopted and `workload:` ids.  
-- Release of an adopted place **unbinds**. It does not kill a process Palm did not start.  
 - Keep spawn on the same book. Do not add a second spawn path.  
 - Leave room for Tiny LLM: a long-lived small **service** as a place. Speak stays a later provider.
+
+`adopt:` is on `combined_structure_spawn_port`. Adopted `stop` unbinds (no runner `stop`).
 
 **Not floor:** product CQRS `workload.adopt`. MCP. New runners. Invert of `LocalPalmInvoker`. Assist compost.
 
@@ -168,8 +176,8 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | Slice | Intent |
 |-------|--------|
 | **0.71.0** | Plan. This file. ADR **Proposed**. STATUS. PALM one-line pointer. |
-| **0.71.1** | Floor: adopt into the workload book; structure ENSURE; fail closed without handle. Tests first. |
-| **0.71.2+** | Growth: register prefix on combined spawn port if not in 0.71.1; projection; release-as-unbind. |
+| **0.71.1** | Floor: adopt into the workload book; structure ENSURE; fail closed without handle. **landed**. |
+| **0.71.2+** | Growth: projection of `InProcessPlaceRegistry`; José locks names. |
 
 Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
 
@@ -201,4 +209,8 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-None until execute. After slices: name leftover duals here. Do not claim projection paid unless tests show one book.
+- Structure `InProcessPlaceRegistry` still **copies** readiness. It is not a projection of the workload book (`0.71.2+`).
+- Working names: method `adopt`, prefix `adopt:`, empty `runtime` on adopted rows. José locks.
+- Reuse `Workload` for adopted rows. Contested only if José wants a thinner place row.
+
+Do not claim projection paid unless tests show one book.

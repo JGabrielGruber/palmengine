@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.1 — Adopt a named place into the workload book
+
+- `WorkloadEngine.adopt` records an existing `WorkloadHandle.base_url` as ready. No runner `start`. Prefix `adopt:` on the structure spawn table. Tests: `tests/test_place_adopt_0_71_1.py`.
+
 ### 0.71.0 — Place registry (**theme open** · José 2026-09-20)
 
 Vision: [VISION-0.71](docs/vision/VISION-0.71.md) · ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed**

@@ -23,14 +23,21 @@ from palm.core.workload.exceptions import (
     WorkloadNotFoundError,
     WorkloadPlacementError,
     WorkloadPolicyError,
+    WorkloadSpecError,
     WorkloadStateError,
 )
+from palm.core.workload.handle import WorkloadHandle
 from palm.core.workload.owner import WorkloadOwner
 from palm.core.workload.protocol import WorkloadRuntime
 from palm.core.workload.record import Workload
 from palm.core.workload.registry import workload_runtime_registry
 from palm.core.workload.result import WorkloadResult
-from palm.core.workload.spec import IsolationPolicy, WorkloadKind, WorkloadSpec
+from palm.core.workload.spec import (
+    IsolationPolicy,
+    LifecyclePolicy,
+    WorkloadKind,
+    WorkloadSpec,
+)
 from palm.core.workload.status import (
     WorkloadStatus,
     can_transition,
@@ -109,9 +116,7 @@ class WorkloadEngine(BasePalmEngine):
         if placement.runtime:
             name = placement.runtime
             if name in placement.reject_runtimes:
-                raise WorkloadPlacementError(
-                    f"Requested runtime {name!r} is in reject_runtimes"
-                )
+                raise WorkloadPlacementError(f"Requested runtime {name!r} is in reject_runtimes")
             return name
         if self._default_runtime:
             if self._default_runtime in placement.reject_runtimes:
@@ -123,9 +128,7 @@ class WorkloadEngine(BasePalmEngine):
             "No runtime selected: set placement.runtime or engine default_runtime"
         )
 
-    def _enforce_isolation_policy(
-        self, spec: WorkloadSpec, runtime: WorkloadRuntime
-    ) -> None:
+    def _enforce_isolation_policy(self, spec: WorkloadSpec, runtime: WorkloadRuntime) -> None:
         caps = runtime.capabilities()
         if not caps.supports_isolation(spec.isolation):
             raise WorkloadPolicyError(
@@ -133,13 +136,8 @@ class WorkloadEngine(BasePalmEngine):
                 f"supports {[str(m) for m in sorted(caps.isolation_modes, key=str)]}"
             )
         # Hard rule: hermetic must never land on host runtime (VISION §13 / ADR-024)
-        if (
-            spec.isolation is IsolationPolicy.HERMETIC
-            and runtime.name == "host"
-        ):
-            raise WorkloadPolicyError(
-                "Hermetic isolation cannot select host runtime"
-            )
+        if spec.isolation is IsolationPolicy.HERMETIC and runtime.name == "host":
+            raise WorkloadPolicyError("Hermetic isolation cannot select host runtime")
 
     # --- public API ---------------------------------------------------------
 
@@ -203,6 +201,61 @@ class WorkloadEngine(BasePalmEngine):
             self._apply_start_outcome(wl, outcome)
             return wl.snapshot()
 
+    def adopt(
+        self,
+        workload_id: str,
+        handle: WorkloadHandle | None = None,
+        *,
+        owner: WorkloadOwner | None = None,
+    ) -> Workload:
+        """Record an existing body as READY. Does not call WorkloadRuntime.start."""
+        if not self.is_initialized:
+            raise WorkloadStateError("WorkloadEngine is not initialized")
+
+        wid = str(workload_id or "").strip()
+        if not wid:
+            raise WorkloadSpecError("adopt requires a non-empty workload id")
+        if handle is None:
+            raise WorkloadSpecError("adopt requires a handle")
+        base_url = str(handle.base_url or "").strip()
+        if not base_url:
+            raise WorkloadSpecError("adopt requires handle.base_url")
+
+        bound = WorkloadHandle(
+            workload_id=wid,
+            base_url=base_url,
+            endpoints=dict(handle.endpoints),
+            connection_hints=dict(handle.connection_hints),
+        )
+        owner = owner or WorkloadOwner(created_by_palm=False, lease_id=wid)
+
+        with self._lock:
+            existing = self._workloads.get(wid)
+            if existing is not None:
+                if existing.runtime or is_terminal(existing.status):
+                    raise WorkloadStateError(f"Workload id {wid!r} already exists")
+                existing.handle = bound
+                existing.owner = owner
+                existing.touch()
+                return existing.snapshot()
+
+            spec = WorkloadSpec(
+                kind=WorkloadKind.SERVICE,
+                isolation=IsolationPolicy.BEST_EFFORT,
+                lifecycle=LifecyclePolicy.LEASE,
+            )
+            wl = Workload(
+                workload_id=wid,
+                spec=spec,
+                status=WorkloadStatus.READY,
+                runtime="",
+                owner=owner,
+                handle=bound,
+            )
+            self._workloads[wid] = wl
+            self._emit(WORKLOAD_EVENT_READY, wl)
+            return wl.snapshot()
+
     def exec(
         self,
         workload_id: str,
@@ -222,11 +275,11 @@ class WorkloadEngine(BasePalmEngine):
         with self._lock:
             wl = self._require(workload_id)
             if not is_exec_allowed(wl.status):
-                raise WorkloadStateError(
-                    f"exec only allowed when READY (current={wl.status})"
-                )
+                raise WorkloadStateError(f"exec only allowed when READY (current={wl.status})")
             if wl.spec.kind is WorkloadKind.RUN:
                 raise WorkloadStateError("exec is not valid on kind=run workloads")
+            if not wl.runtime:
+                raise WorkloadStateError("exec is not valid on a workload with no runtime")
 
             runtime = self._resolve_runtime(wl.runtime)
             # Optional RUNNING while exec is in flight (for long polls)
@@ -259,7 +312,7 @@ class WorkloadEngine(BasePalmEngine):
             raise WorkloadStateError("WorkloadEngine is not initialized")
         with self._lock:
             wl = self._require(workload_id)
-            if refresh and not is_terminal(wl.status):
+            if refresh and not is_terminal(wl.status) and wl.runtime:
                 runtime = self._resolve_runtime(wl.runtime)
                 try:
                     outcome = runtime.poll(workload_id)
@@ -398,9 +451,7 @@ class WorkloadEngine(BasePalmEngine):
         if not enabled_any:
             issues.append("no WorkloadRuntime is enabled")
         with self._lock:
-            active = sum(
-                1 for wl in self._workloads.values() if not is_terminal(wl.status)
-            )
+            active = sum(1 for wl in self._workloads.values() if not is_terminal(wl.status))
             total = len(self._workloads)
         return {
             "engine_initialized": True,
@@ -429,6 +480,10 @@ class WorkloadEngine(BasePalmEngine):
             return wl.snapshot()
 
         self._transition(wl, WorkloadStatus.STOPPING)
+        if not wl.runtime:
+            self._transition(wl, WorkloadStatus.STOPPED, message="unbound")
+            self._emit(WORKLOAD_EVENT_STOPPED, wl)
+            return wl.snapshot()
         runtime = self._resolve_runtime(wl.runtime)
         try:
             outcome = runtime.stop(workload_id)
@@ -567,7 +622,5 @@ class WorkloadEngine(BasePalmEngine):
         ]
         return "|".join(parts)
 
-    def _idempotency_lookup(
-        self, owner: WorkloadOwner, key: str
-    ) -> str | None:
+    def _idempotency_lookup(self, owner: WorkloadOwner, key: str) -> str | None:
         return self._idempotency.get(self._idempotency_index(owner, key))

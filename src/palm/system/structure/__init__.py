@@ -58,7 +58,9 @@ from palm.system.structure.seed import (
 )
 from palm.system.structure.structure_effects import StructureEffectPort
 from palm.system.structure.workload_place import (
+    AdoptPlaceSpawn,
     WorkloadPlaceSpawn,
+    adopt_prefix_spawn_port,
     combined_structure_spawn_port,
     workload_prefix_spawn_port,
 )
@@ -87,7 +89,9 @@ __all__ = [
     "PlaceSpawnResult",
     "RecordingEffectPort",
     "RegisteredPlaceSpawn",
+    "AdoptPlaceSpawn",
     "WorkloadPlaceSpawn",
+    "adopt_prefix_spawn_port",
     "bind_host_structure_to_seat",
     "combined_structure_spawn_port",
     "default_structure_effects",
