@@ -63,7 +63,7 @@ from palm.common.events.external import WebhookDispatcher
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.core.structure import CAPABILITY_ANALYTICS, CAPABILITY_PROJECTIONS
-from palm.kits.server.cqrs import wire_standalone_query_bus
+from palm.common.cqrs.standalone import wire_standalone_query_bus
 from palm.patterns.wizard.bindings.cqrs.projection import (
     WizardProgressReadModel,
 )

@@ -16,6 +16,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
+from palm.common.auth import current_principal_id
+
 if TYPE_CHECKING:
     from palm.system.runtime.base import BaseRuntime
 
@@ -42,11 +44,6 @@ def authenticate_request(runtime: BaseRuntime, headers: Mapping[str, str]) -> bo
 
     runtime.auth.authenticate({"subject": subject})
     return runtime.auth.principal is not None
-
-
-def current_principal_id(runtime: BaseRuntime) -> str | None:
-    principal = runtime.auth.principal
-    return principal.id if principal is not None else None
 
 
 def parse_cookie_header(cookie_header: str | None) -> dict[str, str]:

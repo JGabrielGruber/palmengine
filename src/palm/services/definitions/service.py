@@ -18,7 +18,7 @@ from palm.common.exceptions import (
     InstanceNotFoundError,
 )
 from palm.common.resource.catalog import ResourceCatalog
-from palm.kits.server.plans import prepare_flow_from_body
+from palm.common.plans.from_body import prepare_flow_from_body
 from palm.common.services.base import BaseService
 from palm.common.services.errors import (
     DefinitionNotFoundServiceError,

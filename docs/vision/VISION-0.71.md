@@ -186,6 +186,13 @@ The registry is **real** when tests prove this chain:
 - Cold `from palm.app import ApplicationHost` no longer loads bulk `palm.patterns.{dag,parallel,pipeline}` or provider members (wizard/kits.server may still load via host imports; `0.71.21`).
 - Tests: `tests/test_plugin_autoload_defer_0_71_20.py`.
 
+**As-built `0.71.21`:**
+
+- Shared hands leave `palm.kits.server`: `prepare_*_from_body` → `palm.common.plans.from_body`; `current_principal_id` → `palm.common.auth`; standalone CQRS wire → `palm.common.cqrs.standalone`; doctor anatomy → `palm.services.inspect.diagnostics`. Kit modules re-export for the server door.
+- `INSTALLED_KITS` still lists `server`. `CORE_KITS` (`present`, `authoring`) is what bootstrap `autoload()` imports. Surface kit `server` registers when `palm.runtimes.server` / `palm.kits.server` is imported.
+- Cold `from palm.app import ApplicationHost` and embedded host start do not load `palm.kits.server` / `palm.kits.server.*`. ServerContext still wires via the kit.
+- Tests: `tests/test_application_host_server_kit_isolation_0_71_21.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -306,6 +313,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.18** | Base wheel omits surface static / MCP data (keep in repo/sdist). **landed**. |
 | **0.71.19** | ApplicationHost cold import; cut common→system wait-rehydrate cycle. **landed**. |
 | **0.71.20** | Defer pattern/provider (and kits/runners/storages) autoload to bootstrap. **landed**. |
+| **0.71.21** | Isolate ApplicationHost from `palm.kits.server` (shared hands + CORE_KITS). **landed**. |
 
 Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
 
@@ -352,12 +360,14 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.20` landed. Names locked. Next is José exit judgment plus named place leftovers. `kits.server` on ApplicationHost stays later (`0.71.21`).
+Theme stays **open**. Execute `0.71.0`–`0.71.21` landed. Names locked. Next is José exit judgment plus named place leftovers.
 
 | Residual | Truth |
 |----------|-------|
 | `workload_place` remaining `isinstance` | Typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** honest compost now. |
 | `WorkloadEngine` remaining `isinstance` | argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
 | `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** honest compost now. |
+| Host wizard flats / cold wizard pull | [SD-024](../../TECH-DEBT.md#sd-024). Not composted here; does not pull `kits.server`. |
+| `import palm.common.transforms` autoload | Still on ApplicationHost path. Named; not the `kits.server` pull. |
 
 **Paid this pass (`0.71.9`–`0.71.15`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop); typed `WorkloadEngine` named runtime bind (no dict / WorkloadRuntime isinstance soup); typed seat `bind_structure` on `StructureEffectPort` (no getattr duck-walk); StructureEngine `_places_ready` dual gone (hand-only readiness).

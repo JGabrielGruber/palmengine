@@ -27,7 +27,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.services.base import BaseService
 from palm.common.services.errors import InstanceNotFoundServiceError
-from palm.kits.server.diagnostics import build_doctor_report
+from palm.services.inspect.diagnostics import build_doctor_report
 from palm.services.inspect.present import (
     present_benchmark,
     present_doctor,

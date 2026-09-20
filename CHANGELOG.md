@@ -7,7 +7,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
-- After `0.71.20`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data; ApplicationHost cold import (common→system rehydrate cycle cut); pattern/provider (and kits/runners/storages) autoload deferred to bootstrap. PALM pointer through `0.71.20`.
+- After `0.71.21`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance; host wizard flats SD-024; transforms package autoload on ApplicationHost path). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data; ApplicationHost cold import (common→system rehydrate cycle cut); pattern/provider (and kits/runners/storages) autoload deferred to bootstrap; ApplicationHost isolates from `palm.kits.server`. PALM pointer through `0.71.21`.
+
+### 0.71.21 — Isolate ApplicationHost from server kit
+
+- Shared plan/CQRS/doctor hands live in common/inspect (`from_body`, `auth.current_principal_id`, `cqrs.standalone`, `inspect.diagnostics`). `palm.kits.server` re-exports for the server door.
+- `CORE_KITS` (`present`, `authoring`) is bootstrap autoload; surface kit `server` stays on `INSTALLED_KITS` and registers when the server runtime imports it.
+- Cold `from palm.app import ApplicationHost` and embedded host start do not load `palm.kits.server.*`. Stamp stays `0.68.0`. Tests: `tests/test_application_host_server_kit_isolation_0_71_21.py`.
 
 ### 0.71.20 — Defer pattern/provider autoload
 
