@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.11`: residual named (`workload_place` / `WorkloadEngine` isinstance; `place_spawn` os: getattr/isinstance; `seat.py` bind_structure getattr; pure-engine `_places_ready` when unbound). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`.
+- After `0.71.12`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` isinstance; `place_spawn` os: getattr/isinstance; `seat.py` bind_structure getattr; pure-engine `_places_ready` when unbound). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping.
+
+### 0.71.12 — Typed workload_place spec env
+
+- `_env_from_payload` accepts Mapping only; missing → empty; non-mapping fails closed. No `isinstance(..., dict)` silent drop. Tests: `tests/test_workload_place_env_0_71_12.py`.
 
 ### 0.71.11 — Invert StructureEngine place observations
 

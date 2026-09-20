@@ -195,14 +195,13 @@ class WorkloadPlaceSpawn:
         isolation = IsolationPolicy(isolation_raw)
         lifecycle_raw = str(body.get("lifecycle") or "lease").lower()
         lifecycle = LifecyclePolicy(lifecycle_raw)
-        env = body.get("env") if isinstance(body.get("env"), dict) else {}
         return WorkloadSpec(
             kind=kind,
             isolation=isolation,
             lifecycle=lifecycle,
             command=tuple(argv) if argv else (),
             workdir=body.get("workdir"),
-            env={str(k): str(v) for k, v in env.items()},
+            env=_env_from_payload(body),
             timeout_s=body.get("timeout_s"),
             labels={
                 "structure_place": place_id,
@@ -333,6 +332,16 @@ class AdoptPlaceSpawn:
                 },
             )
         return None
+
+
+def _env_from_payload(body: Mapping[str, Any]) -> dict[str, str]:
+    """Typed env from ensure payload. Mapping only; missing → empty."""
+    raw = body.get("env")
+    if raw is None:
+        return {}
+    if not isinstance(raw, Mapping):
+        raise ValueError("env must be a mapping")
+    return {str(k): str(v) for k, v in raw.items()}
 
 
 def _handle_from_payload(body: Mapping[str, Any]) -> WorkloadHandle | None:
