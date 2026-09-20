@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.15` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.16` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -153,6 +153,13 @@ The registry is **real** when tests prove this chain:
 - StructureEngine has no `_places_ready` set. Assemble readiness is only the bound `ready(place_id)` hand; unbound → places stay missing. `RecordingEffectPort` owns a `ready` hand for auto-ack.
 - Tests: `tests/test_places_ready_invert_0_71_15.py`.
 
+**As-built `0.71.16`:**
+
+- Bare `palmengine` hard deps are empty. `PalmSettings` is a stdlib dataclass: `PALM_*` from `os.environ` only; no cwd `.env` auto-load.
+- File load (`from_env_file` / CLI `--config`) needs pip extra **`dotenv`** (`python-dotenv`). Missing extra → fail closed. File overrides env for keys in the file; CLI flags still win via `resolve_cli_settings`.
+- Do not mix pip extras with `CompositionProfile`. Stamp stays `0.68.0`.
+- Tests: `tests/test_settings_stdlib_0_71_16.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -268,8 +275,9 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.13** | Typed `WorkloadEngine` initialize named runtime bind. **landed**. |
 | **0.71.14** | Typed seat `bind_structure` (`StructureEffectPort` match). **landed**. |
 | **0.71.15** | Invert StructureEngine `_places_ready`; readiness only via ready hand. **landed**. |
+| **0.71.16** | Stdlib `PalmSettings`; empty hard deps; file load extra `dotenv` (fail closed). **landed**. |
 
-Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
+Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
 
 ---
 
@@ -314,7 +322,7 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.15` landed. Names locked. Next is José exit judgment.
+Theme stays **open**. Execute `0.71.0`–`0.71.16` landed. Names locked. Next is José exit judgment plus named place leftovers.
 
 | Residual | Truth |
 |----------|-------|

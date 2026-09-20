@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.boot.modes import BootMode
 from palm.app.settings import PalmSettings
@@ -125,7 +127,7 @@ def test_cli_host_webhook_is_the_install_object_even_without_urls() -> None:
 
 def test_cli_host_webhook_urls_refine_the_same_object() -> None:
     reset_system_log_for_tests()
-    settings = _lean().model_copy(update={"webhook_urls": ["https://example.test/hook"]})
+    settings = replace(_lean(), webhook_urls=["https://example.test/hook"])
     host = ApplicationHost.for_mode(BootMode.cli(), settings=settings)
     host.start()
     try:
@@ -141,7 +143,7 @@ def test_cli_host_webhook_urls_refine_the_same_object() -> None:
 
 def test_embedded_host_still_omits_webhook() -> None:
     reset_system_log_for_tests()
-    settings = _lean().model_copy(update={"webhook_urls": ["https://example.test/hook"]})
+    settings = replace(_lean(), webhook_urls=["https://example.test/hook"])
     host = ApplicationHost.for_mode(BootMode.safe(), settings=settings)
     host.start()
     try:

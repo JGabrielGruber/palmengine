@@ -278,7 +278,7 @@ def test_packaging_has_no_work_drain_service_flag() -> None:
     from palm.app.host.roles import DeploymentProfile
     from palm.app.settings import PalmSettings
 
-    assert "enable_work_drain_service" not in PalmSettings.model_fields
+    assert "enable_work_drain_service" not in PalmSettings.__dataclass_fields__
     assert "enable_work_drain_service" not in DeploymentProfile.__dataclass_fields__
 
 

@@ -139,7 +139,7 @@ def test_cli_host_analytics_is_the_install_object() -> None:
 
 def test_cli_host_analytics_enabled_refines_the_same_object() -> None:
     reset_system_log_for_tests()
-    settings = _lean().model_copy(update={"analytics_enabled": False})
+    settings = replace(_lean(), analytics_enabled=False)
     host = ApplicationHost.for_mode(BootMode.cli(), settings=settings)
     host.start()
     try:

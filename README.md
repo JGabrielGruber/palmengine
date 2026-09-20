@@ -44,6 +44,7 @@ uv pip install -e ".[cli]"
 | Extra | What |
 |-------|------|
 | `[cli]` | CLI + REPL |
+| `[dotenv]` | `--config` / `.env` file load for `PalmSettings` |
 | `[mcp]` | FastMCP (`palm-mcp`) |
 | `[test]` | test deps |
 | `[dev]` | contributor |
@@ -262,14 +263,14 @@ palm --storage-backend filesystem --data-dir ./data flow start onboard
 |------|-----|---------|
 | `-b` / `--storage-backend` | `PALM_STORAGE_BACKEND` | Storage backend (`memory`, `filesystem`, …) |
 | `-d` / `--data-dir` | `PALM_DATA_DIR` | Data directory for durable backends |
-| `--config` | — | Optional `.env`-style config file |
+| `--config` | — | Optional `.env`-style config file (needs `[dotenv]`) |
 | `-S` / `--enable-state-snapshot` | `PALM_ENABLE_STATE_SNAPSHOT` | Capture state snapshot history |
 | `--max-loaded-instances` | `PALM_MAX_LOADED_INSTANCES` | InstanceManager LRU size |
 | `--max-concurrent-active` | `PALM_MAX_CONCURRENT_ACTIVE` | Active instance cap |
 | `--scheduler` | `PALM_DEFAULT_SCHEDULER` | `inline` or `queued` |
 | `--format` | — | `table` (default) or `json` for scripting |
 
-Settings precedence: `PALM_*` environment → `--config` file → CLI flags.
+Settings precedence: `PALM_*` environment → `--config` file (extra `[dotenv]`) → CLI flags. Bare install reads env only (no cwd `.env` auto-load).
 
 ```bash
 palm instance list                          # active (non-terminal) instances

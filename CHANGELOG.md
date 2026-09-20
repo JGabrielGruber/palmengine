@@ -6,8 +6,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Docs — 0.71 present (theme open)
 
-- Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.15`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone. PALM pointer through `0.71.15`.
+- Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
+- After `0.71.16`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra. PALM pointer through `0.71.16`.
+
+### 0.71.16 — Stdlib settings; extra dotenv
+
+- Bare `palmengine` hard deps empty. `PalmSettings` is stdlib (`PALM_*` from `os.environ` only; no cwd `.env` auto-load).
+- File load (`from_env_file` / `--config`) requires pip extra **`dotenv`**; missing extra fails closed. File overrides env; CLI flags still win.
+- Stamp stays `0.68.0`. Tests: `tests/test_settings_stdlib_0_71_16.py`.
 
 ### 0.71.15 — Invert StructureEngine `_places_ready`
 

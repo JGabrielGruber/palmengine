@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from dataclasses import replace
+
 from palm.app.settings import PalmSettings
 
 
@@ -22,4 +24,4 @@ def make_test_settings(
     updates: dict[str, object] = {"storage_backend": storage_backend}
     if data_dir is not None:
         updates["data_dir"] = data_dir
-    return settings.model_copy(update=updates)
+    return replace(settings, **updates)

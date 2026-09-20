@@ -257,6 +257,6 @@ def test_packaging_has_no_outbox_service_flag() -> None:
     from palm.app.host.roles import DeploymentProfile
     from palm.app.settings import PalmSettings as Settings
 
-    assert "enable_outbox_service" not in Settings.model_fields
+    assert "enable_outbox_service" not in Settings.__dataclass_fields__
     assert "enable_outbox_service" not in DeploymentProfile.__dataclass_fields__
-    assert "enable_outbox_background" not in Settings.model_fields
+    assert "enable_outbox_background" not in Settings.__dataclass_fields__

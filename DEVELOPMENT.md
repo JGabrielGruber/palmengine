@@ -187,9 +187,10 @@ No manual runtime assembly in command handlers.
 | Durable (local) | `PALM_STORAGE_BACKEND=filesystem` | Yes — under `PALM_DATA_DIR` (default `./data`) |
 | Override | `palm --storage-backend filesystem --data-dir ./data` | Yes |
 
-Environment variables load via `PalmSettings` (`PALM_*` prefix). CLI flags override
-env **only when explicitly passed** — omit `--storage-backend` to respect
-`PALM_STORAGE_BACKEND`.
+Environment variables load via stdlib `PalmSettings` (`PALM_*` prefix; no cwd `.env`
+auto-load). CLI flags override env **only when explicitly passed** — omit
+`--storage-backend` to respect `PALM_STORAGE_BACKEND`. File load (`--config`) needs
+pip extra `dotenv` and fails closed without it.
 
 Settings precedence (highest last): `PALM_*` env → `--config` file → CLI flags.
 

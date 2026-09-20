@@ -68,7 +68,7 @@ def test_membership_capabilities_from_settings_defaults_and_flags() -> None:
     assert "outbox" not in caps
     assert "work_drain" not in caps
 
-    assert "enable_event_outbox" not in PalmSettings.model_fields
+    assert "enable_event_outbox" not in PalmSettings.__dataclass_fields__
 
 
 def test_deployment_does_not_write_work_drain_membership() -> None:

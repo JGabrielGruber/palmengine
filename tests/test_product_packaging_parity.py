@@ -7,6 +7,8 @@ ServerContext share the same product-identity steps after ``build_all``
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.composition import CompositionProfile
 from palm.app.host.roles import DeploymentProfile
@@ -58,8 +60,9 @@ def test_host_lean_product_packaging() -> None:
         surfaces=(),
         capabilities=frozenset(),
     )
-    settings = PalmSettings.for_tests().model_copy(
-        update={"structure_definition_id": "local.embedded"}
+    settings = replace(
+        PalmSettings.for_tests(),
+        structure_definition_id="local.embedded",
     )
     with ApplicationHost(
         settings=settings,
@@ -79,8 +82,7 @@ def test_host_lean_product_packaging() -> None:
 
 
 def test_hostless_server_context_product_packaging() -> None:
-    settings = PalmSettings.for_tests()
-    settings = settings.model_copy(update={"analytics_default_limit": 42})
+    settings = replace(PalmSettings.for_tests(), analytics_default_limit=42)
     runtime = ServerRuntime(host="127.0.0.1", port=0)
     runtime.start(http=False)
     try:

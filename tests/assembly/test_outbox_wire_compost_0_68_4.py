@@ -11,7 +11,7 @@ from palm.system.runtime.phase_outbox import run as wire_outbox
 
 
 def test_settings_and_start_options_drop_the_flag() -> None:
-    assert "enable_event_outbox" not in PalmSettings.model_fields
+    assert "enable_event_outbox" not in PalmSettings.__dataclass_fields__
     opts = runtime_start_options(PalmSettings.for_tests())
     assert "enable_event_outbox" not in opts
     assert "enable_state_snapshot" in opts

@@ -10,7 +10,7 @@ set export
 package := "palmengine"
 dist_dir := "dist"
 palm_data_dir := env_var_or_default('PALM_DATA_DIR', 'data')
-ci_flags := "--extra cli --extra mcp --group dev"
+ci_flags := "--extra cli --extra mcp --extra dotenv --group dev"
 
 # Default: show help
 default:
@@ -23,10 +23,10 @@ dev: setup hygiene
     @echo "✅ Ready to code! Use: just check, just test, just guard"
 
 setup:
-    uv sync --group dev --extra cli
-    bash -c 'uv pip install --reinstall -e ".[cli]"'
+    uv sync --group dev --extra cli --extra dotenv
+    bash -c 'uv pip install --reinstall -e ".[cli,dotenv]"'
     uv run pre-commit install
-    @echo "✅ Environment synced ({{package}} editable + cli extra) + pre-commit installed"
+    @echo "✅ Environment synced ({{package}} editable + cli/dotenv extras) + pre-commit installed"
 
 hygiene:
     just format

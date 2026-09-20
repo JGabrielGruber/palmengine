@@ -169,7 +169,7 @@ Concrete surfaces (CLI, embedded, daemon, server) live in **`palm.runtimes.<name
 | `ApplicationHost` | Top-level orchestrator — `start()`, `execute()`, `ask()`, `submit_flow()`, … |
 | `DeploymentProfile` | Composable roles: `all_in_one`, `master`, `worker`, `server` |
 | `PalmKernel` | Infrastructure — shared storage, runtime registry, definition loading |
-| `PalmSettings` | Central config (`PALM_*` env vars, `.env`) |
+| `PalmSettings` | Central config (`PALM_*` env; `--config` needs `[dotenv]`) |
 | `create_cli_host()` | CLI bootstrap — collapsed `all_in_one` host |
 
 `PalmKernel` is intentionally **not** the primary public API for services or the CLI. Use it directly only for low-level embedding tests or when you need fine-grained runtime registry control without CQRS.

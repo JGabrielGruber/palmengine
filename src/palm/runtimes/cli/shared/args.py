@@ -32,7 +32,7 @@ examples:
   resource * and assist * are REPL-only (palm repl, then the command)
 
 settings precedence (highest last):
-  PALM_* environment variables → --config file → CLI flags
+  PALM_* environment variables → --config file (needs dotenv extra) → CLI flags
 
 documentation:
   README.md · DEVELOPMENT.md · ARCHITECTURE.md

@@ -34,7 +34,7 @@ from palm.core.structure import (
 
 def _caps(**overrides: object) -> frozenset[str]:
     """Derived capabilities for the light test settings with explicit flag overrides."""
-    settings = PalmSettings.for_tests(load_examples=False).model_copy(update=overrides)
+    settings = replace(PalmSettings.for_tests(load_examples=False), **overrides)
     return composition_profile_from_settings(settings).capabilities
 
 
@@ -61,7 +61,7 @@ def test_lean_test_settings_derive_the_always_on_capabilities() -> None:
 
 
 def test_each_flag_toggles_exactly_its_capability() -> None:
-    assert "enable_event_outbox" not in PalmSettings.model_fields
+    assert "enable_event_outbox" not in PalmSettings.__dataclass_fields__
     assert "outbox" not in _caps()
     assert "work_drain" not in _caps()
     assert "analytics" not in _caps(analytics_enabled=True)
@@ -204,10 +204,9 @@ def test_webhook_gate_reads_dna_not_composition() -> None:
     URLs refine the install dispatcher (0.67.14). Do not mint a recover twin.
     Composition omit on a listed phenotype does not hide it.
     Lean omit is embedded DNA."""
-    settings = PalmSettings.for_tests(full_recovery=True).model_copy(
-        update={
-            "webhook_urls": ["https://example.test/hook"],
-        }
+    settings = replace(
+        PalmSettings.for_tests(full_recovery=True),
+        webhook_urls=["https://example.test/hook"],
     )
 
     listed = ApplicationHost.for_mode(BootMode.cli(), settings=settings)

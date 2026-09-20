@@ -9,8 +9,8 @@ from palm.common.cqrs.projection import ProjectionManager
 
 def test_packaging_has_no_unread_organ_flags() -> None:
     """DNA lists the name. Settings do not keep a dead switch."""
-    assert "enable_compensation" not in PalmSettings.model_fields
-    assert "enable_webhook_dispatcher" not in PalmSettings.model_fields
+    assert "enable_compensation" not in PalmSettings.__dataclass_fields__
+    assert "enable_webhook_dispatcher" not in PalmSettings.__dataclass_fields__
 
 
 def test_coordinator_has_no_attach_runtimes() -> None:

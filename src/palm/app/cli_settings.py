@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from palm.app.settings import PalmSettings, SchedulerPolicy
+from palm.app.settings import PalmSettings, SchedulerPolicy, copy_settings
 from palm.common.storage import StorageFactory
 
 DURABLE_STORAGE_BACKENDS: frozenset[str] = frozenset({"filesystem", "postgres", "mongodb"})
@@ -41,7 +41,7 @@ def resolve_cli_settings(
     4. CLI flags (only when not ``None``)
     5. ``align_shared_storage`` — backend name from a pre-opened shared engine
     """
-    cfg = settings.model_copy(deep=True) if settings is not None else PalmSettings()
+    cfg = copy_settings(settings) if settings is not None else PalmSettings()
 
     if storage_backend is not None:
         cfg.storage_backend = storage_backend
