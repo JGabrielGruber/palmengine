@@ -143,6 +143,11 @@ The registry is **real** when tests prove this chain:
 - `WorkloadEngine._do_initialize` binds named runtimes via `_named_runtimes` (Mapping only). Missing → empty. Non-mapping / non-`WorkloadRuntime` fails closed. No `isinstance(bound, dict)` / `isinstance(runtime, WorkloadRuntime)` soup.
 - Tests: `tests/test_runtime_bind_0_71_13.py`.
 
+**As-built `0.71.14`:**
+
+- `StructureSeat.assemble` matches `StructureEffectPort` and calls `bind_structure`. No `getattr(self.effects, "bind_structure", None)`.
+- Tests: `tests/test_seat_bind_structure_0_71_14.py`.
+
 **As-built `0.71.15`:**
 
 - StructureEngine has no `_places_ready` set. Assemble readiness is only the bound `ready(place_id)` hand; unbound → places stay missing. `RecordingEffectPort` owns a `ready` hand for auto-ack.
