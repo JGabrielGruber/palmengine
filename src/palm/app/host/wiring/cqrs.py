@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import palm.patterns  # noqa: F401 — ensure pattern CQRS contributors are registered
 from palm.app.host.router import RuntimeRouter
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import (
@@ -51,9 +50,9 @@ from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_sn
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
 from palm.common.patterns._registry import iter_cqrs_contributors
+from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.kits.server.middleware import current_principal_id
 from palm.kits.server.plans import prepare_flow_from_body, prepare_process_from_body
-from palm.core.orchestration.exceptions import JobNotFoundError
 from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 if TYPE_CHECKING:

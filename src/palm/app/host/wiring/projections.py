@@ -13,7 +13,9 @@ from palm.common.patterns._registry import get_projection_factory, registered_pr
 
 def build_pattern_projections(storage: Any) -> dict[str, Any]:
     """Construct pattern extras. Core read models live on the install board."""
-    import palm.patterns  # noqa: F401 — ensure pattern projection factories are registered
+    from palm.patterns import autoload as autoload_patterns
+
+    autoload_patterns()
 
     patterns: dict[str, Any] = {}
     for pattern_name in registered_projection_factories():

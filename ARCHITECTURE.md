@@ -333,7 +333,7 @@ Registries are **read from multiple threads** after bootstrap (queued schedulers
 - **Handler invocation outside the lock** — `CommitRegistry.run()` resolves the handler under lock, then calls it unlocked to avoid deadlocks during user code.
 - **Read-heavy after bootstrap** — lock hold time is minimal (dict get/set); no read-copy-update needed at current scale.
 
-**Operational guidance:** register plugins during `PalmKernel.bootstrap()` / module autoload, not from hot job-drive paths. Runtime code should only **read** registries during job execution.
+**Operational guidance:** register plugins during `PalmKernel.bootstrap()` / `ensure_core_plugins()` (`autoload()`), not from package import or hot job-drive paths. Runtime code should only **read** registries during job execution.
 
 ---
 

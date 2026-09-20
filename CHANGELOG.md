@@ -7,7 +7,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
-- After `0.71.19`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data; ApplicationHost cold import (common→system rehydrate cycle cut). PALM pointer through `0.71.19`.
+- After `0.71.20`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data; ApplicationHost cold import (common→system rehydrate cycle cut); pattern/provider (and kits/runners/storages) autoload deferred to bootstrap. PALM pointer through `0.71.20`.
+
+### 0.71.20 — Defer pattern/provider autoload
+
+- Package `__init__` for patterns/providers (also kits/runners/storages) no longer calls `autoload()`. `INSTALLED_*` stays install truth.
+- `ensure_core_plugins()` / host start call `autoload()` so registries populate at bootstrap.
+- Cold `from palm.app import ApplicationHost` skips bulk pattern/provider member modules. Stamp stays `0.68.0`. Tests: `tests/test_plugin_autoload_defer_0_71_20.py`.
 
 ### 0.71.19 — ApplicationHost cold import
 

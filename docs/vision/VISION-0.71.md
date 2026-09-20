@@ -179,6 +179,13 @@ The registry is **real** when tests prove this chain:
 - Bare `from palm.app import ApplicationHost` succeeds in a cold interpreter without `ensure_core_plugins()` first. System path keeps a thin compat re-export.
 - Tests: `tests/test_application_host_cold_import_0_71_19.py`.
 
+**As-built `0.71.20`:**
+
+- `INSTALLED_*` lists stay install truth. Package `__init__` for patterns/providers (and kits/runners/storages) no longer calls `autoload()`.
+- Registries populate at bootstrap via `ensure_core_plugins()` / host start — not on `import palm.patterns` / `import palm.providers`.
+- Cold `from palm.app import ApplicationHost` no longer loads bulk `palm.patterns.{dag,parallel,pipeline}` or provider members (wizard/kits.server may still load via host imports; `0.71.21`).
+- Tests: `tests/test_plugin_autoload_defer_0_71_20.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -298,6 +305,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.17** | Empty `palm.runtimes` surface barrel; embedded start does not load server. **landed**. |
 | **0.71.18** | Base wheel omits surface static / MCP data (keep in repo/sdist). **landed**. |
 | **0.71.19** | ApplicationHost cold import; cut common→system wait-rehydrate cycle. **landed**. |
+| **0.71.20** | Defer pattern/provider (and kits/runners/storages) autoload to bootstrap. **landed**. |
 
 Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
 
@@ -344,7 +352,7 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.19` landed. Names locked. Next is José exit judgment plus named place leftovers. Plugin autoload / `kits.server` on ApplicationHost stay later.
+Theme stays **open**. Execute `0.71.0`–`0.71.20` landed. Names locked. Next is José exit judgment plus named place leftovers. `kits.server` on ApplicationHost stays later (`0.71.21`).
 
 | Residual | Truth |
 |----------|-------|

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import importlib
-
 import pytest
 
 from palm.common.patterns._registry import get_builder, registered_builders
@@ -21,9 +19,13 @@ from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STOR
 @pytest.fixture(autouse=True)
 def _reload_apps() -> None:
     """Ensure registries are populated for isolated assertions."""
-    importlib.import_module("palm.patterns")
-    importlib.import_module("palm.providers")
-    importlib.import_module("palm.storages")
+    from palm.patterns import autoload as autoload_patterns
+    from palm.providers import autoload as autoload_providers
+    from palm.storages import autoload as autoload_storages
+
+    autoload_patterns()
+    autoload_providers()
+    autoload_storages()
     autoload_transforms()
 
 

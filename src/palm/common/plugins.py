@@ -12,18 +12,25 @@ _loaded = False
 
 
 def ensure_core_plugins() -> None:
-    """Import extensible plugin packages so registries are populated.
+    """Call plugin ``autoload`` so registries are populated at bootstrap.
 
     Safe to call multiple times. Used by system runtime start and app bootstrap.
+    Package import alone does not load ``INSTALLED_*`` members.
     """
     global _loaded
     if _loaded:
         return
     import palm.common.transforms  # noqa: F401 — common transform rules
-    import palm.kits  # noqa: F401 — surface kits (server, …); autoload on import
-    import palm.patterns  # noqa: F401 — pattern apps
-    import palm.providers  # noqa: F401 — provider apps
-    import palm.runners  # noqa: F401 — WorkloadRuntime adapters
-    import palm.storages  # noqa: F401 — storage backends
+    from palm.kits import autoload as autoload_kits
+    from palm.patterns import autoload as autoload_patterns
+    from palm.providers import autoload as autoload_providers
+    from palm.runners import autoload as autoload_runners
+    from palm.storages import autoload as autoload_storages
+
+    autoload_kits()
+    autoload_patterns()
+    autoload_providers()
+    autoload_runners()
+    autoload_storages()
 
     _loaded = True

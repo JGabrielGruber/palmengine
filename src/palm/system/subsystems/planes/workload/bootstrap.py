@@ -23,10 +23,12 @@ def build_bound_runtimes(
     work_root: Path | str | None = None,
 ) -> dict[str, WorkloadRuntime]:
     """Construct live runtime instances for engine.initialize(runtimes=…)."""
-    import palm.runners  # noqa: F401
+    from palm.runners import autoload as autoload_runners
     from palm.runners.host.runtime import HostWorkloadRuntime
     from palm.runners.local.runtime import LocalWorkloadRuntime
     from palm.runners.neonroot.runtime import NeonrootWorkloadRuntime
+
+    autoload_runners()
 
     # Prefer a dedicated workloads subdir under data_dir when provided
     local_root = None
@@ -60,8 +62,10 @@ def initialize_workload_engine(
 
 def workload_doctor_section(runtime: Any = None) -> dict[str, Any]:
     """Aggregate workload plane doctor view via engine.doctor() when possible."""
-    import palm.runners  # noqa: F401
     from palm.core.workload.registry import workload_runtime_registry
+    from palm.runners import autoload as autoload_runners
+
+    autoload_runners()
 
     registered = sorted(workload_runtime_registry.names())
     engine = getattr(runtime, "workload", None) if runtime is not None else None

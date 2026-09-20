@@ -22,10 +22,14 @@ def print_version_full(console: Any | None = None) -> int:
 
     Does not start ``EmbeddedRuntime`` — safe for CI and quick checks.
     """
-    import palm.patterns
-    import palm.providers
-    import palm.storages  # noqa: F401
     from palm.core.registry import pattern_registry, provider_registry, storage_registry
+    from palm.patterns import autoload as autoload_patterns
+    from palm.providers import autoload as autoload_providers
+    from palm.storages import autoload as autoload_storages
+
+    autoload_patterns()
+    autoload_providers()
+    autoload_storages()
 
     lines = [
         f"Palm Engine {__version__}",

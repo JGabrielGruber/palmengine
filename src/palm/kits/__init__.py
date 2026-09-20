@@ -15,6 +15,9 @@ Law (SD-011 / 0.57.13):
 Import the server kit as :mod:`palm.kits.server`.
 Import the present kit as :mod:`palm.kits.present` (0.69.4 / 0.69.5).
 Import the authoring kit as :mod:`palm.kits.authoring` (0.70.1).
+
+Registries populate via :func:`autoload` at bootstrap
+(:func:`palm.common.plugins.ensure_core_plugins`), not on package import.
 """
 
 from __future__ import annotations
@@ -28,8 +31,6 @@ from palm.kits.registry import (
     list_kits,
     register_kit,
 )
-
-autoload()
 
 __all__ = [
     "INSTALLED_KITS",

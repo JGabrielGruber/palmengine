@@ -17,16 +17,20 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-import palm.patterns
-import palm.providers
-import palm.storages.memory  # noqa: F401
 from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.app.bootstrap import runtime_start_options
 from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
+from palm.patterns import autoload as autoload_patterns
 from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from palm.providers import autoload as autoload_providers
+from palm.storages import autoload as autoload_storages
+
+autoload_patterns()
+autoload_providers()
+autoload_storages()
 
 
 def _register_demo_flow(repository: Any) -> FlowDefinition:
