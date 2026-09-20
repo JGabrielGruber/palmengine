@@ -11,6 +11,10 @@ Vision: [VISION-0.71](docs/vision/VISION-0.71.md) · ADR [039](docs/adr/039-plac
 - Floor: **adopt** a named existing body. Spawn via `workload:` stays `0.63.16`.
 - Package stamp stays `0.68.0`. No embedded release. Execute starts at `0.71.1`.
 
+### 0.71.1 — Adopt a named place into the workload book
+
+- `WorkloadEngine.adopt` records a named existing body as READY; `adopt:` prefix on combined spawn; structure ENSURE converges; fail closed on missing handle; release is unbind. Tests: `tests/test_place_adopt_0_71_1.py`.
+
 ### 0.70 — Authoring (**theme closed** · José 2026-09-19)
 
 Vision: [VISION-0.70](docs/vision/closed/VISION-0.70.md) · ADR [038](docs/adr/038-authoring-adapter.md) **Accepted** · Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md)

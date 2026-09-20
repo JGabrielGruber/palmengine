@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import threading
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from palm.core.base import BasePalmEngine
@@ -23,14 +23,21 @@ from palm.core.workload.exceptions import (
     WorkloadNotFoundError,
     WorkloadPlacementError,
     WorkloadPolicyError,
+    WorkloadSpecError,
     WorkloadStateError,
 )
+from palm.core.workload.handle import WorkloadHandle
 from palm.core.workload.owner import WorkloadOwner
 from palm.core.workload.protocol import WorkloadRuntime
 from palm.core.workload.record import Workload
 from palm.core.workload.registry import workload_runtime_registry
 from palm.core.workload.result import WorkloadResult
-from palm.core.workload.spec import IsolationPolicy, WorkloadKind, WorkloadSpec
+from palm.core.workload.spec import (
+    IsolationPolicy,
+    LifecyclePolicy,
+    WorkloadKind,
+    WorkloadSpec,
+)
 from palm.core.workload.status import (
     WorkloadStatus,
     can_transition,
@@ -203,6 +210,80 @@ class WorkloadEngine(BasePalmEngine):
             self._apply_start_outcome(wl, outcome)
             return wl.snapshot()
 
+    def adopt(
+        self,
+        workload_id: str,
+        handle: WorkloadHandle | dict[str, Any] | str | None = None,
+        *,
+        spec: WorkloadSpec | None = None,
+        owner: WorkloadOwner | None = None,
+        host_id: str | None = None,
+        labels: Mapping[str, str] | None = None,
+    ) -> Workload:
+        """Adopt an existing running body into the workload book as READY.
+
+        Does not start a runner. Requires non-empty workload_id and a valid handle
+        (at least base_url or connection hints). Release of an adopted workload unbinds.
+        """
+        if not self.is_initialized:
+            raise WorkloadStateError("WorkloadEngine is not initialized")
+
+        wid = str(workload_id or "").strip()
+        if not wid:
+            raise WorkloadSpecError("workload_id must not be empty")
+
+        if handle is None:
+            raise WorkloadSpecError("handle is required to adopt a workload")
+
+        if isinstance(handle, WorkloadHandle):
+            handle_obj = handle
+        elif isinstance(handle, dict):
+            h_dict = dict(handle)
+            if "workload_id" not in h_dict:
+                h_dict["workload_id"] = wid
+            handle_obj = WorkloadHandle.from_dict(h_dict)
+        elif isinstance(handle, str):
+            handle_obj = WorkloadHandle(workload_id=wid, base_url=handle)
+        else:
+            raise WorkloadSpecError(f"Unsupported handle type: {type(handle)}")
+
+        if not handle_obj.base_url and not handle_obj.endpoints and not handle_obj.connection_hints:
+            raise WorkloadSpecError("handle must provide base_url or connection hints")
+
+        with self._lock:
+            if wid in self._workloads:
+                existing = self._workloads[wid]
+                if existing.runtime == "adopted" and existing.status is WorkloadStatus.READY:
+                    existing.handle = handle_obj
+                    existing.touch()
+                    return existing.snapshot()
+                raise WorkloadStateError(f"Workload id {wid!r} already exists")
+
+            if spec is None:
+                spec_labels = {"adopted": "true"}
+                if labels:
+                    spec_labels.update({str(k): str(v) for k, v in labels.items()})
+                spec = WorkloadSpec(
+                    kind=WorkloadKind.SERVICE,
+                    isolation=IsolationPolicy.BEST_EFFORT,
+                    lifecycle=LifecyclePolicy.LEASE,
+                    labels=spec_labels,
+                )
+
+            owner = owner or WorkloadOwner()
+            wl = Workload(
+                workload_id=wid,
+                spec=spec,
+                status=WorkloadStatus.READY,
+                runtime="adopted",
+                owner=owner,
+                handle=handle_obj,
+                host_id=host_id or spec.placement.host_id,
+            )
+            self._workloads[wid] = wl
+            self._emit(WORKLOAD_EVENT_READY, wl)
+            return wl.snapshot()
+
     def exec(
         self,
         workload_id: str,
@@ -225,6 +306,8 @@ class WorkloadEngine(BasePalmEngine):
                 raise WorkloadStateError(
                     f"exec only allowed when READY (current={wl.status})"
                 )
+            if wl.runtime == "adopted":
+                raise WorkloadStateError("exec is not valid on adopted workloads")
             if wl.spec.kind is WorkloadKind.RUN:
                 raise WorkloadStateError("exec is not valid on kind=run workloads")
 
@@ -260,6 +343,8 @@ class WorkloadEngine(BasePalmEngine):
         with self._lock:
             wl = self._require(workload_id)
             if refresh and not is_terminal(wl.status):
+                if wl.runtime == "adopted":
+                    return wl.snapshot()
                 runtime = self._resolve_runtime(wl.runtime)
                 try:
                     outcome = runtime.poll(workload_id)
@@ -426,6 +511,11 @@ class WorkloadEngine(BasePalmEngine):
     def _stop_unlocked(self, workload_id: str) -> Workload:
         wl = self._require(workload_id)
         if is_terminal(wl.status):
+            return wl.snapshot()
+
+        if wl.runtime == "adopted":
+            self._transition(wl, WorkloadStatus.STOPPED, message="adopt_unbound")
+            self._emit(WORKLOAD_EVENT_STOPPED, wl)
             return wl.snapshot()
 
         self._transition(wl, WorkloadStatus.STOPPING)

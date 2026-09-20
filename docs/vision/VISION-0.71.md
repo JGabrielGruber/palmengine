@@ -78,6 +78,17 @@ The registry is **real** when tests prove this chain:
 - `os:` fail closed until a body strategy exists.  
 - Bare place ids: in-process success. **Named residual.** Do not compost on the floor.
 
+**As-built `0.71.1` (2026-09-20):**
+
+- `WorkloadEngine.adopt(workload_id, handle)` records a named existing body as `READY` with `runtime="adopted"`. No `WorkloadRuntime.start`.  
+- `AdoptPlaceSpawn` registered as `adopt:` prefix on `combined_structure_spawn_port` (same `RegisteredPlaceSpawn` table as `workload:` / `os:`). Not a new `if`.  
+- Structure `ENSURE_PLACE` / `places_required` converges when handle is provided in payload or pre-adopted on the engine.  
+- Fail closed: empty id, missing handle, unbound engine — all refuse.  
+- Release is unbind (`adopt_unbound`). Palm did not create the process — no SIGKILL.  
+- Adopted `Workload` reuses existing `Workload` / `WorkloadHandle`. No new Protocol type.  
+- Tests: `tests/test_place_adopt_0_71_1.py` (11 tests).  
+- `adopt:` prefix paid on combined spawn (moved from 0.71.2+ queue).
+
 ---
 
 ## 3. Growth
