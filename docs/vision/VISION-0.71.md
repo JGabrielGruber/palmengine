@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.13` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.14` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -290,10 +290,10 @@ Do not invent a Protocol type name for the registry.
 | StructureEngine place observations | **Pay** on invert (`0.71.11` registry `ready` hand). |
 | `workload_place` env dict isinstance | **Pay** on invert (`0.71.12` typed Mapping env). |
 | `WorkloadEngine` initialize runtime bind | **Pay** on invert (`0.71.13` typed named runtime Mapping). |
+| `seat.py` `getattr(…, "bind_structure", None)` | **Pay** on invert (`0.71.14` typed `StructureEffectPort` match). |
 | `workload_place` remaining `isinstance` | **Leave** named. Typed `WorkloadHandle` accept at Mapping body. |
 | `WorkloadEngine` remaining `isinstance` | **Leave** named. argv-must-not-be-str. |
 | `place_spawn` remaining `getattr`/`isinstance` | **Leave** named. `os:` process poll / pid / env payload. |
-| `seat.py` `getattr(…, "bind_structure", None)` | **Leave** named. Not this trio. |
 | Pure-engine `_places_ready` (no registry hand) | **Leave** named. `0.71.11` as-built when the hand is unbound. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
@@ -302,14 +302,13 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.13` landed. Names locked. Next is José exit judgment.
+Theme stays **open**. Execute `0.71.0`–`0.71.14` landed. Names locked. Next is José exit judgment.
 
 | Residual | Truth |
 |----------|-------|
 | `workload_place` remaining `isinstance` | Typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** honest compost now. |
 | `WorkloadEngine` remaining `isinstance` | argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
 | `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** honest compost now. |
-| `seat.py` `getattr(self.effects, "bind_structure", None)` | Not this trio. **Leave** named. |
 | Pure-engine `_places_ready` when no registry hand is bound | `0.71.11` as-built. Bound seat reads registry `ready`; unbound engine keeps local observation. **Leave** named. |
 
-**Paid this pass (`0.71.9`–`0.71.13`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop); typed `WorkloadEngine` named runtime bind (no dict / WorkloadRuntime isinstance soup).
+**Paid this pass (`0.71.9`–`0.71.14`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop); typed `WorkloadEngine` named runtime bind (no dict / WorkloadRuntime isinstance soup); typed seat `bind_structure` on `StructureEffectPort` (no getattr duck-walk).

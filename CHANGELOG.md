@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.13`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance; `seat.py` bind_structure getattr; pure-engine `_places_ready` when unbound). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind.
+- After `0.71.14`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance; pure-engine `_places_ready` when unbound). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`.
+
+### 0.71.14 — Typed seat bind_structure
+
+- `StructureSeat.assemble` matches `StructureEffectPort` and calls `bind_structure`. No `getattr(self.effects, "bind_structure", None)`. Tests: `tests/test_seat_bind_structure_0_71_14.py`.
 
 ### 0.71.13 — Typed WorkloadEngine named runtime bind
 

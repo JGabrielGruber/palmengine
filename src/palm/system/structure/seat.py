@@ -82,9 +82,9 @@ class StructureSeat:
             definition = local_embedded()
         self.definition = definition
         self._bind_place_ready_hand()
-        bind = getattr(self.effects, "bind_structure", None)
-        if callable(bind):
-            bind(definition, surfaces=surfaces)
+        match self.effects:
+            case StructureEffectPort() as port:
+                port.bind_structure(definition, surfaces=surfaces)
         # Honest membership re-check before / after definition load.
         self.engine.observe(
             Observation(kind=ObservationKind.STRUCTURE_POLICY_CLEARED)
