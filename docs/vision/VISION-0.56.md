@@ -1,6 +1,6 @@
 # VISION 0.56 — Workload plane (WorkloadEngine + runtimes)
 
-**Status:** 🚧 **In progress** — foundation landed (core engine + WorkloadLeaf contract). After [VISION-0.55](closed/VISION-0.55.md) **Reactive Interests**. Session watches: [VISION-SESSION-PLANE](closed/VISION-SESSION-PLANE.md) (may overlap late).  
+**Status:** 📋 **Scout** — foundation landed (core engine + WorkloadLeaf + runners + product path). Adopt remainder is open minor [VISION-0.71](VISION-0.71.md). After [VISION-0.55](closed/VISION-0.55.md) **Reactive Interests**. Session watches: [VISION-SESSION-PLANE](closed/VISION-SESSION-PLANE.md) (may overlap late).  
 **Theme:** First-class **isolated workloads** — one-shot **runs** and long-lived **services** — via pure **WorkloadEngine**, pluggable **WorkloadRuntimes**, **hosts**, **execution-domain CQRS** (`ExecutionService.workloads`), **WorkloadLeaf** (opens **wait interest**), optional resource **blueprints**, and **event-driven composition** (pipelines). NeonRoot becomes one runtime, not the product.
 
 > *Palm orchestrates life. Workloads are where foreign work lives. Providers are how we speak to systems. CQRS is how edges ask. Events are how the graph continues. Never collapse those layers.*

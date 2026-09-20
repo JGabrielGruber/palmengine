@@ -4,7 +4,7 @@
 **Language:** Law uses computer-science terms. Spoken teaching words are marked once. They are not types.  
 **Map:** [PALM.md](../PALM.md) · [WRITING.md](../WRITING.md) (talk vs law) · [VERSIONING.md](../VERSIONING.md)  
 **Walk:** [VISION-NAVIGATOR](VISION-NAVIGATOR.md) (operator-guidance definition · presentation adapter)  
-**Place:** [VISION-0.56](VISION-0.56.md) (workload · place book)  
+**Place:** [VISION-0.71](VISION-0.71.md) (place registry · adopt) · scout [VISION-0.56](VISION-0.56.md)  
 **Compost:** [VISION-0.68](closed/VISION-0.68.md) (**closed** — costume; not this seed) · residual [SD-023](../../TECH-DEBT.md#sd-023)  
 **Surface compost:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md)  
 **North star:** [VISION-GROVE](VISION-GROVE.md)
@@ -102,7 +102,7 @@ RAM budget is a **place constraint** (tiny long-lived service). The binary and v
         │
         ▼
 Navigator (walk = definition)     ← intended invert; not this seed’s floor
-0.56 remainder (place book)       ← body of the model; not this seed’s theme
+0.71 place registry (adopt)       ← body of the model; not this seed’s theme
         │
         ▼
 this seed (needs)                 ← first proof when both homes exist
@@ -115,7 +115,7 @@ Grove (many Palms)                ← Palm X still a client of Palm Y
 
 **Navigator** is the walk. José named it as the intended minor after 0.68 (conversation 2026-09-15). That minor’s **floor** is the invert (guidance definition + adapter). A tiny-model translator is **not** that floor. It is a leaf a guidance pack **may** include once the invert is real.
 
-**0.56** is the place. “Run a ~28MB model as a workload” is dishonest until the place book can spawn or adopt a small service and consume it through a provider.
+**0.71** is the place (adopt). Spawn via `workload:` already exists (`0.63.16`). “Run a ~28MB model as a workload” is dishonest until the place registry can spawn or adopt a small service and consume it through a provider. Scout: [VISION-0.56](VISION-0.56.md).
 
 **Surface deflation** composts Assist/Portal mass **beside** the new adapter. Do not grow the first translator inside the demo shell.
 
@@ -167,7 +167,7 @@ These remain questions. They are not architecture law.
 | ID / seed | Role |
 |-----------|------|
 | [VISION-NAVIGATOR](VISION-NAVIGATOR.md) | Walk home — do not steal it |
-| [VISION-0.56](VISION-0.56.md) | Place home — remainder queued |
+| [VISION-0.71](VISION-0.71.md) | Place home — adopt (open) · scout [VISION-0.56](VISION-0.56.md) |
 | [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) · **SU-007** | Portal/WS must not become the product |
 | **SD-022** | Talk/metaphor as types — clean when touched |
 

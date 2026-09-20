@@ -3,7 +3,7 @@
 **Status:** Live open residual · **2026-08-05**.  
 **Paid/closed detail:** [docs/audit/TECH-DEBT-PAID.md](docs/audit/TECH-DEBT-PAID.md)  
 **PD-era archive:** [docs/audit/TECH-DEBT-ERA-0.45.md](docs/audit/TECH-DEBT-ERA-0.45.md)  
-**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Open theme:** none · closed [VISION-0.70](docs/vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md)  
+**Map:** [docs/PALM.md](docs/PALM.md) · **Status:** [STATUS.md](STATUS.md) · **Open theme:** [0.71](docs/vision/VISION-0.71.md) · ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed** · closed [VISION-0.70](docs/vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](docs/vision/VISION-AUTHORING.md)  
 **Language:** ASD-STE100 (practical).
 
 Closed theme chronicles live under [docs/vision/closed/](docs/vision/closed/).  
@@ -659,7 +659,7 @@ Fill concrete rows when breaks appear. Note **rule**, **true owner**, **parked t
 | **Plane-store framework** | SI-014 | Ponder only; per-plane stores first |
 | **User plane + session impersonation** | D11 · SI-015 bare residual | Principal **acts as** owning session — not dual-own. **Also owns** entry chooser and definition visibility (named on [VISION-NAVIGATOR](docs/vision/VISION-NAVIGATOR.md) 2026-09-15). Do not grow ambient `AuthEngine` principal into this plane. Navigator floor did not open this plane. |
 | **Delegate / team session membership** | growth | Shared walk under one owner session |
-| **Workload remainder** | 0.56 queue | Full placement, cancel hooks, peer mesh; place registry for assembly |
+| **Workload remainder** | **0.71** adopt | Named existing body on the place registry ([VISION-0.71](docs/vision/VISION-0.71.md)). 0.56 scout keeps ssh/k8s/peer/blueprints. |
 | **Tunnels / reach** | after assembly | Trusted paths · neighborhood · edge/cloud — [VISION-TUNNELS](docs/vision/VISION-TUNNELS.md) (queue seed; not open) |
 
 **Closed (not a seed):** **System vitality** — [VISION-0.61](docs/vision/closed/VISION-0.61.md) closed · [ADR-030](docs/adr/030-system-vitality.md) Accepted · residual BI-015 · SD-016.

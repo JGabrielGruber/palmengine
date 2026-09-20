@@ -4,6 +4,13 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.0 — Place registry (**theme open** · José 2026-09-20)
+
+Vision: [VISION-0.71](docs/vision/VISION-0.71.md) · ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed**
+
+- Floor: **adopt** a named existing body. Spawn via `workload:` stays `0.63.16`.
+- Package stamp stays `0.68.0`. No embedded release. Execute starts at `0.71.1`.
+
 ### 0.70 — Authoring (**theme closed** · José 2026-09-19)
 
 Vision: [VISION-0.70](docs/vision/closed/VISION-0.70.md) · ADR [038](docs/adr/038-authoring-adapter.md) **Accepted** · Migration: [MIGRATION-0.70](docs/migrations/MIGRATION-0.70.md)

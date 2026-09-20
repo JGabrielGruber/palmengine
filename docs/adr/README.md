@@ -53,11 +53,12 @@ Process: [AGENTS.md](../../AGENTS.md) §5 · template: [`.github/ISSUE_TEMPLATE/
 | [036](036-require-capability.md) | Require capability — dependents of the admission face (0.67) | Accepted |
 | [037](037-navigator-invert.md) | Navigator invert — operator-guidance definition · presentation kit (0.69) | Accepted |
 | [038](038-authoring-adapter.md) | Authoring adapter — land a shape · definition pack (0.70) | Accepted |
+| [039](039-place-registry-adopt.md) | Place registry adopt — named existing body (0.71) | Proposed |
 
 \*ADR-005 may be promoted to Accepted in a docs pass; shipped reality is the service domain API.
 
-**Next free number:** 039.  
-**Note:** System **0.57** through Authoring **0.70** **closed** (ADR-026…038 Accepted). No open minor. Residual multi-process claim: [SD-019](../../TECH-DEBT.md#sd-019). Queue seeds: [VISION-TUNNELS](../vision/VISION-TUNNELS.md) · [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md) · [VISION-TINY-LLM](../vision/VISION-TINY-LLM.md) · seed essay [VISION-ASSEMBLY](../vision/VISION-ASSEMBLY.md).
+**Next free number:** 040.  
+**Note:** **0.71** Place registry **open** (ADR-039 **Proposed**). System **0.57** through Authoring **0.70** **closed** (ADR-026…038 Accepted). Residual multi-process claim: [SD-019](../../TECH-DEBT.md#sd-019). Queue seeds: [VISION-TUNNELS](../vision/VISION-TUNNELS.md) · [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md) · [VISION-TINY-LLM](../vision/VISION-TINY-LLM.md) · seed essay [VISION-ASSEMBLY](../vision/VISION-ASSEMBLY.md).
 
 ## How to add an ADR
 
