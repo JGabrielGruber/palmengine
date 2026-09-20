@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from palm.core.workload.engine import WorkloadEngine
+    from palm.system.structure.workload_place import WorkloadPlaceSpawn
 
 PlaceSpawnState = Literal["ready", "failed", "gone"]
 
@@ -117,6 +118,8 @@ class RegisteredPlaceSpawn:
     fallback: PlaceSpawnPort = field(default_factory=InProcessPlaceSpawn)
     handles: dict[str, Any] = field(default_factory=dict)
     binds: list[BookBoundHands] = field(default_factory=list)
+    #: Typed workload: hands (set by workload / combined factories; not handles stash).
+    workload_bind: WorkloadPlaceSpawn | None = None
 
     def register(
         self,

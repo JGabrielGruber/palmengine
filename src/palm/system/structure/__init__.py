@@ -12,6 +12,7 @@ from palm.system.structure.errors import (
 )
 from palm.system.structure.hands import LOCAL_CAPABILITY_HANDS, CapabilitySeats
 from palm.system.structure.host_bind import (
+    WorkloadBearingShell,
     bind_host_structure_to_seat,
     book_bind_port,
     default_structure_effects,
@@ -95,6 +96,7 @@ __all__ = [
     "RecordingEffectPort",
     "RegisteredPlaceSpawn",
     "AdoptPlaceSpawn",
+    "WorkloadBearingShell",
     "WorkloadPlaceSpawn",
     "adopt_prefix_spawn_port",
     "bind_host_structure_to_seat",

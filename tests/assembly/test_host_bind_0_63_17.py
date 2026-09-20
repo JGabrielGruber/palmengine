@@ -20,8 +20,10 @@ from palm.system.structure import (
 
 
 def test_resolve_workload_engine_uninitialized() -> None:
+    from palm.core.workload import WorkloadEngine
+
     class _Shell:
-        workload = type("W", (), {"is_initialized": False})()
+        workload = WorkloadEngine()
 
     assert resolve_workload_engine(_Shell()) is None
 
@@ -106,13 +108,21 @@ def test_bind_disabled_leaves_workload_fail_closed() -> None:
 
 
 def test_bind_skips_recording_effect_port() -> None:
-    class _Shell:
-        workload = type("W", (), {"is_initialized": True})()
+    from palm.core.workload import WorkloadEngine
 
-    seat = StructureSeat(effects=RecordingEffectPort(auto_ack_places=True))
-    report = bind_host_structure_to_seat(seat, _Shell())
-    assert report["skipped"] == "no_place_effects"
-    assert report["bound"] is False
+    eng = WorkloadEngine()
+    eng.initialize()
+    try:
+
+        class _Shell:
+            workload = eng
+
+        seat = StructureSeat(effects=RecordingEffectPort(auto_ack_places=True))
+        report = bind_host_structure_to_seat(seat, _Shell())
+        assert report["skipped"] == "no_place_effects"
+        assert report["bound"] is False
+    finally:
+        eng.shutdown()
 
 
 def test_bind_idempotent_already_bound() -> None:

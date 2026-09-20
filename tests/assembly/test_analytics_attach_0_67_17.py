@@ -70,6 +70,7 @@ class _LeanShell:
         self.structure = None
         self.install = None
         self.supervisor = None
+        self.workload = None
 
 
 def test_phase_assemble_seats_analytics_on_install_not_supervisor() -> None:

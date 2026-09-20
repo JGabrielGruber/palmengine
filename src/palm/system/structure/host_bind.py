@@ -7,14 +7,19 @@ engine when it is initialized.
 **Opt-in:** on by default when the engine is ready; off via
 ``structure_bind_workload=False``. Does not force composition membership.
 Does not replace custom effect ports without a place registry.
+
+**0.71.6:** typed shell / engine / effects / spawn hands — no getattr or
+Protocol-isinstance duck nests for bind discovery.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Protocol
 
+from palm.core.workload.engine import WorkloadEngine
+from palm.system.structure.effects import EffectPort
 from palm.system.structure.place_registry import PlaceEffectPort
-from palm.system.structure.place_spawn import BookBindPort
+from palm.system.structure.place_spawn import PlaceSpawnPort, RegisteredPlaceSpawn
 from palm.system.structure.seat import StructureSeat
 from palm.system.structure.structure_effects import StructureEffectPort
 from palm.system.structure.workload_place import (
@@ -23,47 +28,57 @@ from palm.system.structure.workload_place import (
 )
 
 
-def resolve_workload_engine(shell: Any) -> Any | None:
+class WorkloadBearingShell(Protocol):
+    """Host shell that may expose a WorkloadEngine seat."""
+
+    workload: WorkloadEngine | None
+
+
+def resolve_workload_engine(shell: WorkloadBearingShell) -> WorkloadEngine | None:
     """Return shell.workload when present and initialized; else None."""
-    engine = getattr(shell, "workload", None)
+    engine = shell.workload
     if engine is None:
         return None
-    if not getattr(engine, "is_initialized", False):
+    if not engine.is_initialized:
         return None
     return engine
 
 
-def place_effect_port(effects: Any) -> PlaceEffectPort | None:
-    """Extract the place-effect hands from StructureEffectPort or bare place effects."""
-    if isinstance(effects, PlaceEffectPort):
-        return effects
-    places = getattr(effects, "places", None)
-    if isinstance(places, PlaceEffectPort):
-        return places
-    return None
+def place_effect_port(
+    effects: StructureEffectPort | PlaceEffectPort | EffectPort | object,
+) -> PlaceEffectPort | None:
+    """Typed place-effect hands from StructureEffectPort or bare PlaceEffectPort."""
+    match effects:
+        case PlaceEffectPort() as places:
+            return places
+        case StructureEffectPort() as structure:
+            return structure.places
+        case _:
+            return None
 
 
-def book_bind_port(spawn: Any) -> BookBindPort | None:
-    """Return spawn when it exposes typed book binds."""
-    if isinstance(spawn, BookBindPort):
-        return spawn
-    return None
+def book_bind_port(spawn: PlaceSpawnPort | object) -> RegisteredPlaceSpawn | None:
+    """Return RegisteredPlaceSpawn when spawn is the typed book-bind table."""
+    match spawn:
+        case RegisteredPlaceSpawn() as registered:
+            return registered
+        case _:
+            return None
 
 
-def workload_spawn_hands(spawn: Any) -> WorkloadPlaceSpawn | None:
-    """Find WorkloadPlaceSpawn among typed book binds (if any)."""
-    port = book_bind_port(spawn)
-    if port is None:
+def workload_spawn_hands(
+    spawn: PlaceSpawnPort | object,
+) -> WorkloadPlaceSpawn | None:
+    """Typed ``workload:`` hands from RegisteredPlaceSpawn.workload_bind."""
+    registered = book_bind_port(spawn)
+    if registered is None:
         return None
-    for hands in port.book_binds():
-        if isinstance(hands, WorkloadPlaceSpawn):
-            return hands
-    return None
+    return registered.workload_bind
 
 
 def bind_host_structure_to_seat(
     seat: StructureSeat,
-    shell: Any,
+    shell: WorkloadBearingShell,
     *,
     bind_workload: bool = True,
 ) -> dict[str, Any]:
@@ -127,7 +142,9 @@ def bind_host_structure_to_seat(
     return report
 
 
-def default_structure_effects(*, engine: Any | None = None) -> StructureEffectPort:
+def default_structure_effects(
+    *, engine: WorkloadEngine | None = None
+) -> StructureEffectPort:
     """Default place-effect hands with combined structure spawn (os: + workload:)."""
     return StructureEffectPort(
         places=PlaceEffectPort(spawn=combined_structure_spawn_port(engine=engine))
@@ -135,6 +152,7 @@ def default_structure_effects(*, engine: Any | None = None) -> StructureEffectPo
 
 
 __all__ = [
+    "WorkloadBearingShell",
     "bind_host_structure_to_seat",
     "book_bind_port",
     "default_structure_effects",

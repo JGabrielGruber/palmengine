@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Slices `0.71.0`–`0.71.5` landed. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Slices `0.71.0`–`0.71.6` landed. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -102,6 +102,11 @@ The registry is **real** when tests prove this chain:
 
 - `place_registry` / `workload_place` read typed `Workload` / `WorkloadHandle` fields. They do not getattr duck-type book rows.
 - Tests: `tests/test_workload_row_reads_0_71_5.py`.
+
+**As-built `0.71.6`:**
+
+- `host_bind` takes typed `WorkloadBearingShell` / `WorkloadEngine` / `StructureEffectPort`|`PlaceEffectPort` / `RegisteredPlaceSpawn.workload_bind`. No getattr or Protocol-isinstance duck nests for bind discovery.
+- Tests: `tests/test_host_bind_typed_0_71_6.py`.
 
 **As-built to keep:**
 
@@ -205,8 +210,9 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.3** | Compost extra maps. Place id is the book id. **landed**. |
 | **0.71.4** | Typed book binds. No handles duck-walk for bind discovery. **landed**. |
 | **0.71.5** | Typed `Workload` / `WorkloadHandle` book-row reads. **landed**. |
+| **0.71.6** | Typed `host_bind` shell / engine / effects / spawn hands. **landed**. |
 
-No queued compost after `0.71.5`. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
+No queued compost after `0.71.6`. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
 
 Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
 
@@ -232,6 +238,7 @@ Do not invent a Protocol type name for the registry.
 | Structure copy of readiness | **Pay** on growth (`0.71.2` projection, `0.71.3` compost). |
 | Handles duck-walk for bind hands | **Pay** on invert (`0.71.4` typed `BookBindPort`). |
 | Book-row getattr duck-type | **Pay** on invert (`0.71.5` typed `Workload` / `WorkloadHandle` reads). |
+| Host bind getattr / isinstance duck nest | **Pay** on invert (`0.71.6` typed shell / effects / `workload_bind`). |
 | Bare in-process ids / `os:` overlay | **Leave** named. In-process home until a later body strategy. Not honest compost now. |
 | `RegisteredPlaceSpawn.handles` | **Leave** named. Place-id body handles + residual `__os_registry__` stash. Not book bind. |
 | StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
@@ -243,13 +250,13 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Slices `0.71.0`–`0.71.5` landed. No further compost slice is queued. José locks names and exit.
+Theme stays **open**. Slices `0.71.0`–`0.71.6` landed. No further compost slice is queued. José locks names and exit.
 
 | Residual | Truth |
 |----------|-------|
 | Working names (`adopt`, `adopt:`, empty `runtime`) | José locks. |
-| `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`). **Not** honest compost now. |
+| `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`); `workload_bind` is typed (`0.71.6`). **Not** honest compost now. |
 | StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
 | Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
-| EffectIntent payload handle coercion | `_handle_from_payload` accepts `WorkloadHandle` \| dict \| `base_url`. Boundary, not book duck-type. |
+| EffectIntent payload handle coercion | `_handle_from_payload` accepts `WorkloadHandle` \| dict \| `base_url`. Intent boundary, not host-bind duck-type. |
 | Reuse `Workload` for adopted rows | Contested only if José wants a thinner place row. |

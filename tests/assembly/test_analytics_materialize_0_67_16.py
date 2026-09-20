@@ -118,6 +118,7 @@ class _LeanShell:
         self.structure = None
         self.install = None
         self.supervisor = None
+        self.workload = None
 
 
 def _assemble_from_ctx_seats(

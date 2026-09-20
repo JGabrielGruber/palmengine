@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.6 — Typed host_bind
+
+- `host_bind` uses typed `WorkloadBearingShell` / `WorkloadEngine` / `StructureEffectPort`|`PlaceEffectPort` / `RegisteredPlaceSpawn.workload_bind`; no getattr or Protocol-isinstance duck nests. Tests: `tests/test_host_bind_typed_0_71_6.py`.
+
 ### 0.71.5 — Typed workload book row reads
 
 - `place_registry` / `workload_place` read `Workload` / `WorkloadHandle` fields typed; they do not getattr duck-type book rows. Tests: `tests/test_workload_row_reads_0_71_5.py`.

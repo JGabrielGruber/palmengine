@@ -388,6 +388,7 @@ def workload_prefix_spawn_port(
         release=lambda pid: hands.release(pid),
     )
     port.register_bind(hands)
+    port.workload_bind = hands
     return port
 
 
@@ -417,6 +418,7 @@ def combined_structure_spawn_port(
         combined.register_bind(hands)
     for hands in ad_port.book_binds():
         combined.register_bind(hands)
+    combined.workload_bind = wl_port.workload_bind
     # Residual: os registry stash for tests / shutdown (not book bind).
     os_reg = os_port.handles.get("__os_registry__")
     if os_reg is not None:

@@ -47,6 +47,7 @@ class _LeanShell:
         self.structure = None
         self.install = None
         self.supervisor = None
+        self.workload = None
 
 
 def test_phase_source_has_no_organ_start_branches() -> None:
