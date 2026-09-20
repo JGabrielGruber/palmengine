@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Docs — 0.71 residual honesty
+
+- Slices `0.71.0`–`0.71.3` landed. Leftovers stay **named residual** (not queued compost): `RegisteredPlaceSpawn.handles` (bind stash), StructureEngine place observations (assemble/admission), overlay (bare ids and `os:` until a later body strategy). Next: José locks `adopt` / `adopt:` and exit. Theme stays open. Stamp `0.68.0`.
+
 ### 0.71.3 — Compost extra place maps
 
 - Spawn hands do not keep `place_id` → `workload_id`. Place id is the workload id. Overlay is not written for adopt/workload outcomes. Tests: `tests/test_place_maps_compost_0_71_3.py`.

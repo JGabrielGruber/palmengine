@@ -1,7 +1,7 @@
 # Palm Engine — Project Status
 
 **Current Version:** `0.68.0` · **Active theme:** [**0.71** Place registry](docs/vision/VISION-0.71.md) · **Prior closed:** [**0.70** Authoring](docs/vision/closed/VISION-0.70.md)  
-**Last Updated:** September 20, 2026 · José opened **0.71**. Floor: **adopt** a named place. ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed**. Package stamp stays `0.68.0`. Spawn via `workload:` stays [0.63.16](docs/vision/closed/VISION-0.63.md). Assist stays until [surface deflation](docs/vision/VISION-SURFACE-DEFLATION.md).  
+**Last Updated:** September 20, 2026 · José opened **0.71**. Floor through compost `0.71.0`–`0.71.3` **landed**. ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed**. Package stamp stays `0.68.0`. Spawn via `workload:` stays [0.63.16](docs/vision/closed/VISION-0.63.md). Assist stays until [surface deflation](docs/vision/VISION-SURFACE-DEFLATION.md).  
 **Map:** [docs/PALM.md](docs/PALM.md) · open [VISION-0.71](docs/vision/VISION-0.71.md) · [ADR-039](docs/adr/039-place-registry-adopt.md) **Proposed** · scout [VISION-0.56](docs/vision/VISION-0.56.md) · closed [VISION-0.70](docs/vision/closed/VISION-0.70.md) · [ADR-038](docs/adr/038-authoring-adapter.md) **Accepted**  
 **Debt (live):** [TECH-DEBT.md](TECH-DEBT.md) — **SD-025** (authoring job-leaf catalog write) · **SD-023** (0.68 exit residual) · **SD-024** (host names wizard) · **SD-020** (face paid; dependents paid) · **SD-021** · **SD-022** · residual **SD-019** · **SD-016** / **BI-*** / **SI-*** / **SU-***  
 **Closed seasons:** [docs/vision/closed/](docs/vision/closed/) · [VERSIONING.md](docs/VERSIONING.md) (STATUS is the present)
@@ -9,7 +9,7 @@
 ### Agent resume (after compact)
 
 Read: **this STATUS** → [VISION-0.71](docs/vision/VISION-0.71.md) (**open**) → [ADR-039](docs/adr/039-place-registry-adopt.md) **Proposed**.  
-José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.71.2` projection. Compost `0.71.3` extra maps (spawn `place_id` dicts; overlay not for book outcomes). Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks.
+José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.71.2` projection. Compost `0.71.3` extra maps (spawn `place_id` dicts; overlay not for book outcomes). **All landed.** Leftovers stay **named residual** (not queued compost): `RegisteredPlaceSpawn.handles` (bind stash), StructureEngine place observations (assemble/admission), overlay (bare ids and `os:` until a later body strategy). Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks. **Next:** José locks `adopt` / `adopt:` and exit judgment. No queued `0.71.4` code.
 
 | Spirit | Decision |
 |--------|----------|
@@ -28,7 +28,7 @@ José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.7
 | **0.71.0** | Plan: VISION, ADR Proposed, STATUS, PALM pointer | landed |
 | **0.71.1** | Adopt into the workload book; structure ENSURE; fail closed | landed |
 | **0.71.2** | Structure registry projects the workload book | landed |
-| **0.71.3** | Compost extra maps; place id is the book id | **this** |
+| **0.71.3** | Compost extra maps; place id is the book id | landed |
 
 ## Later seeds (not this season)
 
