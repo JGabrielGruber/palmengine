@@ -8,6 +8,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
 
+### 0.71.8 — Typed adopt payload handle
+
+- `AdoptPlaceSpawn` takes typed `WorkloadHandle` only; no dict | `base_url` coercion at the place→engine boundary. Tests: `tests/test_handle_payload_invert_0_71_8.py`.
+
 ### 0.71.7 — Typed place_registry spawn bind
 
 - `place_registry.engine_from_spawn` matches typed `RegisteredPlaceSpawn`; no Protocol `isinstance(spawn, BookBindPort)`. Tests: `tests/test_place_registry_typed_spawn_0_71_7.py`.

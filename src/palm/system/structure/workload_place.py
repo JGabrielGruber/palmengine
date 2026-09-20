@@ -244,7 +244,7 @@ class AdoptPlaceSpawn:
                 payload={"place_id": key},
             )
 
-        handle = _handle_from_payload(key, body)
+        handle = _handle_from_payload(body)
         wid = str(body.get("workload_id") or key)
         if handle is None:
             booked = self._ready_from_book(wid)
@@ -335,22 +335,10 @@ class AdoptPlaceSpawn:
         return None
 
 
-def _handle_from_payload(place_id: str, body: dict[str, Any]) -> WorkloadHandle | None:
-    """Residual: EffectIntent payload coercion (handle | dict | base_url)."""
+def _handle_from_payload(body: Mapping[str, Any]) -> WorkloadHandle | None:
+    """Typed handle from ensure payload. No dict | base_url coercion."""
     raw = body.get("handle")
-    if isinstance(raw, WorkloadHandle):
-        return raw
-    if isinstance(raw, dict):
-        data = dict(raw)
-        data.setdefault("workload_id", place_id)
-        try:
-            return WorkloadHandle.from_dict(data)
-        except Exception:
-            return None
-    url = body.get("base_url")
-    if url:
-        return WorkloadHandle(workload_id=place_id, base_url=str(url))
-    return None
+    return raw if isinstance(raw, WorkloadHandle) else None
 
 
 def adopt_prefix_spawn_port(

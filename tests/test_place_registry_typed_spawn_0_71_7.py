@@ -2,7 +2,7 @@
 
 engine_from_spawn takes typed RegisteredPlaceSpawn book binds (same invert
 as host_bind.book_bind_port). It does not isinstance(spawn, BookBindPort).
-Workload_place payload boundary (_handle_from_payload, env dict) stays named.
+Adopt payload handle invert is `0.71.8` (typed WorkloadHandle only).
 """
 
 from __future__ import annotations
