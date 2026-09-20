@@ -4,12 +4,16 @@ Registry of places this process can mark ready so a definition with
 places_required can converge. **0.63.14:** optional :class:`PlaceSpawnPort`
 grows bodies (OS / workload strategies); default remains in-process success.
 
-**0.71.2 / 0.71.9:** when a workload book is bound, readiness is a **projection**
+**0.71.2 / 0.71.9:** when a workload book is bound, ``places`` is a **projection**
 of that book only — no overlay dict beside it. Unbound, one local register
 holds bare / ``os:`` ready rows. Failed ensures are observations, not rows.
 
 **0.71.7:** ``engine_from_spawn`` matches typed ``RegisteredPlaceSpawn`` (same
 invert as ``host_bind.book_bind_port``); no Protocol ``isinstance``.
+
+**0.71.11:** ``ready(place_id)`` is the assemble readiness hand (book projection
+or local assemble ack). StructureEngine binds it; it does not keep a second
+body book of place observations.
 """
 
 from __future__ import annotations
@@ -19,6 +23,7 @@ from typing import Literal
 
 from palm.core.structure import EffectIntent, EffectIntentKind, Observation, ObservationKind
 from palm.core.workload.engine import WorkloadEngine
+from palm.core.workload.exceptions import WorkloadNotFoundError
 from palm.core.workload.record import Workload
 from palm.core.workload.status import WorkloadStatus, is_terminal
 from palm.system.structure.place_spawn import (
@@ -77,9 +82,7 @@ class InProcessPlaceRegistry:
         return book is not None and book.is_initialized
 
     def mark(self, place_id: str, state: PlaceState) -> None:
-        """Write the local register. No-op when the workload book is home."""
-        if self._book_is_home():
-            return
+        """Write the local assemble register (bare / os: ack; not a body book)."""
         key = str(place_id or "").strip()
         if not key:
             return
@@ -92,10 +95,29 @@ class InProcessPlaceRegistry:
         key = str(place_id or "").strip()
         if not key:
             return "gone"
-        if self._book_is_home():
-            return "gone"
         self._local.pop(key, None)
         return "gone"
+
+    def ready(self, place_id: str) -> bool:
+        """Assemble readiness: book projection wins; else local assemble ack."""
+        key = str(place_id or "").strip()
+        if not key:
+            return False
+        if self._book_is_home():
+            projected = self._project_book()
+            if key in projected:
+                return projected[key] == "ready"
+            book = self.book
+            if book is not None:
+                try:
+                    book.get(key)
+                except WorkloadNotFoundError:
+                    pass
+                else:
+                    # Known to the body book but not ready in projection.
+                    return False
+            return self._local.get(key) == "ready"
+        return self._local.get(key) == "ready"
 
     def _project_book(self) -> dict[str, PlaceState]:
         projected: dict[str, PlaceState] = {}
@@ -147,8 +169,9 @@ class PlaceEffectPort:
                         payload={"reason": "empty_place_id"},
                     ),
                 )
-            # Spawn hands first. Local register only when the book is not home.
-            # Ready rows only — failed ensures stay observations (0.71.3+).
+            # Spawn hands first. Ready marks the assemble register (0.71.11).
+            # Failed ensures stay observations (0.71.3+). places stays book-only
+            # when the workload book is home (0.71.9).
             result = self.spawn.ensure(target, payload=dict(intent.payload or {}))
             if result.state == "ready":
                 self.registry.mark(target, "ready")

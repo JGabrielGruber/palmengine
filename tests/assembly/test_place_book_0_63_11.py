@@ -60,7 +60,9 @@ def test_runtime_default_place_registry_hands() -> None:
     try:
         assert rt.admission.may_run_business is True
         assert rt.structure is not None
-        # Bound book: registry.places is body projection; bare ready is assemble observation.
+        # Bound book: places is body projection; bare ready via registry.ready (0.71.11).
         assert "manor_a" in rt.structure.status().places_ready
+        assert rt.structure.effects.registry.ready("manor_a") is True  # type: ignore[union-attr]
+        assert "manor_a" not in rt.structure.effects.registry.places  # type: ignore[union-attr]
     finally:
         rt.stop()

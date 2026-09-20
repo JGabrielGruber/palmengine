@@ -22,6 +22,7 @@ from palm.system.structure.loop import (
     AssembleLoopResult,
     assemble_until_steady,
 )
+from palm.system.structure.place_registry import PlaceEffectPort
 from palm.system.structure.structure_effects import StructureEffectPort
 
 
@@ -38,6 +39,17 @@ class StructureSeat:
     def __post_init__(self) -> None:
         if not self.engine.is_initialized:
             self.engine.initialize()
+        self._bind_place_ready_hand()
+
+    def _bind_place_ready_hand(self) -> None:
+        """Prefer place-registry ``ready`` over folding PLACE_READY into a second book."""
+        match self.effects:
+            case StructureEffectPort() as port:
+                self.engine.bind_place_ready(port.registry.ready)
+            case PlaceEffectPort() as port:
+                self.engine.bind_place_ready(port.registry.ready)
+            case _:
+                self.engine.bind_place_ready(None)
 
     def admission(self) -> AdmissionSnapshot:
         snap = self.engine.admission()
@@ -69,6 +81,7 @@ class StructureSeat:
         if definition is None:
             definition = local_embedded()
         self.definition = definition
+        self._bind_place_ready_hand()
         bind = getattr(self.effects, "bind_structure", None)
         if callable(bind):
             bind(definition, surfaces=surfaces)
@@ -127,6 +140,7 @@ class StructureSeat:
     def reset(self) -> None:
         self.engine.shutdown()
         self.engine.initialize()
+        self._bind_place_ready_hand()
         self.last_loop = None
         self.definition = None
         self.materialized_capabilities = frozenset()

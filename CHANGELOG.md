@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
-- After `0.71.10`: residual named (assemble observations / remaining `isinstance` gates). Handles bag inverted.
+- After `0.71.11`: residual named (remaining `isinstance` gates). Place observations inverted onto registry `ready`.
+
+### 0.71.11 — Invert StructureEngine place observations
+
+- Assemble / admission reads place-registry `ready(place_id)`. PLACE_READY does not accumulate a second body book when that hand is bound. Tests: `tests/test_place_observations_invert_0_71_11.py`.
 
 ### 0.71.10 — Invert RegisteredPlaceSpawn.handles
 

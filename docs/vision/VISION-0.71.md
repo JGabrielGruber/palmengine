@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.10` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.11` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -128,12 +128,17 @@ The registry is **real** when tests prove this chain:
 - `RegisteredPlaceSpawn.register_body` / `body` / `forget_body` — typed place-id body register. `os_registry` is typed. No `handles` bag. No `__os_registry__` magic key.
 - Tests: `tests/test_spawn_handles_invert_0_71_10.py`.
 
+**As-built `0.71.11`:**
+
+- StructureEngine binds place-registry `ready(place_id)` for assemble / admission. PLACE_READY does not accumulate a second body book when that hand is bound. Bound bare / `os:` acks live on the registry local register; `places` stays book projection only.
+- Tests: `tests/test_place_observations_invert_0_71_11.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
 - Fail closed when `workload:` has no engine.  
 - `os:` fail closed until a body strategy exists.  
-- Bare place ids: in-process success (assemble observation when book-bound).
+- Bare place ids: in-process success via registry `ready` when book-bound (`places` stays book projection).
 
 ---
 
@@ -173,7 +178,7 @@ While the theme stays open, slices may:
 | Authoring names / `palm` catalog write | [SD-025](../../TECH-DEBT.md#sd-025) |
 | Host wizard-named flats | [SD-024](../../TECH-DEBT.md#sd-024) |
 | 0.68 leftover duals | [SD-023](../../TECH-DEBT.md#sd-023) |
-| Bare in-process place ids (body strategy) | Later — `0.71.9` removed the overlay dual; bare ready when book-bound is assemble observation |
+| Bare in-process place ids (body strategy) | Later — `0.71.9` removed the overlay dual; `0.71.11` bare ready when book-bound is registry `ready`, not a second engine book |
 
 **Forbidden always (layer law):**
 
@@ -238,6 +243,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.8** | Typed adopt payload handle (no dict \| `base_url` coercion). **landed**. |
 | **0.71.9** | Compost overlay; bare / `os:` no second map beside the book. **landed**. |
 | **0.71.10** | Invert `handles`; typed `register_body` / `os_registry`. **landed**. |
+| **0.71.11** | Invert StructureEngine place observations onto registry `ready`. **landed**. |
 
 Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
 
@@ -269,7 +275,7 @@ Do not invent a Protocol type name for the registry.
 | EffectIntent payload handle coercion | **Pay** on invert (`0.71.8` typed `WorkloadHandle` only). |
 | Bare in-process ids / `os:` overlay | **Pay** on compost (`0.71.9` — no overlay beside the book). |
 | `RegisteredPlaceSpawn.handles` | **Pay** on invert (`0.71.10` typed `register_body` / `os_registry`). |
-| StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
+| StructureEngine place observations | **Pay** on invert (`0.71.11` registry `ready` hand). |
 | `workload_place` remaining `isinstance` | **Leave** named. Env dict (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). |
 | `WorkloadEngine` remaining `isinstance` | **Leave** named. Runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
@@ -279,10 +285,9 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.10` landed. Names locked. Next is José exit judgment.
+Theme stays **open**. Execute `0.71.0`–`0.71.11` landed. Names locked. Next is José exit judgment.
 
 | Residual | Truth |
 |----------|-------|
-| StructureEngine place observations | Assemble / admission state (including bare ready when book-bound). **Not** a second body book. **Not** honest compost. |
 | `workload_place` remaining `isinstance` | Env dict gate (~L198); typed `WorkloadHandle` accept at Mapping body (~L341). Payload shape / fail-closed. **Not** honest compost now. |
 | `WorkloadEngine` remaining `isinstance` | Initialize runtime bind dict / `WorkloadRuntime` (~L71/L73); argv-must-not-be-str (~L273). Fail-closed. **Not** honest compost now. |
