@@ -243,6 +243,7 @@ class WorkloadEngine(BasePalmEngine):
                 kind=WorkloadKind.SERVICE,
                 isolation=IsolationPolicy.BEST_EFFORT,
                 lifecycle=LifecyclePolicy.LEASE,
+                labels={"structure_place": wid},
             )
             wl = Workload(
                 workload_id=wid,

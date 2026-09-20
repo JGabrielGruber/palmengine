@@ -9,7 +9,7 @@
 ### Agent resume (after compact)
 
 Read: **this STATUS** → [VISION-0.71](docs/vision/VISION-0.71.md) (**open**) → [ADR-039](docs/adr/039-place-registry-adopt.md) **Proposed**.  
-José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor execute `0.71.1` records an existing handle in the workload book (`WorkloadEngine.adopt`). Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks.
+José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor `0.71.1` adopt. Growth `0.71.2` structure registry projects the workload book. Do not reopen 0.56. Do not spawn as the floor (`workload:` already `0.63.16`). Do not implement Tiny LLM. Do not compost Assist. Do not add a `palm` `create_flow` `if` ([SD-025](TECH-DEBT.md#sd-025)). Working prefix `adopt:` until José locks.
 
 | Spirit | Decision |
 |--------|----------|
@@ -17,7 +17,7 @@ José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor execute `0.71.1` records an
 | **ADR-039** | **Proposed** |
 | **ADR-038** | **Accepted** (0.70 closed) |
 | **ADR-024** | Stays **Accepted** (workload engine scout) |
-| **Next** | `0.71.2+` growth (projection of structure copy). |
+| **Next** | José locks `adopt` / `adopt:` · exit judgment. |
 | **Later** | [TINY-LLM](docs/vision/VISION-TINY-LLM.md) · [SURFACE-DEFLATION](docs/vision/VISION-SURFACE-DEFLATION.md) · [SD-021](TECH-DEBT.md#sd-021) · [TUNNELS](docs/vision/VISION-TUNNELS.md) → [Grove](docs/vision/VISION-GROVE.md) |
 | **Experimental** | Pre-1.0 · **no LTS** — [README](README.md) |
 
@@ -26,8 +26,8 @@ José opened 0.71 (2026-09-20). Plan `0.71.0`. Floor execute `0.71.1` records an
 | Slice | Intent | Status |
 |-------|--------|--------|
 | **0.71.0** | Plan: VISION, ADR Proposed, STATUS, PALM pointer | landed |
-| **0.71.1** | Adopt into the workload book; structure ENSURE; fail closed | **this** |
-| **0.71.2+** | Growth: projection of structure copy; José locks `adopt` / `adopt:` | queued |
+| **0.71.1** | Adopt into the workload book; structure ENSURE; fail closed | landed |
+| **0.71.2** | Structure registry projects the workload book | **this** |
 
 ## Later seeds (not this season)
 

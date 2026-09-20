@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.2 — Structure registry projects the workload book
+
+- `InProcessPlaceRegistry.places` reads adopted and `workload:` readiness from `WorkloadEngine`. Overlay stays for bare ids and failed ensures. Tests: `tests/test_place_registry_projection_0_71_2.py`.
+
 ### 0.71.1 — Adopt a named place into the workload book
 
 - `WorkloadEngine.adopt` records an existing `WorkloadHandle.base_url` as ready. No runner `start`. Prefix `adopt:` on the structure spawn table. Tests: `tests/test_place_adopt_0_71_1.py`.

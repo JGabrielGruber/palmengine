@@ -637,7 +637,7 @@ A map that only names **ideals** without today is also incomplete.
 | Patterns / providers / storages registries | **Real** |
 | Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
-| Workload plane (place registry) | **Scout** (0.56) engine landed · **open 0.71** adopt — [VISION-0.71](vision/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** |
+| Workload plane (place registry) | **Scout** (0.56) engine landed · **open 0.71** adopt + projection — [VISION-0.71](vision/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
 | Unified execution port | **Live** — product + graphs + edges for effects and catalog inspect |
 | Shared vs system split in tree | **Deflated** (0.57.6–13); kits exposed (`palm.kits.server`); plans DTO shared |

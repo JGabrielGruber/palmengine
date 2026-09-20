@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Floor execute `0.71.1` landed. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Floor `0.71.1` and growth `0.71.2` landed. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -79,6 +79,13 @@ The registry is **real** when tests prove this chain:
 - ENSURE / `places_required` converge when the book already holds that place id. Missing handle fails closed (`adopt_handle_missing`), not in-process ready.
 - Tests: `tests/test_place_adopt_0_71_1.py`.
 
+**As-built `0.71.2`:**
+
+- `InProcessPlaceRegistry.places` is a view. Bound `WorkloadEngine` rows win for `structure_place` / workload id.
+- Adopted unbind (`stop`, empty runtime → `STOPPED`) drops ready from the view without a `RELEASE_PLACE` intent.
+- Overlay keeps bare in-process ids and failed ensures that never entered the book.
+- Tests: `tests/test_place_registry_projection_0_71_2.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -96,7 +103,7 @@ While the theme stays open, slices may:
 - Keep spawn on the same book. Do not add a second spawn path.  
 - Leave room for Tiny LLM: a long-lived small **service** as a place. Speak stays a later provider.
 
-`adopt:` is on `combined_structure_spawn_port`. Adopted `stop` unbinds (no runner `stop`).
+`adopt:` is on `combined_structure_spawn_port`. Adopted `stop` unbinds (no runner `stop`). Structure registry projects the book for adopted and `workload:` ids (`0.71.2`).
 
 **Not floor:** product CQRS `workload.adopt`. MCP. New runners. Invert of `LocalPalmInvoker`. Assist compost.
 
@@ -177,7 +184,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 |-------|--------|
 | **0.71.0** | Plan. This file. ADR **Proposed**. STATUS. PALM one-line pointer. |
 | **0.71.1** | Floor: adopt into the workload book; structure ENSURE; fail closed without handle. **landed**. |
-| **0.71.2+** | Growth: projection of `InProcessPlaceRegistry`; José locks names. |
+| **0.71.2** | Growth: `InProcessPlaceRegistry` projects the workload book. **landed**. |
 
 Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
 
@@ -200,7 +207,7 @@ Do not invent a Protocol type name for the registry.
 | Pay or leave | Note |
 |--------------|------|
 | Adopt missing | **Pay** on floor (`0.71.1`). |
-| Structure copy of readiness | **Leave** if floor still converges; pay as projection on growth. |
+| Structure copy of readiness | **Pay** on growth (`0.71.2` projection). |
 | Bare in-process ids | **Leave** named. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
@@ -209,8 +216,8 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-- Structure `InProcessPlaceRegistry` still **copies** readiness. It is not a projection of the workload book (`0.71.2+`).
 - Working names: method `adopt`, prefix `adopt:`, empty `runtime` on adopted rows. José locks.
+- Spawn hands still map `place_id` → `workload_id` for idempotent ensure. Readiness is the book.
+- `StructureEngine` still records place observations for admission. That is assemble state, not a second body book.
 - Reuse `Workload` for adopted rows. Contested only if José wants a thinner place row.
-
-Do not claim projection paid unless tests show one book.
+- Bare in-process place ids stay named.

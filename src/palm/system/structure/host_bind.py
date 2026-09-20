@@ -53,6 +53,18 @@ def workload_spawn_hands(spawn: Any) -> WorkloadPlaceSpawn | None:
     return None
 
 
+def _bind_book_engines(spawn: Any, engine: Any | None) -> None:
+    """Attach the live engine to workload and adopt spawn hands on one port."""
+    handles = getattr(spawn, "handles", None)
+    if not isinstance(handles, dict):
+        return
+    for key in ("__workload_spawn__", "__adopt_spawn__"):
+        hands = handles.get(key)
+        bind = getattr(hands, "bind_engine", None)
+        if callable(bind):
+            bind(engine)
+
+
 def bind_host_structure_to_seat(
     seat: StructureSeat,
     shell: Any,
@@ -86,12 +98,15 @@ def bind_host_structure_to_seat(
 
     if existing is not None:
         if engine is not None and existing.engine is not engine:
-            existing.bind_engine(engine)
+            _bind_book_engines(port.spawn, engine)
+            port.bind_book_from_spawn()
             report["bound"] = True
             report["engine"] = True
             report["spawn"] = "existing"
             return report
         if engine is not None and existing.engine is engine:
+            _bind_book_engines(port.spawn, engine)
+            port.bind_book_from_spawn()
             report["bound"] = True
             report["engine"] = True
             report["spawn"] = "already"
@@ -105,6 +120,7 @@ def bind_host_structure_to_seat(
 
     # Default / pre-installed without workload hands → combined.
     port.spawn = combined_structure_spawn_port(engine=engine)
+    port.bind_book_from_spawn()
     report["bound"] = True
     report["engine"] = engine is not None
     report["spawn"] = "combined"
