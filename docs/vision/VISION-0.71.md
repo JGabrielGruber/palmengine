@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.7` landed. Docs theater aligned. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.7` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -69,7 +69,7 @@ The registry is **real** when tests prove this chain:
 
 **Floor function:** that adopt. Not Tiny LLM. Not ssh. Not MCP. Not compost of bare in-process ids.
 
-**Working prefix** until José locks a name: `adopt:`. Same table as `workload:` / `os:` (`RegisteredPlaceSpawn`). Not a new `if`.
+**Locked prefix:** `adopt:`. Same table as `workload:` / `os:` (`RegisteredPlaceSpawn`). Not a new `if`.
 
 **As-built `0.71.1`:**
 
@@ -199,7 +199,10 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **Law word** | **Place registry** (not place book as a type). |
 | **Floor** | **Adopt** a named place with a handle. |
 | **Spawn** | Already `0.63.16`. Not the floor. |
-| **Prefix** | Working `adopt:` until José locks. |
+| **Method** | `WorkloadEngine.adopt` (locked). |
+| **Prefix** | `adopt:` (locked). Same table as `workload:` / `os:`. |
+| **Runtime** | Empty `runtime` on adopted rows. No fake runner name. |
+| **Row type** | Adopted rows stay `Workload`. |
 | **Handle** | Existing `WorkloadHandle` (`base_url` enough). |
 | **Stamp** | `0.68.0`. No embedded release at open. |
 
@@ -218,17 +221,18 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.6** | Typed `host_bind` shell / engine / effects / spawn hands. **landed**. |
 | **0.71.7** | Typed `place_registry` spawn / book bind (no Protocol isinstance). **landed**. |
 
-No queued compost after `0.71.7`. Docs theater is the last slice of this open theme. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
+No queued compost after `0.71.7`. Names are locked. Remaining is José exit judgment. Leftovers in §11 stay **named residual**.
 
 ---
 
-## 9. Names still unnamed
+## 9. Names (locked José 2026-09-20)
 
-| Working | Who locks |
-|---------|-----------|
-| Prefix `adopt:` | José |
-| Engine / registry method spelling for adopt | José after 0.71.1 proposes as-built |
-| Whether adopted records share `Workload` or a thinner place row | Propose in 0.71.1; José locks if contested |
+| Locked | Spelling |
+|--------|----------|
+| Method | `adopt` |
+| Prefix | `adopt:` |
+| Adopted runtime | empty (no fake runner name) |
+| Adopted row | `Workload` (not a thinner place row) |
 
 Do not invent a Protocol type name for the registry.
 
@@ -255,13 +259,11 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.7` landed. Docs theater aligned. No further compost slice is queued. José locks names and exit.
+Theme stays **open**. Execute `0.71.0`–`0.71.7` landed. Names locked. No further compost slice is queued. Next is José exit judgment.
 
 | Residual | Truth |
 |----------|-------|
-| Working names (`adopt`, `adopt:`, empty `runtime`) | José locks. |
 | `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`); `workload_bind` is typed (`0.71.6`); `engine_from_spawn` is typed (`0.71.7`). **Not** honest compost now. |
 | StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
 | Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
 | EffectIntent payload handle coercion | `workload_place._handle_from_payload` accepts `WorkloadHandle` \| dict \| `base_url`. Intent boundary, not host-bind duck-type. |
-| Reuse `Workload` for adopted rows | Contested only if José wants a thinner place row. |

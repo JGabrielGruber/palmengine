@@ -37,7 +37,7 @@ Spawn via `workload:` is already `0.63.16`. It is not the floor.
 
 ### D4 — Hands route on the existing table
 
-Adopt is a **registered strategy** on `RegisteredPlaceSpawn` (working prefix `adopt:` until José locks). Do not add a one-name `if` on the spawn port. Do not add a `PlaceService`.
+Adopt is a **registered strategy** on `RegisteredPlaceSpawn`. Locked prefix: `adopt:`. Method: `WorkloadEngine.adopt`. Adopted rows stay `Workload` with empty `runtime` (no fake runner name). Do not add a one-name `if` on the spawn port. Do not add a `PlaceService`.
 
 ### D5 — Palm did not create an adopted body
 

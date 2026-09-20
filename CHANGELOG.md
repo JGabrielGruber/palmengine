@@ -6,7 +6,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### Docs — 0.71 present (theme open)
 
-- Align STATUS, VISION-0.71, PALM for execute `0.71.0`–`0.71.7`. Residuals named. ADR-039 stays **Proposed**. Next: José locks `adopt` / `adopt:` and exit judgment.
+- Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment.
 
 ### 0.71.7 — Typed place_registry spawn bind
 
