@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Docs — 0.71 present (theme open)
+
+- Align STATUS, VISION-0.71, PALM for execute `0.71.0`–`0.71.7`. Residuals named. ADR-039 stays **Proposed**. Next: José locks `adopt` / `adopt:` and exit judgment.
+
 ### 0.71.7 — Typed place_registry spawn bind
 
 - `place_registry.engine_from_spawn` matches typed `RegisteredPlaceSpawn`; no Protocol `isinstance(spawn, BookBindPort)`. Tests: `tests/test_place_registry_typed_spawn_0_71_7.py`.

@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Slices `0.71.0`–`0.71.7` landed. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.7` landed. Docs theater aligned. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -218,9 +218,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.6** | Typed `host_bind` shell / engine / effects / spawn hands. **landed**. |
 | **0.71.7** | Typed `place_registry` spawn / book bind (no Protocol isinstance). **landed**. |
 
-No queued compost after `0.71.7`. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
-
-Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
+No queued compost after `0.71.7`. Docs theater is the last slice of this open theme. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
 
 ---
 
@@ -249,7 +247,7 @@ Do not invent a Protocol type name for the registry.
 | Bare in-process ids / `os:` overlay | **Leave** named. In-process home until a later body strategy. Not honest compost now. |
 | `RegisteredPlaceSpawn.handles` | **Leave** named. Place-id body handles + residual `__os_registry__` stash. Not book bind. |
 | StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
-| EffectIntent payload handle coercion | **Leave** named. `WorkloadHandle` \| dict \| `base_url` at adopt ensure boundary. |
+| EffectIntent payload handle coercion | **Leave** named. `workload_place._handle_from_payload`: `WorkloadHandle` \| dict \| `base_url`. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
 
@@ -257,7 +255,7 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Slices `0.71.0`–`0.71.7` landed. No further compost slice is queued. José locks names and exit.
+Theme stays **open**. Execute `0.71.0`–`0.71.7` landed. Docs theater aligned. No further compost slice is queued. José locks names and exit.
 
 | Residual | Truth |
 |----------|-------|
@@ -265,5 +263,5 @@ Theme stays **open**. Slices `0.71.0`–`0.71.7` landed. No further compost slic
 | `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`); `workload_bind` is typed (`0.71.6`); `engine_from_spawn` is typed (`0.71.7`). **Not** honest compost now. |
 | StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
 | Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
-| EffectIntent payload handle coercion | `_handle_from_payload` accepts `WorkloadHandle` \| dict \| `base_url`. Intent boundary, not host-bind duck-type. |
+| EffectIntent payload handle coercion | `workload_place._handle_from_payload` accepts `WorkloadHandle` \| dict \| `base_url`. Intent boundary, not host-bind duck-type. |
 | Reuse `Workload` for adopted rows | Contested only if José wants a thinner place row. |

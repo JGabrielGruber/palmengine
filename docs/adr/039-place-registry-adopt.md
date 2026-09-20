@@ -54,7 +54,6 @@ Package version stays `0.68.0` until José cuts an embedded release.
 ## Consequences
 
 - Tests can adopt a URL-shaped place and assemble DNA that requires it without spawning.  
-- Cheaper execute may implement `0.71.1` only inside a kill-box.  
 - Bare in-process place ids stay until a later compost. Name them. Do not “fix” them to keep adopt green.  
 - Product CQRS `workload.adopt` is growth, not floor.
 
