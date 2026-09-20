@@ -7,6 +7,9 @@ grows bodies (OS / workload strategies); default remains in-process success.
 **0.71.2:** when a workload book is bound, adopted and ``workload:`` readiness
 is a **projection** of that book. The overlay is only for bare / ``os:`` ids
 and failed ensures that never entered the book. Not Grove.
+
+**0.71.7:** ``engine_from_spawn`` matches typed ``RegisteredPlaceSpawn`` (same
+invert as ``host_bind.book_bind_port``); no Protocol ``isinstance``.
 """
 
 from __future__ import annotations
@@ -19,9 +22,9 @@ from palm.core.workload.engine import WorkloadEngine
 from palm.core.workload.record import Workload
 from palm.core.workload.status import WorkloadStatus, is_terminal
 from palm.system.structure.place_spawn import (
-    BookBindPort,
     InProcessPlaceSpawn,
     PlaceSpawnPort,
+    RegisteredPlaceSpawn,
 )
 
 PlaceState = Literal["ready", "failed", "gone"]
@@ -34,10 +37,12 @@ def _writes_overlay(reason: str) -> bool:
 
 
 def engine_from_spawn(spawn: object) -> WorkloadEngine | None:
-    """Return the WorkloadEngine from typed book binds on a spawn port, if any."""
-    if isinstance(spawn, BookBindPort):
-        return spawn.book_engine()
-    return None
+    """Return the WorkloadEngine from typed RegisteredPlaceSpawn binds, if any."""
+    match spawn:
+        case RegisteredPlaceSpawn() as registered:
+            return registered.book_engine()
+        case _:
+            return None
 
 def _place_id_for(workload: Workload) -> str:
     labeled = str(workload.spec.labels.get("structure_place") or "").strip()

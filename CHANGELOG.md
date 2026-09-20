@@ -4,6 +4,10 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### 0.71.7 — Typed place_registry spawn bind
+
+- `place_registry.engine_from_spawn` matches typed `RegisteredPlaceSpawn`; no Protocol `isinstance(spawn, BookBindPort)`. Tests: `tests/test_place_registry_typed_spawn_0_71_7.py`.
+
 ### 0.71.6 — Typed host_bind
 
 - `host_bind` uses typed `WorkloadBearingShell` / `WorkloadEngine` / `StructureEffectPort`|`PlaceEffectPort` / `RegisteredPlaceSpawn.workload_bind`; no getattr or Protocol-isinstance duck nests. Tests: `tests/test_host_bind_typed_0_71_6.py`.
