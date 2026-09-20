@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
-- After `0.71.17`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel. PALM pointer through `0.71.17`.
+- After `0.71.18`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data. PALM pointer through `0.71.18`.
+
+### 0.71.18 — Keep surface assets out of wheel
+
+- Base `palmengine` wheel excludes SSR/Portal/Analytics `static/` and `palm/runtimes/mcp/data/`. Repo/sdist keep them. Hatch wheel `artifacts` no longer force those paths. Not a pip extra. Stamp stays `0.68.0`. Tests: `tests/test_wheel_surface_assets_0_71_18.py`.
 
 ### 0.71.17 — Isolate embedded from server import
 

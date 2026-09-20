@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.17` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.18` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -167,6 +167,11 @@ The registry is **real** when tests prove this chain:
 - Callers import concrete surfaces from their subpackages. Kernel keeps per-kind deferred imports.
 - Tests: `tests/test_embedded_import_isolation_0_71_17.py`.
 
+**As-built `0.71.18`:**
+
+- Base `palmengine` wheel excludes SSR/Portal/Analytics `static/` trees and `palm/runtimes/mcp/data/`. Repo and sdist keep them for editable/dev. Not a pip extra (extras cannot strip wheel files). Hatch wheel `artifacts` no longer force those paths in.
+- Tests: `tests/test_wheel_surface_assets_0_71_18.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -284,6 +289,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.15** | Invert StructureEngine `_places_ready`; readiness only via ready hand. **landed**. |
 | **0.71.16** | Stdlib `PalmSettings`; empty hard deps; file load extra `dotenv` (fail closed). **landed**. |
 | **0.71.17** | Empty `palm.runtimes` surface barrel; embedded start does not load server. **landed**. |
+| **0.71.18** | Base wheel omits surface static / MCP data (keep in repo/sdist). **landed**. |
 
 Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
 
@@ -330,7 +336,7 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.17` landed. Names locked. Next is José exit judgment plus named place leftovers.
+Theme stays **open**. Execute `0.71.0`–`0.71.18` landed. Names locked. Next is José exit judgment plus named place leftovers.
 
 | Residual | Truth |
 |----------|-------|

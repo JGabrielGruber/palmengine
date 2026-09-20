@@ -106,17 +106,13 @@ Changelog = "https://github.com/JGabrielGruber/palmengine/blob/master/CHANGELOG.
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/palm"]
+# Surface static + MCP payload stay in repo/sdist for editable/dev; not the base wheel (0.71.18).
 exclude = [
     "**/node_modules/**",
-]
-artifacts = [
-    "src/palm/runtimes/server/surfaces/ssr/studio/static/**/*",
-    "src/palm/runtimes/server/surfaces/websocket/static/**/*",
-    "src/palm/runtimes/server/surfaces/rest/analytics/static/**/*",
-
-    "src/palm/runtimes/mcp/data/llms.txt",
-    "src/palm/runtimes/mcp/data/mcp.txt",
-    "src/palm/runtimes/mcp/data/skills/palm/**/*",
+    "src/palm/runtimes/server/surfaces/ssr/studio/static/**",
+    "src/palm/runtimes/server/surfaces/websocket/static/**",
+    "src/palm/runtimes/server/surfaces/rest/analytics/static/**",
+    "src/palm/runtimes/mcp/data/**",
 ]
 
 [tool.hatch.build.targets.sdist]
