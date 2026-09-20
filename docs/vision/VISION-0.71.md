@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Slices `0.71.0`–`0.71.3` landed. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Slices `0.71.0`–`0.71.4` landed. Remaining: José locks names and exit. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -92,6 +92,11 @@ The registry is **real** when tests prove this chain:
 - `PlaceEffectPort` does not write overlay for `adopt_*` / `workload_*` outcomes. Failed adopt is an observation, not a registry row.
 - Overlay remains for bare in-process and `os:` (named residual).
 - Tests: `tests/test_place_maps_compost_0_71_3.py`.
+
+**As-built `0.71.4`:**
+
+- `RegisteredPlaceSpawn.register_bind` / `BookBindPort` — typed book binds. `host_bind` / `place_registry` walk binds; they do not duck-walk `handles` for workload/adopt hands.
+- Tests: `tests/test_spawn_bind_invert_0_71_4.py`.
 
 **As-built to keep:**
 
@@ -193,8 +198,9 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.1** | Floor: adopt into the workload book; structure ENSURE; fail closed without handle. **landed**. |
 | **0.71.2** | Growth: `InProcessPlaceRegistry` projects the workload book. **landed**. |
 | **0.71.3** | Compost extra maps. Place id is the book id. **landed**. |
+| **0.71.4** | Typed book binds. No handles duck-walk for bind discovery. **landed**. |
 
-No queued compost after `0.71.3`. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
+No queued compost after `0.71.4`. Remaining is José locks `adopt` / `adopt:` and exit judgment. Leftovers in §11 stay **named residual**.
 
 Cheaper execute is allowed **from 0.71.1** only, inside a kill-box (file list, forbidden list, stop on workaround `if`). José or a judgment model writes that box. A cheaper model does not open slices or rename law words.
 
@@ -218,8 +224,9 @@ Do not invent a Protocol type name for the registry.
 |--------------|------|
 | Adopt missing | **Pay** on floor (`0.71.1`). |
 | Structure copy of readiness | **Pay** on growth (`0.71.2` projection, `0.71.3` compost). |
+| Handles duck-walk for bind hands | **Pay** on invert (`0.71.4` typed `BookBindPort`). |
 | Bare in-process ids / `os:` overlay | **Leave** named. In-process home until a later body strategy. Not honest compost now. |
-| `RegisteredPlaceSpawn.handles` | **Leave** named. Bind stash. Not a body book. |
+| `RegisteredPlaceSpawn.handles` | **Leave** named. Place-id body handles + residual `__os_registry__` stash. Not book bind. |
 | StructureEngine place observations | **Leave** named. Assemble / admission. Not a second body book. |
 | 0.56 ssh/k8s/peer/blueprints | **Leave** on the scout. |
 | SD-025 invoker invert | **Leave**. Other organ. |
@@ -228,12 +235,12 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Slices `0.71.0`–`0.71.3` landed. No further compost slice is queued. José locks names and exit.
+Theme stays **open**. Slices `0.71.0`–`0.71.4` landed. No further compost slice is queued. José locks names and exit.
 
 | Residual | Truth |
 |----------|-------|
 | Working names (`adopt`, `adopt:`, empty `runtime`) | José locks. |
-| `RegisteredPlaceSpawn.handles` | Bind stash for spawn-hand objects. **Not** a body book. **Not** honest compost. |
+| `RegisteredPlaceSpawn.handles` | Place-id body handles + `__os_registry__` stash. Book binds live on `binds` (`0.71.4`). **Not** honest compost now. |
 | StructureEngine place observations | Assemble / admission state. **Not** a second body book. **Not** honest compost. |
 | Overlay (bare ids and `os:`) | In-process home until a later body strategy. **Not** honest compost now. |
 | Reuse `Workload` for adopted rows | Contested only if José wants a thinner place row. |

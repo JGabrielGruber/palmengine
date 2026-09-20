@@ -13,6 +13,7 @@ from palm.system.structure.errors import (
 from palm.system.structure.hands import LOCAL_CAPABILITY_HANDS, CapabilitySeats
 from palm.system.structure.host_bind import (
     bind_host_structure_to_seat,
+    book_bind_port,
     default_structure_effects,
     place_effect_port,
     resolve_workload_engine,
@@ -35,6 +36,8 @@ from palm.system.structure.loop import (
 from palm.system.structure.materialize import apply_local_capabilities
 from palm.system.structure.place_registry import InProcessPlaceRegistry, PlaceEffectPort
 from palm.system.structure.place_spawn import (
+    BookBindPort,
+    BookBoundHands,
     InProcessPlaceSpawn,
     OsProcessRegistry,
     PlaceSpawnPort,
@@ -81,6 +84,8 @@ __all__ = [
     "EffectPort",
     "StructureSeat",
     "StructureEffectPort",
+    "BookBindPort",
+    "BookBoundHands",
     "InProcessPlaceRegistry",
     "InProcessPlaceSpawn",
     "OsProcessRegistry",
@@ -93,6 +98,7 @@ __all__ = [
     "WorkloadPlaceSpawn",
     "adopt_prefix_spawn_port",
     "bind_host_structure_to_seat",
+    "book_bind_port",
     "combined_structure_spawn_port",
     "default_structure_effects",
     "os_prefix_spawn_port",

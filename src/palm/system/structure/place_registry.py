@@ -16,12 +16,13 @@ from typing import Any, Literal
 
 from palm.core.structure import EffectIntent, EffectIntentKind, Observation, ObservationKind
 from palm.core.workload.status import WorkloadStatus, is_terminal
-from palm.system.structure.place_spawn import InProcessPlaceSpawn, PlaceSpawnPort
+from palm.system.structure.place_spawn import (
+    BookBindPort,
+    InProcessPlaceSpawn,
+    PlaceSpawnPort,
+)
 
 PlaceState = Literal["ready", "failed", "gone"]
-
-#: Spawn-port handle keys that carry a WorkloadEngine (register, not a place-id if).
-_BOOK_HANDLE_KEYS = ("__adopt_spawn__", "__workload_spawn__")
 
 
 def _writes_overlay(reason: str) -> bool:
@@ -31,15 +32,9 @@ def _writes_overlay(reason: str) -> bool:
 
 
 def engine_from_spawn(spawn: Any) -> Any | None:
-    """Return the WorkloadEngine stashed on a registered spawn port, if any."""
-    handles = getattr(spawn, "handles", None)
-    if not isinstance(handles, dict):
-        return None
-    for key in _BOOK_HANDLE_KEYS:
-        hands = handles.get(key)
-        engine = getattr(hands, "engine", None)
-        if engine is not None:
-            return engine
+    """Return the WorkloadEngine from typed book binds on a spawn port, if any."""
+    if isinstance(spawn, BookBindPort):
+        return spawn.book_engine()
     return None
 
 

@@ -360,7 +360,7 @@ def adopt_prefix_spawn_port(
         ensure=lambda pid, payload: hands.ensure(pid, payload),
         release=lambda pid: hands.release(pid),
     )
-    port.handles["__adopt_spawn__"] = hands
+    port.register_bind(hands)
     return port
 
 
@@ -379,7 +379,7 @@ def workload_prefix_spawn_port(
         ensure=lambda pid, payload: hands.ensure(pid, payload),
         release=lambda pid: hands.release(pid),
     )
-    port.handles["__workload_spawn__"] = hands  # type: ignore[index]
+    port.register_bind(hands)
     return port
 
 
@@ -388,7 +388,7 @@ def combined_structure_spawn_port(
     engine: Any | None = None,
     os_registry: Any | None = None,
 ) -> RegisteredPlaceSpawn:
-    """``os:`` + ``workload:`` structure place routes on one port."""
+    """``os:`` + ``workload:`` + ``adopt:`` structure place routes on one port."""
     from palm.system.structure.place_spawn import (
         OsProcessRegistry,
         os_prefix_spawn_port,
@@ -397,7 +397,7 @@ def combined_structure_spawn_port(
     os_port = os_prefix_spawn_port(registry=os_registry or OsProcessRegistry())
     wl_port = workload_prefix_spawn_port(engine=engine)
     ad_port = adopt_prefix_spawn_port(engine=engine)
-    # Merge into one RegisteredPlaceSpawn with prefix routes.
+    # Merge into one RegisteredPlaceSpawn with prefix routes + typed binds.
     combined = RegisteredPlaceSpawn()
     combined.prefix_ensures.update(os_port.prefix_ensures)
     combined.prefix_releases.update(os_port.prefix_releases)
@@ -405,15 +405,14 @@ def combined_structure_spawn_port(
     combined.prefix_releases.update(wl_port.prefix_releases)
     combined.prefix_ensures.update(ad_port.prefix_ensures)
     combined.prefix_releases.update(ad_port.prefix_releases)
+    for hands in wl_port.book_binds():
+        combined.register_bind(hands)
+    for hands in ad_port.book_binds():
+        combined.register_bind(hands)
+    # Residual: os registry stash for tests / shutdown (not book bind).
     os_reg = os_port.handles.get("__os_registry__")
-    wl_hands = wl_port.handles.get("__workload_spawn__")
-    ad_hands = ad_port.handles.get("__adopt_spawn__")
     if os_reg is not None:
         combined.handles["__os_registry__"] = os_reg
-    if wl_hands is not None:
-        combined.handles["__workload_spawn__"] = wl_hands
-    if ad_hands is not None:
-        combined.handles["__adopt_spawn__"] = ad_hands
     return combined
 
 

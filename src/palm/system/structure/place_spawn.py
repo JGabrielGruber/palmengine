@@ -9,7 +9,7 @@ Not Grove. Not product job path. Structure assemble / place registry only.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol, runtime_checkable
 
@@ -47,6 +47,34 @@ class PlaceSpawnPort(Protocol):
         ...
 
 
+@runtime_checkable
+class BookBoundHands(Protocol):
+    """Spawn hands that attach a WorkloadEngine (typed bind, not handles stash)."""
+
+    engine: Any | None
+
+    def bind_engine(self, engine: Any | None) -> None:
+        """Attach or clear the live workload book."""
+        ...
+
+
+@runtime_checkable
+class BookBindPort(Protocol):
+    """Spawn port that exposes typed book binds for host / registry discovery."""
+
+    def book_binds(self) -> Sequence[BookBoundHands]:
+        """Registered book-bound hands (workload / adopt)."""
+        ...
+
+    def bind_book(self, engine: Any | None) -> None:
+        """Attach the live engine to every registered book bind."""
+        ...
+
+    def book_engine(self) -> Any | None:
+        """First non-None engine among book binds, if any."""
+        ...
+
+
 @dataclass
 class InProcessPlaceSpawn:
     """Default hands: no OS body — ensure means present-in-registry ready."""
@@ -74,6 +102,8 @@ class RegisteredPlaceSpawn:
 
     Unregistered places fall through to ``fallback`` (default in-process).
     Prefix routes (e.g. ``os:``) match when no exact id is registered.
+    Book-bound hands register via :meth:`register_bind` (typed bind table).
+    ``handles`` keeps place-id body handles and residual ``os:`` stash only.
     """
 
     ensures: dict[str, PlaceEnsureFn] = field(default_factory=dict)
@@ -83,6 +113,7 @@ class RegisteredPlaceSpawn:
     prefix_releases: dict[str, PlaceReleaseFn] = field(default_factory=dict)
     fallback: PlaceSpawnPort = field(default_factory=InProcessPlaceSpawn)
     handles: dict[str, Any] = field(default_factory=dict)
+    binds: list[BookBoundHands] = field(default_factory=list)
 
     def register(
         self,
@@ -113,6 +144,24 @@ class RegisteredPlaceSpawn:
             self.prefix_ensures[p] = ensure
         if release is not None:
             self.prefix_releases[p] = release
+
+    def register_bind(self, hands: BookBoundHands) -> None:
+        """Register book-bound spawn hands for typed host / registry discovery."""
+        self.binds.append(hands)
+
+    def book_binds(self) -> tuple[BookBoundHands, ...]:
+        return tuple(self.binds)
+
+    def bind_book(self, engine: Any | None) -> None:
+        for hands in self.binds:
+            hands.bind_engine(engine)
+
+    def book_engine(self) -> Any | None:
+        for hands in self.binds:
+            engine = hands.engine
+            if engine is not None:
+                return engine
+        return None
 
     def _match_prefix(
         self, place_id: str, table: dict[str, Any]
@@ -159,7 +208,7 @@ def _argv_from_payload(payload: Mapping[str, Any]) -> list[str] | None:
 
             parts = shlex.split(raw)
             return parts or None
-        if isinstance(raw, (list, tuple)):
+        if isinstance(raw, list | tuple):
             parts = [str(x) for x in raw]
             return parts or None
     command = payload.get("command")
@@ -310,6 +359,8 @@ def os_prefix_spawn_port(
 
 
 __all__ = [
+    "BookBindPort",
+    "BookBoundHands",
     "InProcessPlaceSpawn",
     "OsProcessRegistry",
     "PlaceEnsureFn",

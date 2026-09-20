@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 from palm.system.structure.place_registry import PlaceEffectPort
+from palm.system.structure.place_spawn import BookBindPort
 from palm.system.structure.seat import StructureSeat
 from palm.system.structure.structure_effects import StructureEffectPort
 from palm.system.structure.workload_place import (
@@ -42,27 +43,22 @@ def place_effect_port(effects: Any) -> PlaceEffectPort | None:
     return None
 
 
-def workload_spawn_hands(spawn: Any) -> WorkloadPlaceSpawn | None:
-    """Find WorkloadPlaceSpawn stashed on a registered port (if any)."""
-    handles = getattr(spawn, "handles", None)
-    if not isinstance(handles, dict):
-        return None
-    hands = handles.get("__workload_spawn__")
-    if isinstance(hands, WorkloadPlaceSpawn):
-        return hands
+def book_bind_port(spawn: Any) -> BookBindPort | None:
+    """Return spawn when it exposes typed book binds."""
+    if isinstance(spawn, BookBindPort):
+        return spawn
     return None
 
 
-def _bind_book_engines(spawn: Any, engine: Any | None) -> None:
-    """Attach the live engine to workload and adopt spawn hands on one port."""
-    handles = getattr(spawn, "handles", None)
-    if not isinstance(handles, dict):
-        return
-    for key in ("__workload_spawn__", "__adopt_spawn__"):
-        hands = handles.get(key)
-        bind = getattr(hands, "bind_engine", None)
-        if callable(bind):
-            bind(engine)
+def workload_spawn_hands(spawn: Any) -> WorkloadPlaceSpawn | None:
+    """Find WorkloadPlaceSpawn among typed book binds (if any)."""
+    port = book_bind_port(spawn)
+    if port is None:
+        return None
+    for hands in port.book_binds():
+        if isinstance(hands, WorkloadPlaceSpawn):
+            return hands
+    return None
 
 
 def bind_host_structure_to_seat(
@@ -94,18 +90,18 @@ def bind_host_structure_to_seat(
         return report
 
     engine = resolve_workload_engine(shell) if bind_workload else None
-    existing = workload_spawn_hands(port.spawn)
-
-    if existing is not None:
-        if engine is not None and existing.engine is not engine:
-            _bind_book_engines(port.spawn, engine)
+    bind = book_bind_port(port.spawn)
+    if bind is not None and bind.book_binds():
+        current = bind.book_engine()
+        if engine is not None and current is not engine:
+            bind.bind_book(engine)
             port.bind_book_from_spawn()
             report["bound"] = True
             report["engine"] = True
             report["spawn"] = "existing"
             return report
-        if engine is not None and existing.engine is engine:
-            _bind_book_engines(port.spawn, engine)
+        if engine is not None and current is engine:
+            bind.bind_book(engine)
             port.bind_book_from_spawn()
             report["bound"] = True
             report["engine"] = True
@@ -140,6 +136,7 @@ def default_structure_effects(*, engine: Any | None = None) -> StructureEffectPo
 
 __all__ = [
     "bind_host_structure_to_seat",
+    "book_bind_port",
     "default_structure_effects",
     "place_effect_port",
     "resolve_workload_engine",

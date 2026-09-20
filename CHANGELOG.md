@@ -4,9 +4,9 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Docs — 0.71 residual honesty
+### 0.71.4 — Typed book binds (spawn-hand discovery invert)
 
-- Slices `0.71.0`–`0.71.3` landed. Leftovers stay **named residual** (not queued compost): `RegisteredPlaceSpawn.handles` (bind stash), StructureEngine place observations (assemble/admission), overlay (bare ids and `os:` until a later body strategy). Next: José locks `adopt` / `adopt:` and exit. Theme stays open. Stamp `0.68.0`.
+- `RegisteredPlaceSpawn.register_bind` / `BookBindPort`: host_bind and place_registry walk typed binds; they do not duck-walk `handles` for workload/adopt hands. Tests: `tests/test_spawn_bind_invert_0_71_4.py`.
 
 ### 0.71.3 — Compost extra place maps
 
