@@ -599,7 +599,7 @@ From theme **0.57** onward:
 | Live debt (SD/SU/ST/CS) | [TECH-DEBT.md](../TECH-DEBT.md) |
 | Intention stubs | [STUBS.md](STUBS.md) |
 | Debt archive (PD era) | [audit/TECH-DEBT-ERA-0.45.md](audit/TECH-DEBT-ERA-0.45.md) |
-| Theme plan | **open 0.71** [VISION-0.71](vision/VISION-0.71.md) (`0.71.0`–`0.71.16` landed; names locked; José exit next) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
+| Theme plan | **open 0.71** [VISION-0.71](vision/VISION-0.71.md) (`0.71.0`–`0.71.17` landed; names locked; José exit next) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
 | Structural ADR | [ADR-026](adr/026-palm-system-layer.md) |
 | Start / continue law | [VISION-0.55](vision/closed/VISION-0.55.md) · [ADR-025](adr/025-reactive-interests.md) |
 | Event buses | [EVENT-PLANE](EVENT-PLANE.md) |
@@ -612,7 +612,7 @@ From theme **0.57** onward:
 | Multi-claimer capacity (**0.62 closed**) | [VISION-0.62](vision/closed/VISION-0.62.md) · [ADR-031](adr/031-multi-claimer-work-drain.md) Accepted · exclusive claim + multi-claimer + Queued pool · stamp `0.62.8` · residual multi-process CAS [SD-019](../TECH-DEBT.md#sd-019) |
 | Assembly (**0.63** closed) · first capability (**0.64** closed) · outbox proof (**0.65** closed) · admission on capabilities (**0.66** closed) · dependents (**0.67** closed) · costume (**0.68** closed) | [VISION-0.68](vision/closed/VISION-0.68.md) · [ADR-036](adr/036-require-capability.md) Accepted · seed [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) · residual [SD-023](../TECH-DEBT.md#sd-023) · [SD-021](../TECH-DEBT.md#sd-021) |
 | Authoring (**0.70 closed**) | [VISION-0.70](vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) — land a shape; authoring adapter + definition pack; ADR [038](adr/038-authoring-adapter.md) **Accepted** |
-| Place registry (**0.71 open**) | [VISION-0.71](vision/VISION-0.71.md) — `0.71.0`–`0.71.16` landed (adopt + projection + map/overlay compost + typed binds + typed adopt payload + handles invert + registry `ready` hand + typed env/runtime/seat bind + `_places_ready` dual gone + stdlib settings/`dotenv` extra); names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows); residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os:); José exit next; ADR [039](adr/039-place-registry-adopt.md) **Proposed**; spawn `workload:` already `0.63.16` |
+| Place registry (**0.71 open**) | [VISION-0.71](vision/VISION-0.71.md) — `0.71.0`–`0.71.17` landed (adopt + projection + map/overlay compost + typed binds + typed adopt payload + handles invert + registry `ready` hand + typed env/runtime/seat bind + `_places_ready` dual gone + stdlib settings/`dotenv` extra + embedded import isolation); names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows); residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os:); José exit next; ADR [039](adr/039-place-registry-adopt.md) **Proposed**; spawn `workload:` already `0.63.16` |
 | Tunnels (queue seed) | [VISION-TUNNELS](vision/VISION-TUNNELS.md) — reach after assembly, before Grove; not open |
 | Multi-Palm horizon | [VISION-GROVE](vision/VISION-GROVE.md) — org crown; path: assembly → tunnels → Grove |
 | Dense layer detail | [ARCHITECTURE.md](../ARCHITECTURE.md) |
@@ -637,7 +637,7 @@ A map that only names **ideals** without today is also incomplete.
 | Patterns / providers / storages registries | **Real** |
 | Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
-| Workload plane (place registry) | **Scout** (0.56) engine landed · **open 0.71** adopt through hand-only readiness + stdlib settings (`0.71.0`–`0.71.16`); names locked; residual named; José exit next — [VISION-0.71](vision/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** |
+| Workload plane (place registry) | **Scout** (0.56) engine landed · **open 0.71** adopt through hand-only readiness + stdlib settings + embedded import isolation (`0.71.0`–`0.71.17`); names locked; residual named; José exit next — [VISION-0.71](vision/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
 | Unified execution port | **Live** — product + graphs + edges for effects and catalog inspect |
 | Shared vs system split in tree | **Deflated** (0.57.6–13); kits exposed (`palm.kits.server`); plans DTO shared |

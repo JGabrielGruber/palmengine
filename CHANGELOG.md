@@ -7,7 +7,11 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 ### Docs — 0.71 present (theme open)
 
 - Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
-- After `0.71.16`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra. PALM pointer through `0.71.16`.
+- After `0.71.17`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel. PALM pointer through `0.71.17`.
+
+### 0.71.17 — Isolate embedded from server import
+
+- `palm.runtimes` package root no longer re-exports sibling surfaces. Embedded import / `PalmKernel` embedded start does not load `palm.runtimes.server` (or daemon/mcp). Tests: `tests/test_embedded_import_isolation_0_71_17.py`.
 
 ### 0.71.16 — Stdlib settings; extra dotenv
 

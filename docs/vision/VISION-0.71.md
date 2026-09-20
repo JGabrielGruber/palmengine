@@ -1,6 +1,6 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.16` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.17` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
@@ -160,6 +160,13 @@ The registry is **real** when tests prove this chain:
 - Do not mix pip extras with `CompositionProfile`. Stamp stays `0.68.0`.
 - Tests: `tests/test_settings_stdlib_0_71_16.py`.
 
+**As-built `0.71.17`:**
+
+- `palm.runtimes` package root is not a surface barrel. It does not import `embedded` / `daemon` / `server` / `mcp`.
+- `from palm.runtimes.embedded import EmbeddedRuntime` and `PalmKernel.create_runtime("embedded", autostart=True)` do not load `palm.runtimes.server` (or daemon/mcp).
+- Callers import concrete surfaces from their subpackages. Kernel keeps per-kind deferred imports.
+- Tests: `tests/test_embedded_import_isolation_0_71_17.py`.
+
 **As-built to keep:**
 
 - `0.63.16` `workload:` spawn via `WorkloadPlaceSpawn` / `combined_structure_spawn_port`.  
@@ -276,6 +283,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.14** | Typed seat `bind_structure` (`StructureEffectPort` match). **landed**. |
 | **0.71.15** | Invert StructureEngine `_places_ready`; readiness only via ready hand. **landed**. |
 | **0.71.16** | Stdlib `PalmSettings`; empty hard deps; file load extra `dotenv` (fail closed). **landed**. |
+| **0.71.17** | Empty `palm.runtimes` surface barrel; embedded start does not load server. **landed**. |
 
 Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
 
@@ -322,7 +330,7 @@ Do not invent a Protocol type name for the registry.
 
 ## 11. Residual (open)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.16` landed. Names locked. Next is José exit judgment plus named place leftovers.
+Theme stays **open**. Execute `0.71.0`–`0.71.17` landed. Names locked. Next is José exit judgment plus named place leftovers.
 
 | Residual | Truth |
 |----------|-------|
