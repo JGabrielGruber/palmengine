@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import composition_profile_from_name
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.runtimes.mcp.assist.operator import dispatch_operator_path
@@ -24,7 +24,7 @@ def _started_host(*, with_assist: bool = False) -> ApplicationHost:
         host = ApplicationHost(
             settings=PalmSettings.for_tests(load_examples=False),
             profile=DeploymentProfile.all_in_one(),
-            composition=CompositionProfile.all_in_one(),
+            composition=composition_profile_from_name("all_in_one"),
         )
     else:
         host = ApplicationHost(

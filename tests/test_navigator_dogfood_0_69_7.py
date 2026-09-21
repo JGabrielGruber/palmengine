@@ -16,7 +16,7 @@ from examples.definitions.operator_entry import (
     register_definitions as register_operator_entry,
 )
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import composition_profile_from_name
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
@@ -47,7 +47,7 @@ def test_embedded_test_host_has_no_assist() -> None:
     host = ApplicationHost.for_mode("test")
     host.start()
     try:
-        assert host.composition == CompositionProfile.embedded()
+        assert host.composition == composition_profile_from_name("embedded")
         assert "assist" not in host.composition.services
         assert host.assist is None
     finally:

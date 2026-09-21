@@ -13,7 +13,7 @@ from dataclasses import replace
 
 from palm.app.bootstrap import composition_profile_from_settings
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import CompositionProfile as CP
+from palm.app.host.composition import composition_profile_from_name
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.core.structure import CAPABILITY_WORK_DRAIN
@@ -55,7 +55,7 @@ def test_explicit_composition_does_not_veto_dna_work_drain() -> None:
     host = ApplicationHost(
         settings=settings,
         profile=DeploymentProfile.server_only(port=0),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     assert not host.composition.has("work_drain")
     host.start()
@@ -76,7 +76,7 @@ def test_work_drain_gate_is_dna_not_composition_or() -> None:
     host = ApplicationHost(
         settings=settings,
         profile=DeploymentProfile.all_in_one(),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     host.start()
     try:
@@ -97,7 +97,7 @@ def test_work_drain_follows_definition_not_composition() -> None:
     host = ApplicationHost(
         settings=settings,
         profile=DeploymentProfile.all_in_one(),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     host.start()
     try:
@@ -122,7 +122,7 @@ def test_surfaces_skip_when_composition_has_none() -> None:
         settings=settings,
         profile=DeploymentProfile.server_only(port=0),
         composition=replace(
-            CP.server(),
+            composition_profile_from_name("server"),
             surfaces=(),
             capabilities=frozenset({"projections", "journal"}),
         ),
@@ -141,7 +141,7 @@ def test_projections_omit_is_admission_not_a_boot_phase() -> None:
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(
         settings=settings,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     host.start(structure_definition_id="local.embedded")
     try:
@@ -194,9 +194,9 @@ def test_system_log_boot_start_carries_membership() -> None:
 def test_membership_snapshot_matches_composition() -> None:
     host = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        composition=CP.embedded(),
+        composition=composition_profile_from_name("embedded"),
     )
     snap = host.membership_snapshot()
-    assert snap["services"] == list(CP.embedded().services)
+    assert snap["services"] == list(composition_profile_from_name("embedded").services)
     assert snap["surfaces"] == []
     assert snap["capabilities"] == []

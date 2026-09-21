@@ -15,7 +15,7 @@ import os
 from dataclasses import dataclass
 from typing import Literal, Self
 
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import CompositionProfile, composition_profile_from_name
 from palm.app.host.roles import DeploymentProfile
 from palm.system.log import (
     LEVEL_LIFECYCLE,
@@ -72,7 +72,7 @@ class BootMode:
         return cls(
             name="safe",
             description="Minimal truth; CI isolation; no surfaces; no background drain",
-            composition=CompositionProfile.embedded(),
+            composition=composition_profile_from_name("embedded"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_LIFECYCLE,
             recover_on_start=False,
@@ -84,7 +84,7 @@ class BootMode:
         return cls(
             name="test",
             description="Deterministic host; recover off by default",
-            composition=CompositionProfile.embedded(),
+            composition=composition_profile_from_name("embedded"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_LIFECYCLE,
             system_log_console=False,
@@ -97,7 +97,7 @@ class BootMode:
         return cls(
             name="dev",
             description="Full local dogfood",
-            composition=CompositionProfile.all_in_one(),
+            composition=composition_profile_from_name("all_in_one"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_OPERATE,
             recover_on_start=True,
@@ -109,7 +109,7 @@ class BootMode:
         return cls(
             name="prod",
             description="Strict operate; declared surfaces only",
-            composition=CompositionProfile.server(),
+            composition=composition_profile_from_name("server"),
             deployment=DeploymentProfile.server_only(),
             system_log_level=LEVEL_SYSTEM,
             recover_on_start=True,
@@ -122,7 +122,7 @@ class BootMode:
         return cls(
             name="cli",
             description="CLI / REPL shape",
-            composition=CompositionProfile.cli(),
+            composition=composition_profile_from_name("cli"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_SYSTEM,
             recover_on_start=True,
@@ -133,7 +133,7 @@ class BootMode:
         return cls(
             name="mcp",
             description="MCP operator shape",
-            composition=CompositionProfile.mcp(),
+            composition=composition_profile_from_name("mcp"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_SYSTEM,
             recover_on_start=True,
@@ -144,7 +144,7 @@ class BootMode:
         return cls(
             name="worker",
             description="Headless worker shape",
-            composition=CompositionProfile.worker(),
+            composition=composition_profile_from_name("worker"),
             deployment=DeploymentProfile.worker_only(),
             system_log_level=LEVEL_SYSTEM,
             recover_on_start=True,
@@ -155,7 +155,7 @@ class BootMode:
         return cls(
             name="server",
             description="HTTP server shape",
-            composition=CompositionProfile.server(),
+            composition=composition_profile_from_name("server"),
             deployment=DeploymentProfile.server_only(),
             system_log_level=LEVEL_SYSTEM,
             recover_on_start=True,
@@ -166,7 +166,7 @@ class BootMode:
         return cls(
             name="all_in_one",
             description="Collapsed full host (legacy default phenotype)",
-            composition=CompositionProfile.all_in_one(),
+            composition=composition_profile_from_name("all_in_one"),
             deployment=DeploymentProfile.all_in_one(),
             system_log_level=LEVEL_LIFECYCLE,
             recover_on_start=True,
@@ -202,9 +202,7 @@ def get_boot_mode(name: str) -> BootMode:
     key = str(name).strip().lower()
     reg = _ensure_registry()
     if key not in reg:
-        raise ValueError(
-            f"Unknown boot mode {name!r}; expected one of {sorted(reg)}"
-        )
+        raise ValueError(f"Unknown boot mode {name!r}; expected one of {sorted(reg)}")
     return reg[key]
 
 

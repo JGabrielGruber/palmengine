@@ -10,8 +10,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.app.host.composition import CompositionProfile
-from palm.app.host.services import HostServiceContext, apply_product_packaging, core_service_registry
+from palm.app.host.composition import CompositionProfile, composition_profile_from_name
+from palm.app.host.services import (
+    HostServiceContext,
+    apply_product_packaging,
+    core_service_registry,
+)
 from palm.app.settings import PalmSettings
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
@@ -22,14 +26,14 @@ from palm.kits.server.cqrs import wire_standalone_buses
 
 if TYPE_CHECKING:
     from palm.app.host.application_host import ApplicationHost
-    from palm.system.runtime.base import BaseRuntime
     from palm.services.analytics import AnalyticsService
     from palm.services.assist import AssistService
     from palm.services.definitions import DefinitionService
     from palm.services.design import DesignService
     from palm.services.execution import ExecutionService
-    from palm.services.session import SessionService
     from palm.services.inspect import InspectService
+    from palm.services.session import SessionService
+    from palm.system.runtime.base import BaseRuntime
 
 
 class _RuntimeKernelView:
@@ -67,10 +71,10 @@ class ServerContext:
        surface (``ask``/``execute``/``execution``/``definitions``/``composition``/…),
        independent of what is assembling behind it.
     2. **The lean server composition root.** When no host is attached it *is* the
-       ``CompositionProfile.server()`` phenotype — a single :class:`ServerRuntime`,
+       saved ``server`` composition record — a single :class:`ServerRuntime`,
        no projection layer, reads served directly from the runtime
        (``wire_standalone_buses``). It is the server-side sibling of
-       ``CompositionProfile.embedded()``: one genome, a leaner phenotype.
+       the saved ``embedded`` record: one genome, a leaner phenotype.
 
     Services build through the **same** ``core_service_registry()`` and shared
     :func:`~palm.app.host.services.packaging.apply_product_packaging` as
@@ -169,7 +173,11 @@ class ServerContext:
         server context *is* the server shape. Both roots speak the same
         ``composition`` language (0.50.5+); the type stays as the surface view.
         """
-        return self._host.composition if self._host is not None else CompositionProfile.server()
+        return (
+            self._host.composition
+            if self._host is not None
+            else composition_profile_from_name("server")
+        )
 
     def resolve_execution_runtime(self, runtime_name: str | None = None) -> BaseRuntime:
         """Runtime services execute on — host routes by name; standalone is this runtime."""

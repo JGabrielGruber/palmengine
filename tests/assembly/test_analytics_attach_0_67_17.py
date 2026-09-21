@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import CompositionProfile as CP
+from palm.app.host.composition import composition_profile_from_name
 from palm.app.settings import PalmSettings
 from palm.common.analytics import AnalyticsOrgan
 from palm.core.event import EventEngine
@@ -157,7 +157,10 @@ def test_embedded_host_still_omits_analytics_even_with_product_services() -> Non
     host = ApplicationHost.for_mode(
         BootMode.safe(),
         settings=_lean(),
-        composition=replace(CP.embedded(), services=CP.all_in_one().services),
+        composition=replace(
+            composition_profile_from_name("embedded"),
+            services=composition_profile_from_name("all_in_one").services,
+        ),
     )
     host.start()
     try:

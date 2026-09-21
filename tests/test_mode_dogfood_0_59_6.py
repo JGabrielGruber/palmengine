@@ -14,7 +14,7 @@ import pytest
 
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.boot.modes import BootMode, get_boot_mode
-from palm.app.host.composition import CompositionProfile as CP
+from palm.app.host.composition import composition_profile_from_name
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.definitions.flow import FlowDefinition
 from palm.system.log import (
@@ -64,7 +64,9 @@ def test_for_mode_boots_phenotype(mode_name: str) -> None:
 
         boot = host.control_plane_status()["boot"]
         assert boot["mode"] == mode_name
-        assert boot["membership"]["services"] == list(CP.embedded().services)
+        assert boot["membership"]["services"] == list(
+            composition_profile_from_name("embedded").services
+        )
         assert boot["membership"]["surfaces"] == []
         assert boot["last_walk"] is not None
         assert any(r["phase"] == "host.ready" for r in boot["last_walk"])
@@ -91,9 +93,7 @@ def test_mode_applies_system_log_level_defaults(mode_name: str) -> None:
         starts = [r for r in slog.recent() if r.event == "boot.start"]
         assert starts and starts[0].fields.get("mode") == mode_name
         host_ready = [
-            r
-            for r in slog.recent()
-            if r.event == "ready" and r.fields.get("schedule") == "host"
+            r for r in slog.recent() if r.event == "ready" and r.fields.get("schedule") == "host"
         ]
         assert host_ready and host_ready[0].fields.get("mode") == mode_name
     finally:

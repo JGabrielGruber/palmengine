@@ -14,7 +14,7 @@ from palm.app.bootstrap import (
 )
 from palm.app.host.boot.host_schedule import build_host_handlers
 from palm.app.host.boot.modes import BootMode, resolve_boot_mode
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import CompositionProfile, composition_profile_from_name
 from palm.app.host.event_recorder import HostEventRecorder, RecordedEvent
 from palm.app.host.events import HostEventType
 from palm.app.host.lifecycle import RecoveryCoordinator, RuntimeSpawner
@@ -59,11 +59,11 @@ from palm.common.cqrs.query import (
     Query,
 )
 from palm.common.cqrs.schemas import build_schema_registry
+from palm.common.cqrs.standalone import wire_standalone_query_bus
 from palm.common.events.external import WebhookDispatcher
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.core.structure import CAPABILITY_ANALYTICS, CAPABILITY_PROJECTIONS
-from palm.common.cqrs.standalone import wire_standalone_query_bus
 from palm.patterns.wizard.bindings.cqrs.projection import (
     WizardProgressReadModel,
 )
@@ -130,21 +130,15 @@ class ApplicationHost:
         elif mode is not None:
             self.composition = mode.composition
         else:
-            # 0.63.12 — deployment roles seed composition when no BootMode
-            # (server/worker/all_in_one roles), else settings-composed all_in_one.
-            from palm.app.host.composition import CompositionProfile
+            # 0.72.2 — build from a saved record. No preset method.
+            # server / worker / cli names still follow the deployment seed so the
+            # phenotype matches the structure seed (that seed uses the same name).
             from palm.system.structure.seed import boot_mode_name_for_deployment
 
             seed_name = boot_mode_name_for_deployment(self.profile)
-            if seed_name == "server":
-                # Server role — full surfaces + drain membership intent
-                self.composition = CompositionProfile.server()
-            elif seed_name == "worker":
-                self.composition = CompositionProfile.worker()
-            elif seed_name == "cli":
-                self.composition = CompositionProfile.cli()
+            if seed_name in ("server", "worker", "cli"):
+                self.composition = composition_profile_from_name(seed_name)
             else:
-                # all_in_one and unknown: settings-composed (capabilities from flags)
                 self.composition = composition_profile_from_settings(
                     self.settings, deployment=self.profile
                 )

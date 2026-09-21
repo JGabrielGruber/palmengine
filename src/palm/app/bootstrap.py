@@ -9,7 +9,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import CompositionProfile, composition_record
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
@@ -179,14 +179,16 @@ def composition_profile_from_settings(
 
     The twin of :func:`deployment_profile_from_settings`. **0.51.1:** ``capabilities``
     are derived from the ``enable_*`` flags. ``work_drain`` is not among them.
-    Explicit ``CompositionProfile`` passed to ``ApplicationHost`` still wins
+    An explicit ``CompositionProfile`` passed to ``ApplicationHost`` still wins
     and is never rewritten.
 
-    ``services`` and ``surfaces`` stay ``all_in_one``'s on this path (0.50). Settings
-    *refine* the profile; they never bypass an explicit composition.
+    **0.72.2:** services and surfaces come from the saved ``all_in_one`` record.
+    Capabilities come from settings. This function does not call a preset method.
     """
-    return replace(
-        CompositionProfile.all_in_one(),
+    record = composition_record("all_in_one")
+    return CompositionProfile(
+        services=tuple(record.services),
+        surfaces=tuple(record.surfaces),
         capabilities=_capabilities_from_settings(settings, deployment=deployment),
     )
 

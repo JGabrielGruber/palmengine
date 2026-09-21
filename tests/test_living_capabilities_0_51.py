@@ -19,8 +19,8 @@ from palm.app.host.composition import (
     ALL_SERVICES,
     DEFAULT_CAPABILITIES,
     SERVER_SURFACES,
+    composition_profile_from_name,
 )
-from palm.app.host.composition import CompositionProfile as CP
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.core.structure import (
@@ -115,8 +115,10 @@ def test_analytics_is_not_a_composition_seed() -> None:
 def test_resolver_preserves_services_and_surfaces() -> None:
     """0.51.1 touches only capabilities; services/surfaces stay all_in_one's."""
     profile = composition_profile_from_settings(PalmSettings.for_tests(load_examples=False))
-    assert profile.services == ALL_SERVICES == CP.all_in_one().services
-    assert profile.surfaces == SERVER_SURFACES == CP.all_in_one().surfaces
+    assert profile.services == ALL_SERVICES == composition_profile_from_name("all_in_one").services
+    assert (
+        profile.surfaces == SERVER_SURFACES == composition_profile_from_name("all_in_one").surfaces
+    )
 
 
 def test_services_not_gated_by_capabilities_yet() -> None:
@@ -152,7 +154,7 @@ def test_compensation_gate_reads_dna_not_composition() -> None:
 
     listed = ApplicationHost(
         settings=settings,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     listed.start()
     try:
@@ -163,7 +165,7 @@ def test_compensation_gate_reads_dna_not_composition() -> None:
 
     lean = ApplicationHost(
         settings=settings,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     lean.start(structure_definition_id="local.embedded")
     try:
@@ -179,7 +181,9 @@ def test_analytics_gate_reads_dna_not_composition() -> None:
     Lean omit is embedded DNA. Host product slot aliases the install organ (0.67.17)."""
     from palm.core.structure import CAPABILITY_ANALYTICS
 
-    listed = ApplicationHost.for_mode(BootMode.cli(), settings=PalmSettings.for_tests(load_examples=False))
+    listed = ApplicationHost.for_mode(
+        BootMode.cli(), settings=PalmSettings.for_tests(load_examples=False)
+    )
     listed.start()
     try:
         assert listed.admission.has_capability(CAPABILITY_ANALYTICS)
@@ -189,7 +193,9 @@ def test_analytics_gate_reads_dna_not_composition() -> None:
     finally:
         listed.shutdown()
 
-    lean = ApplicationHost.for_mode(BootMode.safe(), settings=PalmSettings.for_tests(load_examples=False))
+    lean = ApplicationHost.for_mode(
+        BootMode.safe(), settings=PalmSettings.for_tests(load_examples=False)
+    )
     lean.start()
     try:
         assert not lean.admission.has_capability(CAPABILITY_ANALYTICS)
@@ -243,7 +249,7 @@ def test_outbox_install_follows_dna_not_composition() -> None:
     on = ApplicationHost(
         settings=settings,
         profile=profile,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     on.start()
     try:
@@ -261,7 +267,7 @@ def test_outbox_install_follows_dna_not_composition() -> None:
     off = ApplicationHost(
         settings=settings,
         profile=profile,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     off.start(structure_definition_id="local.embedded")
     try:
@@ -283,7 +289,7 @@ def test_work_drain_settings_side_routes_through_the_capability() -> None:
     on = ApplicationHost(
         settings=settings,
         profile=profile,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     on.start()
     try:
@@ -300,7 +306,7 @@ def test_work_drain_settings_side_routes_through_the_capability() -> None:
     off = ApplicationHost(
         settings=settings,
         profile=profile,
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     off.start(structure_definition_id="local.embedded")
     try:
@@ -332,7 +338,7 @@ def test_journal_gated_by_capability() -> None:
 
     lean = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     lean.start(structure_definition_id="local.embedded")
     try:
@@ -358,7 +364,7 @@ def test_projections_are_a_capability_lean_host_starts_without_them() -> None:
 
     lean = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     lean.start(structure_definition_id="local.embedded")
     try:
@@ -381,7 +387,7 @@ def test_lean_host_serves_reads_direct_from_runtime() -> None:
 
     lean = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        composition=replace(CP.all_in_one(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("all_in_one"), capabilities=frozenset()),
     )
     lean.start(structure_definition_id="local.embedded")
     try:

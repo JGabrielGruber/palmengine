@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import CompositionProfile
+from palm.app.host.composition import CompositionProfile, composition_profile_from_name
 from palm.app.host.roles import DeploymentProfile
 from palm.app.host.services.packaging import apply_product_packaging, bag_from_built
 from palm.app.settings import PalmSettings
@@ -56,7 +56,7 @@ def test_host_lean_product_packaging() -> None:
     drops the host slot even when composition.services includes analytics.
     """
     composition = CompositionProfile(
-        services=CompositionProfile.all_in_one().services,
+        services=composition_profile_from_name("all_in_one").services,
         surfaces=(),
         capabilities=frozenset(),
     )

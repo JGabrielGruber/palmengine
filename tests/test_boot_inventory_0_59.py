@@ -177,9 +177,9 @@ def test_host_start_idempotent(spine_settings: PalmSettings) -> None:
 
 def test_composition_services_gate_build(spine_settings: PalmSettings) -> None:
     """build_all honors composition.services (membership truth)."""
-    from palm.app.host.composition import CompositionProfile
+    from palm.app.host.composition import composition_profile_from_name
 
-    lean = CompositionProfile.embedded()
+    lean = composition_profile_from_name("embedded")
     host = ApplicationHost(
         settings=spine_settings,
         profile=DeploymentProfile.all_in_one(),

@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from palm.app.host.application_host import ApplicationHost
 from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import CompositionProfile as CP
+from palm.app.host.composition import composition_profile_from_name
 from palm.app.settings import PalmSettings
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
@@ -186,7 +186,7 @@ def test_cli_host_wires_journal_even_when_composition_omits_it() -> None:
     host = ApplicationHost.for_mode(
         BootMode.cli(),
         settings=_lean(),
-        composition=replace(CP.cli(), capabilities=frozenset()),
+        composition=replace(composition_profile_from_name("cli"), capabilities=frozenset()),
     )
     assert not host.composition.has("journal")
     host.start()

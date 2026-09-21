@@ -16,6 +16,7 @@ from palm.app.host.composition import (
     ALL_SERVICES,
     CORE_SERVICES,
     SERVER_SURFACES,
+    composition_profile_from_name,
 )
 from palm.app.host.composition import (
     CompositionProfile as CP,
@@ -33,7 +34,7 @@ def test_composition_profile_is_public_api() -> None:
 def test_all_in_one_services_match_what_host_builds_today() -> None:
     """The default composition must equal the services the host actually constructs."""
     built = tuple(provider.name for provider in CORE_SERVICE_PROVIDERS)
-    assert CP.all_in_one().services == built
+    assert composition_profile_from_name("all_in_one").services == built
     assert ALL_SERVICES == built  # the constant is the single source of truth
 
 
@@ -42,44 +43,44 @@ def test_default_resolver_matches_all_in_one_services_and_surfaces() -> None:
     surfaces still match all_in_one (their behaviour was settled in 0.50 — preserved).
     Capability derivation itself is pinned in test_living_capabilities_0_51.py."""
     profile = composition_profile_from_settings(PalmSettings.for_tests(load_examples=False))
-    assert profile.services == CP.all_in_one().services
-    assert profile.surfaces == CP.all_in_one().surfaces
+    assert profile.services == composition_profile_from_name("all_in_one").services
+    assert profile.surfaces == composition_profile_from_name("all_in_one").surfaces
 
 
 def test_presets_declare_the_shapes_palm_ships() -> None:
     # all_in_one has every surface available (the server deployment mounts them).
     # webhook membership is DNA (0.67.13), not a composition preset.
-    assert CP.server().surfaces == SERVER_SURFACES
-    assert CP.all_in_one().surfaces == SERVER_SURFACES
-    assert not CP.server().has("webhook")
-    assert not CP.all_in_one().has("webhook")
+    assert composition_profile_from_name("server").surfaces == SERVER_SURFACES
+    assert composition_profile_from_name("all_in_one").surfaces == SERVER_SURFACES
+    assert not composition_profile_from_name("server").has("webhook")
+    assert not composition_profile_from_name("all_in_one").has("webhook")
 
     # embedded (palmengine-django) is minimal: core services, no surfaces, no background
-    embedded = CP.embedded()
+    embedded = composition_profile_from_name("embedded")
     assert embedded.services == CORE_SERVICES
     assert embedded.surfaces == ()
     assert embedded.capabilities == frozenset()
     assert not embedded.has("work_drain")
 
     # worker is headless execution; drain/outbox membership is DNA, not composition
-    assert CP.worker().services == ("execution",)
-    assert not CP.worker().has("outbox")
-    assert not CP.worker().has("work_drain")
-    assert not CP.cli().has("work_drain")
-    assert not CP.all_in_one().has("work_drain")
-    assert not CP.server().has("work_drain")
-    assert CP.mcp().surfaces == ("mcp",)
+    assert composition_profile_from_name("worker").services == ("execution",)
+    assert not composition_profile_from_name("worker").has("outbox")
+    assert not composition_profile_from_name("worker").has("work_drain")
+    assert not composition_profile_from_name("cli").has("work_drain")
+    assert not composition_profile_from_name("all_in_one").has("work_drain")
+    assert not composition_profile_from_name("server").has("work_drain")
+    assert composition_profile_from_name("mcp").surfaces == ("mcp",)
 
 
 def test_profile_is_frozen_and_hashable() -> None:
-    a, b = CP.all_in_one(), CP.all_in_one()
+    a, b = composition_profile_from_name("all_in_one"), composition_profile_from_name("all_in_one")
     assert a == b
     assert hash(a) == hash(b)  # frozen dataclass — usable as a key / in a set
     assert a is not b
 
 
 def test_helpers() -> None:
-    server = CP.server()
+    server = composition_profile_from_name("server")
     assert server.exposes("rest") and not server.exposes("nope")
     assert server.has("workloads") and not server.has("nope")
     assert not server.has("analytics")
@@ -93,7 +94,7 @@ def test_host_default_composition_builds_all_services() -> None:
     host = ApplicationHost(settings=PalmSettings.for_tests(load_examples=False))
     host.start()
     try:
-        assert host.composition.services == CP.all_in_one().services
+        assert host.composition.services == composition_profile_from_name("all_in_one").services
         for name in (
             "inspect",
             "session",
@@ -114,7 +115,7 @@ def test_host_embedded_composition_builds_core_only() -> None:
     """The embedded/lib shape is now real: core services only, and it starts clean."""
     host = ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
-        composition=CP.embedded(),
+        composition=composition_profile_from_name("embedded"),
     )
     host.start()
     try:
@@ -159,7 +160,9 @@ def test_default_surfaces_respects_composition_filter() -> None:
     assert len(filtered) == 2  # rest + mcp only
 
     # all_in_one mounts everything (server-deploy behaviour-preserving)
-    assert len(default_surfaces(ctx, only=CP.all_in_one().surfaces)) == 5
+    assert (
+        len(default_surfaces(ctx, only=composition_profile_from_name("all_in_one").surfaces)) == 5
+    )
 
 
 # ── host query flats (grouping objects composted 0.68.15) ────────────────────

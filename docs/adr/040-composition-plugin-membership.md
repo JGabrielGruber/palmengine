@@ -71,7 +71,7 @@ This ADR does **not** decide:
 
 - STATUS / PALM / VISION speech name the raise and the measuring bar without claiming green.  
 - As-built observations (call path, tuples, controls that are not membership) live in [VISION-0.72](../vision/VISION-0.72.md) §2.3. This ADR does not repeat them.  
-- Problem sites for `0.72.1` live in [VISION-0.72](../vision/VISION-0.72.md) §12. This ADR does not solve them.  
+- Problem sites live in [VISION-0.72](../vision/VISION-0.72.md) §12. `0.72.2` builds the composition record (P5–P8). This ADR does not decide package install (P1–P4, P9–P14).  
 - Later `0.72.x` may populate composition-owned install under José sequence — outside this ADR’s default for `0.72.0`.  
 - DNA organ/place green and phenotype theater remain fake-green if cited as membership proof.
 
