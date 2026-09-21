@@ -2,7 +2,7 @@
 
 **Palm** is a lightweight, Python-first orchestration engine built on a clean **Behavior Tree** foundation. It coordinates interactive wizards, data pipelines, and—over time—compute-heavy workloads with explicit contracts, durable state, and human-first tooling.
 
-**Current release:** `0.68.0` · **Open minor:** [**0.71**](docs/vision/VISION-0.71.md) place registry · present [STATUS.md](STATUS.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
+**Current release:** `0.68.0` · **Open minor:** [**0.72**](docs/vision/VISION-0.72.md) composition plugin membership (paperwork; measure **not pass**) · present [STATUS.md](STATUS.md) · map [PALM.md](docs/PALM.md) · [CHANGELOG.md](CHANGELOG.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [docs/MCP.md](docs/MCP.md)
 
 ### Experimental — no long-term support
 
@@ -10,7 +10,7 @@ Palm is **pre-1.0** and **experimental**. APIs, packages, and behaviors may brea
 
 Use Palm to explore, dogfood, and build. Pin versions deliberately. Read [STATUS.md](STATUS.md), [docs/VERSIONING.md](docs/VERSIONING.md), and [MIGRATION](docs/migrations/) notes when you upgrade. Structure and honesty matter more than comfort paths while the organism is still growing.
 
-Stamp `0.68.0`. Open minor: [0.71](docs/vision/VISION-0.71.md) place registry (adopt). Prior closed: [0.70](docs/vision/closed/VISION-0.70.md) Authoring · [0.69](docs/vision/closed/VISION-0.69.md) Navigator · [0.68](docs/vision/closed/VISION-0.68.md) costume. Residual duals [SD-023](TECH-DEBT.md#sd-023).  
+Stamp `0.68.0`. Open minor: [0.72](docs/vision/VISION-0.72.md) composition plugin membership (minimal embed measure). Prior closed: [0.71](docs/vision/closed/VISION-0.71.md) Place registry · [0.70](docs/vision/closed/VISION-0.70.md) Authoring · [0.69](docs/vision/closed/VISION-0.69.md) Navigator · [0.68](docs/vision/closed/VISION-0.68.md) costume. Residual duals [SD-023](TECH-DEBT.md#sd-023).  
 **Website:** [palmengine.org](https://palmengine.org) — [`website/`](website/) · build `just website-build` → **`website/dist`** (Cloudflare assets dir).
 
 ---
@@ -216,9 +216,12 @@ palm flow start transform-formats  # json_load → csv_dump ETL-style pipeline
 Declarative data shaping via registered rules — usable in **pipelines**, **wizard** steps (`step_kind: transform`), or `TransformLeaf` nodes.
 
 ```python
-from palm.common.transforms import TransformExecutor, autoload
+from palm.common.transforms import TransformExecutor
 
-autoload()
+# Residual: `import palm.common.transforms` still runs import-time `autoload()`
+# (named STATUS residual). Explicit `autoload()` after that import is redundant.
+# Other plugin families fill registries at `ensure_core_plugins` / host start
+# (post-0.71.20) — do not teach bare-import registration as the general rule.
 executor = TransformExecutor()
 result = executor.apply(
     "string_format",

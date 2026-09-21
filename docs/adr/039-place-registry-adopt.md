@@ -1,13 +1,13 @@
 # ADR-039 — Place registry adopt (named existing body)
 
-**Status:** Proposed  
-**Date:** 2026-09-20  
-**Theme:** [VISION-0.71](../vision/VISION-0.71.md) (**open**)  
+**Status:** Accepted  
+**Date:** 2026-09-20 · **Accepted:** 2026-09-21  
+**Theme:** [VISION-0.71](../vision/closed/VISION-0.71.md) (**closed**)  
 **Scout:** [VISION-0.56](../vision/VISION-0.56.md) · [ADR-024](024-workload-engine.md) **Accepted**  
 **Spawn hand:** [ADR-032](032-organism-assembly.md) **Accepted** (`0.63.16` `workload:`)  
 **Map:** [PALM.md](../PALM.md)
 
-José opened theme **0.71** (2026-09-20). Floor: adopt a named place. Package stamp stays `0.68.0`. Accept at theme exit.
+José exited theme **0.71** and accepted this ADR (2026-09-21). Floor/growth through `0.71.21` landed. Names locked. Package stamp stays `0.68.0`.
 
 ---
 
@@ -59,4 +59,4 @@ Package version stays `0.68.0` until José cuts an embedded release.
 
 ## Status
 
-**Proposed** until José exits 0.71 and accepts this ADR.
+**Accepted** (José 2026-09-21). Theme [VISION-0.71](../vision/closed/VISION-0.71.md) **closed**.

@@ -96,7 +96,7 @@ providers/<name>/
 | **file** | resource, design | params | provider_registry, design_contributor |
 | **graphql** | — (stub) | — | provider_registry |
 | **postgres** | — (stub) | — | provider_registry |
-| **neonroot** | 0.53 landed as provider; 0.56 isolation is `palm.runners.neonroot` WorkloadRuntime only | — | `workload_runtime_registry` · `WorkloadEngine.doctor` / `health()` · hermetic jobs |
+| **neonroot** | **Legacy as provider** (0.53). Live home: **`palm.runners.neonroot`** WorkloadRuntime (0.56+) — not `INSTALLED_PROVIDERS` | — | `workload_runtime_registry` · `WorkloadEngine.doctor` / `health()` · hermetic jobs |
 | **postgres** / **mongodb** | stubs / untested (PD-022) | — | **Future:** NeonRoot test images + Palm DAG/resource graphs |
 
 ---
@@ -163,8 +163,9 @@ Actions: `submit_flow`, `submit_process`, `invoke_resource`, `fetch`.
    - `provider_registry.register("<name>", MyProvider)`
    - `<name>_app.register()`
 4. Add `"<name>"` to `INSTALLED_PROVIDERS` in `providers/_apps.py`.
-5. As complexity grows, move code into `bindings/` and `flow/` — do not park provider logic in `palm.common`.
-6. Add tests; run `just guard-common` before merge.
+5. **Bootstrap timing (post-`0.71.20`):** registries fill at `ensure_core_plugins` / host start — bare package import does **not** register.
+6. As complexity grows, move code into `bindings/` and `flow/` — do not park provider logic in `palm.common`.
+7. Add tests; run `just guard-common` before merge.
 
 See [PATTERN-APPS.md](PATTERN-APPS.md) for the parallel pattern-app model and [AGENTS.md](../AGENTS.md) for architectural rules.
 

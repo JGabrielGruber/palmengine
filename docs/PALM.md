@@ -5,7 +5,7 @@
 **Role:** This file is the **map of Palm as a whole**. Use it first.  
 **Detail:** Link out. Do not replace this map with a second full copy.
 
-**Related:** [architecture/](architecture/README.md) (**intended architecture** · C4 SE vault) · [VISION-0.62](vision/closed/VISION-0.62.md) (multi-claimer capacity **closed** `0.62.8`) · [ADR-031](adr/031-multi-claimer-work-drain.md) **Accepted** · [VISION-0.61](vision/closed/VISION-0.61.md) (vitality **closed** `0.61.13`) · [ADR-030](adr/030-system-vitality.md) **Accepted** · [VISION-0.60](vision/closed/VISION-0.60.md) (supervisor + work plane **closed**) · [ADR-029](adr/029-system-supervisor.md) **Accepted** · [VISION-0.59](vision/closed/VISION-0.59.md) (boot **closed**) · [ADR-028](adr/028-system-boot.md) **Accepted** · [VISION-0.58](vision/closed/VISION-0.58.md) (session **closed**) · [ADR-027](adr/027-session-plane.md) **Accepted** · [VISION-0.64](vision/closed/VISION-0.64.md) (**closed**) · [VISION-0.63](vision/closed/VISION-0.63.md) (assembly **closed**) · [ADR-032](adr/032-organism-assembly.md) **Accepted** · [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) (seed law) · [VISION-0.66](vision/closed/VISION-0.66.md) (**closed**) · [VISION-0.67](vision/closed/VISION-0.67.md) (**closed**) · [VISION-0.68](vision/closed/VISION-0.68.md) (**closed**) · [VISION-0.69](vision/closed/VISION-0.69.md) (**closed** Navigator) · [ADR-037](adr/037-navigator-invert.md) **Accepted** · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) · [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) (queue) · [VISION-TINY-LLM](vision/VISION-TINY-LLM.md) (queue) · [VISION-0.70](vision/closed/VISION-0.70.md) (**closed** Authoring) · [ADR-038](adr/038-authoring-adapter.md) **Accepted** · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) · [VISION-0.71](vision/VISION-0.71.md) (**open** place registry) · [ADR-039](adr/039-place-registry-adopt.md) **Proposed** · [VISION-VITALITY](vision/closed/VISION-VITALITY.md) (seed essay) · [VISION-0.57](vision/closed/VISION-0.57.md) · [ADR-026](adr/026-palm-system-layer.md) · [WRITING.md](WRITING.md) · [VISION-GROVE](vision/VISION-GROVE.md) · [AGENTS.md](../AGENTS.md) (mode router) · [src/palm/AGENTS.md](../src/palm/AGENTS.md) (development) · [architecture/AGENTS.md](architecture/AGENTS.md) (intended architecture) · [ARCHITECTURE.md](../ARCHITECTURE.md) · [STATUS.md](../STATUS.md)
+**Related:** [architecture/](architecture/README.md) (**intended architecture** · C4 SE vault) · [VISION-0.62](vision/closed/VISION-0.62.md) (multi-claimer capacity **closed** `0.62.8`) · [ADR-031](adr/031-multi-claimer-work-drain.md) **Accepted** · [VISION-0.61](vision/closed/VISION-0.61.md) (vitality **closed** `0.61.13`) · [ADR-030](adr/030-system-vitality.md) **Accepted** · [VISION-0.60](vision/closed/VISION-0.60.md) (supervisor + work plane **closed**) · [ADR-029](adr/029-system-supervisor.md) **Accepted** · [VISION-0.59](vision/closed/VISION-0.59.md) (boot **closed**) · [ADR-028](adr/028-system-boot.md) **Accepted** · [VISION-0.58](vision/closed/VISION-0.58.md) (session **closed**) · [ADR-027](adr/027-session-plane.md) **Accepted** · [VISION-0.64](vision/closed/VISION-0.64.md) (**closed**) · [VISION-0.63](vision/closed/VISION-0.63.md) (assembly **closed**) · [ADR-032](adr/032-organism-assembly.md) **Accepted** · [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) (seed law) · [VISION-0.66](vision/closed/VISION-0.66.md) (**closed**) · [VISION-0.67](vision/closed/VISION-0.67.md) (**closed**) · [VISION-0.68](vision/closed/VISION-0.68.md) (**closed**) · [VISION-0.69](vision/closed/VISION-0.69.md) (**closed** Navigator) · [ADR-037](adr/037-navigator-invert.md) **Accepted** · seed [VISION-NAVIGATOR](vision/VISION-NAVIGATOR.md) · [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) (queue) · [VISION-TINY-LLM](vision/VISION-TINY-LLM.md) (queue) · [VISION-0.70](vision/closed/VISION-0.70.md) (**closed** Authoring) · [ADR-038](adr/038-authoring-adapter.md) **Accepted** · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) · [VISION-0.71](vision/closed/VISION-0.71.md) (**closed** place registry) · [ADR-039](adr/039-place-registry-adopt.md) **Accepted** · [VISION-0.72](vision/VISION-0.72.md) (**open** composition plugin membership) · [ADR-040](adr/040-composition-plugin-membership.md) **Proposed** · [VISION-VITALITY](vision/closed/VISION-VITALITY.md) (seed essay) · [VISION-0.57](vision/closed/VISION-0.57.md) · [ADR-026](adr/026-palm-system-layer.md) · [WRITING.md](WRITING.md) · [VISION-GROVE](vision/VISION-GROVE.md) · [AGENTS.md](../AGENTS.md) (mode router) · [src/palm/AGENTS.md](../src/palm/AGENTS.md) (development) · [architecture/AGENTS.md](architecture/AGENTS.md) (intended architecture) · [ARCHITECTURE.md](../ARCHITECTURE.md) · [STATUS.md](../STATUS.md)
 
 ---
 
@@ -230,14 +230,19 @@ Instances **pin** a revision and hold resume state.
 | Plugin family | Purpose | Package |
 |---------------|---------|---------|
 | **Patterns** | Control-flow shapes (wizard, parallel, pipeline, dag, …) | `palm.patterns` |
-| **Providers** | Speak backends (rest, kv, file, palm, neonroot-as-provider legacy, …) | `palm.providers` |
-| **Runners** | Workload isolation backends (host, neonroot, …) | `palm.runners` |
+| **Providers** | Speak backends (rest, kv, file, palm, …) | `palm.providers` |
+| **Runners** | Workload isolation backends (host, **neonroot**, …) | `palm.runners` |
+| **Kits** | Surface / library kits (`present`, `authoring`, `server`, …) | `palm.kits` |
 | **Storages** | Storage backends (memory, filesystem, postgres, …) | `palm.storages` |
+| **Transforms** | Declarative shaping rules | `palm.common.transforms` |
 
-Patterns, providers, and storages follow an **app + registry** layout.  
-`INSTALLED_*` is install truth; `autoload()` runs at bootstrap (`ensure_core_plugins`), not on package import.  
+**Neonroot:** live home is **`palm.runners.neonroot`** (WorkloadRuntime). Older “neonroot-as-provider” speech is **legacy** — not on `INSTALLED_PROVIDERS`.
+
+Patterns, providers, runners, kits, and storages follow an **app + registry** layout.  
+`INSTALLED_*` / `CORE_*` is **plugin-package** install truth @ HEAD; `autoload()` runs at bootstrap (`ensure_core_plugins` / host start), not on bare package import (post-`0.71.20`).  
 Runners autoload into `workload_runtime_registry` the same way.  
-Capability is added at the edge. Core contracts stay stable.
+**Do not fuse** this latch with host **services** phenotype (`CompositionProfile.services` / orphan `INSTALLED_SERVICES`).  
+Capability-at-the-edge means plugin families. Core contracts stay stable.
 
 **Flagship pattern today:** **wizard** — interactive steps, validation, backtrack, commit, resource and workload leaves.  
 Other patterns exist at different maturity. Maturity is not the same as purpose.
@@ -391,14 +396,24 @@ Surfaces must not invent a second semantic model.
 |-------|------|
 | **PalmKernel** | Infra: shared storage, instance manager, runtime registry |
 | **ApplicationHost** | Composition root: roles, CQRS wiring, recovery, service façades, workers |
-| **CompositionProfile** | Membership: services, surfaces, capabilities (*what*) |
+| **CompositionProfile** | Phenotype membership: **services**, **surfaces**, `capabilities`=**workloads** (*what* chrome/planes). **Not** plugin-package install @ HEAD; **not** organ enablement. |
 | **DeploymentProfile** | Roles and deployment activation (*where*) |
-| **Boot schedule + mode** | Order and strictness (*how start runs*) — **0.59 closed** |
+| **Boot schedule + mode** | Order and strictness (*how start runs*) — **0.59 closed**. BootMode ≠ package SoT. |
 | **System log** | Ordered narrative of system life (observation) — [SYSTEM-LOG](SYSTEM-LOG.md) |
 | **Settings** | Configuration resolver into the axes above |
 
 The host is **not** a second port table.  
 The host **wires** system instances and product.
+
+**Posture verbs (install ≠ enable ≠ SoT) — as-built @ HEAD vs José lock:**
+
+| Verb | Lock target (reading A · [VISION-0.72](vision/VISION-0.72.md)) | As-built @ `7ee20a3d` |
+|------|---------------------------------------------------------------|----------------------|
+| **install** | composition installs **packages** | composition installs **services/surfaces/workloads**; **latch** (`INSTALLED_*`/`CORE_*` + `ensure_core_plugins`) installs packages |
+| **enable** | structure enables organs now; package capabilities only **after** composition installed them | structure enables **organs** (+places/refuse/admission) only — no structure→latch path |
+| **SoT after load** | StructureDefinition precedent; package carrier under composition raise | holds for structure; **unpaid** for packages (latch remains) |
+
+Reject reading B (DNA owns latch). `0.71.17`–`0.71.21` cold-host / deferred autoload / `kits.server` isolation are **phenotype/host isolation**, not composition-owned package membership.
 
 #### Boot (0.59 closed)
 
@@ -410,7 +425,8 @@ The host **wires** system instances and product.
 | **Modes** | `BootMode` + `for_mode` dogfood (safe/test + shapes); residual suite force **BI-007** |
 | **System log** | Seats live — [SYSTEM-LOG](SYSTEM-LOG.md); richer catalog residual **BI-015** |
 
-**Law:** plugins stay on `INSTALLED_*`. Planes are **not** plugins.  
+**Law:** plugin packages stay on `INSTALLED_*` / latch @ HEAD (composition package-install is the **0.72** raise — unpaid). Planes are **not** plugins.  
+**Law:** ADR-028 D4 organ examples are **superseded** — organs on `StructureDefinition`; composition capabilities = workloads (succession note on the ADR).  
 **Law:** one composition root walks the host phase table — no private boot via import side effects.  
 **Law:** system log is **observation**; event buses remain **reaction**; EventJournal remains **durable domain facts**.  
 **Theme closed:** [VISION-0.59](vision/closed/VISION-0.59.md) · [ADR-028](adr/028-system-boot.md) **Accepted** · [SD-014](../TECH-DEBT.md#sd-014) ✅ · residual **BI-*** · [RELEASE-0.59.8](releases/RELEASE-0.59.8.md).
@@ -600,7 +616,7 @@ From theme **0.57** onward:
 | Live debt (SD/SU/ST/CS) | [TECH-DEBT.md](../TECH-DEBT.md) |
 | Intention stubs | [STUBS.md](STUBS.md) |
 | Debt archive (PD era) | [audit/TECH-DEBT-ERA-0.45.md](audit/TECH-DEBT-ERA-0.45.md) |
-| Theme plan | **open 0.71** [VISION-0.71](vision/VISION-0.71.md) (`0.71.0`–`0.71.21` landed; names locked; José exit next) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
+| Theme plan | **open 0.72** [VISION-0.72](vision/VISION-0.72.md) (paperwork; measure **NOT PASS**) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** · closed [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
 | Structural ADR | [ADR-026](adr/026-palm-system-layer.md) |
 | Start / continue law | [VISION-0.55](vision/closed/VISION-0.55.md) · [ADR-025](adr/025-reactive-interests.md) |
 | Event buses | [EVENT-PLANE](EVENT-PLANE.md) |
@@ -613,7 +629,8 @@ From theme **0.57** onward:
 | Multi-claimer capacity (**0.62 closed**) | [VISION-0.62](vision/closed/VISION-0.62.md) · [ADR-031](adr/031-multi-claimer-work-drain.md) Accepted · exclusive claim + multi-claimer + Queued pool · stamp `0.62.8` · residual multi-process CAS [SD-019](../TECH-DEBT.md#sd-019) |
 | Assembly (**0.63** closed) · first capability (**0.64** closed) · outbox proof (**0.65** closed) · admission on capabilities (**0.66** closed) · dependents (**0.67** closed) · costume (**0.68** closed) | [VISION-0.68](vision/closed/VISION-0.68.md) · [ADR-036](adr/036-require-capability.md) Accepted · seed [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) · residual [SD-023](../TECH-DEBT.md#sd-023) · [SD-021](../TECH-DEBT.md#sd-021) |
 | Authoring (**0.70 closed**) | [VISION-0.70](vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) — land a shape; authoring adapter + definition pack; ADR [038](adr/038-authoring-adapter.md) **Accepted** |
-| Place registry (**0.71 open**) | [VISION-0.71](vision/VISION-0.71.md) — `0.71.0`–`0.71.21` landed (adopt + projection + map/overlay compost + typed binds + typed adopt payload + handles invert + registry `ready` hand + typed env/runtime/seat bind + `_places_ready` dual gone + stdlib settings/`dotenv` extra + embedded import isolation + wheel omits surface static/MCP data + ApplicationHost cold import + deferred plugin autoload + ApplicationHost isolates from `kits.server`); names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows); residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os:; host wizard SD-024; transforms autoload); José exit next; ADR [039](adr/039-place-registry-adopt.md) **Proposed**; spawn `workload:` already `0.63.16` |
+| Place registry (**0.71 closed**) | [VISION-0.71](vision/closed/VISION-0.71.md) — `0.71.0`–`0.71.21` landed; names locked; residual named; ADR [039](adr/039-place-registry-adopt.md) **Accepted**; spawn `workload:` already `0.63.16` |
+| Composition plugin membership (**0.72 open**) | [VISION-0.72](vision/VISION-0.72.md) — pack `0.72.0` paperwork; reading A; measure **NOT PASS**; package membership unpaid; ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Tunnels (queue seed) | [VISION-TUNNELS](vision/VISION-TUNNELS.md) — reach after assembly, before Grove; not open |
 | Multi-Palm horizon | [VISION-GROVE](vision/VISION-GROVE.md) — org crown; path: assembly → tunnels → Grove |
 | Dense layer detail | [ARCHITECTURE.md](../ARCHITECTURE.md) |
@@ -638,7 +655,8 @@ A map that only names **ideals** without today is also incomplete.
 | Patterns / providers / storages registries | **Real** |
 | Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
-| Workload plane (place registry) | **Scout** (0.56) engine landed · **open 0.71** adopt through hand-only readiness + stdlib settings + embedded import isolation + wheel omits surface assets + ApplicationHost cold import + deferred plugin autoload + ApplicationHost isolates from `kits.server` (`0.71.0`–`0.71.21`); names locked; residual named; José exit next — [VISION-0.71](vision/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Proposed** |
+| Workload plane (place registry) | **Scout** (0.56) engine landed · **closed 0.71** adopt through `0.71.21`; residual named — [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** |
+| Composition plugin membership | **open 0.72** paperwork · measure **NOT PASS** · unpaid package latch — [VISION-0.72](vision/VISION-0.72.md) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
 | Unified execution port | **Live** — product + graphs + edges for effects and catalog inspect |
 | Shared vs system split in tree | **Deflated** (0.57.6–13); kits exposed (`palm.kits.server`); plan-from-body / standalone CQRS / doctor anatomy shared outside the kit (`0.71.21`) |
