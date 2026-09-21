@@ -630,7 +630,7 @@ From theme **0.57** onward:
 | Assembly (**0.63** closed) · first capability (**0.64** closed) · outbox proof (**0.65** closed) · admission on capabilities (**0.66** closed) · dependents (**0.67** closed) · costume (**0.68** closed) | [VISION-0.68](vision/closed/VISION-0.68.md) · [ADR-036](adr/036-require-capability.md) Accepted · seed [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) · residual [SD-023](../TECH-DEBT.md#sd-023) · [SD-021](../TECH-DEBT.md#sd-021) |
 | Authoring (**0.70 closed**) | [VISION-0.70](vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) — land a shape; authoring adapter + definition pack; ADR [038](adr/038-authoring-adapter.md) **Accepted** |
 | Place registry (**0.71 closed**) | [VISION-0.71](vision/closed/VISION-0.71.md) — `0.71.0`–`0.71.21` landed; names locked; residual named; ADR [039](adr/039-place-registry-adopt.md) **Accepted**; spawn `workload:` already `0.63.16` |
-| Composition plugin membership (**0.72 open**) | [VISION-0.72](vision/VISION-0.72.md) — pack `0.72.0` paperwork; reading A; measure **NOT PASS**; package membership unpaid; ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
+| Composition plugin membership (**0.72 open**) | [VISION-0.72](vision/VISION-0.72.md) — `0.72.0` paperwork; **`0.72.1` register landed**; next **`0.72.2`** composition record; reading A; measure **NOT PASS**; package membership unpaid; ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Tunnels (queue seed) | [VISION-TUNNELS](vision/VISION-TUNNELS.md) — reach after assembly, before Grove; not open |
 | Multi-Palm horizon | [VISION-GROVE](vision/VISION-GROVE.md) — org crown; path: assembly → tunnels → Grove |
 | Dense layer detail | [ARCHITECTURE.md](../ARCHITECTURE.md) |
@@ -656,7 +656,7 @@ A map that only names **ideals** without today is also incomplete.
 | Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
 | Workload plane (place registry) | **Scout** (0.56) engine landed · **closed 0.71** adopt through `0.71.21`; residual named — [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** |
-| Composition plugin membership | **open 0.72** paperwork · measure **NOT PASS** · unpaid package latch — [VISION-0.72](vision/VISION-0.72.md) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
+| Composition plugin membership | **open 0.72** · **`0.72.1` landed** · next **`0.72.2`** · measure **NOT PASS** · unpaid package latch — [VISION-0.72](vision/VISION-0.72.md) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
 | Unified execution port | **Live** — product + graphs + edges for effects and catalog inspect |
 | Shared vs system split in tree | **Deflated** (0.57.6–13); kits exposed (`palm.kits.server`); plan-from-body / standalone CQRS / doctor anatomy shared outside the kit (`0.71.21`) |

@@ -1,6 +1,6 @@
 # VISION 0.72 — Composition plugin membership (minimal embed measure)
 
-**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` = vision write + docs align + thread close. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
+**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slice **`0.72.1`** landed (problem register + forward order). Next expected: **`0.72.2`** composition record. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed**.  
@@ -80,7 +80,56 @@ Definition **SoT after load** — StructureDefinition precedent (seed→law); **
 
 **Also invariant:** organ/place DNA green does **not** count as plugin-membership green; phenotype flags / `only=` do **not** count as composition ownership.
 
-**As-built honesty:** Wind bar defined; measure **not pass** @ HEAD — unpaid latch soup still dual truth. Do not claim green.
+**As-built honesty:** The bar is named. Measure is **not pass**. Concrete facts are in §2.3. Do not claim green.
+
+### 2.3 As-built observations (code)
+
+These rows are facts in the tree. They are not decisions. [ADR-040](../adr/040-composition-plugin-membership.md) does not repeat them. A later change to this path must update this section.
+
+**Call path.** Two callers, one stroke.
+
+| Step | Code | What it decides |
+|------|------|-----------------|
+| First call | `PalmKernel.bootstrap` → `ensure_plugins` | Runs the latch before a system instance exists |
+| Alias | `palm.app.bootstrap.ensure_plugins` | Calls `ensure_core_plugins` |
+| Schedule seat | `system.plugins.ensure` → `phase_plugins.run` | Second call. Discards `BootContext` and phase options |
+| Stroke | `palm.common.plugins.ensure_core_plugins` | Process flag `_loaded`. Then the walks below |
+
+`_loaded` keeps the first set for the process. A later call does not install a different set.
+
+**What the stroke walks.** `ensure_core_plugins` imports `palm.common.transforms` (that package calls its `autoload` at import), then calls `autoload()` on kits, patterns, providers, runners, and storages. No call passes a composition record.
+
+| Family | Names the walk uses | Note |
+|--------|---------------------|------|
+| Kits | `CORE_KITS`: `present`, `authoring` | `server` is on `INSTALLED_KITS` and is not in this walk |
+| Patterns | `INSTALLED_PATTERNS`: `dag`, `parallel`, `pipeline`, `wizard` | No argument |
+| Providers | `INSTALLED_PROVIDERS`: `rest`, `palm`, `kv`, `file`, `authoring` | No argument |
+| Runners | `INSTALLED_RUNNERS`: `local`, `host`, `neonroot` | No argument |
+| Storages | `CORE_STORAGES`: `memory`, `filesystem` | `include_optional` defaults false. The latch passes nothing, so `postgres` and `mongodb` stay out |
+| Transforms | `register_builtin_rules()` | `INSTALLED_TRANSFORMS` is a second hard-coded name list. This walk uses the function, not that tuple |
+| Services | `INSTALLED_SERVICES` on `palm.services._apps` | `ensure_core_plugins` does not call `services.autoload`. No other caller does |
+
+**Controls that are not package membership.**
+
+| Control | What it gates |
+|---------|----------------|
+| `CompositionProfile.embedded()` | Services `inspect`, `session`, `definitions`, `execution`. Surfaces empty. Capabilities empty. No package names |
+| `BootMode` and phase options | Discarded by `phase_plugins.run` |
+| Kit `server` left off `CORE_KITS` | A constant in `palm.kits._apps`. Not a composition record |
+| Runner `host` "default OFF" | `autoload` still imports the package. Import registers `HostWorkloadRuntime`. OFF is `workload_host_enabled` default false in `phase_engines` |
+| Storage `include_optional` | The only `autoload` that takes a parameter. The latch never sets it |
+
+**O-reading from these facts.**
+
+| # | Observation |
+|---|-------------|
+| O1 | The load-set owner is `ensure_core_plugins` plus the tuples above. No composition record names those packages |
+| O2 | `embedded()` removes none of those walks. Co-membership is that stroke |
+| O3 | There is no owned package set, so there is no path under one |
+| O4 | The phase ignores context. The profile does not write the tuples. The package king is the latch |
+| O5 | Services and surfaces sit on `CompositionProfile`. Organs sit on `StructureDefinition`. Packages sit on the tuples. Runner OFF is an engine flag on a class the latch already registered. Those are separate facts |
+
+The import call can stay. The law to move is the tuple each `autoload` closes over, and the process flag that freezes the first set. The package carrier for the replacement record stays unpaid ([ADR-040](../adr/040-composition-plugin-membership.md) D4).
 
 ---
 
@@ -145,10 +194,13 @@ Do not invent carriers or suites in this plan pack.
 
 | Slice | Intent | Status |
 |-------|--------|--------|
-| **0.72.0** | Plan: VISION, ADR Proposed, STATUS, PALM pointer / kind honesty; O1–O5 named **not pass** | **landed** (this paperwork) |
-| later `0.72.x` | Populate composition-owned install / measure prove-it / package carrier — José sequences | **TBD / deferred** |
+| **0.72.0** | Plan: VISION, ADR Proposed, STATUS, PALM pointer / kind honesty; O1–O5 named **not pass** | **landed** |
+| **0.72.1** | Problem register (§12) and this forward order. No membership implement. No profile rewrite. | **landed** |
+| **0.72.2** | Composition record. The host builds `CompositionProfile` from data. Preset methods become saved records. `ApplicationHost.__init__`, `composition_profile_from_settings`, and `BootMode` stop calling those methods (P5–P8). | **expected** |
+| **0.72.3** | Package names on that record (P9), then one install stroke. `autoload` walks the set. Latch callers use the stroke (P1–P4). `CORE_KITS`, runner `host` always-import, and `include_optional` stop being the law in this same slice (P12–P14). | **expected** |
+| **0.72.4** | Second menus after the record is how a set is named: `services.autoload` (P10) and `INSTALLED_TRANSFORMS` (P11). Does not block the embed measure. | **expected** |
 
-Do not invent fake later slices as landed.
+Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` waits on that. One slice is one law and its call sites. Spine stays green (job path, wait, session). `just check` covers the modes that slice declares. A preset the slice does not declare may break. Measure stays **not pass** until a later prove-it. Do not invent fake slices as landed. Do not solve a §12 row inside `0.72.1`.
 
 ---
 
@@ -186,3 +238,40 @@ Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. Member
 | Package membership data carrier | Unpaid. No boot YAML DSL. No fold into DNA. |
 | O1–O5 | Bar named; **not pass** @ open. |
 | Reading A populate (enable-of-installed) | After composition owns install — later growth. |
+| Problem register | **Landed** as `0.72.1` (§12). Forward order is §8. |
+
+---
+
+## 12. Problem register (`0.72.1`)
+
+A mark answers one question: does this block belong to theme **0.72**? The register keeps the sites that do, so later work changes that law. A workaround around an unnamed site is out of this slice. A row names a site and the problem. It does not choose a fix. O1–O5 stay the measure bar (§2.2). Facts of the current stroke stay in §2.3.
+
+**Mark:** José selects a block. Judge fit before adding a row.
+
+| Fit | Action |
+|-----|--------|
+| **In theme** | The block is part of the membership law (who names the package set, or who builds the composition record that will name it). Add a `P` row only when no existing row already owns that law. Otherwise cite the block on that row. |
+| **Same law** | Symptom of a named row. Do not add an id. |
+| **Not this theme** | Leave it. One sentence on why it stays out, if the mark was easy to confuse with membership. |
+| **Workaround** | Do not write it as a goal. A flag, a thinner tuple, or a preset method that hides the law is not a fit. |
+
+Leave status **named**. Do not implement the row in this slice.
+
+**Already holds (do not file as a problem):** `HostServiceRegistry.build_all(only=composition.services)` reads the service tuple once a `CompositionProfile` exists. `DeploymentProfile.from_roles` builds a deployment record from a name set.
+
+| Id | Site | Problem | Status |
+|----|------|---------|--------|
+| P1 | `palm.common.plugins.ensure_core_plugins` | Process flag `_loaded` keeps the first package set. The function takes no composition record. | named |
+| P2 | `palm.system.runtime.phase_plugins.run` | `system.plugins.ensure` discards `BootContext` and phase options, then calls the latch. | named |
+| P3 | `PalmKernel.bootstrap` → `ensure_plugins` | First caller of the latch. It runs before any composition record is applied to packages. | named |
+| P4 | `autoload` in `palm.patterns`, `palm.providers`, `palm.runners`, `palm.kits`, `palm.storages` | Each walk closes over a module tuple (`INSTALLED_*` or `CORE_*`). The tuple is the membership law. | named |
+| P5 | `CompositionProfile` classmethods in `palm.app.host.composition` | `embedded`, `server`, `worker`, `cli`, `mcp`, and `all_in_one` are the host law. The dataclass constructor is not the host path. | named |
+| P6 | `ApplicationHost.__init__` else branch | With no `composition` argument and no `BootMode`, `boot_mode_name_for_deployment(self.profile)` selects `CompositionProfile.server`, `worker`, or `cli`. The deployment axis picks the composition axis. | named |
+| P7 | `composition_profile_from_settings` | Starts from `CompositionProfile.all_in_one()` and replaces capabilities only. Services and surfaces stay the full preset. | named |
+| P8 | `BootMode` classmethods in `palm.app.host.boot.modes` | Each mode calls a composition preset and a deployment preset. Third hard-coded menu. | named |
+| P9 | `CompositionProfile` fields | The record has `services`, `surfaces`, and `capabilities`. It has no package names. `embedded()` cannot steer `autoload`. | named |
+| P10 | `palm.services._apps.autoload` | No caller. `INSTALLED_SERVICES` is a menu beside `HostServiceRegistry`. | named |
+| P11 | `palm.common.transforms.autoload` | The stroke is `register_builtin_rules()`. `INSTALLED_TRANSFORMS` is a second hard-coded name list. | named |
+| P12 | `CORE_KITS` in `palm.kits._apps` | `server` is on `INSTALLED_KITS` and off `CORE_KITS` by a constant in that module. Not a composition record. | named |
+| P13 | `INSTALLED_RUNNERS` entry `host` | `autoload` imports the package and registers `HostWorkloadRuntime`. "Default OFF" is `workload_host_enabled` in `phase_engines`. | named |
+| P14 | `palm.storages.autoload` | The function accepts `include_optional`. The latch calls it with no argument, so `postgres` and `mongodb` stay out by that default. | named |
