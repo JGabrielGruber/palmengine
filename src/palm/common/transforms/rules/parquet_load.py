@@ -32,3 +32,10 @@ class ParquetLoadRule(BaseTransformRule):
             f"{self.rule_name} is not implemented yet — use json_load/csv_load or "
             "register a custom Parquet rule with pyarrow",
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(ParquetLoadRule.name, ParquetLoadRule)
+

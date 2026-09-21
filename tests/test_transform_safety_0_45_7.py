@@ -10,7 +10,7 @@ import pytest
 from examples.definitions.system.event_watch import PALM_SYSTEM_WATCH_EVENT_FLOW
 from palm.common.patterns import build_pattern
 from palm.common.patterns.build_context import PatternBuildContext
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.common.transforms.builder import build_transform_leaf, transform_step_from_mapping
 from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.core import PatternStatus
@@ -25,7 +25,7 @@ from tests.core.fakes import TestState
 @pytest.fixture
 def transform_engine() -> Iterator[TransformEngine]:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     engine = TransformEngine()
     engine.initialize()
     yield engine
@@ -100,7 +100,7 @@ def test_event_watch_pipeline_persist_step_has_no_batch_override() -> None:
 def test_event_watch_pipeline_tick_persists_list() -> None:
     """Real flow slice: append_item + put_resource without batch:false."""
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
 
     resource_engine = MagicMock()
     stored: list[object] = []

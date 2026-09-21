@@ -133,6 +133,9 @@ class ServerContext:
             settings=self._settings,
             resolve_execution_runtime=self.resolve_execution_runtime,
         )
+        from palm.services._apps import autoload as autoload_services
+
+        autoload_services(tuple(self.composition.services))
         built = core_service_registry().build_all(service_ctx, only=self.composition.services)
         bag = apply_product_packaging(
             built,

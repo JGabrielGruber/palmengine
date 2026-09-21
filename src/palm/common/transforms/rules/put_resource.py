@@ -80,3 +80,10 @@ class PutResourceRule(BaseTransformRule):
 
 
 __all__ = ["PutResourceRule"]
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(PutResourceRule.name, PutResourceRule)
+

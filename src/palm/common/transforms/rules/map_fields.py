@@ -37,3 +37,10 @@ class MapFieldsRule(BaseTransformRule):
             out,
             meta={"mapping": self._mapping, "keep_unmapped": self._keep_unmapped},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(MapFieldsRule.name, MapFieldsRule)
+

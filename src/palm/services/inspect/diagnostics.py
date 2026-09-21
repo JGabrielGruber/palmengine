@@ -91,10 +91,6 @@ def build_doctor_report(
             ),
         }
 
-    from palm.common.transforms import autoload as autoload_transforms
-
-    autoload_transforms()
-
     registries = {
         "patterns": sorted(pattern_registry.names()),
         "providers": sorted(provider_registry.names()),

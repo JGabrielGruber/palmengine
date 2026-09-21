@@ -63,3 +63,10 @@ class CountByRule(BaseTransformRule):
             rows,
             meta={"field": field, "groups": len(rows), "count_key": count_key},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(CountByRule.name, CountByRule)
+

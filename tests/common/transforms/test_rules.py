@@ -21,7 +21,7 @@ from tests.core.fakes import TestState
 @pytest.fixture
 def executor() -> TransformExecutor:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     return TransformExecutor()
 
 

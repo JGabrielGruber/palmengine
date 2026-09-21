@@ -39,3 +39,10 @@ class JsonLoadRule(BaseTransformRule):
                 f"{self.rule_name} invalid JSON at line {exc.lineno} col {exc.colno}: {exc.msg}",
             ) from exc
         return context.advance(self.rule_name, parsed, meta={"encoding": encoding})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(JsonLoadRule.name, JsonLoadRule)
+

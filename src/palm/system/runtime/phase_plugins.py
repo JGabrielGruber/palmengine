@@ -17,7 +17,7 @@ from palm.common.plugins import ensure_core_plugins
 from palm.system.boot.context import BootContext
 from palm.system.boot.definition import PhaseDefinition
 
-_PACKAGE_KEYS = ("kits", "patterns", "providers", "runners", "storages")
+_PACKAGE_KEYS = ("kits", "patterns", "providers", "runners", "storages", "transforms")
 
 
 def run(_ctx: BootContext, options: Mapping[str, Any]) -> None:
@@ -31,6 +31,7 @@ def run(_ctx: BootContext, options: Mapping[str, Any]) -> None:
         providers=names["providers"],
         runners=names["runners"],
         storages=names["storages"],
+        transforms=names["transforms"],
     )
 
 

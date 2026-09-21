@@ -23,6 +23,7 @@ from palm.app.host.composition import (
     RECORD_PROVIDERS,
     RECORD_RUNNERS,
     RECORD_STORAGES,
+    RECORD_TRANSFORMS,
     CompositionProfile,
     composition_profile_from_name,
     composition_record,
@@ -30,7 +31,7 @@ from palm.app.host.composition import (
 from palm.app.settings import PalmSettings
 from palm.storages._apps import autoload as autoload_storages
 
-_FAMILIES = ("kits", "patterns", "providers", "runners", "storages")
+_FAMILIES = ("kits", "patterns", "providers", "runners", "storages", "transforms")
 
 
 def _run_cold(body: str) -> subprocess.CompletedProcess[str]:
@@ -50,6 +51,7 @@ def test_saved_records_name_package_families() -> None:
         "providers": RECORD_PROVIDERS,
         "runners": RECORD_RUNNERS,
         "storages": RECORD_STORAGES,
+        "transforms": RECORD_TRANSFORMS,
     }
     for row in COMPOSITION_RECORDS:
         for family, names in expected.items():
@@ -69,6 +71,7 @@ def test_from_record_copies_package_names() -> None:
         "providers": tuple(record.providers),
         "runners": tuple(record.runners),
         "storages": tuple(record.storages),
+        "transforms": tuple(record.transforms),
     }
     assert BootMode.safe().composition.kits == record.kits
     assert BootMode.worker().composition.runners == record.runners
@@ -82,6 +85,7 @@ def test_settings_resolver_copies_package_names() -> None:
     assert profile.providers == record.providers
     assert profile.runners == record.runners
     assert profile.storages == record.storages
+    assert profile.transforms == record.transforms
 
 
 def test_core_kits_is_not_the_walk_law() -> None:
@@ -114,6 +118,7 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
             providers=(),
             runners=("local",),
             storages=("memory",),
+            transforms=(),
         )
         assert "palm.kits.present" in sys.modules
         assert "palm.kits.authoring" not in sys.modules
@@ -127,6 +132,7 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
             providers=(),
             runners=("local", "host"),
             storages=("memory",),
+            transforms=(),
         )
         assert "palm.kits.authoring" in sys.modules
         assert "palm.runners.host" in sys.modules
@@ -159,6 +165,7 @@ def test_phase_installs_only_the_option_set() -> None:
                     "providers": (),
                     "runners": ("local",),
                     "storages": ("memory",),
+                    "transforms": (),
                 }
             },
         )

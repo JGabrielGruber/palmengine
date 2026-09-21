@@ -16,7 +16,7 @@ from examples.definitions.system.event_watch import (
 )
 from palm.app import ApplicationHost, PalmSettings
 from palm.common.patterns import build_pattern
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.core import PatternStatus
 from palm.core.transform.engine import TransformEngine
 from palm.core.transform.registry import transform_registry
@@ -27,7 +27,7 @@ from tests.helpers.event_plane import emit_orchestration_event
 @pytest.fixture
 def transform_engine() -> Iterator[TransformEngine]:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     engine = TransformEngine()
     engine.initialize()
     yield engine
@@ -220,7 +220,7 @@ def test_resource_changed_does_not_enqueue_watch() -> None:
 
 def test_coconut_profile_pipeline_slice() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     pattern = build_pattern(COCONUT_PROFILE_PIPELINE)
     state = TestState()
     state.set("player_profile", {"visit_count": 2, "player_name": "Ada"})

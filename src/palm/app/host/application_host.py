@@ -840,6 +840,10 @@ class ApplicationHost:
         )
         # Build only the services this app is composed of (+ their transitive deps).
         # Default composition (all_in_one) is full services, so this is behaviour-preserving.
+        # 0.72.4: import the record's service names. INSTALLED_SERVICES is the catalog.
+        from palm.services._apps import autoload as autoload_services
+
+        autoload_services(tuple(self.composition.services))
         built = core_service_registry().build_all(service_ctx, only=self.composition.services)
         # Shared product identity (BI-003): assist↔analytics, dashboards, design CQRS.
         bag = apply_product_packaging(

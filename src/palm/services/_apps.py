@@ -1,10 +1,14 @@
 """
 Service domain bootstrap.
 
-Domain modules register REST/MCP entries via per-package ``registry.py`` (0.16b+).
+``INSTALLED_SERVICES`` is the catalog of real service packages.
+The composition record's ``services`` tuple is the set the host walks (0.72.4).
+``HostServiceRegistry`` builds that same tuple. This function imports the packages.
 """
 
 from __future__ import annotations
+
+import importlib
 
 INSTALLED_SERVICES: tuple[str, ...] = (
     "definitions",
@@ -16,11 +20,9 @@ INSTALLED_SERVICES: tuple[str, ...] = (
 )
 
 
-def autoload() -> None:
-    """Import installed service packages."""
-    import importlib
-
-    for name in INSTALLED_SERVICES:
+def autoload(names: tuple[str, ...]) -> None:
+    """Import the named service packages."""
+    for name in names:
         importlib.import_module(f"palm.services.{name}")
 
 

@@ -56,3 +56,10 @@ class JsonDumpRule(BaseTransformRule):
                 f"{self.rule_name} value is not JSON serializable: {exc}",
             ) from exc
         return context.advance(self.rule_name, result, meta={"ensure_ascii": ensure_ascii})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(JsonDumpRule.name, JsonDumpRule)
+

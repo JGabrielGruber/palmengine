@@ -1,9 +1,9 @@
 """
 Shared transform coordination — built-in rules and registration helpers.
 
-Import this package (or call :func:`autoload`) to register common rules in
-``transform_registry``. Core stays pure; concrete rules live here and in
-pattern packages.
+The install stroke calls :func:`autoload` with the names on the composition
+record. Importing this package does not register rules. Core stays pure;
+concrete rules live here and in pattern packages.
 """
 
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, autoload
@@ -45,8 +45,6 @@ from palm.common.transforms.rules import (
     RenameFieldRule,
     StringFormatRule,
 )
-
-autoload()
 
 __all__ = [
     "BUILTIN_RULES",

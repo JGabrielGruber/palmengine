@@ -48,3 +48,10 @@ class CallableRule(BaseTransformRule):
             result = fn(value)
             mode = "single"
         return context.advance(self.rule_name, result, meta={"mode": mode})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(CallableRule.name, CallableRule)
+

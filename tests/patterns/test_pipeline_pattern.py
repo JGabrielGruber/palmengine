@@ -7,7 +7,7 @@ import importlib
 import pytest
 
 from palm.common.patterns import PatternBuildContext, build_pattern
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.core.behavior_tree import PatternStatus
 from palm.core.transform.registry import transform_registry
 from palm.definitions import FlowDefinition
@@ -17,7 +17,7 @@ from tests.core.fakes import TestState
 @pytest.fixture(autouse=True)
 def _load_transforms() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
 
 
 def test_pipeline_pattern_from_flow_definition() -> None:

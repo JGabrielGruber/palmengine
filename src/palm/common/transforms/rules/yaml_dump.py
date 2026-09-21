@@ -53,3 +53,10 @@ class YamlDumpRule(BaseTransformRule):
         if not isinstance(result, str):
             result = str(result)
         return context.advance(self.rule_name, result)
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(YamlDumpRule.name, YamlDumpRule)
+

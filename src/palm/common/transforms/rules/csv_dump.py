@@ -86,3 +86,10 @@ class CsvDumpRule(BaseTransformRule):
             buffer.getvalue(),
             meta={"rows": len(rows), "columns": len(fieldnames)},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(CsvDumpRule.name, CsvDumpRule)
+

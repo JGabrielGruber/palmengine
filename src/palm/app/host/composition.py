@@ -19,8 +19,13 @@ builds a ``CompositionProfile`` from that data. Preset classmethods are not the 
 providers, runners, storages). The install stroke walks those names.
 ``INSTALLED_*`` stays the catalog of real packages.
 
+**0.72.4:** each record also names transform rules. The same stroke walks
+those names. Service names stay the phenotype field. The host imports that
+tuple; ``INSTALLED_SERVICES`` stays the catalog.
+
 History: skeleton 0.50 · living capabilities 0.51 · boot schedule 0.59.2-.4 ·
-membership truth 0.59.5 · composition record 0.72.2 · package names 0.72.3.
+membership truth 0.59.5 · composition record 0.72.2 · package names 0.72.3 ·
+second menus 0.72.4.
 Typed name-tuples + saved records — not a manifest DSL.
 """
 
@@ -78,6 +83,33 @@ RECORD_PATTERNS: tuple[str, ...] = ("dag", "parallel", "pipeline", "wizard")
 RECORD_PROVIDERS: tuple[str, ...] = ("rest", "palm", "kv", "file", "authoring")
 RECORD_RUNNERS: tuple[str, ...] = ("local", "host", "neonroot")
 RECORD_STORAGES: tuple[str, ...] = ("memory", "filesystem")
+#: Transform rules each saved record installs (0.72.4). Same set on every record.
+RECORD_TRANSFORMS: tuple[str, ...] = (
+    "rename_field",
+    "map_fields",
+    "append_item",
+    "put_resource",
+    "filter_items",
+    "count_by",
+    "callable",
+    "string_format",
+    "jsonpath_extract",
+    "jsonpath_set",
+    "calculate",
+    "enrich_resource",
+    "date_format",
+    "date_parse",
+    "lookup",
+    "conditional",
+    "json_load",
+    "json_dump",
+    "csv_load",
+    "csv_dump",
+    "yaml_load",
+    "yaml_dump",
+    "toml_load",
+    "xml_load",
+)
 
 
 @dataclass(frozen=True)
@@ -93,6 +125,7 @@ class CompositionRecord:
     providers: tuple[str, ...]
     runners: tuple[str, ...]
     storages: tuple[str, ...]
+    transforms: tuple[str, ...]
 
 
 #: Named shapes. One row is one record. The host does not keep a method per name.
@@ -107,6 +140,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
     CompositionRecord(
         "server",
@@ -118,6 +152,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
     CompositionRecord(
         "embedded",
@@ -129,6 +164,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
     CompositionRecord(
         "worker",
@@ -140,6 +176,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
     CompositionRecord(
         "cli",
@@ -151,6 +188,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
     CompositionRecord(
         "mcp",
@@ -162,6 +200,7 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         RECORD_PROVIDERS,
         RECORD_RUNNERS,
         RECORD_STORAGES,
+        RECORD_TRANSFORMS,
     ),
 )
 
@@ -183,8 +222,9 @@ class CompositionProfile:
     """Declared composition: services, surfaces, capabilities, and package names.
 
     Services, surfaces, and capabilities are the phenotype.
-    ``kits`` / ``patterns`` / ``providers`` / ``runners`` / ``storages`` are the
-    plugin packages this composition installs (0.72.3).
+    ``kits`` / ``patterns`` / ``providers`` / ``runners`` / ``storages`` /
+    ``transforms`` are the plugin packages and rules this composition installs
+    (0.72.3 / 0.72.4).
     """
 
     services: tuple[str, ...] = ALL_SERVICES
@@ -195,6 +235,7 @@ class CompositionProfile:
     providers: tuple[str, ...] = RECORD_PROVIDERS
     runners: tuple[str, ...] = RECORD_RUNNERS
     storages: tuple[str, ...] = RECORD_STORAGES
+    transforms: tuple[str, ...] = RECORD_TRANSFORMS
 
     def has(self, capability: str) -> bool:
         """Whether ``capability`` is part of this composition."""
@@ -212,6 +253,7 @@ class CompositionProfile:
             "providers": tuple(self.providers),
             "runners": tuple(self.runners),
             "storages": tuple(self.storages),
+            "transforms": tuple(self.transforms),
         }
 
     @classmethod
@@ -226,6 +268,7 @@ class CompositionProfile:
             providers=tuple(record.providers),
             runners=tuple(record.runners),
             storages=tuple(record.storages),
+            transforms=tuple(record.transforms),
         )
 
 
@@ -244,6 +287,7 @@ __all__ = [
     "RECORD_PROVIDERS",
     "RECORD_RUNNERS",
     "RECORD_STORAGES",
+    "RECORD_TRANSFORMS",
     "SERVER_SURFACES",
     "Capability",
     "CompositionProfile",

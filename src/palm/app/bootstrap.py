@@ -199,6 +199,8 @@ def composition_profile_from_settings(
     Capabilities come from settings. This function does not call a preset method.
 
     **0.72.3:** package names come from that same record.
+
+    **0.72.4:** transform names come from that same record.
     """
     record = composition_record("all_in_one")
     return CompositionProfile(
@@ -210,6 +212,7 @@ def composition_profile_from_settings(
         providers=tuple(record.providers),
         runners=tuple(record.runners),
         storages=tuple(record.storages),
+        transforms=tuple(record.transforms),
     )
 
 

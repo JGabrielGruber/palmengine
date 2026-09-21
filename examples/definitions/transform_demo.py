@@ -11,9 +11,9 @@ Try::
 Or drive programmatically::
 
     from palm.common.patterns import build_pattern
-    from palm.common.transforms import autoload
+    from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     pattern = build_pattern(flow, context)
     pattern.tick(state)
 """

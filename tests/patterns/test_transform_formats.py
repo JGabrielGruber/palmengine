@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from examples.definitions.transform_formats import TRANSFORM_FORMATS_FLOW
 from palm.common.patterns import build_pattern
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.core import PatternStatus
 from palm.core.transform.registry import transform_registry
 from tests.core.fakes import TestState
@@ -12,7 +12,7 @@ from tests.core.fakes import TestState
 
 def test_transform_formats_pipeline_exports_csv() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     pattern = build_pattern(TRANSFORM_FORMATS_FLOW)
     state = TestState()
     state.set("raw_json", TRANSFORM_FORMATS_FLOW.options["initial_state"]["raw_json"])

@@ -84,3 +84,10 @@ class XmlLoadRule(BaseTransformRule):
             result,
             meta={"root": tag},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(XmlLoadRule.name, XmlLoadRule)
+

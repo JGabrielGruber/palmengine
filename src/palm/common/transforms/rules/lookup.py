@@ -60,3 +60,10 @@ class LookupRule(BaseTransformRule):
             result,
             meta={"key": lookup_key, "hit": lookup_key in table},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(LookupRule.name, LookupRule)
+

@@ -82,3 +82,10 @@ def _matches(subject: Any, container: dict[str, Any] | None, options: dict[str, 
     raise TransformApplicationError(
         "conditional requires a predicate (equals, gt, gte, is_truthy, exists, ...)",
     )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(ConditionalRule.name, ConditionalRule)
+

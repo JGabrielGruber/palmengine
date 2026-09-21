@@ -16,7 +16,7 @@ class TransformExecutor:
     """
     Thin coordinator around :class:`~palm.core.transform.engine.TransformEngine`.
 
-    Ensures common rules are loaded and the engine is initialized before use.
+    Initializes the engine before use. The install stroke registers rules.
     Patterns may share one executor instance or supply their own engine.
     """
 
@@ -29,10 +29,10 @@ class TransformExecutor:
         return self.ensure_ready()
 
     def ensure_ready(self) -> TransformEngine:
-        """Load common rules and initialize the engine when needed."""
-        from palm.common.transforms._apps import autoload
+        """Initialize the engine when needed.
 
-        autoload()
+        The install stroke registers rules. This method does not choose a set.
+        """
         if not self._engine.is_initialized:
             self._engine.initialize()
         return self._engine

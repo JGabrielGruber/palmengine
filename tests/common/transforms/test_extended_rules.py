@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.common.transforms import TransformExecutor, autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, TransformExecutor, autoload
 from palm.core import TransformApplicationError
 from palm.core.resource import ResourceEngine
 from palm.core.transform.registry import transform_registry
@@ -13,7 +13,7 @@ from palm.core.transform.registry import transform_registry
 @pytest.fixture
 def executor() -> TransformExecutor:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     return TransformExecutor()
 
 

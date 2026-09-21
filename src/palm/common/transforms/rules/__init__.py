@@ -1,8 +1,9 @@
 """
 Built-in common transform rules.
 
-Import :mod:`palm.common.transforms.rules.registry` to register rules with
-``transform_registry`` (same pattern as pattern app ``registry.py`` modules).
+Each rule module exposes ``register()``. The install stroke calls that
+function for the names on the composition record. Importing a rule module
+does not register it.
 """
 
 from palm.common.transforms.rules.calculate import CalculateRule

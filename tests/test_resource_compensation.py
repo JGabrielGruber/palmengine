@@ -21,7 +21,7 @@ from palm.common.resource.compensation import (
     track_resource_invocation,
 )
 from palm.common.resource.observability import stamp_execution_context
-from palm.common.transforms import TransformExecutor, autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, TransformExecutor, autoload
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.resource import ResourceEngine
 from palm.core.resource.observability import resource_correlation
@@ -161,7 +161,7 @@ def test_is_mutating_action() -> None:
 @pytest.fixture
 def executor() -> TransformExecutor:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     return TransformExecutor()
 
 

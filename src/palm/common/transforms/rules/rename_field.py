@@ -28,3 +28,10 @@ class RenameFieldRule(BaseTransformRule):
             out,
             meta={"from": self._from_key, "to": self._to_key},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(RenameFieldRule.name, RenameFieldRule)
+

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from palm.common.transforms import (
+    INSTALLED_TRANSFORMS,
     apply_transform,
     apply_transform_to_state,
+    autoload,
     default_executor,
 )
 from palm.core.transform.registry import transform_registry
@@ -21,6 +23,7 @@ def test_default_executor_is_singleton() -> None:
 
 def test_apply_transform_module_helper() -> None:
     transform_registry.clear()
+    autoload(INSTALLED_TRANSFORMS)
     result = apply_transform(
         "rename_field",
         {"first_name": "Bob"},
@@ -32,6 +35,7 @@ def test_apply_transform_module_helper() -> None:
 
 def test_apply_transform_to_state_module_helper(test_state: TestState) -> None:
     transform_registry.clear()
+    autoload(INSTALLED_TRANSFORMS)
     test_state.set("payload", {"first_name": "Bob"})
     result = apply_transform_to_state(
         "rename_field",

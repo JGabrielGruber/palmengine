@@ -33,9 +33,6 @@ class StudioFetcher:
         return items
 
     def list_transforms(self) -> list[dict[str, str]]:
-        from palm.common.transforms import autoload
-
-        autoload()
         items: list[dict[str, str]] = []
         for name in transform_registry.names():
             rule_cls = transform_registry.get(name)

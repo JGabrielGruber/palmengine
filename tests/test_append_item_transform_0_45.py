@@ -6,7 +6,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.core.exceptions import TransformApplicationError
 from palm.core.transform.engine import TransformEngine
 from palm.core.transform.registry import transform_registry
@@ -16,7 +16,7 @@ from tests.core.fakes import TestState
 @pytest.fixture(autouse=True)
 def _rules() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
 
 
 @pytest.fixture

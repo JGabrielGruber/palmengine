@@ -1,8 +1,9 @@
 """
 Django-style autoloading for common transform rules.
 
-Each entry in ``INSTALLED_TRANSFORMS`` maps to a built-in rule registered via
-``palm.common.transforms.rules.registry``.
+``INSTALLED_TRANSFORMS`` is the catalog of real rules.
+The composition record names which rules the install stroke registers (0.72.4).
+Importing a rule module does not register it. Each module exposes ``register()``.
 """
 
 from __future__ import annotations
@@ -41,9 +42,8 @@ INSTALLED_TRANSFORMS: tuple[str, ...] = (
 INTENTION_TRANSFORMS: tuple[str, ...] = ("parquet_load",)
 
 
-def autoload() -> None:
-    """Ensure built-in rule modules are loaded and registry entries exist."""
-    importlib.import_module("palm.common.transforms.rules.registry")
-    from palm.common.transforms.rules.registry import register_builtin_rules
-
-    register_builtin_rules()
+def autoload(names: tuple[str, ...]) -> None:
+    """Register the named built-in rules."""
+    for name in names:
+        module = importlib.import_module(f"palm.common.transforms.rules.{name}")
+        module.register()

@@ -50,3 +50,10 @@ class DateParseRule(BaseTransformRule):
             result,
             meta={"output": output, "input_format": input_format},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(DateParseRule.name, DateParseRule)
+

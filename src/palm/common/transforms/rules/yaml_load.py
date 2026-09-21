@@ -50,3 +50,10 @@ class YamlLoadRule(BaseTransformRule):
                 f"{self.rule_name} invalid YAML: {exc}",
             ) from exc
         return context.advance(self.rule_name, parsed, meta={"safe": safe})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(YamlLoadRule.name, YamlLoadRule)
+

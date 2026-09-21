@@ -45,3 +45,10 @@ class TomlLoadRule(BaseTransformRule):
                 f"{self.rule_name} invalid TOML: {exc}",
             ) from exc
         return context.advance(self.rule_name, parsed, meta={"encoding": encoding})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(TomlLoadRule.name, TomlLoadRule)
+

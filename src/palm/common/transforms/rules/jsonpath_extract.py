@@ -35,3 +35,10 @@ class JsonpathExtractRule(BaseTransformRule):
         else:
             value = jsonpath_get(context.value, str(path), default=default)
         return context.advance(self.rule_name, value, meta={"path": path})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(JsonpathExtractRule.name, JsonpathExtractRule)
+

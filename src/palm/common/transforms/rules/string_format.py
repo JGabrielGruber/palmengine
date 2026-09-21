@@ -109,3 +109,10 @@ class StringFormatRule(BaseTransformRule):
             raise TransformApplicationError(
                 f"{self.rule_name} template missing key: {exc.args[0]}",
             ) from exc
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(StringFormatRule.name, StringFormatRule)
+

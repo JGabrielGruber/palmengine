@@ -9,6 +9,10 @@ depending on plugin packages at import time.
 It does not keep a process flag, and it does not close over ``INSTALLED_*``.
 A later call imports names that are not yet imported. It does not unload
 names already imported.
+
+**0.72.4:** transform names are on that same record. Service packages stay
+on the host phenotype (``CompositionProfile.services``). This stroke does
+not import them.
 """
 
 from __future__ import annotations
@@ -21,13 +25,10 @@ def ensure_core_plugins(
     providers: tuple[str, ...],
     runners: tuple[str, ...],
     storages: tuple[str, ...],
+    transforms: tuple[str, ...],
 ) -> None:
-    """Import the named plugin packages so their registries fill.
-
-    Transforms still register on ``import palm.common.transforms`` (0.72.4 / P11).
-    Services stay on ``HostServiceRegistry`` (0.72.4 / P10).
-    """
-    import palm.common.transforms  # noqa: F401 — common transform rules
+    """Import the named plugin packages and register the named transform rules."""
+    from palm.common.transforms import autoload as autoload_transforms
     from palm.kits import autoload as autoload_kits
     from palm.patterns import autoload as autoload_patterns
     from palm.providers import autoload as autoload_providers
@@ -39,3 +40,4 @@ def ensure_core_plugins(
     autoload_providers(tuple(providers))
     autoload_runners(tuple(runners))
     autoload_storages(tuple(storages))
+    autoload_transforms(tuple(transforms))

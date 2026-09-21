@@ -54,3 +54,10 @@ class JsonpathSetRule(BaseTransformRule):
             updated,
             meta={"path": path, "set_value": set_value},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(JsonpathSetRule.name, JsonpathSetRule)
+

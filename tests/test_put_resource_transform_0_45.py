@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.common.transforms import autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.common.transforms.rules.put_resource import PutResourceRule
 from palm.core.exceptions import TransformApplicationError
 from palm.core.resource.result import ProviderResult
@@ -20,7 +20,7 @@ from tests.core.fakes import TestState
 @pytest.fixture(autouse=True)
 def _rules() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
 
 
 @pytest.fixture

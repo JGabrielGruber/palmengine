@@ -116,3 +116,10 @@ class EnrichResourceRule(BaseTransformRule):
                 "target_field": target_field if merge else None,
             },
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(EnrichResourceRule.name, EnrichResourceRule)
+

@@ -47,3 +47,10 @@ class CalculateRule(BaseTransformRule):
             result,
             meta={"expression": expression, "variables": sorted(variables)},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(CalculateRule.name, CalculateRule)
+

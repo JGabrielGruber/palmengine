@@ -7,7 +7,6 @@ import pytest
 from palm.common.patterns._registry import get_builder, registered_builders
 from palm.common.storage import StorageFactory
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, INTENTION_TRANSFORMS
-from palm.common.transforms._apps import autoload as autoload_transforms
 from palm.core.exceptions import RegistryError
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.transform.registry import transform_registry
@@ -18,11 +17,10 @@ from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STOR
 
 @pytest.fixture(autouse=True)
 def _reload_apps() -> None:
-    """Registries follow the all_in_one record. Transforms stay their own walk."""
+    """Registries follow the all_in_one record, including its transform names."""
     from palm.app.bootstrap import ensure_plugins
 
     ensure_plugins()
-    autoload_transforms()
 
 
 def test_installed_pattern_apps_register() -> None:

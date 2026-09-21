@@ -75,3 +75,10 @@ class CsvLoadRule(BaseTransformRule):
             rows,
             meta={"rows": len(rows), "header": has_header},
         )
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(CsvLoadRule.name, CsvLoadRule)
+

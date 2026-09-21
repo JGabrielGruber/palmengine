@@ -34,3 +34,10 @@ class DateFormatRule(BaseTransformRule):
             input_format=str(input_format) if input_format else None,
         )
         return context.advance(self.rule_name, result, meta={"format": fmt})
+
+def register() -> None:
+    """Register this rule when the install stroke names it."""
+    from palm.common.transforms.registration import register_transform
+
+    register_transform(DateFormatRule.name, DateFormatRule)
+

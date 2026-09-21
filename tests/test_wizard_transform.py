@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from palm.common.patterns import build_pattern
-from palm.common.transforms import TransformExecutor, autoload
+from palm.common.transforms import INSTALLED_TRANSFORMS, TransformExecutor, autoload
 from palm.core import PatternStatus
 from palm.core.transform.registry import transform_registry
 from palm.patterns.wizard import WizardKeys, WizardPattern
@@ -18,7 +18,7 @@ from tests.core.fakes import TestState
 @pytest.fixture
 def executor() -> TransformExecutor:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     return TransformExecutor()
 
 
@@ -65,7 +65,7 @@ def test_wizard_transform_step_builds_from_options() -> None:
 
 def test_wizard_transform_runs_between_input_steps() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     wizard = WizardPattern(name="w", config=_transform_wizard_config())
     state = TestState()
 
@@ -113,7 +113,7 @@ def test_wizard_transform_failure_publishes_validation_feedback() -> None:
 
 def test_wizard_transform_chain() -> None:
     transform_registry.clear()
-    autoload()
+    autoload(INSTALLED_TRANSFORMS)
     config = wizard_config_from_options(
         {
             "steps": [
