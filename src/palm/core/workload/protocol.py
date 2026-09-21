@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from palm.core.workload.handle import WorkloadHandle
@@ -93,6 +94,21 @@ class WorkloadRuntime(ABC):
 
     def __init__(self, *, name: str) -> None:
         self.name = name
+
+    @classmethod
+    def bind(
+        cls,
+        *,
+        host_enabled: bool = False,
+        work_root: Path | str | None = None,
+    ) -> WorkloadRuntime:
+        """Build one instance for the engine.
+
+        The workload plane walks the registry and calls this. A runner that
+        needs ``host_enabled`` or ``work_root`` overrides this method.
+        """
+        del host_enabled, work_root
+        return cls()
 
     @abstractmethod
     def capabilities(self) -> RuntimeCapabilities:

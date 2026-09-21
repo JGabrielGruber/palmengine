@@ -23,6 +23,7 @@ INTENTION_PROVIDERS: tuple[str, ...] = (
 )
 
 
-def autoload() -> None:
-    for name in INSTALLED_PROVIDERS:
+def autoload(names: tuple[str, ...]) -> None:
+    """Import the named provider apps (triggers registry side effects)."""
+    for name in names:
         importlib.import_module(f"palm.providers.{name}")

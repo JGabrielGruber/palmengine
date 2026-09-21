@@ -13,6 +13,7 @@ from palm.app.bootstrap import (
     load_definitions_for_repository,
     runtime_start_options,
 )
+from palm.app.host.composition import CompositionProfile
 from palm.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from palm.app.settings import PalmSettings
 from palm.common.managers import InstanceManager, InstanceSummary
@@ -21,13 +22,13 @@ from palm.core.storage import StorageEngine
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
-    from palm.system.runtime.base import BaseRuntime
     from palm.core.orchestration import Job
     from palm.core.resource import ProviderResult
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
     from palm.definitions.resource import ResourceDefinition
     from palm.instances import ProcessInstance, StateSnapshot
+    from palm.system.runtime.base import BaseRuntime
 
 
 class PalmKernel:
@@ -86,9 +87,13 @@ class PalmKernel:
         """Shared instance lifecycle coordinator across runtimes."""
         return self._instance_manager
 
-    def bootstrap(self) -> Self:
-        """Load plugin apps and mark the application ready for runtime creation."""
-        ensure_plugins()
+    def bootstrap(self, composition: CompositionProfile | None = None) -> Self:
+        """Install plugin packages and mark the application ready for runtime creation.
+
+        ``composition`` names the package set. No argument selects the
+        ``all_in_one`` record (:func:`palm.app.bootstrap.ensure_plugins`).
+        """
+        ensure_plugins(composition)
         self._bootstrapped = True
         return self
 

@@ -16,14 +16,14 @@ Import the server kit as :mod:`palm.kits.server`.
 Import the present kit as :mod:`palm.kits.present` (0.69.4 / 0.69.5).
 Import the authoring kit as :mod:`palm.kits.authoring` (0.70.1).
 
-Core kits (``present``, ``authoring``) populate via :func:`autoload` at
-bootstrap (:func:`palm.common.plugins.ensure_core_plugins`). Surface kit
+The composition record names which kits :func:`autoload` imports
+(:func:`palm.common.plugins.ensure_core_plugins`, 0.72.3). Surface kit
 ``server`` registers when the server runtime imports it (0.71.21).
 """
 
 from __future__ import annotations
 
-from palm.kits._apps import CORE_KITS, INSTALLED_KITS, INTENTION_KITS, autoload
+from palm.kits._apps import INSTALLED_KITS, INTENTION_KITS, autoload
 from palm.kits.registry import (
     KitInfo,
     clear_kits,
@@ -34,7 +34,6 @@ from palm.kits.registry import (
 )
 
 __all__ = [
-    "CORE_KITS",
     "INSTALLED_KITS",
     "INTENTION_KITS",
     "KitInfo",

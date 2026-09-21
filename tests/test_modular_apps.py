@@ -18,14 +18,10 @@ from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STOR
 
 @pytest.fixture(autouse=True)
 def _reload_apps() -> None:
-    """Ensure registries are populated for isolated assertions."""
-    from palm.patterns import autoload as autoload_patterns
-    from palm.providers import autoload as autoload_providers
-    from palm.storages import autoload as autoload_storages
+    """Registries follow the all_in_one record. Transforms stay their own walk."""
+    from palm.app.bootstrap import ensure_plugins
 
-    autoload_patterns()
-    autoload_providers()
-    autoload_storages()
+    ensure_plugins()
     autoload_transforms()
 
 

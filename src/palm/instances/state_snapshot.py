@@ -71,9 +71,6 @@ class StateSnapshot:
 def _pattern_snapshot_fields(job: Job) -> tuple[str | None, dict[str, Any]]:
     """Resolve optional step slug and runtime position via the pattern registry."""
     from palm.common.patterns._registry import get_instance_fields
-    from palm.patterns import autoload as autoload_patterns
-
-    autoload_patterns()
 
     pattern = job.metadata.get("pattern")
     if not isinstance(pattern, str):

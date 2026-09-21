@@ -92,12 +92,12 @@ def test_application_host_cold_import_skips_bulk_pattern_members() -> None:
 def test_ensure_core_plugins_loads_patterns_and_providers() -> None:
     result = _run_cold_script(
         """
-        from palm.common.plugins import ensure_core_plugins
+        from palm.app.bootstrap import ensure_plugins
         from palm.core.registry import pattern_registry, provider_registry
         from palm.patterns._apps import INSTALLED_PATTERNS
         from palm.providers._apps import INSTALLED_PROVIDERS
 
-        ensure_core_plugins()
+        ensure_plugins()
 
         for name in INSTALLED_PATTERNS:
             pattern_registry.get(name)

@@ -49,6 +49,17 @@ class LocalWorkloadRuntime(WorkloadRuntime):
         self._work_root = Path(work_root).resolve() if work_root else None
         self._live: dict[str, dict[str, Any]] = {}
 
+    @classmethod
+    def bind(
+        cls,
+        *,
+        host_enabled: bool = False,
+        work_root: Path | str | None = None,
+    ) -> LocalWorkloadRuntime:
+        del host_enabled
+        root = Path(work_root) / "workloads" if work_root is not None else None
+        return cls(work_root=root)
+
     def is_enabled(self) -> bool:
         return True
 

@@ -25,9 +25,6 @@ class StudioFetcher:
         return self._ctx.runtime.version
 
     def list_patterns(self) -> list[dict[str, str]]:
-        from palm.patterns import autoload as autoload_patterns
-
-        autoload_patterns()
         items: list[dict[str, str]] = []
         for name in pattern_registry.names():
             cls = pattern_registry.get(name)

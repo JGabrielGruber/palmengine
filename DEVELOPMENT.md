@@ -450,8 +450,8 @@ See **[docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)** for the full guide. Summary
    - `bindings/definitions/builder.py` — `build(flow, context, pattern_cls)` for flow options
    - `registry.py` — `pattern_registry.register(...)` + `register_builder(...)` + `<name>_app.register()`
    - `__init__.py` — import `registry` for side effect
-2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
-3. Registries fill at `ensure_core_plugins` / host start (post-`0.71.20`) — bare package import does **not** register.
+2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`, and to the composition records that install it.
+3. Registries fill when the install stroke walks those names (`0.72.3`) — bare package import does **not** register.
 4. Keep pattern-specific logic in `palm/patterns/<name>/` — **not** in `palm.common`. Run `just guard-common`.
 5. Add tests in `tests/`.
 
@@ -509,7 +509,7 @@ examples/definitions/todos/
 
 1. Create `palm/storages/<name>/` with `backend.py` and `registry.py`.
 2. Register with `storage_registry.register("<name>", YourBackend)`.
-3. Add the name to `INSTALLED_STORAGES` in `storages/_apps.py` (use `OPTIONAL_STORAGES` when the backend needs extra dependencies).
+3. Add the name to the storage catalog in `storages/_apps.py` (`OPTIONAL_STORAGES` when the backend needs extra dependencies). Add it to the composition records that should install it.
 4. Declare a uv extra in `pyproject.toml` when optional drivers are required.
 5. Add tests; use `StorageFactory.ensure_registered("<name>")` in tests for optional backends.
 
@@ -519,7 +519,7 @@ Plugin registries (`pattern_registry`, `provider_registry`, `storage_registry`, 
 
 **Do:**
 
-- Register patterns/providers/storages/runners/kits in each app's `registry.py`; list on `INSTALLED_*` / `CORE_*`; bootstrap via `ensure_core_plugins` / host start (not bare import).
+- Register patterns/providers/storages/runners/kits in each app's `registry.py`; list on `INSTALLED_*` and on the composition records that install them; bootstrap via the install stroke / host start (not bare import).
 - Register commit handlers in `register_definitions()` or module import side effects before serving traffic.
 - Use `ApplicationHost.start()` or `PalmKernel.bootstrap()` before serving traffic in multi-threaded deployments.
 

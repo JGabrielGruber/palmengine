@@ -21,7 +21,7 @@ INSTALLED_PATTERNS: tuple[str, ...] = (
 INTENTION_PATTERNS: tuple[str, ...] = ("etl",)
 
 
-def autoload() -> None:
-    """Import all installed pattern apps (triggers registry side effects)."""
-    for name in INSTALLED_PATTERNS:
+def autoload(names: tuple[str, ...]) -> None:
+    """Import the named pattern apps (triggers registry side effects)."""
+    for name in names:
         importlib.import_module(f"palm.patterns.{name}")

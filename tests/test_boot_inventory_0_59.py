@@ -11,8 +11,8 @@ from typing import Any
 import pytest
 
 from palm.app import ApplicationHost, DeploymentProfile
+from palm.app.bootstrap import ensure_plugins
 from palm.app.settings import PalmSettings
-from palm.common.plugins import ensure_core_plugins
 from palm.runtimes.embedded import EmbeddedRuntime
 from palm.system.subsystems.planes.session.plane import SessionPlaneService
 from palm.system.subsystems.planes.wait.plane import WaitPlaneService
@@ -153,9 +153,9 @@ def test_system_start_alone_attaches_planes(spine_settings: PalmSettings) -> Non
 
 def test_ensure_core_plugins_idempotent() -> None:
     """Plugin ensure may run host + system + tests; must be safe to repeat."""
-    ensure_core_plugins()
-    ensure_core_plugins()
-    # Second call is a no-op (module flag); registries still readable.
+    ensure_plugins()
+    ensure_plugins()
+    # Second call walks the same names. Import is idempotent.
     from palm.common.patterns._registry import registered_builders
 
     assert "wizard" in registered_builders()

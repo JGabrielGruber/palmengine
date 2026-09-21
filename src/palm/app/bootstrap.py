@@ -9,7 +9,11 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from palm.app.host.composition import CompositionProfile, composition_record
+from palm.app.host.composition import (
+    CompositionProfile,
+    composition_profile_from_name,
+    composition_record,
+)
 from palm.app.host.roles import DeploymentProfile
 from palm.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
@@ -17,9 +21,18 @@ from palm.common.plugins import ensure_core_plugins
 from palm.common.storage import StorageFactory
 
 
-def ensure_plugins() -> None:
-    """Import extensible plugin packages so registries are populated."""
-    ensure_core_plugins()
+def ensure_plugins(composition: CompositionProfile | None = None) -> None:
+    """Install the plugin packages a composition record names.
+
+    No argument selects the ``all_in_one`` record. ``ApplicationHost`` passes
+    its composition, so the first install uses that record.
+    """
+    profile = (
+        composition
+        if composition is not None
+        else composition_profile_from_name("all_in_one")
+    )
+    ensure_core_plugins(**profile.package_names())
 
 
 def hydrate_definitions_from_storage(repository: DefinitionRepository) -> int:
@@ -184,12 +197,19 @@ def composition_profile_from_settings(
 
     **0.72.2:** services and surfaces come from the saved ``all_in_one`` record.
     Capabilities come from settings. This function does not call a preset method.
+
+    **0.72.3:** package names come from that same record.
     """
     record = composition_record("all_in_one")
     return CompositionProfile(
         services=tuple(record.services),
         surfaces=tuple(record.surfaces),
         capabilities=_capabilities_from_settings(settings, deployment=deployment),
+        kits=tuple(record.kits),
+        patterns=tuple(record.patterns),
+        providers=tuple(record.providers),
+        runners=tuple(record.runners),
+        storages=tuple(record.storages),
     )
 
 

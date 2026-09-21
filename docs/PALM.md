@@ -239,9 +239,9 @@ Instances **pin** a revision and hold resume state.
 **Neonroot:** live home is **`palm.runners.neonroot`** (WorkloadRuntime). Older “neonroot-as-provider” speech is **legacy** — not on `INSTALLED_PROVIDERS`.
 
 Patterns, providers, runners, kits, and storages follow an **app + registry** layout.  
-`INSTALLED_*` / `CORE_*` is **plugin-package** install truth @ HEAD; `autoload()` runs at bootstrap (`ensure_core_plugins` / host start), not on bare package import (post-`0.71.20`).  
-Runners autoload into `workload_runtime_registry` the same way.  
-**Do not fuse** this latch with host **services** phenotype (`CompositionProfile.services` / orphan `INSTALLED_SERVICES`).  
+`INSTALLED_*` is the **catalog** of real plugin packages. The composition record names the install set (`0.72.3`). `autoload(names)` walks that set at the install stroke (`ensure_core_plugins` / host start), not on bare package import (post-`0.71.20`).  
+Runners register on `workload_runtime_registry` the same way. The workload plane binds classes already registered.  
+**Do not fuse** package names with the host **services** phenotype (`CompositionProfile.services` / orphan `INSTALLED_SERVICES`).  
 Capability-at-the-edge means plugin families. Core contracts stay stable.
 
 **Flagship pattern today:** **wizard** — interactive steps, validation, backtrack, commit, resource and workload leaves.  
@@ -396,7 +396,7 @@ Surfaces must not invent a second semantic model.
 |-------|------|
 | **PalmKernel** | Infra: shared storage, instance manager, runtime registry |
 | **ApplicationHost** | Composition root: roles, CQRS wiring, recovery, service façades, workers |
-| **CompositionProfile** | Phenotype membership: **services**, **surfaces**, `capabilities`=**workloads** (*what* chrome/planes). Host builds it from a saved record (`0.72.2`). **Not** plugin-package install; **not** organ enablement. |
+| **CompositionProfile** | Phenotype: **services**, **surfaces**, `capabilities`=**workloads**. Package install: **kits**, **patterns**, **providers**, **runners**, **storages** (`0.72.3`). Host builds it from a saved record (`0.72.2`). **Not** organ enablement. |
 | **DeploymentProfile** | Roles and deployment activation (*where*) |
 | **Boot schedule + mode** | Order and strictness (*how start runs*) — **0.59 closed**. BootMode ≠ package SoT. |
 | **System log** | Ordered narrative of system life (observation) — [SYSTEM-LOG](SYSTEM-LOG.md) |
@@ -407,11 +407,11 @@ The host **wires** system instances and product.
 
 **Posture verbs (install ≠ enable ≠ SoT) — as-built @ HEAD vs José lock:**
 
-| Verb | Lock target (reading A · [VISION-0.72](vision/VISION-0.72.md)) | As-built @ `7ee20a3d` |
+| Verb | Lock target (reading A · [VISION-0.72](vision/VISION-0.72.md)) | As-built (`0.72.3`) |
 |------|---------------------------------------------------------------|----------------------|
-| **install** | composition installs **packages** | composition installs **services/surfaces/workloads**; **latch** (`INSTALLED_*`/`CORE_*` + `ensure_core_plugins`) installs packages |
+| **install** | composition installs **packages** | the composition record names packages; the install stroke walks those names. Every saved record names the same set. Measure **NOT PASS** |
 | **enable** | structure enables organs now; package capabilities only **after** composition installed them | structure enables **organs** (+places/refuse/admission) only — no structure→latch path |
-| **SoT after load** | StructureDefinition precedent; package carrier under composition raise | holds for structure; **unpaid** for packages (latch remains) |
+| **SoT after load** | StructureDefinition precedent; package carrier under composition raise | holds for structure; package names live on the composition record. A separate carrier (boot YAML, DNA fold) stays **unpaid** |
 
 Reject reading B (DNA owns latch). `0.71.17`–`0.71.21` cold-host / deferred autoload / `kits.server` isolation are **phenotype/host isolation**, not composition-owned package membership.
 
@@ -425,7 +425,7 @@ Reject reading B (DNA owns latch). `0.71.17`–`0.71.21` cold-host / deferred au
 | **Modes** | `BootMode` + `for_mode` dogfood (safe/test + shapes); residual suite force **BI-007** |
 | **System log** | Seats live — [SYSTEM-LOG](SYSTEM-LOG.md); richer catalog residual **BI-015** |
 
-**Law:** plugin packages stay on `INSTALLED_*` / latch @ HEAD (composition package-install is the **0.72** raise — unpaid). Planes are **not** plugins.  
+**Law:** the composition record names plugin packages (`0.72.3`). `INSTALLED_*` is the catalog. Planes are **not** plugins. Measure **NOT PASS** — every saved record names the same set.  
 **Law:** ADR-028 D4 organ examples are **superseded** — organs on `StructureDefinition`; composition capabilities = workloads (succession note on the ADR).  
 **Law:** one composition root walks the host phase table — no private boot via import side effects.  
 **Law:** system log is **observation**; event buses remain **reaction**; EventJournal remains **durable domain facts**.  
@@ -472,7 +472,7 @@ Each top-level part has **one purpose**.
 | `ExecutionService.*` | Product over **ports** for effects | list/doctor residual |
 | `palm.system` | System home: runtime, planes, ports | — |
 | `palm.common` | Shared libraries (plans, CQRS, transforms, …) | — |
-| `palm.kits` | Surface kits (`server`, **`present`**, **`authoring`**, …). **`CORE_KITS`** (`present`, `authoring`) bootstrap-autoload; surface kit **`server`** registers on server import (`0.71.21` — ApplicationHost does not pull it). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. **`palm.kits.authoring`** as-built `0.70.1` (`land` / `commit` on `host.definitions`); `0.70.5` job leaf via resource that walks `bound()`; `0.70.6` `commit` lands `kind: resource`; `0.70.7` `bound()` from the started host. Handle classes unnamed. Theme: [VISION-0.70](vision/closed/VISION-0.70.md) (**closed**). Seed: [VISION-AUTHORING](vision/VISION-AUTHORING.md). Present: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). | SD-011 ✅ · SD-025 |
+| `palm.kits` | Surface kits (`server`, **`present`**, **`authoring`**, …). Saved records name **`present`** and **`authoring`** (`0.72.3`). Surface kit **`server`** stays on `INSTALLED_KITS` and registers on server import (`0.71.21`). **`palm.kits.present`** as-built `0.69.4` (**turn invert** + **kit-as-composition**); `0.69.5` owns **`guidance_definition_id`** and is the stamp/replace caller. **`palm.kits.authoring`** as-built `0.70.1` (`land` / `commit` on `host.definitions`); `0.70.5` job leaf via resource that walks `bound()`; `0.70.6` `commit` lands `kind: resource`; `0.70.7` `bound()` from the started host. Handle classes unnamed. Theme: [VISION-0.70](vision/closed/VISION-0.70.md) (**closed**). Seed: [VISION-AUTHORING](vision/VISION-AUTHORING.md). Present: [VISION-0.69](vision/closed/VISION-0.69.md) (**closed**). | SD-011 ✅ · SD-025 |
 | `services.inspect` | Operator present **product** (`InspectService`) | Do not call it the kernel; not supervisor `SystemService` |
 
 ---
@@ -616,7 +616,7 @@ From theme **0.57** onward:
 | Live debt (SD/SU/ST/CS) | [TECH-DEBT.md](../TECH-DEBT.md) |
 | Intention stubs | [STUBS.md](STUBS.md) |
 | Debt archive (PD era) | [audit/TECH-DEBT-ERA-0.45.md](audit/TECH-DEBT-ERA-0.45.md) |
-| Theme plan | **open 0.72** [VISION-0.72](vision/VISION-0.72.md) (`0.72.2` composition record landed; measure **NOT PASS**) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** · closed [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
+| Theme plan | **open 0.72** [VISION-0.72](vision/VISION-0.72.md) (`0.72.3` package set landed; measure **NOT PASS**) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** · closed [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** · scout [VISION-0.56](vision/VISION-0.56.md) · closed [VISION-0.70](vision/closed/VISION-0.70.md) · ADR [038](adr/038-authoring-adapter.md) **Accepted** |
 | Structural ADR | [ADR-026](adr/026-palm-system-layer.md) |
 | Start / continue law | [VISION-0.55](vision/closed/VISION-0.55.md) · [ADR-025](adr/025-reactive-interests.md) |
 | Event buses | [EVENT-PLANE](EVENT-PLANE.md) |
@@ -630,7 +630,7 @@ From theme **0.57** onward:
 | Assembly (**0.63** closed) · first capability (**0.64** closed) · outbox proof (**0.65** closed) · admission on capabilities (**0.66** closed) · dependents (**0.67** closed) · costume (**0.68** closed) | [VISION-0.68](vision/closed/VISION-0.68.md) · [ADR-036](adr/036-require-capability.md) Accepted · seed [VISION-ASSEMBLY](vision/VISION-ASSEMBLY.md) · residual [SD-023](../TECH-DEBT.md#sd-023) · [SD-021](../TECH-DEBT.md#sd-021) |
 | Authoring (**0.70 closed**) | [VISION-0.70](vision/closed/VISION-0.70.md) · seed [VISION-AUTHORING](vision/VISION-AUTHORING.md) — land a shape; authoring adapter + definition pack; ADR [038](adr/038-authoring-adapter.md) **Accepted** |
 | Place registry (**0.71 closed**) | [VISION-0.71](vision/closed/VISION-0.71.md) — `0.71.0`–`0.71.21` landed; names locked; residual named; ADR [039](adr/039-place-registry-adopt.md) **Accepted**; spawn `workload:` already `0.63.16` |
-| Composition plugin membership (**0.72 open**) | [VISION-0.72](vision/VISION-0.72.md) — `0.72.0` paperwork; **`0.72.1` register landed**; **`0.72.2` composition record landed**; next **`0.72.3`** package set; reading A; measure **NOT PASS**; package membership unpaid; ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
+| Composition plugin membership (**0.72 open**) | [VISION-0.72](vision/VISION-0.72.md) — `0.72.0` paperwork; **`0.72.1` register landed**; **`0.72.2` composition record landed**; **`0.72.3` package set landed**; next **`0.72.4`** second menus; reading A; measure **NOT PASS**; ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Tunnels (queue seed) | [VISION-TUNNELS](vision/VISION-TUNNELS.md) — reach after assembly, before Grove; not open |
 | Multi-Palm horizon | [VISION-GROVE](vision/VISION-GROVE.md) — org crown; path: assembly → tunnels → Grove |
 | Dense layer detail | [ARCHITECTURE.md](../ARCHITECTURE.md) |
@@ -656,7 +656,7 @@ A map that only names **ideals** without today is also incomplete.
 | Wizard and Assist product loops | **Real** (product maturity varies by surface). Navigator invert **closed 0.69** — `palm.kits.present` on embedded; Assist stays until [VISION-SURFACE-DEFLATION](vision/VISION-SURFACE-DEFLATION.md) |
 | Reactive start / continue law | **Landed** (0.55) |
 | Workload plane (place registry) | **Scout** (0.56) engine landed · **closed 0.71** adopt through `0.71.21`; residual named — [VISION-0.71](vision/closed/VISION-0.71.md) · ADR [039](adr/039-place-registry-adopt.md) **Accepted** |
-| Composition plugin membership | **open 0.72** · **`0.72.2` record landed** · next **`0.72.3`** · measure **NOT PASS** · unpaid package latch — [VISION-0.72](vision/VISION-0.72.md) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
+| Composition plugin membership | **open 0.72** · **`0.72.3` package set landed** · next **`0.72.4`** · measure **NOT PASS** · same package set on every saved record — [VISION-0.72](vision/VISION-0.72.md) · ADR [040](adr/040-composition-plugin-membership.md) **Proposed** |
 | Named system layer in packages | **Live** — `palm.system` holds shell, `interfaces/`, `subsystems/` (planes, supervisor), boot, vitality, executions (**0.57+**; seat DI **0.61**) |
 | Unified execution port | **Live** — product + graphs + edges for effects and catalog inspect |
 | Shared vs system split in tree | **Deflated** (0.57.6–13); kits exposed (`palm.kits.server`); plan-from-body / standalone CQRS / doctor anatomy shared outside the kit (`0.71.21`) |

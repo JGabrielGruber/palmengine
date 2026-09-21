@@ -13,15 +13,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from palm.common.plugins import ensure_core_plugins
-
-# Patterns, providers, runners, storages, transforms (system start uses same helper).
-ensure_core_plugins()
-from palm.app import ApplicationHost, DeploymentProfile
+from palm.app import ApplicationHost
+from palm.app.bootstrap import ensure_plugins
 from palm.app.settings import PalmSettings
 from palm.core.event import EventEngine
 from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
 from palm.runtimes.cli.shared.context import CliContext
+
+# all_in_one record: patterns, providers, runners, storages, kits, transforms.
+ensure_plugins()
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

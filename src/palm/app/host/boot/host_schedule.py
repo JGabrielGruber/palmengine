@@ -48,7 +48,7 @@ def build_host_handlers(
     """
 
     def kernel_bootstrap(_ctx: BootContext) -> None:
-        host._app.bootstrap()
+        host._app.bootstrap(host.composition)
 
     def host_event(_ctx: BootContext) -> None:
         host._event.initialize()
@@ -59,6 +59,9 @@ def build_host_handlers(
 
     def system_spawn(_ctx: BootContext) -> None:
         merged = runtime_start_options(host.settings, **options)
+        # 0.72.3 — system.plugins.ensure installs this set. The kernel call
+        # above already installed the same names.
+        merged["composition_packages"] = host.composition.package_names()
         # 0.63.5 / 0.63.13 — seed structure definition + membership for refuse.
         # Caller definition override still wins; membership always seeds so dual shapes
         # fail closed under refuse (env/composition cannot hide from admission).

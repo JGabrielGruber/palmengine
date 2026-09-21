@@ -184,7 +184,7 @@ with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
     view = host.get_instance_view(job.metadata["instance_id"])
 ```
 
-**Extensible plugins** stay in `palm.patterns`, `palm.providers`, `palm.runners`, `palm.kits`, and `palm.storages` — each is a Django-style app subpackage with its own registry. Add the app name to the matching `INSTALLED_*` / `CORE_*` tuple; never modify core to add a plugin. Registries fill at `ensure_core_plugins` / host start (post-`0.71.20`), not on bare package import. Plugin-package latch ≠ host services phenotype (`CompositionProfile.services`).
+**Extensible plugins** stay in `palm.patterns`, `palm.providers`, `palm.runners`, `palm.kits`, and `palm.storages` — each is a Django-style app subpackage with its own registry. Add the app name to the matching `INSTALLED_*` catalog and to the composition records that install it; never modify core to add a plugin. Registries fill when the install stroke walks those record names (`0.72.3`), not on bare package import. Package names are separate from the services phenotype (`CompositionProfile.services`).
 
 See [ApplicationHost, CQRS, and reliability](#applicationhost-cqrs-and-reliability-010) and [MIGRATION-0.10.md](docs/migrations/MIGRATION-0.10.md).
 

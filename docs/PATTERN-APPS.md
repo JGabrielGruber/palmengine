@@ -141,8 +141,8 @@ Enforced by `tests/test_common_boundary.py` and `just guard-common`.
    - `pattern_registry.register("<name>", MyPattern)`
    - `register_builder("<name>", build)`
    - `<name>_app.register()`
-4. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
-5. **Bootstrap timing (post-`0.71.20`):** listing on `INSTALLED_*` is membership *intent*; registries fill when `ensure_core_plugins` / host start runs — bare `import palm.patterns.<name>` does **not** register. Do not teach import-time autoload.
+4. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py` (catalog) and to the composition records that install it.
+5. **Bootstrap timing (`0.72.3`):** the composition record names the install set. Registries fill when the install stroke walks those names — bare `import palm.patterns.<name>` does **not** register. Do not teach import-time autoload.
 6. As complexity grows, move code into `bindings/` and `flow/` — do not park pattern logic in `palm.common`.
 7. Add tests; run `just guard-common` before merge.
 

@@ -4,18 +4,19 @@ from __future__ import annotations
 
 from typing import Any
 
+from palm.app.bootstrap import ensure_plugins
+from palm.app.host.composition import composition_profile_from_name
 from palm.app.mcp_registry import iter_app_mcp_contributors
 from palm.common.patterns._registry import iter_mcp_contributors
-from palm.patterns._apps import autoload as autoload_patterns
 
 
 def register_pattern_mcp_tools(mcp: Any, rest_client: Any) -> None:
-    """Autoload pattern apps and register contributed MCP tools.
+    """Install the ``mcp`` record's packages and register contributed MCP tools.
 
-    ``PatternApp.register`` already calls ``ready()``. This path only
-    drains the MCP contributor registry.
+    ``PatternApp.register`` already calls ``ready()``. This path drains the
+    MCP contributor registry after that install.
     """
-    autoload_patterns()
+    ensure_plugins(composition_profile_from_name("mcp"))
     for contributor in iter_mcp_contributors():
         contributor.register(mcp, rest_client)
 

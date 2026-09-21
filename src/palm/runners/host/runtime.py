@@ -50,6 +50,15 @@ class HostWorkloadRuntime(WorkloadRuntime):
         self._work_root = Path(work_root).resolve() if work_root else None
         self._live: dict[str, dict[str, Any]] = {}
 
+    @classmethod
+    def bind(
+        cls,
+        *,
+        host_enabled: bool = False,
+        work_root: Path | str | None = None,
+    ) -> HostWorkloadRuntime:
+        return cls(enabled=host_enabled, work_root=work_root)
+
     def set_enabled(self, enabled: bool) -> None:
         self._enabled = bool(enabled)
 

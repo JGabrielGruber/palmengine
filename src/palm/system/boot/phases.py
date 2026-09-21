@@ -121,7 +121,7 @@ SYSTEM_PHASES: tuple[PhaseSpec, ...] = (
         "system.plugins.ensure",
         "system",
         "implemented",
-        "ensure_core_plugins (idempotent)",
+        "install composition package names",
     ),
     PhaseSpec(
         "system.engines.init",

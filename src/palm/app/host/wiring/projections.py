@@ -12,11 +12,10 @@ from palm.common.patterns._registry import get_projection_factory, registered_pr
 
 
 def build_pattern_projections(storage: Any) -> dict[str, Any]:
-    """Construct pattern extras. Core read models live on the install board."""
-    from palm.patterns import autoload as autoload_patterns
+    """Construct pattern extras. Core read models live on the install board.
 
-    autoload_patterns()
-
+    Pattern packages are already installed by the composition stroke.
+    """
     patterns: dict[str, Any] = {}
     for pattern_name in registered_projection_factories():
         factory = get_projection_factory(pattern_name)

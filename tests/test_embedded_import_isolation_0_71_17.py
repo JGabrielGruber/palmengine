@@ -47,9 +47,9 @@ def test_palm_kernel_embedded_start_does_not_load_server() -> None:
         """
         import sys
 
-        from palm.common.plugins import ensure_core_plugins
+        from palm.app.bootstrap import ensure_plugins
 
-        ensure_core_plugins()
+        ensure_plugins()
         from palm.app import PalmKernel, PalmSettings
 
         app = PalmKernel(PalmSettings(load_example_definitions=False))

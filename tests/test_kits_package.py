@@ -4,10 +4,11 @@ from __future__ import annotations
 
 
 def test_installed_kits_include_server() -> None:
-    from palm.kits import CORE_KITS, INSTALLED_KITS, get_kit, list_kits
+    import palm.kits as kits
+    from palm.kits import INSTALLED_KITS, get_kit, list_kits
 
     assert "server" in INSTALLED_KITS
-    assert "server" not in CORE_KITS
+    assert not hasattr(kits, "CORE_KITS")
     # Surface kit registers on import (not core bootstrap autoload).
     import palm.kits.server  # noqa: F401
 

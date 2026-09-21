@@ -1,8 +1,8 @@
 """Wire WorkloadEngine with bound runner instances.
 
-**local** is always on (trusted Palm process runner).
-**host** is opt-in (PALM_WORKLOAD_HOST_ENABLED).
-**neonroot** is hermetic when CLI present.
+The engine binds runners the composition record already installed.
+``local`` is the trusted default. ``host`` starts disabled unless
+``host_enabled`` is set. ``neonroot`` binds when that package was installed.
 """
 
 from __future__ import annotations
@@ -22,23 +22,18 @@ def build_bound_runtimes(
     host_enabled: bool = False,
     work_root: Path | str | None = None,
 ) -> dict[str, WorkloadRuntime]:
-    """Construct live runtime instances for engine.initialize(runtimes=…)."""
-    from palm.runners import autoload as autoload_runners
-    from palm.runners.host.runtime import HostWorkloadRuntime
-    from palm.runners.local.runtime import LocalWorkloadRuntime
-    from palm.runners.neonroot.runtime import NeonrootWorkloadRuntime
+    """Construct live runtime instances for engine.initialize(runtimes=…).
 
-    autoload_runners()
-
-    # Prefer a dedicated workloads subdir under data_dir when provided
-    local_root = None
-    if work_root is not None:
-        local_root = Path(work_root) / "workloads"
+    Walks the workload runtime registry. Does not import runner packages.
+    """
+    from palm.core.workload.registry import workload_runtime_registry
 
     return {
-        "local": LocalWorkloadRuntime(work_root=local_root or work_root),
-        "host": HostWorkloadRuntime(enabled=host_enabled, work_root=work_root),
-        "neonroot": NeonrootWorkloadRuntime(),
+        name: workload_runtime_registry.get(name).bind(
+            host_enabled=host_enabled,
+            work_root=work_root,
+        )
+        for name in workload_runtime_registry.names()
     }
 
 
@@ -63,9 +58,6 @@ def initialize_workload_engine(
 def workload_doctor_section(runtime: Any = None) -> dict[str, Any]:
     """Aggregate workload plane doctor view via engine.doctor() when possible."""
     from palm.core.workload.registry import workload_runtime_registry
-    from palm.runners import autoload as autoload_runners
-
-    autoload_runners()
 
     registered = sorted(workload_runtime_registry.names())
     engine = getattr(runtime, "workload", None) if runtime is not None else None
@@ -86,7 +78,7 @@ def workload_doctor_section(runtime: Any = None) -> dict[str, Any]:
         "registered_runtimes": registered,
         "runtimes": [],
         "issues": ["WorkloadEngine not bound on runtime"],
-        "note": "local / host / neonroot WorkloadRuntimes",
+        "note": "installed WorkloadRuntimes",
     }
 
 

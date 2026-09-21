@@ -69,9 +69,9 @@ def test_server_start_still_wires_kits_server() -> None:
         """
         import sys
 
-        from palm.common.plugins import ensure_core_plugins
+        from palm.app.bootstrap import ensure_plugins
 
-        ensure_core_plugins()
+        ensure_plugins()
         from palm.app.settings import PalmSettings
         from palm.runtimes.server.context import ServerContext
         from palm.runtimes.server.runtime import ServerRuntime

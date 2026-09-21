@@ -15,9 +15,13 @@ See ADR-028 D4, VISION-0.64, and ``composition_profile_from_settings``.
 **0.72.2:** named shapes are saved records (``COMPOSITION_RECORDS``). The host
 builds a ``CompositionProfile`` from that data. Preset classmethods are not the path.
 
+**0.72.3:** each record names the plugin packages it installs (kits, patterns,
+providers, runners, storages). The install stroke walks those names.
+``INSTALLED_*`` stays the catalog of real packages.
+
 History: skeleton 0.50 · living capabilities 0.51 · boot schedule 0.59.2-.4 ·
-membership truth 0.59.5 · composition record 0.72.2. Typed name-tuples + saved
-records, palm's ``INSTALLED_*`` idiom — not a manifest DSL.
+membership truth 0.59.5 · composition record 0.72.2 · package names 0.72.3.
+Typed name-tuples + saved records — not a manifest DSL.
 """
 
 from __future__ import annotations
@@ -66,6 +70,15 @@ DEFAULT_CAPABILITIES: frozenset[Capability] = frozenset(
     }
 )
 
+#: Package names each saved record installs (0.72.3).
+#: The install stroke walks the record. These tuples are the saved data.
+#: ``INSTALLED_*`` in each family package is the catalog of real packages.
+RECORD_KITS: tuple[str, ...] = ("present", "authoring")
+RECORD_PATTERNS: tuple[str, ...] = ("dag", "parallel", "pipeline", "wizard")
+RECORD_PROVIDERS: tuple[str, ...] = ("rest", "palm", "kv", "file", "authoring")
+RECORD_RUNNERS: tuple[str, ...] = ("local", "host", "neonroot")
+RECORD_STORAGES: tuple[str, ...] = ("memory", "filesystem")
+
 
 @dataclass(frozen=True)
 class CompositionRecord:
@@ -75,6 +88,11 @@ class CompositionRecord:
     services: tuple[str, ...]
     surfaces: tuple[str, ...]
     capabilities: frozenset[str]
+    kits: tuple[str, ...]
+    patterns: tuple[str, ...]
+    providers: tuple[str, ...]
+    runners: tuple[str, ...]
+    storages: tuple[str, ...]
 
 
 #: Named shapes. One row is one record. The host does not keep a method per name.
@@ -84,17 +102,67 @@ COMPOSITION_RECORDS: tuple[CompositionRecord, ...] = (
         ALL_SERVICES,
         SERVER_SURFACES,
         DEFAULT_CAPABILITIES,
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
     ),
     CompositionRecord(
         "server",
         ALL_SERVICES,
         SERVER_SURFACES,
         DEFAULT_CAPABILITIES,
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
     ),
-    CompositionRecord("embedded", CORE_SERVICES, (), frozenset()),
-    CompositionRecord("worker", ("execution",), (), frozenset()),
-    CompositionRecord("cli", ALL_SERVICES, (), DEFAULT_CAPABILITIES),
-    CompositionRecord("mcp", ALL_SERVICES, ("mcp",), DEFAULT_CAPABILITIES),
+    CompositionRecord(
+        "embedded",
+        CORE_SERVICES,
+        (),
+        frozenset(),
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
+    ),
+    CompositionRecord(
+        "worker",
+        ("execution",),
+        (),
+        frozenset(),
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
+    ),
+    CompositionRecord(
+        "cli",
+        ALL_SERVICES,
+        (),
+        DEFAULT_CAPABILITIES,
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
+    ),
+    CompositionRecord(
+        "mcp",
+        ALL_SERVICES,
+        ("mcp",),
+        DEFAULT_CAPABILITIES,
+        RECORD_KITS,
+        RECORD_PATTERNS,
+        RECORD_PROVIDERS,
+        RECORD_RUNNERS,
+        RECORD_STORAGES,
+    ),
 )
 
 _RECORDS_BY_NAME: dict[str, CompositionRecord] = {row.name: row for row in COMPOSITION_RECORDS}
@@ -112,11 +180,21 @@ def composition_record(name: str) -> CompositionRecord:
 
 @dataclass(frozen=True)
 class CompositionProfile:
-    """The declared composition of an app: which services, surfaces, and capabilities."""
+    """Declared composition: services, surfaces, capabilities, and package names.
+
+    Services, surfaces, and capabilities are the phenotype.
+    ``kits`` / ``patterns`` / ``providers`` / ``runners`` / ``storages`` are the
+    plugin packages this composition installs (0.72.3).
+    """
 
     services: tuple[str, ...] = ALL_SERVICES
     surfaces: tuple[str, ...] = ()
     capabilities: frozenset[str] = DEFAULT_CAPABILITIES
+    kits: tuple[str, ...] = RECORD_KITS
+    patterns: tuple[str, ...] = RECORD_PATTERNS
+    providers: tuple[str, ...] = RECORD_PROVIDERS
+    runners: tuple[str, ...] = RECORD_RUNNERS
+    storages: tuple[str, ...] = RECORD_STORAGES
 
     def has(self, capability: str) -> bool:
         """Whether ``capability`` is part of this composition."""
@@ -126,6 +204,16 @@ class CompositionProfile:
         """Whether ``surface`` is exposed by this composition."""
         return surface in self.surfaces
 
+    def package_names(self) -> dict[str, tuple[str, ...]]:
+        """Plugin package names this composition installs."""
+        return {
+            "kits": tuple(self.kits),
+            "patterns": tuple(self.patterns),
+            "providers": tuple(self.providers),
+            "runners": tuple(self.runners),
+            "storages": tuple(self.storages),
+        }
+
     @classmethod
     def from_record(cls, record: CompositionRecord) -> Self:
         """Build a profile from saved composition data."""
@@ -133,6 +221,11 @@ class CompositionProfile:
             services=tuple(record.services),
             surfaces=tuple(record.surfaces),
             capabilities=frozenset(record.capabilities),
+            kits=tuple(record.kits),
+            patterns=tuple(record.patterns),
+            providers=tuple(record.providers),
+            runners=tuple(record.runners),
+            storages=tuple(record.storages),
         )
 
 
@@ -146,6 +239,11 @@ __all__ = [
     "COMPOSITION_RECORDS",
     "CORE_SERVICES",
     "DEFAULT_CAPABILITIES",
+    "RECORD_KITS",
+    "RECORD_PATTERNS",
+    "RECORD_PROVIDERS",
+    "RECORD_RUNNERS",
+    "RECORD_STORAGES",
     "SERVER_SURFACES",
     "Capability",
     "CompositionProfile",
