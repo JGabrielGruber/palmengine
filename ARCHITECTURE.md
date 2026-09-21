@@ -54,6 +54,8 @@ flowchart TB
     subgraph Plugins["Extensible plugins"]
         patterns[palm.patterns]
         providers[palm.providers]
+        runners[palm.runners]
+        kits[palm.kits]
         storages[palm.storages]
     end
 
@@ -182,7 +184,7 @@ with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
     view = host.get_instance_view(job.metadata["instance_id"])
 ```
 
-**Extensible plugins** stay in `palm.patterns`, `palm.providers`, and `palm.storages` — each is a Django-style app subpackage with its own `registry.py`. Add the app name to `INSTALLED_PATTERNS` / `INSTALLED_PROVIDERS` / `INSTALLED_STORAGES`; never modify core to add a plugin.
+**Extensible plugins** stay in `palm.patterns`, `palm.providers`, `palm.runners`, `palm.kits`, and `palm.storages` — each is a Django-style app subpackage with its own registry. Add the app name to the matching `INSTALLED_*` / `CORE_*` tuple; never modify core to add a plugin. Registries fill at `ensure_core_plugins` / host start (post-`0.71.20`), not on bare package import. Plugin-package latch ≠ host services phenotype (`CompositionProfile.services`).
 
 See [ApplicationHost, CQRS, and reliability](#applicationhost-cqrs-and-reliability-010) and [MIGRATION-0.10.md](docs/migrations/MIGRATION-0.10.md).
 
@@ -286,7 +288,7 @@ Extension is explicit and import-time registered:
 | `PlanRegistry` | `common/plans/registry.py` | deferred execution plans |
 | `RuntimeRegistry` | `app/registry.py` | named `PalmKernel` runtimes |
 
-New capabilities are added by new modules under `patterns/`, `providers/`, or `storages/`—not by editing orchestration internals.
+New plugin capability is added by new modules under `patterns/`, `providers/`, `runners/`, `kits/`, or `storages/`—not by editing orchestration internals. (English “capability” here means plugin family extension — not `StructureDefinition` organs.)
 
 ### Storage layer (0.7)
 

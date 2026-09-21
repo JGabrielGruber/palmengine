@@ -11,7 +11,7 @@ Palm 0.6 finalizes the orchestration maturation work started in 0.5.x:
 - **Lifecycle authority** — `JobRunner` → `RunResult` → `apply_result`
 - **Scheduling** — `JobScheduler` (inline / queued) replaces ad-hoc modes
 - **Executions handoff** — `ExecutionPlan` / `ProcessPlan` with prepare → stage → submit
-- **Runtimes** — `BaseRuntime` foundation with `EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime`
+- **Runtimes** — historical `BaseRuntime` family (`EmbeddedRuntime`, `DaemonRuntime`, `ServerRuntime`); **`palm.runtimes` barrel emptied in 0.71.17** — see honesty note near the archive snippet below
 - **Middleware** — `JobHook` drive-phase hooks, `AuthMiddleware`, `InstancePersistenceHook`
 
 Deprecated aliases and transitional APIs from the 0.5 maturation period have been **removed**.
@@ -145,13 +145,12 @@ runtime.start()
 | `ServerRuntime` | queued + HTTP | Network API |
 
 ```python
-from palm.runtimes import DaemonRuntime, ServerRuntime
-
-daemon = DaemonRuntime()
-daemon.start(credentials={"subject": "ops"}, auth_enforce=True)
-
-server = ServerRuntime()
-server.start(port=8080, auth_enforce=True)
+# **0.72.0 honesty:** `palm.runtimes` emptied in `0.71.17` — the import below is **archive**.
+# Live: ApplicationHost / composition phenotype / `kits.server` — not `from palm.runtimes import …`.
+# Historical (ImportError @ HEAD):
+# from palm.runtimes import DaemonRuntime, ServerRuntime
+# daemon = DaemonRuntime(); daemon.start(credentials={"subject": "ops"}, auth_enforce=True)
+# server = ServerRuntime(); server.start(port=8080, auth_enforce=True)
 # POST /v1/plans/prepare, POST /v1/plans/submit
 # Header: X-Palm-Subject: ops
 ```

@@ -451,8 +451,9 @@ See **[docs/PATTERN-APPS.md](docs/PATTERN-APPS.md)** for the full guide. Summary
    - `registry.py` — `pattern_registry.register(...)` + `register_builder(...)` + `<name>_app.register()`
    - `__init__.py` — import `registry` for side effect
 2. Add `"<name>"` to `INSTALLED_PATTERNS` in `patterns/_apps.py`.
-3. Keep pattern-specific logic in `palm/patterns/<name>/` — **not** in `palm.common`. Run `just guard-common`.
-4. Add tests in `tests/`.
+3. Registries fill at `ensure_core_plugins` / host start (post-`0.71.20`) — bare package import does **not** register.
+4. Keep pattern-specific logic in `palm/patterns/<name>/` — **not** in `palm.common`. Run `just guard-common`.
+5. Add tests in `tests/`.
 
 ## Collection step kind (wizard)
 
@@ -518,7 +519,7 @@ Plugin registries (`pattern_registry`, `provider_registry`, `storage_registry`, 
 
 **Do:**
 
-- Register patterns/providers/storages in each app's `registry.py`, imported via `INSTALLED_*` autoload lists.
+- Register patterns/providers/storages/runners/kits in each app's `registry.py`; list on `INSTALLED_*` / `CORE_*`; bootstrap via `ensure_core_plugins` / host start (not bare import).
 - Register commit handlers in `register_definitions()` or module import side effects before serving traffic.
 - Use `ApplicationHost.start()` or `PalmKernel.bootstrap()` before serving traffic in multi-threaded deployments.
 

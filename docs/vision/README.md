@@ -18,7 +18,7 @@ Seeds deepen; they do not hide that law only inside one file.
 
 | Doc | Role |
 |------|------|
-| [VISION-0.71.md](VISION-0.71.md) | **Open minor** — place registry · adopt a named body |
+| [VISION-0.72.md](VISION-0.72.md) | **Open minor** — composition plugin membership · minimal embed measure |
 | [VISION-ASSEMBLY.md](VISION-ASSEMBLY.md) | Seed essay (law) · roles · ports · admission · citizenship · modules |
 | [VISION-0.56.md](VISION-0.56.md) | Workload — **horizontal** place book (scout) |
 | [VISION-TUNNELS.md](VISION-TUNNELS.md) | **Reach** only · after assembly, before Grove |
@@ -34,7 +34,7 @@ Seeds deepen; they do not hide that law only inside one file.
 ## Closed
 
 All finished theme plans live under [`closed/`](closed/).  
-Example: [closed/VISION-0.70.md](closed/VISION-0.70.md) (Authoring), [closed/VISION-0.69.md](closed/VISION-0.69.md) (Navigator invert).
+Example: [closed/VISION-0.71.md](closed/VISION-0.71.md) (Place registry), [closed/VISION-0.70.md](closed/VISION-0.70.md) (Authoring), [closed/VISION-0.69.md](closed/VISION-0.69.md) (Navigator invert).
 
 Index of names: list the directory. Do not re-import closed themes into AGENTS or the live debt front matter.
 

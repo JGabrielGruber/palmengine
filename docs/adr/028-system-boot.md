@@ -71,6 +71,15 @@ fold deployment `enable_work_drain_service` into membership once; explicit
 `CompositionProfile` always wins. PhaseSkip reasons `composition_off:*`;
 `boot.start` and doctor `boot.membership` report phenotype.
 
+**Succession (organs — post-0.64 / StructureDefinition):** D4’s organ examples
+(`outbox`, `work_drain`, `projections`, …) are **historical**. Those organs now
+live on `StructureDefinition.capabilities` → `LOCAL_CAPABILITY_HANDS` (hands /
+materialize). Composition `capabilities` remain **workloads** only (phenotype
+plane flag). Do **not** re-wire organs onto `CompositionProfile`. Current law:
+[VISION-ASSEMBLY](../vision/VISION-ASSEMBLY.md) · structure definition + hands.
+Composition still owns product **services**, **surfaces**, and workload
+membership on the phenotype path.
+
 ### D5 — Plugins vs planes (preserve)
 
 1. **Plugins** — settings / `INSTALLED_*` declare membership; packages self-register downward.  

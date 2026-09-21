@@ -1,27 +1,28 @@
 # VISION 0.71 — Place registry (adopt)
 
-**Status:** 📋 **Theme open** (José 2026-09-20). Execute `0.71.0`–`0.71.19` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). Remaining: José exit judgment plus named place leftovers. Package stamp stays `0.68.0` (no embedded release).  
+**Status:** ✅ **Theme closed** (José 2026-09-21). Floor/growth through `0.71.21` landed. Names locked (`adopt` / `adopt:` / empty `runtime` / `Workload` rows). ADR-039 **Accepted**. Package stamp stays `0.68.0` (no embedded release).  
 **Language:** ASD-STE100 Simplified Technical English.  
-**Map:** [PALM.md](../PALM.md) — read first.  
-**ADR:** [039-place-registry-adopt.md](../adr/039-place-registry-adopt.md) **Proposed**.  
-**Scout (engine):** [VISION-0.56](VISION-0.56.md) · [ADR-024](../adr/024-workload-engine.md) **Accepted**.  
-**Assembly hands (spawn already):** [VISION-0.63](closed/VISION-0.63.md) `0.63.16` `workload:` · [ADR-032](../adr/032-organism-assembly.md) **Accepted**.  
-**Theme law:** [VERSIONING.md](../VERSIONING.md) (floor · growth · exit judgment).  
-**Prior closed:** [VISION-0.70](closed/VISION-0.70.md) Authoring · [ADR-038](../adr/038-authoring-adapter.md) **Accepted**.  
-**Needs later:** [VISION-TINY-LLM](VISION-TINY-LLM.md) — model body is a place; speak is not this theme.  
-**Not this theme:** [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) · [VISION-TUNNELS](VISION-TUNNELS.md).  
-**North star:** [VISION-GROVE](VISION-GROVE.md).
+**Map:** [PALM.md](../../PALM.md) — read first.  
+**ADR:** [039-place-registry-adopt.md](../../adr/039-place-registry-adopt.md) **Accepted**.  
+**Scout (engine):** [VISION-0.56](../VISION-0.56.md) · [ADR-024](../../adr/024-workload-engine.md) **Accepted**.  
+**Assembly hands (spawn already):** [VISION-0.63](VISION-0.63.md) `0.63.16` `workload:` · [ADR-032](../../adr/032-organism-assembly.md) **Accepted**.  
+**Theme law:** [VERSIONING.md](../../VERSIONING.md) (floor · growth · exit judgment).  
+**Prior closed:** [VISION-0.70](VISION-0.70.md) Authoring · [ADR-038](../../adr/038-authoring-adapter.md) **Accepted**.  
+**Needs later:** [VISION-TINY-LLM](../VISION-TINY-LLM.md) — model body is a place; speak is not this theme.  
+**Not this theme:** [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md) · [VISION-TUNNELS](../VISION-TUNNELS.md).  
+**North star:** [VISION-GROVE](../VISION-GROVE.md).  
+**Next open:** [VISION-0.72](../VISION-0.72.md) composition plugin membership · [ADR-040](../../adr/040-composition-plugin-membership.md) **Proposed**.
 
 Teaching name (once): **place book remainder**.  
 Law: **place registry** — named places Palm may mean (spawn or adopt); lifecycle + readiness. Home: workload plane.
 
-**Open:** José named **0.71** (2026-09-20). Floor: **adopt**. Spawn via `WorkloadEngine` is already `0.63.16`. Do not reopen `0.56`.
+**Exit:** José closed the theme (2026-09-21). Floor/growth through `0.71.21` held. Names locked. ADR-039 **Accepted**. Residual named in §11. Next open is **0.72**.
 
 ---
 
 ## 1. Goal
 
-[PALM.md](../PALM.md) says the **place registry** lives on the workload plane. Structure may **require** places. Tiny LLM needs a named body Palm did not necessarily start.
+[PALM.md](../../PALM.md) says the **place registry** lives on the workload plane. Structure may **require** places. Tiny LLM needs a named body Palm did not necessarily start.
 
 As-built is two books:
 
@@ -54,7 +55,7 @@ A place Palm **adopts** is missing. “The server is already up” has no honest
 | **Growth line** | Theme may grow while José keeps it open — projection, release-as-unbind, spawn-on-same-book honesty. |
 | **Exit** | **José’s** judgment when the home is proper and residual is honest. |
 
-**Who decides:** José Gabriel Gruber — [VERSIONING.md](../VERSIONING.md) *Who decides*.
+**Who decides:** José Gabriel Gruber — [VERSIONING.md](../../VERSIONING.md) *Who decides*.
 
 ---
 
@@ -231,13 +232,13 @@ While the theme stays open, slices may:
 
 | Out of this theme’s *subject* | Home |
 |-------------------------------|------|
-| Tiny model inference / schema muzzle | [VISION-TINY-LLM](VISION-TINY-LLM.md) |
-| Compost Assist / CLI forest / Portal | [VISION-SURFACE-DEFLATION](VISION-SURFACE-DEFLATION.md) |
-| Full 0.56.7–13 list (ssh, k8s, peer, blueprints) | [VISION-0.56](VISION-0.56.md) remainder — not this floor |
-| Tunnels / Grove | [VISION-TUNNELS](VISION-TUNNELS.md) · [VISION-GROVE](VISION-GROVE.md) |
-| Authoring names / `palm` catalog write | [SD-025](../../TECH-DEBT.md#sd-025) |
-| Host wizard-named flats | [SD-024](../../TECH-DEBT.md#sd-024) |
-| 0.68 leftover duals | [SD-023](../../TECH-DEBT.md#sd-023) |
+| Tiny model inference / schema muzzle | [VISION-TINY-LLM](../VISION-TINY-LLM.md) |
+| Compost Assist / CLI forest / Portal | [VISION-SURFACE-DEFLATION](../VISION-SURFACE-DEFLATION.md) |
+| Full 0.56.7–13 list (ssh, k8s, peer, blueprints) | [VISION-0.56](../VISION-0.56.md) remainder — not this floor |
+| Tunnels / Grove | [VISION-TUNNELS](../VISION-TUNNELS.md) · [VISION-GROVE](../VISION-GROVE.md) |
+| Authoring names / `palm` catalog write | [SD-025](../../../TECH-DEBT.md#sd-025) |
+| Host wizard-named flats | [SD-024](../../../TECH-DEBT.md#sd-024) |
+| 0.68 leftover duals | [SD-023](../../../TECH-DEBT.md#sd-023) |
 | Bare in-process place ids (body strategy) | Later — `0.71.9` removed the overlay dual; `0.71.11` bare ready when book-bound is registry `ready`, not a second engine book |
 
 **Forbidden always (layer law):**
@@ -256,7 +257,7 @@ While the theme stays open, slices may:
 
 ## 6. Principles
 
-Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-032](../adr/032-organism-assembly.md).
+Bind to [PALM.md](../../PALM.md), [ADR-024](../../adr/024-workload-engine.md), [ADR-032](../../adr/032-organism-assembly.md).
 
 1. **Two axes stay split.** Vertical = home / structure. Horizontal = place registry.  
 2. **Allocate vs speak.** Workload places bodies. Providers speak. Do not collapse.  
@@ -315,7 +316,7 @@ Bind to [PALM.md](../PALM.md), [ADR-024](../adr/024-workload-engine.md), [ADR-03
 | **0.71.20** | Defer pattern/provider (and kits/runners/storages) autoload to bootstrap. **landed**. |
 | **0.71.21** | Isolate ApplicationHost from `palm.kits.server` (shared hands + CORE_KITS). **landed**. |
 
-Names are locked. Remaining is José exit judgment plus named place leftovers. Leftovers in §11 stay **named residual**.
+Names are locked. Theme **closed**. Leftovers in §11 stay **named residual** (not claimed fixed).
 
 ---
 
@@ -358,16 +359,16 @@ Do not invent a Protocol type name for the registry.
 
 ---
 
-## 11. Residual (open)
+## 11. Residual (theme closed)
 
-Theme stays **open**. Execute `0.71.0`–`0.71.21` landed. Names locked. Next is José exit judgment plus named place leftovers.
+Theme **closed** (José 2026-09-21). Floor/growth through `0.71.21` landed. Names locked. ADR-039 **Accepted**. Named residuals below were **not** fixed in this theme — leave them honest.
 
 | Residual | Truth |
 |----------|-------|
-| `workload_place` remaining `isinstance` | Typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** honest compost now. |
-| `WorkloadEngine` remaining `isinstance` | argv-must-not-be-str. Fail-closed. **Not** honest compost now. |
-| `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** honest compost now. |
-| Host wizard flats / cold wizard pull | [SD-024](../../TECH-DEBT.md#sd-024). Not composted here; does not pull `kits.server`. |
-| `import palm.common.transforms` autoload | Still on ApplicationHost path. Named; not the `kits.server` pull. |
+| `workload_place` remaining `isinstance` | Typed `WorkloadHandle` accept at Mapping body. Payload shape / fail-closed. **Not** fixed. |
+| `WorkloadEngine` remaining `isinstance` | argv-must-not-be-str. Fail-closed. **Not** fixed. |
+| `place_spawn` remaining `getattr`/`isinstance` | `os:` process poll / pid / env payload. **Not** fixed. |
+| Host wizard flats / cold wizard pull | [SD-024](../../../TECH-DEBT.md#sd-024). Not composted here; does not pull `kits.server`. **Not** fixed. |
+| `import palm.common.transforms` autoload | Still on ApplicationHost path. Named; not the `kits.server` pull. **Not** fixed. |
 
 **Paid this pass (`0.71.9`–`0.71.15`):** overlay dict gone; `.handles` / `__os_registry__` gone; bound seat reads place readiness from the registry, not a second observation book; typed `workload_place` env Mapping (no dict isinstance silent drop); typed `WorkloadEngine` named runtime bind (no dict / WorkloadRuntime isinstance soup); typed seat `bind_structure` on `StructureEffectPort` (no getattr duck-walk); StructureEngine `_places_ready` dual gone (hand-only readiness).

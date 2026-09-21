@@ -37,8 +37,8 @@ Theme work so far did real work — and it is easy to over-read it.
 
 | Built (roughly) | Not built yet (roughly) |
 |-----------------|-------------------------|
-| **Readiness dashboard** — admission snapshot, fail-closed doors on many business paths, surface honest refuse, residual cartography | **Structure manager** — desired structure that **materializes** membership and only wires allowed life (compose-like control of services-ish) |
-| Pure reconciler + system seat + thin DNA seed map | Structure definition as the **install set** for the process |
+| **Readiness dashboard** — admission snapshot, fail-closed doors on many business paths, surface honest refuse, residual cartography | **Structure manager** — desired structure that **materializes** organ/place membership and only wires allowed life (essay once said “services-ish”; **code:** organs via hands — services stay `CompositionProfile`) |
+| Pure reconciler + system seat + thin DNA seed map | Structure definition as organ/place **enablement law** after load (not the plugin-package install set; packages unpaid under latch @ HEAD) |
 | Gate-first purge of market-day pretenders | Bootstrap/host freelancing replaced by structure plan → materialize → admit |
 
 **Dashboard** means: we can see readiness, refuse business when admission is down, and map dual paths. That is necessary. It is **not** the full seed goal.
@@ -105,7 +105,7 @@ Name the split. Do not collapse it.
 | Role | Computer-science term | Duty |
 |------|----------------------|------|
 | **Authority** | Author of desired structure | Publishes the **assembly definition**. Does not stand at every gate for clients. |
-| **Assembly definition** | Desired state (declarative) | Versioned DNA: role, truth home, places, refuse, projection, seat intent. |
+| **Assembly definition** | Desired state (declarative) | Versioned DNA (essay field set — teaching). **Code now:** `StructureDefinition` fields are `id` / `version` / `role_intent` / `refuse` / **`capabilities`** (seven **organs**) / `places_required` / `meta`. Services stay composition. Do **not** treat the essay field list as the current StructureDefinition API. |
 | **Assembly engine** | Pure reconciler | Holds definition + **assembly status**; emits **effect intents**; folds **observations**. No sockets. No OS spawn. No business jobs. |
 | **Assembly status** | Local readiness / status model | This process’s reflection under the current definition. Not a second definition. |
 | **System loop** | Apply + observe cycle | Loads definition; ticks engine; applies intents via ports; feeds observations; publishes admission. |

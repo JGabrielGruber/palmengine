@@ -4,10 +4,14 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
-### Docs — 0.71 present (theme open)
+### Docs — 0.72.0 paperwork (theme open)
 
-- Lock as-built names: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. Theme stays open. ADR-039 stays **Proposed**. Next: José exit judgment plus named place leftovers.
-- After `0.71.21`: residual named (`workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance; host wizard flats SD-024; transforms package autoload on ApplicationHost path). Paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed `workload_place` env Mapping; typed `WorkloadEngine` named runtime bind; typed seat `bind_structure`; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation from server barrel; base wheel omits surface static / MCP data; ApplicationHost cold import (common→system rehydrate cycle cut); pattern/provider (and kits/runners/storages) autoload deferred to bootstrap; ApplicationHost isolates from `palm.kits.server`. PALM pointer through `0.71.21`.
+- José exited **0.71** / opened **0.72** paperwork (2026-09-21). VISION-0.71 → `closed/`; ADR-039 **Accepted**. VISION-0.72 open; ADR-040 **Proposed** (composition plugin membership · reading A · minimal embed measure). STATUS/PALM/vision README/root README aligned. Stamp stays `0.68.0`. Measure **not pass**. Pack = vision write + docs align — not membership implement.
+
+### Docs — 0.71 present (theme closed)
+
+- José exited **0.71** (2026-09-21). Names locked: method `adopt`, prefix `adopt:`, empty `runtime`, adopted rows stay `Workload`. ADR-039 **Accepted**. VISION-0.71 moved to `docs/vision/closed/`. Residual named (not claimed fixed): `workload_place` WorkloadHandle accept; `WorkloadEngine` argv-must-not-be-str; `place_spawn` os: getattr/isinstance; host wizard flats SD-024; transforms package autoload on ApplicationHost path.
+- Through `0.71.21` paid: overlay gone; `.handles` / `__os_registry__` gone; bound seat reads registry `ready`; typed env/runtime/seat binds; StructureEngine `_places_ready` dual gone; stdlib settings + `dotenv` extra; embedded import isolation; base wheel omits surface static / MCP data; ApplicationHost cold import; deferred plugin autoload; ApplicationHost isolates from `palm.kits.server`.
 
 ### 0.71.21 — Isolate ApplicationHost from server kit
 
@@ -101,7 +105,7 @@ All notable changes to Palm are documented here. The format follows [Keep a Chan
 
 ### 0.71.0 — Place registry (**theme open** · José 2026-09-20)
 
-Vision: [VISION-0.71](docs/vision/VISION-0.71.md) · ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed**
+Vision: [VISION-0.71](docs/vision/closed/VISION-0.71.md) · ADR [039](docs/adr/039-place-registry-adopt.md) **Proposed** (at open; **Accepted** 2026-09-21 on theme exit)
 
 - Floor: **adopt** a named existing body. Spawn via `workload:` stays `0.63.16`.
 - Package stamp stays `0.68.0`. No embedded release. Execute starts at `0.71.1`.
