@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from palm.core.behavior_tree import ActionNode, BaseNode, PatternStatus
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard import WizardPhaseContext, default_wizard_step_registry
+
+from plugins.patterns.wizard import WizardPhaseContext, default_wizard_step_registry
 
 
 def _build_log_step(ctx: WizardPhaseContext) -> BaseNode:
@@ -18,7 +19,7 @@ def _build_log_step(ctx: WizardPhaseContext) -> BaseNode:
     slug = ctx.step.slug
 
     def mark(state: object) -> PatternStatus:
-        from palm.patterns.wizard import WizardKeys
+        from plugins.patterns.wizard import WizardKeys
 
         answers = state.get(WizardKeys.ANSWERS, {}) or {}
         if isinstance(answers, dict):

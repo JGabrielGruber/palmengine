@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.wizard.bindings.catalog import flow_step_slugs
+
+from plugins.patterns.wizard.bindings.catalog import flow_step_slugs
 
 
 def flow_catalog_row(flow: FlowDefinition) -> dict[str, Any]:

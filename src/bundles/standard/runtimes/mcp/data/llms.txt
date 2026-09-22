@@ -1,0 +1,258 @@
+# Palm Engine — LLM Guide
+
+> Lightweight Behavior Tree orchestration for wizards, durable workflows, and human-in-the-loop processes in Python.
+
+**Version:** 0.68.0 (PyPI) · **PyPI:** `palmengine` · **Import:** `palm` · **CLI:** `palm` · **Theme:** 0.71 place registry (adopt; stamp 0.68.0) · present STATUS.md
+
+## Philosophy
+
+Palm grows where the sun meets the sea. Orchestration should feel alive, truthful, and humane. The core stays pure; capability grows at the edges through registries.
+
+## Recommended Entry Points
+
+For most applications, use **ApplicationHost** — it wires CQRS, projections, outbox, compensation, and recovery:
+
+```python
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+
+with ApplicationHost(profile=DeploymentProfile.all_in_one()) as host:
+    session = host.execution.flows.dispatch(
+        ["flows", "onboard", "session", sid, "input"],
+        {"value": "yes"},
+    )
+    views = host.list_instance_views(include_terminal=False)
+```
+
+CLI bootstrap uses the same path via `create_cli_host()` (collapsed `all_in_one` profile).
+
+**PalmKernel** remains valid for low-level embedding when you need direct runtime registry control without host overhead.
+
+## Architecture (0.16+)
+
+Layered, registry-driven model with a strictly pure core:
+
+```
+REST / MCP / CLI
+        ↓
+palm/runtimes/     Thin adapters → services (per-domain routes + MCP)
+        ↓
+palm/app/          ApplicationHost (recommended), PalmKernel (infra)
+        ↓
+palm/services/     USER API — definitions, execution/*, system, assist (0.18)
+        ↓
+palm/common/       CQRS + CqrsSchemaRegistry, hooks, persistence, transforms
+        ↓
+palm/core/         PURE engines — Behavior Tree, Orchestration, Context, Storage, Resource, Event, Auth, Transform
+```
+
+**Core purity rule:** `palm/core/` must never import from any other Palm package.
+
+**Extension:** patterns, providers, storages register at bootstrap via registries — never by editing core.
+
+## Key Capabilities
+
+| Area | Highlights |
+|------|------------|
+| **Wizard** | Validation, collection steps, transform steps, backtracking, summary + commit |
+| **Parallel** | Concurrent wizard branches with isolated scopes and merge strategies |
+| **Transforms** | 24 built-in rules; pipelines, wizard steps, or `TransformExecutor` (`parquet_load` is intention-only) |
+| **State** | `DictStateSchema`, scoped blackboards, schema-aware snapshots (`__palm:meta`) |
+| **Persistence** | Durable `ProcessInstance` records; resume across restarts |
+| **CQRS** | Command/query buses; host projections (`instance_index`, `job_status_board`); wizard CQRS in `patterns/wizard/bindings/cqrs/` |
+| **Reliability** | Transactional outbox, compensation handlers. Webhook organ does not POST |
+| **Runtimes** | Embedded, Daemon, Server (HTTP), CLI + REPL (host-backed) |
+| **Resources (0.12)** | `ResourceDefinition`, `ResourceEngine.invoke()`, `ResourceLeaf`, `ResourceCatalog`, `palm` provider |
+| **Flow REST (0.58.19 paths)** | `/v1/api/flows/{flow_id}/instance/{instance_id}/…` — create, inspect, input, backtrack (legacy segment `session` may parse) |
+| **Session plane (0.58)** | System `session_id` (`sess-…`) ≠ product `instance_id`; BoundSurface / SessionService door |
+| **Definitions REST (0.16)** | `/v1/api/definitions/{flows,processes,resources}/…` — catalog CRUD + validate |
+| **Definition revisions (0.24)** | Append-only flow revisions; `flow_revision` pin; `GET flow?revision=`; impact + migrate |
+| **Providers REST (0.16)** | `POST /v1/api/providers/{provider}/{resource_ref}/invoke` |
+| **Palm Explorer** | SSR hub at `/explorer` — wizard workspace (HTMX), collection UI, **resources**; `GET /` redirects here |
+| **MCP (0.16–0.31)** | Prefer **`palm_assist`**; `PALM_MCP_SURFACE=assist` for one-tool hosts; L1 `palm://agent/card`; discover via `alias=assist/discover`; full domain tools optional — `docs/MCP.md` |
+| **Service layer (0.16)** | `host.system`, `host.definitions`, `host.execution.flows`, `host.execution.providers` |
+| **Assist (0.18)** | `host.assist` · REST `/v1/api/assist/…` · `palm-operator-entry` scenario · handoff → flows |
+| **palm_assist (0.19)** | Single MCP tool: `path` / `alias` / `params` dispatch · resource `palm://assist/routes` |
+| **Operator views (0.20)** | **Assistant** default on assist (`question`, `choices`, `hint`) · **Powertool** on `palm_flows_*` / flows paths (`operator_hint`) |
+| **MCP in-process (0.15+)** | `PALM_MCP_IN_PROCESS=1` — tools use services without HTTP (default in `.grok/config.toml`) |
+| **Dashboard** | `palm status` — projection-backed Rich overview |
+| **Reliability** | Resource compensation via `register_for_resource()`; `ResourceInvocationProjection` |
+
+## Quick Commands
+
+```bash
+pip install palmengine[cli]
+palm doctor
+palm status
+palm flow start onboard
+palm flow start schema-onboard
+palm flow start todo-builder
+palm flow start parallel-demo
+palm repl   # then: resource list / describe / invoke
+```
+
+From source: `uv sync --group dev --extra cli && uv pip install -e ".[cli]"`
+
+Server + Explorer:
+```bash
+palm host server   # or: just palm-server
+# → http://localhost:8080/explorer (root / redirects here)
+curl -s -X POST http://localhost:8080/v1/api/flows/todo-builder/create \
+  -H 'Content-Type: application/json' -d '{"flow_name":"todo-builder"}'
+# → open /explorer/instances/<instance_id> for wizard workspace + collection UI
+```
+
+## Agent development with MCP (0.16)
+
+**Local default:** in-process engine — no REST server required.
+
+```bash
+uv sync --extra mcp
+PALM_MCP_IN_PROCESS=1 uv run --extra mcp palm-mcp    # stdio → services
+```
+
+**Remote proxy:** `PALM_MCP_IN_PROCESS=0` + `just palm-server` on `:8080`.
+
+Grok: `.grok/config.toml` — `PALM_MCP_IN_PROCESS=1`, `PALM_LLMS_TXT=docs/mcp.txt`. Cursor/Claude: same env vars with `uv run --extra mcp palm-mcp`.
+
+### Operator loop (memorize this)
+
+`definitions → create → inspect → input → wait on children → resume`
+
+### Rules for agents
+
+1. **Instance-continue / session-bind (0.58)** — prefer `instance_id` for walk continue; system `session_id` is `sess-…` only. Do not treat them as the same. Use `job_id` only when you lack a continue handle (`palm_system_inspect_job`).
+2. **Plain input** — `palm_flows_session_input` + continue id + `input="yes"` not JSON blobs. `yes`/`no` coerce to boolean on confirm steps.
+3. **Two view modes (0.20–0.21)** — **Assistant** on assist paths (`question`, `choices`, `hint`, `actions`). **Powertool** default on `palm_flows_*` and flows/system `palm_assist` paths. **0.21.5 opt-in:** `palm_flows_session(format="assistant")` or flows REST `?format=assistant`. Use `format=powertool` on assist for 0.19 compact shape; `verbose` for full inspect.
+4. **Human entry (0.21)** — CLI: `assist start operator-entry`. Explorer: `/explorer/assist`. MCP/REST assist; handoff → flows create.
+5. **Resources = read, tools = write** — MCP read URIs (`palm://definitions/*`, `palm://agent/guide`) via FetchMcpResource; resource definitions (`knowkey.search_nodes`, `fetch-customer`) via `palm_providers_invoke`. Never pass `palm://` to invoke.
+6. **Compositional wizards** — check `waiting_on`, drive the **child** instance; parent unparks on completion.
+7. **Collection steps** — `palm_wizard_collection_action` or `palm_assist(params={instance_id, flow_id, collection_action, value})`; `params.edit={item_index, …}` for field edits; fuzzy menu tokens (`add`/`edit`/`done`/`continue`) coerce to labels.
+8. **Interactive entry** — `palm_assist` / `palm_flows_create_session(flow_id=…)` for wizards. Never `palm_processes_submit` on catalog processes with `entry_flow`; read `palm://definitions/processes/{name}` for `submit_hint` / `mcp_default_entry`.
+9. **Batch drive** — `palm_flows_session_drive` accepts plain strings in `inputs`, `payload={…}` alone for one structured step, or both. After commit, `palm_flows_compose_status` includes `result` / `result_summary`.
+10. **`actions` block (0.21.4)** — on assistant turns; prefer structured `path`/`alias` over parsing `hint` for next steps.
+11. **Product door** — SessionService / BoundSurface; continue via wait plane only.
+
+### Typical walk (0.31 — assist-first / weak-LLM)
+
+```
+# Progressive docs: palm://agent/card first (not full guide)
+palm_assist(alias="assist/discover", params={query: "run"})  # optional route search
+palm_assist()                                                → operator-entry
+palm_assist(params={flow_id: "coconut-npc"})                 → start flow (assistant)
+palm_assist(params={instance_id, flow_id, value: "…"})       → continue
+palm_assist(params={body: {name, pattern, options.steps}})   → one-shot publish
+palm_assist(alias="assist/doctor")                           → health / resource preflight
+# With PALM_MCP_SURFACE=assist these are the only tool calls needed
+# Power users on surface=full may still use palm_flows_* / palm_design_*
+```
+
+### Tool cheat sheet (prefer palm_assist)
+
+| Need | Tool / resource |
+|------|-----------------|
+| Operator card (L1) | `palm://agent/card` |
+| Full guide (L2) | `palm://agent/guide` (`docs/mcp.txt`) |
+| Agent skill (L2) | `palm://agent/skill` |
+| Discover routes | `palm_assist(alias="assist/discover")` |
+| Start / drive wizard | `palm_assist(params={flow_id})` / `{session_id, flow_id, value}` |
+| List flows / waiting | `assist/catalog/flows` · `assist/catalog/waiting` |
+| Publish flow | `palm_assist(params={body})` or `design/publish` |
+| Doctor | `assist/doctor` |
+| Routes catalog | `palm://assist/routes` |
+| Project context | `docs/llms.txt` (this file) |
+| Health | `palm_system_doctor` |
+| Read catalogs / guide | `palm://definitions/*`, `palm://agent/guide` (FetchMcpResource) |
+| Invoke resource definition | `palm_providers_invoke` (definition name, not `palm://`) |
+| Commit result / node IDs | `palm_flows_compose_status`, `palm_system_fetch_job` |
+| Multi-step burst | `palm_flows_session_drive` (`payload` for structured JSON) |
+
+**Prompts:** `debug-wizard-block`, `drive-wizard-to-step`, `explain-compositional-stack`, `operator-handoff`
+
+Full inventory: `docs/MCP.md`
+
+Durable local storage:
+```bash
+export PALM_STORAGE_BACKEND=filesystem
+export PALM_DATA_DIR=./data
+```
+
+## Package Layout
+
+```
+src/palm/
+├── app/            # ApplicationHost, PalmKernel, DeploymentProfile, create_cli_host()
+├── core/           # Pure engines (no external palm imports)
+├── services/       # User-facing API (definitions, execution, system)
+├── common/         # CQRS, hooks, persistence, transforms, runtimes base
+├── patterns/       # PatternApp + bindings/ + flow/ (wizard, parallel, pipeline, dag, etl)
+├── providers/      # rest, graphql, postgres (extensible)
+├── storages/       # memory, filesystem, postgres, mongodb (extensible)
+├── definitions/    # FlowDefinition, ProcessDefinition, ResourceDefinition
+├── instances/      # ProcessInstance, StateSnapshot
+└── runtimes/       # Thin CLI, embedded, daemon, server surfaces
+```
+
+## Key Documents
+
+| Document | Purpose |
+|----------|---------|
+| AGENTS.md | Constitution for AI agents and contributors |
+| STATUS.md | Living current state |
+| ARCHITECTURE.md | Layers, ApplicationHost, CQRS, reliability |
+| DEVELOPMENT.md | Contributor setup and patterns |
+| docs/PATTERN-APPS.md | PatternApp manifests, bindings/flow layout, common boundary |
+| docs/PROVIDER-APPS.md | ProviderApp manifests, bindings/flow layout for providers; palm reference |
+| docs/adr/002-pattern-apps-and-common-boundaries.md | ADR for pattern/common split |
+| docs/wiki/guides/explorer-wizard.md | Explorer wizard workspace + collection UI guide |
+| docs/MCP.md | **Agent MCP guide** — setup, workflows, full tool inventory |
+| docs/skills/palm/SKILL.md | Portable agent skill — copy into Cursor, Claude, or custom hosts |
+| docs/mcp.txt | MCP operator guide (`palm://agent/guide` default) |
+| docs/DOCKER.md | Docker Compose stack — Explorer, REST, HTTP MCP |
+| MIGRATION-0.22.md | Agent skill + operator guide split (0.22) |
+| MIGRATION-0.20.md | Assistant vs powertool operator views (0.20 assist surfaces) |
+| MIGRATION-0.16.md | Upgrade from 0.15.x REST/MCP to service-domain API |
+| MIGRATION-0.12.md | Upgrade from 0.11.x wizard action steps |
+| MIGRATION-0.10.md | Upgrade from 0.9.x bootstrap paths |
+| docs/VISION-0.16.md | Services are the API release vision |
+| docs/VISION-0.15.md | CQRS schemas + service layer release vision |
+| docs/adr/005-service-domain-api.md | ADR for 0.16 service-domain API |
+| docs/adr/004-cqrs-schemas-service-layer.md | ADR for services and in-process MCP |
+| examples/README.md | Runnable flow definitions |
+
+## Extension Patterns
+
+| Add | Where | How |
+|-----|-------|-----|
+| Pattern | `palm/patterns/<name>/` | `pattern.py` + `app.py` + `bindings/definitions/builder.py` + `registry.py`; add to `INSTALLED_PATTERNS`. See `docs/PATTERN-APPS.md` |
+| Provider | `palm/providers/<name>/` | `provider.py` + `app.py` (ProviderApp) + `registry.py` + `bindings/` + `flow/`; add to `INSTALLED_PROVIDERS`. See `docs/PROVIDER-APPS.md` |
+| Storage | `palm/storages/<name>/` | Same structure; add to `INSTALLED_STORAGES` |
+| Transform rule | `palm/common/transforms/rules/` | `BaseTransformRule` + `register_transform()` |
+| CQRS handler | `palm/patterns/<name>/bindings/cqrs/` | Register via `register_cqrs_contributor()` in `PatternApp.ready()` |
+| CQRS schemas | `palm/patterns/<name>/bindings/cqrs/schemas.py` | `command_schemas` / `query_schemas` on `CqrsContributor` |
+| Service API | `palm/services/<domain>/` | Compose CQRS in domain `service.py`; register REST/MCP in domain `registry.py` |
+
+## Resources (0.12 — Compositional Power)
+
+Resources are first-class definitions (symmetric with flows/processes):
+
+- `ResourceDefinition` in `DefinitionRepository` — register via bootstrap or CLI
+- `ResourceLeaf` — core BT node; wizard `step_kind: resource` with `resource_ref`
+- `ResourceEngine.invoke()` — bind `{{ state.* }}` params, emit `resource.*` events
+- `palm` provider — `submit_flow`, `submit_process`, `invoke_resource`, `fetch` (local or remote HTTP)
+- `enrich_resource` transform accepts `resource_ref`; compensation via `register_for_resource()`
+- Explorer: `/explorer/resources` catalog, detail, Try Invoke; timelines on instances/jobs
+
+**Best practices:** define once, reference by `resource_ref`; cache definitions not mutating results; use `palm doctor` / Explorer before invoke.
+
+Vision: `docs/VISION-0.12.md` · Migration: `MIGRATION-0.12.md` · ADR: `docs/adr/001-compositional-power-resources.md`
+
+## Invariants (Never Break)
+
+- Job state transitions only through `RunResult` + `OrchestrationEngine.apply_result()`
+- Registries use `threading.RLock`; populate at bootstrap, not in hot paths
+- Resume authority: `ProcessInstance.state_snapshot` (not historical `state_snapshots[]`)
+- Never import from `archive/` in new code
+
+## Repository
+
+https://github.com/JGabrielGruber/palmengine

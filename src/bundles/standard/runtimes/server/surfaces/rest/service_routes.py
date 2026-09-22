@@ -1,0 +1,44 @@
+"""Mount per-service REST routes under ``/v1/api``."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from bundles.standard.runtimes.server.surfaces.rest.analytics.routes import register_analytics_routes
+from bundles.standard.runtimes.server.surfaces.rest.assist.routes import register_assist_routes
+from bundles.standard.runtimes.server.surfaces.rest.definitions.routes import register_definitions_routes
+from bundles.standard.runtimes.server.surfaces.rest.design.routes import register_design_routes
+from bundles.standard.runtimes.server.surfaces.rest.events.routes import register_events_routes
+from bundles.standard.runtimes.server.surfaces.rest.execution.flows.routes import register_flow_routes
+from bundles.standard.runtimes.server.surfaces.rest.execution.processes.routes import register_process_routes
+from bundles.standard.runtimes.server.surfaces.rest.execution.providers.routes import register_provider_routes
+from bundles.standard.runtimes.server.surfaces.rest.execution.workloads.routes import register_workload_routes
+from bundles.standard.runtimes.server.surfaces.rest.inbound.routes import register_inbound_routes
+from bundles.standard.runtimes.server.surfaces.rest.system.routes import register_system_routes
+
+if TYPE_CHECKING:
+    from plugins.kits.server.registry import RouteRegistry
+    from bundles.standard.runtimes.server.context import ServerContext
+
+
+def register_service_routes(
+    registry: RouteRegistry,
+    ctx: ServerContext,
+    *,
+    surface: str,
+) -> None:
+    """Register definitions, flows, and system routes from runtime-owned tables."""
+    register_definitions_routes(registry, ctx, surface=surface)
+    register_design_routes(registry, ctx, surface=surface)
+    register_analytics_routes(registry, ctx, surface=surface)
+    register_assist_routes(registry, ctx, surface=surface)
+    register_flow_routes(registry, ctx, surface=surface)
+    register_process_routes(registry, ctx, surface=surface)
+    register_provider_routes(registry, ctx, surface=surface)
+    register_workload_routes(registry, ctx, surface=surface)
+    register_system_routes(registry, ctx, surface=surface)
+    register_events_routes(registry, ctx, surface=surface)
+    register_inbound_routes(registry, ctx, surface=surface)
+
+
+__all__ = ["register_service_routes"]

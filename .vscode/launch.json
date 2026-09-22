@@ -1,0 +1,38 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Todo Engine Example",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "examples/todo/main.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Standard Bundle CLI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/bundles/standard/runtimes/cli/cli.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Standard Bundle Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/bundles/standard/runtimes/cli/cli.py",
+            "console": "integratedTerminal",
+            "args": ["host", "server"]
+        },
+        {
+            "name": "Standard Bundle Server with FileSystem Storage",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/bundles/standard/runtimes/cli/cli.py",
+            "console": "integratedTerminal",
+            "args": ["--storage-backend", "filesystem", "host", "server"]
+        }
+    ]
+}

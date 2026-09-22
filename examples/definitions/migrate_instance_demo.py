@@ -36,7 +36,7 @@ from palm.common.persistence.definition_migration import (
 from palm.common.persistence.instance_migration import migrate_instance
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
+from plugins.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
 
 MIGRATE_DEMO_SOURCE_V1 = FlowDefinition(
     id="flow-migrate-demo-source",

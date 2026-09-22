@@ -36,8 +36,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
 from palm.common.exceptions import DefinitionNotFoundError
 from palm.common.persistence.definition_migration import (
     CallableMigrationRule,
@@ -45,11 +43,14 @@ from palm.common.persistence.definition_migration import (
 )
 from palm.definitions import FlowDefinition, ProcessDefinition
 from palm.instances import ProcessInstance
-from palm.patterns.wizard.bindings.compensation.handler import (
+from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitResult,
     default_commit_registry,
 )
+
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 
 FLOW_ID = "design-demo-flow"
 _HOST_BY_STORAGE_ID: dict[int, ApplicationHost] = {}

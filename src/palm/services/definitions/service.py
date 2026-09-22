@@ -26,11 +26,13 @@ from palm.common.services.errors import (
     InstanceNotFoundServiceError,
 )
 from palm.definitions.flow import FlowDefinition
-from palm.patterns.wizard.bindings.catalog import flow_step_slugs
 from palm.services.definitions.flows import flow_catalog_row
 from palm.services.definitions.parsers import parse_flow, parse_process, parse_resource
 from palm.services.definitions.processes import process_catalog_row
 from palm.services.definitions.resources import resource_catalog_row
+
+
+from plugins.patterns.wizard.bindings.catalog import flow_step_slugs
 
 if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository

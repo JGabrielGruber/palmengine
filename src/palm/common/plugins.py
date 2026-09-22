@@ -29,11 +29,11 @@ def ensure_core_plugins(
 ) -> None:
     """Import the named plugin packages and register the named transform rules."""
     from palm.common.transforms import autoload as autoload_transforms
-    from palm.kits import autoload as autoload_kits
-    from palm.patterns import autoload as autoload_patterns
-    from palm.providers import autoload as autoload_providers
-    from palm.runners import autoload as autoload_runners
-    from palm.storages import autoload as autoload_storages
+    from plugins.kits import autoload as autoload_kits
+    from plugins.patterns import autoload as autoload_patterns
+    from plugins.providers import autoload as autoload_providers
+    from plugins.runners import autoload as autoload_runners
+    from plugins.storages import autoload as autoload_storages
 
     autoload_kits(tuple(kits))
     autoload_patterns(tuple(patterns))
