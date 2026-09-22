@@ -1,5 +1,6 @@
 """
-Stdlib HTTP transport — zero-dependency threading server for :class:`ServerApp`.
+Stdlib HTTP transport — zero-dependency threading server for a
+:class:`~plugins.kits.server.transport.TransportApp`.
 """
 
 from __future__ import annotations
@@ -7,14 +8,12 @@ from __future__ import annotations
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from plugins.kits.server.protocol import ServerRequest
 from plugins.kits.server.responses import error_response
-
-if TYPE_CHECKING:
-    from bundles.standard.runtimes.server.app import ServerApp
+from plugins.kits.server.transport import TransportApp
 
 
 class StdlibHttpTransport:
@@ -22,7 +21,7 @@ class StdlibHttpTransport:
 
     name = "stdlib"
 
-    def __init__(self, app: ServerApp, host: str, port: int) -> None:
+    def __init__(self, app: TransportApp, host: str, port: int) -> None:
         self._app = app
         self._host = host
         self._port = port
@@ -68,13 +67,13 @@ class StdlibHttpTransport:
         self._thread = None
 
 
-def create_stdlib_transport(app: ServerApp, host: str, port: int) -> StdlibHttpTransport:
+def create_stdlib_transport(app: TransportApp, host: str, port: int) -> StdlibHttpTransport:
     """Factory registered on :data:`~palm.kits.server.transport.transport_registry`."""
     return StdlibHttpTransport(app, host, port)
 
 
 def serve_app(
-    app: ServerApp,
+    app: TransportApp,
     *,
     host: str,
     port: int,
@@ -85,7 +84,7 @@ def serve_app(
     return transport
 
 
-def _build_handler(app: ServerApp) -> type[BaseHTTPRequestHandler]:
+def _build_handler(app: TransportApp) -> type[BaseHTTPRequestHandler]:
     class StdlibHttpHandler(BaseHTTPRequestHandler):
         server: ThreadingHTTPServer
         # RFC6455 WebSocket opening handshake requires HTTP/1.1+.

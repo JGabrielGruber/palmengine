@@ -2,17 +2,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from plugins.kits.server.transport import BaseTransport, TransportApp, transport_registry
 
-from plugins.kits.server.transport import BaseTransport, transport_registry
 from bundles.standard.runtimes.server.transport.stdlib import (
     StdlibHttpTransport,
     create_stdlib_transport,
     serve_app,
 )
-
-if TYPE_CHECKING:
-    from bundles.standard.runtimes.server.app import ServerApp
 
 DEFAULT_TRANSPORT = "stdlib"
 
@@ -21,7 +17,7 @@ transport_registry.register(DEFAULT_TRANSPORT, create_stdlib_transport)
 
 def create_transport(
     name: str,
-    app: ServerApp,
+    app: TransportApp,
     *,
     host: str,
     port: int,

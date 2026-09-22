@@ -52,7 +52,10 @@ class ServerResponse:
 
 @runtime_checkable
 class ServerSurface(Protocol):
-    """Extensible interaction model mounted on a :class:`~palm.runtimes.server.app.ServerApp`."""
+    """Interaction model a composition root mounts and dispatches.
+
+    The root implements the transport contract. This surface declares routes.
+    """
 
     @property
     def name(self) -> str:

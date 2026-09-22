@@ -1,10 +1,12 @@
-"""Server kit — HTTP protocol, routing, transport, CQRS bridge, SSR helpers.
+"""Server kit — contracts for HTTP protocol, routes, transport, and webhook health.
 
-**Kit home:** :mod:`palm.kits.server` (0.57.13). Surfaces under
-``palm.runtimes.server`` compose this kit; they do not re-own the protocol.
+**Kit home:** :mod:`plugins.kits.server`.
 
-Composition roots (``ServerApp`` / ``ServerContext``) stay in
-``palm.runtimes.server``. ``ServerWebhookBridge`` is exported lazily.
+The kit names what a composition root must provide: a normalized request and
+response, a mountable surface, a :class:`~plugins.kits.server.transport.TransportApp`
+a wire may dispatch, and a webhook health snapshot. The root owns wiring.
+The bundled server runtime is one such root. ``ServerWebhookBridge`` is
+exported lazily.
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from plugins.kits.server.responses import error_response
 from plugins.kits.server.surface import BaseSurface
 from plugins.kits.server.transport import (
     BaseTransport,
+    TransportApp,
     TransportRegistry,
     transport_registry,
 )
@@ -66,6 +69,7 @@ def __getattr__(name: str) -> object:
 __all__ = [
     "BaseSurface",
     "BaseTransport",
+    "TransportApp",
     "HttpMethod",
     "PALM_SESSION_COOKIE",
     "PALM_SESSION_HEADER",

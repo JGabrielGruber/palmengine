@@ -1,7 +1,8 @@
 """
 Base surface — shared abstract base for server interaction models.
 
-Concrete surfaces (REST, WebSocket, MCP, SSR) live in ``palm.runtimes.server.surfaces``.
+A composition root mounts concrete surfaces (REST, WebSocket, MCP, SSR).
+Those surfaces implement this base and live with the runtime that wires them.
 """
 
 from __future__ import annotations

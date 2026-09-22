@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from plugins.kits.server.registry import RouteRegistry, SurfaceRegistry
-from plugins.kits.server.transport import transport_registry
+from plugins.kits.server.transport import TransportApp, transport_registry
 from bundles.standard.runtimes.server import ServerRuntime, create_app, create_transport
 from bundles.standard.runtimes.server.app import create_server_app
 from bundles.standard.runtimes.server.context import ServerContext
@@ -124,6 +124,7 @@ def test_transport_registry_includes_stdlib() -> None:
 def test_create_transport_returns_stdlib_binding(server: ServerRuntime) -> None:
     app = server.server_app
     assert app is not None
+    assert isinstance(app, TransportApp)
     transport = create_transport("stdlib", app, host="127.0.0.1", port=0)
     assert isinstance(transport, StdlibHttpTransport)
     assert transport.name == "stdlib"

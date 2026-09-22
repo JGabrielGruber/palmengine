@@ -22,11 +22,12 @@ from bundles.standard.runtimes.server.context import ServerContext
 
 class ServerApp:
     """
-    Transport-agnostic Palm server application.
+    Bundled composition root for Palm server surfaces.
 
-    Surfaces register routes on a shared :class:`RouteRegistry`. The app
-    dispatches normalized :class:`ServerRequest` objects and supports both
-    sync and async handlers.
+    Implements :class:`~plugins.kits.server.transport.TransportApp`: surfaces
+    register routes on a shared :class:`RouteRegistry`, and the app dispatches
+    normalized :class:`ServerRequest` objects on both sync and async handlers.
+    Wiring stays here. The kit names the contract.
     """
 
     def __init__(

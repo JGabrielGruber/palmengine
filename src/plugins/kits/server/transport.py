@@ -1,28 +1,46 @@
 """
-Transport protocol — pluggable wire bindings for :class:`~palm.runtimes.server.app.ServerApp`.
+Transport contract — what a wire binding may call, and how it is registered.
+
+The kit owns this expectation. A composition root implements
+:class:`TransportApp` and registers a factory. The bundled server runtime is
+one such root.
 """
 
 from __future__ import annotations
 
 import threading
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from palm.core.exceptions import RegistryError
+from plugins.kits.server.protocol import ServerRequest, ServerResponse
 
-if TYPE_CHECKING:
-    from bundles.standard.runtimes.server.app import ServerApp
+TransportFactory = Callable[["TransportApp", str, int], "BaseTransport"]
 
-TransportFactory = Callable[["ServerApp", str, int], "BaseTransport"]
+
+@runtime_checkable
+class TransportApp(Protocol):
+    """What a transport is allowed to call on the mounted application.
+
+    Accept a normalized request and return a normalized response, sync or async.
+    The composition root decides how routes, auth, and surfaces are wired.
+    """
+
+    def dispatch(self, request: ServerRequest) -> ServerResponse:
+        """Run the sync dispatch path."""
+
+    async def dispatch_async(self, request: ServerRequest) -> ServerResponse:
+        """Run the async dispatch path."""
 
 
 @runtime_checkable
 class BaseTransport(Protocol):
     """
-    Binds a :class:`~palm.runtimes.server.app.ServerApp` to a wire protocol.
+    Binds a :class:`TransportApp` to a wire protocol.
 
     Implementations may be sync (stdlib HTTP) or async (Starlette/uvicorn). Async
-    transports should serve all HTTP-mounted surfaces and upgrade paths (WebSocket).
+    transports serve every HTTP-mounted surface and upgrade path (WebSocket)
+    through :meth:`TransportApp.dispatch_async`.
     """
 
     @property
@@ -58,7 +76,7 @@ class TransportRegistry:
     def create(
         self,
         name: str,
-        app: ServerApp,
+        app: TransportApp,
         *,
         host: str,
         port: int,
