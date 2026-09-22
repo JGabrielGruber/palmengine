@@ -9,9 +9,9 @@ import pytest
 
 FORBIDDEN_PREFIXES = (
     "palm.services",
-    "palm.runtimes",
-    "palm.patterns",
-    "palm.app",
+    "bundles.standard.runtimes",
+    "plugins.patterns",
+    "bundles.standard.app",
 )
 
 

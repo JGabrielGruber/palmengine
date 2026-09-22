@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from palm.definitions import FlowDefinition
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.common.events.catalog import is_public_event_type
-from palm.providers.palm.events_client import PalmEventsClient, event_mentions_job
+from plugins.providers.palm.events_client import PalmEventsClient, event_mentions_job
 
 
 def test_event_mentions_job() -> None:

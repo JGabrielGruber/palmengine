@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.event import EventEngine
 
 

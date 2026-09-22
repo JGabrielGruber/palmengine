@@ -6,8 +6,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.services.assist.registry import scenario_by_id
 
 

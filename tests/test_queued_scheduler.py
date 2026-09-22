@@ -9,7 +9,7 @@ from palm.system.runtime.schedulers import QueuedScheduler
 from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.core.orchestration import JobStatus, OrchestrationEngine
-from palm.patterns.wizard import WizardConfig, WizardStepConfig
+from plugins.patterns.wizard import WizardConfig, WizardStepConfig
 from tests.core.fakes.runner import TestRunner
 
 

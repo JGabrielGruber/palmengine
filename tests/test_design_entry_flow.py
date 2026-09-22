@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 
 
 @pytest.fixture

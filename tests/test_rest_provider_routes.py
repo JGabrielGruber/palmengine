@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.execution.providers.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.execution.providers.routes import ROUTES
 
 
 def test_provider_routes_use_service_path_shape() -> None:

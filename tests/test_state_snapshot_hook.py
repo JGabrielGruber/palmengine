@@ -6,16 +6,16 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.app import PalmKernel, PalmSettings
+from bundles.standard.app import PalmKernel, PalmSettings
 from palm.system.runtime.job_hooks.state_snapshot import StateSnapshotHook
 from palm.common.persistence.instance_repository import InstanceRepository
 from palm.core import StorageEngine
 from palm.core.orchestration import Job, JobStatus, OrchestrationEngine
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
-from palm.patterns.wizard import WizardKeys
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.storages import memory  # noqa: F401
+from plugins.patterns.wizard import WizardKeys
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from plugins.storages import memory  # noqa: F401
 
 
 def _wizard_flow() -> FlowDefinition:

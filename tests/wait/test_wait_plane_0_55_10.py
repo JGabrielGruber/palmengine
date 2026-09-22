@@ -5,8 +5,8 @@ from __future__ import annotations
 from palm.core.event import EventEngine
 from palm.core.orchestration import Job, JobStatus
 from palm.core.wait import has_open_waits, make_job_wait
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.system.subsystems.planes.wait import WaitPlaneService
 
 
@@ -118,7 +118,7 @@ def test_install_wait_plane_attaches() -> None:
 
 
 def test_doctor_uses_wait_plane_snapshot() -> None:
-    from palm.kits.server.diagnostics import build_doctor_report
+    from plugins.kits.server.diagnostics import build_doctor_report
 
     rt = EmbeddedRuntime()
     rt.start()

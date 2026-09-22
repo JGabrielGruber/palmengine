@@ -14,7 +14,7 @@ from palm.core import SCOPES_ROOT_KEY, DictStateSchema
 from palm.core.behavior_tree import PatternStatus
 from palm.core.context import ContextEngine
 from palm.definitions import FlowDefinition, StateSchemaDefinition
-from palm.patterns.wizard import (
+from plugins.patterns.wizard import (
     WizardConfig,
     WizardKeys,
     WizardPattern,
@@ -22,7 +22,7 @@ from palm.patterns.wizard import (
     materialize_wizard_step_schemas,
     validate_collected_answers,
 )
-from palm.patterns.wizard.bindings.compensation.handler import (
+from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,
     CommitResult,
@@ -246,7 +246,7 @@ def test_validate_collected_answers_reports_missing_required() -> None:
     assert not result.ok
     assert "missing required key: name" in result.errors[0]
 
-    from palm.patterns.wizard.flow.validation import format_validation_message
+    from plugins.patterns.wizard.flow.validation import format_validation_message
 
     assert format_validation_message(result.errors[0]) == "Missing required answer: name"
 

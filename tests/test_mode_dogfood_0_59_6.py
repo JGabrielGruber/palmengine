@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode, get_boot_mode
-from palm.app.host.composition import composition_profile_from_name
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode, get_boot_mode
+from bundles.standard.app.host.composition import composition_profile_from_name
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.definitions.flow import FlowDefinition
 from palm.system.log import (

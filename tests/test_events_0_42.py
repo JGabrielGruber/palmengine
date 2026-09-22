@@ -9,7 +9,7 @@ from palm.common.events.catalog import (
 )
 from palm.common.events.journal import EventJournal
 from palm.core.storage import StorageEngine
-from palm.providers.palm.events_client import PalmEventsClient
+from plugins.providers.palm.events_client import PalmEventsClient
 
 
 def _storage() -> StorageEngine:
@@ -37,9 +37,9 @@ def test_journal_read_after_public() -> None:
 
 
 def test_events_catalog_and_journal_http() -> None:
-    from palm.app.host.application_host import ApplicationHost
-    from palm.app.host.roles import DeploymentProfile
-    from palm.app.settings import PalmSettings
+    from bundles.standard.app.host.application_host import ApplicationHost
+    from bundles.standard.app.host.roles import DeploymentProfile
+    from bundles.standard.app.settings import PalmSettings
 
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),
@@ -67,8 +67,8 @@ def test_events_catalog_and_journal_http() -> None:
 
 
 def test_ws_surface_lists_events_path() -> None:
-    from palm.runtimes.server.surfaces.websocket.events_session import EVENTS_WS_PATH
-    from palm.runtimes.server.surfaces.websocket.session import ASSIST_WS_PATH
+    from bundles.standard.runtimes.server.surfaces.websocket.events_session import EVENTS_WS_PATH
+    from bundles.standard.runtimes.server.surfaces.websocket.session import ASSIST_WS_PATH
 
     assert EVENTS_WS_PATH == "/ws/v1/events"
     assert ASSIST_WS_PATH == "/ws/v1/assist"

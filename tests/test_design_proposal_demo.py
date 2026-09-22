@@ -6,8 +6,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.common.patterns._registry import get_design_contributor_hook
 from palm.services.design.contributors import reset_design_contributor_wiring
 from palm.services.design.registry import clear_design_contributors
@@ -73,7 +73,7 @@ def test_design_proposal_demo_commit_handler_preview(demo_host: ApplicationHost)
         _make_apply_design_proposal_handler,
         _seed_revision_one_instance,
     )
-    from palm.patterns.wizard.bindings.compensation.handler import CommitContext
+    from plugins.patterns.wizard.bindings.compensation.handler import CommitContext
 
     instance_id = "inst-design-demo-preview"
     _seed_revision_one_instance(demo_host, instance_id=instance_id)
@@ -104,8 +104,8 @@ def test_design_proposal_demo_commit_handler_preview(demo_host: ApplicationHost)
 
 
 def test_wizard_and_pipeline_design_hooks_registered() -> None:
-    from palm.patterns.pipeline.app import pipeline_app
-    from palm.patterns.wizard.app import wizard_app
+    from plugins.patterns.pipeline.app import pipeline_app
+    from plugins.patterns.wizard.app import wizard_app
 
     wizard_app.register()
     pipeline_app.register()

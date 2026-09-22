@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.core.structure import AdmissionSnapshot, StructurePhase
-from palm.runtimes.server.surfaces.rest import errors
+from bundles.standard.runtimes.server.surfaces.rest import errors
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
 

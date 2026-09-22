@@ -6,11 +6,11 @@ from typing import Any
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
-from palm.runtimes.mcp.assist.operator import dispatch_operator_path
+from bundles.standard.runtimes.mcp.assist.operator import dispatch_operator_path
 from palm.system.subsystems.planes.session import InstanceNotOwnedError, SessionPlaneError
 
 

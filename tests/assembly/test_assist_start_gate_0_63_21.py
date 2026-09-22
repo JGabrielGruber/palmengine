@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.settings import PalmSettings
 from palm.services.assist.catalog.menu import build_menu_page, menu_for_assist
 from palm.system.log import reset_system_log_for_tests
 from palm.system.structure.errors import AdmissionRefusedError

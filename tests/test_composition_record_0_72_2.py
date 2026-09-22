@@ -7,17 +7,17 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import (
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import (
     COMPOSITION_RECORDS,
     CompositionProfile,
     composition_profile_from_name,
     composition_record,
 )
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 
 _PRESET_NAMES = ("all_in_one", "server", "embedded", "worker", "cli", "mcp")
 

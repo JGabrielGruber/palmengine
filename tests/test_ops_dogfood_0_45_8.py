@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from palm.app import ApplicationHost, PalmSettings
-from palm.app.bootstrap import all_definition_roots
-from palm.app.settings import PalmSettings as Settings
-from palm.runtimes.server.surfaces.rest.execution.providers.routes import ROUTES
+from bundles.standard.app import ApplicationHost, PalmSettings
+from bundles.standard.app.bootstrap import all_definition_roots
+from bundles.standard.app.settings import PalmSettings as Settings
+from bundles.standard.runtimes.server.surfaces.rest.execution.providers.routes import ROUTES
 
 
 def test_all_definition_roots_skips_cwd_when_examples_disabled() -> None:

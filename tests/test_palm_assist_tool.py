@@ -7,25 +7,25 @@ import pytest
 fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
-from palm.app.settings import PalmSettings  # noqa: E402
-from palm.runtimes.mcp.assist.dispatch import (  # noqa: E402
+from bundles.standard.app.settings import PalmSettings  # noqa: E402
+from bundles.standard.runtimes.mcp.assist.dispatch import (  # noqa: E402
     assist_routes_payload,
     normalize_assist_dispatch_args,
     resolve_dispatch_path,
 )
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
-from palm.runtimes.mcp.in_process import (  # noqa: E402
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from bundles.standard.runtimes.mcp.in_process import (  # noqa: E402
     PalmInProcessBackend,
     shutdown_in_process_runtime,
 )
-from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
-from palm.runtimes.server import ServerRuntime  # noqa: E402
-from palm.runtimes.server.factory import build_server_context  # noqa: E402
+from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
+from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
+from bundles.standard.runtimes.server.factory import build_server_context  # noqa: E402
 
 
 @pytest.fixture
 def assist_server_ctx():
-    from palm.app.bootstrap import load_definitions_for_repository
+    from bundles.standard.app.bootstrap import load_definitions_for_repository
 
     shutdown_in_process_runtime()
     settings = PalmSettings.for_tests(load_examples=True)
@@ -138,7 +138,7 @@ def test_normalize_assist_dispatch_args_flow_id_starts_create() -> None:
 
 
 def test_resolve_dispatch_format_flows_honors_assistant_tool_format() -> None:
-    from palm.runtimes.mcp.assist.dispatch import resolve_dispatch_format
+    from bundles.standard.runtimes.mcp.assist.dispatch import resolve_dispatch_format
 
     fmt = resolve_dispatch_format(
         ["flows", "coconut-npc", "instance", "inst-1", "input"],

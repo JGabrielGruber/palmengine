@@ -15,7 +15,7 @@ from palm.definitions import (
     StateSchemaDefinition,
 )
 from palm.states import BlackboardState
-from palm.storages import memory  # noqa: F401
+from plugins.storages import memory  # noqa: F401
 
 
 def _sample_flow() -> FlowDefinition:
@@ -224,7 +224,7 @@ def test_repository_list_resources() -> None:
 
 
 def test_hydrate_definitions_from_storage_includes_resources() -> None:
-    from palm.app.bootstrap import hydrate_definitions_from_storage
+    from bundles.standard.app.bootstrap import hydrate_definitions_from_storage
 
     storage = StorageEngine()
     storage.initialize(backend="memory")

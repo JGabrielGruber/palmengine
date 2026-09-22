@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from palm.app import ApplicationHost, PalmSettings
-from palm.app.host.workplane.inbound_service import InboundBindingService
+from bundles.standard.app import ApplicationHost, PalmSettings
+from bundles.standard.app.host.workplane.inbound_service import InboundBindingService
 from palm.common.resource.inbound import parse_inbound_spec
 from palm.core.work import WorkIntent
 from palm.definitions import FlowDefinition, ResourceDefinition

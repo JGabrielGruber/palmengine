@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.patterns.etl  # intention pattern (not default INSTALLED)
+import plugins.patterns.etl  # intention pattern (not default INSTALLED)
 
 import pytest
 
@@ -13,7 +13,7 @@ from palm.definitions import FlowDefinition, ProcessDefinition
 
 
 
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 
@@ -43,7 +43,7 @@ def test_plan_registry_store_and_consume() -> None:
 
 
 def test_server_store_and_submit_stored_plan() -> None:
-    from palm.runtimes.server import ServerRuntime
+    from bundles.standard.runtimes.server import ServerRuntime
 
     rt = ServerRuntime()
     rt.start(port=0, http=False)

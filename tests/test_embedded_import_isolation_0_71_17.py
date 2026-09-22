@@ -22,14 +22,14 @@ def test_embedded_import_does_not_load_sibling_surfaces() -> None:
         """
         import sys
 
-        from palm.runtimes.embedded import EmbeddedRuntime
+        from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
         assert EmbeddedRuntime is not None
         for name in (
-            "palm.runtimes.server",
-            "palm.runtimes.daemon",
-            "palm.runtimes.mcp",
-            "palm.runtimes.cli",
+            "bundles.standard.runtimes.server",
+            "bundles.standard.runtimes.daemon",
+            "bundles.standard.runtimes.mcp",
+            "bundles.standard.runtimes.cli",
         ):
             assert name not in sys.modules, f"unexpected load: {name}"
             assert not any(
@@ -47,22 +47,22 @@ def test_palm_kernel_embedded_start_does_not_load_server() -> None:
         """
         import sys
 
-        from palm.app.bootstrap import ensure_plugins
+        from bundles.standard.app.bootstrap import ensure_plugins
 
         ensure_plugins()
-        from palm.app import PalmKernel, PalmSettings
+        from bundles.standard.app import PalmKernel, PalmSettings
 
         app = PalmKernel(PalmSettings(load_example_definitions=False))
         app.bootstrap()
         runtime = app.create_runtime("embedded", autostart=True)
         assert runtime.is_started
-        assert "palm.runtimes.server" not in sys.modules
+        assert "bundles.standard.runtimes.server" not in sys.modules
         assert not any(
-            key == "palm.runtimes.server" or key.startswith("palm.runtimes.server.")
+            key == "bundles.standard.runtimes.server" or key.startswith("bundles.standard.runtimes.server.")
             for key in sys.modules
         )
-        assert "palm.runtimes.daemon" not in sys.modules
-        assert "palm.runtimes.mcp" not in sys.modules
+        assert "bundles.standard.runtimes.daemon" not in sys.modules
+        assert "bundles.standard.runtimes.mcp" not in sys.modules
         runtime.stop()
         app.shutdown()
         print("ok")
@@ -75,7 +75,7 @@ def test_palm_kernel_embedded_start_does_not_load_server() -> None:
 def test_server_still_imports_from_server_package() -> None:
     result = _run_isolation_script(
         """
-        from palm.runtimes.server import ServerRuntime, run_server
+        from bundles.standard.runtimes.server import ServerRuntime, run_server
 
         assert ServerRuntime is not None
         assert callable(run_server)
@@ -101,4 +101,4 @@ def test_runtimes_package_init_has_no_sibling_surface_imports() -> None:
             for alias in node.names:
                 imported.add(alias.name)
     for sibling in ("daemon", "embedded", "server", "mcp", "cli"):
-        assert f"palm.runtimes.{sibling}" not in imported
+        assert f"bundles.standard.runtimes.{sibling}" not in imported

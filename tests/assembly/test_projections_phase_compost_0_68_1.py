@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.system.boot import HOST_PHASES, host_phase_ids
 
 
@@ -14,7 +14,7 @@ def test_host_phase_table_drops_projections_attach() -> None:
 
 
 def test_unread_host_projection_builders_are_gone() -> None:
-    import palm.app.host.wiring as wiring
+    import bundles.standard.app.host.wiring as wiring
 
     assert not hasattr(wiring, "build_host_projections")
     assert not hasattr(wiring, "register_host_projections")

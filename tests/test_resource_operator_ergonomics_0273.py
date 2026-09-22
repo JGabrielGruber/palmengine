@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER
 from palm.common import DefinitionRepository
 from palm.common.operator.compact import compact_wizard_inspect
@@ -16,14 +16,14 @@ from palm.common.resource.preflight import (
     resource_preflight_issues,
     rest_resource_has_base_url,
 )
-from palm.kits.server.diagnostics import build_doctor_report
+from plugins.kits.server.diagnostics import build_doctor_report
 from palm.core.behavior_tree import PatternStatus
 from palm.core.resource import ResourceEngine
 from palm.definitions import ResourceDefinition
-from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.services.execution.providers.service import ProviderExecutionService
 from palm.states import BlackboardState
 

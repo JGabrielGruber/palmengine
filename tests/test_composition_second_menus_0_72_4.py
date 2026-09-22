@@ -13,7 +13,7 @@ import subprocess
 import sys
 import textwrap
 
-from palm.app.host.composition import (
+from bundles.standard.app.host.composition import (
     COMPOSITION_RECORDS,
     RECORD_TRANSFORMS,
     CompositionProfile,
@@ -104,10 +104,10 @@ def test_host_imports_the_record_service_names() -> None:
         """
         import sys
 
-        from palm.app.host.application_host import ApplicationHost
-        from palm.app.host.composition import CORE_SERVICES, CompositionProfile
-        from palm.app.host.roles import DeploymentProfile
-        from palm.app.settings import PalmSettings
+        from bundles.standard.app.host.application_host import ApplicationHost
+        from bundles.standard.app.host.composition import CORE_SERVICES, CompositionProfile
+        from bundles.standard.app.host.roles import DeploymentProfile
+        from bundles.standard.app.settings import PalmSettings
 
         profile = CompositionProfile(
             services=CORE_SERVICES,

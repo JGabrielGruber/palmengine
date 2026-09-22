@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.app.session import create_cli_host
-from palm.app.settings import PalmSettings
+from bundles.standard.app.session import create_cli_host
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import LOCAL_CLI_ID
 from palm.system.log import reset_system_log_for_tests
 

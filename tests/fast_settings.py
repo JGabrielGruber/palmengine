@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dataclasses import replace
 
-from palm.app.settings import PalmSettings
+from bundles.standard.app.settings import PalmSettings
 
 
 def make_test_settings(

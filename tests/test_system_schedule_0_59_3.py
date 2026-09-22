@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.app.bootstrap import runtime_start_options
-from palm.app.settings import PalmSettings
+from bundles.standard.app.bootstrap import runtime_start_options
+from bundles.standard.app.settings import PalmSettings
 from palm.system.boot import SYSTEM_PHASES, system_phase_ids
 from palm.system.log import get_system_log, reset_system_log_for_tests
 from palm.system.subsystems.planes.session.plane import SessionPlaneService

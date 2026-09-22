@@ -10,8 +10,8 @@ from typing import Any
 import pytest
 
 from palm.core.orchestration import JobStatus
-from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.execution.processes.routes import ROUTES
+from bundles.standard.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.rest.execution.processes.routes import ROUTES
 
 
 def test_process_routes_registered() -> None:

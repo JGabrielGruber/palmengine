@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.storage import StorageEngine
 from palm.system.subsystems.planes.session import (
     InstanceNotOwnedError,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.mcp.assist.dispatch import (
+from bundles.standard.runtimes.mcp.assist.dispatch import (
     resolve_dispatch_format,
     shape_dispatch_result,
 )

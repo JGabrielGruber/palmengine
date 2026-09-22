@@ -14,7 +14,7 @@ from examples.definitions.system.event_watch import (
 from examples.definitions.system.event_watch import (
     register_definitions as register_event_watch,
 )
-from palm.app import ApplicationHost, PalmSettings
+from bundles.standard.app import ApplicationHost, PalmSettings
 from palm.common.patterns import build_pattern
 from palm.common.transforms import INSTALLED_TRANSFORMS, autoload
 from palm.core import PatternStatus

@@ -6,10 +6,10 @@ import asyncio
 
 import pytest
 
-from palm.runtimes.mcp.config import PalmMcpConfig
-from palm.runtimes.mcp.in_process import create_in_process_backend
-from palm.runtimes.mcp.server import create_mcp_server
-from palm.runtimes.mcp.surface import (
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig
+from bundles.standard.runtimes.mcp.in_process import create_in_process_backend
+from bundles.standard.runtimes.mcp.server import create_mcp_server
+from bundles.standard.runtimes.mcp.surface import (
     DEFAULT_SURFACE,
     normalize_surface,
     surface_includes,

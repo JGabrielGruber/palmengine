@@ -6,7 +6,7 @@ import urllib.request
 
 import pytest
 
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture

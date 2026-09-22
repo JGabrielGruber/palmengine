@@ -11,8 +11,8 @@ import pytest
 
 fastmcp = pytest.importorskip("fastmcp")
 
-from palm.runtimes.mcp.http_bridge import shutdown_mcp_http_bridges  # noqa: E402
-from palm.runtimes.server import ServerRuntime  # noqa: E402
+from bundles.standard.runtimes.mcp.http_bridge import shutdown_mcp_http_bridges  # noqa: E402
+from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
 
 
 @pytest.fixture

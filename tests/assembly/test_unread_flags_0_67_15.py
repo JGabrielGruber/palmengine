@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.app.settings import PalmSettings
+from bundles.standard.app.settings import PalmSettings
 from palm.common.compensation.coordinator import CompensationCoordinator
 from palm.common.cqrs.projection import ProjectionManager
 

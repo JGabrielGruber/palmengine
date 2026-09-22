@@ -10,8 +10,8 @@ from palm.system.runtime.schedulers import InlineScheduler
 from palm.core.event import EventEngine
 from palm.core.orchestration import OrchestrationEngine
 from palm.definitions.flow import FlowDefinition
-from palm.runtimes.daemon import DaemonRuntime
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.daemon import DaemonRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from tests.core.fakes.runner import TestRunner
 
 

@@ -6,13 +6,13 @@ import time
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
-from palm.app.host.events import HostEventType
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app.host.events import HostEventType
 from palm.common.events import OutboxStore
 from palm.core.event import Event
-from palm.runtimes.daemon import DaemonRuntime
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.daemon import DaemonRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 def test_all_in_one_collapses_to_single_embedded(full_recovery_settings: PalmSettings) -> None:
@@ -158,7 +158,7 @@ def test_deployment_profile_from_settings_roles(settings: PalmSettings) -> None:
 
 
 def test_palm_app_backward_compatible(settings: PalmSettings) -> None:
-    from palm.app import PalmKernel
+    from bundles.standard.app import PalmKernel
 
     app = PalmKernel(settings)
     app.bootstrap()

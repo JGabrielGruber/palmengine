@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.kits.server.middleware import (
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from plugins.kits.server.middleware import (
     PALM_SESSION_COOKIE,
     PALM_SESSION_HEADER,
     extract_system_session_hint,
@@ -13,7 +13,7 @@ from palm.kits.server.middleware import (
     resolve_session_plane,
     set_cookie_header_value,
 )
-from palm.runtimes.server.surfaces.websocket.session import (
+from bundles.standard.runtimes.server.surfaces.websocket.session import (
     _ConnectionState,
     handle_client_message,
 )

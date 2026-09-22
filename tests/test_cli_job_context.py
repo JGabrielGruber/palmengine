@@ -16,8 +16,8 @@ from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.behavior_tree import PatternStatus
 from palm.core.event import EventEngine
 from palm.definitions import FlowDefinition
-from palm.patterns.parallel.pattern import ParallelPattern
-from palm.runtimes.cli.commands.registry import build_registry
+from plugins.patterns.parallel.pattern import ParallelPattern
+from bundles.standard.runtimes.cli.commands.registry import build_registry
 from palm.states import BlackboardState
 
 

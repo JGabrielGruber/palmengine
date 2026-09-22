@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.execution.workloads.routes import ROUTES
+from bundles.standard.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.rest.execution.workloads.routes import ROUTES
 
 
 def test_workload_routes_registered() -> None:

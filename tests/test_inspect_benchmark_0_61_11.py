@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.runtimes.cli.commands.benchmark import cmd_benchmark
-from palm.runtimes.cli.commands.registry import build_registry
-from palm.runtimes.cli.shared.args import (
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.cli.commands.benchmark import cmd_benchmark
+from bundles.standard.runtimes.cli.commands.registry import build_registry
+from bundles.standard.runtimes.cli.shared.args import (
     build_parser,
     invocation_from_namespace,
 )
-from palm.runtimes.cli.shared.context import CliContext
-from palm.runtimes.cli.shared.dispatch import dispatch_invocation
+from bundles.standard.runtimes.cli.shared.context import CliContext
+from bundles.standard.runtimes.cli.shared.dispatch import dispatch_invocation
 from palm.services.inspect import present_benchmark
 from palm.system.log import reset_system_log_for_tests
 from palm.system.vitality import RECIPE_LOG_FILL, RECIPE_PULSE

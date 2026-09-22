@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.common.operator.invoke_tree import build_invoke_tree
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.providers.palm.provider import PalmProvider
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from plugins.providers.palm.provider import PalmProvider
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def _child_wizard_flow() -> FlowDefinition:

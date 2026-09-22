@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.settings import PalmSettings
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.core.structure import AdmissionSnapshot, StructurePhase
 from palm.services.execution.flows.service import FlowExecutionService

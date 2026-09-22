@@ -4,19 +4,19 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from examples.definitions.data_ingestion import INGEST_ETL_FLOW
 from palm.core.orchestration import JobStatus
 from palm.definitions import ResourceDefinition
-from palm.providers.palm.bindings.recursion.guard import (
+from plugins.providers.palm.bindings.recursion.guard import (
     PalmRecursionError,
     RecursionLimits,
     palm_invoke_frame,
 )
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.providers.palm.provider import PalmProvider
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.server import ServerRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from plugins.providers.palm.provider import PalmProvider
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture

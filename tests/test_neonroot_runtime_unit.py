@@ -17,9 +17,9 @@ from palm.core.workload import (
     WorkloadStatus,
 )
 from palm.core.workload.registry import workload_runtime_registry
-from palm.runners.neonroot.cli import NeonrootProbe
-from palm.runners.neonroot.runtime import NeonrootWorkloadRuntime
-from palm.runners.neonroot.spawn import (
+from plugins.runners.neonroot.cli import NeonrootProbe
+from plugins.runners.neonroot.runtime import NeonrootWorkloadRuntime
+from plugins.runners.neonroot.spawn import (
     SpawnRequest,
     build_spawn_argv,
     parse_spawn_params,
@@ -27,8 +27,8 @@ from palm.runners.neonroot.spawn import (
 
 
 def test_neonroot_not_in_provider_registry() -> None:
-    import palm.providers  # noqa: F401
-    import palm.runners  # noqa: F401
+    import plugins.providers  # noqa: F401
+    import plugins.runners  # noqa: F401
 
     assert "neonroot" not in provider_registry.names()
     assert "neonroot" in workload_runtime_registry.names()
@@ -60,9 +60,9 @@ def test_engine_start_via_neonroot_runtime_mock() -> None:
         "neonroot": present.as_dict(),
     }
     with (
-        patch("palm.runners.neonroot.cli.probe_neonroot", return_value=present),
-        patch("palm.runners.neonroot.spawn.run_spawn", return_value=payload),
-        patch("palm.runners.neonroot.spawn.resolve_repo_root", return_value=None),
+        patch("plugins.runners.neonroot.cli.probe_neonroot", return_value=present),
+        patch("plugins.runners.neonroot.spawn.run_spawn", return_value=payload),
+        patch("plugins.runners.neonroot.spawn.resolve_repo_root", return_value=None),
     ):
         wl = engine.start(
             WorkloadSpec(
@@ -81,7 +81,7 @@ def test_engine_start_via_neonroot_runtime_mock() -> None:
 
 
 def test_hermetic_contract_validate() -> None:
-    from palm.runners.neonroot.contract import validate_hermetic_job_params
+    from plugins.runners.neonroot.contract import validate_hermetic_job_params
 
     req = validate_hermetic_job_params({"image": "palm-ci", "command": ["true"]})
     assert req.image == "palm-ci"

@@ -28,7 +28,7 @@ def test_drive_observability_hook_records_slices() -> None:
 
 
 def test_observability_start_option_records_drives() -> None:
-    from palm.runtimes.embedded import EmbeddedRuntime
+    from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
     rt = EmbeddedRuntime()
     rt.start(observability=True)

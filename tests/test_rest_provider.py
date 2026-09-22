@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401
-from palm.providers.rest.provider import RestProvider
+import plugins.providers  # noqa: F401
+from plugins.providers.rest.provider import RestProvider
 
 
 def test_rest_provider_fetch_via_http(rest_base_url: str) -> None:

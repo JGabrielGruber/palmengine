@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from palm.app import PalmKernel, PalmSettings
+from bundles.standard.app import PalmKernel, PalmSettings
 from palm.common import DefinitionRepository, InstanceRepository
 from palm.common.storage import StorageFactory
 from palm.core import (
@@ -18,7 +18,7 @@ from palm.core import (
     storage_registry,
 )
 from palm.instances import ProcessInstance
-from palm.storages.filesystem import FilesystemStorageBackend
+from plugins.storages.filesystem import FilesystemStorageBackend
 from tests.test_definitions_storage import _sample_flow, _sample_process
 
 

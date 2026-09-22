@@ -9,13 +9,13 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import CompositionProfile, composition_profile_from_name
-from palm.app.host.roles import DeploymentProfile
-from palm.app.host.services.packaging import apply_product_packaging, bag_from_built
-from palm.app.settings import PalmSettings
-from palm.runtimes.server.context import ServerContext
-from palm.runtimes.server.runtime import ServerRuntime
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.composition import CompositionProfile, composition_profile_from_name
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.host.services.packaging import apply_product_packaging, bag_from_built
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.server.context import ServerContext
+from bundles.standard.runtimes.server.runtime import ServerRuntime
 from palm.services.analytics import AnalyticsService
 from palm.services.assist import AssistService
 from palm.services.inspect import InspectService

@@ -10,15 +10,15 @@ from palm.common.transforms._apps import INSTALLED_TRANSFORMS, INTENTION_TRANSFO
 from palm.core.exceptions import RegistryError
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.transform.registry import transform_registry
-from palm.patterns._apps import INSTALLED_PATTERNS, INTENTION_PATTERNS
-from palm.providers._apps import INSTALLED_PROVIDERS, INTENTION_PROVIDERS
-from palm.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
+from plugins.patterns._apps import INSTALLED_PATTERNS, INTENTION_PATTERNS
+from plugins.providers._apps import INSTALLED_PROVIDERS, INTENTION_PROVIDERS
+from plugins.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 
 @pytest.fixture(autouse=True)
 def _reload_apps() -> None:
     """Registries follow the all_in_one record, including its transform names."""
-    from palm.app.bootstrap import ensure_plugins
+    from bundles.standard.app.bootstrap import ensure_plugins
 
     ensure_plugins()
 
@@ -132,8 +132,8 @@ def test_installed_transform_apps_register() -> None:
 
 
 def test_wizard_handler_exports() -> None:
-    from palm.patterns.wizard import CommitRegistry
-    from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry as HandlerRegistry
+    from plugins.patterns.wizard import CommitRegistry
+    from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry as HandlerRegistry
 
     assert CommitRegistry is HandlerRegistry
 

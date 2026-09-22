@@ -6,10 +6,10 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.common.operator.view_registry import OperatorViewContext
-from palm.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
+from bundles.standard.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
 from palm.services.assist.catalog.menu import build_menu_page
 from palm.services.assist.catalog.open import parse_open_token
 from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
@@ -35,7 +35,7 @@ def host() -> Iterator[ApplicationHost]:
 
 def test_open_flow_returns_humanized_first_turn(host) -> None:
     """0.34.5+ — open:flow must not return raw WAITING_FOR_INPUT without question."""
-    from palm.runtimes.mcp.assist.dispatch import shape_dispatch_result
+    from bundles.standard.runtimes.mcp.assist.dispatch import shape_dispatch_result
 
     raw = host.assist.open(
         {
@@ -166,7 +166,7 @@ def test_design_auto_start_intent_set() -> None:
 
 
 def test_shape_waiting_resume_chips() -> None:
-    from palm.runtimes.mcp.assist.shape.catalog import shape_waiting_assistant
+    from bundles.standard.runtimes.mcp.assist.shape.catalog import shape_waiting_assistant
 
     shaped = shape_waiting_assistant(
         [

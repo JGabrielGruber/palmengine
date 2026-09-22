@@ -12,7 +12,7 @@ import pytest
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ProcessDefinition, ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture
@@ -203,7 +203,7 @@ def test_list_and_get_snapshots(server: ServerRuntime) -> None:
 
 
 def test_list_and_get_resources(server: ServerRuntime) -> None:
-    import palm.providers  # noqa: F401 — register providers
+    import plugins.providers  # noqa: F401 — register providers
 
     server.repository.register_resource(
         ResourceDefinition(

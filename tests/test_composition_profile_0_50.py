@@ -9,26 +9,26 @@ that transition. See VISION-0.50 / ADR-019.
 
 from __future__ import annotations
 
-import palm.app
-from palm.app import ApplicationHost
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.composition import (
+import bundles.standard.app
+from bundles.standard.app import ApplicationHost
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.composition import (
     ALL_SERVICES,
     CORE_SERVICES,
     SERVER_SURFACES,
     composition_profile_from_name,
 )
-from palm.app.host.composition import (
+from bundles.standard.app.host.composition import (
     CompositionProfile as CP,
 )
-from palm.app.host.services.providers import CORE_SERVICE_PROVIDERS
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.services.providers import CORE_SERVICE_PROVIDERS
+from bundles.standard.app.settings import PalmSettings
 
 
 def test_composition_profile_is_public_api() -> None:
-    """Exported from `palm.app` (and `palm.app.host`) like DeploymentProfile."""
-    assert palm.app.CompositionProfile is CP
-    assert "CompositionProfile" in palm.app.__all__
+    """Exported from `bundles.standard.app` (and `bundles.standard.app.host`) like DeploymentProfile."""
+    assert bundles.standard.app.CompositionProfile is CP
+    assert "CompositionProfile" in bundles.standard.app.__all__
 
 
 def test_all_in_one_services_match_what_host_builds_today() -> None:
@@ -148,9 +148,9 @@ def test_host_embedded_composition_builds_core_only() -> None:
 
 def test_default_surfaces_respects_composition_filter() -> None:
     """`only` (a composition's surfaces) narrows what the server mounts; None = all."""
-    from palm.runtimes.server import ServerRuntime
-    from palm.runtimes.server.context import ServerContext
-    from palm.runtimes.server.surfaces import default_surfaces
+    from bundles.standard.runtimes.server import ServerRuntime
+    from bundles.standard.runtimes.server.context import ServerContext
+    from bundles.standard.runtimes.server.surfaces import default_surfaces
 
     ctx = ServerContext(ServerRuntime())
     full = default_surfaces(ctx)  # None → all (rest + 4)

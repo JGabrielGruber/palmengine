@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import composition_profile_from_name
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import composition_profile_from_name
+from bundles.standard.app.settings import PalmSettings
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.core.structure import (

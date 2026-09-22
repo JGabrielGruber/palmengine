@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.event import Event, EventContext
 from palm.core.storage import StorageEngine
-from palm.runtimes.mcp.assist.operator import (
+from bundles.standard.runtimes.mcp.assist.operator import (
     dispatch_operator_path,
     rewrite_system_session_continue,
 )
@@ -140,7 +140,7 @@ def test_system_session_inspect_dispatch() -> None:
 
 def test_events_subscribe_session_filter_helper() -> None:
     """Unit-level: event filter used by Events WS (no full WS upgrade)."""
-    from palm.runtimes.server.surfaces.websocket.events_session import (
+    from bundles.standard.runtimes.server.surfaces.websocket.events_session import (
         _event_matches_session,
     )
 

@@ -11,11 +11,11 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import composition_profile_from_name
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.composition import composition_profile_from_name
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import CAPABILITY_WORK_DRAIN
 from palm.system.log import get_system_log, reset_system_log_for_tests
 

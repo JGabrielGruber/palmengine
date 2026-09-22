@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import PalmKernel, PalmSettings
+from bundles.standard.app import PalmKernel, PalmSettings
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
-from palm.runtimes.daemon import DaemonRuntime
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.daemon import DaemonRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture
@@ -106,8 +106,8 @@ def test_requires_bootstrap() -> None:
 
 
 def test_create_cli_host_registers_collapsed_runtime() -> None:
-    from palm.app.session import create_cli_host
-    from palm.runtimes.embedded import EmbeddedRuntime
+    from bundles.standard.app.session import create_cli_host
+    from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
     host = create_cli_host(settings=PalmSettings(load_example_definitions=False))
     try:

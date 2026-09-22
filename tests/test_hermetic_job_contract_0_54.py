@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.runners.neonroot.contract import (
+from plugins.runners.neonroot.contract import (
     HERMETIC_JOB_SPAWN_FIELDS,
     hermetic_job_summary,
     validate_hermetic_job_params,

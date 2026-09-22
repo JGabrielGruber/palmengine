@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import palm.patterns  # noqa: F401
+import plugins.patterns  # noqa: F401
 from palm.common.cqrs.command import ProvideInputCommand
 from palm.common.cqrs.schemas import build_schema_registry
-from palm.patterns.wizard.bindings.cqrs.commands import (
+from plugins.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
-from palm.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
+from bundles.standard.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 
 
 def test_body_schema_for_wizard_input_value_only() -> None:

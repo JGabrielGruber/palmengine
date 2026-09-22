@@ -9,10 +9,10 @@ from typing import Any
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 def _request(

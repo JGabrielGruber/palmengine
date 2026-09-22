@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.patterns.wizard import WizardKeys
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.providers.palm.provider import PalmProvider
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard import WizardKeys
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from plugins.providers.palm.provider import PalmProvider
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def _child_wizard_flow() -> FlowDefinition:
@@ -121,7 +121,7 @@ def test_parent_wizard_suspends_until_child_completes(runtime: EmbeddedRuntime) 
     assert parent_job.status == JobStatus.WAITING_FOR_INPUT
     assert parent_job.state.get(WizardKeys.CURRENT_STEP) == "spawn_child"
 
-    from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+    from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 
     park = nested_park_interest(parent_job.state)
     assert park is not None

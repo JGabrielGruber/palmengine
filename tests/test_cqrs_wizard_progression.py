@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.common.cqrs.query import ListInstancesQuery
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.storage import StorageEngine
-from palm.patterns.wizard import WizardConfig, WizardEventType, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
-from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
-from palm.patterns.wizard.bindings.events.types import WizardEventType as WizardEvents
-from palm.runtimes.cli.shared.args import CliInvocation
-from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime
+from plugins.patterns.wizard import WizardConfig, WizardEventType, WizardPattern, WizardStepConfig
+from plugins.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
+from plugins.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
+from plugins.patterns.wizard.bindings.events.types import WizardEventType as WizardEvents
+from bundles.standard.runtimes.cli.shared.args import CliInvocation
+from bundles.standard.runtimes.cli.shared.bootstrap import bootstrap_runtime
 from palm.states import BlackboardState
 
 
@@ -128,7 +128,7 @@ def test_cli_context_uses_query_bus_for_instance_list(fast_cli_settings: PalmSet
         queried = ctx.host.ask(ListInstancesQuery(include_terminal=True))
         assert len(summaries) == len(queried)
     finally:
-        from palm.runtimes.cli.shared.bootstrap import shutdown_context
+        from bundles.standard.runtimes.cli.shared.bootstrap import shutdown_context
 
         shutdown_context(ctx)
 

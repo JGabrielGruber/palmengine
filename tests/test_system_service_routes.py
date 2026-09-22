@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.system.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.system.routes import ROUTES
 
 
 def test_system_routes_include_job_context_and_instances() -> None:

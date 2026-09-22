@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from examples.definitions.coconut.npc import COCONUT_NPC_FLOW
 from examples.definitions.coconut.resources import (
     LOAD_COCONUT_PLAYER,
@@ -16,10 +16,10 @@ from palm.common.resource.document_storage import (
     get_memory_kv_store,
 )
 from palm.core.orchestration import JobStatus
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.providers.kv.provider import KvProvider
-from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.providers.kv.provider import KvProvider
+from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def _register_coconut(rt: EmbeddedRuntime) -> None:

@@ -13,10 +13,10 @@ import ast
 from pathlib import Path
 
 from examples.definitions.authoring_pack import AUTHORING_PACK_FLOW
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 
 _ASSIST_ENVELOPE_KEYS = (
     "question",
@@ -59,7 +59,7 @@ def test_authoring_pack_module_does_not_import_assist() -> None:
     tree = ast.parse(_PACK_PATH.read_text(encoding="utf-8"))
     forbidden_prefixes = (
         "palm.services.assist",
-        "palm.kits.assist",
+        "plugins.kits.assist",
     )
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -82,8 +82,8 @@ def test_design_entry_leftover_unchanged() -> None:
 
 
 def test_land_commit_then_present_starts_authoring_pack_and_waits() -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

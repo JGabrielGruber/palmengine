@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.assist.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.assist.routes import ROUTES
 
 
 def test_assist_routes_include_start_and_handoff() -> None:

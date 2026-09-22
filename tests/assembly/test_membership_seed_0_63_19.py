@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.system.structure import (
     ALWAYS_ON_MEMBERSHIP_CAPABILITIES,
     MEMBERSHIP_CAPABILITY_SEEDS,

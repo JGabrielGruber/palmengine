@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from palm.common.job_inspection import inspect_job_json
 from palm.common.operator.waiting_jobs import enrich_job_list_rows, slim_waiting_job_row
-from palm.kits.server.diagnostics import build_doctor_report
+from plugins.kits.server.diagnostics import build_doctor_report
 from palm.system.subsystems.planes.wait.present import summarize_waiting_on, waiting_on_from_job
 from palm.core.orchestration import Job, JobStatus
 from palm.core.wait import make_job_wait, open_wait_on_job
-from palm.patterns.wizard.bindings.resource.nested_park import open_nested_park
+from plugins.patterns.wizard.bindings.resource.nested_park import open_nested_park
 from palm.services.assist.present.humanize import hint_text, question_text
 
 

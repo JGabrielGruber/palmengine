@@ -21,7 +21,7 @@ def test_from_palm_app_import_application_host_cold() -> None:
     """Public door: no ensure_core_plugins warm-up; no ImportError cycle."""
     result = _run_cold_script(
         """
-        from palm.app import ApplicationHost
+        from bundles.standard.app import ApplicationHost
 
         assert ApplicationHost.__name__ == "ApplicationHost"
         print("ok")
@@ -36,7 +36,7 @@ def test_application_host_cold_import_without_ensure_core_plugins() -> None:
     result = _run_cold_script(
         """
         # Deliberately do not call ensure_core_plugins().
-        from palm.app import ApplicationHost
+        from bundles.standard.app import ApplicationHost
 
         cls = ApplicationHost
         assert isinstance(cls, type)

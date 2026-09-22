@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.design.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.design.routes import ROUTES
 
 
 def test_design_routes_include_proposal_lifecycle() -> None:

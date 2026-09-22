@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.assist_registry import (
+from bundles.standard.app.assist_registry import (
     AppAssistContributor,
     clear_app_assist_contributors,
     iter_app_assist_contributors,

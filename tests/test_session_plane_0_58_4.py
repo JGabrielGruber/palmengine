@@ -15,8 +15,8 @@ from palm.core.orchestration.engine import OrchestrationEngine
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 from palm.system.executions.flow_submission import prepare_flow_submission
 

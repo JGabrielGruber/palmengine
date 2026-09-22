@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.cli.shared.context import CliContext
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.cli.shared.context import CliContext
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.system.subsystems.planes.session import (
     SessionBind,
     SessionClosedError,

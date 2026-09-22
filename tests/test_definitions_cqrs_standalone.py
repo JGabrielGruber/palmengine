@@ -6,7 +6,7 @@ import pytest
 
 from palm.common.services.errors import InstanceNotFoundServiceError
 from palm.definitions import FlowDefinition
-from palm.runtimes.mcp.in_process import _bootstrap_server_context
+from bundles.standard.runtimes.mcp.in_process import _bootstrap_server_context
 
 
 def _wizard_body(name: str) -> dict:

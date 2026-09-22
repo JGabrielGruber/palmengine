@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import build_resource_leaf, resource_definition_resolver
 from palm.core.behavior_tree import PatternStatus, ResourceLeaf
 from palm.core.resource import ResourceEngine
 from palm.definitions import ResourceDefinition
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.pattern import WizardPattern
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from plugins.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
 
 

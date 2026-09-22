@@ -19,7 +19,7 @@ from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard import WizardConfig, WizardPattern
+from plugins.patterns.wizard import WizardConfig, WizardPattern
 from palm.states import BlackboardState
 from tests.core.fakes import TestState
 

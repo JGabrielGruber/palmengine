@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.execution.flows.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.execution.flows.routes import ROUTES
 
 
 def test_flow_routes_use_command_path_shape() -> None:

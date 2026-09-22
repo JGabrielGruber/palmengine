@@ -7,18 +7,18 @@ from io import StringIO
 import pytest
 from rich.console import Console
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
-from palm.app.host.event_recorder import HostEventRecorder
-from palm.app.host.events import HostEventType
-from palm.patterns.wizard.bindings.cqrs.queries import ListWizardProgressQuery
-from palm.runtimes.cli.cli import main
-from palm.runtimes.cli.commands.dashboard import (
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app.host.event_recorder import HostEventRecorder
+from bundles.standard.app.host.events import HostEventType
+from plugins.patterns.wizard.bindings.cqrs.queries import ListWizardProgressQuery
+from bundles.standard.runtimes.cli.cli import main
+from bundles.standard.runtimes.cli.commands.dashboard import (
     DashboardOptions,
     parse_dashboard_args,
     render_status_dashboard,
     run_status_dashboard,
 )
-from palm.runtimes.cli.commands.registry import build_registry
+from bundles.standard.runtimes.cli.commands.registry import build_registry
 
 
 def test_render_status_dashboard_smoke(cli_ctx) -> None:

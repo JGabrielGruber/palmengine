@@ -6,7 +6,7 @@ from palm.common import ExecutionPlan, prepare_flow_submission
 from palm.common.patterns import PatternBuildContext
 from palm.core.orchestration import JobStatus
 from palm.definitions.flow import FlowDefinition
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def test_flow_submission_to_plan_and_submit() -> None:

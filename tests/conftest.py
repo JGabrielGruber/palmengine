@@ -13,12 +13,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from palm.app import ApplicationHost
-from palm.app.bootstrap import ensure_plugins
-from palm.app.settings import PalmSettings
 from palm.core.event import EventEngine
-from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli.shared.context import CliContext
+
+from bundles.standard.app import ApplicationHost
+from bundles.standard.app.bootstrap import ensure_plugins
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from bundles.standard.runtimes.cli.shared.context import CliContext
 
 # all_in_one record: patterns, providers, runners, storages, kits, transforms.
 ensure_plugins()
@@ -60,7 +61,7 @@ def _isolate_coconut_kv_state(request: pytest.FixtureRequest) -> Iterator[None]:
         yield
         return
     from palm.common.resource.document_storage import clear_memory_kv_store
-    from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+    from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 
     clear_memory_kv_store()
     clear_palm_runtime()

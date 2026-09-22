@@ -9,6 +9,6 @@ import importlib.util
 
 
 def test_local_has_no_ready_override() -> None:
-    assert importlib.util.find_spec("palm.runners.local.app") is None
-    assert importlib.util.find_spec("palm.runners.host.app") is None
-    assert importlib.util.find_spec("palm.runners.neonroot.app") is None
+    assert importlib.util.find_spec("plugins.runners.local.app") is None
+    assert importlib.util.find_spec("plugins.runners.host.app") is None
+    assert importlib.util.find_spec("plugins.runners.neonroot.app") is None

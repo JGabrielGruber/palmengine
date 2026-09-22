@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.system.boot import HOST_PHASES, host_phase_ids
 from palm.system.log import get_system_log, reset_system_log_for_tests
 

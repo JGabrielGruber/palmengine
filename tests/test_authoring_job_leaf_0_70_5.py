@@ -9,7 +9,7 @@ Not palm create_flow. Not land verbs on present. Not Design. Not Assist.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
 from examples.definitions.authoring_pack import (
@@ -31,8 +31,8 @@ def _shape_body(name: str) -> dict:
 
 
 def test_pack_job_leaf_commits_submitted_shape_via_adapter() -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
-from palm.app.host.events import HostEventType
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app.host.events import HostEventType
 from palm.common.compensation import (
     CompensationCoordinator,
     CompensationEventType,
@@ -23,8 +23,8 @@ from palm.common.events import (
 )
 from palm.core.event import Event, EventContext, EventEngine
 from palm.core.storage import StorageEngine
-from palm.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
-from palm.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
+from plugins.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
+from plugins.patterns.wizard.bindings.cqrs.queries import GetWizardProgressQuery
 
 
 def _storage() -> StorageEngine:

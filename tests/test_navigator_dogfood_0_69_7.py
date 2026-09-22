@@ -15,12 +15,12 @@ from examples.definitions.operator_entry import OPERATOR_ENTRY_FLOW
 from examples.definitions.operator_entry import (
     register_definitions as register_operator_entry,
 )
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.composition import composition_profile_from_name
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.composition import composition_profile_from_name
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 from tests.helpers.flows import spine_wizard
 
 _ASSIST_ENVELOPE_KEYS = (
@@ -55,7 +55,7 @@ def test_embedded_test_host_has_no_assist() -> None:
 
 
 def test_unset_guidance_definition_id_still_refuses_empty_handed_start() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -74,7 +74,7 @@ def test_unset_guidance_definition_id_still_refuses_empty_handed_start() -> None
 
 
 def test_empty_handed_start_does_not_start_operator_entry() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -96,7 +96,7 @@ def test_empty_handed_start_does_not_start_operator_entry() -> None:
 
 
 def test_present_waiting_navigator_has_no_assist_envelope() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -119,7 +119,7 @@ def test_present_waiting_navigator_has_no_assist_envelope() -> None:
 
 
 def test_floor_walk_empty_handed_navigator_on_embedded() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

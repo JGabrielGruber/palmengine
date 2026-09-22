@@ -19,14 +19,14 @@ def test_common_has_no_provider_imports() -> None:
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:
                 if (
-                    node.module.startswith("palm.providers.")
+                    node.module.startswith("plugins.providers.")
                     and node.module not in _ALLOWED_COMMON_PROVIDER_MODULES
                 ):
                     violations.append(f"{path.relative_to(repo_root)}: from {node.module}")
             elif isinstance(node, ast.Import):
                 for alias in node.names:
                     if (
-                        alias.name.startswith("palm.providers.")
+                        alias.name.startswith("plugins.providers.")
                         and alias.name not in _ALLOWED_COMMON_PROVIDER_MODULES
                     ):
                         violations.append(f"{path.relative_to(repo_root)}: import {alias.name}")
@@ -35,12 +35,12 @@ def test_common_has_no_provider_imports() -> None:
 
 
 def test_patterns_have_no_provider_internals() -> None:
-    """``palm.patterns`` must not import palm provider bindings or flow modules."""
+    """``plugins.patterns`` must not import palm provider bindings or flow modules."""
     patterns_root = Path(__file__).resolve().parents[1] / "src" / "palm" / "patterns"
     repo_root = patterns_root.parents[1]
     banned_fragments = (
-        "palm.providers.palm.bindings",
-        "palm.providers.palm.flow",
+        "plugins.providers.palm.bindings",
+        "plugins.providers.palm.flow",
     )
     violations: list[str] = []
 
@@ -55,6 +55,6 @@ def test_patterns_have_no_provider_internals() -> None:
                     if any(fragment in alias.name for fragment in banned_fragments):
                         violations.append(f"{path.relative_to(repo_root)}: import {alias.name}")
 
-    assert not violations, "palm provider internals found in palm.patterns:\n" + "\n".join(
+    assert not violations, "palm provider internals found in plugins.patterns:\n" + "\n".join(
         violations
     )

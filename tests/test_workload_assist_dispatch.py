@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import sys
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.runtimes.mcp.assist.operator import dispatch_operator_path
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.mcp.assist.operator import dispatch_operator_path
 from palm.services.assist.registry import list_mcp_path_aliases, resolve_mcp_alias
 
 

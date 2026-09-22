@@ -20,8 +20,8 @@ from palm.core.wait import (
     has_open_waits,
     open_wait_on_job,
 )
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def test_open_workload_wait_kind() -> None:

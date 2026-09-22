@@ -10,13 +10,13 @@ from examples.definitions.coconut.resources import (
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine
-from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
-from palm.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
-from palm.patterns.wizard.flow.phases._base import provide_wizard_input
-from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
+from plugins.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
+from plugins.patterns.wizard.flow.phases._base import provide_wizard_input
+from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 

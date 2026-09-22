@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.core.structure import AdmissionSnapshot, StructurePhase
-from palm.runtimes.mcp.rest_client import (
+from bundles.standard.runtimes.mcp.rest_client import (
     PalmRestError,
     admission_refused_error,
     maybe_admission_refused_error,
@@ -41,7 +41,7 @@ def test_maybe_admission_refused_error_ignores_other() -> None:
 
 def test_websocket_maps_admission_not_internal() -> None:
     """Assist WS exception path: AdmissionRefusedError → code admission_refused."""
-    from palm.runtimes.server.surfaces.websocket import session as ws_session
+    from bundles.standard.runtimes.server.surfaces.websocket import session as ws_session
 
     snap = AdmissionSnapshot(
         may_run_business=False,

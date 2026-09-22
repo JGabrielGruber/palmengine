@@ -6,13 +6,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.settings import PalmSettings
-from palm.patterns.wizard.bindings.cqrs.commands import (
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.settings import PalmSettings
+from plugins.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
 )
-from palm.patterns.wizard.bindings.cqrs.handlers import handle_wizard_command
+from plugins.patterns.wizard.bindings.cqrs.handlers import handle_wizard_command
 from palm.system.log import reset_system_log_for_tests
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory

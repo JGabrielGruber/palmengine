@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import inspect
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.workplane.coordinator import WorkPlaneCoordinator
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.workplane.coordinator import WorkPlaneCoordinator
 from palm.common.events import consumers as journal_consumers
 from palm.common.events.journal import EventJournal
 from palm.core.structure import CAPABILITY_WORK_DRAIN

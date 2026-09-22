@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import importlib.util
 
-import palm.runners  # noqa: F401
+import plugins.runners  # noqa: F401
 from palm.core.workload.registry import workload_runtime_registry
-from palm.runners._apps import INSTALLED_RUNNERS
+from plugins.runners._apps import INSTALLED_RUNNERS
 
 
 def test_runner_app_bag_is_gone() -> None:
-    assert importlib.util.find_spec("palm.runners.app") is None
-    assert importlib.util.find_spec("palm.runners._registry") is None
+    assert importlib.util.find_spec("plugins.runners.app") is None
+    assert importlib.util.find_spec("plugins.runners._registry") is None
     for name in INSTALLED_RUNNERS:
-        assert importlib.util.find_spec(f"palm.runners.{name}.app") is None
+        assert importlib.util.find_spec(f"plugins.runners.{name}.app") is None
 
 
 def test_autoload_still_registers_workload_runtimes() -> None:

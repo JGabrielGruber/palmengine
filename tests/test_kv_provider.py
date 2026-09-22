@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.common.resource.document_storage import (
@@ -14,9 +14,9 @@ from palm.common.resource.document_storage import (
 )
 from palm.core.resource import ResourceEngine
 from palm.definitions import ResourceDefinition
-from palm.providers.kv.provider import KvProvider
-from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.kv.provider import KvProvider
+from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 

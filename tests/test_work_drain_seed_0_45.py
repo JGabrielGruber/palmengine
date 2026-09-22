@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, PalmSettings
+from bundles.standard.app import ApplicationHost, PalmSettings
 from palm.definitions import FlowDefinition, ResourceDefinition
 
 

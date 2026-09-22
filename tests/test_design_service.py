@@ -6,8 +6,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.common.persistence.definition_migration import (
     CallableMigrationRule,
     migration_registry,

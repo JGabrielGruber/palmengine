@@ -10,13 +10,13 @@ import inspect
 
 from palm.common.patterns.app import PatternApp
 from palm.common.providers.app import ProviderApp
-from palm.runners.host import registry as host_registry
-from palm.runners.local import registry as local_registry
-from palm.runners.neonroot import registry as neonroot_registry
+from plugins.runners.host import registry as host_registry
+from plugins.runners.local import registry as local_registry
+from plugins.runners.neonroot import registry as neonroot_registry
 
 
 def test_runner_register_does_not_call_ready() -> None:
-    assert importlib.util.find_spec("palm.runners.app") is None
+    assert importlib.util.find_spec("plugins.runners.app") is None
     for mod in (local_registry, host_registry, neonroot_registry):
         src = inspect.getsource(mod)
         assert "ready" not in src

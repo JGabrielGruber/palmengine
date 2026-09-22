@@ -22,12 +22,12 @@ from examples.definitions.authoring_apply import (
     snapshot_resource_body,
 )
 from examples.definitions.authoring_pack import AUTHORING_PACK_FLOW
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.common.job_inspection import JobContext
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.core.orchestration import JobStatus
-from palm.kits.present import GUIDANCE_INSTANCE_ID
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 
 _ASSIST_ENVELOPE_KEYS = (
     "question",
@@ -78,8 +78,8 @@ def test_authoring_apply_module_does_not_import_assist() -> None:
 
 
 def test_pack_wait_leaf_commit_apply_snapshot_present_drive(tmp_path: Path) -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     documents_root = tmp_path / "documents"
     snapshot_path = documents_root / "authoring" / "snapshot.json"

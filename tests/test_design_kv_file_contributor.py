@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers + design contributors
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
-from palm.providers.file.bindings.design import validate_file_design_proposal
-from palm.providers.kv.bindings.design import validate_kv_design_proposal
+import plugins.providers  # noqa: F401 — register providers + design contributors
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
+from plugins.providers.file.bindings.design import validate_file_design_proposal
+from plugins.providers.kv.bindings.design import validate_kv_design_proposal
 from palm.services.design.registry import clear_design_contributors, iter_design_contributors
 
 
 @pytest.fixture(autouse=True)
 def _ensure_contributors_registered() -> None:
     clear_design_contributors()
-    from palm.providers.file.bindings.design import register_file_design_contributor
-    from palm.providers.kv.bindings.design import register_kv_design_contributor
+    from plugins.providers.file.bindings.design import register_file_design_contributor
+    from plugins.providers.kv.bindings.design import register_kv_design_contributor
 
     register_kv_design_contributor()
     register_file_design_contributor()

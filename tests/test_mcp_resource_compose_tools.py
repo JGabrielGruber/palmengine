@@ -9,15 +9,15 @@ import pytest
 fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
-from palm.app.mcp_registry import (  # noqa: E402
+from bundles.standard.app.mcp_registry import (  # noqa: E402
     AppMcpContributor,
     clear_app_mcp_contributors,
     get_app_mcp_contributor,
     register_app_mcp_contributor,
 )
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
-from palm.runtimes.mcp.contributors import register_app_mcp_tools  # noqa: E402
-from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from bundles.standard.runtimes.mcp.contributors import register_app_mcp_tools  # noqa: E402
+from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
 
 
 class _Phase5FakeClient:

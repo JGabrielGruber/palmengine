@@ -30,7 +30,7 @@ def test_base_runtime_reactive_seats_without_host() -> None:
 
 
 def test_server_runtime_subclass_inherits_seats() -> None:
-    from palm.runtimes.server.runtime import ServerRuntime
+    from bundles.standard.runtimes.server.runtime import ServerRuntime
 
     reset_system_log_for_tests()
     rt = ServerRuntime()

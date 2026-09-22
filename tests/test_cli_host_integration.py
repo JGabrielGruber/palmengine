@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from palm.app.host.events import HostEventType
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.events import HostEventType
+from bundles.standard.app.settings import PalmSettings
 from palm.common.cqrs.query import ListInstancesQuery
-from palm.runtimes.cli.shared.args import CliInvocation
-from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli.tui import actions as tui_actions
+from bundles.standard.runtimes.cli.shared.args import CliInvocation
+from bundles.standard.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from bundles.standard.runtimes.cli.tui import actions as tui_actions
 
 
 def test_cli_submit_flow_uses_host_command_bus(fast_cli_settings: PalmSettings) -> None:
@@ -52,7 +52,7 @@ def test_cli_context_requires_host(fast_cli_settings: PalmSettings) -> None:
 
 
 def test_cli_doctor_uses_projection_instance_list(fast_cli_settings: PalmSettings) -> None:
-    from palm.runtimes.cli.commands.doctor import run_doctor
+    from bundles.standard.runtimes.cli.commands.doctor import run_doctor
 
     ctx = bootstrap_runtime(settings=fast_cli_settings, show_banner=False)
     try:
@@ -78,7 +78,7 @@ def test_cli_runtime_binds_application_host(fast_cli_settings: PalmSettings) -> 
 
 
 def test_cli_doctor_json_is_inspect_bag(fast_cli_settings: PalmSettings) -> None:
-    from palm.runtimes.cli.commands.doctor import run_doctor
+    from bundles.standard.runtimes.cli.commands.doctor import run_doctor
 
     ctx = bootstrap_runtime(
         settings=fast_cli_settings,

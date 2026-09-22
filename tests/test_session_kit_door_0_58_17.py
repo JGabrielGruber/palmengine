@@ -6,21 +6,21 @@ from types import SimpleNamespace
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
-from palm.kits.server.middleware import (
+from plugins.kits.server.middleware import (
     require_session_service,
     resolve_session_plane,
     resolve_session_service,
 )
-from palm.runtimes.cli.shared.context import CliContext
-from palm.runtimes.mcp.assist.operator import (
+from bundles.standard.runtimes.cli.shared.context import CliContext
+from bundles.standard.runtimes.mcp.assist.operator import (
     dispatch_system,
     rewrite_system_session_continue,
 )
-from palm.runtimes.server.surfaces.websocket.session import (
+from bundles.standard.runtimes.server.surfaces.websocket.session import (
     _ConnectionState,
     _service_bind_into,
     handle_client_message,

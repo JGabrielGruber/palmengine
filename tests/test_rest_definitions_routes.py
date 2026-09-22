@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.server.surfaces.rest.definitions.routes import ROUTES
+from bundles.standard.runtimes.server.surfaces.rest.definitions.routes import ROUTES
 
 
 def test_definitions_routes_include_crud_verbs() -> None:

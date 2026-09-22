@@ -8,8 +8,8 @@ from palm.common.persistence.state_snapshot import snapshot_state, state_from_sn
 from palm.core.behavior_tree import PatternStatus
 from palm.core.context import ContextEngine
 from palm.definitions import FlowDefinition
-from palm.patterns.parallel import ParallelKeys, ParallelPattern, parallel_config_from_options
-from palm.patterns.parallel.bindings.instances.persistence import (
+from plugins.patterns.parallel import ParallelKeys, ParallelPattern, parallel_config_from_options
+from plugins.patterns.parallel.bindings.instances.persistence import (
     parallel_runtime_position,
     restore_parallel_position,
 )
@@ -97,8 +97,8 @@ def _multi_step_branch_flow() -> FlowDefinition:
 
 
 def test_parallel_branch_advances_through_multiple_steps() -> None:
-    from palm.patterns.parallel.flow.scope import load_branch_snapshot_for
-    from palm.patterns.wizard.bindings.context.keys import WizardKeys
+    from plugins.patterns.parallel.flow.scope import load_branch_snapshot_for
+    from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 
     flow = _multi_step_branch_flow()
     state = BlackboardState(schema=flow.materialize_state_schema())

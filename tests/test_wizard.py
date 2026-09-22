@@ -7,7 +7,7 @@ import pytest
 from palm.core.behavior_tree import PatternStatus
 from palm.core.context import ContextEngine
 from palm.core.event import EventEngine
-from palm.patterns.wizard import (
+from plugins.patterns.wizard import (
     StepValidationRule,
     WizardConfig,
     WizardEventType,
@@ -15,7 +15,7 @@ from palm.patterns.wizard import (
     WizardPattern,
     WizardStepConfig,
 )
-from palm.patterns.wizard.bindings.compensation.handler import (
+from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,
     CommitResult,
@@ -241,7 +241,7 @@ def _transactional_config() -> WizardConfig:
 
 
 def test_transactional_wizard_happy_path_with_commit() -> None:
-    from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry, CommitResult
+    from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry, CommitResult
 
     registry = CommitRegistry()
     committed: list[dict] = []
@@ -296,7 +296,7 @@ def test_validation_min_length_failure() -> None:
 
 
 def test_commit_handler_failure() -> None:
-    from palm.patterns.wizard.bindings.compensation.handler import CommitRegistry, CommitResult
+    from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry, CommitResult
 
     registry = CommitRegistry()
 
@@ -347,7 +347,7 @@ def test_backtrack_blocked_for_commit_step() -> None:
 
 def test_legacy_action_step_kind_rejected_by_builder() -> None:
     from palm.common.exceptions import DefinitionBuildError
-    from palm.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
+    from plugins.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
 
     with pytest.raises(DefinitionBuildError, match="step_kind 'action' was removed"):
         wizard_config_from_options(

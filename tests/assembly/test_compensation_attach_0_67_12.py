@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.settings import PalmSettings
 from palm.common.compensation.events import CompensationEventType, CompensationTrigger
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 
-from palm.kits import registry as kits_registry
+from plugins.kits import registry as kits_registry
 from palm.system.vitality import (
     CAPABILITY_MONITOR_AGENT,
     default_vitality_registry,
@@ -19,7 +19,7 @@ def test_system_reexport_shims_are_gone() -> None:
 
 def test_utils_and_dag_flow_parking_lots_are_gone() -> None:
     assert importlib.util.find_spec("palm.utils") is None
-    assert importlib.util.find_spec("palm.patterns.dag.flow") is None
+    assert importlib.util.find_spec("plugins.patterns.dag.flow") is None
 
 
 def test_kits_doctor_section_is_gone() -> None:

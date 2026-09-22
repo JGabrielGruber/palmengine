@@ -7,8 +7,8 @@ import importlib.metadata
 import palm
 from palm.core import BehaviorTreeEngine, pattern_registry, storage_registry
 from palm.core.registry import Registry
-from palm.patterns import wizard  # noqa: F401
-from palm.storages import memory  # noqa: F401
+from plugins.patterns import wizard  # noqa: F401
+from plugins.storages import memory  # noqa: F401
 
 
 def test_version() -> None:
@@ -40,7 +40,7 @@ def test_behavior_tree_engine_tick() -> None:
 
 
 def test_embedded_runtime_quick_wizard() -> None:
-    from palm.runtimes.embedded import EmbeddedRuntime
+    from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
     rt = EmbeddedRuntime()
     rt.start()

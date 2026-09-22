@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import AdmissionSnapshot, StructurePhase
 from palm.services.assist.session import AssistSession
 from palm.system.log import reset_system_log_for_tests

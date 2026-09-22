@@ -1,4 +1,4 @@
-"""0.69.4 — palm.kits.present kit-as-composition.
+"""0.69.4 — plugins.kits.present kit-as-composition.
 
 Library door: one object holds one BoundSurface and walks bind, present,
 submit, start, attach, focus. Not a PresentService. No pattern if.
@@ -8,11 +8,11 @@ Title start still must not stamp when the definition id does not match.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 from palm.services.session.bound_surface import BoundSurface
 from tests.helpers.flows import spine_wizard
 
@@ -27,19 +27,19 @@ _ASSIST_ENVELOPE_KEYS = (
 
 
 def test_present_kit_is_installed() -> None:
-    import palm.kits.present as present
-    from palm.kits import INSTALLED_KITS, get_kit, list_kits
+    import plugins.kits.present as present
+    from plugins.kits import INSTALLED_KITS, get_kit, list_kits
 
     assert present is not None
     assert "present" in INSTALLED_KITS
     info = get_kit("present")
     assert info is not None
-    assert info.module == "palm.kits.present"
+    assert info.module == "plugins.kits.present"
     assert "present" in {k.name for k in list_kits()}
 
 
 def test_bind_through_kit_returns_outside_bound_surface() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -55,7 +55,7 @@ def test_bind_through_kit_returns_outside_bound_surface() -> None:
 
 
 def test_present_waiting_run_via_job_inspectable_without_assist_envelope() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -76,7 +76,7 @@ def test_present_waiting_run_via_job_inspectable_without_assist_envelope() -> No
 
 
 def test_submit_input_through_kit_uses_input_capable() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -93,7 +93,7 @@ def test_submit_input_through_kit_uses_input_capable() -> None:
 
 
 def test_start_named_work_spawns_sibling_without_job_session() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -122,7 +122,7 @@ def test_start_named_work_spawns_sibling_without_job_session() -> None:
 
 
 def test_focus_among_owned_instances() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

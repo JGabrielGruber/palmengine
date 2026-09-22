@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from palm.core.behavior_tree import ActionNode, PatternStatus
 from palm.core.context import BaseState
-from palm.patterns.wizard.bindings.behavior_tree.bt import (
+from plugins.patterns.wizard.bindings.behavior_tree.bt import (
     PhaseKeyedSelectorNode,
     PhaseTransitionLoopNode,
 )
-from palm.patterns.wizard.flow.collection.state import collection_phase, set_collection_phase
+from plugins.patterns.wizard.flow.collection.state import collection_phase, set_collection_phase
 from palm.states import BlackboardState
 
 

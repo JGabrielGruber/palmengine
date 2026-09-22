@@ -10,15 +10,15 @@ import pytest
 fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
-from palm.runtimes.mcp.in_process import (  # noqa: E402
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from bundles.standard.runtimes.mcp.in_process import (  # noqa: E402
     PalmInProcessBackend,
     create_in_process_backend,
     shutdown_in_process_runtime,
 )
-from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
-from palm.runtimes.server import ServerRuntime  # noqa: E402
-from palm.runtimes.server.factory import build_server_context  # noqa: E402
+from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
+from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
+from bundles.standard.runtimes.server.factory import build_server_context  # noqa: E402
 
 
 @pytest.fixture

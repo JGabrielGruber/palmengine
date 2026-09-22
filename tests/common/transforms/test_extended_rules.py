@@ -91,7 +91,7 @@ def test_enrich_resource_via_resource_ref(
     executor: TransformExecutor,
     rest_base_url: str,
 ) -> None:
-    import palm.providers  # noqa: F401
+    import plugins.providers  # noqa: F401
     from palm.common import DefinitionRepository
     from palm.common.resource import resource_definition_resolver
     from palm.definitions import ResourceDefinition
@@ -122,7 +122,7 @@ def test_enrich_resource_via_resource_ref(
 
 
 def test_enrich_resource_merges_fetch(executor: TransformExecutor, rest_base_url: str) -> None:
-    import palm.providers  # noqa: F401
+    import plugins.providers  # noqa: F401
 
     resource = ResourceEngine()
     resource.initialize()

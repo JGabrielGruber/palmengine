@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from palm.app.bootstrap import runtime_start_options
-from palm.app.settings import PalmSettings
-from palm.kits.server.diagnostics import build_doctor_report
+from bundles.standard.app.bootstrap import runtime_start_options
+from bundles.standard.app.settings import PalmSettings
+from plugins.kits.server.diagnostics import build_doctor_report
 from palm.core.workload import (
     IsolationPolicy,
     LifecyclePolicy,
@@ -13,7 +13,7 @@ from palm.core.workload import (
     WorkloadPolicyError,
     WorkloadSpec,
 )
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def test_embedded_runtime_wires_workload_engine() -> None:
@@ -80,7 +80,7 @@ def test_host_enabled_via_start_options() -> None:
 
 
 def test_doctor_includes_workloads_and_host_warning() -> None:
-    import palm.runners  # noqa: F401
+    import plugins.runners  # noqa: F401
 
     rt = EmbeddedRuntime()
     rt.start(

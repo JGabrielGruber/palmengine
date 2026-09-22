@@ -8,12 +8,12 @@ import pytest
 
 from palm.core.behavior_tree import PatternStatus
 from palm.core.resource.result import ProviderResult
-from palm.patterns.dag.bindings.definitions.config import (
+from plugins.patterns.dag.bindings.definitions.config import (
     DagConfig,
     DagNodeSpec,
     topological_sort,
 )
-from palm.patterns.dag.pattern import DagPattern
+from plugins.patterns.dag.pattern import DagPattern
 from palm.states.dict_backed_state import DictBackedState
 
 
@@ -177,8 +177,8 @@ def test_drain_ready_false_one_node_per_tick() -> None:
 def test_builder_wires_resource_engine() -> None:
     from palm.common.patterns.build_context import PatternBuildContext
     from palm.definitions.flow import FlowDefinition
-    from palm.patterns.dag.bindings.definitions.builder import build
-    from palm.patterns.dag.pattern import DagPattern as DP
+    from plugins.patterns.dag.bindings.definitions.builder import build
+    from plugins.patterns.dag.pattern import DagPattern as DP
 
     flow = FlowDefinition(
         name="hermetic-dag",

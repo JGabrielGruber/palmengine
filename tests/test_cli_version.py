@@ -15,7 +15,7 @@ def test_version_module() -> None:
 
 def test_cli_version_brief() -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "palm.runtimes.cli", "version"],
+        [sys.executable, "-m", "bundles.standard.runtimes.cli", "version"],
         capture_output=True,
         text=True,
         check=False,
@@ -26,7 +26,7 @@ def test_cli_version_brief() -> None:
 
 def test_cli_version_full() -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "palm.runtimes.cli", "version", "--full"],
+        [sys.executable, "-m", "bundles.standard.runtimes.cli", "version", "--full"],
         capture_output=True,
         text=True,
         check=False,
@@ -38,7 +38,7 @@ def test_cli_version_full() -> None:
 
 def test_cli_help_lists_commands() -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "palm.runtimes.cli", "--help"],
+        [sys.executable, "-m", "bundles.standard.runtimes.cli", "--help"],
         capture_output=True,
         text=True,
         check=False,

@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from palm import __version__
-from palm.runtimes.server.surfaces.rest.openapi import build_openapi_spec
-from palm.runtimes.server.surfaces.rest.openapi_registry import (
+from bundles.standard.runtimes.server.surfaces.rest.openapi import build_openapi_spec
+from bundles.standard.runtimes.server.surfaces.rest.openapi_registry import (
     collect_service_routes,
     meta_routes,
     rest_routes,
 )
-from palm.runtimes.server.surfaces.rest.route_table import rest_routes as table_rest_routes
+from bundles.standard.runtimes.server.surfaces.rest.route_table import rest_routes as table_rest_routes
 
 
 def test_collect_service_routes_includes_system_and_flows() -> None:

@@ -12,17 +12,17 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app import ApplicationHost
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import (
+from bundles.standard.app import ApplicationHost
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import (
     ALL_SERVICES,
     DEFAULT_CAPABILITIES,
     SERVER_SURFACES,
     composition_profile_from_name,
 )
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import (
     CAPABILITY_COMPENSATION,
     CAPABILITY_OUTBOX,

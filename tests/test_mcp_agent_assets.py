@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from palm.runtimes.mcp.agent_assets import read_skill_asset, resolve_skill_root
+from bundles.standard.runtimes.mcp.agent_assets import read_skill_asset, resolve_skill_root
 
 
 def test_resolve_skill_root_finds_docs_copy() -> None:

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.system.subsystems.planes.workload.run_python import build_run_python_spec, resolve_runtime_choice
 from palm.core.behavior_tree import PatternStatus
 from palm.core.workload import IsolationPolicy, WorkloadKind
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.pattern import WizardPattern
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from plugins.patterns.wizard.pattern import WizardPattern
 from palm.states import BlackboardState
 
 
@@ -45,7 +45,7 @@ def test_resolve_runtime_auto_prefers_string() -> None:
 
 def test_wizard_workload_step_host_run() -> None:
     from palm.core.workload import WorkloadEngine
-    from palm.runners.host.runtime import HostWorkloadRuntime
+    from plugins.runners.host.runtime import HostWorkloadRuntime
 
     engine = WorkloadEngine()
     engine.initialize(runtimes={"host": HostWorkloadRuntime(enabled=True)})

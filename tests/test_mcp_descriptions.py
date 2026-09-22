@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.mcp.descriptions import tool_description
+from bundles.standard.runtimes.mcp.descriptions import tool_description
 
 
 def test_tool_description_includes_connected_tool_prefix() -> None:

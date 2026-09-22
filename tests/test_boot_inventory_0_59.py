@@ -10,10 +10,10 @@ from typing import Any
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.bootstrap import ensure_plugins
-from palm.app.settings import PalmSettings
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.bootstrap import ensure_plugins
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.system.subsystems.planes.session.plane import SessionPlaneService
 from palm.system.subsystems.planes.wait.plane import WaitPlaneService
 
@@ -136,7 +136,7 @@ def test_spine_host_post_start_contracts(spine_settings: PalmSettings) -> None:
 
 def test_system_start_alone_attaches_planes(spine_settings: PalmSettings) -> None:
     """BaseRuntime system schedule without host still attaches wait + session."""
-    from palm.app.bootstrap import runtime_start_options
+    from bundles.standard.app.bootstrap import runtime_start_options
 
     rt = EmbeddedRuntime()
     rt.start(**runtime_start_options(spine_settings))
@@ -177,7 +177,7 @@ def test_host_start_idempotent(spine_settings: PalmSettings) -> None:
 
 def test_composition_services_gate_build(spine_settings: PalmSettings) -> None:
     """build_all honors composition.services (membership truth)."""
-    from palm.app.host.composition import composition_profile_from_name
+    from bundles.standard.app.host.composition import composition_profile_from_name
 
     lean = composition_profile_from_name("embedded")
     host = ApplicationHost(

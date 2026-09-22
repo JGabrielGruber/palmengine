@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401
+import plugins.providers  # noqa: F401
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.patterns.wizard import WizardKeys
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard import WizardKeys
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def _child_wizard_flow() -> FlowDefinition:
@@ -86,7 +86,7 @@ def test_nested_unpark_via_matcher_only(runtime: EmbeddedRuntime) -> None:
     runtime.wait_until_idle(timeout=5)
 
     assert parent_job.status == JobStatus.WAITING_FOR_INPUT
-    from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+    from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 
     park = nested_park_interest(parent_job.state)
     assert park is not None

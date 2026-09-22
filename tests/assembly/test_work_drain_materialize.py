@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import composition_profile_from_name
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import composition_profile_from_name
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import (
     CAPABILITY_WORK_DRAIN,
     LOCAL_CLI_ID,
@@ -275,8 +275,8 @@ def test_assemble_uses_shell_assembly_seat() -> None:
 
 def test_packaging_has_no_work_drain_service_flag() -> None:
     """DNA lists the name. Settings and deployment do not keep a dead switch."""
-    from palm.app.host.roles import DeploymentProfile
-    from palm.app.settings import PalmSettings
+    from bundles.standard.app.host.roles import DeploymentProfile
+    from bundles.standard.app.settings import PalmSettings
 
     assert "enable_work_drain_service" not in PalmSettings.__dataclass_fields__
     assert "enable_work_drain_service" not in DeploymentProfile.__dataclass_fields__
@@ -288,7 +288,7 @@ def test_host_does_not_alias_start_plane() -> None:
 
 
 def test_coordinator_has_no_start_plane_alias() -> None:
-    from palm.app.host.workplane.coordinator import WorkPlaneCoordinator
+    from bundles.standard.app.host.workplane.coordinator import WorkPlaneCoordinator
 
     assert not hasattr(WorkPlaneCoordinator, "_start_plane")
     assert not hasattr(WorkPlaneCoordinator, "start_background")
@@ -296,7 +296,7 @@ def test_coordinator_has_no_start_plane_alias() -> None:
 
 
 def test_coordinator_tick_reads_runtime_work_plane() -> None:
-    from palm.app.host.workplane.coordinator import WorkPlaneCoordinator
+    from bundles.standard.app.host.workplane.coordinator import WorkPlaneCoordinator
 
     class _Plane:
         def tick(self, *, limit: int = 10) -> int:

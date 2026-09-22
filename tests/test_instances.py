@@ -9,10 +9,10 @@ from palm.core import StorageEngine
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance
-from palm.patterns.wizard import WizardKeys
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.storages import memory  # noqa: F401
+from plugins.patterns.wizard import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from plugins.storages import memory  # noqa: F401
 
 
 def _wizard_flow() -> FlowDefinition:

@@ -15,7 +15,7 @@ def test_common_has_no_wizard_imports() -> None:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module:
-                if "patterns.wizard" in node.module or node.module == "palm.patterns.wizard":
+                if "patterns.wizard" in node.module or node.module == "plugins.patterns.wizard":
                     violations.append(
                         f"{path.relative_to(common_root.parents[1])}: from {node.module}"
                     )

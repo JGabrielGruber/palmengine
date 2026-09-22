@@ -28,7 +28,7 @@ def _isolate_service_registry() -> None:
 
 
 def _ensure_wizard_hook() -> None:
-    from palm.patterns.wizard.app import wizard_app
+    from plugins.patterns.wizard.app import wizard_app
 
     wizard_app.register()
 
@@ -43,7 +43,7 @@ def test_wizard_registers_design_contributor_hook_on_pattern_import() -> None:
 
 
 def _ensure_pipeline_hook() -> None:
-    from palm.patterns.pipeline.app import pipeline_app
+    from plugins.patterns.pipeline.app import pipeline_app
 
     pipeline_app.register()
 

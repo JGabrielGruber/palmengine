@@ -13,7 +13,7 @@ from palm.core.workload import (
     WorkloadSpec,
     WorkloadStatus,
 )
-from palm.runners.local.runtime import LocalWorkloadRuntime
+from plugins.runners.local.runtime import LocalWorkloadRuntime
 
 
 def test_local_always_enabled_and_healthy(tmp_path) -> None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
 from palm.definitions import FlowDefinition
 
 

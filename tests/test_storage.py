@@ -11,9 +11,9 @@ from palm.core import (
     StorageNotConfiguredError,
     storage_registry,
 )
-from palm.storages import memory  # noqa: F401 — register backends
-from palm.storages.memory import MemoryBackend
-from palm.storages.mongodb import MongoStorageBackend
+from plugins.storages import memory  # noqa: F401 — register backends
+from plugins.storages.memory import MemoryBackend
+from plugins.storages.mongodb import MongoStorageBackend
 
 
 def test_storage_registry_has_mongodb_after_lazy_load() -> None:

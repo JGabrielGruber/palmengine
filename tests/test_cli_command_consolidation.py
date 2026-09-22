@@ -7,9 +7,9 @@ from io import StringIO
 import pytest
 from rich.console import Console
 
-from palm.runtimes.cli.commands.registry import build_registry
-from palm.runtimes.cli.shared.args import CliInvocation
-from palm.runtimes.cli.shared.dispatch import dispatch_invocation
+from bundles.standard.runtimes.cli.commands.registry import build_registry
+from bundles.standard.runtimes.cli.shared.args import CliInvocation
+from bundles.standard.runtimes.cli.shared.dispatch import dispatch_invocation
 
 
 def test_status_default_is_dashboard(cli_ctx) -> None:
@@ -53,7 +53,7 @@ def test_legacy_aliases_removed() -> None:
 
 
 def test_registry_aliases_match_catalog() -> None:
-    from palm.runtimes.cli.commands.catalog import COMMAND_ALIASES
+    from bundles.standard.runtimes.cli.commands.catalog import COMMAND_ALIASES
 
     reg = build_registry()
     for alias, canonical in COMMAND_ALIASES.items():
@@ -76,6 +76,6 @@ def test_registry_aliases_match_catalog() -> None:
     ],
 )
 def test_invocation_dispatch_lines(inv: CliInvocation, expected_prefix: str) -> None:
-    from palm.runtimes.cli.shared.dispatch import _invocation_to_line
+    from bundles.standard.runtimes.cli.shared.dispatch import _invocation_to_line
 
     assert _invocation_to_line(inv) == expected_prefix

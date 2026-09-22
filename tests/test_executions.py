@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.patterns.etl  # intention pattern (not default INSTALLED)
+import plugins.patterns.etl  # intention pattern (not default INSTALLED)
 
 import pytest
 
@@ -20,13 +20,13 @@ from palm.definitions import FlowDefinition, ProcessDefinition
 
 
 
-from palm.patterns.wizard import (
+from plugins.patterns.wizard import (
     WizardEventType,
     WizardKeys,
     WizardPattern,
     wizard_config_from_options,
 )
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def _onboard_flow() -> FlowDefinition:
@@ -198,7 +198,7 @@ def test_persisted_process_executes_after_reload() -> None:
 
 
 def test_transactional_wizard_from_stored_flow(runtime: EmbeddedRuntime) -> None:
-    from palm.patterns.wizard.bindings.compensation.handler import (
+    from plugins.patterns.wizard.bindings.compensation.handler import (
         CommitResult,
         default_commit_registry,
     )

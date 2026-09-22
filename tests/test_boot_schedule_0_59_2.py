@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot import BootMode, get_boot_mode, list_boot_modes
-from palm.app.host.boot.system_log_phase import make_host_system_log_handler
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot import BootMode, get_boot_mode, list_boot_modes
+from bundles.standard.app.host.boot.system_log_phase import make_host_system_log_handler
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.system.boot import (
     HOST_PHASES,
     SYSTEM_PHASES,

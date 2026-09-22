@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.backends.behavior_tree import BehaviorTreeRunner
 from palm.core.event import EventEngine
 from palm.core.orchestration import JobStatus, OrchestrationEngine
-from palm.patterns.wizard import (
+from plugins.patterns.wizard import (
     WizardConfig,
     WizardEventType,
     WizardKeys,

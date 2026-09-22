@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from palm.core.orchestration import JobStatus
-from palm.runtimes.server import PALM_SUBJECT_HEADER, ServerRuntime
+from bundles.standard.runtimes.server import PALM_SUBJECT_HEADER, ServerRuntime
 
 
 @pytest.fixture

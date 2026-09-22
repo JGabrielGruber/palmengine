@@ -7,7 +7,7 @@ Not a second kit-global. Not palm create_flow. Not land verbs on present.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition
 from examples.definitions.authoring_pack import (
@@ -29,7 +29,7 @@ def _wizard_body(name: str) -> dict:
 
 
 def test_bound_commits_after_host_start_without_land() -> None:
-    from palm.kits.authoring import bound
+    from plugins.kits.authoring import bound
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -46,8 +46,8 @@ def test_bound_commits_after_host_start_without_land() -> None:
 
 
 def test_pack_job_leaf_still_walks_bound_after_library_land() -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

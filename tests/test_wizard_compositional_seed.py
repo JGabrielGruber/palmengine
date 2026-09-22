@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from palm.core.behavior_tree import PatternStatus
-from palm.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.bindings.compensation.handler import (
+from plugins.patterns.wizard import WizardConfig, WizardPattern, WizardStepConfig
+from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,
     CommitResult,
 )
-from palm.patterns.wizard.bindings.context.state import (
+from plugins.patterns.wizard.bindings.context.state import (
     get_answers,
     merge_compositional_state_into_answers,
 )

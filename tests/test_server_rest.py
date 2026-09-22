@@ -9,10 +9,10 @@ from typing import Any
 
 import pytest
 
-from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.route_table import rest_routes
-from palm.runtimes.server.surfaces.rest.schema_validation import schema_errors_to_details
-from palm.runtimes.server.surfaces.rest.schemas import SUBMIT_PLANS_BODY, submit_job_variant_errors
+from bundles.standard.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.rest.route_table import rest_routes
+from bundles.standard.runtimes.server.surfaces.rest.schema_validation import schema_errors_to_details
+from bundles.standard.runtimes.server.surfaces.rest.schemas import SUBMIT_PLANS_BODY, submit_job_variant_errors
 
 
 @pytest.fixture

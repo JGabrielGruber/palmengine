@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.core.behavior_tree import PatternStatus
 from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.patterns.wizard import WizardConfig, WizardKeys, WizardPattern, WizardStepConfig
-from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard import WizardConfig, WizardKeys, WizardPattern, WizardStepConfig
+from plugins.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 FLOW_CAPTURE_NODE = "capture-node"
@@ -177,7 +177,7 @@ def test_parent_merge_main_extracts_child_commit_result(runtime: EmbeddedRuntime
     parent = runtime.get_job(parent.id)
     assert parent.state.get(WizardKeys.CURRENT_STEP) == "capture_main"
 
-    from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+    from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 
     park = nested_park_interest(parent.state)
     assert park is not None

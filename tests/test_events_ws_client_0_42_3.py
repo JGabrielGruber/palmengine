@@ -5,10 +5,10 @@ from __future__ import annotations
 import threading
 import time
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.providers.palm.events_ws import (
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from plugins.providers.palm.events_ws import (
     PalmEventsWebSocketClient,
     http_base_to_ws_url,
 )

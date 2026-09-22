@@ -9,9 +9,9 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture

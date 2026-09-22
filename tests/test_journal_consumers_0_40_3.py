@@ -8,7 +8,7 @@ from palm.common.events.consumers import (
 )
 from palm.common.events.journal import EventJournal
 from palm.core.storage import StorageEngine
-from palm.kits.server.diagnostics import build_doctor_report
+from plugins.kits.server.diagnostics import build_doctor_report
 
 
 def _journal() -> EventJournal:

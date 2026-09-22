@@ -9,13 +9,13 @@ from typing import Any
 
 import pytest
 
-from palm.kits.server.registry import RouteRegistry, SurfaceRegistry
-from palm.kits.server.transport import transport_registry
-from palm.runtimes.server import ServerRuntime, create_app, create_transport
-from palm.runtimes.server.app import create_server_app
-from palm.runtimes.server.context import ServerContext
-from palm.runtimes.server.surfaces import RestSurface, default_surfaces
-from palm.runtimes.server.transport import DEFAULT_TRANSPORT, StdlibHttpTransport
+from plugins.kits.server.registry import RouteRegistry, SurfaceRegistry
+from plugins.kits.server.transport import transport_registry
+from bundles.standard.runtimes.server import ServerRuntime, create_app, create_transport
+from bundles.standard.runtimes.server.app import create_server_app
+from bundles.standard.runtimes.server.context import ServerContext
+from bundles.standard.runtimes.server.surfaces import RestSurface, default_surfaces
+from bundles.standard.runtimes.server.transport import DEFAULT_TRANSPORT, StdlibHttpTransport
 
 
 @pytest.fixture

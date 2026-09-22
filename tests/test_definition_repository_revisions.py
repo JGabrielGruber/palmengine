@@ -7,7 +7,7 @@ import pytest
 from palm.common import DefinitionNotFoundError, DefinitionRepository
 from palm.core import StorageEngine, StorageNotConfiguredError
 from palm.definitions import FlowDefinition
-from palm.storages import memory  # noqa: F401
+from plugins.storages import memory  # noqa: F401
 
 
 def _sample_flow(*, name: str = "onboard", options: dict | None = None) -> FlowDefinition:

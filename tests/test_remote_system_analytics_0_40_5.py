@@ -7,11 +7,11 @@ from examples.definitions.system.origin_dashboard import register_origin_system_
 from examples.definitions.system.origin_resources import (
     register_origin_system_resources,
 )
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.definitions import FlowDefinition
-from palm.runtimes.server.runtime import ServerRuntime
+from bundles.standard.runtimes.server.runtime import ServerRuntime
 
 
 def test_analytics_origin_resources_not_query_params() -> None:

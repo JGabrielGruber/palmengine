@@ -15,9 +15,9 @@ from palm.core.workload import (
     WorkloadSpec,
     WorkloadStatus,
 )
-from palm.runners.neonroot.cli import NeonrootProbe
-from palm.runners.neonroot.runtime import NeonrootWorkloadRuntime
-from palm.runners.neonroot.spec_map import spawn_request_from_spec
+from plugins.runners.neonroot.cli import NeonrootProbe
+from plugins.runners.neonroot.runtime import NeonrootWorkloadRuntime
+from plugins.runners.neonroot.spec_map import spawn_request_from_spec
 
 
 def _hermetic_run(*, image: str = "palm-ci", seed: dict | None = None) -> WorkloadSpec:
@@ -101,7 +101,7 @@ def test_neonroot_missing_cli_fails_closed() -> None:
     engine = WorkloadEngine()
     engine.initialize(runtimes={"neonroot": rt})
     missing = NeonrootProbe(available=False, error="neonroot not found on PATH")
-    with patch("palm.runners.neonroot.cli.probe_neonroot", return_value=missing):
+    with patch("plugins.runners.neonroot.cli.probe_neonroot", return_value=missing):
         wl = engine.start(_hermetic_run())
     assert wl.status is WorkloadStatus.FAILED
     assert wl.result is not None
@@ -125,9 +125,9 @@ def test_neonroot_spawn_success_mapped() -> None:
         "neonroot": present.as_dict(),
     }
     with (
-        patch("palm.runners.neonroot.cli.probe_neonroot", return_value=present),
-        patch("palm.runners.neonroot.spawn.run_spawn_request", return_value=payload),
-        patch("palm.runners.neonroot.spawn.resolve_repo_root", return_value=None),
+        patch("plugins.runners.neonroot.cli.probe_neonroot", return_value=present),
+        patch("plugins.runners.neonroot.spawn.run_spawn_request", return_value=payload),
+        patch("plugins.runners.neonroot.spawn.resolve_repo_root", return_value=None),
     ):
         wl = engine.start(_hermetic_run())
     assert wl.status is WorkloadStatus.STOPPED
@@ -155,12 +155,12 @@ def test_neonroot_rejects_workspace_kind() -> None:
 
 
 def test_neonroot_health_and_doctor_shape() -> None:
-    import palm.runners  # noqa: F401
+    import plugins.runners  # noqa: F401
     from palm.core.workload.registry import workload_runtime_registry
 
     assert "neonroot" in workload_runtime_registry.names()
     present = NeonrootProbe(available=True, path="/bin/neonroot", version="0.2")
-    with patch("palm.runners.neonroot.cli.probe_neonroot", return_value=present):
+    with patch("plugins.runners.neonroot.cli.probe_neonroot", return_value=present):
         h = NeonrootWorkloadRuntime().health()
         assert h.available is True
         assert h.to_dict()["detail"]["path"] == "/bin/neonroot"

@@ -5,9 +5,9 @@ from __future__ import annotations
 from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.behavior_tree import PatternStatus
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard import WizardKeys, WizardPattern
-from palm.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
-from palm.patterns.wizard.bindings.context.keys import WizardKeys as Keys
+from plugins.patterns.wizard import WizardKeys, WizardPattern
+from plugins.patterns.wizard.bindings.compensation.handler import CommitResult, default_commit_registry
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys as Keys
 from palm.states import BlackboardState
 
 

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from palm.common.operator.compact import compact_wizard_inspect
-from palm.runtimes.mcp.assist.dispatch import compact_dispatch_result
-from palm.runtimes.mcp.flows.views import flatten_session_view
+from bundles.standard.runtimes.mcp.assist.dispatch import compact_dispatch_result
+from bundles.standard.runtimes.mcp.flows.views import flatten_session_view
 from palm.services.execution.flows.schemas import SessionContext
 
 

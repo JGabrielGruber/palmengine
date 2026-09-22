@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 
 from palm.core.storage import StorageEngine
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.system.subsystems.planes.session import (
     InstanceAlreadyAttachedError,
     SessionClosedError,

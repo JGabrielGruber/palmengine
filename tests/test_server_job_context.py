@@ -15,7 +15,7 @@ from palm.common.patterns import PatternBuildContext, build_pattern
 from palm.core.orchestration import Job, JobStatus
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 from palm.states import BlackboardState
 
 
@@ -186,11 +186,11 @@ def test_get_job_context_not_found(server: ServerRuntime) -> None:
 
 
 def test_docs_include_job_context_route() -> None:
-    from palm.runtimes.server.surfaces.rest.system.routes import ROUTES
+    from bundles.standard.runtimes.server.surfaces.rest.system.routes import ROUTES
 
     routes = {entry.route_id: entry for entry in ROUTES}
     route = routes["inspect_job"]
     assert route.path == "/v1/api/system/jobs/{job_id}/context"
-    from palm.runtimes.server.surfaces.rest.doc_examples import RESPONSE_EXAMPLES
+    from bundles.standard.runtimes.server.surfaces.rest.doc_examples import RESPONSE_EXAMPLES
 
     assert "get_job_context" in RESPONSE_EXAMPLES

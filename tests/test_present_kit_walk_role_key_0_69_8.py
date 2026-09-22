@@ -6,9 +6,9 @@ and the stamp/replace callers. Session verbs do not say guidance.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
-from palm.kits import present
+from plugins.kits import present
 from palm.services.session.bound_surface import SESSION_CONTEXT_KEYS
 from palm.services.session.service import SessionService
 from palm.system.subsystems.planes.session import SessionPlaneService, walk_writes

@@ -6,7 +6,7 @@ import inspect
 
 from palm.common.patterns.app import PatternApp
 from palm.common.providers.app import ProviderApp
-from palm.runtimes.mcp.contributors import register_pattern_mcp_tools
+from bundles.standard.runtimes.mcp.contributors import register_pattern_mcp_tools
 
 
 def test_mcp_registrar_does_not_call_ready() -> None:

@@ -169,7 +169,7 @@ def test_enrich_resource_with_resource_ref_and_action(
     executor: TransformExecutor,
     rest_base_url: str,
 ) -> None:
-    import palm.providers  # noqa: F401
+    import plugins.providers  # noqa: F401
 
     repo = DefinitionRepository()
     repo.register_resource(

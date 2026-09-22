@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 
 from palm.core.orchestration import JobStatus
-from palm.patterns.wizard import WizardConfig, WizardEventType, WizardKeys, WizardStepConfig
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard import WizardConfig, WizardEventType, WizardKeys, WizardStepConfig
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 from tests.core.fakes import FakePattern
 

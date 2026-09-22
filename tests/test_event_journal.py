@@ -73,9 +73,9 @@ def test_wire_journal_interceptor() -> None:
 
 
 def test_host_control_plane_status() -> None:
-    from palm.app.host.application_host import ApplicationHost
-    from palm.app.host.roles import DeploymentProfile
-    from palm.app.settings import PalmSettings
+    from bundles.standard.app.host.application_host import ApplicationHost
+    from bundles.standard.app.host.roles import DeploymentProfile
+    from bundles.standard.app.settings import PalmSettings
 
     with ApplicationHost(
         settings=PalmSettings.for_tests(load_examples=False),

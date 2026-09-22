@@ -6,10 +6,10 @@ from unittest.mock import patch
 
 import pytest
 
-from palm.app import DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.runtimes.cli.cli import _host_profile_from_invocation, main
-from palm.runtimes.cli.shared.args import CliInvocation
+from bundles.standard.app import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.cli.cli import _host_profile_from_invocation, main
+from bundles.standard.runtimes.cli.shared.args import CliInvocation
 
 
 @pytest.mark.parametrize(
@@ -66,7 +66,7 @@ def test_main_host_all_in_one_starts_host() -> None:
         captured["profile"] = profile
         captured["settings"] = settings
 
-    with patch("palm.runtimes.cli.cli.run_host", fake_run_host):
+    with patch("bundles.standard.runtimes.cli.cli.run_host", fake_run_host):
         exit_code = main(["--storage-backend", "memory", "host", "all-in-one"])
 
     assert exit_code == 0
@@ -81,7 +81,7 @@ def test_main_host_master_starts_host() -> None:
     def fake_run_host(profile: DeploymentProfile, *, settings: PalmSettings | None = None) -> None:
         captured["profile"] = profile
 
-    with patch("palm.runtimes.cli.cli.run_host", fake_run_host):
+    with patch("bundles.standard.runtimes.cli.cli.run_host", fake_run_host):
         exit_code = main(["host", "master"])
 
     assert exit_code == 0

@@ -6,8 +6,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_optional_collection_field_schema_and_skip(
     assist_host: ApplicationHost,
 ) -> None:
     """0.32.9 — due_date required=false + empty/skip advances to priority."""
-    from palm.runtimes.server.surfaces.websocket.session import (
+    from bundles.standard.runtimes.server.surfaces.websocket.session import (
         _ConnectionState,
         handle_client_message,
     )
@@ -92,7 +92,7 @@ def test_ws_auto_continues_introduction_to_real_step(
     assist_host: ApplicationHost,
 ) -> None:
     """0.32.8 — intro welcome should not force a free-text ack on Portal."""
-    from palm.runtimes.server.surfaces.websocket.session import (
+    from bundles.standard.runtimes.server.surfaces.websocket.session import (
         _ConnectionState,
         handle_client_message,
     )
@@ -149,7 +149,7 @@ def test_ws_auto_start_binds_business_flow_id(assist_host: ApplicationHost) -> N
     Sticky operator-entry flow_id caused subsequent inputs to path as
     flows/flow-palm-operator-entry/session/{todo-session}/input.
     """
-    from palm.runtimes.server.surfaces.websocket.session import (
+    from bundles.standard.runtimes.server.surfaces.websocket.session import (
         _ConnectionState,
         handle_client_message,
     )
@@ -218,7 +218,7 @@ def test_portal_greeting_shape_preserves_question_and_input(
     WebSocket Portal often sends a greeting as params.value on first dispatch.
     Rebuild-from-assistant used to wipe question and set mutations_allowed=false.
     """
-    from palm.runtimes.mcp.assist.dispatch import (
+    from bundles.standard.runtimes.mcp.assist.dispatch import (
         dispatch_operator_path,
         normalize_assist_dispatch_args,
         resolve_dispatch_path,

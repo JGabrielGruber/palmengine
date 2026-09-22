@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import inspect
 
-from palm.app.host.events import HostEventType
-from palm.runtimes.cli.commands.dashboard import _event_type_styled
+from bundles.standard.app.host.events import HostEventType
+from bundles.standard.runtimes.cli.commands.dashboard import _event_type_styled
 
 
 def test_host_event_type_has_no_webhook_names() -> None:

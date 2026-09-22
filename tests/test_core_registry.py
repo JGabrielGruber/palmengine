@@ -7,18 +7,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from palm.app.registry import RuntimeHandle, RuntimeRegistry
+from bundles.standard.app.registry import RuntimeHandle, RuntimeRegistry
 from palm.common.patterns import _registry as builder_registry
 from palm.common.plans.registry import PlanRegistry
 from palm.core.exceptions import RegistryError
 from palm.core.registry import Registry
 from palm.definitions import FlowDefinition
-from palm.patterns.wizard.bindings.compensation.handler import (
+from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
     CommitRegistry,
     CommitResult,
 )
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 

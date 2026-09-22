@@ -7,9 +7,9 @@ from examples.definitions.todos.resources import (
     SEED_TODO_ROWS,
     materialize_todo_analytics,
 )
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 
 
 def test_todo_package_materialize_and_query() -> None:

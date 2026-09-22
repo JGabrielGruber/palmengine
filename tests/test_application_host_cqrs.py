@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import time
 
-from palm.app import ApplicationHost, DeploymentProfile, PalmSettings
-from palm.app.host.events import HostEventType
+from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
+from bundles.standard.app.host.events import HostEventType
 from palm.common.cqrs.command import SubmitFlowCommand
 from palm.common.cqrs.query import ListInstancesQuery
 from tests.helpers.flows import spine_wizard

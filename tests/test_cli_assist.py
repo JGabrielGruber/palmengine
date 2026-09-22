@@ -6,9 +6,9 @@ from io import StringIO
 
 from rich.console import Console
 
-from palm.runtimes.cli.commands.registry import build_registry
-from palm.runtimes.cli.tui.display import render_assistant_panel
-from palm.runtimes.cli.tui.repl import dispatch_repl_line
+from bundles.standard.runtimes.cli.commands.registry import build_registry
+from bundles.standard.runtimes.cli.tui.display import render_assistant_panel
+from bundles.standard.runtimes.cli.tui.repl import dispatch_repl_line
 
 
 def test_assist_list_includes_operator_entry(cli_ctx) -> None:

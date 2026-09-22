@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.definitions import FlowDefinition
-from palm.runtimes.mcp.in_process import create_in_process_backend
+from bundles.standard.runtimes.mcp.in_process import create_in_process_backend
 
 
 def test_design_full_flow_in_process_backend() -> None:
@@ -42,7 +42,7 @@ def test_design_publish_flow_one_shot() -> None:
 
 def test_assist_dispatch_body_publishes_via_design_alias() -> None:
     """0.30.5: palm_assist(params={body}) → design/publish without extra tools."""
-    from palm.runtimes.mcp.assist.dispatch import (
+    from bundles.standard.runtimes.mcp.assist.dispatch import (
         normalize_assist_dispatch_args,
         resolve_dispatch_path,
         shape_dispatch_result,

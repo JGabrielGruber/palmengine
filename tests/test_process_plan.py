@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.patterns.etl  # intention pattern (not default INSTALLED)
+import plugins.patterns.etl  # intention pattern (not default INSTALLED)
 
 from palm.common import ProcessPlan
 from palm.core.orchestration import JobStatus
@@ -10,7 +10,7 @@ from palm.definitions import FlowDefinition, ProcessDefinition
 
 
 
-from palm.runtimes.embedded import EmbeddedRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 

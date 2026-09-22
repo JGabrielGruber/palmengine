@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401 — register providers
+import plugins.providers  # noqa: F401 — register providers
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.event import EventEngine
@@ -15,7 +15,7 @@ from palm.core.resource import (
     bind_resource_value,
 )
 from palm.definitions import ResourceDefinition
-from palm.providers.rest.provider import RestProvider
+from plugins.providers.rest.provider import RestProvider
 from palm.states import BlackboardState
 
 

@@ -10,15 +10,15 @@ from __future__ import annotations
 
 import pytest
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 from palm.system.subsystems.planes.session import InstanceNotOwnedError
 from tests.helpers.flows import spine_wizard
 
 
 def test_unset_guidance_definition_id_refuses_empty_handed_start() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -41,7 +41,7 @@ def test_unset_guidance_definition_id_refuses_empty_handed_start() -> None:
 
 
 def test_empty_handed_start_uses_kit_guidance_definition_and_stamps() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -66,7 +66,7 @@ def test_empty_handed_start_uses_kit_guidance_definition_and_stamps() -> None:
 
 
 def test_start_of_guidance_definition_stamps_if_absent() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -85,7 +85,7 @@ def test_start_of_guidance_definition_stamps_if_absent() -> None:
 
 
 def test_start_of_title_does_not_stamp_or_replace_home() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -111,7 +111,7 @@ def test_start_of_title_does_not_stamp_or_replace_home() -> None:
 
 
 def test_replace_only_when_attached_and_definition_id_equals() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -144,7 +144,7 @@ def test_replace_only_when_attached_and_definition_id_equals() -> None:
 
 
 def test_attach_focus_and_raw_start_without_kit_do_not_stamp() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

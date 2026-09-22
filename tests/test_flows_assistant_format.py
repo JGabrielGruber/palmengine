@@ -14,15 +14,15 @@ from fastmcp import Client  # noqa: E402
 
 from palm.common.operator.flow_session_view import shape_flow_session_view  # noqa: E402
 from palm.common.operator.view_registry import clear_operator_view_builders  # noqa: E402
-from palm.runtimes.mcp.assist.dispatch import shape_dispatch_result  # noqa: E402
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
-from palm.runtimes.mcp.in_process import (  # noqa: E402
+from bundles.standard.runtimes.mcp.assist.dispatch import shape_dispatch_result  # noqa: E402
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from bundles.standard.runtimes.mcp.in_process import (  # noqa: E402
     PalmInProcessBackend,
     shutdown_in_process_runtime,
 )
-from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
-from palm.runtimes.server import ServerRuntime  # noqa: E402
-from palm.runtimes.server.factory import build_server_context  # noqa: E402
+from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
+from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
+from bundles.standard.runtimes.server.factory import build_server_context  # noqa: E402
 from palm.services.assist.views import ensure_assist_view_registration  # noqa: E402
 from palm.services.execution.flows.schemas import SessionContext  # noqa: E402
 
@@ -115,10 +115,10 @@ def test_shape_dispatch_result_flows_assistant_from_params() -> None:
 
 @pytest.fixture
 def flows_server_ctx():
-    from palm.app.bootstrap import load_definitions_for_repository
+    from bundles.standard.app.bootstrap import load_definitions_for_repository
 
     shutdown_in_process_runtime()
-    from palm.app.settings import PalmSettings
+    from bundles.standard.app.settings import PalmSettings
 
     settings = PalmSettings.for_tests(load_examples=True)
     rt = ServerRuntime(host="127.0.0.1", port=0)

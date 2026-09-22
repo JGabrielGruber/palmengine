@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import composition_profile_from_name
-from palm.app.settings import PalmSettings
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import composition_profile_from_name
+from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import (
     CAPABILITY_OUTBOX,
     LOCAL_CLI_ID,
@@ -254,8 +254,8 @@ def test_mcp_dna_does_not_list_or_start_outbox() -> None:
 
 def test_packaging_has_no_outbox_service_flag() -> None:
     """DNA lists the name. Settings and deployment do not keep a dead switch."""
-    from palm.app.host.roles import DeploymentProfile
-    from palm.app.settings import PalmSettings as Settings
+    from bundles.standard.app.host.roles import DeploymentProfile
+    from bundles.standard.app.settings import PalmSettings as Settings
 
     assert "enable_outbox_service" not in Settings.__dataclass_fields__
     assert "enable_outbox_service" not in DeploymentProfile.__dataclass_fields__

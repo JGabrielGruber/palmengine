@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from palm.core.orchestration.job_state import JobState
 from palm.core.wait import WAIT_KIND_JOB, has_open_waits, list_wait_interests
-from palm.patterns.wizard.bindings.resource.nested_park import (
+from plugins.patterns.wizard.bindings.resource.nested_park import (
     NESTED_SOURCE,
     clear_nested_park,
     nested_park_interest,

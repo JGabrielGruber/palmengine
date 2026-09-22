@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, PalmSettings
-from palm.app.host.roles import DeploymentProfile
+from bundles.standard.app import ApplicationHost, PalmSettings
+from bundles.standard.app.host.roles import DeploymentProfile
 from palm.core.structure import CAPABILITY_WORK_DRAIN
 
 

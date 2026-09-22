@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.runtimes.cli.shared.humanize import (
+from bundles.standard.runtimes.cli.shared.humanize import (
     human_bytes,
     human_count,
     human_delta,

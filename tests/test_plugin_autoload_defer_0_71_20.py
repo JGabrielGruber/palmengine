@@ -22,12 +22,12 @@ def test_import_palm_patterns_does_not_autoload_installed_members() -> None:
         """
         import sys
 
-        from palm.patterns._apps import INSTALLED_PATTERNS
-        import palm.patterns
+        from plugins.patterns._apps import INSTALLED_PATTERNS
+        import plugins.patterns
 
-        assert palm.patterns.INSTALLED_PATTERNS == INSTALLED_PATTERNS
+        assert plugins.patterns.INSTALLED_PATTERNS == INSTALLED_PATTERNS
         for name in INSTALLED_PATTERNS:
-            mod = f"palm.patterns.{name}"
+            mod = f"plugins.patterns.{name}"
             assert mod not in sys.modules, f"unexpected load: {mod}"
             assert not any(
                 key == mod or key.startswith(mod + ".") for key in sys.modules
@@ -44,12 +44,12 @@ def test_import_palm_providers_does_not_autoload_installed_members() -> None:
         """
         import sys
 
-        from palm.providers._apps import INSTALLED_PROVIDERS
-        import palm.providers
+        from plugins.providers._apps import INSTALLED_PROVIDERS
+        import plugins.providers
 
-        assert palm.providers.INSTALLED_PROVIDERS == INSTALLED_PROVIDERS
+        assert plugins.providers.INSTALLED_PROVIDERS == INSTALLED_PROVIDERS
         for name in INSTALLED_PROVIDERS:
-            mod = f"palm.providers.{name}"
+            mod = f"plugins.providers.{name}"
             assert mod not in sys.modules, f"unexpected load: {mod}"
             assert not any(
                 key == mod or key.startswith(mod + ".") for key in sys.modules
@@ -67,17 +67,17 @@ def test_application_host_cold_import_skips_bulk_pattern_members() -> None:
         """
         import sys
 
-        from palm.app import ApplicationHost
+        from bundles.standard.app import ApplicationHost
 
         assert ApplicationHost.__name__ == "ApplicationHost"
         for name in ("dag", "parallel", "pipeline"):
-            mod = f"palm.patterns.{name}"
+            mod = f"plugins.patterns.{name}"
             assert mod not in sys.modules, f"unexpected load: {mod}"
             assert not any(
                 key == mod or key.startswith(mod + ".") for key in sys.modules
             ), f"unexpected subtree: {mod}"
         for name in ("rest", "palm", "kv", "file", "authoring"):
-            mod = f"palm.providers.{name}"
+            mod = f"plugins.providers.{name}"
             assert mod not in sys.modules, f"unexpected load: {mod}"
             assert not any(
                 key == mod or key.startswith(mod + ".") for key in sys.modules
@@ -92,10 +92,10 @@ def test_application_host_cold_import_skips_bulk_pattern_members() -> None:
 def test_ensure_core_plugins_loads_patterns_and_providers() -> None:
     result = _run_cold_script(
         """
-        from palm.app.bootstrap import ensure_plugins
+        from bundles.standard.app.bootstrap import ensure_plugins
         from palm.core.registry import pattern_registry, provider_registry
-        from palm.patterns._apps import INSTALLED_PATTERNS
-        from palm.providers._apps import INSTALLED_PROVIDERS
+        from plugins.patterns._apps import INSTALLED_PATTERNS
+        from plugins.providers._apps import INSTALLED_PROVIDERS
 
         ensure_plugins()
 
@@ -113,11 +113,11 @@ def test_ensure_core_plugins_loads_patterns_and_providers() -> None:
 def test_host_start_registers_patterns_and_providers() -> None:
     result = _run_cold_script(
         """
-        from palm.app import ApplicationHost
-        from palm.app.settings import PalmSettings
+        from bundles.standard.app import ApplicationHost
+        from bundles.standard.app.settings import PalmSettings
         from palm.core.registry import pattern_registry, provider_registry
-        from palm.patterns._apps import INSTALLED_PATTERNS
-        from palm.providers._apps import INSTALLED_PROVIDERS
+        from plugins.patterns._apps import INSTALLED_PATTERNS
+        from plugins.providers._apps import INSTALLED_PROVIDERS
 
         host = ApplicationHost(PalmSettings(load_example_definitions=False))
         host.start()

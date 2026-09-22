@@ -11,13 +11,13 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.runtimes.server.runtime import ServerRuntime
-from palm.runtimes.server.surfaces.websocket.frames import (
+from bundles.standard.runtimes.server.runtime import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.websocket.frames import (
     OP_TEXT,
     is_websocket_upgrade,
     websocket_accept_key,
 )
-from palm.runtimes.server.surfaces.websocket.session import (
+from bundles.standard.runtimes.server.surfaces.websocket.session import (
     ASSIST_WS_PATH,
     PROTOCOL_VERSION,
     handle_client_message,
@@ -164,7 +164,7 @@ def test_portal_static_index_and_assets(palm_server: ServerRuntime) -> None:
 
 
 def test_portal_file_response_rejects_traversal() -> None:
-    from palm.runtimes.server.surfaces.websocket.static import portal_file_response
+    from bundles.standard.runtimes.server.surfaces.websocket.static import portal_file_response
 
     assert portal_file_response("../surface.py") is None
     assert portal_file_response("..") is None
@@ -173,7 +173,7 @@ def test_portal_file_response_rejects_traversal() -> None:
 
 
 def test_handle_bind_and_dispatch_uses_bound_session(palm_server: ServerRuntime) -> None:
-    from palm.runtimes.server.surfaces.websocket.session import _ConnectionState
+    from bundles.standard.runtimes.server.surfaces.websocket.session import _ConnectionState
     from palm.system.subsystems.planes.session import looks_like_system_session_id
 
     ctx = palm_server.server_app.context  # type: ignore[union-attr]

@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 from palm.definitions import ResourceDefinition
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 def _request(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from examples.definitions.system.event_watch import _WATCH_FLOW
 from examples.definitions.system.event_watch import register_definitions as register_event_watch
-from palm.app import ApplicationHost, PalmSettings
+from bundles.standard.app import ApplicationHost, PalmSettings
 from tests.helpers.event_plane import emit_orchestration_event, runtime_event_engine
 
 
@@ -26,7 +26,7 @@ def test_event_plane_status_on_host() -> None:
 
 
 def test_doctor_report_includes_event_plane() -> None:
-    from palm.kits.server.diagnostics import build_doctor_report
+    from plugins.kits.server.diagnostics import build_doctor_report
 
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(settings=settings)

@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from palm.app.cli_settings import resolve_cli_settings
-from palm.app.settings import PalmSettings
+from bundles.standard.app.cli_settings import resolve_cli_settings
+from bundles.standard.app.settings import PalmSettings
 from tests.fast_settings import make_test_settings
 
 
@@ -25,7 +25,7 @@ def test_palm_settings_reads_palm_env_without_pydantic(
     monkeypatch.setenv("PALM_OUTBOX_POLL_INTERVAL", "1.5")
     monkeypatch.setenv("PALM_AUTH_ROLES", '["admin","ops"]')
 
-    settings_mod = importlib.import_module("palm.app.settings")
+    settings_mod = importlib.import_module("bundles.standard.app.settings")
     assert getattr(settings_mod, "BaseSettings", None) is None
     assert "pydantic" not in settings_mod.__dict__
     assert "pydantic_settings" not in settings_mod.__dict__

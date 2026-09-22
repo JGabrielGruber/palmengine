@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from palm.core.structure import AdmissionSnapshot, StructurePhase
-from palm.runtimes.cli.shared.admission_voice import format_cli_error
-from palm.runtimes.server.surfaces.ssr.explorer.admission_voice import operator_error_text
+from bundles.standard.runtimes.cli.shared.admission_voice import format_cli_error
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.admission_voice import operator_error_text
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
 

@@ -24,11 +24,11 @@ from examples.definitions.authoring_pack import (
     AUTHORING_COMMIT_RESOURCE,
     AUTHORING_PACK_FLOW,
 )
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.core.orchestration import JobStatus
 from palm.definitions import ResourceDefinition
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 
 
 def _job(host: ApplicationHost, job_id: str):
@@ -36,7 +36,7 @@ def _job(host: ApplicationHost, job_id: str):
 
 
 def test_land_commits_resource_on_embedded_definitions() -> None:
-    from palm.kits.authoring import land
+    from plugins.kits.authoring import land
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -64,7 +64,7 @@ def test_land_commits_resource_on_embedded_definitions() -> None:
 
 
 def test_commit_unknown_kind_fails() -> None:
-    from palm.kits.authoring import land
+    from plugins.kits.authoring import land
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -78,8 +78,8 @@ def test_commit_unknown_kind_fails() -> None:
 def test_pack_job_leaf_lands_snapshot_then_present_drives_apply(
     tmp_path: Path,
 ) -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     documents_root = tmp_path / "documents"
     snapshot_path = documents_root / "authoring" / "snapshot.json"

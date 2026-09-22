@@ -6,11 +6,11 @@ import json
 
 import pytest
 
-from palm.app.cli_settings import resolve_cli_settings
-from palm.runtimes.cli.commands.registry import build_registry
-from palm.runtimes.cli.shared.args import CliInvocation, settings_from_invocation
-from palm.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
-from palm.runtimes.cli.shared.instance_ops import (
+from bundles.standard.app.cli_settings import resolve_cli_settings
+from bundles.standard.runtimes.cli.commands.registry import build_registry
+from bundles.standard.runtimes.cli.shared.args import CliInvocation, settings_from_invocation
+from bundles.standard.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
+from bundles.standard.runtimes.cli.shared.instance_ops import (
     filter_summaries,
     is_terminal_status,
     parse_instance_list_flags,
@@ -270,7 +270,7 @@ def test_instance_list_to_status_filesystem(tmp_path) -> None:
 
 
 def test_shared_storage_aligns_settings() -> None:
-    import palm.storages.memory  # noqa: F401
+    import plugins.storages.memory  # noqa: F401
     from palm.core import StorageEngine
 
     storage = StorageEngine()
@@ -290,7 +290,7 @@ def test_shared_storage_aligns_settings() -> None:
 
 
 def test_status_defaults_to_active_instance(cli_ctx) -> None:
-    from palm.runtimes.cli.shared.dispatch import dispatch_invocation
+    from bundles.standard.runtimes.cli.shared.dispatch import dispatch_invocation
 
     reg = build_registry()
     reg.dispatch(cli_ctx, "flow start quick")
@@ -359,7 +359,7 @@ def test_cli_flags_override_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_repl_completer_builds(cli_ctx) -> None:
     from prompt_toolkit.completion import Completer, Completion
 
-    from palm.runtimes.cli.tui.completion import build_repl_completer
+    from bundles.standard.runtimes.cli.tui.completion import build_repl_completer
 
     reg = build_registry()
     completer = build_repl_completer(
@@ -370,7 +370,7 @@ def test_repl_completer_builds(cli_ctx) -> None:
 
 @pytest.mark.slow
 def test_instance_resume() -> None:
-    import palm.storages.memory  # noqa: F401
+    import plugins.storages.memory  # noqa: F401
     from palm.core import StorageEngine
 
     storage = StorageEngine()

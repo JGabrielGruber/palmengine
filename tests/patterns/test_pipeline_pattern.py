@@ -21,7 +21,7 @@ def _load_transforms() -> None:
 
 
 def test_pipeline_pattern_from_flow_definition() -> None:
-    importlib.import_module("palm.patterns.pipeline")
+    importlib.import_module("plugins.patterns.pipeline")
 
     flow = FlowDefinition(
         id="flow-test-pipeline",

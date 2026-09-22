@@ -1,4 +1,4 @@
-"""0.70.1 — palm.kits.authoring kit-as-composition.
+"""0.70.1 — plugins.kits.authoring kit-as-composition.
 
 Library door: one object holds host.definitions and walks one-shot commit.
 Not an AuthoringService. Not Design. Not land verbs on present.
@@ -7,7 +7,7 @@ Handle class stays unnamed.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.definitions.flow import FlowDefinition
 
 
@@ -20,20 +20,20 @@ def _wizard_body(name: str) -> dict:
 
 
 def test_authoring_kit_is_installed() -> None:
-    import palm.kits.authoring as authoring
-    from palm.kits import INSTALLED_KITS, INTENTION_KITS, get_kit, list_kits
+    import plugins.kits.authoring as authoring
+    from plugins.kits import INSTALLED_KITS, INTENTION_KITS, get_kit, list_kits
 
     assert authoring is not None
     assert "authoring" in INSTALLED_KITS
     assert INTENTION_KITS == ()
     info = get_kit("authoring")
     assert info is not None
-    assert info.module == "palm.kits.authoring"
+    assert info.module == "plugins.kits.authoring"
     assert "authoring" in {k.name for k in list_kits()}
 
 
 def test_land_commits_flow_on_embedded_definitions_without_design() -> None:
-    from palm.kits.authoring import land
+    from plugins.kits.authoring import land
 
     host = ApplicationHost.for_mode("test")
     host.start()

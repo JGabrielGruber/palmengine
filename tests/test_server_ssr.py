@@ -11,20 +11,20 @@ from typing import Any
 import pytest
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
-from palm.runtimes.server.surfaces.ssr.explorer.forms import (
+from bundles.standard.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.fetch import ExplorerFetcher
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.forms import (
     flow_submit_form,
     job_input_form,
     schema_form,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
-from palm.runtimes.server.surfaces.ssr.explorer.pages.utils import (
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.layout import explorer_page
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.pages.utils import (
     flow_description,
     flow_option_label,
     start_flow_href,
 )
-from palm.runtimes.server.surfaces.ssr.explorer.schemas import (
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.schemas import (
     FLOW_SUBMIT_FORM,
     build_flow_submit_schema,
 )
@@ -533,7 +533,7 @@ def test_flow_detail_start_wizard_label(server: ServerRuntime, sample_flow: Flow
 
 
 def _register_todo_collection_flow(server: ServerRuntime) -> None:
-    from palm.patterns.wizard.bindings.compensation.handler import (
+    from plugins.patterns.wizard.bindings.compensation.handler import (
         CommitResult,
         default_commit_registry,
     )

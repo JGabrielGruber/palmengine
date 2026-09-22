@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from palm.app.host.workplane.inbound_service import InboundBindingService
+from bundles.standard.app.host.workplane.inbound_service import InboundBindingService
 from palm.common.resource.inbound import parse_inbound_spec
 from palm.core.event import EventEngine
 from palm.core.work import WorkIntent
@@ -104,7 +104,7 @@ def test_debounce_defers_and_merges_latest_payload() -> None:
 
 
 def test_work_drain_uses_submit_flow_body(monkeypatch) -> None:
-    from palm.app import ApplicationHost, PalmSettings
+    from bundles.standard.app import ApplicationHost, PalmSettings
 
     settings = PalmSettings.for_tests(load_examples=False)
     host = ApplicationHost(settings=settings)

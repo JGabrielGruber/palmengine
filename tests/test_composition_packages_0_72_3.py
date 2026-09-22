@@ -14,9 +14,9 @@ import textwrap
 
 import pytest
 
-from palm.app.bootstrap import composition_profile_from_settings
-from palm.app.host.boot.modes import BootMode
-from palm.app.host.composition import (
+from bundles.standard.app.bootstrap import composition_profile_from_settings
+from bundles.standard.app.host.boot.modes import BootMode
+from bundles.standard.app.host.composition import (
     COMPOSITION_RECORDS,
     RECORD_KITS,
     RECORD_PATTERNS,
@@ -28,8 +28,8 @@ from palm.app.host.composition import (
     composition_profile_from_name,
     composition_record,
 )
-from palm.app.settings import PalmSettings
-from palm.storages._apps import autoload as autoload_storages
+from bundles.standard.app.settings import PalmSettings
+from plugins.storages._apps import autoload as autoload_storages
 
 _FAMILIES = ("kits", "patterns", "providers", "runners", "storages", "transforms")
 
@@ -89,7 +89,7 @@ def test_settings_resolver_copies_package_names() -> None:
 
 
 def test_core_kits_is_not_the_walk_law() -> None:
-    import palm.kits as kits
+    import plugins.kits as kits
 
     assert not hasattr(kits, "CORE_KITS")
 
@@ -120,11 +120,11 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
             storages=("memory",),
             transforms=(),
         )
-        assert "palm.kits.present" in sys.modules
-        assert "palm.kits.authoring" not in sys.modules
-        assert "palm.runners.host" not in sys.modules
-        assert "palm.runners.local" in sys.modules
-        assert "palm.storages.postgres" not in sys.modules
+        assert "plugins.kits.present" in sys.modules
+        assert "plugins.kits.authoring" not in sys.modules
+        assert "plugins.runners.host" not in sys.modules
+        assert "plugins.runners.local" in sys.modules
+        assert "plugins.storages.postgres" not in sys.modules
 
         ensure_core_plugins(
             kits=("present", "authoring"),
@@ -134,9 +134,9 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
             storages=("memory",),
             transforms=(),
         )
-        assert "palm.kits.authoring" in sys.modules
-        assert "palm.runners.host" in sys.modules
-        assert "palm.kits.server" not in sys.modules
+        assert "plugins.kits.authoring" in sys.modules
+        assert "plugins.runners.host" in sys.modules
+        assert "plugins.kits.server" not in sys.modules
         print("ok")
         """
     )
@@ -153,8 +153,8 @@ def test_phase_installs_only_the_option_set() -> None:
         from palm.system.runtime.phase_plugins import run
 
         run(BootContext(schedule="system"), {})
-        assert "palm.runners.local" not in sys.modules
-        assert "palm.kits.present" not in sys.modules
+        assert "plugins.runners.local" not in sys.modules
+        assert "plugins.kits.present" not in sys.modules
 
         run(
             BootContext(schedule="system"),
@@ -169,10 +169,10 @@ def test_phase_installs_only_the_option_set() -> None:
                 }
             },
         )
-        assert "palm.kits.present" in sys.modules
-        assert "palm.runners.local" in sys.modules
-        assert "palm.runners.host" not in sys.modules
-        assert "palm.kits.authoring" not in sys.modules
+        assert "plugins.kits.present" in sys.modules
+        assert "plugins.runners.local" in sys.modules
+        assert "plugins.runners.host" not in sys.modules
+        assert "plugins.kits.authoring" not in sys.modules
         print("ok")
         """
     )
@@ -185,10 +185,10 @@ def test_host_start_installs_the_composition_set() -> None:
         """
         import sys
 
-        from palm.app.host.application_host import ApplicationHost
-        from palm.app.host.composition import CORE_SERVICES, CompositionProfile
-        from palm.app.host.roles import DeploymentProfile
-        from palm.app.settings import PalmSettings
+        from bundles.standard.app.host.application_host import ApplicationHost
+        from bundles.standard.app.host.composition import CORE_SERVICES, CompositionProfile
+        from bundles.standard.app.host.roles import DeploymentProfile
+        from bundles.standard.app.settings import PalmSettings
 
         profile = CompositionProfile(
             services=CORE_SERVICES,
@@ -207,12 +207,12 @@ def test_host_start_installs_the_composition_set() -> None:
         )
         host.start()
         try:
-            assert "palm.kits.present" in sys.modules
-            assert "palm.kits.authoring" not in sys.modules
-            assert "palm.kits.server" not in sys.modules
-            assert "palm.runners.local" in sys.modules
-            assert "palm.runners.host" not in sys.modules
-            assert "palm.storages.postgres" not in sys.modules
+            assert "plugins.kits.present" in sys.modules
+            assert "plugins.kits.authoring" not in sys.modules
+            assert "plugins.kits.server" not in sys.modules
+            assert "plugins.runners.local" in sys.modules
+            assert "plugins.runners.host" not in sys.modules
+            assert "plugins.storages.postgres" not in sys.modules
         finally:
             host.shutdown()
         print("ok")
@@ -228,10 +228,10 @@ def test_saved_embedded_record_still_names_host_and_authoring() -> None:
         """
         import sys
 
-        from palm.app.host.application_host import ApplicationHost
-        from palm.app.host.composition import composition_profile_from_name
-        from palm.app.host.roles import DeploymentProfile
-        from palm.app.settings import PalmSettings
+        from bundles.standard.app.host.application_host import ApplicationHost
+        from bundles.standard.app.host.composition import composition_profile_from_name
+        from bundles.standard.app.host.roles import DeploymentProfile
+        from bundles.standard.app.settings import PalmSettings
 
         profile = composition_profile_from_name("embedded")
         host = ApplicationHost(
@@ -241,10 +241,10 @@ def test_saved_embedded_record_still_names_host_and_authoring() -> None:
         )
         host.start()
         try:
-            assert "palm.kits.authoring" in sys.modules
-            assert "palm.runners.host" in sys.modules
-            assert "palm.kits.server" not in sys.modules
-            assert "palm.storages.postgres" not in sys.modules
+            assert "plugins.kits.authoring" in sys.modules
+            assert "plugins.runners.host" in sys.modules
+            assert "plugins.kits.server" not in sys.modules
+            assert "plugins.storages.postgres" not in sys.modules
         finally:
             host.shutdown()
         print("ok")

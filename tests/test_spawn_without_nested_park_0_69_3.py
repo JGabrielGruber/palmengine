@@ -8,10 +8,10 @@ Kit start() is a later slice.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
-from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 from tests.helpers.flows import spine_wizard
 
 
@@ -106,10 +106,10 @@ def test_until_input_nested_park_leftover_still_opens_wait_on_child() -> None:
 
     Not the floor path. Do not delete this slice.
     """
-    import palm.providers  # noqa: F401 — register providers
+    import plugins.providers  # noqa: F401 — register providers
     from palm.definitions import FlowDefinition, ResourceDefinition
-    from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-    from palm.runtimes.embedded import EmbeddedRuntime
+    from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+    from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
     child_flow = FlowDefinition(
         id="flow-child-wizard",

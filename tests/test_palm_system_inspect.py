@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from examples.definitions.system import register_definitions as register_system
-from palm.app.host.application_host import ApplicationHost
-from palm.app.host.roles import DeploymentProfile
-from palm.app.settings import PalmSettings
-from palm.providers.palm.bindings.resource.system_inspect import (
+from bundles.standard.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.roles import DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
+from plugins.providers.palm.bindings.resource.system_inspect import (
     SYSTEM_READ_ACTIONS,
     is_system_read_action,
 )

@@ -11,9 +11,9 @@ See docs/VISION-0.61.md · TECH-DEBT CS-002 · ADR-030 D9.
 
 from __future__ import annotations
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.host.observability import EYES_LAW, PACKAGING_ROLE
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.host.observability import EYES_LAW, PACKAGING_ROLE
+from bundles.standard.app.settings import PalmSettings
 from palm.common.events.consumers import DEFAULT_JOURNAL_CONSUMERS
 
 # Domain keys (packaging residual). Demotion markers may also be present.

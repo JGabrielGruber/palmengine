@@ -8,9 +8,9 @@ from palm.system.runtime.host import RuntimeHost
 from palm.system.runtime.schedulers import InlineScheduler, QueuedScheduler
 from palm.system.runtime.wiring import resolve_scheduler
 from palm.core.orchestration import JobStatus
-from palm.patterns.wizard import WizardConfig, WizardStepConfig
-from palm.runtimes.daemon import DaemonRuntime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard import WizardConfig, WizardStepConfig
+from bundles.standard.runtimes.daemon import DaemonRuntime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from tests.core.fakes.runner import TestRunner
 
 

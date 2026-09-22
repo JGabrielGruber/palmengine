@@ -46,7 +46,7 @@ def test_default_structure_effects_has_structure_prefixes() -> None:
 
 def test_bind_upgrades_in_process_and_attaches_engine() -> None:
     from palm.core.workload import WorkloadEngine
-    from palm.runners.local.runtime import LocalWorkloadRuntime
+    from plugins.runners.local.runtime import LocalWorkloadRuntime
 
     eng = WorkloadEngine()
     eng.initialize(
@@ -80,7 +80,7 @@ def test_bind_upgrades_in_process_and_attaches_engine() -> None:
 
 def test_bind_disabled_leaves_workload_fail_closed() -> None:
     from palm.core.workload import WorkloadEngine
-    from palm.runners.local.runtime import LocalWorkloadRuntime
+    from plugins.runners.local.runtime import LocalWorkloadRuntime
 
     eng = WorkloadEngine()
     eng.initialize(
@@ -127,7 +127,7 @@ def test_bind_skips_recording_effect_port() -> None:
 
 def test_bind_idempotent_already_bound() -> None:
     from palm.core.workload import WorkloadEngine
-    from palm.runners.local.runtime import LocalWorkloadRuntime
+    from plugins.runners.local.runtime import LocalWorkloadRuntime
 
     eng = WorkloadEngine()
     eng.initialize(

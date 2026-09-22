@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import inspect
 
-from palm.app.bootstrap import runtime_start_options
-from palm.app.host.boot.host_schedule import build_host_handlers
-from palm.app.settings import PalmSettings
+from bundles.standard.app.bootstrap import runtime_start_options
+from bundles.standard.app.host.boot.host_schedule import build_host_handlers
+from bundles.standard.app.settings import PalmSettings
 from palm.system.runtime.phase_outbox import run as wire_outbox
 
 

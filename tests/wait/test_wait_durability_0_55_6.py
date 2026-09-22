@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401
+import plugins.providers  # noqa: F401
 from palm.common.persistence.state_snapshot import snapshot_state, state_from_snapshot
 from palm.system.subsystems.planes.wait.index import WaitOwnerIndex
 from palm.system.subsystems.planes.wait.matcher import WaitMatcher
@@ -17,9 +17,9 @@ from palm.core.wait import (
     rehydrate_wait_interests,
 )
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
-from palm.storages import memory  # noqa: F401
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from plugins.storages import memory  # noqa: F401
 
 
 def test_snapshot_roundtrip_preserves_wait_interest() -> None:
@@ -145,7 +145,7 @@ def _nested_flows() -> tuple[FlowDefinition, FlowDefinition, ResourceDefinition]
 
 def test_nested_mid_wait_survives_runtime_restart() -> None:
     """Park parent mid-child-wait, restart runtime, rehydrate interest, complete."""
-    from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+    from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 
     storage = StorageEngine()
     storage.initialize(backend="memory")

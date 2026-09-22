@@ -11,7 +11,7 @@ from palm.core.structure import (
     StructurePhase,
 )
 from palm.core.workload import WorkloadEngine
-from palm.runners.local.runtime import LocalWorkloadRuntime
+from plugins.runners.local.runtime import LocalWorkloadRuntime
 from palm.system.structure import (
     PlaceEffectPort,
     StructureSeat,

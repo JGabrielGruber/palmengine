@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import palm.providers  # noqa: F401
+import plugins.providers  # noqa: F401
 from palm.system.subsystems.planes.wait import WaitPlaneService
 from palm.core.orchestration import Job, JobStatus
 from palm.core.wait import WAIT_KIND_JOB, has_open_waits, list_wait_interests, make_job_wait
 from palm.definitions import FlowDefinition, ResourceDefinition
-from palm.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
-from palm.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def test_open_on_job_registers_index() -> None:
@@ -98,7 +98,7 @@ def test_nested_park_registers_on_bound_plane() -> None:
         parent_job = rt.submit_flow("parent-idx-flow")
         rt.wait_until_idle(timeout=5)
         assert parent_job.status == JobStatus.WAITING_FOR_INPUT
-        from palm.patterns.wizard.bindings.resource.nested_park import nested_park_interest
+        from plugins.patterns.wizard.bindings.resource.nested_park import nested_park_interest
 
         park = nested_park_interest(parent_job.state)
         assert park is not None

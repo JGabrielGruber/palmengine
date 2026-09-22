@@ -7,13 +7,13 @@ from palm.core.structure import (
     AdmissionSnapshot,
     StructurePhase,
 )
-from palm.runtimes.cli.shared.admission_voice import format_cli_error
-from palm.runtimes.mcp.rest_client import (
+from bundles.standard.runtimes.cli.shared.admission_voice import format_cli_error
+from bundles.standard.runtimes.mcp.rest_client import (
     PalmRestError,
     maybe_admission_refused_error,
 )
-from palm.runtimes.server.surfaces.rest import errors
-from palm.runtimes.server.surfaces.ssr.explorer.admission_voice import operator_error_text
+from bundles.standard.runtimes.server.surfaces.rest import errors
+from bundles.standard.runtimes.server.surfaces.ssr.explorer.admission_voice import operator_error_text
 from palm.system.structure.errors import CapabilityRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
 
@@ -72,7 +72,7 @@ def test_ssr_operator_error_labels_capability_refused() -> None:
 
 
 def test_websocket_maps_capability_not_internal() -> None:
-    from palm.runtimes.server.surfaces.websocket.session import structure_refuse_voice
+    from bundles.standard.runtimes.server.surfaces.websocket.session import structure_refuse_voice
 
     payload = structure_refuse_voice("1", _ready_without_drain())
     assert payload is not None

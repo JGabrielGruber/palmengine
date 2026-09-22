@@ -139,8 +139,8 @@ def test_definition_list_and_get_processes() -> None:
 
 
 def test_definition_validate_flow() -> None:
-    from palm.runtimes.server import ServerRuntime
-    from palm.runtimes.server.factory import build_server_context
+    from bundles.standard.runtimes.server import ServerRuntime
+    from bundles.standard.runtimes.server.factory import build_server_context
 
     rt = ServerRuntime(host="127.0.0.1", port=0)
     rt.start(http=False)

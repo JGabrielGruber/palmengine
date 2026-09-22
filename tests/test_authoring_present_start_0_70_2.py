@@ -1,7 +1,7 @@
 """0.70.2 — present starts the committed catalog definition.
 
 Remaining Authoring floor: land/commit on embedded definitions, then
-palm.kits.present starts that catalog id on the same host.
+plugins.kits.present starts that catalog id on the same host.
 
 Not land verbs on present. Not a leftover in-memory FlowDefinition.
 Handle classes stay unnamed.
@@ -9,11 +9,11 @@ Handle classes stay unnamed.
 
 from __future__ import annotations
 
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.common.job_inspection import JobContext
 from palm.core.orchestration import JobStatus
 from palm.definitions.flow import FlowDefinition
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 
 
 def _wizard_body(name: str) -> dict:
@@ -35,8 +35,8 @@ _ASSIST_ENVELOPE_KEYS = (
 
 
 def test_present_starts_committed_definition_by_catalog_id() -> None:
-    from palm.kits.authoring import land
-    from palm.kits.present import bind
+    from plugins.kits.authoring import land
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

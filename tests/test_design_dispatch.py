@@ -6,8 +6,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from palm.app import ApplicationHost, DeploymentProfile
-from palm.app.settings import PalmSettings
+from bundles.standard.app import ApplicationHost, DeploymentProfile
+from bundles.standard.app.settings import PalmSettings
 from palm.common.operator.path_match import match_command_path
 from palm.services.design.dispatch import _DISPATCH_HANDLERS
 from palm.services.design.grammar import resolve_design_command

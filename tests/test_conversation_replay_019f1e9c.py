@@ -9,15 +9,15 @@ import pytest
 fastmcp = pytest.importorskip("fastmcp")
 from fastmcp import Client  # noqa: E402
 
-from palm.app.settings import PalmSettings  # noqa: E402
-from palm.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
-from palm.runtimes.mcp.in_process import (  # noqa: E402
+from bundles.standard.app.settings import PalmSettings  # noqa: E402
+from bundles.standard.runtimes.mcp.config import PalmMcpConfig  # noqa: E402
+from bundles.standard.runtimes.mcp.in_process import (  # noqa: E402
     PalmInProcessBackend,
     shutdown_in_process_runtime,
 )
-from palm.runtimes.mcp.server import create_mcp_server  # noqa: E402
-from palm.runtimes.server import ServerRuntime  # noqa: E402
-from palm.runtimes.server.factory import build_server_context  # noqa: E402
+from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
+from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
+from bundles.standard.runtimes.server.factory import build_server_context  # noqa: E402
 
 _MAX_REPLAY_TOOL_CALLS = 18
 
@@ -25,7 +25,7 @@ _MAX_REPLAY_TOOL_CALLS = 18
 @pytest.fixture
 def replay_server_ctx():
     import examples.definitions.operator_entry as operator_entry
-    from palm.app.bootstrap import load_definitions_for_repository
+    from bundles.standard.app.bootstrap import load_definitions_for_repository
 
     shutdown_in_process_runtime()
     settings = PalmSettings.for_tests(load_examples=True)

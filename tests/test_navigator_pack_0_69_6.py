@@ -12,10 +12,10 @@ from examples.definitions.operator_entry import OPERATOR_ENTRY_FLOW
 from examples.definitions.operator_entry import (
     register_definitions as register_operator_entry,
 )
-from palm.app.host.application_host import ApplicationHost
+from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
 from palm.core.wait import has_open_waits, list_wait_interests
-from palm.kits.present import GUIDANCE_INSTANCE_ID
+from plugins.kits.present import GUIDANCE_INSTANCE_ID
 from tests.helpers.flows import spine_wizard
 
 
@@ -55,7 +55,7 @@ def test_navigator_pack_sits_beside_operator_entry() -> None:
 
 
 def test_naming_work_on_navigator_stays_waiting() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -74,7 +74,7 @@ def test_naming_work_on_navigator_stays_waiting() -> None:
 
 
 def test_named_work_is_same_session_sibling_without_wait_interest() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -108,7 +108,7 @@ def test_named_work_is_same_session_sibling_without_wait_interest() -> None:
 
 
 def test_return_home_is_focus_of_guidance_instance_id() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()
@@ -137,7 +137,7 @@ def test_return_home_is_focus_of_guidance_instance_id() -> None:
 
 
 def test_operator_entry_leftover_still_ends() -> None:
-    from palm.kits.present import bind
+    from plugins.kits.present import bind
 
     host = ApplicationHost.for_mode("test")
     host.start()

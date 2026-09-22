@@ -12,7 +12,7 @@ import pytest
 from palm.system.runtime.host import RuntimeHost
 from palm.system.runtime.schedulers import QueuedScheduler
 from palm.core.orchestration import JobStatus
-from palm.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server import ServerRuntime
 
 
 @pytest.fixture

@@ -6,13 +6,13 @@ from unittest.mock import patch
 
 import pytest
 
-from palm.providers.palm.bindings.orchestration.local import LocalPalmInvoker
-from palm.providers.palm.bindings.orchestration.payload import remote_job_payload
-from palm.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
-from palm.providers.palm.flow.coordinator import PalmInvokeCoordinator
-from palm.providers.palm.flow.params import PalmInvokeParams
-from palm.providers.palm.flow.remote import client as remote_module
-from palm.providers.palm.flow.remote.invoker import RemotePalmInvoker
+from plugins.providers.palm.bindings.orchestration.local import LocalPalmInvoker
+from plugins.providers.palm.bindings.orchestration.payload import remote_job_payload
+from plugins.providers.palm.exceptions import PalmRemoteError, PalmTimeoutError
+from plugins.providers.palm.flow.coordinator import PalmInvokeCoordinator
+from plugins.providers.palm.flow.params import PalmInvokeParams
+from plugins.providers.palm.flow.remote import client as remote_module
+from plugins.providers.palm.flow.remote.invoker import RemotePalmInvoker
 
 
 def test_palm_invoke_params_wait_mode_until_input() -> None:

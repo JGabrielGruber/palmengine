@@ -9,16 +9,16 @@ import urllib.request
 
 import pytest
 
-from palm.runtimes.server import ServerRuntime
-from palm.runtimes.server.surfaces.rest.doc_examples import (
+from bundles.standard.runtimes.server import ServerRuntime
+from bundles.standard.runtimes.server.surfaces.rest.doc_examples import (
     DEFAULT_BASE_URL,
     build_curl,
     featured_curl_examples,
     resolve_path,
     response_example,
 )
-from palm.runtimes.server.surfaces.rest.docs import build_docs_html
-from palm.runtimes.server.surfaces.rest.route_table import rest_routes
+from bundles.standard.runtimes.server.surfaces.rest.docs import build_docs_html
+from bundles.standard.runtimes.server.surfaces.rest.route_table import rest_routes
 
 
 @pytest.fixture

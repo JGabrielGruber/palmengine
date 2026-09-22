@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from palm.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
-from palm.patterns.wizard.bindings.context.keys import WizardKeys
-from palm.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
-from palm.patterns.wizard.flow.phases._base import provide_wizard_input
+from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
+from plugins.patterns.wizard.flow.phases._base import provide_wizard_input
 from palm.states import BlackboardState
 
 
