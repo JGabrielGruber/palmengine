@@ -13,7 +13,6 @@ from bundles.standard.runtimes.server.surfaces import default_surfaces
 
 if TYPE_CHECKING:
     from bundles.standard.app.host.application_host import ApplicationHost
-    from plugins.kits.server.webhooks import ServerWebhookBridge
     from bundles.standard.runtimes.server.runtime import ServerRuntime
 
 
@@ -41,11 +40,10 @@ def create_app(
     *,
     host: ApplicationHost | None = None,
     surfaces: list[Any] | None = None,
-    webhook_bridge: ServerWebhookBridge | None = None,
 ) -> ServerApp:
     """Factory for a composable Palm server application with default surfaces."""
     ctx = build_server_context(runtime, host=host)
     # Surfaces come from the context's composition (an attached host's, or the
     # standalone server shape). Explicit `surfaces=` still wins.
     resolved = surfaces if surfaces is not None else default_surfaces(ctx, only=ctx.composition.surfaces)
-    return create_server_app(ctx, surfaces=resolved, webhook_bridge=webhook_bridge)
+    return create_server_app(ctx, surfaces=resolved)

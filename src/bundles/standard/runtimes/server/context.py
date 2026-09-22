@@ -21,8 +21,10 @@ from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.common.cqrs.command import Command
 from palm.common.cqrs.query import Query
 from palm.common.cqrs.schemas import CqrsSchemaRegistry, build_schema_registry
+from palm.common.events.external import WebhookDispatcher
 from palm.common.plans import PlanRegistry
 from plugins.kits.server.cqrs import wire_standalone_buses
+from plugins.kits.server.webhooks import ServerWebhookBridge
 
 if TYPE_CHECKING:
     from bundles.standard.app.host.application_host import ApplicationHost
@@ -160,6 +162,27 @@ class ServerContext:
     @property
     def host(self) -> ApplicationHost | None:
         return self._host
+
+    @property
+    def webhook_dispatcher(self) -> WebhookDispatcher | None:
+        """Dispatcher the server kit reads for webhook health.
+
+        An attached host contributes its install dispatcher. Host-less, the
+        runtime outbox may already hold a :class:`WebhookDispatcher`.
+        """
+        host = self._host
+        if host is not None and host.webhook_dispatcher is not None:
+            return host.webhook_dispatcher
+        processor = self._runtime.outbox_processor
+        external = getattr(processor, "external_dispatcher", None)
+        if isinstance(external, WebhookDispatcher):
+            return external
+        return None
+
+    @property
+    def webhook_bridge(self) -> ServerWebhookBridge:
+        """Current webhook health snapshot. Follows :attr:`webhook_dispatcher`."""
+        return ServerWebhookBridge.from_context(self)
 
     @property
     def settings(self) -> PalmSettings:

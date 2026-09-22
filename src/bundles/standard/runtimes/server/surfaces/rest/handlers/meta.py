@@ -28,9 +28,7 @@ def health(ctx: ServerContext, surface_names: list[str]) -> Any:
         "wiki": "/explorer",
         "openapi": "/v1/openapi.json",
     }
-    bridge = getattr(ctx, "webhook_bridge", None)
-    if bridge is not None:
-        payload["webhook_targets"] = len(bridge.targets)
+    payload["webhook_targets"] = len(ctx.webhook_bridge.targets)
     return ok(payload)
 
 

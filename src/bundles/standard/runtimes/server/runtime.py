@@ -14,7 +14,6 @@ from palm.system.runtime.base import BaseRuntime
 from plugins.kits.server.middleware import current_principal_id
 from plugins.kits.server.plans import prepare_flow_from_body, prepare_process_from_body
 from plugins.kits.server.transport import BaseTransport
-from plugins.kits.server.webhooks import ServerWebhookBridge
 from palm.system.runtime.wiring import SchedulerPolicy
 from palm.core.orchestration import Job
 from bundles.standard.runtimes.server.factory import create_app
@@ -52,7 +51,6 @@ class ServerRuntime(BaseRuntime):
         self._transport: BaseTransport | None = None
         self.plan_registry = self._new_plan_registry()
         self._server_app: ServerApp | None = None
-        self.webhook_bridge = ServerWebhookBridge()
 
     @property
     def host(self) -> str:
@@ -83,9 +81,6 @@ class ServerRuntime(BaseRuntime):
         self._host_bridge = host
         if self._server_app is not None:
             self._server_app.context.attach_host(host)
-            self._server_app.webhook_bridge = ServerWebhookBridge.from_context(
-                self._server_app.context
-            )
 
     def start_http(
         self,

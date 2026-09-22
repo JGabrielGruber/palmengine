@@ -17,7 +17,6 @@ from plugins.kits.server.protocol import (
 )
 from plugins.kits.server.registry import RouteRegistry, SurfaceRegistry
 from plugins.kits.server.responses import not_found, unauthorized
-from plugins.kits.server.webhooks import ServerWebhookBridge
 from bundles.standard.runtimes.server.context import ServerContext
 
 
@@ -36,13 +35,10 @@ class ServerApp:
         *,
         routes: RouteRegistry | None = None,
         surfaces: SurfaceRegistry | None = None,
-        webhook_bridge: ServerWebhookBridge | None = None,
     ) -> None:
         self._ctx = ctx
         self._routes = routes or RouteRegistry()
         self._surfaces = surfaces or SurfaceRegistry()
-        self.webhook_bridge = webhook_bridge or ServerWebhookBridge.from_context(ctx)
-        ctx.webhook_bridge = self.webhook_bridge  # type: ignore[attr-defined]
         self._mount_surfaces()
 
     @property
@@ -94,7 +90,6 @@ def create_server_app(
     ctx: ServerContext,
     *,
     surfaces: list[Any] | None = None,
-    webhook_bridge: ServerWebhookBridge | None = None,
 ) -> ServerApp:
     """
     Build a :class:`ServerApp` from explicitly provided surfaces.
@@ -106,11 +101,7 @@ def create_server_app(
     for surface in surfaces or ():
         registry.register(surface)
 
-    return ServerApp(
-        ctx,
-        surfaces=registry,
-        webhook_bridge=webhook_bridge,
-    )
+    return ServerApp(ctx, surfaces=registry)
 
 
 def _run_handler(
