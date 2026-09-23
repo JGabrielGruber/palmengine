@@ -1,0 +1,25 @@
+"""In-process system instance for the minimal bundle."""
+
+from __future__ import annotations
+
+from typing import ClassVar
+
+from palm.system.runtime.base import BaseRuntime
+from palm.system.runtime.wiring import SchedulerPolicy
+
+
+class MinimalRuntime(BaseRuntime):
+    """
+    In-process system instance for the minimal bundle.
+
+    Default scheduling is synchronous via
+    :class:`~palm.system.runtime.schedulers.inline.InlineScheduler`. Pass
+    ``scheduler="queued"`` or an explicit scheduler instance to :meth:`start`
+    for alternative policies.
+
+    Pass a shared :class:`~palm.core.storage.StorageEngine` to the constructor
+    when instances must survive across multiple runtime lifetimes.
+    """
+
+    runtime_name: ClassVar[str] = "MinimalRuntime"
+    default_scheduler_policy: ClassVar[SchedulerPolicy] = "inline"

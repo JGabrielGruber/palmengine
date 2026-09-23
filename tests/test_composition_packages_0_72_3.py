@@ -13,7 +13,6 @@ import sys
 import textwrap
 
 import pytest
-
 from bundles.standard.app.bootstrap import composition_profile_from_settings
 from bundles.standard.app.host.boot.modes import BootMode
 from bundles.standard.app.host.composition import (
@@ -153,8 +152,11 @@ def test_phase_installs_only_the_option_set() -> None:
         from palm.system.runtime.phase_plugins import run
 
         run(BootContext(schedule="system"), {})
+        assert "palm.common.plugins" not in sys.modules
         assert "plugins.runners.local" not in sys.modules
         assert "plugins.kits.present" not in sys.modules
+
+        from palm.common.plugins import ensure_core_plugins
 
         run(
             BootContext(schedule="system"),
@@ -166,7 +168,8 @@ def test_phase_installs_only_the_option_set() -> None:
                     "runners": ("local",),
                     "storages": ("memory",),
                     "transforms": (),
-                }
+                },
+                "plugin_install": ensure_core_plugins,
             },
         )
         assert "plugins.kits.present" in sys.modules

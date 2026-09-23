@@ -18,10 +18,10 @@ _OPTIONAL_STORAGES: dict[str, str] = {
     "mongodb": "mongodb",
 }
 _STORAGE_MODULES: dict[str, str] = {
-    "memory": "palm.storages.memory",
-    "filesystem": "palm.storages.filesystem",
-    "postgres": "palm.storages.postgres",
-    "mongodb": "palm.storages.mongodb",
+    "memory": "plugins.storages.memory",
+    "filesystem": "plugins.storages.filesystem",
+    "postgres": "plugins.storages.postgres",
+    "mongodb": "plugins.storages.mongodb",
 }
 _DEFAULT_DATA_DIR = Path("data")
 

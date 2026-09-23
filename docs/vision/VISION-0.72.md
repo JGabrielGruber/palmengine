@@ -92,7 +92,7 @@ These rows are facts in the tree. They are not decisions. [ADR-040](../adr/040-c
 |------|------|-----------------|
 | First call | `host.kernel.bootstrap` → `PalmKernel.bootstrap(composition)` → `ensure_plugins` | Installs that composition's package names. A kernel call with no composition uses the `all_in_one` record |
 | Alias | `palm.app.bootstrap.ensure_plugins` | Reads the profile and calls the stroke |
-| Schedule seat | `system.plugins.ensure` → `phase_plugins.run` | Reads `composition_packages` from phase options and calls the stroke. No key: the phase installs nothing |
+| Schedule seat | `system.plugins.ensure` → `phase_plugins.run` | Reads `composition_packages` from phase options. No key: the phase installs nothing and does not import the stroke. A mapping calls `plugin_install` from the same options. The standard host passes `ensure_core_plugins` |
 | Stroke | `palm.common.plugins.ensure_core_plugins` | No process flag. Imports `palm.common.transforms` (that package calls its `autoload` at import), then `autoload(names)` for kits, patterns, providers, runners, and storages |
 
 A later call imports names that are not yet imported. It does not unload names already imported.

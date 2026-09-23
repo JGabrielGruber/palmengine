@@ -1,9 +1,8 @@
 """Plugin package side-effect registration (shared bootstrap helper).
 
 System code must not import ``palm.patterns`` / product surfaces
-(``scripts/guard_system.py``). Call :func:`ensure_core_plugins` from
-system-instance start so registries populate without the system layer
-depending on plugin packages at import time.
+(``scripts/guard_system.py``). The standard host passes this function as
+``plugin_install`` on system start. The system phase does not import it.
 
 **0.72.3:** the function takes the package names from a composition record.
 It does not keep a process flag, and it does not close over ``INSTALLED_*``.
@@ -28,12 +27,13 @@ def ensure_core_plugins(
     transforms: tuple[str, ...],
 ) -> None:
     """Import the named plugin packages and register the named transform rules."""
-    from palm.common.transforms import autoload as autoload_transforms
     from plugins.kits import autoload as autoload_kits
     from plugins.patterns import autoload as autoload_patterns
     from plugins.providers import autoload as autoload_providers
     from plugins.runners import autoload as autoload_runners
     from plugins.storages import autoload as autoload_storages
+
+    from palm.common.transforms import autoload as autoload_transforms
 
     autoload_kits(tuple(kits))
     autoload_patterns(tuple(patterns))

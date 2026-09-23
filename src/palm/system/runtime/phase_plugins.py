@@ -1,11 +1,12 @@
 """
-System start phase: install composition package names (system.plugins.ensure).
+System start phase: install package names when the caller supplies an installer.
 
-Subject: plugin registry (common); phase seat on system start.
+Subject: plugin registries. This phase does not choose packages and does not
+import ``palm.common.plugins``.
 
-The host passes ``composition_packages`` on start options. This phase calls
-the install stroke with those names. A start with no package set installs
-nothing — the system schedule does not choose a package set.
+No ``composition_packages`` mapping: the phase returns. A mapping calls the
+``plugin_install`` callable from the same options. A mapping without that
+callable fails closed.
 """
 
 from __future__ import annotations
@@ -13,7 +14,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from palm.common.plugins import ensure_core_plugins
 from palm.system.boot.context import BootContext
 from palm.system.boot.definition import PhaseDefinition
 
@@ -24,8 +24,13 @@ def run(_ctx: BootContext, options: Mapping[str, Any]) -> None:
     raw = options.get("composition_packages")
     if not isinstance(raw, Mapping):
         return
+    installer = options.get("plugin_install")
+    if not callable(installer):
+        raise RuntimeError(
+            "system.plugins.ensure: composition_packages is set and plugin_install is missing"
+        )
     names = {key: tuple(raw[key]) for key in _PACKAGE_KEYS}
-    ensure_core_plugins(
+    installer(
         kits=names["kits"],
         patterns=names["patterns"],
         providers=names["providers"],

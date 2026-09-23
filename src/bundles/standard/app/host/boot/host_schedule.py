@@ -60,8 +60,12 @@ def build_host_handlers(
     def system_spawn(_ctx: BootContext) -> None:
         merged = runtime_start_options(host.settings, **options)
         # 0.72.3 — system.plugins.ensure installs this set. The kernel call
-        # above already installed the same names.
+        # above already installed the same names. The system phase does not
+        # import the stroke; this host passes it.
+        from palm.common.plugins import ensure_core_plugins
+
         merged["composition_packages"] = host.composition.package_names()
+        merged.setdefault("plugin_install", ensure_core_plugins)
         # 0.63.5 / 0.63.13 — seed structure definition + membership for refuse.
         # Caller definition override still wins; membership always seeds so dual shapes
         # fail closed under refuse (env/composition cannot hide from admission).
