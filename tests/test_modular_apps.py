@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import pytest
+from plugins.patterns._apps import INSTALLED_PATTERNS, INTENTION_PATTERNS
+from plugins.providers._apps import INSTALLED_PROVIDERS, INTENTION_PROVIDERS
+from plugins.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 from palm.common.patterns._registry import get_builder, registered_builders
-from palm.common.storage import StorageFactory
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, INTENTION_TRANSFORMS
 from palm.core.exceptions import RegistryError
 from palm.core.registry import pattern_registry, provider_registry, storage_registry
 from palm.core.transform.registry import transform_registry
-from plugins.patterns._apps import INSTALLED_PATTERNS, INTENTION_PATTERNS
-from plugins.providers._apps import INSTALLED_PROVIDERS, INTENTION_PROVIDERS
-from plugins.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 
 @pytest.fixture(autouse=True)
@@ -106,9 +105,11 @@ def test_installed_storage_apps_register() -> None:
     assert set(OPTIONAL_STORAGES) == {"postgres", "mongodb"}
     for name in CORE_STORAGES:
         storage_registry.get(name)
-    # Optional backends register on demand via factory (still intention bodies).
+    # Optional backends register when the application imports them.
+    import importlib
+
     for name in OPTIONAL_STORAGES:
-        StorageFactory.ensure_registered(name)
+        importlib.import_module(f"plugins.storages.{name}")
         storage_registry.get(name)
 
 
@@ -133,7 +134,9 @@ def test_installed_transform_apps_register() -> None:
 
 def test_wizard_handler_exports() -> None:
     from plugins.patterns.wizard import CommitRegistry
-    from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry as HandlerRegistry
+    from plugins.patterns.wizard.bindings.compensation.handler import (
+        CommitRegistry as HandlerRegistry,
+    )
 
     assert CommitRegistry is HandlerRegistry
 

@@ -23,6 +23,12 @@ class DaemonRuntime(BaseRuntime):
     runtime_name: ClassVar[str] = "DaemonRuntime"
     default_scheduler_policy: ClassVar[SchedulerPolicy] = "queued"
 
+    def start(self, **options: Any) -> None:
+        """Name this bundle's storage backend and workload runner when omitted."""
+        options.setdefault("storage_backend", "memory")
+        options.setdefault("workload_default_runtime", "local")
+        super().start(**options)
+
 
 def run_daemon(**options: Any) -> None:
     """

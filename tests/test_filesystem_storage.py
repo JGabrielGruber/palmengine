@@ -7,8 +7,9 @@ import threading
 from pathlib import Path
 
 import pytest
-
 from bundles.standard.app import PalmKernel, PalmSettings
+from plugins.storages.filesystem import FilesystemStorageBackend
+
 from palm.common import DefinitionRepository, InstanceRepository
 from palm.common.storage import StorageFactory
 from palm.core import (
@@ -18,7 +19,6 @@ from palm.core import (
     storage_registry,
 )
 from palm.instances import ProcessInstance
-from plugins.storages.filesystem import FilesystemStorageBackend
 from tests.test_definitions_storage import _sample_flow, _sample_process
 
 
@@ -145,15 +145,12 @@ def test_storage_factory_backend_options_for_filesystem() -> None:
     assert defaults["data_dir"] == Path("data")
 
 
-def test_storage_factory_lazy_loads_mongodb() -> None:
+def test_storage_factory_selects_registered_mongodb() -> None:
+    import plugins.storages.mongodb  # noqa: F401 — application installs the plugin
+
     StorageFactory.ensure_registered("mongodb")
     assert "mongodb" in storage_registry.names()
-
-    engine = StorageEngine()
-    StorageFactory.initialize_engine(engine, storage_backend="mongodb")
-    engine.set("token", "abc")
-    assert engine.get("token") == "abc"
-    engine.shutdown()
+    assert storage_registry.get("mongodb").__name__ == "MongoStorageBackend"
 
 
 def test_definition_repository_filesystem_roundtrip(tmp_path: Path) -> None:

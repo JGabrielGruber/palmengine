@@ -1,68 +1,35 @@
 """
-StorageFactory — lazy backend registration and PalmSettings integration.
+StorageFactory — select a storage backend the application already registered.
 """
 
 from __future__ import annotations
 
-import importlib
 from pathlib import Path
 from typing import Any
 
-from palm.core.exceptions import ConfigurationError, RegistryError
+from palm.core.exceptions import RegistryError
 from palm.core.registry import storage_registry
 from palm.core.storage import BaseBackend, StorageEngine
 
-_CORE_STORAGES: tuple[str, ...] = ("memory", "filesystem")
-_OPTIONAL_STORAGES: dict[str, str] = {
-    "postgres": "postgres",
-    "mongodb": "mongodb",
-}
-_STORAGE_MODULES: dict[str, str] = {
-    "memory": "plugins.storages.memory",
-    "filesystem": "plugins.storages.filesystem",
-    "postgres": "plugins.storages.postgres",
-    "mongodb": "plugins.storages.mongodb",
-}
 _DEFAULT_DATA_DIR = Path("data")
 
 
 class StorageFactory:
-    """
-    Resolve storage backends by name with lazy module loading.
+    """Select a registered storage backend and apply settings options.
 
-    Core backends (``memory``, ``filesystem``) ship with Palm. Optional
-    backends declare a uv extra; missing extras raise :class:`~palm.core.exceptions.ConfigurationError`
-    with install guidance instead of an opaque import error.
+    The application imports the storage plugin. This factory does not.
     """
 
     @staticmethod
     def ensure_registered(name: str) -> None:
-        """Import the storage app module so its backend is registered."""
+        """Fail closed when *name* is not already in the storage registry."""
         normalized = name.strip().lower()
         if normalized in storage_registry.names():
             return
-        module_path = _STORAGE_MODULES.get(normalized)
-        if module_path is None:
-            raise RegistryError(
-                f"Unknown storage backend {name!r}. "
-                f"Available modules: {sorted(_STORAGE_MODULES)}"
-            )
-        try:
-            importlib.import_module(module_path)
-        except ImportError as exc:
-            extra = _OPTIONAL_STORAGES.get(normalized)
-            if extra is not None:
-                raise ConfigurationError(
-                    f"Storage backend {name!r} requires optional dependencies. "
-                    f"Install with: pip install palmengine[{extra}]"
-                ) from exc
-            raise ConfigurationError(
-                f"Failed to import storage backend {name!r} from {module_path}: {exc}"
-            ) from exc
-        if normalized not in storage_registry.names():
-            raise ConfigurationError(
-                f"Storage module {module_path!r} did not register backend {normalized!r}"
-            )
+        raise RegistryError(
+            f"Storage backend {name!r} is not registered. "
+            "The application installs that storage plugin before storage select."
+        )
 
     @staticmethod
     def resolve_data_dir(data_dir: Path | None) -> Path:
@@ -121,7 +88,7 @@ class StorageFactory:
         cls,
         engine: StorageEngine,
         *,
-        storage_backend: str = "memory",
+        storage_backend: str,
         data_dir: Path | None = None,
         settings: Any | None = None,
         **backend_options: Any,

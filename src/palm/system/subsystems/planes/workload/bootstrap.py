@@ -1,8 +1,8 @@
 """Wire WorkloadEngine with bound runner instances.
 
-The engine binds runners the composition record already installed.
-``local`` is the trusted default. ``host`` starts disabled unless
-``host_enabled`` is set. ``neonroot`` binds when that package was installed.
+The engine binds runners the application already installed.
+``host`` starts disabled unless ``host_enabled`` is set.
+The application names ``default_runtime``. This module does not.
 """
 
 from __future__ import annotations
@@ -45,11 +45,11 @@ def initialize_workload_engine(
     default_runtime: str | None = None,
     publish_event: EventPublisher | None = None,
 ) -> WorkloadEngine:
-    """Initialize engine; default_runtime falls back to **local** (always on)."""
+    """Initialize engine with the runtimes already registered."""
     runtimes = build_bound_runtimes(host_enabled=host_enabled, work_root=work_root)
     engine.initialize(
         runtimes=runtimes,
-        default_runtime=default_runtime or "local",
+        default_runtime=default_runtime,
         publish_event=publish_event,
     )
     return engine

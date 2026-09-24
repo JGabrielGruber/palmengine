@@ -8,16 +8,17 @@ import signal
 import threading
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from palm.common.exceptions import PlanNotFoundError
-from palm.common.plans import ExecutionPlan, ProcessPlan, StoredPlan
-from palm.system.runtime.base import BaseRuntime
 from plugins.kits.server.middleware import current_principal_id
 from plugins.kits.server.plans import prepare_flow_from_body, prepare_process_from_body
 from plugins.kits.server.transport import BaseTransport
-from palm.system.runtime.wiring import SchedulerPolicy
-from palm.core.orchestration import Job
+
 from bundles.standard.runtimes.server.factory import create_app
 from bundles.standard.runtimes.server.transport import DEFAULT_TRANSPORT, create_transport
+from palm.common.exceptions import PlanNotFoundError
+from palm.common.plans import ExecutionPlan, ProcessPlan, StoredPlan
+from palm.core.orchestration import Job
+from palm.system.runtime.base import BaseRuntime
+from palm.system.runtime.wiring import SchedulerPolicy
 
 if TYPE_CHECKING:
     from bundles.standard.app.host.application_host import ApplicationHost
@@ -97,6 +98,8 @@ class ServerRuntime(BaseRuntime):
         )
 
     def start(self, **options: Any) -> None:
+        options.setdefault("storage_backend", "memory")
+        options.setdefault("workload_default_runtime", "local")
         super().start(**options)
         if options.get("http", True):
             self._start_transport(

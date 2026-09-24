@@ -2,6 +2,15 @@
 
 from __future__ import annotations
 
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
+from plugins.patterns.wizard.bindings.context.keys import WizardKeys
+from plugins.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
+from plugins.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
+from plugins.patterns.wizard.flow.phases._base import provide_wizard_input
+from plugins.providers.kv.provider import KvProvider
+from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
+
 from examples.definitions.coconut.npc import (
     COCONUT_NPC_FLOW,
     RETURNING_TOPIC_BY_REPUTATION,
@@ -10,14 +19,6 @@ from examples.definitions.coconut.resources import LOAD_COCONUT_PLAYER, SAVE_COC
 from palm.common import DefinitionRepository
 from palm.common.resource import resource_definition_resolver
 from palm.core.resource import ResourceEngine
-from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
-from plugins.patterns.wizard.bindings.context.keys import WizardKeys
-from plugins.patterns.wizard.bindings.definitions.builder import wizard_config_from_options
-from plugins.patterns.wizard.bindings.definitions.options import parse_wizard_flow_options
-from plugins.patterns.wizard.flow.phases._base import provide_wizard_input
-from plugins.providers.kv.provider import KvProvider
-from plugins.providers.palm.bindings.runtimes.wiring import bind_palm_runtime, clear_palm_runtime
-from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from palm.states import BlackboardState
 
 
@@ -28,7 +29,7 @@ def _tree_and_engine():
     engine = ResourceEngine()
     engine.initialize(definition_resolver=resource_definition_resolver(repo))
     runtime = EmbeddedRuntime()
-    runtime.start()
+    runtime.start(storage_backend="memory")
     bind_palm_runtime(runtime)
     options = parse_wizard_flow_options(COCONUT_NPC_FLOW.options)
     config = wizard_config_from_options(options)

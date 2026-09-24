@@ -22,9 +22,15 @@ def select_system_storage(
     """Initialize storage on *shell* when not already initialized."""
     opts = dict(options or {})
     if not shell.storage.is_initialized:
+        backend = opts.get("storage_backend")
+        if not isinstance(backend, str) or not backend.strip():
+            raise RuntimeError(
+                "system.storage.select: storage_backend is required. "
+                "The application names a storage plugin it has registered."
+            )
         StorageFactory.initialize_engine(
             shell.storage,
-            storage_backend=str(opts.get("storage_backend", "memory")),
+            storage_backend=backend.strip(),
             **dict(opts.get("backend_options") or {}),
         )
     return shell.storage
@@ -38,7 +44,7 @@ def run(ctx: BootContext, options: Mapping[str, Any]) -> None:
 DEFINITION = PhaseDefinition(
     id="system.storage.select",
     run=run,
-    description="StorageFactory when storage not yet initialized",
+    description="Select the storage backend the application named",
 )
 
 __all__ = ["DEFINITION", "run", "select_system_storage"]

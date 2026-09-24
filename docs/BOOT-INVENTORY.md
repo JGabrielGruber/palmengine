@@ -90,7 +90,7 @@ Source: `BaseRuntime.start` (`palm.system.runtime.base`).
 
 | # | Provisional id | What runs | Notes |
 |---|----------------|-----------|--------|
-| S1 | `plugins.ensure` | `plugin_install` when `composition_packages` is set | No key: install nothing. The system phase does not import the stroke. The standard host passes `ensure_core_plugins` |
+| S1 | `plugins.ensure` | call zero-arg `plugin_install` when set | No key: install nothing. The phase does not name packages. The standard host closes over its record and passes `ensure_core_plugins` |
 | S2 | `engines.core` | context, event initialize | |
 | S3 | `engines.resource` | resource.initialize (+ cache options) | |
 | S4 | `engines.workload` | `initialize_workload_engine` | host runner opt-in via options |

@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from bundles.standard.app.bootstrap import runtime_start_options
 from bundles.standard.app.settings import PalmSettings
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from plugins.kits.server.diagnostics import build_doctor_report
+
 from palm.core.workload import (
     IsolationPolicy,
     LifecyclePolicy,
@@ -13,12 +15,11 @@ from palm.core.workload import (
     WorkloadPolicyError,
     WorkloadSpec,
 )
-from bundles.standard.runtimes.embedded import EmbeddedRuntime
 
 
 def test_embedded_runtime_wires_workload_engine() -> None:
     rt = EmbeddedRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(storage_backend="memory", workload_default_runtime="local")
     try:
         assert rt.workload.is_initialized
         names = {row["name"] for row in rt.workload.runtimes()}

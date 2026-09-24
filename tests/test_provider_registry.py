@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import pytest
-
 import plugins.providers  # noqa: F401 — register providers
-from palm.common.providers._registry import get_bound_runtime
-from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+import pytest
 from bundles.standard.runtimes.embedded import EmbeddedRuntime
+from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
+
+from palm.common.providers._registry import get_bound_runtime
 
 
 @pytest.fixture
 def runtime() -> EmbeddedRuntime:
     rt = EmbeddedRuntime()
-    rt.start()
+    rt.start(storage_backend="memory")
     yield rt
     rt.stop()
     clear_palm_runtime()

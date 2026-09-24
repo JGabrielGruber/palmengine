@@ -92,7 +92,7 @@ These rows are facts in the tree. They are not decisions. [ADR-040](../adr/040-c
 |------|------|-----------------|
 | First call | `host.kernel.bootstrap` → `PalmKernel.bootstrap(composition)` → `ensure_plugins` | Installs that composition's package names. A kernel call with no composition uses the `all_in_one` record |
 | Alias | `palm.app.bootstrap.ensure_plugins` | Reads the profile and calls the stroke |
-| Schedule seat | `system.plugins.ensure` → `phase_plugins.run` | Reads `composition_packages` from phase options. No key: the phase installs nothing and does not import the stroke. A mapping calls `plugin_install` from the same options. The standard host passes `ensure_core_plugins` |
+| Schedule seat | `system.plugins.ensure` → `phase_plugins.run` | Calls zero-arg `plugin_install` when that option is set. No key: the phase installs nothing and does not import the stroke. The phase does not read package family names. The standard host closes over the record and passes `ensure_core_plugins` |
 | Stroke | `palm.common.plugins.ensure_core_plugins` | No process flag. Imports `palm.common.transforms` (that package calls its `autoload` at import), then `autoload(names)` for kits, patterns, providers, runners, and storages |
 
 A later call imports names that are not yet imported. It does not unload names already imported.
@@ -115,7 +115,7 @@ A later call imports names that are not yet imported. It does not unload names a
 |---------|----------------|
 | Saved composition records | Each record has package name fields (`0.72.3`). Phenotype fields are unchanged. `embedded` services stay `inspect`, `session`, `definitions`, `execution`. Surfaces empty. Capabilities empty. Package names match the other records |
 | `BootMode` | Stores the profile built from a record. It does not choose packages by itself |
-| Phase options | `composition_packages` is the set the host passed. The phase does not invent a set |
+| Phase options | `plugin_install` is the callable the host passed. The phase does not invent a set. The standard host closes over the record's package names inside that callable |
 | Kit `server` | On `INSTALLED_KITS`. Off every saved record. The server runtime imports it when that surface starts |
 | Runner `host` | On the record, so the stroke imports it. The engine binds the registered class. OFF is `workload_host_enabled` |
 | Storage names | The record names `memory` and `filesystem`. `include_optional` is gone |
@@ -282,4 +282,4 @@ Rows that stay **named** are not implemented. **`0.72.2`** paid P5–P8: those s
 
 `0.72.2` build path: `COMPOSITION_RECORDS` holds the six shapes. `CompositionProfile.from_record` and `composition_profile_from_name` build the profile. `composition_profile_from_settings` copies services and surfaces from the `all_in_one` record and writes capabilities from settings. `BootMode` stores that built profile. With no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still select the record by `boot_mode_name_for_deployment` (§11). `all_in_one` uses the settings build.
 
-`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. `ensure_core_plugins` walks the names. `autoload` takes the names. The host bootstrap passes the host composition. The system phase reads `composition_packages`. Every saved record names the same package set. Measure stays **not pass**.
+`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. `ensure_core_plugins` walks the names. `autoload` takes the names. The host bootstrap passes the host composition. The system phase calls `plugin_install`. The standard host closes over the record's package names inside that callable. Every saved record names the same package set. Measure stays **not pass**.

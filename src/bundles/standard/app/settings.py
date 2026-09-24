@@ -245,7 +245,7 @@ def _default_values() -> dict[str, Any]:
         "projection_rebuild_max_instances": 5000,
         "projection_rebuild_skip_if_fresh": True,
         "workload_host_enabled": False,
-        "workload_default_runtime": None,
+        "workload_default_runtime": "local",
         "session_strict_attribution": True,
         "webhook_urls": [],
         "webhook_event_types": [],

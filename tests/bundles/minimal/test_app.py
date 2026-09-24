@@ -53,6 +53,20 @@ def test_minimal_package_does_not_import_the_standard_bundle_or_plugin_stroke() 
     assert offenders == []
 
 
+def _run_cold(script: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    src = str(_REPO / "src")
+    env["PYTHONPATH"] = src + os.pathsep + env.get("PYTHONPATH", "")
+    return subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=_REPO,
+        env=env,
+    )
+
+
 def test_minimal_start_does_not_load_the_plugin_stroke() -> None:
     script = """
 import sys
@@ -87,16 +101,30 @@ finally:
     app.stop()
 print("ok")
 """
-    env = os.environ.copy()
-    src = str(_REPO / "src")
-    env["PYTHONPATH"] = src + os.pathsep + env.get("PYTHONPATH", "")
-    result = subprocess.run(
-        [sys.executable, "-c", script],
-        capture_output=True,
-        text=True,
-        check=False,
-        cwd=_REPO,
-        env=env,
-    )
+    result = _run_cold(script)
+    assert result.returncode == 0, result.stderr or result.stdout
+    assert "ok" in result.stdout
+
+
+def test_minimal_app_installs_only_the_modules_it_names() -> None:
+    script = """
+import sys
+
+from bundles.minimal.app import MinimalApp
+
+app = MinimalApp(modules=("plugins.storages.memory", "plugins.patterns.wizard"))
+app.start()
+try:
+    assert "plugins.storages.memory" in sys.modules
+    assert "plugins.patterns.wizard" in sys.modules
+    assert "plugins.patterns.dag" not in sys.modules
+    assert "plugins.providers" not in sys.modules
+    assert "palm.common.plugins" not in sys.modules
+    assert "bundles.standard" not in sys.modules
+finally:
+    app.stop()
+print("ok")
+"""
+    result = _run_cold(script)
     assert result.returncode == 0, result.stderr or result.stdout
     assert "ok" in result.stdout

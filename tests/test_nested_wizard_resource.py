@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-import pytest
-
 import plugins.providers  # noqa: F401 — register providers
-from palm.core.orchestration import JobStatus
-from palm.definitions import FlowDefinition, ResourceDefinition
+import pytest
+from bundles.standard.runtimes.embedded import EmbeddedRuntime
 from plugins.patterns.wizard import WizardKeys
 from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from plugins.providers.palm.provider import PalmProvider
-from bundles.standard.runtimes.embedded import EmbeddedRuntime
+
+from palm.core.orchestration import JobStatus
+from palm.definitions import FlowDefinition, ResourceDefinition
 
 
 def _child_wizard_flow() -> FlowDefinition:
@@ -63,7 +63,7 @@ def _submit_child_resource() -> ResourceDefinition:
 @pytest.fixture
 def runtime() -> EmbeddedRuntime:
     rt = EmbeddedRuntime()
-    rt.start()
+    rt.start(storage_backend="memory")
     rt.repository.save_flow(_child_wizard_flow())
     rt.repository.save_flow(_parent_wizard_flow())
     rt.repository.save_resource(_submit_child_resource())

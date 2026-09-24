@@ -158,20 +158,17 @@ def test_phase_installs_only_the_option_set() -> None:
 
         from palm.common.plugins import ensure_core_plugins
 
-        run(
-            BootContext(schedule="system"),
-            {
-                "composition_packages": {
-                    "kits": ("present",),
-                    "patterns": (),
-                    "providers": (),
-                    "runners": ("local",),
-                    "storages": ("memory",),
-                    "transforms": (),
-                },
-                "plugin_install": ensure_core_plugins,
-            },
-        )
+        def install() -> None:
+            ensure_core_plugins(
+                kits=("present",),
+                patterns=(),
+                providers=(),
+                runners=("local",),
+                storages=("memory",),
+                transforms=(),
+            )
+
+        run(BootContext(schedule="system"), {"plugin_install": install})
         assert "plugins.kits.present" in sys.modules
         assert "plugins.runners.local" in sys.modules
         assert "plugins.runners.host" not in sys.modules

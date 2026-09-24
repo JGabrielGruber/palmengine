@@ -14,15 +14,19 @@ José Gabriel Gruber keeps this bundle as the place that asks how much an applic
 
 The saved composition record and `palm.common.plugins.ensure_core_plugins` are the current standard-host workaround. They are not the composition model.
 
-The minimal app uses a **constrained start**:
+`system.plugins.ensure` calls `plugin_install` when the start options set it. The callable takes no arguments. The phase does not name plugin packages, bundles, or family tuples. No callable: the phase installs nothing. A non-callable value fails closed.
 
-| The start sets | The start leaves out |
-|----------------|----------------------|
-| `storage_backend=memory` | `composition_packages` |
-| `structure_definition_id=local.embedded` | `plugin_install` |
-| One `BaseRuntime` subclass, inline scheduler | Product services, surfaces, host schedule |
+The minimal app owns a `MinimalDefinition`: the storage backend name, the plugin modules (the storage module is one of them), and the structure definition id. `install_modules` imports that tuple during `plugin_install`. System storage select uses the backend name and requires the plugin to be registered already. It does not import a storage package and it does not default the name to `memory`.
 
-`system.plugins.ensure` installs nothing when `composition_packages` is absent. It does not import the stroke. A mapping without a callable `plugin_install` fails closed. The standard host still passes `ensure_core_plugins`. That call stays on the standard host.
+The standard host names `storage_backend` on `PalmSettings` and names `workload_default_runtime` as `local`, because that host installs the local runner. The system workload wire binds runners already registered. It does not fill a missing default with `local`.
+
+The standard host closes over its composition record and passes `ensure_core_plugins` as that callable. That call stays on the standard host.
+
+| The start sets | The app owns | The start leaves out |
+|----------------|--------------|----------------------|
+| `storage_backend=memory` | the module tuple | product services |
+| `structure_definition_id=local.embedded` | `plugin_install` → `install_modules` | surfaces |
+| `MinimalRuntime`, inline scheduler | | the host schedule |
 
 ---
 
@@ -35,7 +39,7 @@ Accepted law this bundle treats as fixed:
 | The system owns | The bundle owns |
 |-----------------|-----------------|
 | System schedule, planes, supervisor, structure, admission, vitality, system log, `ExecutionPort` | Process entry, the start options above, shutdown |
-| Plugin install only when the caller passes names and an installer | Whether any installer exists. This bundle passes none |
+| The call to `plugin_install` during the system schedule | The module tuple and `install_modules` |
 | `local.embedded` as the floor organism | Settings beyond the two start options |
 
 Plugins are not planes. Boot mode is order. Composition installs packages. Structure enables organs and places. [ADR-028](../../adr/028-system-boot.md) · [ADR-032](../../adr/032-organism-assembly.md) · [ADR-040](../../adr/040-composition-plugin-membership.md).
@@ -75,11 +79,14 @@ Product knowledge still sits inside the system. Later refactor, not this sketch:
 
 `MinimalApp` (`src/bundles/minimal/app.py`):
 
-1. Construct `MinimalRuntime` (`BaseRuntime`, inline scheduler).
-2. `start(storage_backend="memory", structure_definition_id="local.embedded")`.
-3. `stop()` on the way out.
+1. Hold a `MinimalDefinition`. The default names storage backend `memory`, module `plugins.storages.memory`, and structure id `local.embedded`.
+2. Construct `MinimalRuntime` (`BaseRuntime`, inline scheduler).
+3. `start` with that backend name, that structure id, and `plugin_install` bound to `install_modules(definition.modules)`.
+4. `stop()` on the way out.
 
-Memory storage resolves in `StorageFactory` to `plugins.storages.memory`. That import is the storage seat. It is not the plugin stroke. The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `plugins.storages`.
+`examples/todo` is the probe for a wider module tuple. A resource flow there adds `plugins.patterns.wizard` and `plugins.providers.kv` beside the memory storage module. That probe is the next poke. It is not this sketch.
+
+The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `plugins.storages`. `StorageFactory` selects a registered name. It does not import the package.
 
 The standard host schedule stays the picture of a full application: system log, kernel bootstrap, host events, workers, spawn, definition load, product wire, surfaces, recovery, ready. Spawn is the phase that enters the system. This app does not walk that schedule.
 
@@ -90,6 +97,7 @@ The standard host schedule stays the picture of a full application: system log, 
 | Residual | Where |
 |----------|--------|
 | Standard runtime is still `EmbeddedRuntime` with the same two class facts | `src/bundles/standard/runtimes/embedded/runtime.py`. The kernel still builds that class |
+| Job runner default inside system wiring | `resolve_runner` builds `BehaviorTreeRunner` when the start options omit `runner`. That runner is not a `plugins` package |
 | Fat install on the standard host, twice | Kernel bootstrap and `plugin_install` on spawn |
 | Root test latch | `tests/conftest.py` calls `ensure_plugins()` |
 | Map names `palm.patterns` / `palm.storages` | Code lives under `src/plugins/` and `src/bundles/` |

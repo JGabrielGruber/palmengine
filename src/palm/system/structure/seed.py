@@ -132,7 +132,7 @@ def definition_id_from_settings(settings: Any | None) -> str | None:
     text = str(raw).strip()
     return text or None
 
-
+# TODO: This is a placeholder for the actual implementation.
 def membership_capabilities_from_settings(
     settings: Any | None,
     *,
