@@ -4,7 +4,7 @@
 **Date:** 2026-09-21  
 **Theme:** [VISION-0.72](../vision/VISION-0.72.md) (**open**)  
 **Prior closed:** [VISION-0.71](../vision/closed/VISION-0.71.md) · [ADR-039](039-place-registry-adopt.md) **Accepted**  
-**Related:** [ADR-032](032-organism-assembly.md) **Accepted** (organ/place precedent) · [ADR-028](028-system-boot.md) **Accepted** (plugins ≠ planes) · [ADR-019](019-composition-profiles.md) **Accepted** (phenotype) · [ADR-036](036-require-capability.md) **Accepted** (organ require)  
+**Related:** [ADR-041](041-bundle-start.md) **Proposed** (amends D2, D4, D7) · [ADR-032](032-organism-assembly.md) **Accepted** (organ/place precedent) · [ADR-028](028-system-boot.md) **Accepted** (plugins ≠ planes) · [ADR-019](019-composition-profiles.md) **Accepted** (phenotype) · [ADR-036](036-require-capability.md) **Accepted** (organ require)  
 **Map:** [PALM.md](../PALM.md)
 
 José opened theme **0.72** (2026-09-21) after exiting **0.71**. Pack `0.72.0` is vision + docs align + thread close. Package stamp stays `0.68.0`. Accept at theme exit. This ADR records **structural decisions only** — no API sketch, no `ensure_core_plugins` rewrite recipe.
@@ -25,9 +25,11 @@ José opened theme **0.72** (2026-09-21) after exiting **0.71**. Pack `0.72.0` i
 
 Composition **plugin membership** (package-install vertical), measured on minimal embed, is theme **0.72**. Do not reopen closed place-registry **0.71** as this subject.
 
-### D2 — Composition installs local packages
+### D2 — The profile names the sets the loader installs
 
-**Ownership raise:** composition / boot owns local package (plugin family) membership. At HEAD the latch dual is **unpaid** — naming the raise is not claiming the body landed.
+**Amended 2026-09-28 by [ADR-041](041-bundle-start.md).** The profile assigned to the bundle names a driver set and a plugin set. The loader installs each once, during bundle start, through the load contract (ADR-041 D4–D6). The kernel owns neither set. It receives bound drivers and a structure seed. Provenance stays with the bundle and records both sets.
+
+The loader is not in the tree yet. Naming this owner is not claiming the body landed.
 
 ### D3 — Structure enables capabilities (reading A)
 
@@ -35,7 +37,7 @@ Structure **enables** organs / places / refuse on `StructureDefinition` now; cap
 
 ### D4 — Definition SoT after load
 
-StructureDefinition seed→law is the precedent. Same **taste** for composition plugin membership; **package carrier unpaid**. Do not invent a boot YAML DSL or fold plugins into DNA from this ADR.
+StructureDefinition seed→law is the precedent. **Amended 2026-09-28 by [ADR-041](041-bundle-start.md):** the package carrier is the profile's driver set and plugin set (ADR-041 D4), returned as provenance beside the bound drivers and never passed to the kernel. The assembly definition stays the system's. Still no boot YAML DSL and no plugins in DNA.
 
 ### D5 — Minimal embed = measuring point
 
@@ -47,7 +49,7 @@ Minimal embed pressure is the fail-closed measuring altitude (O1–O5 in [VISION
 
 ### D7 — CompositionProfile phenotype honesty
 
-Services / surfaces stay composition phenotype ([ADR-019](019-composition-profiles.md)). Organ names are **not** composition members after DNA ([ADR-028](028-system-boot.md) D4 succession honesty).
+The profile still names services and surfaces ([ADR-019](019-composition-profiles.md)). **Amended 2026-09-28 by [ADR-041](041-bundle-start.md) D11:** surface code stays in the bundle; service code lives on `src/services`. Organ names are **not** composition members after DNA ([ADR-028](028-system-boot.md) D4 succession honesty).
 
 ### D8 — Stamp
 
@@ -72,9 +74,10 @@ This ADR does **not** decide:
 - STATUS / PALM / VISION speech name the raise and the measuring bar without claiming green.  
 - As-built observations (call path, tuples, controls that are not membership) live in [VISION-0.72](../vision/VISION-0.72.md) §2.3. This ADR does not repeat them.  
 - Problem sites live in [VISION-0.72](../vision/VISION-0.72.md) §12. `0.72.2` builds the composition record (P5–P8). `0.72.3` puts package names on that record and the install stroke walks them (P1–P4, P9, P12–P14). P10 and P11 stay for `0.72.4`. This ADR does not add an API recipe. Status stays **Proposed**.  
+- The package carrier decision now lives in [ADR-041](041-bundle-start.md) **Proposed**. This ADR does not claim the loader has landed.  
 - Later `0.72.x` may populate composition-owned install under José sequence — outside this ADR’s default for `0.72.0`.  
 - DNA organ/place green and phenotype theater remain fake-green if cited as membership proof.
 
 ## Status
 
-**Proposed** until José exits 0.72 and accepts this ADR.
+**Proposed** until José exits 0.72 and accepts this ADR. D2, D4, and D7 were amended 2026-09-28 by [ADR-041](041-bundle-start.md), which stays **Proposed** with this one.

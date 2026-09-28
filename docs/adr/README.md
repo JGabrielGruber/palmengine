@@ -55,11 +55,12 @@ Process: [AGENTS.md](../../AGENTS.md) §5 · template: [`.github/ISSUE_TEMPLATE/
 | [038](038-authoring-adapter.md) | Authoring adapter — land a shape · definition pack (0.70) | Accepted |
 | [039](039-place-registry-adopt.md) | Place registry adopt — named existing body (0.71) | Accepted |
 | [040](040-composition-plugin-membership.md) | Composition plugin membership — package-install · minimal embed (0.72) | Proposed |
+| [041](041-bundle-start.md) | Bundle start — loader, drivers, and plugins (0.72) | Proposed |
 
 \*ADR-005 may be promoted to Accepted in a docs pass; shipped reality is the service domain API.
 
-**Next free number:** 041.  
-**Note:** **0.72** composition plugin membership **open** (ADR-040 **Proposed**). Place registry **0.71** **closed** (ADR-039 **Accepted**). System **0.57** through Authoring **0.70** **closed** (ADR-026…038 Accepted). Residual multi-process claim: [SD-019](../../TECH-DEBT.md#sd-019). Queue seeds: [VISION-TUNNELS](../vision/VISION-TUNNELS.md) · [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md) · [VISION-TINY-LLM](../vision/VISION-TINY-LLM.md) · seed essay [VISION-ASSEMBLY](../vision/VISION-ASSEMBLY.md).
+**Next free number:** 042.  
+**Note:** **0.72** composition plugin membership **open** (ADR-040 **Proposed**, amended by ADR-041 **Proposed**). Place registry **0.71** **closed** (ADR-039 **Accepted**). System **0.57** through Authoring **0.70** **closed** (ADR-026…038 Accepted). Residual multi-process claim: [SD-019](../../TECH-DEBT.md#sd-019). Queue seeds: [VISION-TUNNELS](../vision/VISION-TUNNELS.md) · [VISION-SURFACE-DEFLATION](../vision/VISION-SURFACE-DEFLATION.md) · [VISION-TINY-LLM](../vision/VISION-TINY-LLM.md) · seed essay [VISION-ASSEMBLY](../vision/VISION-ASSEMBLY.md).
 
 ## How to add an ADR
 

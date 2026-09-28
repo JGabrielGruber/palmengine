@@ -3,7 +3,7 @@
 **Status:** Sketch. This file is the bundle note. It is not a theme plan and it does not accept an ADR.  
 **Map:** [PALM.md](../../PALM.md) — read first.  
 **System law:** [ADR-026](../../adr/026-palm-system-layer.md) **Accepted** · [SYSTEM-LOW-LEVEL](../../SYSTEM-LOW-LEVEL.md).  
-**Open theme beside this sketch:** [VISION-0.72](../../vision/VISION-0.72.md) · [ADR-040](../../adr/040-composition-plugin-membership.md) **Proposed**. Measure **not pass**.  
+**Open theme beside this sketch:** [VISION-0.72](../../vision/VISION-0.72.md) · [ADR-040](../../adr/040-composition-plugin-membership.md) **Proposed** · [ADR-041](../../adr/041-bundle-start.md) **Proposed**. Measure **not pass**.  
 **Code:** `src/bundles/minimal/`. Tests: `tests/bundles/minimal/`.
 
 José Gabriel Gruber keeps this bundle as the place that asks how much an application must implement. The answer uses `palm.system`. It does not copy the standard host.

@@ -17,12 +17,13 @@
 | **Core** | Pure engines and pure types under `palm.core`. No I/O. No imports outside core. | Host packaging; product policy |
 | **System** | Running Palm: shell, engines, interfaces, subsystems (planes, supervisor), boot, vitality, structure manager. | Product business rules; HTTP surface code |
 | **Shared** | Reusable code that is not system and not product (common helpers, kits that many layers use carefully). | A place to hide layer violations |
-| **Plugin** | Registry extension (pattern, provider, storage, runner, …) installed at the edge. | Ad-hoc `if type ==` menus in hubs |
+| **Plugin** | Registry extension the job path or a surface walks (pattern, provider, kit, transform). Home: `src/plugins`. [ADR-041](../adr/041-bundle-start.md) **Proposed**. | A driver slot; an organ; a service door |
+| **Driver** | Boot-bound slot the kernel defines. Storage is required. The workload runtime is optional. Home today: `src/drivers`. [ADR-041](../adr/041-bundle-start.md) **Proposed**. | **Port** (effect or admission); `WorkloadDriver` (graph effect protocol) |
 | **Hand** | Function that fills or drops one **named** organ. Lives next to the organ; listed in an explicit table. | Import-time self-register; host `if` |
 | **Walker** | Live code that performs one duty (install, start, stop, apply). Something in `src/` must call it. [ADR-033](../adr/033-one-walker.md). | Helper that only names an unused branch |
 | **Fill site** | The one place that installs or registers a member. Dual fill = two walkers still live. | Host `if` next to the hand |
-| **Product** | Userland services (assist, execution façades, domain APIs). Client of system ports and admission. | Transport adapters; composition root digs |
-| **Surface** | Transport edge only (`palm.runtimes`: CLI, REST, MCP, SSR, WebSocket, …). Depends on system — never reverse. | Structure law; business policy |
+| **Product** | Userland doors (`inspect`, `session`, `definitions`, `execution`, and the fuller set). Home: `src/services`. A bundle constructs the ones its profile names. Client of system ports and admission. [ADR-041](../adr/041-bundle-start.md) **Proposed**. | Transport adapters; the kernel package; one bundle's private code |
+| **Surface** | Transport edge only. Code lives in the bundle that mounts it (`bundles.standard` for the reference host). Depends on system — never reverse. | Structure law; a service door |
 | **Host** | Composition root: seed choice, wire seats once, package settings. Not a public structure API. | Readiness king after structure definition load |
 | **Composition root** | Same duty as host in wiring terms — the place that assembles the object graph once. | Runtime bag product digs for readiness |
 | **Package** | Installable Python package / package family under `palm.*` (architecture C4 code altitude). | Business “package” of work for a customer |

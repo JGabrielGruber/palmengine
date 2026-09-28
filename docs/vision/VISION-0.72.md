@@ -3,7 +3,7 @@
 **Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slice **`0.72.1`** landed (problem register + forward order). Slice **`0.72.2`** landed (composition record). Slice **`0.72.3`** landed (package set + install stroke). Next expected: **`0.72.4`** second menus. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
-**ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed**.  
+**ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed** · [041-bundle-start.md](../adr/041-bundle-start.md) **Proposed** (amends 040 D2, D4, D7).  
 **Theme law:** [VERSIONING.md](../VERSIONING.md) (floor · growth · exit judgment).  
 **Prior closed:** [VISION-0.71](closed/VISION-0.71.md) Place registry · [ADR-039](../adr/039-place-registry-adopt.md) **Accepted**.  
 **Related:** [VISION-ASSEMBLY](VISION-ASSEMBLY.md) · [ADR-032](../adr/032-organism-assembly.md) **Accepted** (organ/place precedent) · [ADR-028](../adr/028-system-boot.md) **Accepted** (plugins ≠ planes) · [ADR-019](../adr/019-composition-profiles.md) **Accepted** (phenotype).  
@@ -48,7 +48,7 @@ This is **not** “DNA unfinished.” DNA did its job for organs/places. Differe
 The theme is **real as a plan** when:
 
 1. This VISION is **open** with floor / growth / non-goals / principles / slice guide named.  
-2. [ADR-040](../adr/040-composition-plugin-membership.md) is **Proposed** (structural decisions only — no API recipe as the design).  
+2. [ADR-040](../adr/040-composition-plugin-membership.md) is **Proposed** (structural decisions only — no API recipe as the design). [ADR-041](../adr/041-bundle-start.md) is **Proposed** and amends 040 D2, D4, and D7.  
 3. [STATUS.md](../../STATUS.md) points at **0.72** as present; agent resume → this VISION → ADR-040; slice **`0.72.0`** = plan landed.  
 4. [PALM.md](../PALM.md) has one open-theme pointer + kind honesty (composition-owned package membership is the **0.72 raise**; latch dual unpaid today).  
 5. Measure bar **O1–O5** is named here as **not pass** — do not claim green from DNA, suite slice, phenotype, or latch-ran.
@@ -66,7 +66,7 @@ The theme is **real as a plan** when:
 **Reading A (lock):** structure enables capabilities **of** packages composition already installed.  
 **Reject B:** structure owns package membership as peer of DNA organs.
 
-Definition **SoT after load** — StructureDefinition precedent (seed→law); **package carrier unpaid** under this raise.
+Definition **SoT after load** — StructureDefinition precedent (seed→law). The package carrier is the profile's driver set and plugin set ([ADR-041](../adr/041-bundle-start.md) **Proposed**). The loader is not in the tree.
 
 ### 2.2 Success observables (fail-closed bar — **not pass** @ open)
 
@@ -130,7 +130,7 @@ A later call imports names that are not yet imported. It does not unload names a
 | O4 | The host passes the record's names. The phase reads them. `BootMode` stays order |
 | O5 | Services and surfaces stay phenotype fields. Package names are separate fields on the same record. Organs stay on `StructureDefinition`. Runner OFF is an engine flag on a class the record installed |
 
-Measure stays **not pass**. A separate package carrier (boot YAML, or a fold into DNA) stays unpaid ([ADR-040](../adr/040-composition-plugin-membership.md) D4).
+Measure stays **not pass**. The carrier decision is [ADR-041](../adr/041-bundle-start.md) D4 (amends [ADR-040](../adr/040-composition-plugin-membership.md) D4). As-built, package names still live on the composition record. No boot YAML DSL and no plugins in DNA.
 
 ---
 
@@ -169,10 +169,10 @@ Do not invent carriers or suites in this plan pack.
 
 1. **Kind split** — composition **installs**; structure **enables**; do not cross-wire.  
 2. **Reading A** — enable capabilities *of* already-installed packages; reject B.  
-3. **Definition SoT after load** — StructureDefinition precedent; package carrier unpaid.  
+3. **Definition SoT after load** — StructureDefinition precedent. The package carrier is the profile's driver set and plugin set ([ADR-041](../adr/041-bundle-start.md) **Proposed**). The loader body is not landed. Measure stays **not pass**.  
 4. **Plugins ≠ planes** — [ADR-028](../adr/028-system-boot.md) D5 continuity.  
 5. **Minimal embed = measuring point** — not a second vertical.  
-6. **Services/surfaces** stay composition phenotype ([ADR-019](../adr/019-composition-profiles.md)); organ names are not composition members after DNA ([ADR-028](../adr/028-system-boot.md) D4 succession honesty).  
+6. **Services/surfaces** stay named by the profile ([ADR-019](../adr/019-composition-profiles.md)). Surface code stays in the bundle. Service code lives on `src/services` ([ADR-041](../adr/041-bundle-start.md) D11). Organ names are not composition members after DNA ([ADR-028](../adr/028-system-boot.md) D4 succession honesty).  
 7. **STE** for theme docs. Spoken words are teaching only.  
 8. **José exits** — checklist theater does not close the season.
 
