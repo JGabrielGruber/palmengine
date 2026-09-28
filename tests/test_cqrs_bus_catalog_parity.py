@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-import palm.services.definitions.bindings.cqrs.contributor
-import palm.services.design.bindings.cqrs.contributor  # noqa: F401
+import services.definitions.bindings.cqrs.contributor
+import services.design.bindings.cqrs.contributor  # noqa: F401
 from palm.common.cqrs.catalog import collect_cqrs_command_types, collect_cqrs_query_types
-from palm.services.definitions.bindings.cqrs.registry import (
+from services.definitions.bindings.cqrs.registry import (
     DEFINITIONS_COMMAND_TYPES,
     DEFINITIONS_QUERY_TYPES,
 )
-from palm.services.design.bindings.cqrs.registry import DESIGN_COMMAND_TYPES, DESIGN_QUERY_TYPES
+from services.design.bindings.cqrs.registry import DESIGN_COMMAND_TYPES, DESIGN_QUERY_TYPES
 
 SERVICE_COMMAND_TYPES = DEFINITIONS_COMMAND_TYPES + DESIGN_COMMAND_TYPES
 SERVICE_QUERY_TYPES = DEFINITIONS_QUERY_TYPES + DESIGN_QUERY_TYPES

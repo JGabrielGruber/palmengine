@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.services.analytics.schema_roles import fields_from_schemas
+from services.analytics.schema_roles import fields_from_schemas
 
 
 def test_json_schema_properties_become_fields() -> None:

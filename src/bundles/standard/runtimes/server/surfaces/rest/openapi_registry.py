@@ -13,12 +13,12 @@ from bundles.standard.runtimes.server.surfaces.rest.execution.providers import r
 from bundles.standard.runtimes.server.surfaces.rest.execution.workloads import routes as workloads_routes
 from bundles.standard.runtimes.server.surfaces.rest.route_table import RouteDefinition
 from bundles.standard.runtimes.server.surfaces.rest.system import routes as system_routes
-from palm.services.assist.registry import assist_commands
-from palm.services.definitions.registry import catalog_verbs
-from palm.services.execution.flows.registry import flow_commands
-from palm.services.execution.processes.registry import process_commands
-from palm.services.execution.providers.registry import invoke_verbs
-from palm.services.inspect.registry import observe_verbs
+from services.assist.registry import assist_commands
+from services.definitions.registry import catalog_verbs
+from services.execution.flows.registry import flow_commands
+from services.execution.processes.registry import process_commands
+from services.execution.providers.registry import invoke_verbs
+from services.inspect.registry import observe_verbs
 
 _SERVICE_GROUPS = {
     "assist": "Assist",

@@ -7,12 +7,12 @@ from palm.common.operator.view_registry import (
     build_operator_view,
     clear_operator_view_builders,
 )
-from palm.services.assist.registry import (
+from services.assist.registry import (
     clear_assist_contributors,
     register_assistant_enricher,
 )
-from palm.services.assist.schemas import build_assist_session_context
-from palm.services.assist.views import (
+from services.assist.schemas import build_assist_session_context
+from services.assist.views import (
     build_assistant_actions,
     build_assistant_view,
     ensure_assist_view_registration,
@@ -293,7 +293,7 @@ def test_complete_turn_gets_finished_blurb_and_run_again() -> None:
 
 def test_resource_error_surfaces_resume_actions() -> None:
     _setup()
-    from palm.services.assist.views import build_assistant_view
+    from services.assist.views import build_assistant_view
 
     flat = {
         "session_id": "inst-res-1",
@@ -327,7 +327,7 @@ def test_resource_error_surfaces_resume_actions() -> None:
 
 def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:
     _setup()
-    from palm.services.assist.views import merge_assistant_actions
+    from services.assist.views import merge_assistant_actions
 
     merged = merge_assistant_actions(
         [{"label": "Send answer", "path": ["assist", "instance", "x", "input"]}],
@@ -356,7 +356,7 @@ def test_to_dict_merges_design_actions_for_create_flow_intent() -> None:
 
 def test_assistant_handoff_action_uses_alias() -> None:
     _setup()
-    from palm.services.assist.registry import AssistContributor, register_assist_contributor
+    from services.assist.registry import AssistContributor, register_assist_contributor
 
     register_assist_contributor(
         AssistContributor(
@@ -383,7 +383,7 @@ def test_assistant_handoff_action_uses_alias() -> None:
 
 
 def test_assist_service_registers_assistant_format() -> None:
-    from palm.services.assist.service import AssistService
+    from services.assist.service import AssistService
 
     clear_operator_view_builders()
     clear_assist_contributors()

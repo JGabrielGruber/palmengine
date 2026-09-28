@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from palm.services.analytics.service import AnalyticsService
-from palm.services.analytics.virtual import apply_view_transform
+from services.analytics.service import AnalyticsService
+from services.analytics.virtual import apply_view_transform
 
 
 def test_apply_count_by() -> None:

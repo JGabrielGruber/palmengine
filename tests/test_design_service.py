@@ -17,20 +17,20 @@ from palm.common.services.errors import DesignCommitRejectedServiceError
 from palm.core import StorageEngine
 from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance
-from palm.services.design.envelope import (
+from services.design.envelope import (
     PublishAction,
     extract_flow_dict,
     resolve_publish_intent,
     validation_body,
 )
-from palm.services.design.factory import create_proposal_repository
-from palm.services.design.proposal import DesignProposalRepository
-from palm.services.design.registry import (
+from services.design.factory import create_proposal_repository
+from services.design.proposal import DesignProposalRepository
+from services.design.registry import (
     DesignContributor,
     clear_design_contributors,
     register_design_contributor,
 )
-from palm.services.design.storage_proposal_repository import StorageDesignProposalRepository
+from services.design.storage_proposal_repository import StorageDesignProposalRepository
 
 
 @pytest.fixture

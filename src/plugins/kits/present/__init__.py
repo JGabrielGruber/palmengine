@@ -1,6 +1,6 @@
 """Present kit — library walk over session + execution (0.69.4 / 0.69.5).
 
-One object holds one :class:`~palm.services.session.bound_surface.BoundSurface`
+One object holds one :class:`~services.session.bound_surface.BoundSurface`
 and walks existing doors: bind, present, submit, start, attach, focus.
 
 Owns ``guidance_definition_id`` (``str | None``) and the walk-role key
@@ -26,9 +26,9 @@ GUIDANCE_INSTANCE_ID = "guidance_instance_id"
 
 if TYPE_CHECKING:
     from palm.core.orchestration import Job
-    from palm.services.execution.flows.service import FlowExecutionService
-    from palm.services.session.bound_surface import BoundSurface
-    from palm.services.session.service import SessionService
+    from services.execution.flows.service import FlowExecutionService
+    from services.session.bound_surface import BoundSurface
+    from services.session.service import SessionService
     from palm.system.runtime.base import BaseRuntime
 
 register_kit(

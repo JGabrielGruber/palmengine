@@ -114,14 +114,14 @@ def rewrite_system_session_continue(
     **0.58.9 law:** ``session_id`` is always the system subject. Product path
     segments still expect an **instance** id (SI-001/005). When a path or
     param carries ``sess-…`` where product needs an instance, resolve via
-    product :class:`~palm.services.session.SessionService`
+    product :class:`~services.session.SessionService`
     ``resolve_continue_instance`` (active → waiting → last). Does **not**
     invent resume. Does **not** write the instance back into ``session_id``.
 
     **0.58.11 SI-015:** when a system ``session_id`` is bound and the path is a
     product continue/inspect under that subject, the continue ``instance_id``
     must be on the session attach list
-    (:meth:`~palm.services.session.SessionService.require_owned_instance`).
+    (:meth:`~services.session.SessionService.require_owned_instance`).
 
     **0.58.15 strict attribution:** continue paths without a system session
     resolve the owner from the plane; orphan / bare instances raise

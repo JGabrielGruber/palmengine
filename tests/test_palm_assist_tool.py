@@ -93,7 +93,7 @@ def test_normalize_collection_action_params() -> None:
 
 
 def test_resolve_flows_session_input_alias() -> None:
-    from palm.services.assist.registry import resolve_mcp_alias
+    from services.assist.registry import resolve_mcp_alias
 
     path = resolve_mcp_alias(
         "flows/session-input",

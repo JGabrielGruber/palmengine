@@ -13,7 +13,7 @@ from bundles.standard.runtimes.mcp.assist.dispatch import (
     resolve_dispatch_path,
     shape_dispatch_result,
 )
-from palm.services.assist.registry import resolve_mcp_alias
+from services.assist.registry import resolve_mcp_alias
 
 
 @pytest.fixture

@@ -8,7 +8,7 @@ from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
-from palm.services.session import (
+from services.session import (
     HOST_SESSION_ID,
     BoundSurface,
     SessionService,

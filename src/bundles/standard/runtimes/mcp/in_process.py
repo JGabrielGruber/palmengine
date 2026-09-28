@@ -34,7 +34,7 @@ from bundles.standard.runtimes.mcp.rest_client import (
     maybe_admission_refused_error,
 )
 from bundles.standard.runtimes.server.surfaces.rest.openapi import build_openapi_spec
-from palm.services.execution.flows import flow_command_from_body
+from services.execution.flows import flow_command_from_body
 from palm.states import BlackboardState
 
 if TYPE_CHECKING:

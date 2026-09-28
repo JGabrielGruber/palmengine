@@ -22,12 +22,12 @@ from palm.definitions.process import ProcessDefinition
 from palm.definitions.resource import ResourceDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from bundles.standard.runtimes.cli.shared.instances import resolve_instance_id as _resolve_instance_id
-from palm.services.execution.flows import ReplSession
+from services.execution.flows import ReplSession
 
 if TYPE_CHECKING:
     from bundles.standard.app.host.application_host import ApplicationHost
     from bundles.standard.app.kernel import PalmKernel
-    from palm.services.session import BoundSurface
+    from services.session import BoundSurface
 
 
 @dataclass

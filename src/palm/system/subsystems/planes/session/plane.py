@@ -219,7 +219,7 @@ class SessionPlaneService:
         Service sessions attribute **automated / internal** start (work drain,
         host housekeeping). They are not outside subjects. Id is deterministic
         from *origin* (``sess-svc-…``). Prefer product
-        :meth:`~palm.services.session.SessionService.ensure_service_session`.
+        :meth:`~services.session.SessionService.ensure_service_session`.
         """
         from palm.system.subsystems.planes.session.types import service_session_id
 

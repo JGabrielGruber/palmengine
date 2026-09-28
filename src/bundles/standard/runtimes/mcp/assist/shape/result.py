@@ -33,8 +33,8 @@ from bundles.standard.runtimes.mcp.assist.shape.session import (
     rebuild_assist_with_input_schema,
 )
 from bundles.standard.runtimes.mcp.flows.views import flatten_session_view, submission_view
-from palm.services.assist.views import resolve_view_format
-from palm.services.design.views import (
+from services.assist.views import resolve_view_format
+from services.design.views import (
     build_design_impact_assistant_view,
     build_design_validate_assistant_view,
 )
@@ -83,7 +83,7 @@ def shape_dispatch_result(
     Keep off for MCP token budgets; WebSocket Assist sets True.
     """
     # Lazy-register assistant builder so isolated callers (tests, REST proxy) work.
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     ensure_assist_view_registration()
     fmt = normalize_view_format(

@@ -196,7 +196,7 @@ def test_composition_services_gate_build(spine_settings: PalmSettings) -> None:
         assert host.design is None
         # 0.67.17: host.analytics is the install organ. Default all_in_one DNA
         # lists it; composition omit of AnalyticsService does not hide the organ.
-        from palm.services.analytics import AnalyticsService
+        from services.analytics import AnalyticsService
 
         assert host.analytics is host.runtime().install.analytics
         assert host.analytics is not None

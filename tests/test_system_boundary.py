@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 FORBIDDEN_PREFIXES = (
-    "palm.services",
+    "services",
     "bundles.standard.runtimes",
     "plugins.patterns",
     "bundles.standard.app",

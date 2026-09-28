@@ -536,7 +536,7 @@ class ApplicationHost:
         self._workplane.stop_inbound()
 
         try:
-            from palm.services.analytics.dashboards import attach_dashboard_store
+            from services.analytics.dashboards import attach_dashboard_store
 
             attach_dashboard_store(None)
         except Exception:
@@ -841,7 +841,7 @@ class ApplicationHost:
         # Build only the services this app is composed of (+ their transitive deps).
         # Default composition (all_in_one) is full services, so this is behaviour-preserving.
         # 0.72.4: import the record's service names. INSTALLED_SERVICES is the catalog.
-        from palm.services._apps import autoload as autoload_services
+        from services._apps import autoload as autoload_services
 
         autoload_services(tuple(self.composition.services))
         built = core_service_registry().build_all(service_ctx, only=self.composition.services)
@@ -917,8 +917,8 @@ class ApplicationHost:
     def packaging_status(self) -> dict[str, Any]:
         """Single residual packaging bag (CS-002) — not living seat law.
 
-        Prefer :meth:`~palm.services.inspect.InspectService.top` /
-        :meth:`~palm.services.inspect.InspectService.vitality` for living eyes.
+        Prefer :meth:`~services.inspect.InspectService.top` /
+        :meth:`~services.inspect.InspectService.vitality` for living eyes.
         """
         return self._observability.packaging_status()
 

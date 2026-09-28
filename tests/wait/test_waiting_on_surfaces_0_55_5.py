@@ -9,7 +9,7 @@ from palm.system.subsystems.planes.wait.present import summarize_waiting_on, wai
 from palm.core.orchestration import Job, JobStatus
 from palm.core.wait import make_job_wait, open_wait_on_job
 from plugins.patterns.wizard.bindings.resource.nested_park import open_nested_park
-from palm.services.assist.present.humanize import hint_text, question_text
+from services.assist.present.humanize import hint_text, question_text
 
 
 def test_waiting_on_row_and_from_job() -> None:

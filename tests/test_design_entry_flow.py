@@ -26,17 +26,17 @@ def test_design_entry_module_does_not_import_design_service() -> None:
     path = Path(__file__).resolve().parents[1] / "examples/definitions/design_entry.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     forbidden = {
-        "palm.services.design.service",
-        "palm.services.design",
+        "services.design.service",
+        "services.design",
     }
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 assert alias.name not in forbidden
-                assert not alias.name.startswith("palm.services.design")
+                assert not alias.name.startswith("services.design")
         if isinstance(node, ast.ImportFrom) and node.module:
             assert node.module not in forbidden
-            assert not node.module.startswith("palm.services.design")
+            assert not node.module.startswith("services.design")
 
 
 def test_design_entry_listed_as_scenario(assist_host: ApplicationHost) -> None:
@@ -141,7 +141,7 @@ def test_design_entry_improve_handoff_base_flow_id(
 
 
 def test_design_entry_start_alias_resolves(assist_host: ApplicationHost) -> None:
-    from palm.services.assist.registry import resolve_mcp_alias
+    from services.assist.registry import resolve_mcp_alias
 
     path = resolve_mcp_alias("design-entry/start")
     assert path == ("assist", "scenarios", "design-entry", "start")

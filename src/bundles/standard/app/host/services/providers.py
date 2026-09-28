@@ -24,13 +24,13 @@ from bundles.standard.app.host.services.registry import HostServiceContext, Host
 
 
 def _build_inspect(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
-    from palm.services.inspect import InspectService
+    from services.inspect import InspectService
 
     return InspectService(**ctx.bus_kwargs)
 
 
 def _build_session(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
-    from palm.services.session import SessionService
+    from services.session import SessionService
 
     return SessionService(
         **ctx.bus_kwargs,
@@ -43,18 +43,18 @@ def _build_session(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
 
 
 def _build_definitions(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
-    from palm.services.definitions import DefinitionService
+    from services.definitions import DefinitionService
 
     return DefinitionService(**ctx.bus_kwargs, repository=ctx.app.repository())
 
 
 def _build_execution(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
     # 0.63.30/31 — inject published admission for execution product façades.
-    from palm.services.execution import ExecutionService
-    from palm.services.execution.flows import FlowExecutionService
-    from palm.services.execution.processes import ProcessExecutionService
-    from palm.services.execution.providers import ProviderExecutionService
-    from palm.services.execution.workloads import WorkloadExecutionService
+    from services.execution import ExecutionService
+    from services.execution.flows import FlowExecutionService
+    from services.execution.processes import ProcessExecutionService
+    from services.execution.providers import ProviderExecutionService
+    from services.execution.workloads import WorkloadExecutionService
     from palm.system.structure.access import admission_source_from_runtime_resolver
 
     admission_source = admission_source_from_runtime_resolver(
@@ -94,7 +94,7 @@ def _build_execution(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
 
 def _build_assist(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
     # 0.63.22/23 — inject published admission; packaging binds it once.
-    from palm.services.assist import AssistService
+    from services.assist import AssistService
     from palm.system.structure.access import admission_source_from_runtime_resolver
 
     return AssistService(
@@ -111,8 +111,8 @@ def _build_assist(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
 
 
 def _build_design(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
-    from palm.services.design import DesignService
-    from palm.services.design.factory import create_proposal_repository
+    from services.design import DesignService
+    from services.design.factory import create_proposal_repository
 
     return DesignService(
         **ctx.bus_kwargs,
@@ -123,7 +123,7 @@ def _build_design(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
 
 
 def _build_analytics(ctx: HostServiceContext, built: dict[str, Any]) -> Any:
-    from palm.services.analytics import AnalyticsService
+    from services.analytics import AnalyticsService
 
     settings = ctx.settings
     allow_unpub = bool(settings.analytics_allow_unpublished)

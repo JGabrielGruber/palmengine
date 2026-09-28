@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from palm.services.analytics.present.pipeline import present
-from palm.services.analytics.present.profiles.kpi import present_kpi
-from palm.services.analytics.present.profiles.series import present_series
-from palm.services.analytics.present.profiles.table import present_table
+from services.analytics.present.pipeline import present
+from services.analytics.present.profiles.kpi import present_kpi
+from services.analytics.present.profiles.series import present_series
+from services.analytics.present.profiles.table import present_table
 
 
 def test_table() -> None:

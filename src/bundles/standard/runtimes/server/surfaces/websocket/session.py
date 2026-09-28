@@ -8,7 +8,7 @@
 (product path residual SI-001).
 
 0.58.17: product door only — :func:`~palm.kits.server.middleware.resolve_session_service`
-+ :class:`~palm.services.session.BoundSurface`. No raw ``session_plane`` on this path.
++ :class:`~services.session.BoundSurface`. No raw ``session_plane`` on this path.
 
 Portal dogfood: ``session_id: null`` drops continue focus unless ``instance_id``
 is in the same message. Dispatch refreshes BoundSurface from the mirrors.
@@ -570,9 +570,9 @@ def _handle_dispatch(
             resolve_dispatch_path,
             shape_dispatch_result,
         )
-        from palm.services.assist.profiles.continuity import apply_chat_continuity
-        from palm.services.assist.profiles.turn_meta import flow_id_from_turn
-        from palm.services.assist.views import ensure_assist_view_registration
+        from services.assist.profiles.continuity import apply_chat_continuity
+        from services.assist.profiles.turn_meta import flow_id_from_turn
+        from services.assist.views import ensure_assist_view_registration
 
         ensure_assist_view_registration()
         norm_path, norm_alias, dispatch_params, _used_default = (

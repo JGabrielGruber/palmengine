@@ -8,8 +8,8 @@ from typing import Any
 from palm.common.cqrs import CommandBus
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.orchestration import JobStatus
-from palm.services.execution.flows.schemas import SessionContext
-from palm.services.execution.flows.service import FlowExecutionService
+from services.execution.flows.schemas import SessionContext
+from services.execution.flows.service import FlowExecutionService
 
 
 @dataclass

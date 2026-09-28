@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.services.assist.registry import (
+from services.assist.registry import (
     AssistContributor,
     clear_assist_contributors,
     register_assist_contributor,

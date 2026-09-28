@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from palm.common.patterns._registry import clear_session_enrichers, register_session_enricher
 from palm.core.orchestration import JobStatus
-from palm.services.execution.flows.schemas import SessionContext, build_session_context
+from services.execution.flows.schemas import SessionContext, build_session_context
 
 
 def test_build_session_context_core_fields() -> None:

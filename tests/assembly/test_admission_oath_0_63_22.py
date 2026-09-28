@@ -39,7 +39,7 @@ def test_coerce_factory_refused() -> None:
 
 def test_assist_admission_gate_prefers_inject_over_runtime() -> None:
     """Business path that needs admission must use injected source — never require resolve_runtime."""
-    from palm.services.assist.service import AssistService
+    from services.assist.service import AssistService
 
     closed = AdmissionSnapshot(
         may_run_business=False,
@@ -59,7 +59,7 @@ def test_assist_admission_gate_prefers_inject_over_runtime() -> None:
 def test_assist_service_admission_gate_uses_source() -> None:
     """AssistService.admission_gate returns inject; fallback is only when unset."""
     from palm.common.cqrs.bus import CommandBus, QueryBus
-    from palm.services.assist.service import AssistService
+    from services.assist.service import AssistService
 
     ready = AdmissionSnapshot(
         may_run_business=True,

@@ -5,8 +5,8 @@ from __future__ import annotations
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
-from palm.services.analytics.dashboard_design import validate_dashboard_body
-from palm.services.analytics.dashboards import clear_dashboards, get_dashboard
+from services.analytics.dashboard_design import validate_dashboard_body
+from services.analytics.dashboards import clear_dashboards, get_dashboard
 
 
 def test_validate_dashboard_body_ok() -> None:

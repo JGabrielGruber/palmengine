@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from palm.core.storage import StorageEngine
 from palm.definitions.dashboard import DashboardDefinition, DashboardTile
-from palm.services.analytics.dashboard_store import DashboardStore
-from palm.services.analytics.dashboards import (
+from services.analytics.dashboard_store import DashboardStore
+from services.analytics.dashboards import (
     attach_dashboard_store,
     clear_dashboards,
     get_dashboard,

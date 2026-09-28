@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from palm.services.analytics.errors import AnalyticsDisabledError
-from palm.services.analytics.service import AnalyticsService
+from services.analytics.errors import AnalyticsDisabledError
+from services.analytics.service import AnalyticsService
 
 
 class _FakeDefinitions:

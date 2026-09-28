@@ -28,13 +28,13 @@ from plugins.kits.server.webhooks import ServerWebhookBridge
 
 if TYPE_CHECKING:
     from bundles.standard.app.host.application_host import ApplicationHost
-    from palm.services.analytics import AnalyticsService
-    from palm.services.assist import AssistService
-    from palm.services.definitions import DefinitionService
-    from palm.services.design import DesignService
-    from palm.services.execution import ExecutionService
-    from palm.services.inspect import InspectService
-    from palm.services.session import SessionService
+    from services.analytics import AnalyticsService
+    from services.assist import AssistService
+    from services.definitions import DefinitionService
+    from services.design import DesignService
+    from services.execution import ExecutionService
+    from services.inspect import InspectService
+    from services.session import SessionService
     from palm.system.runtime.base import BaseRuntime
 
 
@@ -135,7 +135,7 @@ class ServerContext:
             settings=self._settings,
             resolve_execution_runtime=self.resolve_execution_runtime,
         )
-        from palm.services._apps import autoload as autoload_services
+        from services._apps import autoload as autoload_services
 
         autoload_services(tuple(self.composition.services))
         built = core_service_registry().build_all(service_ctx, only=self.composition.services)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.common.operator.compact import compact_wizard_inspect
 from palm.common.operator.flow_session_view import shape_flow_session_view
 from palm.common.operator.view_registry import OperatorViewContext, clear_operator_view_builders
-from palm.services.assist.views import build_assistant_view, ensure_assist_view_registration
+from services.assist.views import build_assistant_view, ensure_assist_view_registration
 
 
 def _setup_assistant_registry() -> None:

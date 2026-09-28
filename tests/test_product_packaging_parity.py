@@ -16,9 +16,9 @@ from bundles.standard.app.host.services.packaging import apply_product_packaging
 from bundles.standard.app.settings import PalmSettings
 from bundles.standard.runtimes.server.context import ServerContext
 from bundles.standard.runtimes.server.runtime import ServerRuntime
-from palm.services.analytics import AnalyticsService
-from palm.services.assist import AssistService
-from palm.services.inspect import InspectService
+from services.analytics import AnalyticsService
+from services.assist import AssistService
+from services.inspect import InspectService
 
 
 def _assert_product_doors(ctx: ServerContext | ApplicationHost) -> None:

@@ -8,7 +8,7 @@ carry the system ``session_id``; the session plane owns truth.
 :func:`resolve_session_service` only. Do **not** call
 :func:`resolve_session_plane` for product verbs (bind, gate, inspect,
 continue resolve, event filter). The plane remains system law behind
-:class:`~palm.services.session.SessionService`.
+:class:`~services.session.SessionService`.
 """
 
 from __future__ import annotations
@@ -99,11 +99,11 @@ def set_cookie_header_value(
 
 
 def resolve_session_service(ctx: Any) -> Any | None:
-    """Product :class:`~palm.services.session.SessionService` — **single kit door** (0.58.17).
+    """Product :class:`~services.session.SessionService` — **single kit door** (0.58.17).
 
     Surfaces (CLI / MCP / WS / REST) use this for all product session verbs:
 
-    * bind / :meth:`~palm.services.session.SessionService.bind_surface`
+    * bind / :meth:`~services.session.SessionService.bind_surface`
     * continue resolve / owner gate / inspect / event filter
     * session metadata
 

@@ -20,8 +20,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from palm.common.cqrs.bus import CommandBus, QueryBus
-from palm.services._cqrs_wiring import wire_all_service_cqrs
-from palm.services.design.contributors import wire_builtin_design_contributors
+from services._cqrs_wiring import wire_all_service_cqrs
+from services.design.contributors import wire_builtin_design_contributors
 
 
 @dataclass(frozen=True)
@@ -68,7 +68,7 @@ def apply_product_packaging(
     if bag.assist is not None and bag.analytics is not None:
         bag.assist.bind_analytics(bag.analytics)
     if storage is not None and getattr(storage, "is_initialized", False):
-        from palm.services.analytics.dashboards import attach_dashboard_store
+        from services.analytics.dashboards import attach_dashboard_store
 
         attach_dashboard_store(storage)
     if bag.design is not None:

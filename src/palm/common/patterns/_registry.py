@@ -388,7 +388,7 @@ def clear_design_contributor_hooks() -> None:
 
 
 def register_session_enricher(name: str, fn: SessionEnricherFn) -> None:
-    """Register pattern-specific fields for :class:`~palm.services.execution.flows.schemas.SessionContext`."""
+    """Register pattern-specific fields for :class:`~services.execution.flows.schemas.SessionContext`."""
     with _lock:
         if _session_enrichers.get(name) is fn:
             return

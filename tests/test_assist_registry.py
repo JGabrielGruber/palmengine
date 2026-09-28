@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
-from palm.services.assist.registry import (
+from services.assist.grammar import AssistCommandKind, parse_assist_command
+from services.assist.registry import (
     AssistContributor,
     assist_commands,
     clear_assist_contributors,

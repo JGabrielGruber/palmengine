@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.services.execution.flows import flow_command_from_body
+from services.execution.flows import flow_command_from_body
 
 
 def test_flow_command_from_body_passes_metadata_and_state() -> None:

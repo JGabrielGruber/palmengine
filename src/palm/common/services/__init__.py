@@ -1,4 +1,4 @@
-"""Shared service primitives — domain services live in ``palm.services``."""
+"""Shared service primitives — domain services live in ``services``."""
 
 from palm.common.services.base import BaseService
 from palm.common.services.errors import (

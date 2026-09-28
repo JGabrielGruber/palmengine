@@ -11,11 +11,11 @@ from palm.common.patterns._registry import (
     iter_design_contributor_hooks,
     register_design_contributor_hook,
 )
-from palm.services.design.contributors import (
+from services.design.contributors import (
     reset_design_contributor_wiring,
     wire_builtin_design_contributors,
 )
-from palm.services.design.registry import clear_design_contributors, iter_design_contributors
+from services.design.registry import clear_design_contributors, iter_design_contributors
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +65,7 @@ def test_custom_hook_registers_via_wire() -> None:
     calls: list[str] = []
 
     def _register() -> None:
-        from palm.services.design.registry import DesignContributor, register_design_contributor
+        from services.design.registry import DesignContributor, register_design_contributor
 
         calls.append("registered")
         register_design_contributor(

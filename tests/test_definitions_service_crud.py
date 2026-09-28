@@ -15,7 +15,7 @@ from palm.common.persistence.definition_impact import analyze_definition_impact
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.definitions import FlowDefinition
-from palm.services.definitions import DefinitionService
+from services.definitions import DefinitionService
 
 
 class _QueryBus:

@@ -9,7 +9,7 @@ from palm.common.exceptions import DefinitionBuildError
 
 def register_pipeline_design_contributor() -> None:
     """Register pipeline-specific design proposal checks at pattern bootstrap."""
-    from palm.services.design.registry import DesignContributor, register_design_contributor
+    from services.design.registry import DesignContributor, register_design_contributor
 
     register_design_contributor(
         DesignContributor(
@@ -22,7 +22,7 @@ def register_pipeline_design_contributor() -> None:
 
 def validate_pipeline_design_proposal(body: dict[str, Any], _context: Any) -> tuple[bool, list[str]]:
     """Validate pipeline flow payloads inside a design proposal envelope."""
-    from palm.services.design.envelope import extract_flow_dict
+    from services.design.envelope import extract_flow_dict
 
     flow = extract_flow_dict(body)
     if flow is None or str(flow.get("pattern") or "") != "pipeline":

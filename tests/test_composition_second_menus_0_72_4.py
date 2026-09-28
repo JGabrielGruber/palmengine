@@ -20,7 +20,7 @@ from bundles.standard.app.host.composition import (
     composition_record,
 )
 from palm.common.transforms._apps import INSTALLED_TRANSFORMS, autoload as autoload_transforms
-from palm.services._apps import INSTALLED_SERVICES, autoload as autoload_services
+from services._apps import INSTALLED_SERVICES, autoload as autoload_services
 
 
 def _run_cold(body: str) -> subprocess.CompletedProcess[str]:
@@ -127,9 +127,9 @@ def test_host_imports_the_record_service_names() -> None:
         )
         host.start()
         try:
-            assert "palm.services.inspect" in sys.modules
-            assert "palm.services.execution" in sys.modules
-            assert "palm.services.assist" not in sys.modules
+            assert "services.inspect" in sys.modules
+            assert "services.execution" in sys.modules
+            assert "services.assist" not in sys.modules
         finally:
             host.shutdown()
 
@@ -151,7 +151,7 @@ def test_host_imports_the_record_service_names() -> None:
         )
         host_full.start()
         try:
-            assert "palm.services.assist" in sys.modules
+            assert "services.assist" in sys.modules
         finally:
             host_full.shutdown()
         print("ok")

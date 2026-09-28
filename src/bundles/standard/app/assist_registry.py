@@ -10,7 +10,7 @@ from __future__ import annotations
 import threading
 from dataclasses import dataclass
 
-from palm.services.assist.registry import AssistContributor, register_assist_contributor
+from services.assist.registry import AssistContributor, register_assist_contributor
 
 
 @dataclass(frozen=True)

@@ -70,9 +70,9 @@ def test_authoring_apply_module_does_not_import_assist() -> None:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                assert not alias.name.startswith("palm.services.assist")
+                assert not alias.name.startswith("services.assist")
         if isinstance(node, ast.ImportFrom) and node.module:
-            assert not node.module.startswith("palm.services.assist")
+            assert not node.module.startswith("services.assist")
             for alias in node.names:
                 assert alias.name != "AssistContributor"
 

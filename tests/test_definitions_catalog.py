@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.services.definitions.flows import flow_catalog_row
-from palm.services.definitions.processes import process_catalog_row
+from services.definitions.flows import flow_catalog_row
+from services.definitions.processes import process_catalog_row
 
 
 def test_process_catalog_row_includes_entry_flow() -> None:

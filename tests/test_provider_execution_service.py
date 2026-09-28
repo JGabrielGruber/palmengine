@@ -10,7 +10,7 @@ from palm.common.cqrs import CommandBus
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.common.services.errors import DefinitionNotFoundServiceError
 from palm.core.resource.result import ProviderResult
-from palm.services.execution.providers.service import ProviderExecutionService
+from services.execution.providers.service import ProviderExecutionService
 
 
 class _DefinitionsStub:

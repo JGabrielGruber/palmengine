@@ -1,6 +1,6 @@
 """Authoring kit — library walk over host.definitions (0.70.1).
 
-One object holds :class:`~palm.services.definitions.service.DefinitionService`
+One object holds :class:`~services.definitions.service.DefinitionService`
 and walks one-shot catalog commit.
 
 Not an ``AuthoringService``. Not ``DesignService``. Not land verbs on
@@ -20,7 +20,7 @@ from palm.common.providers._registry import get_bound_runtime
 from plugins.kits.registry import register_kit
 
 if TYPE_CHECKING:
-    from palm.services.definitions.service import DefinitionService
+    from services.definitions.service import DefinitionService
 
 register_kit(
     "authoring",

@@ -11,10 +11,10 @@ from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.orchestration import JobStatus
 from bundles.standard.runtimes.server import ServerRuntime
 from bundles.standard.runtimes.server.factory import build_server_context
-from palm.services.execution import ExecutionService
-from palm.services.execution.flows import FlowExecutionService, ReplSession
-from palm.services.execution.processes import ProcessExecutionService
-from palm.services.execution.providers import ProviderExecutionService
+from services.execution import ExecutionService
+from services.execution.flows import FlowExecutionService, ReplSession
+from services.execution.processes import ProcessExecutionService
+from services.execution.providers import ProviderExecutionService
 
 
 class _CommandBusStub:

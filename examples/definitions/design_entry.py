@@ -12,8 +12,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.services.assist.registry import AssistContributor, register_assist_contributor
-from palm.services.assist.views import (
+from services.assist.registry import AssistContributor, register_assist_contributor
+from services.assist.views import (
     DESIGN_DISCOVERY_INTENTS,
     design_discovery_actions,
     design_discovery_hint,

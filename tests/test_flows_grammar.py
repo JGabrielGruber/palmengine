@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.services.execution.flows.grammar import (
+from services.execution.flows.grammar import (
     FlowCommandKind,
     command_path,
     normalize_path,

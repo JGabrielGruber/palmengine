@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.services.assist.registry import assist_commands, list_mcp_path_aliases
-from palm.services.definitions.registry import catalog_verbs
-from palm.services.design.registry import design_commands, list_design_mcp_aliases
-from palm.services.execution.flows.registry import flow_commands
-from palm.services.execution.processes.registry import process_commands
-from palm.services.execution.providers.registry import invoke_verbs
-from palm.services.inspect.registry import observe_verbs
+from services.assist.registry import assist_commands, list_mcp_path_aliases
+from services.definitions.registry import catalog_verbs
+from services.design.registry import design_commands, list_design_mcp_aliases
+from services.execution.flows.registry import flow_commands
+from services.execution.processes.registry import process_commands
+from services.execution.providers.registry import invoke_verbs
+from services.inspect.registry import observe_verbs
 
 
 def build_assist_routes_catalog() -> dict[str, Any]:

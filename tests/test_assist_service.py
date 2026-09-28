@@ -47,7 +47,7 @@ def test_optional_collection_field_schema_and_skip(
         _ConnectionState,
         handle_client_message,
     )
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     ensure_assist_view_registration()
     conn = _ConnectionState(headers={})
@@ -96,7 +96,7 @@ def test_ws_auto_continues_introduction_to_real_step(
         _ConnectionState,
         handle_client_message,
     )
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     ensure_assist_view_registration()
     conn = _ConnectionState(headers={})
@@ -153,7 +153,7 @@ def test_ws_auto_start_binds_business_flow_id(assist_host: ApplicationHost) -> N
         _ConnectionState,
         handle_client_message,
     )
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     ensure_assist_view_registration()
     conn = _ConnectionState(headers={})
@@ -224,7 +224,7 @@ def test_portal_greeting_shape_preserves_question_and_input(
         resolve_dispatch_path,
         shape_dispatch_result,
     )
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     ensure_assist_view_registration()
     params = {"value": "Hi", "include_input_schema": True}

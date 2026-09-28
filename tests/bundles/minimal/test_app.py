@@ -17,7 +17,7 @@ _MINIMAL = _REPO / "src" / "bundles" / "minimal"
 _FORBIDDEN_PREFIXES = (
     "bundles.standard",
     "palm.common.plugins",
-    "palm.services",
+    "services",
     "plugins.patterns",
     "plugins.providers",
     "plugins.kits",
@@ -70,7 +70,7 @@ try:
     banned = (
         "palm.common.plugins",
         "bundles.standard",
-        "palm.services",
+        "services",
         "plugins.patterns",
         "plugins.providers",
         "plugins.kits",

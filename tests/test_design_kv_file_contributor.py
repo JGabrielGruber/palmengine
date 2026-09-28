@@ -8,7 +8,7 @@ import plugins.providers  # noqa: F401 — register providers + design contribut
 from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
 from plugins.providers.file.bindings.design import validate_file_design_proposal
 from plugins.providers.kv.bindings.design import validate_kv_design_proposal
-from palm.services.design.registry import clear_design_contributors, iter_design_contributors
+from services.design.registry import clear_design_contributors, iter_design_contributors
 
 
 @pytest.fixture(autouse=True)

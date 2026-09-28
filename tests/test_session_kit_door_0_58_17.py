@@ -25,7 +25,7 @@ from bundles.standard.runtimes.server.surfaces.websocket.session import (
     _service_bind_into,
     handle_client_message,
 )
-from palm.services.session import BoundSurface, SessionService
+from services.session import BoundSurface, SessionService
 from palm.system.subsystems.planes.session import InstanceNotOwnedError
 
 

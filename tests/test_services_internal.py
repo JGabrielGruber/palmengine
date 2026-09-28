@@ -13,7 +13,7 @@ from palm.common.cqrs.query import (
 )
 from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.common.services.errors import InstanceNotFoundServiceError
-from palm.services.inspect import InspectService
+from services.inspect import InspectService
 
 
 class _QueryBusStub:

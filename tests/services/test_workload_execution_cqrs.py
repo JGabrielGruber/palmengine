@@ -11,12 +11,12 @@ from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.cqrs.schemas import build_schema_registry
 from palm.core.workload import WorkloadPolicyError
-from palm.services.execution.workloads.bindings.cqrs.commands import (
+from services.execution.workloads.bindings.cqrs.commands import (
     ExecWorkloadCommand,
     StartWorkloadCommand,
     StopWorkloadCommand,
 )
-from palm.services.execution.workloads.bindings.cqrs.queries import (
+from services.execution.workloads.bindings.cqrs.queries import (
     GetWorkloadQuery,
     ListWorkloadHostsQuery,
     ListWorkloadRuntimesQuery,
@@ -36,7 +36,7 @@ def host() -> Iterator[ApplicationHost]:
 
 def test_workload_cqrs_schemas_registered() -> None:
     # Ensure contributor import side-effect
-    import palm.services.execution.workloads  # noqa: F401
+    import services.execution.workloads  # noqa: F401
 
     registry = build_schema_registry()
     assert StartWorkloadCommand in registry.command_types()

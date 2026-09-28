@@ -8,8 +8,8 @@ from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.boot.modes import BootMode
 from bundles.standard.app.settings import PalmSettings
 from palm.core.structure import StructurePhase
-from palm.services.assist.catalog.menu import menu_for_assist
-from palm.services.inspect.present import present_top
+from services.assist.catalog.menu import menu_for_assist
+from services.inspect.present import present_top
 from palm.system.log import reset_system_log_for_tests
 from palm.system.structure import admission_as_dict
 from palm.system.vitality import SEAT_STRUCTURE, walk_result

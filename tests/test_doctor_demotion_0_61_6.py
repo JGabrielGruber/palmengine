@@ -8,7 +8,7 @@ from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from plugins.kits.server.diagnostics import build_doctor_report
 from bundles.standard.runtimes.mcp.assist.operator import dispatch_operator_path
-from palm.services.inspect.present import (
+from services.inspect.present import (
     DOCTOR_KIND,
     DOCTOR_ROLE,
     SOURCE_VITALITY,

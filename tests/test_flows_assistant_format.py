@@ -23,8 +23,8 @@ from bundles.standard.runtimes.mcp.in_process import (  # noqa: E402
 from bundles.standard.runtimes.mcp.server import create_mcp_server  # noqa: E402
 from bundles.standard.runtimes.server import ServerRuntime  # noqa: E402
 from bundles.standard.runtimes.server.factory import build_server_context  # noqa: E402
-from palm.services.assist.views import ensure_assist_view_registration  # noqa: E402
-from palm.services.execution.flows.schemas import SessionContext  # noqa: E402
+from services.assist.views import ensure_assist_view_registration  # noqa: E402
+from services.execution.flows.schemas import SessionContext  # noqa: E402
 
 
 def _onboard_flat() -> dict[str, Any]:

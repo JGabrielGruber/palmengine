@@ -6,7 +6,7 @@ import pytest
 
 from palm.common.operator.path_alias import resolve_path_alias
 from palm.common.operator.path_match import match_command_path
-from palm.services.design.registry import resolve_design_mcp_alias
+from services.design.registry import resolve_design_mcp_alias
 
 
 def test_resolve_path_alias_substitutes_params() -> None:

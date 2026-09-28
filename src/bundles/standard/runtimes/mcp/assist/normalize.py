@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from palm.services.assist.registry import resolve_mcp_alias
-from palm.services.design.registry import resolve_design_mcp_alias
+from services.assist.registry import resolve_mcp_alias
+from services.design.registry import resolve_design_mcp_alias
 
 _DEFAULT_ASSIST_ALIAS = "operator-entry/start"
 

@@ -37,7 +37,7 @@ def job_accepted(job: Job) -> ServerResponse:
 
 
 def session_context_body(ctx: Any) -> dict[str, Any]:
-    """Normalize a :class:`~palm.services.execution.flows.schemas.SessionContext` payload."""
+    """Normalize a :class:`~services.execution.flows.schemas.SessionContext` payload."""
     if hasattr(ctx, "to_dict"):
         return ctx.to_dict()
     if isinstance(ctx, dict):

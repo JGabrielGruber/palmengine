@@ -9,7 +9,7 @@ from plugins.kits.server.responses import error_response
 from bundles.standard.runtimes.server.surfaces.rest import errors
 from bundles.standard.runtimes.server.surfaces.rest.handlers.base import require_auth
 from bundles.standard.runtimes.server.surfaces.rest.responses import ok
-from palm.services.analytics.errors import AnalyticsDisabledError, AnalyticsError
+from services.analytics.errors import AnalyticsDisabledError, AnalyticsError
 
 if TYPE_CHECKING:
     from bundles.standard.runtimes.server.context import ServerContext

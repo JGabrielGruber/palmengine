@@ -10,9 +10,9 @@ from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.settings import PalmSettings
 from palm.common.cqrs.bus import CommandBus, QueryBus
 from palm.core.structure import AdmissionSnapshot, StructurePhase
-from palm.services.execution.processes.service import ProcessExecutionService
-from palm.services.execution.providers.service import ProviderExecutionService
-from palm.services.execution.workloads.service import WorkloadExecutionService
+from services.execution.processes.service import ProcessExecutionService
+from services.execution.providers.service import ProviderExecutionService
+from services.execution.workloads.service import WorkloadExecutionService
 from palm.system.log import reset_system_log_for_tests
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory

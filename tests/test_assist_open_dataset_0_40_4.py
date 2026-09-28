@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from palm.services.analytics.virtual import apply_view_transform
-from palm.services.assist.catalog.open import open_target, parse_open_token
+from services.analytics.virtual import apply_view_transform
+from services.assist.catalog.open import open_target, parse_open_token
 
 
 def test_parse_open_dataset_token() -> None:

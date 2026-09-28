@@ -10,7 +10,7 @@ from palm.common.cqrs.schemas import CqrsSchemaRegistry
 from palm.core.event import EventEngine
 from palm.core.storage import StorageEngine
 from palm.core.work import WorkIntent
-from palm.services.execution.providers.service import ProviderExecutionService
+from services.execution.providers.service import ProviderExecutionService
 from palm.system.subsystems.planes.work.plane import WorkPlaneService
 
 

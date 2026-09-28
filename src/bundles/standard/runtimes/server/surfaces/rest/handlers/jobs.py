@@ -19,7 +19,7 @@ from bundles.standard.runtimes.server.surfaces.rest.schemas import (
     submit_job_variant_errors,
 )
 from bundles.standard.runtimes.server.surfaces.rest.validation import parse_list_jobs_query
-from palm.services.execution.flows import flow_command_from_body
+from services.execution.flows import flow_command_from_body
 
 if TYPE_CHECKING:
     from bundles.standard.runtimes.server.context import ServerContext

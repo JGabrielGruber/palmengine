@@ -18,7 +18,7 @@ from bundles.standard.runtimes.cli.shared.runtime_display import format_runtime_
 from bundles.standard.runtimes.cli.shared.settings import is_durable_storage
 from bundles.standard.runtimes.cli.shared.startup import format_persistence_notice
 from bundles.standard.runtimes.cli.tui.context import context_lines
-from palm.services.inspect.present import DOCTOR_KIND
+from services.inspect.present import DOCTOR_KIND
 
 
 def run_doctor(ctx: CliContext) -> int:

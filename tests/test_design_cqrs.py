@@ -10,16 +10,16 @@ from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.cqrs.schemas import build_schema_registry
 from palm.definitions import FlowDefinition
-from palm.services.design.bindings.cqrs.commands import (
+from services.design.bindings.cqrs.commands import (
     CommitDesignProposalCommand,
     ProposeFlowDefinitionCommand,
 )
-from palm.services.design.bindings.cqrs.queries import (
+from services.design.bindings.cqrs.queries import (
     AnalyzeDesignProposalImpactQuery,
     ListDesignProposalsQuery,
     ValidateDesignProposalQuery,
 )
-from palm.services.design.registry import clear_design_contributors
+from services.design.registry import clear_design_contributors
 
 
 @pytest.fixture

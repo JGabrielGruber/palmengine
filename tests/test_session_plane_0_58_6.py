@@ -8,7 +8,7 @@ import pytest
 
 from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
-from palm.services.assist.registry import scenario_by_id
+from services.assist.registry import scenario_by_id
 
 
 @pytest.fixture

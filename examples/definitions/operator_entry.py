@@ -17,8 +17,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions import FlowDefinition, ProcessDefinition
-from palm.services.assist.registry import AssistContributor, register_assist_contributor
-from palm.services.assist.views import (
+from services.assist.registry import AssistContributor, register_assist_contributor
+from services.assist.views import (
     DESIGN_DISCOVERY_INTENTS,
     design_discovery_actions,
     design_discovery_hint,
@@ -96,7 +96,7 @@ def enrich_operator_entry(view: dict[str, Any], *, context: Any) -> dict[str, An
 
 def post_terminal_flow_actions(*, intent: str, label: str | None = None) -> list[dict[str, Any]]:
     """Human-first CTAs after choosing a demo flow (0.32.5)."""
-    from palm.services.assist.views import merge_assistant_actions
+    from services.assist.views import merge_assistant_actions
 
     human = label or _FLOW_INTENT_LABELS.get(intent) or intent
     return merge_assistant_actions(

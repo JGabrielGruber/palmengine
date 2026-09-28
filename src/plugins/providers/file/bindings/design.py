@@ -9,8 +9,8 @@ from palm.common.resource.design_validation import validate_file_resource
 
 def validate_file_design_proposal(body: dict[str, Any], _context: Any) -> tuple[bool, list[str]]:
     """Validate resource proposals targeting the ``file`` document provider."""
-    from palm.services.definitions.parsers import parse_resource
-    from palm.services.design.envelope import extract_resource_dict
+    from services.definitions.parsers import parse_resource
+    from services.design.envelope import extract_resource_dict
 
     payload = extract_resource_dict(body)
     if payload is None:
@@ -28,7 +28,7 @@ def validate_file_design_proposal(body: dict[str, Any], _context: Any) -> tuple[
 
 
 def register_file_design_contributor() -> None:
-    from palm.services.design.registry import DesignContributor, register_design_contributor
+    from services.design.registry import DesignContributor, register_design_contributor
 
     register_design_contributor(
         DesignContributor(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from palm.common.operator.compact import compact_wizard_inspect
 from bundles.standard.runtimes.mcp.assist.dispatch import compact_dispatch_result
 from bundles.standard.runtimes.mcp.flows.views import flatten_session_view
-from palm.services.execution.flows.schemas import SessionContext
+from services.execution.flows.schemas import SessionContext
 
 
 def _sample_session_context() -> SessionContext:

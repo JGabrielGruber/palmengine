@@ -20,7 +20,7 @@ from bundles.standard.runtimes.server.surfaces.rest.responses import accepted, f
 from bundles.standard.runtimes.server.surfaces.rest.schema_bridge import body_schema_for_command
 from bundles.standard.runtimes.server.surfaces.rest.schema_validation import validate_body
 from bundles.standard.runtimes.server.surfaces.rest.validation import PaginationParams
-from palm.services.assist.views import resolve_view_format
+from services.assist.views import resolve_view_format
 
 if TYPE_CHECKING:
     from bundles.standard.runtimes.server.context import ServerContext

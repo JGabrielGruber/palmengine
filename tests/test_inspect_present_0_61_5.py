@@ -7,7 +7,7 @@ from bundles.standard.app.host.composition import composition_profile_from_name
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from bundles.standard.runtimes.mcp.assist.operator import dispatch_operator_path
-from palm.services.inspect import InspectService, present_top
+from services.inspect import InspectService, present_top
 from palm.system.log import reset_system_log_for_tests
 from palm.system.vitality import (
     SEAT_INSTALL,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from palm.services.analytics.exposure import (
+from services.analytics.exposure import (
     AnalyticsExposure,
     is_analytics_published,
     parse_analytics_exposure,

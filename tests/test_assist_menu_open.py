@@ -10,15 +10,15 @@ from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.operator.view_registry import OperatorViewContext
 from bundles.standard.runtimes.mcp.assist.normalize import normalize_assist_dispatch_args, resolve_dispatch_path
-from palm.services.assist.catalog.menu import build_menu_page
-from palm.services.assist.catalog.open import parse_open_token
-from palm.services.assist.grammar import AssistCommandKind, parse_assist_command
-from palm.services.assist.present.humanize import humanize_assistant_view
-from palm.services.assist.profiles.continuity import (
+from services.assist.catalog.menu import build_menu_page
+from services.assist.catalog.open import parse_open_token
+from services.assist.grammar import AssistCommandKind, parse_assist_command
+from services.assist.present.humanize import humanize_assistant_view
+from services.assist.profiles.continuity import (
     ensure_design_handoff_actions,
     maybe_auto_start_design_entry,
 )
-from palm.services.assist.profiles.policy import (
+from services.assist.profiles.policy import (
     CHAT_DESIGN_AUTO_START_INTENTS,
 )
 
@@ -188,7 +188,7 @@ def test_shape_waiting_resume_chips() -> None:
 
 
 def test_browse_menu_actions_on_operator_intent() -> None:
-    from palm.services.assist.profiles.actions_chat import ensure_browse_menu_actions
+    from services.assist.profiles.actions_chat import ensure_browse_menu_actions
 
     payload = {
         "status": "waiting",

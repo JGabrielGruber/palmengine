@@ -6,7 +6,7 @@ from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from bundles.standard.runtimes.server.context import ServerContext
-from palm.services.analytics import AnalyticsService
+from services.analytics import AnalyticsService
 
 
 def test_host_exposes_analytics() -> None:

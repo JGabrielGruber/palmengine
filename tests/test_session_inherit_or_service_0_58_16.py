@@ -11,7 +11,7 @@ from palm.common.triggers.registry import (
     _with_inherited_session,
 )
 from palm.core.storage import StorageEngine
-from palm.services.session import SessionService, service_session_id
+from services.session import SessionService, service_session_id
 
 
 def _host() -> ApplicationHost:

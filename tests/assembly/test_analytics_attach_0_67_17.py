@@ -18,7 +18,7 @@ from palm.core.structure import (
     local_cli,
     local_embedded,
 )
-from palm.services.analytics import AnalyticsService
+from services.analytics import AnalyticsService
 from palm.system.boot.context import BootContext
 from palm.system.interfaces.install import SystemInstall
 from palm.system.log import reset_system_log_for_tests

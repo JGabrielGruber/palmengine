@@ -1,6 +1,6 @@
 """Reactive start session attribution on the system path (0.60.4).
 
-Mirrors product :meth:`~palm.services.session.SessionService.enrich_reactive_start`
+Mirrors product :meth:`~services.session.SessionService.enrich_reactive_start`
 using the **session plane** only — no product import (system purity).
 
 Law (0.58.16): inherit system ``session_id`` from the signal, else stable

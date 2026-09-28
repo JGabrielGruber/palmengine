@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from palm.definitions.dashboard import DashboardDefinition, DashboardTile
-from palm.services.analytics.dashboards import register_dashboard
+from services.analytics.dashboards import register_dashboard
 
 _DEFAULT_PREFIX = "origin"
 

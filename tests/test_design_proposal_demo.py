@@ -9,8 +9,8 @@ import pytest
 from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.patterns._registry import get_design_contributor_hook
-from palm.services.design.contributors import reset_design_contributor_wiring
-from palm.services.design.registry import clear_design_contributors
+from services.design.contributors import reset_design_contributor_wiring
+from services.design.registry import clear_design_contributors
 
 
 @pytest.fixture

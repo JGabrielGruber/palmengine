@@ -13,7 +13,7 @@ from bundles.standard.runtimes.cli.shared.args import (
 )
 from bundles.standard.runtimes.cli.shared.context import CliContext
 from bundles.standard.runtimes.cli.shared.dispatch import dispatch_invocation
-from palm.services.inspect import present_benchmark
+from services.inspect import present_benchmark
 from palm.system.log import reset_system_log_for_tests
 from palm.system.vitality import RECIPE_LOG_FILL, RECIPE_PULSE
 

@@ -6,7 +6,7 @@ from bundles.standard.runtimes.mcp.assist.dispatch import (
     resolve_dispatch_format,
     shape_dispatch_result,
 )
-from palm.services.execution.flows.schemas import SessionContext
+from services.execution.flows.schemas import SessionContext
 
 
 def _sample_session_context() -> SessionContext:
@@ -81,7 +81,7 @@ def test_shape_dispatch_result_assistant_passthrough() -> None:
 
 def test_shape_dispatch_result_flows_session_assistant_default() -> None:
     from palm.common.operator.view_registry import clear_operator_view_builders
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     clear_operator_view_builders()
     ensure_assist_view_registration()
@@ -97,7 +97,7 @@ def test_shape_dispatch_result_flows_session_assistant_default() -> None:
 
 def test_shape_dispatch_result_flows_session_assistant_opt_in() -> None:
     from palm.common.operator.view_registry import clear_operator_view_builders
-    from palm.services.assist.views import ensure_assist_view_registration
+    from services.assist.views import ensure_assist_view_registration
 
     clear_operator_view_builders()
     ensure_assist_view_registration()

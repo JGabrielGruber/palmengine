@@ -24,7 +24,7 @@ from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tre
 from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 from plugins.patterns.wizard.bindings.definitions.config import WizardConfig, WizardStepConfig
 from bundles.standard.runtimes.embedded import EmbeddedRuntime
-from palm.services.execution.providers.service import ProviderExecutionService
+from services.execution.providers.service import ProviderExecutionService
 from palm.states import BlackboardState
 
 

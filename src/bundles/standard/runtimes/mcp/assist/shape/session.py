@@ -28,7 +28,7 @@ def is_assistant_shaped(result: dict[str, Any]) -> bool:
 def input_schema_from_assist_turn(payload: dict[str, Any]) -> dict[str, Any] | None:
     """Build Portal ``input`` from an already-humanized assist turn (0.32.6)."""
     try:
-        from palm.services.assist.present.input_schema import build_input_schema
+        from services.assist.present.input_schema import build_input_schema
     except Exception:
         return None
     compose = payload.get("compose") if isinstance(payload.get("compose"), dict) else {}
@@ -64,7 +64,7 @@ def input_schema_from_assist_turn(payload: dict[str, Any]) -> dict[str, Any] | N
 def rebuild_assist_with_input_schema(result: dict[str, Any]) -> dict[str, Any] | None:
     """Re-humanize a *flat inspect* dict with Portal ``input`` widgets."""
     try:
-        from palm.services.assist.views import build_assistant_view
+        from services.assist.views import build_assistant_view
     except Exception:
         return None
     flat = assist_session_flat(result)

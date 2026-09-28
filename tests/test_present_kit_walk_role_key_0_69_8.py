@@ -9,8 +9,8 @@ from __future__ import annotations
 from bundles.standard.app.host.application_host import ApplicationHost
 from palm.core.orchestration import JobStatus
 from plugins.kits import present
-from palm.services.session.bound_surface import SESSION_CONTEXT_KEYS
-from palm.services.session.service import SessionService
+from services.session.bound_surface import SESSION_CONTEXT_KEYS
+from services.session.service import SessionService
 from palm.system.subsystems.planes.session import SessionPlaneService, walk_writes
 from tests.helpers.flows import spine_wizard
 

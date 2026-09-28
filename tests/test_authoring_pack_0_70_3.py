@@ -58,16 +58,16 @@ def test_authoring_pack_is_purpose_wizard_not_author() -> None:
 def test_authoring_pack_module_does_not_import_assist() -> None:
     tree = ast.parse(_PACK_PATH.read_text(encoding="utf-8"))
     forbidden_prefixes = (
-        "palm.services.assist",
+        "services.assist",
         "plugins.kits.assist",
     )
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
                 assert alias.name not in forbidden_prefixes
-                assert not alias.name.startswith("palm.services.assist")
+                assert not alias.name.startswith("services.assist")
         if isinstance(node, ast.ImportFrom) and node.module:
-            assert not node.module.startswith("palm.services.assist")
+            assert not node.module.startswith("services.assist")
             for alias in node.names:
                 assert alias.name != "AssistContributor"
 

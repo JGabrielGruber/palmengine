@@ -5,13 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 from palm.definitions.dashboard import DashboardDefinition, DashboardTile
-from palm.services.analytics.dashboards import (
+from services.analytics.dashboards import (
     clear_dashboards,
     list_dashboards,
     register_dashboard,
     render_dashboard,
 )
-from palm.services.analytics.service import AnalyticsService
+from services.analytics.service import AnalyticsService
 
 
 class _FakeDefinitions:

@@ -9,9 +9,9 @@ import pytest
 from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.operator.path_match import match_command_path
-from palm.services.design.dispatch import _DISPATCH_HANDLERS
-from palm.services.design.grammar import resolve_design_command
-from palm.services.design.registry import (
+from services.design.dispatch import _DISPATCH_HANDLERS
+from services.design.grammar import resolve_design_command
+from services.design.registry import (
     clear_design_contributors,
     design_commands,
     resolve_design_mcp_alias,

@@ -5,14 +5,14 @@ from __future__ import annotations
 import ast
 import pathlib
 
-from palm.services.assist.registry import CommandSpec as AssistCommandSpec
-from palm.services.assist.registry import assist_commands
-from palm.services.definitions.registry import CatalogVerb, catalog_verbs
-from palm.services.execution.flows.registry import CommandSpec, flow_commands
-from palm.services.execution.processes.registry import CommandSpec as ProcessCommandSpec
-from palm.services.execution.processes.registry import process_commands
-from palm.services.execution.providers.registry import InvokeVerb, invoke_verbs
-from palm.services.inspect.registry import ObserveVerb, observe_verbs
+from services.assist.registry import CommandSpec as AssistCommandSpec
+from services.assist.registry import assist_commands
+from services.definitions.registry import CatalogVerb, catalog_verbs
+from services.execution.flows.registry import CommandSpec, flow_commands
+from services.execution.processes.registry import CommandSpec as ProcessCommandSpec
+from services.execution.processes.registry import process_commands
+from services.execution.providers.registry import InvokeVerb, invoke_verbs
+from services.inspect.registry import ObserveVerb, observe_verbs
 
 
 def test_definitions_registry_has_catalog_verbs() -> None:

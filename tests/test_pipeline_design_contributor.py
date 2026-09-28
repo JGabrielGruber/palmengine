@@ -9,7 +9,7 @@ import pytest
 from bundles.standard.app import ApplicationHost, DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.definitions import FlowDefinition
-from palm.services.design.registry import clear_design_contributors, iter_design_contributors
+from services.design.registry import clear_design_contributors, iter_design_contributors
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def design_host(design_settings: PalmSettings) -> Iterator[ApplicationHost]:
 
 
 def setup_function() -> None:
-    from palm.services.design.contributors import reset_design_contributor_wiring
+    from services.design.contributors import reset_design_contributor_wiring
 
     clear_design_contributors()
     reset_design_contributor_wiring()

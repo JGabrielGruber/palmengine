@@ -8,7 +8,7 @@ this package.
 Rules (enforced by ``scripts/guard_system.py``):
 
 - May import ``palm.core``, ``palm.definitions``, ``palm.instances``, and shared libraries.
-- Must not import product (``palm.services``), surfaces (``palm.runtimes``), or patterns.
+- Must not import product (``services``), surfaces (``palm.runtimes``), or patterns.
 """
 
 from __future__ import annotations

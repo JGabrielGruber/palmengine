@@ -9,7 +9,7 @@ from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.core.storage import StorageEngine
 from bundles.standard.runtimes.mcp.assist.operator import rewrite_system_session_continue
-from palm.services.session import SessionAttributionError, SessionService
+from services.session import SessionAttributionError, SessionService
 from palm.system.subsystems.planes.session import (
     InstanceNotOwnedError,
     SessionAttributionError as PlaneAttributionError,

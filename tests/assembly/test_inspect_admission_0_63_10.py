@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from palm.services.inspect.present import present_top, present_vitality
+from services.inspect.present import present_top, present_vitality
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.vitality.seats import reset_default_probe_catalog_for_tests
