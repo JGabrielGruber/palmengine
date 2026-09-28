@@ -1,8 +1,8 @@
 """Plugin package side-effect registration (shared bootstrap helper).
 
 System code must not import ``palm.patterns`` / product surfaces
-(``scripts/guard_system.py``). The standard host passes this function as
-``plugin_install`` on system start. The system phase does not import it.
+(``scripts/guard_system.py``). The standard bundle calls this function from
+kernel bootstrap, before system start. The system schedule does not install.
 
 **0.72.3:** the function takes the package names from a composition record.
 It does not keep a process flag, and it does not close over ``INSTALLED_*``.

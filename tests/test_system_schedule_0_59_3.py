@@ -23,7 +23,7 @@ def test_system_start_walks_full_phase_table() -> None:
         # All seats visited; optional may skip.
         by_id = {w.phase: w for w in rt._last_boot_walk}
         assert by_id["system.log.ready"].outcome == "ok"
-        assert by_id["system.plugins.ensure"].outcome == "ok"
+        assert "system.plugins.ensure" not in by_id
         assert by_id["system.engines.init"].outcome == "ok"
         assert by_id["system.storage.select"].outcome == "ok"
         assert by_id["system.outbox.wire"].outcome == "skip"
@@ -49,7 +49,8 @@ def test_system_start_walks_full_phase_table() -> None:
         ]
         # Walker emits phase.start for every seat including optional (then skip).
         assert starts[0] == "system.log.ready"
-        assert "system.plugins.ensure" in starts
+        assert "system.plugins.ensure" not in starts
+        assert "system.engines.init" in starts
         assert "system.storage.select" in starts
         assert "system.planes.attach" in starts
         assert "system.ready" in starts

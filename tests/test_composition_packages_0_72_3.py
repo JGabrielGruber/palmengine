@@ -143,46 +143,6 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
     assert "ok" in result.stdout
 
 
-def test_phase_installs_only_the_option_set() -> None:
-    result = _run_cold(
-        """
-        import sys
-
-        from palm.system.boot.context import BootContext
-        from palm.system.runtime.phase_plugins import run
-
-        run(BootContext(schedule="system"), {})
-        assert "palm.common.plugins" not in sys.modules
-        assert "drivers.runners.local" not in sys.modules
-        assert "plugins.kits.present" not in sys.modules
-
-        from palm.common.plugins import ensure_core_plugins
-
-        run(
-            BootContext(schedule="system"),
-            {
-                "composition_packages": {
-                    "kits": ("present",),
-                    "patterns": (),
-                    "providers": (),
-                    "runners": ("local",),
-                    "storages": ("memory",),
-                    "transforms": (),
-                },
-                "plugin_install": ensure_core_plugins,
-            },
-        )
-        assert "plugins.kits.present" in sys.modules
-        assert "drivers.runners.local" in sys.modules
-        assert "drivers.runners.host" not in sys.modules
-        assert "plugins.kits.authoring" not in sys.modules
-        print("ok")
-        """
-    )
-    assert result.returncode == 0, result.stderr or result.stdout
-    assert "ok" in result.stdout
-
-
 def test_host_start_installs_the_composition_set() -> None:
     result = _run_cold(
         """

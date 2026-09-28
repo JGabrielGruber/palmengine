@@ -291,7 +291,14 @@ class BaseRuntime:
 
         0.59.3 — no private soup here. Rules live in
         ``palm.system.boot.system_schedule``. Observation via SystemLog.
+
+        0.72.5 — this schedule does not install packages. The bundle installs
+        before it calls ``start``.
         """
+        refused = [key for key in ("plugin_install", "composition_packages") if key in options]
+        if refused:
+            names = ", ".join(refused)
+            raise RuntimeError(f"system start does not install packages; refused {names}")
         if self._started:
             return
 
@@ -583,9 +590,7 @@ class BaseRuntime:
 
         require_business_admission(self)
         engine = self._require_workload_engine()
-        parsed = (
-            spec if isinstance(spec, WorkloadSpec) else WorkloadSpec.from_dict(dict(spec))
-        )
+        parsed = spec if isinstance(spec, WorkloadSpec) else WorkloadSpec.from_dict(dict(spec))
         bound_owner = _coerce_workload_owner(owner)
         # 0.58.8 — fill session/job/instance from event context when job path has them
         bound_owner = _enrich_workload_owner_from_event_context(self, bound_owner)

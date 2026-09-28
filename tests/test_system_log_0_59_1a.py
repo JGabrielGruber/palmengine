@@ -79,7 +79,8 @@ def test_host_boot_writes_system_log_sequence() -> None:
             for r in slog.recent()
             if r.event == "phase.start" and r.fields.get("schedule") == "system"
         ]
-        assert "system.plugins.ensure" in sys_phases
+        assert "system.plugins.ensure" not in sys_phases
+        assert "system.engines.init" in sys_phases
         assert "system.planes.attach" in sys_phases
         # cold reader can sketch phenotype from messages
         messages = " ".join(slog.recent_messages())

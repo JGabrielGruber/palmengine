@@ -118,12 +118,6 @@ SYSTEM_PHASES: tuple[PhaseSpec, ...] = (
         "Ensure SystemLog is process-ready (early console)",
     ),
     PhaseSpec(
-        "system.plugins.ensure",
-        "system",
-        "implemented",
-        "install composition package names",
-    ),
-    PhaseSpec(
         "system.engines.init",
         "system",
         "implemented",

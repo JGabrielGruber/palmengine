@@ -7,7 +7,6 @@ System phase definition catalog — membership of system start (0.61).
 | Phase id | Home |
 |----------|------|
 | system.log.ready | ``palm.system.log.phase_ready`` |
-| system.plugins.ensure | ``palm.system.runtime.phase_plugins`` |
 | system.engines.init | ``palm.system.runtime.phase_engines`` |
 | system.storage.select | ``palm.system.runtime.phase_storage`` |
 | system.outbox.wire | ``palm.system.runtime.phase_outbox`` |
@@ -36,7 +35,6 @@ from palm.system.runtime.phase_orchestration_start import (
     DEFINITION as _orchestration_start,
 )
 from palm.system.runtime.phase_outbox import DEFINITION as _outbox
-from palm.system.runtime.phase_plugins import DEFINITION as _plugins
 from palm.system.runtime.phase_provider_bind import DEFINITION as _bind
 from palm.system.runtime.phase_ready import DEFINITION as _ready
 from palm.system.runtime.phase_storage import DEFINITION as _storage
@@ -50,7 +48,6 @@ from palm.system.subsystems.supervisor.phase_wire import DEFINITION as _supervis
 # Membership of the system start catalog (not walk order).
 DEFAULT_SYSTEM_PHASE_DEFINITIONS: tuple[PhaseDefinition, ...] = (
     _log_ready,
-    _plugins,
     _engines,
     _storage,
     _outbox,
@@ -65,9 +62,7 @@ DEFAULT_SYSTEM_PHASE_DEFINITIONS: tuple[PhaseDefinition, ...] = (
     _background,
 )
 
-_BY_ID: dict[str, PhaseDefinition] = {
-    d.id: d for d in DEFAULT_SYSTEM_PHASE_DEFINITIONS
-}
+_BY_ID: dict[str, PhaseDefinition] = {d.id: d for d in DEFAULT_SYSTEM_PHASE_DEFINITIONS}
 
 
 def system_phase_definition(phase_id: str) -> PhaseDefinition | None:

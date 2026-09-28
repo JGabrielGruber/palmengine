@@ -90,7 +90,7 @@ Source: `BaseRuntime.start` (`palm.system.runtime.base`).
 
 | # | Provisional id | What runs | Notes |
 |---|----------------|-----------|--------|
-| S1 | `plugins.ensure` | `plugin_install` when `composition_packages` is set | No key: install nothing. The system phase does not import the stroke. The standard host passes `ensure_core_plugins` |
+| S1 | `plugins.ensure` | Left the system schedule in `0.72.5` | The standard bundle installs in kernel bootstrap, once, before system start. `start` refuses `plugin_install` and `composition_packages` |
 | S2 | `engines.core` | context, event initialize | |
 | S3 | `engines.resource` | resource.initialize (+ cache options) | |
 | S4 | `engines.workload` | `initialize_workload_engine` | host runner opt-in via options |

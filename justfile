@@ -90,6 +90,7 @@ guard-common:
 guard-system:
     @echo "🔒 Checking palm.system import rules (0.57+)..."
     uv run python scripts/guard_system.py
+    uv run python scripts/guard_kernel_install.py
     uv run pytest -q tests/test_system_boundary.py --tb=short
 
 # Assembly coherence (0.63.4) — fail-closed admission; red maps dual mode.

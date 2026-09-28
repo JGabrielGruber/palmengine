@@ -35,7 +35,8 @@ def test_locked_phase_tables_order() -> None:
 
     sys_ids = system_phase_ids()
     assert sys_ids[0] == "system.log.ready"
-    assert "system.plugins.ensure" in sys_ids
+    assert sys_ids[1] == "system.engines.init"
+    assert "system.plugins.ensure" not in sys_ids
     assert "system.install.bind" in sys_ids
     assert "system.planes.attach" in sys_ids
     assert "system.supervisor.wire" in sys_ids

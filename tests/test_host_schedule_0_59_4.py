@@ -51,7 +51,8 @@ def test_host_start_walks_full_phase_table() -> None:
             for r in slog.recent()
             if r.event == "phase.start" and r.fields.get("schedule") == "system"
         ]
-        assert "system.plugins.ensure" in sys_starts
+        assert "system.plugins.ensure" not in sys_starts
+        assert "system.engines.init" in sys_starts
         assert "system.planes.attach" in sys_starts
         assert "system.background.start" in sys_starts
     finally:

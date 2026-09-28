@@ -22,7 +22,7 @@ The minimal app uses a **constrained start**:
 | `structure_definition_id=local.embedded` | `plugin_install` |
 | One `BaseRuntime` subclass, inline scheduler | Product services, surfaces, host schedule |
 
-`system.plugins.ensure` installs nothing when `composition_packages` is absent. It does not import the stroke. A mapping without a callable `plugin_install` fails closed. The standard host still passes `ensure_core_plugins`. That call stays on the standard host.
+The system schedule does not install (`0.72.5`). `start` refuses `plugin_install` and `composition_packages`. The standard bundle installs in kernel bootstrap, once, before system start.
 
 ---
 
@@ -35,7 +35,7 @@ Accepted law this bundle treats as fixed:
 | The system owns | The bundle owns |
 |-----------------|-----------------|
 | System schedule, planes, supervisor, structure, admission, vitality, system log, `ExecutionPort` | Process entry, the start options above, shutdown |
-| Plugin install only when the caller passes names and an installer | Whether any installer exists. This bundle passes none |
+| The system schedule, with no install phase | Whether this bundle installs anything. This bundle installs nothing |
 | `local.embedded` as the floor organism | Settings beyond the two start options |
 
 Plugins are not planes. Boot mode is order. Composition installs packages. Structure enables organs and places. [ADR-028](../../adr/028-system-boot.md) · [ADR-032](../../adr/032-organism-assembly.md) · [ADR-040](../../adr/040-composition-plugin-membership.md).
@@ -90,7 +90,7 @@ The standard host schedule stays the picture of a full application: system log, 
 | Residual | Where |
 |----------|--------|
 | Standard runtime is still `EmbeddedRuntime` with the same two class facts | `src/bundles/standard/runtimes/embedded/runtime.py`. The kernel still builds that class |
-| Fat install on the standard host, twice | Kernel bootstrap and `plugin_install` on spawn |
+| Fat install on the standard host, once | Kernel bootstrap, before system start. The loader is still unpaid |
 | Root test latch | `tests/conftest.py` calls `ensure_plugins()` |
 | Map names `palm.patterns` / `palm.storages` | Code lives under `src/plugins/` and `src/bundles/` |
 | `examples/todo` | Probe through `ApplicationHost`. It is not the direction of this bundle |
