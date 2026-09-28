@@ -6,9 +6,9 @@ This module does not install plugin packages and does not read a composition rec
 
 from __future__ import annotations
 
+from bundles.minimal.bind import bind_memory
 from bundles.minimal.runtime import MinimalRuntime
 
-_STORAGE_BACKEND = "memory"
 _STRUCTURE_ID = "local.embedded"
 
 
@@ -30,7 +30,7 @@ class MinimalApp:
             return self._runtime
         runtime = self._runtime or MinimalRuntime()
         runtime.start(
-            storage_backend=_STORAGE_BACKEND,
+            drivers=bind_memory(),
             structure_definition_id=_STRUCTURE_ID,
         )
         self._runtime = runtime

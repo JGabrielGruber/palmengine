@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from palm.system.log import reset_system_log_for_tests
+from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.planes.session.plane import SessionPlaneService
 from palm.system.subsystems.planes.wait.plane import WaitPlaneService
 from palm.system.subsystems.planes.work.plane import WorkPlaneService
-from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.supervisor import SystemSupervisor
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_base_runtime_reactive_seats_without_host() -> None:
     """Any started SystemInstance owns work/wait/session + supervisor."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert isinstance(rt.work_plane, WorkPlaneService)
         assert isinstance(rt.wait_plane, WaitPlaneService)

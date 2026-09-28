@@ -17,6 +17,7 @@ from palm.system.structure import (
     resolve_workload_engine,
     workload_spawn_hands,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_resolve_workload_engine_uninitialized() -> None:
@@ -45,8 +46,9 @@ def test_default_structure_effects_has_structure_prefixes() -> None:
 
 
 def test_bind_upgrades_in_process_and_attaches_engine() -> None:
-    from palm.core.workload import WorkloadEngine
     from drivers.runners.local.runtime import LocalWorkloadRuntime
+
+    from palm.core.workload import WorkloadEngine
 
     eng = WorkloadEngine()
     eng.initialize(
@@ -79,8 +81,9 @@ def test_bind_upgrades_in_process_and_attaches_engine() -> None:
 
 
 def test_bind_disabled_leaves_workload_fail_closed() -> None:
-    from palm.core.workload import WorkloadEngine
     from drivers.runners.local.runtime import LocalWorkloadRuntime
+
+    from palm.core.workload import WorkloadEngine
 
     eng = WorkloadEngine()
     eng.initialize(
@@ -126,8 +129,9 @@ def test_bind_skips_recording_effect_port() -> None:
 
 
 def test_bind_idempotent_already_bound() -> None:
-    from palm.core.workload import WorkloadEngine
     from drivers.runners.local.runtime import LocalWorkloadRuntime
+
+    from palm.core.workload import WorkloadEngine
 
     eng = WorkloadEngine()
     eng.initialize(
@@ -151,7 +155,7 @@ def test_runtime_start_binds_workload_engine() -> None:
     """system.engines.init then assemble — default seat holds live engine."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.structure is not None
         assert isinstance(rt.structure.effects, StructureEffectPort)
@@ -171,10 +175,7 @@ def test_runtime_start_binds_workload_engine() -> None:
 def test_runtime_bind_workload_false() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_bind_workload=False,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_bind_workload=False)
     try:
         assert rt.structure is not None
         port = place_effect_port(rt.structure.effects)
@@ -198,7 +199,7 @@ def test_runtime_workload_place_converges_on_host_path() -> None:
     """End-to-end: host seat + DNA requiring workload: place → ready."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         dna = StructureDefinition(

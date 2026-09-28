@@ -23,6 +23,7 @@ from palm.system.structure import (
     StructureSeat,
     require_business_admission,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def _noop_flow() -> FlowDefinition:
@@ -65,10 +66,7 @@ def test_require_admission_accepts_snapshot_and_factory() -> None:
 def test_submit_flow_fail_closed_when_assembly_skipped() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         with pytest.raises(AdmissionRefusedError, match="admission refused"):
@@ -80,7 +78,7 @@ def test_submit_flow_fail_closed_when_assembly_skipped() -> None:
 def test_submit_flow_ok_when_embedded_ready() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         job = rt.submit_flow(_noop_flow())
@@ -93,12 +91,10 @@ def test_submit_flow_ok_when_embedded_ready() -> None:
 def test_submit_fail_closed_truth_home_down() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.structure is not None
-        rt.structure.engine.observe(
-            Observation(kind=ObservationKind.TRUTH_HOME_DOWN)
-        )
+        rt.structure.engine.observe(Observation(kind=ObservationKind.TRUTH_HOME_DOWN))
         assert rt.admission.may_run_business is False
         with pytest.raises(AdmissionRefusedError):
             rt.submit_flow(_noop_flow())
@@ -110,10 +106,7 @@ def test_work_plane_and_submit_same_gate() -> None:
     """Both business paths that need admission refuse under the same snapshot."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         plane = rt.work_plane
         assert plane is not None

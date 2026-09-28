@@ -3,21 +3,21 @@
 from __future__ import annotations
 
 import pytest
+from drivers.storages import memory  # noqa: F401 — register backends
+from drivers.storages.load import ensure_registered
+from drivers.storages.memory import MemoryBackend
+from drivers.storages.mongodb import MongoStorageBackend
 
-from palm.common.storage import StorageFactory
 from palm.core import (
     BackendNotOpenError,
     StorageEngine,
     StorageNotConfiguredError,
     storage_registry,
 )
-from drivers.storages import memory  # noqa: F401 — register backends
-from drivers.storages.memory import MemoryBackend
-from drivers.storages.mongodb import MongoStorageBackend
 
 
 def test_storage_registry_has_mongodb_after_lazy_load() -> None:
-    StorageFactory.ensure_registered("mongodb")
+    ensure_registered("mongodb")
     assert "mongodb" in storage_registry.names()
     assert storage_registry.get("mongodb") is MongoStorageBackend
 
@@ -64,7 +64,7 @@ def test_storage_engine_select_switches_backend() -> None:
     engine.initialize()
     engine.select("memory")
     engine.set("x", 1)
-    StorageFactory.ensure_registered("mongodb")
+    ensure_registered("mongodb")
     engine.select("mongodb", connection_uri="mongodb://test:27017")
     assert engine.backend_name == "mongodb"
     assert isinstance(engine.backend, MongoStorageBackend)
@@ -96,7 +96,7 @@ def test_mongo_storage_backend_connection_stub() -> None:
 def test_storage_engine_passes_backend_options() -> None:
     engine = StorageEngine()
     engine.initialize()
-    StorageFactory.ensure_registered("mongodb")
+    ensure_registered("mongodb")
     backend = engine.select(
         "mongodb",
         connection_uri="mongodb://custom:27017",

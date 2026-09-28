@@ -5,17 +5,18 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.settings import PalmSettings
-from palm.common.cqrs.bus import CommandBus, QueryBus
-from palm.core.structure import AdmissionSnapshot, StructurePhase
 from services.execution.flows.service import FlowExecutionService
 from services.execution.flows.session import FlowSession
+
+from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.core.structure import AdmissionSnapshot, StructurePhase
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
+from tests.helpers.bound import bound_for_runtime
 
 
 def _settings() -> PalmSettings:
@@ -137,10 +138,7 @@ def test_cancel_job_not_admission_citizen() -> None:
     """Shell cancel remains control path when admission closed."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         # Missing job → False / no AdmissionRefusedError

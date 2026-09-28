@@ -5,10 +5,12 @@ from __future__ import annotations
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.boot.modes import BootMode
 from bundles.standard.app.settings import PalmSettings
+
 from palm.core.structure import LOCAL_CLI_ID
 from palm.system.interfaces.install import SystemInstall
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
+from tests.helpers.bound import bound_for_runtime
 
 
 class _FakePlane:
@@ -77,7 +79,9 @@ def test_host_cli_binds_start_ports_on_install_not_defer() -> None:
 def test_bare_runtime_cli_starts_drain_when_ports_bound() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory", structure_definition_id=LOCAL_CLI_ID)
+    rt.start(
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id=LOCAL_CLI_ID
+    )
     try:
         assert rt.install.start_ports_bound() is True
         assert "work_drain" in rt.supervisor.names()

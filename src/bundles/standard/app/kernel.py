@@ -13,7 +13,7 @@ from bundles.standard.app.bootstrap import (
     load_definitions_for_repository,
     runtime_start_options,
 )
-from bundles.standard.app.host.composition import CompositionProfile
+from bundles.standard.app.host.composition import CompositionProfile, composition_profile_from_name
 from bundles.standard.app.registry import RuntimeHandle, RuntimeKind, RuntimeRegistry
 from bundles.standard.app.settings import PalmSettings
 from palm.common.managers import InstanceManager, InstanceSummary
@@ -73,6 +73,7 @@ class PalmKernel:
         self._runtimes = RuntimeRegistry()
         self._primary: str | None = None
         self._bootstrapped = False
+        self._composition: CompositionProfile | None = None
 
     @property
     def is_bootstrapped(self) -> bool:
@@ -93,7 +94,11 @@ class PalmKernel:
         ``composition`` names the package set. No argument selects the
         ``all_in_one`` record (:func:`palm.app.bootstrap.ensure_plugins`).
         """
-        ensure_plugins(composition)
+        profile = (
+            composition if composition is not None else composition_profile_from_name("all_in_one")
+        )
+        ensure_plugins(profile)
+        self._composition = profile
         self._bootstrapped = True
         return self
 
@@ -300,7 +305,12 @@ class PalmKernel:
         handle = self._runtimes.get(name)
         if handle.runtime.is_started:
             return handle.runtime
-        merged = runtime_start_options(self.settings, **options)
+        merged = runtime_start_options(
+            self.settings,
+            storage_engine=self.storage,
+            composition=self._composition,
+            **options,
+        )
         handle.runtime.start(**merged)
         return handle.runtime
 

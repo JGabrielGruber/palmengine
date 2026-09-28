@@ -9,6 +9,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from bundles.standard.app.bind import bind_from_settings
 from bundles.standard.app.host.composition import (
     CompositionProfile,
     composition_profile_from_name,
@@ -18,7 +19,7 @@ from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
 from palm.common.plugins import ensure_core_plugins
-from palm.common.storage import StorageFactory
+from palm.system.bound import BoundDrivers
 
 
 def ensure_plugins(composition: CompositionProfile | None = None) -> None:
@@ -28,9 +29,7 @@ def ensure_plugins(composition: CompositionProfile | None = None) -> None:
     its composition, so the first install uses that record.
     """
     profile = (
-        composition
-        if composition is not None
-        else composition_profile_from_name("all_in_one")
+        composition if composition is not None else composition_profile_from_name("all_in_one")
     )
     ensure_core_plugins(**profile.package_names())
 
@@ -217,10 +216,19 @@ def composition_profile_from_settings(
 
 
 def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str, Any]:
-    """Build keyword arguments for :meth:`~palm.system.runtime.base.BaseRuntime.start`."""
+    """Build keyword arguments for :meth:`~palm.system.runtime.base.BaseRuntime.start`.
+
+    Storage and the workload default are ``drivers``. The loose names
+    ``storage_backend``, ``backend_options``, and ``workload_default_runtime``
+    are read here and are not forwarded.
+    """
+    engine = overrides.pop("storage_engine", None)
+    composition = overrides.pop("composition", None)
+    storage_backend = overrides.pop("storage_backend", None)
+    backend_options = overrides.pop("backend_options", None)
+    workload_default = overrides.pop("workload_default_runtime", None)
+    raw_drivers = overrides.pop("drivers", None)
     options: dict[str, Any] = {
-        "storage_backend": settings.storage_backend,
-        "backend_options": StorageFactory.backend_options(settings=settings),
         "observability": settings.observability,
         "auth_enforce": settings.auth_enforce,
         "auth_roles": list(settings.auth_roles),
@@ -242,7 +250,6 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
         "max_entries": settings.resource_cache_max_entries,
     }
     options["workload_host_enabled"] = settings.workload_host_enabled
-    options["workload_default_runtime"] = settings.workload_default_runtime
     # Work *plane* packaging (attach reads these). Not drain membership.
     options["work_plane_max_depth"] = settings.work_plane_max_depth
     options["work_plane_batch_size"] = settings.work_plane_batch_size
@@ -252,6 +259,21 @@ def runtime_start_options(settings: PalmSettings, **overrides: Any) -> dict[str,
     if settings.data_dir is not None:
         options["data_dir"] = settings.data_dir
     options.update(overrides)
+    if raw_drivers is not None and not isinstance(raw_drivers, BoundDrivers):
+        options["drivers"] = raw_drivers
+        return options
+    named = storage_backend if isinstance(storage_backend, str) else None
+    extra = backend_options if isinstance(backend_options, dict) else None
+    picked = workload_default if isinstance(workload_default, str) else None
+    options["drivers"] = bind_from_settings(
+        settings,
+        composition=composition,
+        engine=engine,
+        storage_backend=named,
+        backend_options=extra,
+        workload_default=picked,
+        existing=raw_drivers if isinstance(raw_drivers, BoundDrivers) else None,
+    )
     return options
 
 

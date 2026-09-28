@@ -43,6 +43,7 @@ from palm.system.boot import (
     build_system_handlers,
     walk_schedule,
 )
+from palm.system.bound import BOUND_DRIVERS_VERSION, BoundDrivers
 from palm.system.executions import DefinitionExecutor
 from palm.system.interfaces.install import SystemInstall
 from palm.system.log import get_system_log
@@ -294,6 +295,10 @@ class BaseRuntime:
 
         0.72.5 — this schedule does not install packages. The bundle installs
         before it calls ``start``.
+
+        0.72.6 — ``drivers`` is a :class:`~palm.system.bound.BoundDrivers` value.
+        This schedule attaches that storage. It does not choose a storage or a
+        workload runtime.
         """
         refused = [key for key in ("plugin_install", "composition_packages") if key in options]
         if refused:
@@ -301,6 +306,23 @@ class BaseRuntime:
             raise RuntimeError(f"system start does not install packages; refused {names}")
         if self._started:
             return
+        slot_keys = [
+            key
+            for key in ("storage_backend", "backend_options", "workload_default_runtime")
+            if key in options
+        ]
+        if slot_keys:
+            names = ", ".join(slot_keys)
+            raise RuntimeError(f"system start takes bound drivers; refused {names}")
+        drivers = options.get("drivers")
+        if not isinstance(drivers, BoundDrivers):
+            raise RuntimeError("system start requires bound drivers")
+        if drivers.version != BOUND_DRIVERS_VERSION:
+            raise RuntimeError(
+                f"bound drivers contract version {drivers.version} is not {BOUND_DRIVERS_VERSION}"
+            )
+        if not drivers.storage.is_open:
+            raise RuntimeError("bound storage is not initialized")
 
         self._start_options = dict(options)
         slog = get_system_log()

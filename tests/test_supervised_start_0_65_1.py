@@ -26,6 +26,7 @@ from palm.system.subsystems.supervisor.outbox_loop import OutboxLoopService
 from palm.system.subsystems.supervisor.phase_background import (
     start_supervised_background,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 class _FakePlane:
@@ -110,7 +111,7 @@ def test_registered_outbox_starts_without_option() -> None:
 def test_embedded_default_does_not_register_drain() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         assert "work_drain" not in rt.supervisor.names()
@@ -125,8 +126,7 @@ def test_cli_starts_drain_when_ports_bound() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id=LOCAL_CLI_ID,
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id=LOCAL_CLI_ID
     )
     try:
         assert rt.install.start_ports_bound() is True

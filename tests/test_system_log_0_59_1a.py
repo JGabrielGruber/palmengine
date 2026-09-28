@@ -5,6 +5,7 @@ from __future__ import annotations
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
+
 from palm.system.log import (
     LEVEL_LIFECYCLE,
     SystemLog,
@@ -13,6 +14,7 @@ from palm.system.log import (
     reset_system_log_for_tests,
 )
 from palm.system.runtime.base import BaseRuntime
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_system_log_ring_and_level_filter() -> None:
@@ -94,7 +96,7 @@ def test_host_boot_writes_system_log_sequence() -> None:
 def test_system_alone_boot_log() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         events = get_system_log().events()
         assert "boot.start" in events

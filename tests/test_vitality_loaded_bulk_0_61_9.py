@@ -18,6 +18,7 @@ from palm.system.vitality import (
     reset_default_vitality_registry_for_tests,
     sample_loaded_bulk,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def setup_function() -> None:
@@ -36,7 +37,7 @@ def test_default_registry_loaded_bulk_installed() -> None:
 
 def test_sample_loaded_bulk_after_boot() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         frag = sample_loaded_bulk(rt, SampleContext())
         assert frag.capability_id == CAPABILITY_LOADED_BULK
@@ -87,7 +88,7 @@ def test_bag_skip() -> None:
 
 def test_project_includes_loaded_bulk_by_default() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         snap = project(rt)
         assert CAPABILITY_SEAT_WALK in snap.fragments
@@ -108,7 +109,7 @@ def test_project_includes_loaded_bulk_by_default() -> None:
 
 def test_projection_still_does_not_start_services() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         assert rt.supervisor.status()["running_count"] == 0

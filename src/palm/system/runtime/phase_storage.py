@@ -1,7 +1,7 @@
 """
 System start phase: storage select (system.storage.select).
 
-Subject: shell storage seat + StorageFactory.
+Subject: attach the storage backend the bundle already opened.
 """
 
 from __future__ import annotations
@@ -9,24 +9,22 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from palm.common.storage import StorageFactory
 from palm.system.boot.context import BootContext
 from palm.system.boot.definition import PhaseDefinition
 from palm.system.boot.shell import resolve_shell
+from palm.system.bound import BoundDrivers
 
 
 def select_system_storage(
     shell: Any,
     options: Mapping[str, Any] | None = None,
 ) -> Any:
-    """Initialize storage on *shell* when not already initialized."""
+    """Attach the bound storage backend. Does not load or default one."""
     opts = dict(options or {})
-    if not shell.storage.is_initialized:
-        StorageFactory.initialize_engine(
-            shell.storage,
-            storage_backend=str(opts.get("storage_backend", "memory")),
-            **dict(opts.get("backend_options") or {}),
-        )
+    drivers = opts.get("drivers")
+    if not isinstance(drivers, BoundDrivers):
+        raise RuntimeError("system storage select requires bound drivers")
+    shell.storage.attach(drivers.storage)
     return shell.storage
 
 
@@ -38,7 +36,7 @@ def run(ctx: BootContext, options: Mapping[str, Any]) -> None:
 DEFINITION = PhaseDefinition(
     id="system.storage.select",
     run=run,
-    description="StorageFactory when storage not yet initialized",
+    description="attach the bound storage backend",
 )
 
 __all__ = ["DEFINITION", "run", "select_system_storage"]

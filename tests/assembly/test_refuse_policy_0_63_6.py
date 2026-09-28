@@ -14,6 +14,7 @@ from palm.core.structure import (
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure import StructureSeat
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_refuse_violations_pure() -> None:
@@ -30,9 +31,7 @@ def test_refuse_violations_pure() -> None:
 
     mcp = local_mcp()
     assert refuse_violations(mcp, surfaces=("mcp",)) == ()
-    assert refuse_violations(mcp, surfaces=("rest",)) == (
-        "refuse:http_server_surfaces",
-    )
+    assert refuse_violations(mcp, surfaces=("rest",)) == ("refuse:http_server_surfaces",)
 
 
 def test_seat_blocks_on_refuse_dual() -> None:
@@ -59,7 +58,7 @@ def test_runtime_membership_from_options() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
+        drivers=bound_for_runtime(storage_backend="memory"),
         structure_definition_id="local.embedded",
         structure_surfaces=["rest"],
     )

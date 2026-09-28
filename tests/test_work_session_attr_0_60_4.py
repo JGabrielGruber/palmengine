@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from palm.core.work import WorkIntent
 from palm.system.log import reset_system_log_for_tests
+from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.planes.session.types import (
     looks_like_system_session_id,
     service_session_id,
@@ -12,14 +13,12 @@ from palm.system.subsystems.planes.work.session_attr import (
     attribute_reactive_start,
     reactive_origin,
 )
-from palm.system.runtime.base import BaseRuntime
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_reactive_origin_shapes() -> None:
     assert reactive_origin("f1", {"trigger": "schedule"}) == "schedule:f1"
-    assert reactive_origin(None, {"trigger": "inbound", "inbound_resource": "r1"}) == (
-        "inbound:r1"
-    )
+    assert reactive_origin(None, {"trigger": "inbound", "inbound_resource": "r1"}) == ("inbound:r1")
     assert reactive_origin("analytics", {}) == "work-drain:analytics"
     assert reactive_origin(None, {}) == "work-drain"
 
@@ -27,7 +26,7 @@ def test_reactive_origin_shapes() -> None:
 def test_attribute_inherits_system_session() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         meta = attribute_reactive_start(
             rt,
@@ -43,7 +42,7 @@ def test_attribute_inherits_system_session() -> None:
 def test_attribute_service_session_when_absent() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         meta = attribute_reactive_start(rt, "analytics", {"trigger": "on_resource"})
         sid = meta.get("session_id")
@@ -60,8 +59,7 @@ def test_work_plane_tick_attributes_session_on_system_submit() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         plane = rt.work_plane

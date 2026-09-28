@@ -10,6 +10,7 @@ from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES
 from palm.system.subsystems.planes.wait.plane import WaitPlaneService
+from tests.helpers.bound import bound_for_runtime
 
 
 def _orch_for(owner: Job) -> object:
@@ -63,9 +64,7 @@ def test_wait_resume_when_able() -> None:
     owner.status = JobStatus.WAITING_FOR_INPUT
     plane = WaitPlaneService()
     plane.open_on_job(owner, make_job_wait("child-o"))
-    plane.attach(
-        orchestration=_orch_for(owner), event=engine, able=lambda: True
-    )
+    plane.attach(orchestration=_orch_for(owner), event=engine, able=lambda: True)
     plane.handle_payload(
         "job.completed",
         {"job_id": "child-o", "status": "SUCCEEDED"},
@@ -87,10 +86,7 @@ def test_set_able_none_fails_closed() -> None:
 def test_runtime_wait_plane_able_tracks_admission() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         plane = rt.wait_plane
@@ -103,7 +99,7 @@ def test_runtime_wait_plane_able_tracks_admission() -> None:
 def test_runtime_wait_plane_able_when_admitted() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         plane = rt.wait_plane

@@ -288,8 +288,9 @@ export PALM_STORAGE_BACKEND=filesystem
 export PALM_DATA_DIR=./data
 ```
 
-:class:`~palm.common.storage.StorageFactory` and ``runtime_start_options()`` wire
-storage automatically on host/runtime start.
+``runtime_start_options()`` binds an open storage backend into ``drivers`` before
+system start. :class:`~palm.common.storage.StorageFactory` builds backend options.
+``drivers.storages.load`` opens the backend.
 
 ### InstanceManager
 
@@ -511,7 +512,7 @@ examples/definitions/todos/
 2. Register with `storage_registry.register("<name>", YourBackend)`.
 3. Add the name to the storage catalog in `storages/_apps.py` (`OPTIONAL_STORAGES` when the backend needs extra dependencies). Add it to the composition records that should install it.
 4. Declare a uv extra in `pyproject.toml` when optional drivers are required.
-5. Add tests; use `StorageFactory.ensure_registered("<name>")` in tests for optional backends.
+5. Add tests; use `drivers.storages.load.ensure_registered("<name>")` in tests for optional backends.
 
 ## Registry registration and thread safety
 

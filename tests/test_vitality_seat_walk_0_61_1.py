@@ -34,7 +34,7 @@ from palm.system.vitality import (
     supervisor_service_seat_id,
     walk_result,
 )
-
+from tests.helpers.bound import bound_for_runtime
 
 # ── unit: SystemPlanes hub owns membership ───────────────────────────────────
 
@@ -53,7 +53,7 @@ def test_vitality_probes_planes_hub_not_private_plane_list() -> None:
 def test_started_runtime_planes_hub_consumes_members() -> None:
     rt = BaseRuntime()
     try:
-        rt.start(storage_backend="memory")
+        rt.start(drivers=bound_for_runtime(storage_backend="memory"))
         assert rt.planes is not None
         assert rt.planes.names() == ["wait", "session", "work"]
         assert rt.plane("wait") is rt.wait_plane
@@ -83,7 +83,7 @@ def test_system_planes_install_owns_policy() -> None:
     """Planes subsystem install constructs + puts from runtime.install."""
     rt = BaseRuntime()
     try:
-        rt.start(storage_backend="memory")
+        rt.start(drivers=bound_for_runtime(storage_backend="memory"))
         hub = rt.planes
         assert hub is not None
         assert hub.names() == ["wait", "session", "work"]
@@ -99,9 +99,9 @@ def test_system_planes_install_owns_policy() -> None:
 
 
 def test_system_planes_ensure_on_and_install_wait() -> None:
+    from palm.system.interfaces.install import SystemInstall
     from palm.system.subsystems.planes.hub import SystemPlanes
     from palm.system.subsystems.planes.wait.plane import WaitPlaneService
-    from palm.system.interfaces.install import SystemInstall
 
     class _Orch:
         jobs: dict = {}
@@ -227,12 +227,18 @@ def test_boot_context_publishes_seats() -> None:
 
     rt = BaseRuntime()
     try:
-        rt.start(storage_backend="memory")
+        rt.start(drivers=bound_for_runtime(storage_backend="memory"))
         # Seats live on the shell after boot; BootContext is walk-local.
         assert rt.install is not None
         assert rt.planes is not None
         assert rt.supervisor is not None
-        ctx = BootContext(schedule="system", shell=rt, install=rt.install, planes=rt.planes, supervisor=rt.supervisor)
+        ctx = BootContext(
+            schedule="system",
+            shell=rt,
+            install=rt.install,
+            planes=rt.planes,
+            supervisor=rt.supervisor,
+        )
         assert ctx.shell is rt
         assert ctx.install is rt.install
         assert ctx.planes is rt.planes
@@ -244,8 +250,8 @@ def test_boot_context_publishes_seats() -> None:
 def test_boot_context_engine_seats_and_supervisor_ensure_on() -> None:
     """SD-016: boot publishes engine seats; supervisor seats like planes."""
     from palm.system.boot.context import BootContext
-    from palm.system.boot.system_schedule import build_system_handlers
     from palm.system.boot.phases import SYSTEM_PHASES
+    from palm.system.boot.system_schedule import build_system_handlers
     from palm.system.boot.walker import walk_schedule
     from palm.system.runtime.base import BaseRuntime
     from palm.system.subsystems.supervisor import SystemSupervisor
@@ -255,9 +261,11 @@ def test_boot_context_engine_seats_and_supervisor_ensure_on() -> None:
     try:
         walk_schedule(
             SYSTEM_PHASES,
-            build_system_handlers(options={
-                "storage_backend": "memory",
-            }),
+            build_system_handlers(
+                options={
+                    "drivers": bound_for_runtime(storage_backend="memory"),
+                }
+            ),
             ctx=ctx,
         )
         assert ctx.event is not None
@@ -276,9 +284,9 @@ def test_boot_context_engine_seats_and_supervisor_ensure_on() -> None:
 
 def test_runtime_install_is_first_class_interface() -> None:
     """SystemInstall peer of execution — bind explicit, snapshot via from_install."""
-    from palm.system.subsystems.planes.install_context import InstallContext
     from palm.system.interfaces.install import SystemInstall
     from palm.system.runtime.base import BaseRuntime
+    from palm.system.subsystems.planes.install_context import InstallContext
 
     rt = BaseRuntime()
     assert isinstance(rt.install, SystemInstall)
@@ -407,7 +415,7 @@ def test_default_probes_use_shared_resolvers() -> None:
     """Seat table uses attr_resolver / hub / first_resolver — no getattr wrappers."""
     import palm.system.vitality.seats as seats
     from palm.system.subsystems.planes.hub import get_system_planes
-    from palm.system.vitality.schema import SEAT_STRUCTURE, SEAT_INSTALL, SEAT_PLANES
+    from palm.system.vitality.schema import SEAT_INSTALL, SEAT_PLANES, SEAT_STRUCTURE
     from palm.system.vitality.seats import build_default_probes
 
     for name in (
@@ -495,8 +503,7 @@ def test_walk_started_base_runtime_seats_present() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         result = walk_result(rt)
@@ -535,9 +542,7 @@ def test_walk_started_base_runtime_seats_present() -> None:
         assert "capacity" in (by_id[SEAT_SYSTEM_LOG].meta.get("raw") or {})
 
         # Dynamic supervisor services (work_drain, outbox when DNA lists them).
-        service_ids = [
-            r.seat_id for r in result.reports if r.seat_id.startswith("supervisor.")
-        ]
+        service_ids = [r.seat_id for r in result.reports if r.seat_id.startswith("supervisor.")]
         assert supervisor_service_seat_id("work_drain") in service_ids
         assert supervisor_service_seat_id("outbox") in service_ids
         for sid in service_ids:
@@ -554,7 +559,7 @@ def test_walk_started_base_runtime_seats_present() -> None:
 def test_seat_walk_dicts_schema() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         rows = seat_walk(rt)
         assert all(row["schema"] == SEAT_REPORT_SCHEMA for row in rows)
@@ -567,7 +572,7 @@ def test_public_last_boot_walk_property() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     assert rt.last_boot_walk is None
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.last_boot_walk is not None
         assert len(rt.last_boot_walk) > 0
@@ -581,7 +586,7 @@ def test_public_last_boot_walk_property() -> None:
 def test_detach_wait_plane_becomes_absent() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         before = index_by_seat_id(discover_seats(rt))
         assert before[SEAT_WAIT_PLANE].present is True
@@ -602,7 +607,7 @@ def test_detach_wait_plane_becomes_absent() -> None:
 def test_supervisor_service_discovered_dynamically() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         custom = CallableSystemService("custom_loop", status=lambda: {"ticks": 3})
@@ -620,11 +625,9 @@ def test_supervisor_service_discovered_dynamically() -> None:
 def test_expand_supervisor_services_never() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
-        reports = discover_seats(
-            rt, WalkOptions(expand_supervisor_services="never")
-        )
+        reports = discover_seats(rt, WalkOptions(expand_supervisor_services="never"))
         assert all(not r.seat_id.startswith("supervisor.") for r in reports)
         assert any(r.seat_id == SEAT_SUPERVISOR for r in reports)
     finally:
@@ -694,9 +697,7 @@ def test_system_log_and_supervisor_have_no_seat_report() -> None:
     from palm.system.log import get_system_log
 
     log = get_system_log()
-    assert not hasattr(log, "seat_report") or not callable(
-        getattr(type(log), "seat_report", None)
-    )
+    assert not hasattr(log, "seat_report") or not callable(getattr(type(log), "seat_report", None))
     assert log.capacity >= 10
     assert isinstance(log.record_count, int)
 
@@ -766,7 +767,7 @@ def test_probe_error_becomes_error_report() -> None:
 def test_walk_does_not_start_supervisor_services() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         assert rt.supervisor.status()["running_count"] == 0

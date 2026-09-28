@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.settings import PalmSettings
+
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure import (
@@ -12,6 +13,7 @@ from palm.system.structure import (
     admission_inventory,
     admission_inventory_snapshot,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_admission_inventory_has_walls() -> None:
@@ -30,7 +32,7 @@ def test_admission_inventory_has_walls() -> None:
 def test_admission_inventory_snapshot_live() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         snap = admission_inventory_snapshot(rt)
         assert snap["live"]["is_started"] is True

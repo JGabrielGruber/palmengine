@@ -1,8 +1,8 @@
 """Wire WorkloadEngine with bound runner instances.
 
-The engine binds runners the composition record already installed.
-``local`` is the trusted default. ``host`` starts disabled unless
-``host_enabled`` is set. ``neonroot`` binds when that package was installed.
+The engine binds the runtime names the caller passes. It does not import
+runner packages and it does not choose a default name. ``host`` starts
+disabled unless ``host_enabled`` is set.
 """
 
 from __future__ import annotations
@@ -19,21 +19,26 @@ EventPublisher = Callable[[str, dict[str, Any]], None]
 
 def build_bound_runtimes(
     *,
+    names: tuple[str, ...],
     host_enabled: bool = False,
     work_root: Path | str | None = None,
 ) -> dict[str, WorkloadRuntime]:
-    """Construct live runtime instances for engine.initialize(runtimes=…).
+    """Construct live runtime instances for the names the bundle registered.
 
-    Walks the workload runtime registry. Does not import runner packages.
+    Does not import runner packages and does not add a name of its own.
     """
     from palm.core.workload.registry import workload_runtime_registry
 
+    missing = [name for name in names if name not in workload_runtime_registry.names()]
+    if missing:
+        listed = ", ".join(missing)
+        raise RuntimeError(f"workload runtime not registered: {listed}")
     return {
         name: workload_runtime_registry.get(name).bind(
             host_enabled=host_enabled,
             work_root=work_root,
         )
-        for name in workload_runtime_registry.names()
+        for name in names
     }
 
 
@@ -43,13 +48,18 @@ def initialize_workload_engine(
     host_enabled: bool = False,
     work_root: Path | str | None = None,
     default_runtime: str | None = None,
+    runtime_names: tuple[str, ...] = (),
     publish_event: EventPublisher | None = None,
 ) -> WorkloadEngine:
-    """Initialize engine; default_runtime falls back to **local** (always on)."""
-    runtimes = build_bound_runtimes(host_enabled=host_enabled, work_root=work_root)
+    """Initialize the engine with the named runtimes. No default name is added."""
+    runtimes = build_bound_runtimes(
+        names=runtime_names,
+        host_enabled=host_enabled,
+        work_root=work_root,
+    )
     engine.initialize(
         runtimes=runtimes,
-        default_runtime=default_runtime or "local",
+        default_runtime=default_runtime,
         publish_event=publish_event,
     )
     return engine

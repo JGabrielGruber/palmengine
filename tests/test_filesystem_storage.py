@@ -7,8 +7,10 @@ import threading
 from pathlib import Path
 
 import pytest
-
 from bundles.standard.app import PalmKernel, PalmSettings
+from drivers.storages.filesystem import FilesystemStorageBackend
+from drivers.storages.load import ensure_registered, initialize_engine
+
 from palm.common import DefinitionRepository, InstanceRepository
 from palm.common.storage import StorageFactory
 from palm.core import (
@@ -18,7 +20,6 @@ from palm.core import (
     storage_registry,
 )
 from palm.instances import ProcessInstance
-from drivers.storages.filesystem import FilesystemStorageBackend
 from tests.test_definitions_storage import _sample_flow, _sample_process
 
 
@@ -146,11 +147,11 @@ def test_storage_factory_backend_options_for_filesystem() -> None:
 
 
 def test_storage_factory_lazy_loads_mongodb() -> None:
-    StorageFactory.ensure_registered("mongodb")
+    ensure_registered("mongodb")
     assert "mongodb" in storage_registry.names()
 
     engine = StorageEngine()
-    StorageFactory.initialize_engine(engine, storage_backend="mongodb")
+    initialize_engine(engine, storage_backend="mongodb")
     engine.set("token", "abc")
     assert engine.get("token") == "abc"
     engine.shutdown()
@@ -158,7 +159,7 @@ def test_storage_factory_lazy_loads_mongodb() -> None:
 
 def test_definition_repository_filesystem_roundtrip(tmp_path: Path) -> None:
     engine = StorageEngine()
-    StorageFactory.initialize_engine(
+    initialize_engine(
         engine,
         storage_backend="filesystem",
         data_dir=tmp_path,
@@ -177,7 +178,7 @@ def test_definition_repository_filesystem_roundtrip(tmp_path: Path) -> None:
 
 def test_instance_repository_filesystem_roundtrip(tmp_path: Path) -> None:
     engine = StorageEngine()
-    StorageFactory.initialize_engine(
+    initialize_engine(
         engine,
         storage_backend="filesystem",
         data_dir=tmp_path,

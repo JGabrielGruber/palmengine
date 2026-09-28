@@ -13,6 +13,7 @@ from palm.common.resource import resource_definition_resolver
 from palm.system.boot.context import BootContext
 from palm.system.boot.definition import PhaseDefinition
 from palm.system.boot.shell import resolve_shell
+from palm.system.bound import BoundDrivers
 from palm.system.runtime.hooks import authenticate_runtime
 from palm.system.subsystems.planes.workload.bootstrap import initialize_workload_engine
 
@@ -38,11 +39,14 @@ def init_system_engines(
     def _publish_workload(event_type: str, payload: dict[str, Any]) -> None:
         shell.event.emit(event_type, **payload)
 
+    drivers = opts.get("drivers")
+    slot = drivers.workload_runtime if isinstance(drivers, BoundDrivers) else None
     initialize_workload_engine(
         shell.workload,
         host_enabled=bool(opts.get("workload_host_enabled", False)),
         work_root=opts.get("workload_work_root") or opts.get("data_dir"),
-        default_runtime=opts.get("workload_default_runtime"),
+        default_runtime=None if slot is None else slot.default,
+        runtime_names=() if slot is None else slot.names,
         publish_event=_publish_workload,
     )
 

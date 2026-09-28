@@ -76,10 +76,10 @@ Product knowledge still sits inside the system. Later refactor, not this sketch:
 `MinimalApp` (`src/bundles/minimal/app.py`):
 
 1. Construct `MinimalRuntime` (`BaseRuntime`, inline scheduler).
-2. `start(storage_backend="memory", structure_definition_id="local.embedded")`.
+2. Bind an open memory backend (`bundles.minimal.bind.bind_memory`), then `start(drivers=..., structure_definition_id="local.embedded")`. The workload-runtime slot is empty.
 3. `stop()` on the way out.
 
-Memory storage resolves in `StorageFactory` to `drivers.storages.memory`. That import is the storage seat. It is not the plugin stroke. The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `drivers.storages`.
+`bind_memory` opens `drivers.storages.memory`. That import is the bundle's storage seat. It is not the plugin stroke. The kernel does not import it. The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `drivers.storages`.
 
 The standard host schedule stays the picture of a full application: system log, kernel bootstrap, host events, workers, spawn, definition load, product wire, surfaces, recovery, ready. Spawn is the phase that enters the system. This app does not walk that schedule.
 

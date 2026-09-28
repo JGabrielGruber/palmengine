@@ -66,6 +66,8 @@ try:
     assert runtime.structure is not None
     assert runtime.structure.definition is not None
     assert runtime.structure.definition.id == "local.embedded"
+    assert runtime.storage.backend_name == "memory"
+    assert runtime.workload._default_runtime is None
     assert runtime.planes is not None
     banned = (
         "palm.common.plugins",

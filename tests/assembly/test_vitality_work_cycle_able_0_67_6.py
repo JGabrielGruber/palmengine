@@ -7,13 +7,14 @@ from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
 from palm.system.vitality import RECIPE_WORK_CYCLE, STATE_OK, run_benchmark
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_embedded_work_cycle_enqueues_without_drain() -> None:
     """Ready without work_drain still enqueues; tick does not process."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         assert rt.admission.has_capability(CAPABILITY_WORK_DRAIN) is False
@@ -32,8 +33,7 @@ def test_cli_work_cycle_drains_when_organ_installed() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         assert rt.admission.may_run_business is True

@@ -58,7 +58,12 @@ def build_host_handlers(
         host._worker_coordinator = WorkerCoordinator(host.profile, host._event)
 
     def system_spawn(_ctx: BootContext) -> None:
-        merged = runtime_start_options(host.settings, **options)
+        merged = runtime_start_options(
+            host.settings,
+            storage_engine=host._app.storage,
+            composition=host.composition,
+            **options,
+        )
         # 0.72.5 — kernel bootstrap already installed this composition.
         # The system schedule does not install.
         # 0.63.5 / 0.63.13 — seed structure definition + membership for refuse.

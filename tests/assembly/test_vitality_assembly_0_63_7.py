@@ -12,6 +12,7 @@ from palm.system.vitality import (
     walk_result,
 )
 from palm.system.vitality.seats import reset_default_probe_catalog_for_tests
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_assembly_seat_in_default_probes() -> None:
@@ -25,7 +26,7 @@ def test_started_runtime_assembly_seat_ok() -> None:
     reset_system_log_for_tests()
     reset_default_probe_catalog_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         result = walk_result(rt)
         by_id = result.by_id()
@@ -46,10 +47,7 @@ def test_assembly_skip_seat_absent_or_degraded() -> None:
     reset_system_log_for_tests()
     reset_default_probe_catalog_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         result = walk_result(rt)
         report = result.by_id().get(SEAT_STRUCTURE)

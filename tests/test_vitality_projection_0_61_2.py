@@ -33,6 +33,7 @@ from palm.system.vitality import (
     project_top,
     reset_default_vitality_registry_for_tests,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def setup_function() -> None:
@@ -64,9 +65,7 @@ def test_default_registry_has_seat_walk_enabled() -> None:
     assert "system_log_tail" not in reg
     assert CAPABILITY_MONITOR_AGENT in reg
     assert not reg.is_enabled(CAPABILITY_MONITOR_AGENT)
-    intention = next(
-        r for r in reg.catalog() if r["id"] == CAPABILITY_MONITOR_AGENT
-    )
+    intention = next(r for r in reg.catalog() if r["id"] == CAPABILITY_MONITOR_AGENT)
     assert intention["maturity"] == MATURITY_INTENTION
 
 
@@ -103,7 +102,7 @@ def test_custom_capability_registration() -> None:
 
 def test_project_started_runtime_seat_walk() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         snap = project(rt)
         assert snap.schema == VITALITY_SNAPSHOT_SCHEMA
@@ -133,7 +132,7 @@ def test_project_started_runtime_seat_walk() -> None:
 
 def test_project_top_view_structural() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         top = project_top(rt)
         assert top["schema"] == VITALITY_SNAPSHOT_SCHEMA
@@ -152,7 +151,7 @@ def test_project_top_view_structural() -> None:
 def test_projection_receives_reports_no_second_walk_in_bag() -> None:
     """seat_walk stores reports in bag; projection does not invent seats."""
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         direct = discover_seats(rt)
         snap = project_seat_walk_only(rt)
@@ -226,7 +225,7 @@ def test_capability_error_becomes_error_fragment() -> None:
 
 def test_snapshot_to_dict_schema() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         d = project(rt).to_dict()
         assert d["schema"] == VITALITY_SNAPSHOT_SCHEMA
@@ -239,7 +238,7 @@ def test_snapshot_to_dict_schema() -> None:
 
 def test_projection_does_not_start_services() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         assert rt.supervisor.status()["running_count"] == 0

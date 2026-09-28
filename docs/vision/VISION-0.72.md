@@ -1,6 +1,6 @@
 # VISION 0.72 — Composition plugin membership (minimal embed measure)
 
-**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.5`** landed. Next expected: **`0.72.6`** bound drivers. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
+**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.6`** landed. Next expected: **`0.72.7`** loader. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed** · [041-bundle-start.md](../adr/041-bundle-start.md) **Proposed** (amends 040 D2, D4, D7).  
@@ -92,7 +92,7 @@ These rows are facts in the tree. They are not decisions. [ADR-040](../adr/040-c
 |------|------|-----------------|
 | First call | `host.kernel.bootstrap` → `PalmKernel.bootstrap(composition)` → `ensure_plugins` | The one install. A kernel call with no composition uses the `all_in_one` record. This runs before system start |
 | Alias | `bundles.standard.app.bootstrap.ensure_plugins` | Reads the profile and calls the stroke |
-| System schedule | `BaseRuntime.start` → `SYSTEM_PHASES` | No install phase (`0.72.5`). `start` refuses `plugin_install` and `composition_packages` |
+| System schedule | `BaseRuntime.start` → `SYSTEM_PHASES` | No install phase (`0.72.5`). `start` takes bound drivers (`0.72.6`) and refuses `plugin_install` and `composition_packages`. `system.storage.select` attaches the bound storage. The kernel does not import `drivers` and does not default a storage or a runner |
 | Stroke | `palm.common.plugins.ensure_core_plugins` | No process flag. Calls `autoload(names)` for kits, patterns, providers, runners, storages, and transforms |
 
 A later call imports names that are not yet imported. It does not unload names already imported.
@@ -105,7 +105,7 @@ A later call imports names that are not yet imported. It does not unload names a
 | Patterns | `dag`, `parallel`, `pipeline`, `wizard` | `INSTALLED_PATTERNS` |
 | Providers | `rest`, `palm`, `kv`, `file`, `authoring` | `INSTALLED_PROVIDERS` |
 | Runners | `local`, `host`, `neonroot` | `INSTALLED_RUNNERS`. The workload plane binds classes already on the registry. `host` starts disabled unless `workload_host_enabled` |
-| Storages | `memory`, `filesystem` | `CORE_STORAGES` and `OPTIONAL_STORAGES` stay catalogs. `postgres` and `mongodb` are not on the records. `StorageFactory` still loads them on demand |
+| Storages | `memory`, `filesystem` | `CORE_STORAGES` and `OPTIONAL_STORAGES` stay catalogs. `postgres` and `mongodb` are not on the records. `drivers.storages.load` loads a backend by name. The kernel does not |
 | Transforms | names on each saved record (`0.72.4`) | `INSTALLED_TRANSFORMS` stays the catalog. The stroke walks the record |
 | Services | the host imports `composition.services` (`0.72.4`) | `INSTALLED_SERVICES` stays the catalog. `HostServiceRegistry` constructs the same tuple |
 
@@ -115,7 +115,7 @@ A later call imports names that are not yet imported. It does not unload names a
 |---------|----------------|
 | Saved composition records | Each record has package name fields (`0.72.3`). Phenotype fields are unchanged. `embedded` services stay `inspect`, `session`, `definitions`, `execution`. Surfaces empty. Capabilities empty. Package names match the other records |
 | `BootMode` | Stores the profile built from a record. It does not choose packages by itself |
-| Kernel bootstrap | Installs `package_names()` once, before system start (`0.72.5`). Spawn does not pass that set |
+| Kernel bootstrap | Installs `package_names()` once, before system start (`0.72.5`). Spawn passes bound drivers for the storage the profile names and the runners that profile registered (`0.72.6`). Spawn does not pass the plugin set |
 | Kit `server` | On `INSTALLED_KITS`. Off every saved record. The server runtime imports it when that surface starts |
 | Runner `host` | On the record, so the stroke imports it. The engine binds the registered class. OFF is `workload_host_enabled` |
 | Storage names | The record names `memory` and `filesystem`. `include_optional` is gone |
@@ -201,9 +201,10 @@ Do not invent carriers or suites in this plan pack.
 | **0.72.3** | Package names on that record (P9), then one install stroke. `autoload` walks the set. Latch callers use the stroke (P1–P4). `CORE_KITS`, runner `host` always-import, and `include_optional` stop being the law in this same slice (P12–P14). | **landed** |
 | **0.72.4** | Second menus. Transform names are on the record. The host imports the service tuple (P10, P11). | **landed** |
 | **0.72.5** | The kernel schedule has no install phase. The standard bundle installs once, in kernel bootstrap, before `start`. | **landed** |
-| **0.72.6** | `start` receives bound drivers. The kernel does not import or default a storage or a runner. | **expected** |
+| **0.72.6** | `start` receives bound drivers. The kernel does not import or default a storage or a runner. | **landed** |
+| **0.72.7** | The bundle's loader installs the driver set and the plugin set once and returns bound drivers plus provenance. | **expected** |
 
-Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` waits on that. One slice is one law and its call sites. Spine stays green (job path, wait, session). `just check` covers the modes that slice declares. A preset the slice does not declare may break. Measure stays **not pass** until a later prove-it. Do not invent fake slices as landed. Do not solve a §12 row inside `0.72.1`.
+Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` waits on that. One slice is one law and its call sites. Spine stays green (job path, wait, session). `just check` covers the modes that slice declares. A preset the slice does not declare may break. Measure stays **not pass** until a later prove-it. Do not invent fake slices as landed. Do not solve a §12 row inside `0.72.1`.
 
 ---
 
@@ -233,7 +234,7 @@ Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` nam
 
 ## 11. Residual (open)
 
-Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. The install stroke and the kernel boundary through `0.72.5` are landed. The loader, bound drivers, and the readiness join are unpaid. Named O1–O5 bar holds as fail-closed observables for later slices — do not claim green.
+Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. The install stroke, the kernel boundary through `0.72.5`, and bound drivers (`0.72.6`) are landed. The loader and the readiness join are unpaid. Named O1–O5 bar holds as fail-closed observables for later slices — do not claim green.
 
 | Residual | Truth |
 |----------|-------|
@@ -246,6 +247,7 @@ Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. The in
 | Package names + install stroke | **Landed** as `0.72.3`. Each record names kits, patterns, providers, runners, and storages. The stroke walks those names. Every saved record names the same set. `CORE_KITS` and `include_optional` are gone. Runner `host` imports when the record names it. |
 | Second menus | **Landed** as `0.72.4`. Each record names the same transform set. The host imports `composition.services`. |
 | Kernel install phase | **Landed** as `0.72.5`. `SYSTEM_PHASES` has no `system.plugins.ensure`. Kernel bootstrap is the one install. |
+| Bound drivers | **Landed** as `0.72.6`. `start` takes `BoundDrivers` (`version` 1, an open storage backend, optional workload-runtime slot). `palm.system` does not import `drivers`. |
 | Deployment seed names a record | When there is no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still take their record name from `boot_mode_name_for_deployment`. Structure seed uses that same name. Removing the name would load a record the definition refuses. |
 
 ---
@@ -286,4 +288,4 @@ Rows that stay **named** are not implemented. **`0.72.2`** paid P5–P8: those s
 
 `0.72.2` build path: `COMPOSITION_RECORDS` holds the six shapes. `CompositionProfile.from_record` and `composition_profile_from_name` build the profile. `composition_profile_from_settings` copies services and surfaces from the `all_in_one` record and writes capabilities from settings. `BootMode` stores that built profile. With no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still select the record by `boot_mode_name_for_deployment` (§11). `all_in_one` uses the settings build.
 
-`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. `ensure_core_plugins` walks the names. `autoload` takes the names. The host bootstrap passes the host composition. Every saved record names the same package set. `0.72.4` adds transform names to that walk, and the host imports the service tuple. `0.72.5` removes the system install phase. Measure stays **not pass**.
+`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. `ensure_core_plugins` walks the names. `autoload` takes the names. The host bootstrap passes the host composition. Every saved record names the same package set. `0.72.4` adds transform names to that walk, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. Measure stays **not pass**.

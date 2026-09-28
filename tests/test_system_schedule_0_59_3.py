@@ -4,17 +4,19 @@ from __future__ import annotations
 
 from bundles.standard.app.bootstrap import runtime_start_options
 from bundles.standard.app.settings import PalmSettings
+
 from palm.system.boot import SYSTEM_PHASES, system_phase_ids
 from palm.system.log import get_system_log, reset_system_log_for_tests
+from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.planes.session.plane import SessionPlaneService
 from palm.system.subsystems.planes.wait.plane import WaitPlaneService
-from palm.system.runtime.base import BaseRuntime
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_system_start_walks_full_phase_table() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.is_started
         assert rt._last_boot_walk is not None
@@ -67,7 +69,9 @@ def test_system_start_walks_full_phase_table() -> None:
 def test_system_start_with_outbox_ok() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory", structure_definition_id="local.cli")
+    rt.start(
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
+    )
     try:
         assert rt.outbox_store is not None
         by_id = {w.phase: w for w in (rt._last_boot_walk or [])}

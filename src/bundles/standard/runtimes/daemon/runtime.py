@@ -8,6 +8,7 @@ import signal
 import threading
 from typing import Any, ClassVar
 
+from bundles.standard.app.bind import prepare_bound_start
 from palm.system.runtime.base import BaseRuntime
 from palm.system.runtime.wiring import SchedulerPolicy
 
@@ -22,6 +23,10 @@ class DaemonRuntime(BaseRuntime):
 
     runtime_name: ClassVar[str] = "DaemonRuntime"
     default_scheduler_policy: ClassVar[SchedulerPolicy] = "queued"
+
+    def start(self, **options: Any) -> None:
+        """Bind drivers, then walk the system schedule."""
+        super().start(**prepare_bound_start(self.storage, options))
 
 
 def run_daemon(**options: Any) -> None:

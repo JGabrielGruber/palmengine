@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sys
 
+from drivers.runners.local.runtime import LocalWorkloadRuntime
+
 from palm.core.workload import (
     IsolationPolicy,
     LifecyclePolicy,
@@ -13,7 +15,6 @@ from palm.core.workload import (
     WorkloadSpec,
     WorkloadStatus,
 )
-from drivers.runners.local.runtime import LocalWorkloadRuntime
 
 
 def test_local_always_enabled_and_healthy(tmp_path) -> None:
@@ -84,11 +85,16 @@ def test_engine_doctor_includes_health(tmp_path) -> None:
     engine.shutdown()
 
 
-def test_bootstrap_default_local(tmp_path) -> None:
+def test_bootstrap_binds_named_runtimes(tmp_path) -> None:
     from palm.system.subsystems.planes.workload.bootstrap import initialize_workload_engine
 
     engine = WorkloadEngine()
-    initialize_workload_engine(engine, work_root=tmp_path)
+    initialize_workload_engine(
+        engine,
+        work_root=tmp_path,
+        default_runtime="local",
+        runtime_names=("local", "host"),
+    )
     assert engine._default_runtime == "local"
     assert "local" in engine._runtimes
     assert engine._runtimes["local"].is_enabled()

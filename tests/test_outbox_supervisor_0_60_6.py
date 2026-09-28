@@ -5,13 +5,14 @@ from __future__ import annotations
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.supervisor import OutboxLoopService
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_embedded_store_does_not_register_outbox() -> None:
     """Embedded DNA omits outbox — store skip and loop omit are the same listing."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.outbox_processor is None
         assert rt.supervisor is not None
@@ -30,8 +31,7 @@ def test_cli_dna_starts_outbox_when_store_wired() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         by_id = {w.phase: w for w in (rt._last_boot_walk or [])}
@@ -49,8 +49,7 @@ def test_outbox_and_work_drain_both_start() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         assert rt.supervisor is not None

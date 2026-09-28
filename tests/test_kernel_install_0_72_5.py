@@ -2,7 +2,7 @@
 
 The standard bundle installs once, in kernel bootstrap, before system start.
 ``start`` refuses ``plugin_install`` and ``composition_packages``.
-Storage select may still import ``drivers.storages`` (0.72.6).
+``0.72.6`` moves storage loading out of the kernel. ``start`` takes bound drivers.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import pytest
 
 from palm.system.boot import system_phase_ids
 from palm.system.runtime.base import BaseRuntime
+from tests.helpers.bound import bound_for_runtime
 
 _REPO = Path(__file__).resolve().parents[1]
 
@@ -48,10 +49,13 @@ def test_system_schedule_has_no_install_phase() -> None:
 def test_start_refuses_install_keys() -> None:
     runtime = BaseRuntime()
     with pytest.raises(RuntimeError, match="does not install"):
-        runtime.start(storage_backend="memory", plugin_install=lambda **_kwargs: None)
+        runtime.start(
+            drivers=bound_for_runtime(storage_backend="memory"),
+            plugin_install=lambda **_kwargs: None,
+        )
     assert runtime.is_started is False
     with pytest.raises(RuntimeError, match="does not install"):
-        runtime.start(storage_backend="memory", composition_packages={})
+        runtime.start(drivers=bound_for_runtime(storage_backend="memory"), composition_packages={})
     assert runtime.is_started is False
 
 

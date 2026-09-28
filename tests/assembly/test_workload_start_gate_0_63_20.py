@@ -13,6 +13,7 @@ from palm.core.workload import (
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.errors import AdmissionRefusedError
+from tests.helpers.bound import bound_for_runtime
 
 
 def _minimal_spec() -> WorkloadSpec:
@@ -28,7 +29,7 @@ def test_start_workload_refused_when_assembly_skipped() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
+        drivers=bound_for_runtime(storage_backend="memory"),
         structure_skip=True,
         workload_host_enabled=True,
     )
@@ -46,7 +47,7 @@ def test_start_workload_refused_when_dna_refuse_blocks() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
+        drivers=bound_for_runtime(storage_backend="memory"),
         structure_definition_id="local.embedded",
         structure_surfaces=["rest"],
         workload_host_enabled=True,
@@ -62,10 +63,7 @@ def test_start_workload_refused_when_dna_refuse_blocks() -> None:
 def test_start_workload_allowed_when_admitted() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        workload_host_enabled=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), workload_host_enabled=True)
     try:
         assert rt.admission.may_run_business is True
         # Host runtime may fail for other reasons; admission must not refuse first.
@@ -85,7 +83,7 @@ def test_structure_workload_engine_not_gated_by_port() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
+        drivers=bound_for_runtime(storage_backend="memory"),
         structure_skip=True,
         workload_host_enabled=True,
     )

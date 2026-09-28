@@ -7,11 +7,13 @@ from datetime import UTC, datetime, timedelta
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.host.boot.modes import BootMode
 from bundles.standard.app.settings import PalmSettings
+
 from palm.core.structure import CAPABILITY_WORK_DRAIN, Observation, ObservationKind
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
 from palm.system.subsystems.planes.work.schedule import SCHEDULE_PREFIX
+from tests.helpers.bound import bound_for_runtime
 
 
 def _lean() -> PalmSettings:
@@ -39,7 +41,7 @@ def test_embedded_ready_does_not_fire_schedules() -> None:
     """Ready without work_drain is not schedule membership."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         assert rt.admission.has_capability(CAPABILITY_WORK_DRAIN) is False
@@ -60,8 +62,7 @@ def test_cli_fires_schedules_when_drain_installed() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         assert rt.admission.may_run_business is True
@@ -82,8 +83,7 @@ def test_truth_home_down_does_not_fire_schedules() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         plane = rt.work_plane

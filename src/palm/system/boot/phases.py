@@ -127,7 +127,7 @@ SYSTEM_PHASES: tuple[PhaseSpec, ...] = (
         "system.storage.select",
         "system",
         "implemented",
-        "StorageFactory when storage not yet initialized",
+        "attach the bound storage backend",
     ),
     PhaseSpec(
         "system.outbox.wire",

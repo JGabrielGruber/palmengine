@@ -5,15 +5,16 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-
 from bundles.standard.app.host.application_host import ApplicationHost
 from bundles.standard.app.settings import PalmSettings
-from palm.core.structure import AdmissionSnapshot, StructurePhase
 from services.assist.session import AssistSession
+
+from palm.core.structure import AdmissionSnapshot, StructurePhase
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
+from tests.helpers.bound import bound_for_runtime
 
 
 def _settings() -> PalmSettings:
@@ -96,10 +97,7 @@ def test_resume_process_refused_when_assembly_skipped() -> None:
     """Cartography: resume_process already gated via executor._require_runtime."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         with pytest.raises(AdmissionRefusedError):

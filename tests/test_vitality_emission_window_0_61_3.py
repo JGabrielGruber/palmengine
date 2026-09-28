@@ -22,6 +22,7 @@ from palm.system.vitality import (
     reset_default_vitality_registry_for_tests,
     sample_emission_window,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def setup_function() -> None:
@@ -47,7 +48,7 @@ def test_default_registry_emission_window_installed() -> None:
 
 def test_sample_emission_window_after_boot() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         frag = sample_emission_window(rt, SampleContext())
         assert frag.capability_id == CAPABILITY_EMISSION_WINDOW
@@ -87,11 +88,7 @@ def test_declared_actor_kind_partitions() -> None:
     assert by.get(ACTOR_KIND_AGENT, 0) >= 1
     # mystery.blip has no actor_kind → channel default system (not invented human).
     assert by.get(ACTOR_KIND_SYSTEM, 0) >= 1
-    agents = [
-        e
-        for e in frag.data["emissions"]
-        if e.get("actor_kind") == ACTOR_KIND_AGENT
-    ]
+    agents = [e for e in frag.data["emissions"] if e.get("actor_kind") == ACTOR_KIND_AGENT]
     assert agents
     assert agents[-1]["actor_source"] == "declared"
     assert agents[-1]["session_subject"] == "sess-test-1"
@@ -114,7 +111,7 @@ def test_invalid_declared_actor_is_unknown() -> None:
 
 def test_project_includes_emission_window_by_default() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         snap = project(rt)
         assert CAPABILITY_SEAT_WALK in snap.fragments
@@ -144,7 +141,7 @@ def test_window_limit_bag() -> None:
 
 def test_projection_still_does_not_start_services() -> None:
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.supervisor is not None
         assert rt.supervisor.status()["running_count"] == 0

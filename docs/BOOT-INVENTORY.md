@@ -93,9 +93,9 @@ Source: `BaseRuntime.start` (`palm.system.runtime.base`).
 | S1 | `plugins.ensure` | Left the system schedule in `0.72.5` | The standard bundle installs in kernel bootstrap, once, before system start. `start` refuses `plugin_install` and `composition_packages` |
 | S2 | `engines.core` | context, event initialize | |
 | S3 | `engines.resource` | resource.initialize (+ cache options) | |
-| S4 | `engines.workload` | `initialize_workload_engine` | host runner opt-in via options |
+| S4 | `engines.workload` | `initialize_workload_engine` | names and default come from the bound workload slot (`0.72.6`). An empty slot binds no runner |
 | S5 | `engines.auth` | auth.initialize + authenticate_runtime | |
-| S6 | `storage.select` | StorageFactory if not initialized | default memory |
+| S6 | `storage.select` | attach the bound storage backend | no memory default (`0.72.6`) |
 | S7 | `events.outbox` | OutboxStore + wire_reliable_events if enabled | |
 | S8 | `hooks.install` | build job hooks list | observability, auth, persist, session ownership, outbox drain, snapshots |
 | S9 | `orch.init` | orchestration.initialize(scheduler, hooks, …) | |

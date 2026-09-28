@@ -8,15 +8,13 @@ from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.structure.errors import AdmissionRefusedError
 from palm.system.structure.inventory import GATED_PATHS, READINESS_EDGES, admission_inventory
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_resume_job_refused_when_assembly_skipped() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         with pytest.raises(AdmissionRefusedError):
@@ -28,10 +26,7 @@ def test_resume_job_refused_when_assembly_skipped() -> None:
 def test_provide_input_refused_when_assembly_skipped() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         with pytest.raises(AdmissionRefusedError):
@@ -44,9 +39,7 @@ def test_resume_job_allowed_when_admitted_reaches_orchestrator() -> None:
     """Admission open → gate does not refuse; missing job is orchestration error."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         try:
@@ -62,10 +55,7 @@ def test_orch_resume_not_gated_as_product_door() -> None:
     """Wait-plane spine dig — named residual, not ExecutionPort admission path."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         try:

@@ -6,6 +6,7 @@ from palm.system.boot import system_phase_ids
 from palm.system.log import get_system_log, reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.supervisor import CallableSystemService, SystemSupervisor
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_supervisor_register_start_stop_status() -> None:
@@ -64,7 +65,7 @@ def test_supervisor_unknown_service_raises() -> None:
 def test_system_boot_wires_empty_supervisor() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.is_started
         assert isinstance(rt.supervisor, SystemSupervisor)
@@ -93,7 +94,7 @@ def test_system_boot_wires_empty_supervisor() -> None:
 def test_supervisor_stop_on_runtime_stop_stops_services() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     stopped: list[str] = []
     try:
         assert rt.supervisor is not None

@@ -15,19 +15,16 @@ from palm.system.structure import (
     PlaceEffectPort,
     StructureSeat,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_place_registry_ensure_release() -> None:
     registry = InProcessPlaceRegistry()
     port = PlaceEffectPort(registry=registry)
-    obs = port.apply(
-        EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="support_home")
-    )
+    obs = port.apply(EffectIntent(kind=EffectIntentKind.ENSURE_PLACE, target="support_home"))
     assert obs[0].kind.value == "place_ready"
     assert registry.places["support_home"] == "ready"
-    obs2 = port.apply(
-        EffectIntent(kind=EffectIntentKind.RELEASE_PLACE, target="support_home")
-    )
+    obs2 = port.apply(EffectIntent(kind=EffectIntentKind.RELEASE_PLACE, target="support_home"))
     assert obs2[0].kind.value == "place_gone"
     assert "support_home" not in registry.places
 
@@ -51,10 +48,9 @@ def test_runtime_default_place_registry_hands() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
+        drivers=bound_for_runtime(storage_backend="memory"),
         structure_definition=StructureDefinition(
-            id="local.with_place",
-            places_required=("manor_a",),
+            id="local.with_place", places_required=("manor_a",)
         ),
     )
     try:

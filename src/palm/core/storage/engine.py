@@ -39,6 +39,25 @@ class StorageEngine(BasePalmEngine):
         """Registered name of the active backend."""
         return self._backend_name
 
+    def attach(self, backend: BaseBackend) -> BaseBackend:
+        """Use an already-open backend. Does not construct or import a driver."""
+        if not isinstance(backend, BaseBackend) or not backend.is_open:
+            raise StorageNotConfiguredError("bound storage backend is not open")
+        if self._initialized:
+            if self._active is backend:
+                return backend
+            if (
+                self._active is not None
+                and self._active.is_open
+                and self._backend_name == backend.name
+            ):
+                return self._active
+            raise StorageNotConfiguredError(
+                "storage is already initialized with a different backend"
+            )
+        self.initialize(bound_backend=backend)
+        return backend
+
     def select(self, name: str, **backend_options: Any) -> BaseBackend:
         """
         Activate the storage backend registered under ``name``.
@@ -83,6 +102,14 @@ class StorageEngine(BasePalmEngine):
         self._backend_name = None
 
     def _do_initialize(self, **options: Any) -> None:
+        bound = options.get("bound_backend")
+        if isinstance(bound, BaseBackend):
+            if not bound.is_open:
+                raise StorageNotConfiguredError("bound storage backend is not open")
+            self._close_active()
+            self._active = bound
+            self._backend_name = bound.name
+            return
         default = options.get("backend")
         if isinstance(default, str):
             backend_options = options.get("backend_options")

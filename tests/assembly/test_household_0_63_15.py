@@ -20,20 +20,17 @@ from palm.system.structure import (
     StructureSeat,
     os_prefix_spawn_port,
 )
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_structure_projection_invalidate_refresh() -> None:
     hands = StructureEffectPort()
     hands.bind_structure(local_embedded())
-    inv = hands.apply(
-        EffectIntent(kind=EffectIntentKind.INVALIDATE_PROJECTION, target="home")
-    )
+    inv = hands.apply(EffectIntent(kind=EffectIntentKind.INVALIDATE_PROJECTION, target="home"))
     assert inv[0].kind.value == "projection_failed"
     assert "home" not in hands.projections_loaded
 
-    ref = hands.apply(
-        EffectIntent(kind=EffectIntentKind.REFRESH_PROJECTION, target="home")
-    )
+    ref = hands.apply(EffectIntent(kind=EffectIntentKind.REFRESH_PROJECTION, target="home"))
     assert ref[0].kind.value == "projection_loaded"
     assert "home" in hands.projections_loaded
 
@@ -99,9 +96,7 @@ def test_os_process_spawn_and_release() -> None:
     assert isinstance(pid, int)
     assert "os:sleeper" in reg.processes
     # release terminates
-    gone = port.apply(
-        EffectIntent(kind=EffectIntentKind.RELEASE_PLACE, target="os:sleeper")
-    )
+    gone = port.apply(EffectIntent(kind=EffectIntentKind.RELEASE_PLACE, target="os:sleeper"))
     assert gone[0].kind.value == "place_gone"
     assert "os:sleeper" not in reg.processes
     # process should be dead soon
@@ -129,7 +124,7 @@ def test_os_process_fail_closed_without_argv() -> None:
 def test_runtime_structure_default_hands() -> None:
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         assert rt.admission.may_run_business is True
         assert isinstance(rt.structure.effects, StructureEffectPort)  # type: ignore[union-attr]
@@ -155,9 +150,7 @@ def test_engine_projection_intents_via_loop() -> None:
         engine.observe(obs)
     assert engine.admission().may_run_business is False
     assert engine.admission().phase is StructurePhase.BLOCKED
-    for obs in hands.apply(
-        EffectIntent(kind=EffectIntentKind.REFRESH_PROJECTION, target="home")
-    ):
+    for obs in hands.apply(EffectIntent(kind=EffectIntentKind.REFRESH_PROJECTION, target="home")):
         engine.observe(obs)
     loop2 = assemble_until_steady(engine, hands)
     assert loop2.steady is True

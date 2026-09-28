@@ -12,6 +12,7 @@ from palm.core.work import WorkIntent
 from palm.system.log import reset_system_log_for_tests
 from palm.system.runtime.base import BaseRuntime
 from palm.system.subsystems.planes.work.plane import WorkPlaneService
+from tests.helpers.bound import bound_for_runtime
 
 
 def test_work_plane_tick_when_admission_ready() -> None:
@@ -19,8 +20,7 @@ def test_work_plane_tick_when_admission_ready() -> None:
     submitted: list[str] = []
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         assert rt.admission.may_run_business is True
@@ -41,10 +41,7 @@ def test_work_plane_fail_closed_when_assembly_skipped() -> None:
     reset_system_log_for_tests()
     submitted: list[str] = []
     rt = BaseRuntime()
-    rt.start(
-        storage_backend="memory",
-        structure_skip=True,
-    )
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"), structure_skip=True)
     try:
         assert rt.admission.may_run_business is False
         assert rt.admission.phase is StructurePhase.EMPTY
@@ -68,8 +65,7 @@ def test_work_plane_fail_closed_when_truth_home_down() -> None:
     submitted: list[str] = []
     rt = BaseRuntime()
     rt.start(
-        storage_backend="memory",
-        structure_definition_id="local.cli",
+        drivers=bound_for_runtime(storage_backend="memory"), structure_definition_id="local.cli"
     )
     try:
         plane = rt.work_plane
@@ -99,7 +95,7 @@ def test_install_able_matches_drain_not_ready() -> None:
     """0.67.2 — board able is work_drain membership, not may_run_business."""
     reset_system_log_for_tests()
     rt = BaseRuntime()
-    rt.start(storage_backend="memory")
+    rt.start(drivers=bound_for_runtime(storage_backend="memory"))
     try:
         able = rt.install.able
         assert able is not None
