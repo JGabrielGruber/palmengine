@@ -21,7 +21,7 @@ _FORBIDDEN_PREFIXES = (
     "plugins.patterns",
     "plugins.providers",
     "plugins.kits",
-    "plugins.runners",
+    "drivers.runners",
 )
 
 
@@ -74,7 +74,7 @@ try:
         "plugins.patterns",
         "plugins.providers",
         "plugins.kits",
-        "plugins.runners",
+        "drivers.runners",
     )
     loaded = [
         name
@@ -82,7 +82,7 @@ try:
         if any(name == prefix or name.startswith(prefix + ".") for prefix in banned)
     ]
     assert loaded == [], loaded
-    assert "plugins.storages.memory" in sys.modules
+    assert "drivers.storages.memory" in sys.modules
 finally:
     app.stop()
 print("ok")

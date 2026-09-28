@@ -79,7 +79,7 @@ Product knowledge still sits inside the system. Later refactor, not this sketch:
 2. `start(storage_backend="memory", structure_definition_id="local.embedded")`.
 3. `stop()` on the way out.
 
-Memory storage resolves in `StorageFactory` to `plugins.storages.memory`. That import is the storage seat. It is not the plugin stroke. The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `plugins.storages`.
+Memory storage resolves in `StorageFactory` to `drivers.storages.memory`. That import is the storage seat. It is not the plugin stroke. The living map still says `palm.storages` ([PALM.md](../../PALM.md) §5.3). The tree package is `drivers.storages`.
 
 The standard host schedule stays the picture of a full application: system log, kernel bootstrap, host events, workers, spawn, definition load, product wire, surfaces, recovery, ready. Spawn is the phase that enters the system. This app does not walk that schedule.
 

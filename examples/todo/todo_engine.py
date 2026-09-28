@@ -16,7 +16,7 @@ from palm.definitions import FlowDefinition, ResourceDefinition
 
 import plugins.patterns  # noqa: F401
 import plugins.providers  # noqa: F401
-import plugins.storages.memory  # noqa: F401
+import drivers.storages.memory  # noqa: F401
 
 from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
 from bundles.standard.app.bootstrap import runtime_start_options

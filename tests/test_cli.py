@@ -270,7 +270,7 @@ def test_instance_list_to_status_filesystem(tmp_path) -> None:
 
 
 def test_shared_storage_aligns_settings() -> None:
-    import plugins.storages.memory  # noqa: F401
+    import drivers.storages.memory  # noqa: F401
     from palm.core import StorageEngine
 
     storage = StorageEngine()
@@ -370,7 +370,7 @@ def test_repl_completer_builds(cli_ctx) -> None:
 
 @pytest.mark.slow
 def test_instance_resume() -> None:
-    import plugins.storages.memory  # noqa: F401
+    import drivers.storages.memory  # noqa: F401
     from palm.core import StorageEngine
 
     storage = StorageEngine()

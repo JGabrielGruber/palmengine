@@ -18,10 +18,10 @@ _OPTIONAL_STORAGES: dict[str, str] = {
     "mongodb": "mongodb",
 }
 _STORAGE_MODULES: dict[str, str] = {
-    "memory": "plugins.storages.memory",
-    "filesystem": "plugins.storages.filesystem",
-    "postgres": "plugins.storages.postgres",
-    "mongodb": "plugins.storages.mongodb",
+    "memory": "drivers.storages.memory",
+    "filesystem": "drivers.storages.filesystem",
+    "postgres": "drivers.storages.postgres",
+    "mongodb": "drivers.storages.mongodb",
 }
 _DEFAULT_DATA_DIR = Path("data")
 

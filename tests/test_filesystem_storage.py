@@ -18,7 +18,7 @@ from palm.core import (
     storage_registry,
 )
 from palm.instances import ProcessInstance
-from plugins.storages.filesystem import FilesystemStorageBackend
+from drivers.storages.filesystem import FilesystemStorageBackend
 from tests.test_definitions_storage import _sample_flow, _sample_process
 
 

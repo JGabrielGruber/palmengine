@@ -80,7 +80,7 @@ def test_host_enabled_via_start_options() -> None:
 
 
 def test_doctor_includes_workloads_and_host_warning() -> None:
-    import plugins.runners  # noqa: F401
+    import drivers.runners  # noqa: F401
 
     rt = EmbeddedRuntime()
     rt.start(

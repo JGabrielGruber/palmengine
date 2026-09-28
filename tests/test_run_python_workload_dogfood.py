@@ -45,7 +45,7 @@ def test_resolve_runtime_auto_prefers_string() -> None:
 
 def test_wizard_workload_step_host_run() -> None:
     from palm.core.workload import WorkloadEngine
-    from plugins.runners.host.runtime import HostWorkloadRuntime
+    from drivers.runners.host.runtime import HostWorkloadRuntime
 
     engine = WorkloadEngine()
     engine.initialize(runtimes={"host": HostWorkloadRuntime(enabled=True)})

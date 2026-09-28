@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from plugins.runners.neonroot.run_dir import (
+from drivers.runners.neonroot.run_dir import (
     create_run_dir,
     remove_run_dir,
     write_payload_file,

@@ -15,7 +15,7 @@ from palm.definitions import FlowDefinition
 from palm.instances import ProcessInstance, StateSnapshot
 from plugins.patterns.wizard import WizardKeys
 from bundles.standard.runtimes.embedded import EmbeddedRuntime
-from plugins.storages import memory  # noqa: F401
+from drivers.storages import memory  # noqa: F401
 
 
 def _wizard_flow() -> FlowDefinition:

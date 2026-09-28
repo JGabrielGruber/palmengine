@@ -15,7 +15,7 @@ from palm.definitions import (
     StateSchemaDefinition,
 )
 from palm.states import BlackboardState
-from plugins.storages import memory  # noqa: F401
+from drivers.storages import memory  # noqa: F401
 
 
 def _sample_flow() -> FlowDefinition:

@@ -17,7 +17,7 @@ from palm.core.workload import (
     WorkloadSpec,
     WorkloadStatus,
 )
-from plugins.runners.host.runtime import HostWorkloadRuntime
+from drivers.runners.host.runtime import HostWorkloadRuntime
 
 
 def _run_spec(*, runtime: str = "host", isolation: IsolationPolicy = IsolationPolicy.HOST) -> WorkloadSpec:

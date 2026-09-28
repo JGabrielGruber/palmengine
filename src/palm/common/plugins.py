@@ -30,8 +30,8 @@ def ensure_core_plugins(
     from plugins.kits import autoload as autoload_kits
     from plugins.patterns import autoload as autoload_patterns
     from plugins.providers import autoload as autoload_providers
-    from plugins.runners import autoload as autoload_runners
-    from plugins.storages import autoload as autoload_storages
+    from drivers.runners import autoload as autoload_runners
+    from drivers.storages import autoload as autoload_storages
 
     from palm.common.transforms import autoload as autoload_transforms
 

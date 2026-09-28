@@ -12,7 +12,7 @@ from palm.core.registry import pattern_registry, provider_registry, storage_regi
 from palm.core.transform.registry import transform_registry
 from plugins.patterns._apps import INSTALLED_PATTERNS, INTENTION_PATTERNS
 from plugins.providers._apps import INSTALLED_PROVIDERS, INTENTION_PROVIDERS
-from plugins.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
+from drivers.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES
 
 
 @pytest.fixture(autouse=True)

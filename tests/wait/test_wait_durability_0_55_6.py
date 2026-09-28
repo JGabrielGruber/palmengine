@@ -19,7 +19,7 @@ from palm.core.wait import (
 from palm.definitions import FlowDefinition, ResourceDefinition
 from plugins.providers.palm.bindings.runtimes.wiring import clear_palm_runtime
 from bundles.standard.runtimes.embedded import EmbeddedRuntime
-from plugins.storages import memory  # noqa: F401
+from drivers.storages import memory  # noqa: F401
 
 
 def test_snapshot_roundtrip_preserves_wait_interest() -> None:

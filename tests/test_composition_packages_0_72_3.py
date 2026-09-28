@@ -28,7 +28,7 @@ from bundles.standard.app.host.composition import (
     composition_record,
 )
 from bundles.standard.app.settings import PalmSettings
-from plugins.storages._apps import autoload as autoload_storages
+from drivers.storages._apps import autoload as autoload_storages
 
 _FAMILIES = ("kits", "patterns", "providers", "runners", "storages", "transforms")
 
@@ -121,9 +121,9 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
         )
         assert "plugins.kits.present" in sys.modules
         assert "plugins.kits.authoring" not in sys.modules
-        assert "plugins.runners.host" not in sys.modules
-        assert "plugins.runners.local" in sys.modules
-        assert "plugins.storages.postgres" not in sys.modules
+        assert "drivers.runners.host" not in sys.modules
+        assert "drivers.runners.local" in sys.modules
+        assert "drivers.storages.postgres" not in sys.modules
 
         ensure_core_plugins(
             kits=("present", "authoring"),
@@ -134,7 +134,7 @@ def test_stroke_walks_the_given_names_and_a_later_call_can_add() -> None:
             transforms=(),
         )
         assert "plugins.kits.authoring" in sys.modules
-        assert "plugins.runners.host" in sys.modules
+        assert "drivers.runners.host" in sys.modules
         assert "plugins.kits.server" not in sys.modules
         print("ok")
         """
@@ -153,7 +153,7 @@ def test_phase_installs_only_the_option_set() -> None:
 
         run(BootContext(schedule="system"), {})
         assert "palm.common.plugins" not in sys.modules
-        assert "plugins.runners.local" not in sys.modules
+        assert "drivers.runners.local" not in sys.modules
         assert "plugins.kits.present" not in sys.modules
 
         from palm.common.plugins import ensure_core_plugins
@@ -173,8 +173,8 @@ def test_phase_installs_only_the_option_set() -> None:
             },
         )
         assert "plugins.kits.present" in sys.modules
-        assert "plugins.runners.local" in sys.modules
-        assert "plugins.runners.host" not in sys.modules
+        assert "drivers.runners.local" in sys.modules
+        assert "drivers.runners.host" not in sys.modules
         assert "plugins.kits.authoring" not in sys.modules
         print("ok")
         """
@@ -213,9 +213,9 @@ def test_host_start_installs_the_composition_set() -> None:
             assert "plugins.kits.present" in sys.modules
             assert "plugins.kits.authoring" not in sys.modules
             assert "plugins.kits.server" not in sys.modules
-            assert "plugins.runners.local" in sys.modules
-            assert "plugins.runners.host" not in sys.modules
-            assert "plugins.storages.postgres" not in sys.modules
+            assert "drivers.runners.local" in sys.modules
+            assert "drivers.runners.host" not in sys.modules
+            assert "drivers.storages.postgres" not in sys.modules
         finally:
             host.shutdown()
         print("ok")
@@ -245,9 +245,9 @@ def test_saved_embedded_record_still_names_host_and_authoring() -> None:
         host.start()
         try:
             assert "plugins.kits.authoring" in sys.modules
-            assert "plugins.runners.host" in sys.modules
+            assert "drivers.runners.host" in sys.modules
             assert "plugins.kits.server" not in sys.modules
-            assert "plugins.storages.postgres" not in sys.modules
+            assert "drivers.storages.postgres" not in sys.modules
         finally:
             host.shutdown()
         print("ok")

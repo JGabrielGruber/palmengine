@@ -8,7 +8,7 @@ import palm
 from palm.core import BehaviorTreeEngine, pattern_registry, storage_registry
 from palm.core.registry import Registry
 from plugins.patterns import wizard  # noqa: F401
-from plugins.storages import memory  # noqa: F401
+from drivers.storages import memory  # noqa: F401
 
 
 def test_version() -> None:
