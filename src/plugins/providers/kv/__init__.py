@@ -1,6 +1,9 @@
-"""KV resource provider package."""
+"""KV resource provider package.
 
-from plugins.providers.kv import registry as registry
+Importing this package does not register the provider.
+Call :func:`plugins.providers.kv.registry.register`.
+"""
+
 from plugins.providers.kv.provider import KvProvider
 
-__all__ = ["KvProvider", "registry"]
+__all__ = ["KvProvider"]

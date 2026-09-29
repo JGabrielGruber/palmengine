@@ -1,15 +1,11 @@
 """
 Django-style catalog for storage apps.
 
-``CORE_STORAGES`` and ``OPTIONAL_STORAGES`` list real backends.
-The composition record names which ones the install stroke imports (0.72.3).
-``postgres`` and ``mongodb`` stay off the saved records. ``drivers.storages.load``
-still loads an optional backend on demand.
+``CORE_STORAGES`` and ``OPTIONAL_STORAGES`` name real backends.
+``autoload`` does not import them. ``drivers.storages.load`` opens a backend by name.
 """
 
 from __future__ import annotations
-
-import importlib
 
 CORE_STORAGES: tuple[str, ...] = ("memory", "filesystem")
 # Intention backends (ST-002) — load only via drivers.storages.load / explicit opt-in.
@@ -19,6 +15,9 @@ INSTALLED_STORAGES: tuple[str, ...] = CORE_STORAGES
 
 
 def autoload(names: tuple[str, ...]) -> None:
-    """Import the named storage apps (triggers registry side effects)."""
-    for name in names:
-        importlib.import_module(f"drivers.storages.{name}")
+    """Refuse a catalog import. Open a backend through ``drivers.storages.load``."""
+    if names:
+        joined = ", ".join(names)
+        raise RuntimeError(
+            f"catalog autoload is withdrawn; import the module that registers: {joined}"
+        )

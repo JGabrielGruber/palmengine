@@ -89,10 +89,10 @@ class PalmKernel:
         return self._instance_manager
 
     def bootstrap(self, composition: CompositionProfile | None = None) -> Self:
-        """Install plugin packages and mark the application ready for runtime creation.
+        """Mark the application ready for runtime creation.
 
-        ``composition`` names the package set. No argument selects the
-        ``all_in_one`` record (:func:`palm.app.bootstrap.ensure_plugins`).
+        Catalog install is withdrawn. ``ensure_plugins`` refuses, so this
+        bootstrap refuses with it.
         """
         profile = (
             composition if composition is not None else composition_profile_from_name("all_in_one")

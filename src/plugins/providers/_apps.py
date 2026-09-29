@@ -4,8 +4,6 @@ Django-style autoloading for provider apps.
 
 from __future__ import annotations
 
-import importlib
-
 # Real capabilities only — intention stubs listed separately (ST-001 / SD-013).
 INSTALLED_PROVIDERS: tuple[str, ...] = (
     "rest",
@@ -24,6 +22,9 @@ INTENTION_PROVIDERS: tuple[str, ...] = (
 
 
 def autoload(names: tuple[str, ...]) -> None:
-    """Import the named provider apps (triggers registry side effects)."""
-    for name in names:
-        importlib.import_module(f"plugins.providers.{name}")
+    """Refuse a catalog import. Import the provider module that registers the name."""
+    if names:
+        joined = ", ".join(names)
+        raise RuntimeError(
+            f"catalog autoload is withdrawn; import the module that registers: {joined}"
+        )

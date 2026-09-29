@@ -1,13 +1,11 @@
 """
 Django-style autoloading for pattern apps.
 
-Each entry in ``INSTALLED_PATTERNS`` is a self-contained subpackage that
-registers itself via ``registry.py`` on import.
+Each entry in ``INSTALLED_PATTERNS`` names a package that exists.
+``autoload`` does not import it. Import the pattern module to register it.
 """
 
 from __future__ import annotations
-
-import importlib
 
 # Real patterns only — intention stubs listed separately (ST-003 / SD-013).
 INSTALLED_PATTERNS: tuple[str, ...] = (
@@ -22,6 +20,9 @@ INTENTION_PATTERNS: tuple[str, ...] = ("etl",)
 
 
 def autoload(names: tuple[str, ...]) -> None:
-    """Import the named pattern apps (triggers registry side effects)."""
-    for name in names:
-        importlib.import_module(f"plugins.patterns.{name}")
+    """Refuse a catalog import. Import the pattern module that registers the name."""
+    if names:
+        joined = ", ".join(names)
+        raise RuntimeError(
+            f"catalog autoload is withdrawn; import the module that registers: {joined}"
+        )

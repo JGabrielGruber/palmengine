@@ -7,12 +7,12 @@ Package layout::
     bindings/       integration with core and common (context, events, BT, …)
     flow/           wizard-specific orchestration (phases, collection, validation)
     pattern.py      thin ``BasePattern`` orchestrator
-    registry.py     ``INSTALLED_PATTERNS`` wiring
+    registry.py     call ``register()`` to wire the pattern
 
 Phase implementations live in :mod:`palm.patterns.wizard.flow.phases`.
+Importing this package does not register the pattern.
 """
 
-from plugins.patterns.wizard import registry as registry  # — side effect
 from plugins.patterns.wizard.bindings.behavior_tree.tree import build_wizard_tree
 from plugins.patterns.wizard.bindings.compensation.handler import (
     CommitContext,
@@ -101,7 +101,6 @@ __all__ = [
     "extract_instance_fields_from_job",
     "parse_wizard_flow_options",
     "prepare_wizard_resume_state",
-    "registry",
     "validate_collected_answers",
     "validate_step_input",
     "validate_step_schema",

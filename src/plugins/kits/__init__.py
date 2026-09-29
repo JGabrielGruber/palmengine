@@ -16,9 +16,7 @@ Import the server kit as :mod:`palm.kits.server`.
 Import the present kit as :mod:`palm.kits.present` (0.69.4 / 0.69.5).
 Import the authoring kit as :mod:`palm.kits.authoring` (0.70.1).
 
-The composition record names which kits :func:`autoload` imports
-(:func:`palm.common.plugins.ensure_core_plugins`, 0.72.3). Surface kit
-``server`` registers when the server runtime imports it (0.71.21).
+``autoload`` does not import a kit. Import the kit module to register it.
 """
 
 from __future__ import annotations

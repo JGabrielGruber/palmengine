@@ -1,27 +1,22 @@
 """Palm-backed todo store for the mobile MVP.
 
-ApplicationHost + memory kv (put-palm-todos / palm-todos) is the engine of
-truth. Thin ops (list / add / toggle) sit above invoke_resource so Flutter
-can drive a list UI without walking the collection-wizard UX.
+MinimalApp is the engine. This example calls the wizard and kv register
+functions. Thin ops (list / add / toggle) sit above the runtime so Flutter can
+drive a list UI without walking the collection-wizard UX.
 """
+
 from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
 from typing import Any
 
-# Palm
-from palm.core import StorageEngine
+from bundles.minimal.app import MinimalApp
+from plugins.patterns.wizard.registry import register as register_wizard
+from plugins.providers.kv.registry import register as register_kv
+
+from palm.core.orchestration import JobStatus
 from palm.definitions import FlowDefinition, ResourceDefinition
-
-import plugins.patterns  # noqa: F401
-import plugins.providers  # noqa: F401
-import drivers.storages.memory  # noqa: F401
-
-from bundles.standard.app import ApplicationHost, DeploymentProfile, PalmSettings
-from bundles.standard.app.bootstrap import runtime_start_options
-
-
 
 PUT_TODOS = ResourceDefinition(
     id="resource-put-palm-todos",
@@ -98,42 +93,37 @@ class TodoItem:
 
 
 class TodoEngine:
-    """Owns ApplicationHost and exposes list/add/toggle over Palm kv."""
+    """Owns one MinimalApp and exposes list/add/toggle over Palm kv."""
 
     def __init__(self) -> None:
-        self._host: ApplicationHost | None = None
+        self._app: MinimalApp | None = None
 
     @property
-    def host(self) -> ApplicationHost:
-        if self._host is None:
+    def app(self) -> MinimalApp:
+        if self._app is None:
             raise RuntimeError("TodoEngine not started")
-        return self._host
+        return self._app
 
     def start(self) -> None:
-        storage = StorageEngine()
-        storage.initialize(backend="memory")
-        settings = PalmSettings(load_example_definitions=False)
-        host = ApplicationHost(
-            settings,
-            profile=DeploymentProfile.all_in_one(),
-            storage=storage,
-        )
-        host.start(**runtime_start_options(settings))
-        repo = host.app.runtime().repository
+        register_wizard()
+        register_kv()
+        app = MinimalApp()
+        runtime = app.start()
+        repo = runtime.repository
         repo.save_resource(PUT_TODOS)
         repo.save_resource(GET_TODOS)
         repo.save_flow(TODO_PERSIST_FLOW)
-        # Seed empty list via Palm resource path.
-        host.invoke_resource("put-palm-todos", params={"value": []})
-        self._host = host
+        runtime.invoke_resource("put-palm-todos", params={"value": []})
+
+        self._app = app
 
     def shutdown(self) -> None:
-        if self._host is not None:
-            self._host.shutdown()
-            self._host = None
+        if self._app is not None:
+            self._app.stop()
+            self._app = None
 
     def list_todos(self) -> list[TodoItem]:
-        result = self.host.invoke_resource("palm-todos")
+        result = self.app.runtime.invoke_resource("palm-todos")
         if not result.success:
             raise RuntimeError(result.error or "palm-todos get failed")
         raw = (result.data or {}).get("value") or []
@@ -143,20 +133,12 @@ class TodoEngine:
 
     def _persist(self, items: list[TodoItem]) -> None:
         payload = [t.to_dict() for t in items]
-        # Prefer the registered flow so Palm orchestration is on the path.
-        job = self.host.submit_flow("todo-persist", state={"todos": payload})
-        # Resource-only wizard should finish synchronously under EmbeddedRuntime.
-        from palm.core.orchestration import JobStatus
-
+        runtime = self.app.runtime
+        job = runtime.submit_flow("todo-persist", state={"todos": payload})
         if job.status != JobStatus.SUCCEEDED:
-            # Fallback: direct put if flow waiting (defensive).
-            result = self.host.invoke_resource(
-                "put-palm-todos", params={"value": payload}
-            )
+            result = runtime.invoke_resource("put-palm-todos", params={"value": payload})
             if not result.success:
-                raise RuntimeError(
-                    f"persist failed: flow={job.status} put={result.error}"
-                )
+                raise RuntimeError(f"persist failed: flow={job.status} put={result.error}")
 
     def add_todo(self, title: str) -> TodoItem:
         cleaned = (title or "").strip()
@@ -192,9 +174,7 @@ class TodoEngine:
                 item = self.add_todo(str(msg.get("title") or ""))
                 return {"op": "todo_added", "item": item.to_dict()}
             if op == "toggle":
-                item = self.toggle_todo(
-                    str(msg.get("id") or ""), bool(msg.get("done", True))
-                )
+                item = self.toggle_todo(str(msg.get("id") or ""), bool(msg.get("done", True)))
                 return {
                     "op": "todo_toggled",
                     "id": item.id,
@@ -203,7 +183,7 @@ class TodoEngine:
             if op == "ping":
                 return {"op": "pong"}
             return {"op": "list_error", "message": f"unknown op: {op}"}
-        except Exception as exc:  # noqa: BLE001 — surface to Flutter
+        except Exception as exc:  # surface the message to the caller
             return {"op": "list_error", "message": str(exc)}
 
 

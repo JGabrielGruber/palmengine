@@ -12,26 +12,24 @@ from typing import Any
 from bundles.standard.app.bind import bind_from_settings
 from bundles.standard.app.host.composition import (
     CompositionProfile,
-    composition_profile_from_name,
     composition_record,
 )
 from bundles.standard.app.host.roles import DeploymentProfile
 from bundles.standard.app.settings import PalmSettings
 from palm.common.persistence.definition_repository import DefinitionRepository
-from palm.common.plugins import ensure_core_plugins
 from palm.system.bound import BoundDrivers
 
 
 def ensure_plugins(composition: CompositionProfile | None = None) -> None:
-    """Install the plugin packages a composition record names.
+    """Refuse the standard catalog install.
 
-    No argument selects the ``all_in_one`` record. ``ApplicationHost`` passes
-    its composition, so the first install uses that record.
+    The composition record still names packages. Nothing imports them from here.
+    An application imports the plugin module it uses.
     """
-    profile = (
-        composition if composition is not None else composition_profile_from_name("all_in_one")
+    _ = composition
+    raise RuntimeError(
+        "standard catalog install is withdrawn; import the module that registers the plugin"
     )
-    ensure_core_plugins(**profile.package_names())
 
 
 def hydrate_definitions_from_storage(repository: DefinitionRepository) -> int:

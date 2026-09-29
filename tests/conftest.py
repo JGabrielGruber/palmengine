@@ -16,13 +16,11 @@ import pytest
 from palm.core.event import EventEngine
 
 from bundles.standard.app import ApplicationHost
-from bundles.standard.app.bootstrap import ensure_plugins
 from bundles.standard.app.settings import PalmSettings
 from bundles.standard.runtimes.cli.shared.bootstrap import bootstrap_runtime, shutdown_context
 from bundles.standard.runtimes.cli.shared.context import CliContext
 
-# all_in_one record: patterns, providers, runners, storages, kits, transforms.
-ensure_plugins()
+# Catalog install is withdrawn. A test that needs a plugin imports that module.
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

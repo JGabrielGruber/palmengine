@@ -1,6 +1,6 @@
 # VISION 0.72 — Composition plugin membership (minimal embed measure)
 
-**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.6`** landed. Next expected: **`0.72.7`** loader. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
+**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.7`** landed. **`0.72.7`** withdraws catalog install and runs `examples/todo` on `MinimalApp`. The name tables are still process-wide. Next work is §13. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed** · [041-bundle-start.md](../adr/041-bundle-start.md) **Proposed** (amends 040 D2, D4, D7).  
@@ -86,18 +86,17 @@ Definition **SoT after load** — StructureDefinition precedent (seed→law). Th
 
 These rows are facts in the tree. They are not decisions. [ADR-040](../adr/040-composition-plugin-membership.md) does not repeat them. A later change to this path must update this section.
 
-**Call path.** One install, before system start (`0.72.5`). The stroke takes package names from a composition record (`0.72.3`).
+**Call path.** Catalog install refuses (`0.72.7`, in progress). `examples/todo` calls `wizard.registry.register` and `kv.registry.register`, then starts `MinimalApp`. Importing those packages does not register them.
 
 | Step | Code | What it decides |
 |------|------|-----------------|
-| First call | `host.kernel.bootstrap` → `PalmKernel.bootstrap(composition)` → `ensure_plugins` | The one install. A kernel call with no composition uses the `all_in_one` record. This runs before system start |
-| Alias | `bundles.standard.app.bootstrap.ensure_plugins` | Reads the profile and calls the stroke |
+| Standard bootstrap | `PalmKernel.bootstrap` → `ensure_plugins` | Refuses. The standard host does not install a catalog |
+| Stroke | `palm.common.plugins.ensure_core_plugins` | Refuses. It does not call `autoload` |
+| Family `autoload` | kits, patterns, providers, runners, storages | Refuses when given names. Transform `autoload` still imports the rules it is given |
 | System schedule | `BaseRuntime.start` → `SYSTEM_PHASES` | No install phase (`0.72.5`). `start` takes bound drivers (`0.72.6`) and refuses `plugin_install` and `composition_packages`. `system.storage.select` attaches the bound storage. The kernel does not import `drivers` and does not default a storage or a runner |
-| Stroke | `palm.common.plugins.ensure_core_plugins` | No process flag. Calls `autoload(names)` for kits, patterns, providers, runners, storages, and transforms |
+| Todo | `examples/todo/todo_engine.py` | Calls `wizard.registry.register` and `kv.registry.register`. Starts `MinimalApp`. Saves the two resources and the persist flow on the runtime repository |
 
-A later call imports names that are not yet imported. It does not unload names already imported.
-
-**What the stroke walks.** The names on the composition record. Every saved record names the same set in this slice.
+**Names still on the record.** Every saved record names the same set. Nothing walks that set. `autoload` refuses.
 
 | Family | Names on each saved record | Catalog (the walk does not close over this) |
 |--------|----------------------------|-----------------------------------------------|
@@ -202,9 +201,9 @@ Do not invent carriers or suites in this plan pack.
 | **0.72.4** | Second menus. Transform names are on the record. The host imports the service tuple (P10, P11). | **landed** |
 | **0.72.5** | The kernel schedule has no install phase. The standard bundle installs once, in kernel bootstrap, before `start`. | **landed** |
 | **0.72.6** | `start` receives bound drivers. The kernel does not import or default a storage or a runner. | **landed** |
-| **0.72.7** | The bundle's loader installs the driver set and the plugin set once and returns bound drivers plus provenance. | **expected** |
+| **0.72.7** | Catalog autoload refuses. The standard install refuses. `examples/todo` calls `wizard.registry.register` and `kv.registry.register`, then starts `MinimalApp`. | **landed** |
 
-Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` waits on that. One slice is one law and its call sites. Spine stays green (job path, wait, session). `just check` covers the modes that slice declares. A preset the slice does not declare may break. Measure stays **not pass** until a later prove-it. Do not invent fake slices as landed. Do not solve a §12 row inside `0.72.1`.
+Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` withdraws catalog install. The standard host is allowed to break. Measure stays **not pass**. The next cut is §13. Do not invent a loader slice that keeps the process-wide tables.
 
 ---
 
@@ -234,11 +233,11 @@ Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` nam
 
 ## 11. Residual (open)
 
-Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. The install stroke, the kernel boundary through `0.72.5`, and bound drivers (`0.72.6`) are landed. The loader and the readiness join are unpaid. Named O1–O5 bar holds as fail-closed observables for later slices — do not claim green.
+Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. Bound drivers (`0.72.6`) are landed. Catalog install refuses (`0.72.7`). The name tables are still process-wide (§13). Named O1–O5 bar holds as fail-closed observables — do not claim green.
 
 | Residual | Truth |
 |----------|-------|
-| Install owner | **Landed** as `0.72.5`. One call, in kernel bootstrap, before system start. The loader that splits drivers from plugins is unpaid (`0.72.7`). |
+| Install owner | **Landed** as `0.72.7` for the break. Catalog `autoload` refuses. Standard bootstrap refuses. `examples/todo` calls `register()` and starts `MinimalApp`. The tables those calls fill are still process-wide (§13). |
 | Package membership data carrier | Unpaid. The composition record still holds one name list. No boot YAML DSL. No fold into DNA. |
 | O1–O5 | Bar named; **not pass** @ open. |
 | Reading A populate (enable-of-installed) | After composition owns install — later growth. |
@@ -246,7 +245,7 @@ Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. The in
 | Composition record | **Landed** as `0.72.2`. The host builds `CompositionProfile` from saved records. Preset methods are not the path. |
 | Package names + install stroke | **Landed** as `0.72.3`. Each record names kits, patterns, providers, runners, and storages. The stroke walks those names. Every saved record names the same set. `CORE_KITS` and `include_optional` are gone. Runner `host` imports when the record names it. |
 | Second menus | **Landed** as `0.72.4`. Each record names the same transform set. The host imports `composition.services`. |
-| Kernel install phase | **Landed** as `0.72.5`. `SYSTEM_PHASES` has no `system.plugins.ensure`. Kernel bootstrap is the one install. |
+| Kernel install phase | **Landed** as `0.72.5`. `SYSTEM_PHASES` has no `system.plugins.ensure`. `0.72.7` withdrew the bootstrap install. Bootstrap now refuses. |
 | Bound drivers | **Landed** as `0.72.6`. `start` takes `BoundDrivers` (`version` 1, an open storage backend, optional workload-runtime slot). `palm.system` does not import `drivers`. |
 | Deployment seed names a record | When there is no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still take their record name from `boot_mode_name_for_deployment`. Structure seed uses that same name. Removing the name would load a record the definition refuses. |
 
@@ -288,4 +287,28 @@ Rows that stay **named** are not implemented. **`0.72.2`** paid P5–P8: those s
 
 `0.72.2` build path: `COMPOSITION_RECORDS` holds the six shapes. `CompositionProfile.from_record` and `composition_profile_from_name` build the profile. `composition_profile_from_settings` copies services and surfaces from the `all_in_one` record and writes capabilities from settings. `BootMode` stores that built profile. With no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still select the record by `boot_mode_name_for_deployment` (§11). `all_in_one` uses the settings build.
 
-`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. `ensure_core_plugins` walks the names. `autoload` takes the names. The host bootstrap passes the host composition. Every saved record names the same package set. `0.72.4` adds transform names to that walk, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. Measure stays **not pass**.
+`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. Every saved record names the same package set. `0.72.4` adds transform names, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. `0.72.7` withdraws catalog `autoload`. `ensure_core_plugins` and `ensure_plugins` refuse. Wizard and kv register when `registry.register` is called. Measure stays **not pass**.
+
+---
+
+## 13. Finding (2026-09-29)
+
+The name tables are process-wide. A lookup imports the table. The runtime does not hold it.
+
+| Table | Home |
+|-------|------|
+| `pattern_registry`, `provider_registry`, `storage_registry` | `palm.core.registry` |
+| Twelve dictionaries (builders, instance fields, resume handlers, submission metadata, interactive runtime, read models, pattern apps, projections, CQRS, MCP, design hooks, session enrichers) | `palm.common.patterns._registry` |
+| Provider apps, design hooks, runtime binding, `get_bound_runtime()` | `palm.common.providers._registry` |
+| Wizard step kinds | `plugins.patterns.wizard.flow.extensions.registry` |
+| Compensation | `palm.common.compensation.registry` |
+
+`PatternApp` and `ProviderApp` are class-level manifests. `WizardApp()` has no instance state. The object exists so `register()` has a `self`. `register()` stores that object and calls `ready()` on every call. The docstring says once. The line that puts the pattern class or the provider class on its table lives in `registry.py`, beside `app.register()`. Ten package modules still import `registry` and run it on import. Wizard and kv do not.
+
+`MinimalApp()` does not read these tables. The todo path needs the wizard pattern, its builder, and the kv provider at the seed put and at `submit_flow`. `ready()` also fills MCP, CQRS, and design hooks. The todo path does not read those.
+
+The dictionary is interpreter state. Its scope is the runtime that does the lookup. The bundle installs that state once. After `start` it stays fixed. A process is the coarser wall around a host. One set per process does not make a module global the right scope. Drivers already follow the runtime scope: the bundle passes `BoundDrivers` into `start`. A pattern name and a provider name are the same kind of fact.
+
+The loader that returns provenance keeps these tables process-wide. That cut is not next.
+
+José deletes the wiring his taste refuses. The repair starts at `python examples/todo/main.py`. A missing name on list, add, or toggle gets a home on the runtime. Other paths stay broken. Do not restore a process-wide dictionary, an import-time `register()`, or the module-level manifest instance to make the suite quiet. Transform `autoload` still imports the rules it is given. The todo path does not call it.

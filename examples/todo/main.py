@@ -18,7 +18,7 @@ def main() -> int:
     engine = TodoEngine()
     try:
         engine.start()
-        print("TODO: ApplicationHost started", flush=True)
+        print("TODO: MinimalApp started", flush=True)
         items = engine.list_todos()
         print(f"TODO: seeded list len={len(items)}", flush=True)
         # Keep interpreter alive for bridge / logcat.

@@ -1,6 +1,7 @@
-"""Constrained start of bundles.minimal. The root conftest installs the fat package set.
+"""Constrained start of bundles.minimal.
 
-The cold test runs a fresh interpreter so that latch is not in the process.
+The cold test runs a fresh interpreter. Catalog install is withdrawn, so this
+process does not preload plugins either.
 """
 
 from __future__ import annotations

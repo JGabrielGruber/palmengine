@@ -1,10 +1,8 @@
 """
 Concrete storage backends — memory, postgres, mongodb, filesystem (Django-style apps).
 
-Each subpackage registers via its own ``registry.py``. The composition record
-names which backends :func:`autoload` imports
-(:func:`palm.common.plugins.ensure_core_plugins`). Optional backends register
-on demand through :func:`drivers.storages.load.ensure_registered`.
+Each subpackage registers via its own ``registry.py``. ``autoload`` does not
+import a backend. :func:`drivers.storages.load.ensure_registered` opens one by name.
 """
 
 from drivers.storages._apps import CORE_STORAGES, INSTALLED_STORAGES, OPTIONAL_STORAGES, autoload
