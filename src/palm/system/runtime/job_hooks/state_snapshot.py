@@ -8,7 +8,10 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING
 
 from palm.common.exceptions import InstanceNotFoundError
+from palm.common.persistence.instance_sync import InstanceSyncHooks
+from palm.core.exceptions import RegistryError
 from palm.core.orchestration.hooks import JobHookAdapter
+from palm.core.registry import Registry
 from palm.instances.state_snapshot import StateSnapshot
 
 if TYPE_CHECKING:
@@ -26,18 +29,21 @@ class StateSnapshotHook(JobHookAdapter):
     Capture blackboard state on configured job status transitions.
 
     Runs after :class:`~palm.system.runtime.job_hooks.instance_persistence.InstancePersistenceHook`
-    so the durable instance record exists. Snapshot failures are swallowed so job
-    execution never depends on this middleware.
+    so the durable instance record exists. ``sync`` is the system ``instance_sync``
+    table. A missing pattern name raises. Other snapshot failures are swallowed
+    so job execution never depends on this middleware.
     """
 
     def __init__(
         self,
         instances: InstanceRepository | InstanceManager,
         *,
+        sync: Registry[InstanceSyncHooks] | None = None,
         snapshot_on_status: Collection[str] | None = None,
         max_snapshots_per_instance: int = 10,
     ) -> None:
         self._instances = instances
+        self._sync = sync
         self._snapshot_on_status = frozenset(snapshot_on_status or _DEFAULT_STATUSES)
         self._max_snapshots = max(1, max_snapshots_per_instance)
 
@@ -49,6 +55,8 @@ class StateSnapshotHook(JobHookAdapter):
     ) -> None:
         try:
             self._maybe_snapshot(job)
+        except RegistryError:
+            raise
         except Exception:
             return None
 
@@ -65,7 +73,7 @@ class StateSnapshotHook(JobHookAdapter):
         except InstanceNotFoundError:
             return
 
-        snapshot = StateSnapshot.now(job, event="status_snapshot")
+        snapshot = StateSnapshot.now(job, sync=self._sync, event="status_snapshot")
         self._instances.append_state_snapshot(
             str(instance_id),
             snapshot,

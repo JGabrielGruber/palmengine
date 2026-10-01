@@ -59,7 +59,8 @@ def install_orchestration_hooks(
             )
         )
     hooks.append(JobExecutionContextHook())
-    shell.instances.bind_sync(instance_sync_from(shell.registries))
+    sync = instance_sync_from(shell.registries)
+    shell.instances.bind_sync(sync)
     hooks.append(
         InstancePersistenceHook(
             shell.instance_manager,
@@ -73,6 +74,7 @@ def install_orchestration_hooks(
         hooks.append(
             StateSnapshotHook(
                 shell.instance_manager,
+                sync=sync,
                 snapshot_on_status=opts.get("snapshot_on_status"),
                 max_snapshots_per_instance=int(
                     opts.get("max_snapshots_per_instance", 10)

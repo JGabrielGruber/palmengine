@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from palm.core.orchestration import Job
@@ -25,11 +25,15 @@ class StateSnapshot:
     detail: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def now(cls, job: Job, **detail: Any) -> StateSnapshot:
-        """Build a snapshot from the current job state."""
+    def now(cls, job: Job, *, sync: Any = None, **detail: Any) -> StateSnapshot:
+        """Build a snapshot from the current job state.
+
+        ``sync`` is the system ``instance_sync`` table. A missing pattern name
+        on that table raises. No table records an empty step slug and position.
+        """
         from palm.common.persistence.state_snapshot import snapshot_meta, snapshot_state
 
-        step_slug, runtime_position = _pattern_snapshot_fields(job)
+        step_slug, runtime_position = _pattern_snapshot_fields(job, sync)
         payload = {k: v for k, v in detail.items() if v is not None}
         state_meta = snapshot_meta(job.state)
         if state_meta:
@@ -68,14 +72,15 @@ class StateSnapshot:
         )
 
 
-def _pattern_snapshot_fields(job: Job) -> tuple[str | None, dict[str, Any]]:
-    """Resolve optional step slug and runtime position via the pattern registry."""
-    from palm.common.patterns._registry import get_instance_fields
-
+def _pattern_snapshot_fields(
+    job: Job,
+    sync: Any,
+) -> tuple[str | None, dict[str, Any]]:
+    """Resolve optional step slug and runtime position from ``sync``."""
     pattern = job.metadata.get("pattern")
-    if not isinstance(pattern, str):
+    if not isinstance(pattern, str) or sync is None:
         return None, {}
-    fields_fn = get_instance_fields(pattern)
-    if fields_fn is None:
-        return None, {}
-    return fields_fn(job)
+    return cast(
+        tuple[str | None, dict[str, Any]],
+        sync.get(pattern).fields(job),
+    )
