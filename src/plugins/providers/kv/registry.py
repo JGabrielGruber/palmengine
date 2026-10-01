@@ -1,14 +1,12 @@
-"""KV provider registration. Call :func:`register` to wire the provider."""
+"""KV provider registration. Call :func:`register` with the system registries."""
 
-from palm.core.registry import provider_registry
-from plugins.providers.kv.app import kv_app
+from palm.system.registries import SystemRegistries
 from plugins.providers.kv.provider import KvProvider
 
 
-def register() -> None:
-    """Register the kv provider and the kv app."""
-    provider_registry.register("kv", KvProvider)
-    kv_app.register()
+def register(registries: SystemRegistries) -> None:
+    """Register the kv provider on ``registries``."""
+    registries.require("provider").register("kv", KvProvider)
 
 
 __all__ = ["register"]

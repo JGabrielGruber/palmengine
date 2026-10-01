@@ -86,14 +86,21 @@ def test_engine_doctor_includes_health(tmp_path) -> None:
 
 
 def test_bootstrap_binds_named_runtimes(tmp_path) -> None:
+    from drivers.runners.host.runtime import HostWorkloadRuntime
+
+    from palm.core.registry import Registry
     from palm.system.subsystems.planes.workload.bootstrap import initialize_workload_engine
 
+    registry = Registry("workload runtime")
+    registry.register("local", LocalWorkloadRuntime)
+    registry.register("host", HostWorkloadRuntime)
     engine = WorkloadEngine()
     initialize_workload_engine(
         engine,
         work_root=tmp_path,
         default_runtime="local",
         runtime_names=("local", "host"),
+        runtimes_registry=registry,
     )
     assert engine._default_runtime == "local"
     assert "local" in engine._runtimes

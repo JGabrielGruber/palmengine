@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from palm.core.registry import provider_registry
+from palm.core.registry import Registry
 from palm.definitions.resource import ResourceDefinition
 
 if TYPE_CHECKING:
@@ -48,8 +48,14 @@ class ResourceCatalogEntry:
 class ResourceCatalog:
     """Discover resource definitions with provider capability metadata."""
 
-    def __init__(self, repository: DefinitionRepository) -> None:
+    def __init__(
+        self,
+        repository: DefinitionRepository,
+        *,
+        providers: Registry[Any] | None = None,
+    ) -> None:
         self._repository = repository
+        self._providers = providers
 
     def entries(self) -> list[ResourceCatalogEntry]:
         """Return all catalog entries sorted by name."""
@@ -81,16 +87,18 @@ class ResourceCatalog:
         }
 
     def _entry_for(self, resource: ResourceDefinition) -> ResourceCatalogEntry:
-        provider_description = ""
+        provider_description = f"{resource.provider} provider"
         provider_actions: tuple[str, ...] = ()
-        try:
-            cls = provider_registry.get(resource.provider)
-            probe = cls(name=resource.provider)
-            descriptor = probe.describe()
-            provider_description = descriptor.description
-            provider_actions = tuple(action.name for action in descriptor.actions)
-        except Exception:
-            provider_description = f"{resource.provider} provider"
+        providers = self._providers
+        if providers is not None and resource.provider in providers.names():
+            try:
+                cls = providers.get(resource.provider)
+                probe = cls(name=resource.provider)
+                descriptor = probe.describe()
+                provider_description = descriptor.description
+                provider_actions = tuple(action.name for action in descriptor.actions)
+            except Exception:
+                provider_description = f"{resource.provider} provider"
         return ResourceCatalogEntry(
             definition_id=resource.definition_id,
             name=resource.name,

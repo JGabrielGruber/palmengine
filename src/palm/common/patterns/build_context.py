@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from palm.common.persistence.definition_repository import DefinitionRepository
     from palm.definitions.flow import FlowDefinition
     from palm.system.interfaces.execution import ExecutionPort
+    from palm.system.registries import SystemRegistries
 
 
 @dataclass
@@ -36,6 +37,7 @@ class PatternBuildContext:
     workload_engine: WorkloadEngine | None = None
     commit_registry: Any | None = None
     definition_repository: DefinitionRepository | None = None
+    registries: SystemRegistries | None = None
 
     def resolve_state_schema(self, ref: str | None) -> StateSchema | None:
         """Resolve a declarative schema reference into a core ``StateSchema``."""

@@ -12,4 +12,4 @@ from palm.core.registry import Registry
 if TYPE_CHECKING:
     from palm.core.workload.protocol import WorkloadRuntime
 
-workload_runtime_registry: Registry[WorkloadRuntime] = Registry("workload runtime")
+workload_runtime_registry: Registry[type[WorkloadRuntime]] = Registry("workload runtime")

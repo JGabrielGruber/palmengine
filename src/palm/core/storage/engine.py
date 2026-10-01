@@ -1,8 +1,8 @@
 """
 Storage engine — coordinates persistence backends.
 
-Resolves backends by name from ``storage_registry``. Core stays free of
-concrete database or filesystem drivers.
+``select`` resolves a backend from the registry bound on this engine.
+``attach`` uses an already-open backend and does not look a name up.
 """
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ from __future__ import annotations
 from typing import Any
 
 from palm.core.base import BasePalmEngine
-from palm.core.exceptions import StorageNotConfiguredError
-from palm.core.registry import storage_registry
+from palm.core.exceptions import RegistryError, StorageNotConfiguredError
+from palm.core.registry import Registry
 from palm.core.storage.base_backend import BaseBackend
 
 
@@ -28,6 +28,11 @@ class StorageEngine(BasePalmEngine):
         super().__init__(name="storage")
         self._active: BaseBackend | None = None
         self._backend_name: str | None = None
+        self._backends: Registry[type[BaseBackend]] | None = None
+
+    def bind_registry(self, registry: Registry[type[BaseBackend]]) -> None:
+        """Use ``registry`` when ``select`` resolves a backend name."""
+        self._backends = registry
 
     @property
     def backend(self) -> BaseBackend | None:
@@ -69,7 +74,9 @@ class StorageEngine(BasePalmEngine):
             return self._active
 
         self._close_active()
-        cls = storage_registry.get(name)
+        if self._backends is None:
+            raise RegistryError("storage engine has no registry")
+        cls = self._backends.get(name)
         backend = cls(name=name, **backend_options)
         backend.open()
         self._active = backend

@@ -16,6 +16,7 @@ from plugins.patterns.wizard.registry import register as register_wizard
 from plugins.providers.kv.registry import register as register_kv
 
 from palm.core.orchestration import JobStatus
+from palm.core.registry import Registry
 from palm.definitions import FlowDefinition, ResourceDefinition
 
 PUT_TODOS = ResourceDefinition(
@@ -105,9 +106,13 @@ class TodoEngine:
         return self._app
 
     def start(self) -> None:
-        register_wizard()
-        register_kv()
         app = MinimalApp()
+        registries = app.runtime.registries
+        registries.install("pattern", Registry("pattern"))
+        registries.install("pattern_builder", Registry("pattern builder"))
+        registries.install("provider", Registry("provider"))
+        register_wizard(registries)
+        register_kv(registries)
         runtime = app.start()
         repo = runtime.repository
         repo.save_resource(PUT_TODOS)

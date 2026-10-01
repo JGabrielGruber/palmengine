@@ -36,18 +36,21 @@ class Registry(Generic[T]):
 
     def __init__(self, label: str) -> None:
         self._label = label
-        self._entries: dict[str, type[T]] = {}
+        self._entries: dict[str, T] = {}
+        self._frozen = False
         self._lock = threading.RLock()
 
-    def register(self, name: str, implementation: type[T]) -> None:
-        """Register an implementation under ``name``. Overwrites on duplicate type change."""
+    def register(self, name: str, implementation: T) -> None:
+        """Register ``implementation`` under ``name``. The same pair is a no-op."""
         with self._lock:
             if self._entries.get(name) is implementation:
                 return
+            if self._frozen:
+                raise RegistryError(f"{self._label} registry is fixed; refused {name!r}")
             self._entries[name] = implementation
 
-    def get(self, name: str) -> type[T]:
-        """Return the implementation class registered under ``name``."""
+    def get(self, name: str) -> T:
+        """Return the implementation registered under ``name``."""
         with self._lock:
             try:
                 return self._entries[name]
@@ -62,12 +65,31 @@ class Registry(Generic[T]):
         with self._lock:
             return sorted(self._entries)
 
+    def drop(self, name: str) -> None:
+        """Remove one name. A missing name is a no-op."""
+        with self._lock:
+            if self._frozen:
+                raise RegistryError(f"{self._label} registry is fixed; refused drop {name!r}")
+            self._entries.pop(name, None)
+
     def clear(self) -> None:
         """Remove all registrations (primarily for tests)."""
         with self._lock:
+            if self._frozen:
+                raise RegistryError(f"{self._label} registry is fixed")
             self._entries.clear()
 
+    def freeze(self) -> None:
+        """Refuse later register, drop, and clear. Idempotent."""
+        with self._lock:
+            self._frozen = True
 
-pattern_registry: Registry[BasePattern] = Registry("pattern")
-provider_registry: Registry[BaseProvider] = Registry("provider")
-storage_registry: Registry[BaseBackend] = Registry("storage backend")
+    @property
+    def frozen(self) -> bool:
+        with self._lock:
+            return self._frozen
+
+
+pattern_registry: Registry[type[BasePattern]] = Registry("pattern")
+provider_registry: Registry[type[BaseProvider]] = Registry("provider")
+storage_registry: Registry[type[BaseBackend]] = Registry("storage backend")

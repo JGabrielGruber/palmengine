@@ -87,9 +87,16 @@ def probe_check_health(runtime: Any) -> dict[str, Any]:
     return payload
 
 
+def _provider_registry(runtime: Any) -> Any | None:
+    registries = getattr(runtime, "registries", None)
+    if registries is None or "provider" not in registries.names():
+        return None
+    return registries.require("provider")
+
+
 def build_kv_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
     """Report KV provider catalog usage and resolved ``auto`` backend."""
-    catalog = ResourceCatalog(repository)
+    catalog = ResourceCatalog(repository, providers=_provider_registry(runtime))
     entries = catalog.by_provider("kv")
     storage = getattr(runtime, "storage", None)
     storage_backend_name = storage.backend_name if storage is not None else None
@@ -149,14 +156,15 @@ def _documents_root_writable(root: Path) -> bool:
 
 def build_file_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
     """Report ``file`` document resources and documents_root writability."""
-    catalog = ResourceCatalog(repository)
+    catalog = ResourceCatalog(repository, providers=_provider_registry(runtime))
     entries = catalog.by_provider("file")
+    installed = _file_provider_installed(runtime)
     if not entries:
         return {
             "resource_count": 0,
             "documents_root": None,
             "writable": None,
-            "provider_installed": _file_provider_installed(),
+            "provider_installed": installed,
         }
 
     root = resolve_documents_root(runtime)
@@ -164,18 +172,15 @@ def build_file_preflight(runtime: Any, repository: Any) -> dict[str, Any]:
         "resource_count": len(entries),
         "documents_root": str(root.resolve()),
         "writable": _documents_root_writable(root),
-        "provider_installed": _file_provider_installed(),
+        "provider_installed": installed,
     }
 
 
-def _file_provider_installed() -> bool:
-    try:
-        from palm.core.registry import provider_registry
-
-        provider_registry.get("file")
-        return True
-    except Exception:
+def _file_provider_installed(runtime: Any) -> bool:
+    providers = _provider_registry(runtime)
+    if providers is None:
         return False
+    return "file" in providers.names()
 
 
 def build_resource_preflight(runtime: Any) -> dict[str, Any]:

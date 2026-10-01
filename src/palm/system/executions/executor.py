@@ -435,6 +435,7 @@ class DefinitionExecutor:
             workload_engine=getattr(runtime, "workload", None),
             commit_registry=getattr(runtime, "commit_registry", None),
             definition_repository=self._repository,
+            registries=getattr(runtime, "registries", None),
         )
 
     def _require_runtime(self) -> None:

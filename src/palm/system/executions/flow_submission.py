@@ -1,8 +1,8 @@
 """
 Flow submission preparation — definitions to orchestration-ready payloads.
 
-Pattern-specific metadata enrichment registers via
-:mod:`palm.common.patterns._registry` (e.g. wizard in ``palm.patterns.wizard.bindings.instances.submission``).
+Pattern-specific metadata enrichment is the ``submission_metadata`` registry
+on the system instance.
 """
 
 from __future__ import annotations
@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from palm.system.executions.job_state import coerce_job_state
-from palm.common.patterns._registry import get_submission_metadata
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
 from palm.common.persistence.instance_sync import prepare_resume_state
@@ -72,7 +71,7 @@ def prepare_flow_submission(
     meta["flow_definition"] = flow.to_dict()
     if flow.revision is not None:
         meta["flow_revision"] = flow.revision
-    _apply_pattern_submission_metadata(flow, meta)
+    _apply_pattern_submission_metadata(flow, meta, build_ctx.registries)
     # System session owner (0.58.4) — one metadata key only (0.58.9: no palm_session_id).
     sid = meta.get("session_id")
     if sid is not None and str(sid).strip():
@@ -121,11 +120,17 @@ def prepare_resume_submission(
     )
 
 
-def _apply_pattern_submission_metadata(flow: FlowDefinition, meta: dict[str, Any]) -> None:
-
-    enricher = get_submission_metadata(flow.pattern)
-    if enricher is None:
+def _apply_pattern_submission_metadata(
+    flow: FlowDefinition,
+    meta: dict[str, Any],
+    registries: Any,
+) -> None:
+    if registries is None or "submission_metadata" not in registries.names():
         return
+    table = registries.require("submission_metadata")
+    if flow.pattern not in table.names():
+        return
+    enricher = table.get(flow.pattern)
     extra = enricher(flow)
     for key, value in extra.items():
         meta.setdefault(key, value)

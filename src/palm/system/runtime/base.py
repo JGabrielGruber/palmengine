@@ -47,6 +47,7 @@ from palm.system.bound import BOUND_DRIVERS_VERSION, BoundDrivers
 from palm.system.executions import DefinitionExecutor
 from palm.system.interfaces.install import SystemInstall
 from palm.system.log import get_system_log
+from palm.system.registries import SystemRegistries
 from palm.system.runtime.schedulers import QueuedScheduler
 from palm.system.runtime.wiring import SchedulerPolicy
 from palm.system.structure.seat import StructureSeat
@@ -113,6 +114,7 @@ class BaseRuntime:
         self._last_boot_walk: list[Any] | None = None
         self._start_options: dict[str, Any] = {}
         self.application_host: Any | None = None
+        self.registries = SystemRegistries()
 
     @property
     def is_started(self) -> bool:
@@ -299,6 +301,8 @@ class BaseRuntime:
         0.72.6 — ``drivers`` is a :class:`~palm.system.bound.BoundDrivers` value.
         This schedule attaches that storage. It does not choose a storage or a
         workload runtime.
+
+        0.72.8 — ``registries`` freezes before the walk. Engines read that set.
         """
         refused = [key for key in ("plugin_install", "composition_packages") if key in options]
         if refused:
@@ -324,6 +328,8 @@ class BaseRuntime:
         if not drivers.storage.is_open:
             raise RuntimeError("bound storage is not initialized")
 
+        self.registries.freeze()
+        self._bind_installed_registries()
         self._start_options = dict(options)
         slog = get_system_log()
         runtime = getattr(self, "name", None) or self.runtime_name
@@ -357,6 +363,14 @@ class BaseRuntime:
                 reason=f"{type(exc).__name__}: {exc}",
             )
             raise
+
+    def _bind_installed_registries(self) -> None:
+        """Attach registries the caller installed. A missing name stays unbound."""
+        names = set(self.registries.names())
+        if "provider" in names:
+            self.resource.bind_registry(self.registries.require("provider"))
+        if "storage" in names:
+            self.storage.bind_registry(self.registries.require("storage"))
 
     def stop(self) -> None:
         """Stop orchestration and shut down all engines."""

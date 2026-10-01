@@ -1,6 +1,6 @@
 # VISION 0.72 — Composition plugin membership (minimal embed measure)
 
-**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.7`** landed. **`0.72.7`** withdraws catalog install and runs `examples/todo` on `MinimalApp`. The name tables are still process-wide. Next work is §13. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
+**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.8`** landed. **`0.72.8`** puts an open registry set on the system instance. `start` freezes that set. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed** · [041-bundle-start.md](../adr/041-bundle-start.md) **Proposed** (amends 040 D2, D4, D7).  
@@ -202,8 +202,9 @@ Do not invent carriers or suites in this plan pack.
 | **0.72.5** | The kernel schedule has no install phase. The standard bundle installs once, in kernel bootstrap, before `start`. | **landed** |
 | **0.72.6** | `start` receives bound drivers. The kernel does not import or default a storage or a runner. | **landed** |
 | **0.72.7** | Catalog autoload refuses. The standard install refuses. `examples/todo` calls `wizard.registry.register` and `kv.registry.register`, then starts `MinimalApp`. | **landed** |
+| **0.72.8** | The system instance holds an open registry set. `start` freezes it. Pattern, provider, and workload-runtime lookup read that set. | **landed** |
 
-Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` withdraws catalog install. The standard host is allowed to break. Measure stays **not pass**. The next cut is §13. Do not invent a loader slice that keeps the process-wide tables.
+Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` withdraws catalog install. `0.72.8` gives the name tables an owner on the system instance. The standard host is allowed to break. Measure stays **not pass**. The loader stays unpaid. Remaining common dictionaries move onto the same set when a path reads them.
 
 ---
 
@@ -233,11 +234,12 @@ Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` nam
 
 ## 11. Residual (open)
 
-Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. Bound drivers (`0.72.6`) are landed. Catalog install refuses (`0.72.7`). The name tables are still process-wide (§13). Named O1–O5 bar holds as fail-closed observables — do not claim green.
+Theme stays **open**. Pack `0.72.0` is plan landed. Measure **not pass**. Bound drivers (`0.72.6`) are landed. Catalog install refuses (`0.72.7`). The system instance owns an open registry set (`0.72.8`, §13). Named O1–O5 bar holds as fail-closed observables — do not claim green.
 
 | Residual | Truth |
 |----------|-------|
-| Install owner | **Landed** as `0.72.7` for the break. Catalog `autoload` refuses. Standard bootstrap refuses. `examples/todo` calls `register()` and starts `MinimalApp`. The tables those calls fill are still process-wide (§13). |
+| Install owner | **Landed** as `0.72.7` for the break. Catalog `autoload` refuses. Standard bootstrap refuses. `examples/todo` installs pattern, pattern builder, and provider registries on the `MinimalApp` runtime, then calls `register()`. |
+| System registries | **Landed** as `0.72.8`. `BaseRuntime.registries` is an open set. `start` freezes it. See §13. |
 | Package membership data carrier | Unpaid. The composition record still holds one name list. No boot YAML DSL. No fold into DNA. |
 | O1–O5 | Bar named; **not pass** @ open. |
 | Reading A populate (enable-of-installed) | After composition owns install — later growth. |
@@ -287,28 +289,20 @@ Rows that stay **named** are not implemented. **`0.72.2`** paid P5–P8: those s
 
 `0.72.2` build path: `COMPOSITION_RECORDS` holds the six shapes. `CompositionProfile.from_record` and `composition_profile_from_name` build the profile. `composition_profile_from_settings` copies services and surfaces from the `all_in_one` record and writes capabilities from settings. `BootMode` stores that built profile. With no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still select the record by `boot_mode_name_for_deployment` (§11). `all_in_one` uses the settings build.
 
-`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. Every saved record names the same package set. `0.72.4` adds transform names, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. `0.72.7` withdraws catalog `autoload`. `ensure_core_plugins` and `ensure_plugins` refuse. Wizard and kv register when `registry.register` is called. Measure stays **not pass**.
+`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. Every saved record names the same package set. `0.72.4` adds transform names, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. `0.72.7` withdraws catalog `autoload`. `ensure_core_plugins` and `ensure_plugins` refuse. `0.72.8` puts an open registry set on the system instance. Wizard and kv `register` write that set. Measure stays **not pass**.
 
 ---
 
-## 13. Finding (2026-09-29)
+## 13. System registries (`0.72.8`)
 
-The name tables are process-wide. A lookup imports the table. The runtime does not hold it.
+The system instance owns an open set of registries. `Registry` in `palm.core.registry` stays the map. `SystemRegistries` in `palm.system.registries` holds those maps by name. A new kind of table is a new name. The set has no field per kind.
 
-| Table | Home |
-|-------|------|
-| `pattern_registry`, `provider_registry`, `storage_registry` | `palm.core.registry` |
-| Twelve dictionaries (builders, instance fields, resume handlers, submission metadata, interactive runtime, read models, pattern apps, projections, CQRS, MCP, design hooks, session enrichers) | `palm.common.patterns._registry` |
-| Provider apps, design hooks, runtime binding, `get_bound_runtime()` | `palm.common.providers._registry` |
-| Wizard step kinds | `plugins.patterns.wizard.flow.extensions.registry` |
-| Compensation | `palm.common.compensation.registry` |
+The set is empty at construction. The caller installs a `Registry` and fills it before `start`. `start` freezes the set and each installed registry, then binds `provider` onto the resource engine and `storage` onto the storage engine when those names are present. A workload slot with names reads `workload_runtime` from the set. An empty workload slot does not require that registry.
 
-`PatternApp` and `ProviderApp` are class-level manifests. `WizardApp()` has no instance state. The object exists so `register()` has a `self`. `register()` stores that object and calls `ready()` on every call. The docstring says once. The line that puts the pattern class or the provider class on its table lives in `registry.py`, beside `app.register()`. Ten package modules still import `registry` and run it on import. Wizard and kv do not.
+Pattern build reads `pattern` and, when installed, `pattern_builder` from the set on `PatternBuildContext`. Flow submission reads `submission_metadata` from that same set when it is installed. A missing registry fails the lookup. These paths do not read the module-level maps.
 
-`MinimalApp()` does not read these tables. The todo path needs the wizard pattern, its builder, and the kv provider at the seed put and at `submit_flow`. `ready()` also fills MCP, CQRS, and design hooks. The todo path does not read those.
+`examples/todo` installs `pattern`, `pattern_builder`, and `provider` on the `MinimalApp` runtime, then calls `wizard.registry.register` and `kv.registry.register`. Those functions write the installed registries. They do not call `ready()`. The process-wide `pattern_registry` and `provider_registry` stay empty on that path. `python examples/todo/main.py` lists, adds, and toggles.
 
-The dictionary is interpreter state. Its scope is the runtime that does the lookup. The bundle installs that state once. After `start` it stays fixed. A process is the coarser wall around a host. One set per process does not make a module global the right scope. Drivers already follow the runtime scope: the bundle passes `BoundDrivers` into `start`. A pattern name and a provider name are the same kind of fact.
+Witness: `tests/test_system_registries_0_72_8.py` and `tests/bundles/minimal/test_todo_example.py`.
 
-The loader that returns provenance keeps these tables process-wide. That cut is not next.
-
-José deletes the wiring his taste refuses. The repair starts at `python examples/todo/main.py`. A missing name on list, add, or toggle gets a home on the runtime. Other paths stay broken. Do not restore a process-wide dictionary, an import-time `register()`, or the module-level manifest instance to make the suite quiet. Transform `autoload` still imports the rules it is given. The todo path does not call it.
+The module-level maps remain in the tree. Other plugin `registry` modules still write them at import. `TransformEngine` still reads `transform_registry`. Instance sync still reads the common pattern dictionaries. CQRS, MCP, design hooks, wizard step kinds, and compensation are still process-wide. A path that reads one of those gets a registry of that name on the same set. The parent link between system instances waits until a nested run exists. The loader stays unpaid. The standard host stays broken. A red suite outside this witness is expected.
