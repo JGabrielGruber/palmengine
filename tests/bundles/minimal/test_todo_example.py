@@ -83,6 +83,7 @@ registries = engine.app.runtime.registries
 assert registries.frozen
 assert "wizard" in registries.require("pattern").names()
 assert "kv" in registries.require("provider").names()
+assert "resource" in registries.require("wizard_step").names()
 try:
     assert engine.list_todos() == []
     item = engine.add_todo("milk")

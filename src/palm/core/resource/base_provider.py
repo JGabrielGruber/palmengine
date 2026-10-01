@@ -23,6 +23,10 @@ class BaseProvider(ABC):
     def __init__(self, *, name: str) -> None:
         self.name = name
 
+    def bind_storage(self, storage: Any) -> None:
+        """Accept the storage engine the system already holds. Default is a no-op."""
+        del storage
+
     @abstractmethod
     def connect(self) -> None:
         """Establish or validate the provider connection."""

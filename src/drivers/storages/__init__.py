@@ -1,5 +1,5 @@
 """
-Concrete storage backends — memory, postgres, mongodb, filesystem (Django-style apps).
+Concrete storage backends — memory, filesystem, tiered, postgres, mongodb.
 
 Each subpackage registers via its own ``registry.py``. ``autoload`` does not
 import a backend. :func:`drivers.storages.load.ensure_registered` opens one by name.

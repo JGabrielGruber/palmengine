@@ -4,26 +4,31 @@ Build behavior-tree structures for a configured wizard.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
-from palm.core.behavior_tree import RootNode
+from palm.core.behavior_tree import BaseNode, RootNode
+from palm.core.registry import Registry
 from palm.core.resource.invoker import ResourceInvoker
 from palm.core.workload.driver import WorkloadDriver
-from plugins.patterns.wizard.bindings.definitions.config import WizardConfig
-from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry
-from plugins.patterns.wizard.flow.phases._base import EventEmitter, WizardPhaseContext
 from plugins.patterns.wizard.bindings.behavior_tree.backtrack import (
     WizardCompletionGuardNode,
     WizardSequenceNode,
     backtrack_notifier,
 )
-from plugins.patterns.wizard.flow.extensions.registry import (
-    WizardStepKindRegistry,
-    default_wizard_step_registry,
-)
+from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry
+from plugins.patterns.wizard.bindings.definitions.config import WizardConfig
+from plugins.patterns.wizard.flow.phases._base import EventEmitter, WizardPhaseContext
 
 if TYPE_CHECKING:
     from palm.core.context import ContextEngine
+
+
+def _phase_node(registry: Any, ctx: WizardPhaseContext) -> BaseNode:
+    """Build one phase. A core ``Registry`` stores factories. The wizard registry builds."""
+    if isinstance(registry, Registry):
+        factory = registry.get(ctx.step.step_kind)
+        return cast(BaseNode, factory(ctx))
+    return cast(BaseNode, registry.build(ctx))
 
 
 def build_wizard_tree(
@@ -35,7 +40,7 @@ def build_wizard_tree(
     resource_engine: ResourceInvoker | None = None,
     workload_engine: WorkloadDriver | None = None,
     context_engine: ContextEngine | None = None,
-    step_registry: WizardStepKindRegistry | None = None,
+    step_registry: Any | None = None,
 ) -> tuple[RootNode, WizardSequenceNode]:
     """
     Return ``(root, sequence)`` for the given wizard configuration.
@@ -48,11 +53,19 @@ def build_wizard_tree(
                     ├─ phase node …
                     └─ phase node …
     """
-    registry = step_registry or default_wizard_step_registry()
+    if step_registry is None:
+        from plugins.patterns.wizard.flow.extensions.registry import (
+            default_wizard_step_registry,
+        )
+
+        registry = default_wizard_step_registry()
+    else:
+        registry = step_registry
     on_backtrack = backtrack_notifier(emit, wizard_name) if emit is not None else None
 
     leaves = [
-        registry.build(
+        _phase_node(
+            registry,
             WizardPhaseContext(
                 wizard_name=wizard_name,
                 step_index=idx,
@@ -62,7 +75,7 @@ def build_wizard_tree(
                 resource_engine=resource_engine,
                 workload_engine=workload_engine,
                 context_engine=context_engine,
-            )
+            ),
         )
         for idx, step in enumerate(config.iter_tree_steps())
     ]

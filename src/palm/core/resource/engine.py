@@ -44,10 +44,17 @@ class ResourceEngine(BasePalmEngine):
         self._definition_cache: TtlCache | None = None
         self._result_cache: TtlCache | None = None
         self._providers: Registry[type[BaseProvider]] | None = None
+        self._storage: Any | None = None
 
     def bind_registry(self, registry: Registry[type[BaseProvider]]) -> None:
         """Use ``registry`` for provider lookup. The system binds this before the walk."""
         self._providers = registry
+
+    def bind_storage(self, storage: Any) -> None:
+        """Give providers the storage engine this system already holds."""
+        self._storage = storage
+        for provider in self._active.values():
+            provider.bind_storage(storage)
 
     def use(self, name: str) -> BaseProvider:
         """Return a connected provider instance for ``name``."""
@@ -56,6 +63,8 @@ class ResourceEngine(BasePalmEngine):
         if name not in self._active:
             cls = self._providers.get(name)
             provider = cls(name=name)
+            if self._storage is not None:
+                provider.bind_storage(self._storage)
             provider.connect()
             self._active[name] = provider
         return self._active[name]

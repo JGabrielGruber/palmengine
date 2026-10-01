@@ -1,6 +1,6 @@
 # VISION 0.72 — Composition plugin membership (minimal embed measure)
 
-**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.8`** landed. **`0.72.8`** puts an open registry set on the system instance. `start` freezes that set. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
+**Status:** 📋 **Theme open** (José 2026-09-21). Pack `0.72.0` landed. Slices **`0.72.1`** through **`0.72.9`** landed. **`0.72.9`** moves the todo path's remaining process-wide reads onto the system instance. Package stamp stays `0.68.0` (no embedded release). Measure **not pass**.  
 **Language:** ASD-STE100 Simplified Technical English.  
 **Map:** [PALM.md](../PALM.md) — read first.  
 **ADR:** [040-composition-plugin-membership.md](../adr/040-composition-plugin-membership.md) **Proposed** · [041-bundle-start.md](../adr/041-bundle-start.md) **Proposed** (amends 040 D2, D4, D7).  
@@ -203,8 +203,9 @@ Do not invent carriers or suites in this plan pack.
 | **0.72.6** | `start` receives bound drivers. The kernel does not import or default a storage or a runner. | **landed** |
 | **0.72.7** | Catalog autoload refuses. The standard install refuses. `examples/todo` calls `wizard.registry.register` and `kv.registry.register`, then starts `MinimalApp`. | **landed** |
 | **0.72.8** | The system instance holds an open registry set. `start` freezes it. Pattern, provider, and workload-runtime lookup read that set. | **landed** |
+| **0.72.9** | The todo path reads `wizard_step` on that set. Kv uses the runtime storage. Bind and unbind read the set. | **landed** |
 
-Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` withdraws catalog install. `0.72.8` gives the name tables an owner on the system instance. The standard host is allowed to break. Measure stays **not pass**. The loader stays unpaid. Remaining common dictionaries move onto the same set when a path reads them.
+Order is the dependency: `0.72.3` reads the record `0.72.2` builds. `0.72.4` names the second menus on that record. `0.72.5` removes the kernel install phase. `0.72.6` passes bound drivers into `start`. `0.72.7` withdraws catalog install. `0.72.8` gives the name tables an owner on the system instance. `0.72.9` moves the reads the todo path still made: wizard step kinds, kv storage, and the bind and unbind hooks. The standard host is allowed to break. Measure stays **not pass**. The loader stays unpaid. Other common dictionaries move onto the same set when a path reads them.
 
 ---
 
@@ -289,7 +290,7 @@ Rows that stay **named** are not implemented. **`0.72.2`** paid P5–P8: those s
 
 `0.72.2` build path: `COMPOSITION_RECORDS` holds the six shapes. `CompositionProfile.from_record` and `composition_profile_from_name` build the profile. `composition_profile_from_settings` copies services and surfaces from the `all_in_one` record and writes capabilities from settings. `BootMode` stores that built profile. With no `BootMode` and no `composition` argument, `server`, `worker`, and `cli` still select the record by `boot_mode_name_for_deployment` (§11). `all_in_one` uses the settings build.
 
-`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. Every saved record names the same package set. `0.72.4` adds transform names, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. `0.72.7` withdraws catalog `autoload`. `ensure_core_plugins` and `ensure_plugins` refuse. `0.72.8` puts an open registry set on the system instance. Wizard and kv `register` write that set. Measure stays **not pass**.
+`0.72.3` adds package name fields on that record and on the profile. The settings build copies those fields from the `all_in_one` record. Every saved record names the same package set. `0.72.4` adds transform names, and the host imports the service tuple. `0.72.5` removes the system install phase. `0.72.6` passes bound drivers into `start`. The kernel does not import or default a storage or a runner. `0.72.7` withdraws catalog `autoload`. `ensure_core_plugins` and `ensure_plugins` refuse. `0.72.8` puts an open registry set on the system instance. Wizard and kv `register` write that set. `0.72.9` points the todo path's remaining reads at that set. Measure stays **not pass**.
 
 ---
 
@@ -305,4 +306,14 @@ Pattern build reads `pattern` and, when installed, `pattern_builder` from the se
 
 Witness: `tests/test_system_registries_0_72_8.py` and `tests/bundles/minimal/test_todo_example.py`.
 
-The module-level maps remain in the tree. Other plugin `registry` modules still write them at import. `TransformEngine` still reads `transform_registry`. Instance sync still reads the common pattern dictionaries. CQRS, MCP, design hooks, wizard step kinds, and compensation are still process-wide. A path that reads one of those gets a registry of that name on the same set. The parent link between system instances waits until a nested run exists. The loader stays unpaid. The standard host stays broken. A red suite outside this witness is expected.
+`0.72.9` walks the todo path. That path installs `wizard_step`. `wizard.registry.register` writes the builtin step kinds onto it. Pattern build and the wizard tree read that registry. They do not read `default_wizard_step_registry`. A flow with `include_commit` requires a `commit` registry on the same set. The todo flow does not include commit, so it does not install one and does not read the process commit table.
+
+Kv invoke receives the storage engine `start` binds onto the resource engine after the walk. `backend: auto` uses that engine when it is open, including a memory backend. The value is not written to the process memory store. `get_bound_runtime()` is not consulted. A second runtime keeps its own storage.
+
+Tiered storage is `drivers.storages.tiered.TieredBackend`. It holds a hot map on that instance and writes through to a cold backend the caller supplies. The kv provider has no `tiered` mode. `get_tiered_kv_store()` is gone. Explicit `backend: memory` still uses the process `MemoryKvStore`.
+
+`system.bind` calls each entry in `runtime_binding` when that registry is installed. A missing registry skips the phase. `stop` calls each entry in `runtime_unbinding` when that registry is installed. Neither phase reads the process-wide hook.
+
+Witness: `tests/test_system_registries_0_72_9.py` and `tests/bundles/minimal/test_todo_example.py`.
+
+The module-level maps remain in the tree. Other plugin `registry` modules still write them at import. `TransformEngine` still reads `transform_registry`. Instance sync still reads the common pattern dictionaries. CQRS, MCP, and design hooks are still process-wide. File invoke, the wait plane, the palm provider, and the authoring kit still call `get_bound_runtime()`. A path that reads one of those gets a registry of that name on the same set, or receives the runtime the call already holds. The parent link between system instances waits until a nested run exists. The loader stays unpaid. The standard host stays broken. A red suite outside this witness is expected.

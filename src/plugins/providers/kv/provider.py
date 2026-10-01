@@ -13,6 +13,14 @@ from plugins.providers.kv.bindings.resource.invoke import invoke_action
 class KvProvider(BaseProvider):
     """Read/write JSON-compatible values by logical key."""
 
+    def __init__(self, *, name: str) -> None:
+        super().__init__(name=name)
+        self._storage: Any | None = None
+
+    def bind_storage(self, storage: Any) -> None:
+        """Use the storage engine the system passed in. Do not look up a process runtime."""
+        self._storage = storage
+
     def connect(self) -> None:
         pass
 
@@ -45,6 +53,7 @@ class KvProvider(BaseProvider):
             action=action,
             params=merged,
             resource_id=resource_id,
+            storage=self._storage,
         )
 
     def describe(self) -> ProviderDescriptor:

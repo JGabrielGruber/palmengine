@@ -6,11 +6,11 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
+from typing import Any
 
 from palm.core.behavior_tree import BaseNode
 from palm.core.exceptions import RegistryError
 from plugins.patterns.wizard.flow.phases._base import WizardPhaseContext
-from plugins.patterns.wizard.flow.collection.phases.step import build_collection_phase
 from plugins.patterns.wizard.flow.phases.commit import build_commit_phase
 from plugins.patterns.wizard.flow.phases.input import build_input_phase
 from plugins.patterns.wizard.flow.phases.resource import build_resource_phase
@@ -74,9 +74,14 @@ def _build_commit(ctx: WizardPhaseContext) -> BaseNode:
     return build_commit_phase(ctx, hook_name=hook)
 
 
-def register_builtin_wizard_step_kinds(
-    registry: WizardStepKindRegistry | None = None,
-) -> WizardStepKindRegistry:
+def register_builtin_wizard_step_kinds(registry: Any | None = None) -> Any:
+    """Register the builtin step kinds on ``registry``.
+
+    ``registry`` is a :class:`WizardStepKindRegistry` or a
+    :class:`~palm.core.registry.Registry`. The default is the process-wide table.
+    """
+    from plugins.patterns.wizard.flow.collection.phases.step import build_collection_phase
+
     target = registry or _default_step_registry
     target.register("input", build_input_phase)
     target.register("introduction", build_input_phase)
