@@ -14,13 +14,13 @@ from typing import Any
 from palm.core.base import BasePalmEngine
 from palm.core.context.base_state import BaseState
 from palm.core.exceptions import TransformApplicationError
+from palm.core.registry import Registry
 from palm.core.transform.base import (
     BaseTransformRule,
     TransformContext,
     TransformMode,
     TransformResult,
 )
-from palm.core.transform.registry import transform_registry
 
 _MISSING = object()
 
@@ -35,12 +35,15 @@ class TransformEngine(BasePalmEngine):
     or root keys and optional schema validation on output.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, registry: Registry[type[BaseTransformRule]] | None = None) -> None:
         super().__init__(name="transform")
+        self._registry = registry
 
     def resolve(self, name: str, **options: Any) -> BaseTransformRule:
-        """Instantiate a registered transform rule."""
-        cls = transform_registry.get(name)
+        """Instantiate a rule from the registry this engine was given."""
+        if self._registry is None:
+            raise RuntimeError("system has no transform registry")
+        cls = self._registry.get(name)
         build_options = {key: value for key, value in options.items() if not key.startswith("_")}
         return cls.from_options(**build_options)
 

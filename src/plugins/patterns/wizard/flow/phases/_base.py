@@ -11,6 +11,7 @@ from palm.core.behavior_tree.nodes.leaf.interactive_leaf import InteractiveLeaf
 from palm.core.context import BaseState, ContextEngine
 from palm.core.resource.invoker import ResourceInvoker
 from palm.core.workload.driver import WorkloadDriver
+from palm.system.registries import SystemRegistries
 from plugins.patterns.wizard.bindings.compensation.handler import CommitRegistry
 from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 from plugins.patterns.wizard.bindings.definitions.config import WizardStepConfig
@@ -50,6 +51,7 @@ class WizardPhaseContext:
     resource_engine: ResourceInvoker | None = None
     workload_engine: WorkloadDriver | None = None
     context_engine: ContextEngine | None = None
+    registries: SystemRegistries | None = None
 
 
 def wizard_input_key(step_slug: str) -> str:

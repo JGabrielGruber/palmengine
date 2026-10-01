@@ -10,6 +10,7 @@ from palm.core.behavior_tree import BaseNode, RootNode
 from palm.core.registry import Registry
 from palm.core.resource.invoker import ResourceInvoker
 from palm.core.workload.driver import WorkloadDriver
+from palm.system.registries import SystemRegistries
 from plugins.patterns.wizard.bindings.behavior_tree.backtrack import (
     WizardCompletionGuardNode,
     WizardSequenceNode,
@@ -41,6 +42,7 @@ def build_wizard_tree(
     workload_engine: WorkloadDriver | None = None,
     context_engine: ContextEngine | None = None,
     step_registry: Any | None = None,
+    registries: SystemRegistries | None = None,
 ) -> tuple[RootNode, WizardSequenceNode]:
     """
     Return ``(root, sequence)`` for the given wizard configuration.
@@ -75,6 +77,7 @@ def build_wizard_tree(
                 resource_engine=resource_engine,
                 workload_engine=workload_engine,
                 context_engine=context_engine,
+                registries=registries,
             ),
         )
         for idx, step in enumerate(config.iter_tree_steps())

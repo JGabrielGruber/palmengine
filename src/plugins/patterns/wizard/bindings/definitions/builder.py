@@ -47,6 +47,7 @@ def build(
         "workload_engine": resolve_workload_driver(context),
         "commit_registry": _commit_registry(flow, context),
         "step_registry": step_table,
+        "registries": context.registries,
     }
 
     options = flow.options

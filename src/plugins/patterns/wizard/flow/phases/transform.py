@@ -12,7 +12,7 @@ from palm.common.transforms.preview import preview_value
 from palm.core.behavior_tree import LeafNode, PatternStatus
 from palm.core.behavior_tree.nodes.leaf.transform_leaf import TransformLeaf
 from palm.core.context import BaseState
-from palm.core.transform.engine import _MISSING
+from palm.core.transform.engine import _MISSING, TransformEngine
 from plugins.patterns.wizard.bindings.context.keys import WizardKeys
 from plugins.patterns.wizard.bindings.context.state import (
     enrich_prompt_bundle,
@@ -83,7 +83,7 @@ class WizardTransformLeaf(LeafNode):
         if step.transform is None:
             raise ValueError(f"Transform step {step.slug!r} requires transform configuration")
         self._ctx = ctx
-        self._executor = executor or TransformExecutor()
+        self._executor = executor or TransformExecutor(_engine_for(ctx))
         self._inner = build_transform_leaf(
             step.transform,
             engine=self._executor.engine,
@@ -276,3 +276,10 @@ class WizardTransformLeaf(LeafNode):
 
 def build_transform_phase(ctx: WizardPhaseContext) -> WizardTransformLeaf:
     return WizardTransformLeaf(ctx)
+
+
+def _engine_for(ctx: WizardPhaseContext) -> TransformEngine:
+    """Resolve rules from the system registry. There is no process fallback."""
+    if ctx.registries is None:
+        raise RuntimeError("system has no transform registry")
+    return TransformEngine(ctx.registries.require("transform"))

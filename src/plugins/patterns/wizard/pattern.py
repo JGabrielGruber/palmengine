@@ -12,6 +12,7 @@ from palm.core.event import EventContext, EventEngine
 from palm.core.orchestration.input_capable import JobInspectable
 from palm.core.resource.invoker import ResourceInvoker
 from palm.core.workload.driver import WorkloadDriver
+from palm.system.registries import SystemRegistries
 from plugins.patterns.wizard.bindings.behavior_tree.backtrack import (
     WizardSequenceNode,
     request_backtrack,
@@ -51,6 +52,7 @@ class WizardPattern(BasePattern, JobInspectable):
         commit_registry: CommitRegistry | None = None,
         step_registry: Any | None = None,
         context_engine: ContextEngine | None = None,
+        registries: SystemRegistries | None = None,
     ) -> None:
         super().__init__(name=name)
         if config is None:
@@ -73,6 +75,7 @@ class WizardPattern(BasePattern, JobInspectable):
             workload_engine=self._workload_engine,
             context_engine=self._context_engine,
             step_registry=step_registry,
+            registries=registries,
         )
 
     @property
