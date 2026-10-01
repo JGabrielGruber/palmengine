@@ -8,6 +8,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from palm.common.exceptions import InstanceNotFoundError
+from palm.core.exceptions import RegistryError
 from palm.core.orchestration.events import OrchestrationEventType
 from palm.core.orchestration.hooks import JobHookAdapter
 from palm.definitions.flow import FlowDefinition
@@ -97,6 +98,8 @@ class InstancePersistenceHook(JobHookAdapter):
                     process_name=job.metadata.get("process"),
                 )
                 return True
+            except RegistryError:
+                raise
             except Exception:
                 # Documented ignore: persistence must not fail job lifecycle (CS-005).
                 _log.exception(
@@ -105,6 +108,8 @@ class InstancePersistenceHook(JobHookAdapter):
                     getattr(job, "id", None),
                 )
                 return False
+        except RegistryError:
+            raise
         except Exception:
             # Documented ignore: update path best-effort (CS-005).
             _log.exception(

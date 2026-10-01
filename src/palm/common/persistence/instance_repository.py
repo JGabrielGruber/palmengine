@@ -8,9 +8,14 @@ from typing import Any
 from uuid import uuid4
 
 from palm.common.exceptions import InstanceNotFoundError
-from palm.common.persistence.instance_sync import build_instance_from_job, update_instance_from_job
+from palm.common.persistence.instance_sync import (
+    InstanceSyncHooks,
+    build_instance_from_job,
+    update_instance_from_job,
+)
 from palm.core.exceptions import StorageNotConfiguredError
 from palm.core.orchestration import Job
+from palm.core.registry import Registry
 from palm.core.storage import StorageEngine
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
@@ -31,6 +36,11 @@ class InstanceRepository:
         self._storage = storage
         self._prefix = prefix.rstrip(":")
         self._cache: dict[str, ProcessInstance] = {}
+        self._sync: Registry[InstanceSyncHooks] | None = None
+
+    def bind_sync(self, sync: Registry[InstanceSyncHooks] | None) -> None:
+        """Use this instance-sync table for create and update."""
+        self._sync = sync
 
     def create(
         self,
@@ -48,6 +58,7 @@ class InstanceRepository:
             instance_id=instance_id,
             process_id=process_id,
             process_name=process_name,
+            sync=self._sync,
         )
         instance.append_status(job.status.value, event="created", job_id=job.id)
         return self.save(instance)
@@ -56,7 +67,7 @@ class InstanceRepository:
         """Update an existing instance from the current job snapshot."""
         iid = instance_id or str(job.metadata.get("instance_id") or job.id)
         instance = self.get(iid)
-        update_instance_from_job(instance, job)
+        update_instance_from_job(instance, job, sync=self._sync)
         return self.save(instance)
 
     def append_state_snapshot(

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 from palm.system.executions.job_state import coerce_job_state
 from palm.common.patterns.build_context import PatternBuildContext
 from palm.common.patterns.builder import build_pattern
-from palm.common.persistence.instance_sync import prepare_resume_state
+from palm.common.persistence.instance_sync import instance_sync_from, prepare_resume_state
 from palm.common.plans.execution_plan import ExecutionPlan
 from palm.common.state.schema_binding import bind_flow_state_schema
 from palm.core.context import BaseState
@@ -100,7 +100,11 @@ def prepare_resume_submission(
     """Rebuild a submission payload from a persisted process instance."""
     flow = FlowDefinition.from_dict(instance.flow_definition)
     executable = build_pattern(flow, context=build_ctx)
-    state = prepare_resume_state(instance, executable)
+    state = prepare_resume_state(
+        instance,
+        executable,
+        sync=instance_sync_from(build_ctx.registries),
+    )
     bind_flow_state_schema(
         flow,
         state,

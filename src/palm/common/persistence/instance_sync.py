@@ -2,18 +2,17 @@
 Sync orchestration jobs with durable ``ProcessInstance`` records.
 
 Generic snapshot and instance shell logic only. Pattern-specific field
-extraction and resume restoration register via
-:mod:`palm.common.patterns._registry` (e.g. wizard hooks in
-``palm.patterns.wizard.bindings.instances.persistence``).
+extraction and resume restoration are an ``instance_sync`` registry on the
+system instance. This module does not read the process-wide tables.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
-from palm.common.patterns._registry import get_instance_fields, get_resume_handler
 from palm.common.persistence.instance_migration_metadata import preserve_migration_metadata
 from palm.common.persistence.state_snapshot import (
     snapshot_meta,
@@ -21,13 +20,35 @@ from palm.common.persistence.state_snapshot import (
     state_from_snapshot,
 )
 from palm.core.orchestration import Job
+from palm.core.registry import Registry
 from palm.core.wait import rehydrate_wait_interests
 from palm.definitions.flow import FlowDefinition
 from palm.instances import ProcessInstance
 from palm.states import BlackboardState
 
+InstanceFieldsFn = Callable[[Job], tuple[str | None, dict[str, Any]]]
+ResumeStateFn = Callable[[ProcessInstance, Any, BlackboardState], BlackboardState]
+
+
+@dataclass(frozen=True)
+class InstanceSyncHooks:
+    """Field extractor and resume handler for one pattern."""
+
+    fields: InstanceFieldsFn
+    resume: ResumeStateFn
+
+
+def instance_sync_from(registries: Any) -> Registry[InstanceSyncHooks] | None:
+    """Return the installed ``instance_sync`` table, or none when it is absent."""
+    if registries is None or "instance_sync" not in registries.names():
+        return None
+    return cast(Registry[InstanceSyncHooks], registries.require("instance_sync"))
+
+
 __all__ = [
+    "InstanceSyncHooks",
     "build_instance_from_job",
+    "instance_sync_from",
     "prepare_resume_state",
     "session_id_from_job_metadata",
     "snapshot_state",
@@ -57,10 +78,11 @@ def build_instance_from_job(
     instance_id: str | None = None,
     process_id: str | None = None,
     process_name: str | None = None,
+    sync: Registry[InstanceSyncHooks] | None = None,
 ) -> ProcessInstance:
     """Create a new instance record from a submitted job."""
     iid = instance_id or str(job.metadata.get("instance_id") or job.id)
-    step_slug, position = _pattern_instance_fields(job, flow.pattern)
+    step_slug, position = _pattern_instance_fields(job, flow.pattern, sync)
     meta = dict(job.metadata)
     session_id = session_id_from_job_metadata(meta)
     if session_id is not None:
@@ -86,9 +108,14 @@ def build_instance_from_job(
     )
 
 
-def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInstance:
+def update_instance_from_job(
+    instance: ProcessInstance,
+    job: Job,
+    *,
+    sync: Registry[InstanceSyncHooks] | None = None,
+) -> ProcessInstance:
     """Refresh mutable fields and append status history."""
-    step_slug, position = _pattern_instance_fields(job, instance.pattern)
+    step_slug, position = _pattern_instance_fields(job, instance.pattern, sync)
     instance.job_id = job.id
     instance.state_snapshot = snapshot_state(job.state)
     instance.metadata = preserve_migration_metadata(instance.metadata, dict(job.metadata))
@@ -114,33 +141,28 @@ def update_instance_from_job(instance: ProcessInstance, job: Job) -> ProcessInst
 def prepare_resume_state(
     instance: ProcessInstance,
     executable: Any,
+    *,
+    sync: Registry[InstanceSyncHooks] | None = None,
 ) -> BlackboardState:
     """Load blackboard state and delegate pattern-specific resume restoration."""
     state = state_from_snapshot(instance.state_snapshot)
     # Continue plane: normalize palm.wait.interests after snapshot restore.
     rehydrate_wait_interests(state)
-    handler = _resume_handler(instance.pattern)
-    if handler is not None:
-        restored = handler(instance, executable, state)
-        if not isinstance(restored, BlackboardState):
-            raise TypeError(f"Resume handler for {instance.pattern!r} must return BlackboardState")
-        rehydrate_wait_interests(restored)
-        return restored
-    return state
+    if sync is None:
+        return state
+    restored = sync.get(instance.pattern).resume(instance, executable, state)
+    if not isinstance(restored, BlackboardState):
+        raise TypeError(f"Resume handler for {instance.pattern!r} must return BlackboardState")
+    rehydrate_wait_interests(restored)
+    return restored
 
 
-def _pattern_instance_fields(job: Job, pattern: str) -> tuple[str | None, dict[str, Any]]:
-    """Resolve optional step slug and runtime position via the pattern registry."""
-
-    fields_fn = get_instance_fields(pattern)
-    if fields_fn is None:
+def _pattern_instance_fields(
+    job: Job,
+    pattern: str,
+    sync: Registry[InstanceSyncHooks] | None,
+) -> tuple[str | None, dict[str, Any]]:
+    """Resolve optional step slug and runtime position from ``sync``."""
+    if sync is None:
         return None, {}
-    return fields_fn(job)
-
-
-ResumeHandler = Callable[[ProcessInstance, Any, BlackboardState], BlackboardState]
-
-
-def _resume_handler(pattern: str) -> ResumeHandler | None:
-
-    return get_resume_handler(pattern)
+    return sync.get(pattern).fields(job)

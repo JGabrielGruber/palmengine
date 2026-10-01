@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from palm.common.persistence.instance_sync import instance_sync_from
 from palm.core.context import BaseState
 from palm.states import BlackboardState
 from palm.system.boot.context import BootContext
@@ -58,6 +59,7 @@ def install_orchestration_hooks(
             )
         )
     hooks.append(JobExecutionContextHook())
+    shell.instances.bind_sync(instance_sync_from(shell.registries))
     hooks.append(
         InstancePersistenceHook(
             shell.instance_manager,

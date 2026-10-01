@@ -1,7 +1,12 @@
 """Wizard pattern registration. Call :func:`register` with the system registries."""
 
+from palm.common.persistence.instance_sync import InstanceSyncHooks
 from palm.system.registries import SystemRegistries
 from plugins.patterns.wizard.bindings.definitions.builder import build
+from plugins.patterns.wizard.bindings.instances.persistence import (
+    extract_instance_fields_from_job,
+    prepare_wizard_resume_state,
+)
 from plugins.patterns.wizard.bindings.instances.submission import wizard_submission_metadata
 from plugins.patterns.wizard.flow.extensions.registry import register_builtin_wizard_step_kinds
 from plugins.patterns.wizard.pattern import WizardPattern
@@ -15,6 +20,14 @@ def register(registries: SystemRegistries) -> None:
         register_builtin_wizard_step_kinds(registries.require("wizard_step"))
     if "submission_metadata" in registries.names():
         registries.require("submission_metadata").register("wizard", wizard_submission_metadata)
+    if "instance_sync" in registries.names():
+        registries.require("instance_sync").register(
+            "wizard",
+            InstanceSyncHooks(
+                fields=extract_instance_fields_from_job,
+                resume=prepare_wizard_resume_state,
+            ),
+        )
 
 
 __all__ = ["register"]
