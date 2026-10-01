@@ -93,11 +93,13 @@ class FlowSession:
                 inspect=inspect,
             )
         runtime = self._flows.resolve_runtime()
+        hooks = runtime.registries.require("interactive_runtime")
         try:
             _job, slug = provide_interactive_input_for_instance(
                 runtime,
                 self.session_id,
                 value,
+                hooks=hooks,
             )
         except InstanceNotFoundError as exc:
             raise exc
@@ -121,11 +123,13 @@ class FlowSession:
 
         require_business_admission(self._flows.admission_gate())
         runtime = self._flows.resolve_runtime()
+        hooks = runtime.registries.require("interactive_runtime")
         try:
             _job, target = request_interactive_backtrack_for_instance(
                 runtime,
                 self.session_id,
                 to_step,
+                hooks=hooks,
             )
         except InstanceNotFoundError as exc:
             raise exc

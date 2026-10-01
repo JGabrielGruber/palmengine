@@ -65,6 +65,7 @@ def handle_wizard_command(command: Command, ctx: Any) -> Any | None:
             runtime,
             command.instance_id,
             command.value,
+            hooks=runtime.registries.require("interactive_runtime"),
         )
         return {
             "instance_id": command.instance_id,
@@ -80,6 +81,7 @@ def handle_wizard_command(command: Command, ctx: Any) -> Any | None:
             runtime,
             command.instance_id,
             command.to_step,
+            hooks=runtime.registries.require("interactive_runtime"),
         )
         return {
             "instance_id": command.instance_id,

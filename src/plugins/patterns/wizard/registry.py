@@ -2,6 +2,7 @@
 
 from palm.common.persistence.instance_sync import InstanceSyncHooks
 from palm.system.registries import SystemRegistries
+from plugins.patterns.wizard.bindings.bridges import wizard_interactive_hooks
 from plugins.patterns.wizard.bindings.definitions.builder import build
 from plugins.patterns.wizard.bindings.instances.persistence import (
     extract_instance_fields_from_job,
@@ -27,6 +28,11 @@ def register(registries: SystemRegistries) -> None:
                 fields=extract_instance_fields_from_job,
                 resume=prepare_wizard_resume_state,
             ),
+        )
+    if "interactive_runtime" in registries.names():
+        registries.require("interactive_runtime").register(
+            "wizard",
+            wizard_interactive_hooks(),
         )
 
 

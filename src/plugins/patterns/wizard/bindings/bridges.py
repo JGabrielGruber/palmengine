@@ -42,15 +42,17 @@ def _wizard_previous_step(executable: Any, state: Any) -> str:
     return target
 
 
+def wizard_interactive_hooks() -> InteractiveRuntimeHooks:
+    """Return the wizard interactive hooks. The caller chooses the table."""
+    return InteractiveRuntimeHooks(
+        is_executable=_is_wizard_executable,
+        previous_step=_wizard_previous_step,
+    )
+
+
 def register_wizard_bridges() -> None:
     """Wire wizard runtime bridges into the global pattern extension registry."""
-    register_interactive_runtime(
-        "wizard",
-        InteractiveRuntimeHooks(
-            is_executable=_is_wizard_executable,
-            previous_step=_wizard_previous_step,
-        ),
-    )
+    register_interactive_runtime("wizard", wizard_interactive_hooks())
     from plugins.patterns.wizard.bindings.read_model import build_wizard_view
 
     register_read_model_builder("wizard", build_wizard_view)
