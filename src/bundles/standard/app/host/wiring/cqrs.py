@@ -69,12 +69,25 @@ if TYPE_CHECKING:
 class PalmCommandHandlers:
     """Dispatch host commands through PalmKernel with runtime routing."""
 
-    def __init__(self, app: PalmKernel, router: RuntimeRouter) -> None:
+    def __init__(
+        self,
+        app: PalmKernel,
+        router: RuntimeRouter,
+        *,
+        contributors: Registry[CqrsContributor],
+    ) -> None:
         self._app = app
         self._router = router
+        self._contributors = contributors
 
     def handle(self, command: Command) -> Any:
-        for contributor in iter_cqrs_contributors():
+        """Dispatch ``command`` from ``contributors``, then the core commands.
+
+        The caller passes the pattern table. A name that is not installed is
+        not read from the process contributor list.
+        """
+        for name in self._contributors.names():
+            contributor = self._contributors.get(name)
             if contributor.handle_command is None:
                 continue
             if isinstance(command, contributor.command_types):
@@ -382,10 +395,9 @@ def collect_cqrs_query_types(
 
 
 def wire_command_bus(bus: CommandBus, app: PalmKernel, router: RuntimeRouter) -> None:
-    handler = PalmCommandHandlers(app, router)
-    for command_type in collect_cqrs_command_types(
-        contributors=app.runtime().registries.require("cqrs_contributor"),
-    ):
+    contributors = app.runtime().registries.require("cqrs_contributor")
+    handler = PalmCommandHandlers(app, router, contributors=contributors)
+    for command_type in collect_cqrs_command_types(contributors=contributors):
         bus.register(command_type, handler)
 
 
