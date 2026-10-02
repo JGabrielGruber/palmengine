@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from palm.common.patterns.app import PatternApp
 from palm.common.patterns._registry import (
-    CqrsContributor,
     DesignContributorHook,
     McpContributor,
     register_cqrs_contributor,
@@ -17,25 +16,8 @@ from palm.common.patterns._registry import (
     register_projection_factory,
 )
 from plugins.patterns.wizard.bindings.bridges import register_wizard_bridges
-from plugins.patterns.wizard.bindings.cqrs.commands import (
-    ProvideWizardInputCommand,
-    RequestWizardBacktrackCommand,
-    SubmitWizardCommand,
-)
-from plugins.patterns.wizard.bindings.cqrs.handlers import (
-    handle_wizard_command,
-    handle_wizard_query,
-)
+from plugins.patterns.wizard.bindings.cqrs.contributor import wizard_cqrs_contributor
 from plugins.patterns.wizard.bindings.cqrs.projection import WizardProgressProjection
-from plugins.patterns.wizard.bindings.cqrs.queries import (
-    GetWizardProgressQuery,
-    GetWizardStatusQuery,
-    ListWizardProgressQuery,
-)
-from plugins.patterns.wizard.bindings.cqrs.schemas import (
-    WIZARD_COMMAND_SCHEMAS,
-    WIZARD_QUERY_SCHEMAS,
-)
 from plugins.patterns.wizard.bindings.mcp import register_wizard_mcp_tools
 
 
@@ -70,26 +52,7 @@ class WizardApp(PatternApp):
     def ready(self) -> None:
         register_wizard_bridges()
         register_projection_factory("wizard", WizardProgressProjection)
-        register_cqrs_contributor(
-            CqrsContributor(
-                pattern_name="wizard",
-                command_types=(
-                    SubmitWizardCommand,
-                    ProvideWizardInputCommand,
-                    RequestWizardBacktrackCommand,
-                ),
-                query_types=(
-                    GetWizardProgressQuery,
-                    GetWizardStatusQuery,
-                    ListWizardProgressQuery,
-                ),
-                command_schemas=WIZARD_COMMAND_SCHEMAS,
-                query_schemas=WIZARD_QUERY_SCHEMAS,
-                instance_status_query=GetWizardStatusQuery,
-                handle_command=handle_wizard_command,
-                handle_query=handle_wizard_query,
-            )
-        )
+        register_cqrs_contributor(wizard_cqrs_contributor())
         register_mcp_contributor(
             McpContributor(pattern_name="wizard", register=register_wizard_mcp_tools)
         )

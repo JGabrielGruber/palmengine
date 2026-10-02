@@ -257,7 +257,11 @@ class HostQueryHandlers:
         if isinstance(query, GetJobContextQuery):
             return self._get_job_context(query)
         if isinstance(query, InspectInstanceQuery):
-            return handle_inspect_instance(query, self)
+            return handle_inspect_instance(
+                query,
+                self,
+                contributors=self._app.runtime().registries.require("cqrs_contributor"),
+            )
         if isinstance(query, ListJobStatusQuery):
             return self._job_board.list_jobs(query)
         if isinstance(query, GetResourceInvocationsQuery):

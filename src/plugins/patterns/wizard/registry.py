@@ -3,6 +3,7 @@
 from palm.common.persistence.instance_sync import InstanceSyncHooks
 from palm.system.registries import SystemRegistries
 from plugins.patterns.wizard.bindings.bridges import wizard_interactive_hooks
+from plugins.patterns.wizard.bindings.cqrs.contributor import wizard_cqrs_contributor
 from plugins.patterns.wizard.bindings.definitions.builder import build
 from plugins.patterns.wizard.bindings.instances.persistence import (
     extract_instance_fields_from_job,
@@ -37,6 +38,8 @@ def register(registries: SystemRegistries) -> None:
         )
     if "read_model_builder" in registries.names():
         registries.require("read_model_builder").register("wizard", build_wizard_view)
+    if "cqrs_contributor" in registries.names():
+        registries.require("cqrs_contributor").register("wizard", wizard_cqrs_contributor())
 
 
 __all__ = ["register"]

@@ -1,5 +1,8 @@
 """
 Instance inspect dispatch — pattern-aware views without importing pattern packages.
+
+The caller passes the CQRS contributor table. This module does not read the
+process contributor list.
 """
 
 from __future__ import annotations
@@ -11,13 +14,20 @@ from palm.common.cqrs.query import (
     GetJobContextQuery,
     InspectInstanceQuery,
 )
-from palm.common.patterns._registry import iter_cqrs_contributors
+from palm.common.patterns._registry import CqrsContributor
+from palm.core.registry import Registry
 
 
-def handle_inspect_instance(query: InspectInstanceQuery, ctx: Any) -> dict[str, Any] | None:
-    """Resolve a rich instance view via pattern CQRS contributors, then fall back."""
+def handle_inspect_instance(
+    query: InspectInstanceQuery,
+    ctx: Any,
+    *,
+    contributors: Registry[CqrsContributor],
+) -> dict[str, Any] | None:
+    """Resolve a rich instance view from ``contributors``, then fall back."""
 
-    for contributor in iter_cqrs_contributors():
+    for name in contributors.names():
+        contributor = contributors.get(name)
         status_query = contributor.instance_status_query
         if status_query is None or contributor.handle_query is None:
             continue
