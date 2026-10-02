@@ -40,10 +40,11 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
-from palm.common.patterns._registry import iter_cqrs_contributors
+from palm.common.patterns._registry import CqrsContributor, iter_cqrs_contributors
 from palm.common.plans import PlanRegistry
 from palm.common.plans.from_body import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
+from palm.core.registry import Registry
 
 if TYPE_CHECKING:
     from palm.system.runtime.base import BaseRuntime
@@ -52,12 +53,25 @@ if TYPE_CHECKING:
 class StandaloneCommandHandlers:
     """Dispatch write operations directly through a hosting runtime."""
 
-    def __init__(self, runtime: BaseRuntime, *, plan_registry: PlanRegistry) -> None:
+    def __init__(
+        self,
+        runtime: BaseRuntime,
+        *,
+        plan_registry: PlanRegistry,
+        contributors: Registry[CqrsContributor],
+    ) -> None:
         self._runtime = runtime
         self._plan_registry = plan_registry
+        self._contributors = contributors
 
     def handle(self, command: Command) -> Any:
-        for contributor in iter_cqrs_contributors():
+        """Dispatch ``command`` from ``contributors``, then the core commands.
+
+        The caller passes the pattern table. A name that is not installed is
+        not read from the process contributor list.
+        """
+        for name in self._contributors.names():
+            contributor = self._contributors.get(name)
             if contributor.handle_command is None:
                 continue
             if isinstance(command, contributor.command_types):
@@ -397,10 +411,15 @@ def wire_standalone_buses(
     *,
     plan_registry: PlanRegistry,
 ) -> None:
-    commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
+    contributors = runtime.registries.require("cqrs_contributor")
+    commands = StandaloneCommandHandlers(
+        runtime,
+        plan_registry=plan_registry,
+        contributors=contributors,
+    )
     for command_type in collect_cqrs_command_types(
         mode="standalone",
-        contributors=runtime.registries.require("cqrs_contributor"),
+        contributors=contributors,
     ):
         command_bus.register(command_type, commands)
     wire_standalone_query_bus(query_bus, runtime)
