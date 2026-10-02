@@ -1,24 +1,24 @@
-"""Instance inspect reads the system registry (0.72.15).
+"""Standalone query dispatch reads the system registry (0.72.19).
 
-Inspect passes the ``cqrs_contributor`` table into the walk. A missing pattern
-name is not read from the process list. A runtime that does not install the
-table does not read that process list.
+``StandaloneQueryHandlers.ask`` scans the ``cqrs_contributor`` table the
+caller passes. A missing pattern name is not read from the process list. A
+runtime that does not install the table does not read that list.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import pytest
 from bundles.minimal.bind import bind_memory
 from bundles.minimal.runtime import MinimalRuntime
-from plugins.patterns.wizard.bindings.cqrs.handlers import handle_wizard_query
-from plugins.patterns.wizard.bindings.cqrs.queries import GetWizardStatusQuery
+from plugins.patterns.wizard.bindings.cqrs.contributor import wizard_cqrs_contributor
 from plugins.patterns.wizard.registry import register as register_wizard
 
-from palm.common.cqrs.instance_inspect import handle_inspect_instance
-from palm.common.cqrs.query import InspectInstanceQuery
-from palm.common.cqrs.standalone import StandaloneQueryHandlers
+from palm.common.cqrs.bus import QueryBus
+from palm.common.cqrs.query import Query
+from palm.common.cqrs.standalone import StandaloneQueryHandlers, wire_standalone_query_bus
 from palm.common.patterns._registry import (
     CqrsContributor,
     get_cqrs_contributor,
@@ -28,25 +28,30 @@ from palm.core.exceptions import RegistryError
 from palm.core.registry import Registry
 
 
-def _contributor(tag: str) -> CqrsContributor:
-    def handle_query(query: Any, ctx: Any) -> dict[str, Any]:
-        del ctx
-        return {"tag": tag, "instance_id": query.instance_id}
-
-    return CqrsContributor(
-        pattern_name="wizard",
-        instance_status_query=GetWizardStatusQuery,
-        handle_query=handle_query,
-    )
+@dataclass(frozen=True)
+class _Mark(Query):
+    pass
 
 
 _PROCESS_CALLS = {"n": 0}
 
 
-def _process_query(query: Any, ctx: Any) -> dict[str, Any]:
-    del ctx
+def _process_handle(query: Query, ctx: Any) -> str:
+    del query, ctx
     _PROCESS_CALLS["n"] += 1
-    return {"tag": "P", "instance_id": query.instance_id}
+    return "P"
+
+
+def _contributor(tag: str) -> CqrsContributor:
+    def handle_query(query: Query, ctx: Any) -> str:
+        del query, ctx
+        return tag
+
+    return CqrsContributor(
+        pattern_name="wizard",
+        query_types=(_Mark,),
+        handle_query=handle_query,
+    )
 
 
 def _install(runtime: MinimalRuntime, contributor: CqrsContributor | None) -> Registry[Any] | None:
@@ -60,8 +65,7 @@ def _install(runtime: MinimalRuntime, contributor: CqrsContributor | None) -> Re
     register_wizard(registries)
     if table is not None and contributor is not None:
         installed = table.get("wizard")
-        assert installed.handle_query is handle_wizard_query
-        assert installed.instance_status_query is GetWizardStatusQuery
+        assert installed.handle_query is wizard_cqrs_contributor().handle_query
         table.register("wizard", contributor)
     return table
 
@@ -79,11 +83,11 @@ def _stop(*runtimes: MinimalRuntime) -> None:
             runtime.stop()
 
 
-def _inspect(runtime: MinimalRuntime, instance_id: str) -> Any:
+def _handler(runtime: MinimalRuntime) -> StandaloneQueryHandlers:
     return StandaloneQueryHandlers(
         runtime,
         contributors=runtime.registries.require("cqrs_contributor"),
-    ).ask(InspectInstanceQuery(instance_id=instance_id))
+    )
 
 
 @pytest.fixture
@@ -96,9 +100,8 @@ def _process_contributors() -> Any:
     register_cqrs_contributor(
         CqrsContributor(
             pattern_name="wizard",
-            query_types=(GetWizardStatusQuery,),
-            instance_status_query=GetWizardStatusQuery,
-            handle_query=_process_query,
+            query_types=(_Mark,),
+            handle_query=_process_handle,
         )
     )
     try:
@@ -110,7 +113,7 @@ def _process_contributors() -> Any:
             registry._cqrs_contributors.update(saved)
 
 
-def test_instance_inspect_reads_the_system_registry(_process_contributors: None) -> None:
+def test_query_dispatch_reads_the_system_registry(_process_contributors: None) -> None:
     del _process_contributors
     first = MinimalRuntime()
     second = MinimalRuntime()
@@ -119,33 +122,38 @@ def test_instance_inspect_reads_the_system_registry(_process_contributors: None)
     try:
         _start(first)
         _start(second)
-        assert _inspect(first, "inst-a") == {"tag": "A", "instance_id": "inst-a"}
-        assert _inspect(second, "inst-b") == {"tag": "B", "instance_id": "inst-b"}
+        assert _handler(first).ask(_Mark()) == "A"
+        assert _handler(second).ask(_Mark()) == "B"
+        bus = QueryBus()
+        wire_standalone_query_bus(bus, first)
+        assert bus.ask(_Mark()) == "A"
+        assert _PROCESS_CALLS["n"] == 0
         process = get_cqrs_contributor("wizard")
         assert process is not None
-        assert process.handle_query is _process_query
-        assert _PROCESS_CALLS["n"] == 0
+        assert process.handle_query is _process_handle
     finally:
         _stop(first, second)
 
 
-def test_instance_inspect_ignores_the_process_table(_process_contributors: None) -> None:
+def test_query_dispatch_ignores_the_process_table(_process_contributors: None) -> None:
     del _process_contributors
     runtime = MinimalRuntime()
     _install(runtime, None)
     try:
         _start(runtime)
         with pytest.raises(RuntimeError, match="cqrs_contributor"):
-            _inspect(runtime, "inst-a")
+            wire_standalone_query_bus(QueryBus(), runtime)
+        with pytest.raises(RuntimeError, match="cqrs_contributor"):
+            _handler(runtime)
+        assert _PROCESS_CALLS["n"] == 0
         process = get_cqrs_contributor("wizard")
         assert process is not None
-        assert process.handle_query is _process_query
-        assert _PROCESS_CALLS["n"] == 0
+        assert process.handle_query is _process_handle
     finally:
         _stop(runtime)
 
 
-def test_instance_inspect_skips_a_missing_pattern_name(_process_contributors: None) -> None:
+def test_query_dispatch_skips_a_missing_pattern_name(_process_contributors: None) -> None:
     del _process_contributors
     runtime = MinimalRuntime()
     table = _install(runtime, _contributor("A"))
@@ -153,20 +161,13 @@ def test_instance_inspect_skips_a_missing_pattern_name(_process_contributors: No
     table.drop("wizard")
     try:
         _start(runtime)
-        assert _inspect(runtime, "inst-a") is None
-        assert (
-            handle_inspect_instance(
-                InspectInstanceQuery(instance_id="inst-a"),
-                object(),
-                contributors=runtime.registries.require("cqrs_contributor"),
-            )
-            is None
-        )
+        with pytest.raises(TypeError, match="Unsupported query: _Mark"):
+            _handler(runtime).ask(_Mark())
         with pytest.raises(RegistryError, match="wizard"):
             table.get("wizard")
+        assert _PROCESS_CALLS["n"] == 0
         process = get_cqrs_contributor("wizard")
         assert process is not None
-        assert process.handle_query is _process_query
-        assert _PROCESS_CALLS["n"] == 0
+        assert process.handle_query is _process_handle
     finally:
         _stop(runtime)

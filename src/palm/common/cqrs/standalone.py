@@ -40,7 +40,7 @@ from palm.common.cqrs.query import (
 from palm.common.cqrs.resolvers import resolve_flow, resolve_process, resolve_snapshot
 from palm.common.exceptions import DefinitionNotFoundError, InstanceNotFoundError, PlanNotFoundError
 from palm.common.job_context import build_job_context, instance_id_for_job
-from palm.common.patterns._registry import CqrsContributor, iter_cqrs_contributors
+from palm.common.patterns._registry import CqrsContributor
 from palm.common.plans import PlanRegistry
 from palm.common.plans.from_body import prepare_flow_from_body, prepare_process_from_body
 from palm.core.orchestration.exceptions import JobNotFoundError
@@ -181,13 +181,25 @@ class StandaloneCommandHandlers:
 class StandaloneQueryHandlers:
     """Serve reads from the authoritative runtime when no host projections exist."""
 
-    def __init__(self, runtime: BaseRuntime) -> None:
+    def __init__(
+        self,
+        runtime: BaseRuntime,
+        *,
+        contributors: Registry[CqrsContributor],
+    ) -> None:
         self._runtime = runtime
+        self._contributors = contributors
         self._pattern_projections: dict[str, Any] = {}
 
     def ask(self, query: Query) -> Any:
-        for contributor in iter_cqrs_contributors():
-            if contributor.handle_query is None:
+        """Dispatch ``query`` from ``contributors``, then the core queries.
+
+        The caller passes the pattern table. A name that is not installed is
+        not read from the process contributor list.
+        """
+        for name in self._contributors.names():
+            contributor = self._contributors.get(name)
+            if contributor.handle_query is None or not contributor.query_types:
                 continue
             if isinstance(query, contributor.query_types):
                 return contributor.handle_query(query, self)
@@ -396,10 +408,11 @@ def wire_standalone_query_bus(query_bus: QueryBus, runtime: BaseRuntime) -> None
     half of the composition-root convergence, achieved *without* dissolving
     ``ServerContext`` (see ``docs/SCOUT-0.51.6-serverctx-foldin.md``).
     """
-    queries = StandaloneQueryHandlers(runtime)
+    contributors = runtime.registries.require("cqrs_contributor")
+    queries = StandaloneQueryHandlers(runtime, contributors=contributors)
     for query_type in collect_cqrs_query_types(
         mode="standalone",
-        contributors=runtime.registries.require("cqrs_contributor"),
+        contributors=contributors,
     ):
         query_bus.register(query_type, queries)
 
