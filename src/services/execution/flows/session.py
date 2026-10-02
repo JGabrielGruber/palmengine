@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import CancelJobCommand
@@ -50,11 +51,12 @@ class FlowSession:
             view["session_id"] = str(system_sid).strip()
         elif view.get("session_id") and not str(view["session_id"]).startswith("sess-"):
             view.pop("session_id", None)
+        enrichers = self._flows.resolve_runtime().registries.require("session_enricher")
         ctx = build_session_context(
             flow_id=self.flow_id,
             session_id=self.session_id,
             view=view,
-            enricher=enrich_session_view,
+            enricher=partial(enrich_session_view, enrichers=enrichers),
         )
         if sync_gate:
             self._flows.sync_mutation_gate(self.session_id, ctx)
@@ -78,12 +80,13 @@ class FlowSession:
 
         if should_validate_mutation(params):
             view = self._flows.inspect_session(self.session_id)
+            enrichers = self._flows.resolve_runtime().registries.require("session_enricher")
             inspect = flatten_session_read_model(
                 build_session_context(
                     flow_id=self.flow_id,
                     session_id=self.session_id,
                     view=view,
-                    enricher=enrich_session_view,
+                    enricher=partial(enrich_session_view, enrichers=enrichers),
                 )
             )
             assert_on_write(

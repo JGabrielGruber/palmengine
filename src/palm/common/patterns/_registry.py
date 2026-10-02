@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from palm.core.orchestration import Job
+from palm.core.registry import Registry
 
 if TYPE_CHECKING:
     from palm.common.cqrs.command import Command
@@ -401,13 +402,20 @@ def get_session_enricher(name: str) -> SessionEnricherFn | None:
         return _session_enrichers.get(name)
 
 
-def enrich_session_view(pattern: str | None, view: dict[str, Any]) -> dict[str, Any]:
-    """Apply the registered enricher for ``pattern``, if any."""
+def enrich_session_view(
+    pattern: str | None,
+    view: dict[str, Any],
+    *,
+    enrichers: Registry[SessionEnricherFn],
+) -> dict[str, Any]:
+    """Apply the enricher for ``pattern`` from the table the caller passes.
+
+    A name that is not installed is not read from the process enricher map.
+    A view with no pattern name has no lookup.
+    """
     if pattern is None:
         return {}
-    fn = get_session_enricher(pattern)
-    if fn is None:
-        return {}
+    fn = enrichers.get(pattern)
     extra = fn(view)
     return extra if isinstance(extra, dict) else {}
 

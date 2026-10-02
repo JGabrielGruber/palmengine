@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from palm.common.cqrs.command import SubmitFlowCommand
@@ -390,11 +391,12 @@ class FlowExecutionService(BaseService):
     ) -> SessionContext:
         """Build a :class:`SessionContext` for ``session_id``."""
         view = self.inspect_session(session_id)
+        enrichers = self.resolve_runtime().registries.require("session_enricher")
         return build_session_context(
             flow_id=flow_id,
             session_id=session_id,
             view=view,
-            enricher=enrich_session_view,
+            enricher=partial(enrich_session_view, enrichers=enrichers),
         )
 
     def resolve_runtime(self, runtime_name: str | None = None) -> BaseRuntime:
