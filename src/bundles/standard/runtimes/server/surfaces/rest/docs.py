@@ -14,6 +14,10 @@ from bundles.standard.runtimes.server.surfaces.rest.doc_examples import (
     schema_fields,
 )
 from bundles.standard.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
+from bundles.standard.runtimes.server.surfaces.rest.schemas import named_schemas
+from palm.common.patterns._registry import CqrsContributor
+from palm.core.context.state_schema import DictStateSchema
+from palm.core.registry import Registry
 
 _METHOD_COLORS = {
     "GET": "#14b8a6",
@@ -24,8 +28,13 @@ _METHOD_COLORS = {
 }
 
 
-def build_docs_html(*, version: str) -> str:
+def build_docs_html(
+    *,
+    version: str,
+    contributors: Registry[CqrsContributor],
+) -> str:
     """Render a rich HTML documentation hub for the REST surface."""
+    schemas = named_schemas(contributors=contributors)
     groups: dict[str, list[RouteDefinition]] = {}
     for route in rest_routes():
         groups.setdefault(route.group, []).append(route)
@@ -35,7 +44,7 @@ def build_docs_html(*, version: str) -> str:
     for group, routes in groups.items():
         anchor = _group_anchor(group)
         nav_items.append(f'<a class="nav-link" href="#{anchor}">{html.escape(group)}</a>')
-        cards = "\n".join(_endpoint_card(route) for route in routes)
+        cards = "\n".join(_endpoint_card(route, schemas) for route in routes)
         description = GROUP_DESCRIPTIONS.get(group, "")
         sections.append(
             f'<section class="group" id="{anchor}">'
@@ -244,7 +253,10 @@ def _group_anchor(group: str) -> str:
     return group.lower().replace(" ", "-")
 
 
-def _endpoint_card(route: RouteDefinition) -> str:
+def _endpoint_card(
+    route: RouteDefinition,
+    schemas: dict[str, DictStateSchema],
+) -> str:
     method_color = _METHOD_COLORS.get(route.method, "#71717a")
     auth_badge = '<span class="badge auth">auth required</span>' if route.auth_required else ""
     status_badge = (
@@ -253,7 +265,7 @@ def _endpoint_card(route: RouteDefinition) -> str:
         else ""
     )
 
-    schema_tags = _schema_tags(route)
+    schema_tags = _schema_tags(route, schemas)
     curl = html.escape(build_curl(route))
     response = response_example(route)
     response_block = ""
@@ -296,10 +308,13 @@ def _endpoint_card(route: RouteDefinition) -> str:
     )
 
 
-def _schema_tags(route: RouteDefinition) -> str:
+def _schema_tags(
+    route: RouteDefinition,
+    schemas: dict[str, DictStateSchema],
+) -> str:
     tags: list[str] = []
     if route.request_schema:
-        for field in schema_fields(route.request_schema):
+        for field in schema_fields(route.request_schema, schemas=schemas):
             tags.append(f'<span class="schema-tag">{html.escape(field)}</span>')
     if route.query_schema:
         hint = QUERY_HINTS.get(route.query_schema, route.query_schema)

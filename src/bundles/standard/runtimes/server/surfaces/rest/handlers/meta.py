@@ -37,10 +37,20 @@ def doctor(ctx: ServerContext, request: ServerRequest) -> Any:
 
 
 def openapi(ctx: ServerContext, request: ServerRequest) -> Any:
-    return ok(build_openapi_spec(version=ctx.runtime.version))
+    return ok(
+        build_openapi_spec(
+            version=ctx.runtime.version,
+            contributors=ctx.runtime.registries.require("cqrs_contributor"),
+        )
+    )
 
 
 def docs(ctx: ServerContext, request: ServerRequest) -> Any:
     from bundles.standard.runtimes.server.surfaces.rest.responses import html as html_response
 
-    return html_response(build_docs_html(version=ctx.runtime.version))
+    return html_response(
+        build_docs_html(
+            version=ctx.runtime.version,
+            contributors=ctx.runtime.registries.require("cqrs_contributor"),
+        )
+    )

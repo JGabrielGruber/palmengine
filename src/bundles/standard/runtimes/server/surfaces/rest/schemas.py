@@ -6,11 +6,12 @@ Schemas drive validation and OpenAPI component generation from a single source.
 
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import Any
 
 from palm.common.cqrs.command import ProvideInputCommand
+from palm.common.patterns._registry import CqrsContributor
 from palm.core.context.state_schema import DictStateSchema
+from palm.core.registry import Registry
 from plugins.patterns.wizard.bindings.cqrs.commands import (
     ProvideWizardInputCommand,
     RequestWizardBacktrackCommand,
@@ -85,37 +86,6 @@ SUBMIT_PLANS_BODY = DictStateSchema(
         "required": ["plan_ids"],
     }
 )
-
-@lru_cache(maxsize=1)
-def _cqrs_schema_registry():
-    from palm.common.cqrs.schemas import build_schema_registry
-
-    return build_schema_registry()
-
-
-def _openapi_command_body(
-    command_type: type,
-    *,
-    properties: tuple[str, ...],
-) -> DictStateSchema:
-    return body_schema_for_command(
-        _cqrs_schema_registry(),
-        command_type,
-        properties=properties,
-    )
-
-
-def provide_input_body_schema() -> DictStateSchema:
-    return _openapi_command_body(ProvideInputCommand, properties=("value",))
-
-
-def wizard_input_body_schema() -> DictStateSchema:
-    return _openapi_command_body(ProvideWizardInputCommand, properties=("value",))
-
-
-def wizard_backtrack_body_schema() -> DictStateSchema:
-    return _openapi_command_body(RequestWizardBacktrackCommand, properties=("to_step",))
-
 
 LIST_JOBS_QUERY = DictStateSchema(
     {
@@ -244,9 +214,6 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
     "ValidateFlowBody": VALIDATE_FLOW_BODY,
     "PreparePlansBody": PREPARE_PLANS_BODY,
     "SubmitPlansBody": SUBMIT_PLANS_BODY,
-    "ProvideInputBody": provide_input_body_schema(),
-    "WizardInputBody": wizard_input_body_schema(),
-    "WizardBacktrackBody": wizard_backtrack_body_schema(),
     "ListJobsQuery": LIST_JOBS_QUERY,
     "ListInstancesQuery": LIST_INSTANCES_QUERY,
     "ListFlowsQuery": LIST_FLOWS_QUERY,
@@ -259,9 +226,39 @@ NAMED_SCHEMAS: dict[str, DictStateSchema] = {
 }
 
 
-def openapi_components() -> dict[str, Any]:
+def named_schemas(
+    *,
+    contributors: Registry[CqrsContributor],
+) -> dict[str, DictStateSchema]:
+    """Static REST schemas plus command bodies copied from ``contributors``."""
+    from palm.common.cqrs.schemas import build_schema_registry
+
+    registry = build_schema_registry(contributors=contributors)
+    named = dict(NAMED_SCHEMAS)
+    named["ProvideInputBody"] = body_schema_for_command(
+        registry,
+        ProvideInputCommand,
+        properties=("value",),
+    )
+    named["WizardInputBody"] = body_schema_for_command(
+        registry,
+        ProvideWizardInputCommand,
+        properties=("value",),
+    )
+    named["WizardBacktrackBody"] = body_schema_for_command(
+        registry,
+        RequestWizardBacktrackCommand,
+        properties=("to_step",),
+    )
+    return named
+
+
+def openapi_components(*, contributors: Registry[CqrsContributor]) -> dict[str, Any]:
     """Export schema documents for OpenAPI ``components.schemas``."""
-    return {name: schema.definition for name, schema in NAMED_SCHEMAS.items()}
+    return {
+        name: schema.definition
+        for name, schema in named_schemas(contributors=contributors).items()
+    }
 
 
 def submit_job_variant_errors(body: dict[str, Any]) -> list[str]:

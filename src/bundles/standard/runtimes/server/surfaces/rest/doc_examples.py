@@ -7,9 +7,11 @@ Single source for served ``/v1/docs``, OpenAPI request examples, and static site
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from typing import Any
 
 from palm import __version__
+from palm.core.context.state_schema import DictStateSchema
 from plugins.kits.server.middleware import PALM_SUBJECT_HEADER
 from bundles.standard.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
 
@@ -584,11 +586,13 @@ def response_example(route: RouteDefinition) -> str:
     return json.dumps(sample, indent=2)
 
 
-def schema_fields(schema_name: str) -> list[str]:
+def schema_fields(
+    schema_name: str,
+    *,
+    schemas: Mapping[str, DictStateSchema],
+) -> list[str]:
     """Return human-readable schema field highlights."""
-    from bundles.standard.runtimes.server.surfaces.rest.schemas import NAMED_SCHEMAS
-
-    schema = NAMED_SCHEMAS.get(schema_name)
+    schema = schemas.get(schema_name)
     if schema is None:
         return []
     definition = schema.definition

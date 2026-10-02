@@ -828,7 +828,9 @@ class ApplicationHost:
             # single-runtime; see docs/SCOUT-0.51.6-serverctx-foldin.md). ServerContext stays
             # — this is only the read half of the convergence, no surface re-typing.
             wire_standalone_query_bus(self._query_bus, self.runtime())
-        self._schema_registry = build_schema_registry()
+        self._schema_registry = build_schema_registry(
+            contributors=self.runtime().registries.require("cqrs_contributor"),
+        )
         service_ctx = HostServiceContext(
             command_bus=self._command_bus,
             query_bus=self._query_bus,

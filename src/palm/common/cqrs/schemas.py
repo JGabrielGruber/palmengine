@@ -7,8 +7,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any
 
-from palm.common.patterns._registry import iter_cqrs_contributors
+from palm.common.patterns._registry import CqrsContributor
 from palm.core.context.state_schema import DictStateSchema
+from palm.core.registry import Registry
 
 
 @dataclass(frozen=True)
@@ -52,23 +53,32 @@ class CqrsSchemaRegistry:
         return ValidationResult(ok=not errors, errors=errors, details=details)
 
 
-def build_schema_registry() -> CqrsSchemaRegistry:
-    """Build a registry from core schemas and pattern CQRS contributors."""
+def build_schema_registry(
+    *,
+    contributors: Registry[CqrsContributor],
+) -> CqrsSchemaRegistry:
+    """Copy pattern schemas from ``contributors``, then service schemas.
+
+    The caller passes the pattern table. A name that is not installed is not
+    read from the process contributor list. Service schemas stay on that
+    process list.
+    """
     from palm.common.cqrs.schema_bootstrap import register_core_schemas
 
     registry = CqrsSchemaRegistry()
     register_core_schemas(registry)
-    for contributor in iter_cqrs_contributors():
+    for name in contributors.names():
+        contributor = contributors.get(name)
         for command_type, schema in contributor.command_schemas.items():
             registry.register_command(command_type, schema)
         for query_type, schema in contributor.query_schemas.items():
             registry.register_query(query_type, schema)
     from palm.common.cqrs.service_contributors import iter_service_cqrs_contributors
 
-    for contributor in iter_service_cqrs_contributors():
-        for command_type, schema in contributor.command_schemas.items():
+    for service in iter_service_cqrs_contributors():
+        for command_type, schema in service.command_schemas.items():
             registry.register_command(command_type, schema)
-        for query_type, schema in contributor.query_schemas.items():
+        for query_type, schema in service.query_schemas.items():
             registry.register_query(query_type, schema)
     return registry
 

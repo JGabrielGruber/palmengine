@@ -441,7 +441,11 @@ class PalmInProcessBackend:
             ) from exc
 
     def get_openapi(self) -> dict[str, Any]:
-        return build_openapi_spec(version=self._ctx.runtime.version)
+        runtime = self._ctx.runtime
+        return build_openapi_spec(
+            version=runtime.version,
+            contributors=runtime.registries.require("cqrs_contributor"),
+        )
 
     def cancel_job(self, job_id: str) -> dict[str, Any]:
         result = self._ctx.system.cancel_job(job_id)

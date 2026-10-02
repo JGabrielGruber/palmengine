@@ -10,12 +10,18 @@ from bundles.standard.runtimes.server.surfaces.rest.doc_examples import (
 )
 from bundles.standard.runtimes.server.surfaces.rest.route_table import RouteDefinition, rest_routes
 from bundles.standard.runtimes.server.surfaces.rest.schemas import openapi_components
+from palm.common.patterns._registry import CqrsContributor
+from palm.core.registry import Registry
 
 _ERROR_REF = {"$ref": "#/components/schemas/Error"}
 _JSON_BODY = "application/json"
 
 
-def build_openapi_spec(*, version: str) -> dict[str, Any]:
+def build_openapi_spec(
+    *,
+    version: str,
+    contributors: Registry[CqrsContributor],
+) -> dict[str, Any]:
     """Build an OpenAPI document from :func:`rest_routes` and shared schemas."""
     paths: dict[str, Any] = {}
     tags: dict[str, dict[str, str]] = {}
@@ -44,7 +50,7 @@ def build_openapi_spec(*, version: str) -> dict[str, Any]:
         "paths": paths,
         "components": {
             "schemas": {
-                **openapi_components(),
+                **openapi_components(contributors=contributors),
                 "Error": _error_schema(),
                 "Pagination": _pagination_schema(),
             },

@@ -129,7 +129,9 @@ class ServerContext:
         service_ctx = HostServiceContext(
             command_bus=self._command_bus,
             query_bus=self._query_bus,
-            schemas=build_schema_registry(),
+            schemas=build_schema_registry(
+                contributors=runtime.registries.require("cqrs_contributor"),
+            ),
             app=_RuntimeKernelView(runtime),
             event=None,
             settings=self._settings,
