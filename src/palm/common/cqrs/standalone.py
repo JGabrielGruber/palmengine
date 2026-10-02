@@ -383,7 +383,10 @@ def wire_standalone_query_bus(query_bus: QueryBus, runtime: BaseRuntime) -> None
     ``ServerContext`` (see ``docs/SCOUT-0.51.6-serverctx-foldin.md``).
     """
     queries = StandaloneQueryHandlers(runtime)
-    for query_type in collect_cqrs_query_types(mode="standalone"):
+    for query_type in collect_cqrs_query_types(
+        mode="standalone",
+        contributors=runtime.registries.require("cqrs_contributor"),
+    ):
         query_bus.register(query_type, queries)
 
 
@@ -395,7 +398,10 @@ def wire_standalone_buses(
     plan_registry: PlanRegistry,
 ) -> None:
     commands = StandaloneCommandHandlers(runtime, plan_registry=plan_registry)
-    for command_type in collect_cqrs_command_types(mode="standalone"):
+    for command_type in collect_cqrs_command_types(
+        mode="standalone",
+        contributors=runtime.registries.require("cqrs_contributor"),
+    ):
         command_bus.register(command_type, commands)
     wire_standalone_query_bus(query_bus, runtime)
 

@@ -59,6 +59,8 @@ if TYPE_CHECKING:
     from bundles.standard.app.kernel import PalmKernel
     from palm.common.cqrs.projection import Projection
     from palm.common.managers.instance_manager import InstanceManager
+    from palm.common.patterns._registry import CqrsContributor
+    from palm.core.registry import Registry
     from palm.definitions.flow import FlowDefinition
     from palm.definitions.process import ProcessDefinition
     from palm.instances import StateSnapshot
@@ -361,21 +363,29 @@ class HostQueryHandlers:
             return None
 
 
-def collect_cqrs_command_types() -> tuple[type, ...]:
+def collect_cqrs_command_types(
+    *,
+    contributors: Registry[CqrsContributor],
+) -> tuple[type, ...]:
     from palm.common.cqrs.catalog import collect_cqrs_command_types as _collect
 
-    return _collect(mode="host")
+    return _collect(mode="host", contributors=contributors)
 
 
-def collect_cqrs_query_types() -> tuple[type, ...]:
+def collect_cqrs_query_types(
+    *,
+    contributors: Registry[CqrsContributor],
+) -> tuple[type, ...]:
     from palm.common.cqrs.catalog import collect_cqrs_query_types as _collect
 
-    return _collect(mode="host")
+    return _collect(mode="host", contributors=contributors)
 
 
 def wire_command_bus(bus: CommandBus, app: PalmKernel, router: RuntimeRouter) -> None:
     handler = PalmCommandHandlers(app, router)
-    for command_type in collect_cqrs_command_types():
+    for command_type in collect_cqrs_command_types(
+        contributors=app.runtime().registries.require("cqrs_contributor"),
+    ):
         bus.register(command_type, handler)
 
 
@@ -397,5 +407,7 @@ def wire_query_bus(
         job_board=job_board,
         instance_manager=instance_manager,
     )
-    for query_type in collect_cqrs_query_types():
+    for query_type in collect_cqrs_query_types(
+        contributors=app.runtime().registries.require("cqrs_contributor"),
+    ):
         bus.register(query_type, handler)
