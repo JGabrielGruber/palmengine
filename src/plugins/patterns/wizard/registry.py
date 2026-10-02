@@ -9,6 +9,7 @@ from plugins.patterns.wizard.bindings.instances.persistence import (
     prepare_wizard_resume_state,
 )
 from plugins.patterns.wizard.bindings.instances.submission import wizard_submission_metadata
+from plugins.patterns.wizard.bindings.read_model import build_wizard_view
 from plugins.patterns.wizard.flow.extensions.registry import register_builtin_wizard_step_kinds
 from plugins.patterns.wizard.pattern import WizardPattern
 
@@ -34,6 +35,8 @@ def register(registries: SystemRegistries) -> None:
             "wizard",
             wizard_interactive_hooks(),
         )
+    if "read_model_builder" in registries.names():
+        registries.require("read_model_builder").register("wizard", build_wizard_view)
 
 
 __all__ = ["register"]

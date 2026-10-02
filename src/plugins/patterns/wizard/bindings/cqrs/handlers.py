@@ -152,14 +152,16 @@ def get_wizard_status(query: GetWizardStatusQuery, ctx: Any) -> dict[str, Any] |
             job_id=job_id,
         )
 
+    if hasattr(ctx, "_app"):
+        runtime = ctx._app.runtime()
+    else:
+        runtime = ctx._runtime
+
     pattern: dict[str, Any] | None = None
     job_status: str | None = None
     job_result: Any = None
     try:
-        if hasattr(ctx, "_app"):
-            job = ctx._app.runtime().get_job(job_id)
-        else:
-            job = ctx._runtime.get_job(job_id)
+        job = runtime.get_job(job_id)
         job_status = job.status.value
         job_result = job.result
         from palm.common.job_inspection import inspect_job_json
@@ -173,6 +175,7 @@ def get_wizard_status(query: GetWizardStatusQuery, ctx: Any) -> dict[str, Any] |
     return build_pattern_read_model(
         "wizard",
         instance_payload,
+        builders=runtime.registries.require("read_model_builder"),
         wizard_progress=wizard_progress,
         pattern=pattern,
         job_status=job_status,
