@@ -27,6 +27,10 @@ class BaseProvider(ABC):
         """Accept the storage engine the system already holds. Default is a no-op."""
         del storage
 
+    def bind_definitions(self, definitions: Any) -> None:
+        """Accept the definitions service the host already holds. Default is a no-op."""
+        del definitions
+
     @abstractmethod
     def connect(self) -> None:
         """Establish or validate the provider connection."""

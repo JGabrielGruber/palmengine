@@ -43,6 +43,8 @@ def build_wizard_tree(
     context_engine: ContextEngine | None = None,
     step_registry: Any | None = None,
     registries: SystemRegistries | None = None,
+    wait_plane: Any | None = None,
+    orchestration: Any | None = None,
 ) -> tuple[RootNode, WizardSequenceNode]:
     """
     Return ``(root, sequence)`` for the given wizard configuration.
@@ -78,6 +80,8 @@ def build_wizard_tree(
                 workload_engine=workload_engine,
                 context_engine=context_engine,
                 registries=registries,
+                wait_plane=wait_plane,
+                orchestration=orchestration,
             ),
         )
         for idx, step in enumerate(config.iter_tree_steps())

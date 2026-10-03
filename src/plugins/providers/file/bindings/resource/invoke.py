@@ -5,11 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from palm.common.providers._registry import get_bound_runtime
-from palm.common.resource.document_storage import FileDocumentStore, resolve_documents_root
+from plugins.providers.file.flow.params import FileInvokeParams
+
+from palm.common.resource.document_storage import FileDocumentStore
 from palm.core.exceptions import StoragePermissionError
 from palm.core.resource.result import ProviderResult
-from plugins.providers.file.flow.params import FileInvokeParams
+
+_DEFAULT_DOCUMENTS_ROOT = Path("data") / "documents"
 
 
 def invoke_action(
@@ -18,12 +20,13 @@ def invoke_action(
     action: str,
     params: dict[str, Any] | None = None,
     resource_id: str | None = None,
+    storage: Any | None = None,
 ) -> ProviderResult:
     invoke_params = FileInvokeParams.from_mapping(params)
     relative_path = str(resource_id or invoke_params.extras.get("path") or "").strip()
 
     try:
-        store = _resolve_store(invoke_params)
+        store = _resolve_store(invoke_params, storage)
     except (TypeError, ValueError, StoragePermissionError) as exc:
         return ProviderResult.fail(str(exc), action=action, provider=name)
 
@@ -81,16 +84,24 @@ def invoke_action(
     )
 
 
-def _resolve_store(invoke_params: FileInvokeParams) -> FileDocumentStore:
+def _resolve_store(
+    invoke_params: FileInvokeParams,
+    storage: Any | None,
+) -> FileDocumentStore:
     if invoke_params.documents_root:
         root = Path(str(invoke_params.documents_root))
     else:
-        runtime = get_bound_runtime()
-        if runtime is None:
-            root = resolve_documents_root(object())
-        else:
-            root = resolve_documents_root(runtime)
+        root = _documents_root(storage)
     return FileDocumentStore(root)
+
+
+def _documents_root(storage: Any | None) -> Path:
+    """Documents directory on the storage engine the caller passed."""
+    backend = None if storage is None else storage.backend
+    data_dir = None if backend is None else getattr(backend, "data_dir", None)
+    if data_dir is None:
+        return _DEFAULT_DOCUMENTS_ROOT
+    return Path(data_dir) / "documents"
 
 
 def _invoke_read(

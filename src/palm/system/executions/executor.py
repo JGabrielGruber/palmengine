@@ -436,6 +436,8 @@ class DefinitionExecutor:
             commit_registry=getattr(runtime, "commit_registry", None),
             definition_repository=self._repository,
             registries=getattr(runtime, "registries", None),
+            wait_plane=getattr(runtime, "wait_plane", None),
+            orchestration=runtime.orchestration,
         )
 
     def _require_runtime(self) -> None:

@@ -38,6 +38,8 @@ class PatternBuildContext:
     commit_registry: Any | None = None
     definition_repository: DefinitionRepository | None = None
     registries: SystemRegistries | None = None
+    wait_plane: Any | None = None
+    orchestration: Any | None = None
 
     def resolve_state_schema(self, ref: str | None) -> StateSchema | None:
         """Resolve a declarative schema reference into a core ``StateSchema``."""

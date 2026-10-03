@@ -48,6 +48,8 @@ def build(
         "commit_registry": _commit_registry(flow, context),
         "step_registry": step_table,
         "registries": context.registries,
+        "wait_plane": context.wait_plane,
+        "orchestration": context.orchestration,
     }
 
     options = flow.options

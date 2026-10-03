@@ -53,6 +53,8 @@ class WizardPattern(BasePattern, JobInspectable):
         step_registry: Any | None = None,
         context_engine: ContextEngine | None = None,
         registries: SystemRegistries | None = None,
+        wait_plane: Any | None = None,
+        orchestration: Any | None = None,
     ) -> None:
         super().__init__(name=name)
         if config is None:
@@ -76,6 +78,8 @@ class WizardPattern(BasePattern, JobInspectable):
             context_engine=self._context_engine,
             step_registry=step_registry,
             registries=registries,
+            wait_plane=wait_plane,
+            orchestration=orchestration,
         )
 
     @property

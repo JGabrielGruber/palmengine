@@ -7,7 +7,7 @@ Pure interest types live in :mod:`palm.core.wait`. Coordination and
 
 * :class:`WaitPlaneService`
 * :func:`get_wait_plane` and :func:`open_interest_on_job` (etc.) when
-  callers have a job/state but not a plane reference (register-downward)
+  callers pass the continue plane and the orchestration they already hold
 * :mod:`~palm.system.subsystems.planes.wait.present` helpers for operator surfaces
 
 Internals (import the submodule): ``matcher``, ``index``, ``signals``,

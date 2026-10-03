@@ -59,10 +59,23 @@ def park_meta_from_result(
     return {"target_id": str(child_job_id), "meta": meta}
 
 
-def open_nested_park(state: Any, *, target_id: str, meta: dict[str, Any]) -> WaitInterest:
+def open_nested_park(
+    state: Any,
+    *,
+    target_id: str,
+    meta: dict[str, Any],
+    plane: Any | None = None,
+    orchestration: Any | None = None,
+) -> WaitInterest:
     """Sole park write: open continue-plane interest."""
     interest = make_job_wait(target_id, meta=dict(meta))
-    return open_interest_for_state(state, interest, replace_same_target=True)
+    return open_interest_for_state(
+        state,
+        interest,
+        plane=plane,
+        orchestration=orchestration,
+        replace_same_target=True,
+    )
 
 
 def nested_park_interest(state: Any) -> WaitInterest | None:
@@ -82,13 +95,31 @@ def nested_park_for_step(state: Any, step_slug: str) -> WaitInterest | None:
     return interest
 
 
-def clear_nested_park(state: Any, *, target_id: str | None = None) -> None:
+def clear_nested_park(
+    state: Any,
+    *,
+    target_id: str | None = None,
+    plane: Any | None = None,
+    orchestration: Any | None = None,
+) -> None:
     if target_id:
-        close_interest_for_state(state, kind=WAIT_KIND_JOB, target_id=str(target_id))
+        close_interest_for_state(
+            state,
+            kind=WAIT_KIND_JOB,
+            target_id=str(target_id),
+            plane=plane,
+            orchestration=orchestration,
+        )
         return
     for w in list(find_wait_interests(state, kind=WAIT_KIND_JOB)):
         if (w.meta or {}).get("source") == NESTED_SOURCE:
-            close_interest_for_state(state, kind=w.kind, target_id=w.target_id)
+            close_interest_for_state(
+                state,
+                kind=w.kind,
+                target_id=w.target_id,
+                plane=plane,
+                orchestration=orchestration,
+            )
 
 
 def default_nested_prompt(interest: WaitInterest) -> str:

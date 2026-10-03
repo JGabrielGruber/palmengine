@@ -6,7 +6,7 @@ and walks one-shot catalog commit.
 Not an ``AuthoringService``. Not ``DesignService``. Not land verbs on
 ``palm.kits.present``. Handle class name stays unnamed (VISION-0.70 §9).
 
-Library door: ``land(host)``. Job leaf: ``bound()`` from the started host.
+Library door: ``land(host)``. Job leaf: ``bound(definitions=...)``.
 ``commit(body)`` walks catalog ``kind`` (``flow`` / ``resource``). José
 locked the package ``palm.kits.authoring`` (2026-09-19). Constructor
 spelling is as-built for the floor; rename is José's.
@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from palm.common.providers._registry import get_bound_runtime
 from plugins.kits.registry import register_kit
 
 if TYPE_CHECKING:
@@ -62,19 +61,15 @@ def land(host: Any) -> _Authoring:
     return _Authoring(definitions=host.definitions)
 
 
-def bound() -> _Authoring:
-    """Return the adapter for the started host on the bound runtime.
+def bound(*, definitions: Any | None = None) -> _Authoring:
+    """Return the adapter for the definitions service the caller passes.
 
-    Jobs have no host. Host start already binds the runtime (same door
-    file/kv use). ``land(host)`` is the library door, not a kit-global stash.
+    ``land(host)`` is the library door. A job passes the same definitions
+    service the host already holds.
     """
-    runtime = get_bound_runtime()
-    if runtime is None or not runtime.is_started:
+    if definitions is None:
         raise RuntimeError("authoring has no bound definitions; start the host first")
-    host = runtime.application_host
-    if host is None or host.definitions is None:
-        raise RuntimeError("authoring has no bound definitions; start the host first")
-    return _Authoring(definitions=host.definitions)
+    return _Authoring(definitions=definitions)
 
 
 __all__ = ["land"]

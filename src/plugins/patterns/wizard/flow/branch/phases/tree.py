@@ -69,6 +69,8 @@ def _build_nested_phase(
         workload_engine=parent_ctx.workload_engine,
         context_engine=parent_ctx.context_engine,
         registries=parent_ctx.registries,
+        wait_plane=parent_ctx.wait_plane,
+        orchestration=parent_ctx.orchestration,
     )
     build = getattr(registry, "build", None)
     if not callable(build):

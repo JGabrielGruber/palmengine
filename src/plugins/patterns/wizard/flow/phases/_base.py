@@ -52,6 +52,8 @@ class WizardPhaseContext:
     workload_engine: WorkloadDriver | None = None
     context_engine: ContextEngine | None = None
     registries: SystemRegistries | None = None
+    wait_plane: Any | None = None
+    orchestration: Any | None = None
 
 
 def wizard_input_key(step_slug: str) -> str:

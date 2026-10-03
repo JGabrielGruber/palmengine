@@ -17,6 +17,14 @@ from plugins.kits.authoring import bound
 class AuthoringProvider(BaseProvider):
     """Commit a flow body through the bound authoring adapter."""
 
+    def __init__(self, *, name: str) -> None:
+        super().__init__(name=name)
+        self._definitions: Any | None = None
+
+    def bind_definitions(self, definitions: Any) -> None:
+        """Use the definitions service the host passed in."""
+        self._definitions = definitions
+
     def connect(self) -> None:
         pass
 
@@ -51,7 +59,7 @@ class AuthoringProvider(BaseProvider):
                 resource_id=resource_id,
             )
         try:
-            published = bound().commit(body)
+            published = bound(definitions=self._definitions).commit(body)
         except Exception as exc:
             return ProviderResult.fail(
                 str(exc),

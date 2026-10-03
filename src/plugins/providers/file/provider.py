@@ -13,6 +13,14 @@ from plugins.providers.file.bindings.resource.invoke import invoke_action
 class FileProvider(BaseProvider):
     """Read/write documents under a host ``documents_root`` directory."""
 
+    def __init__(self, *, name: str) -> None:
+        super().__init__(name=name)
+        self._storage: Any | None = None
+
+    def bind_storage(self, storage: Any) -> None:
+        """Use the storage engine the system passed in."""
+        self._storage = storage
+
     def connect(self) -> None:
         pass
 
@@ -42,6 +50,7 @@ class FileProvider(BaseProvider):
             action=action,
             params=merged,
             resource_id=resource_id,
+            storage=self._storage,
         )
 
     def describe(self) -> ProviderDescriptor:

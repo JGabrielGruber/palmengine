@@ -208,7 +208,11 @@ class WizardResourceLeaf(LeafNode):
             resource_ref=self._ctx.step.resource_ref,
         )
         interest = open_nested_park(
-            state, target_id=park["target_id"], meta=park["meta"]
+            state,
+            target_id=park["target_id"],
+            meta=park["meta"],
+            plane=self._ctx.wait_plane,
+            orchestration=self._ctx.orchestration,
         )
 
         prompt = default_nested_prompt(interest)
@@ -246,7 +250,12 @@ class WizardResourceLeaf(LeafNode):
 
         # Plane already delivered + interest lag.
         if self._nested_output_delivered(state):
-            clear_nested_park(state, target_id=child_job_id)
+            clear_nested_park(
+                state,
+                target_id=child_job_id,
+                plane=self._ctx.wait_plane,
+                orchestration=self._ctx.orchestration,
+            )
             return self._finish_nested_delivered(state)
 
         publish_prompt(

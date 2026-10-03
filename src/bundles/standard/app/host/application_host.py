@@ -860,6 +860,8 @@ class ApplicationHost:
         self._inspect = bag.inspect
         self._session = bag.session
         self._definitions = bag.definitions
+        if self._definitions is not None:
+            self.runtime().resource.bind_definitions(self._definitions)
         self._execution = bag.execution
         self._assist = bag.assist
         self._design = bag.design
