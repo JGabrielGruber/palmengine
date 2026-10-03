@@ -148,6 +148,7 @@ class ServerContext:
             repository=runtime.repository,
             instance_manager=runtime.instance_manager,
             storage=getattr(runtime, "storage", None),
+            registries=runtime.registries,
         )
         self._inspect = bag.inspect
         self._session = bag.session

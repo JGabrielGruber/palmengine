@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from palm.common.cqrs.bus import CommandBus, QueryBus
+from palm.system.registries import SystemRegistries
 from services._cqrs_wiring import wire_all_service_cqrs
 from services.design.contributors import wire_builtin_design_contributors
 
@@ -58,6 +59,7 @@ def apply_product_packaging(
     repository: Any,
     instance_manager: Any,
     storage: Any | None = None,
+    registries: SystemRegistries,
 ) -> ProductServiceBag:
     """Apply shared post-build product packaging; return the service bag.
 
@@ -72,7 +74,10 @@ def apply_product_packaging(
 
         attach_dashboard_store(storage)
     if bag.design is not None:
-        wire_builtin_design_contributors()
+        wire_builtin_design_contributors(
+            pattern_hooks=registries.require("design_contributor_hook"),
+            provider_hooks=registries.require("provider_design_contributor_hook"),
+        )
     wire_all_service_cqrs(
         command_bus,
         query_bus,

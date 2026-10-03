@@ -855,6 +855,7 @@ class ApplicationHost:
             repository=self._app.repository(),
             instance_manager=self._app.instance_manager,
             storage=self._app.storage,
+            registries=self.runtime().registries,
         )
         self._inspect = bag.inspect
         self._session = bag.session

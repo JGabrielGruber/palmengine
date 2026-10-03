@@ -20,6 +20,8 @@ from services.analytics import AnalyticsService
 from services.assist import AssistService
 from services.inspect import InspectService
 
+from palm.system.registries import SystemRegistries
+
 
 def _assert_product_doors(ctx: ServerContext | ApplicationHost) -> None:
     assert isinstance(ctx.inspect, InspectService)
@@ -155,6 +157,7 @@ def test_apply_product_packaging_binds_analytics() -> None:
         repository=object(),
         instance_manager=object(),
         storage=None,
+        registries=SystemRegistries(),
     )
     assert bag.assist is assist
     assert assist.analytics is analytics
